@@ -1002,6 +1002,41 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `POST /api/v1/me/notifications/{id}/read`.
     /// - Remark: Generated from `#/paths//api/v1/me/notifications/{id}/read/post(markMyNotificationRead)`.
     func markMyNotificationRead(_ input: Operations.MarkMyNotificationRead.Input) async throws -> Operations.MarkMyNotificationRead.Output
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)`.
+    func listLeaveRequests(_ input: Operations.ListLeaveRequests.Input) async throws -> Operations.ListLeaveRequests.Output
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += days, remaining -= days) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. A non-pending request is 409; an out-of-branch / unknown request is 404.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)`.
+    func decideLeaveRequest(_ input: Operations.DecideLeaveRequest.Input) async throws -> Operations.DecideLeaveRequest.Output
+    /// Per-employee annual-leave balance roster (직원별 연차 현황)
+    ///
+    /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/balances`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)`.
+    func listLeaveBalances(_ input: Operations.ListLeaveBalances.Input) async throws -> Operations.ListLeaveBalances.Output
+    /// Serve a §61 연차 사용 촉진 (round 1 or 2)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id` (which is validated against the actor's scope). Delivers a receipt-gated 연차촉진 notice into the target's 개인 수신함 and records the push. The engine AP- run binds once the 연차촉진 submittable definition exists; until then the push carries `ap_submission: pending_engine_definition`. Idempotent per (target, round).
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/promotions`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)`.
+    func pushLeavePromotion(_ input: Operations.PushLeavePromotion.Input) async throws -> Operations.PushLeavePromotion.Output
+    /// Serve a 노무수령거부 notice (after a round-2 promotion)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id`. Delivers a receipt-gated 노무수령거부 notice into the target's 개인 수신함 and records the push. Same engine-binding semantics as promotions. Idempotent per target.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/refusal-notices`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)`.
+    func pushLeaveRefusalNotice(_ input: Operations.PushLeaveRefusalNotice.Input) async throws -> Operations.PushLeaveRefusalNotice.Output
     /// List the authenticated user's statutory-notice vault (개인 수신함)
     ///
     /// Metadata only — a locked legal notice's body never appears in the list. The recipient is bound from the JWT; a non-recipient sees nothing.
@@ -3991,6 +4026,77 @@ extension APIProtocol {
         try await markMyNotificationRead(Operations.MarkMyNotificationRead.Input(
             path: path,
             headers: headers
+        ))
+    }
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)`.
+    public func listLeaveRequests(
+        query: Operations.ListLeaveRequests.Input.Query = .init(),
+        headers: Operations.ListLeaveRequests.Input.Headers = .init()
+    ) async throws -> Operations.ListLeaveRequests.Output {
+        try await listLeaveRequests(Operations.ListLeaveRequests.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += days, remaining -= days) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. A non-pending request is 409; an out-of-branch / unknown request is 404.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)`.
+    public func decideLeaveRequest(
+        path: Operations.DecideLeaveRequest.Input.Path,
+        headers: Operations.DecideLeaveRequest.Input.Headers = .init(),
+        body: Operations.DecideLeaveRequest.Input.Body
+    ) async throws -> Operations.DecideLeaveRequest.Output {
+        try await decideLeaveRequest(Operations.DecideLeaveRequest.Input(
+            path: path,
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Per-employee annual-leave balance roster (직원별 연차 현황)
+    ///
+    /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/balances`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)`.
+    public func listLeaveBalances(headers: Operations.ListLeaveBalances.Input.Headers = .init()) async throws -> Operations.ListLeaveBalances.Output {
+        try await listLeaveBalances(Operations.ListLeaveBalances.Input(headers: headers))
+    }
+    /// Serve a §61 연차 사용 촉진 (round 1 or 2)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id` (which is validated against the actor's scope). Delivers a receipt-gated 연차촉진 notice into the target's 개인 수신함 and records the push. The engine AP- run binds once the 연차촉진 submittable definition exists; until then the push carries `ap_submission: pending_engine_definition`. Idempotent per (target, round).
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/promotions`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)`.
+    public func pushLeavePromotion(
+        headers: Operations.PushLeavePromotion.Input.Headers = .init(),
+        body: Operations.PushLeavePromotion.Input.Body
+    ) async throws -> Operations.PushLeavePromotion.Output {
+        try await pushLeavePromotion(Operations.PushLeavePromotion.Input(
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Serve a 노무수령거부 notice (after a round-2 promotion)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id`. Delivers a receipt-gated 노무수령거부 notice into the target's 개인 수신함 and records the push. Same engine-binding semantics as promotions. Idempotent per target.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/refusal-notices`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)`.
+    public func pushLeaveRefusalNotice(
+        headers: Operations.PushLeaveRefusalNotice.Input.Headers = .init(),
+        body: Operations.PushLeaveRefusalNotice.Input.Body
+    ) async throws -> Operations.PushLeaveRefusalNotice.Output {
+        try await pushLeaveRefusalNotice(Operations.PushLeaveRefusalNotice.Input(
+            headers: headers,
+            body: body
         ))
     }
     /// List the authenticated user's statutory-notice vault (개인 수신함)
@@ -17540,6 +17646,418 @@ public enum Components {
             }
             public enum CodingKeys: String, CodingKey {
                 case stepUp = "step_up"
+            }
+        }
+        /// One leave request in the approval queue (결재함 leave variant).
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveRequestView`.
+        public struct LeaveRequestView: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/id`.
+            public var id: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/requester_user_id`.
+            public var requesterUserId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/subject_employee_id`.
+            public var subjectEmployeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/leave_type`.
+            @frozen public enum LeaveTypePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case annual = "annual"
+                case halfDay = "half_day"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/leave_type`.
+            public var leaveType: Components.Schemas.LeaveRequestView.LeaveTypePayload
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/days`.
+            public var days: Swift.Double
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/start_date`.
+            public var startDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/end_date`.
+            public var endDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/reason`.
+            public var reason: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/status`.
+            @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case pending = "pending"
+                case approved = "approved"
+                case returned = "returned"
+                case rejected = "rejected"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/status`.
+            public var status: Components.Schemas.LeaveRequestView.StatusPayload
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/decided_by`.
+            public var decidedBy: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/decided_at`.
+            public var decidedAt: Foundation.Date?
+            /// Mandatory on return/reject; present only when set.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/decision_comment`.
+            public var decisionComment: Swift.String?
+            /// The engine AP- run, when the submittable definition exists.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/ap_run_id`.
+            public var apRunId: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestView/created_at`.
+            public var createdAt: Components.Schemas.Timestamp
+            /// Creates a new `LeaveRequestView`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - branchId:
+            ///   - requesterUserId:
+            ///   - subjectEmployeeId:
+            ///   - leaveType:
+            ///   - days:
+            ///   - startDate:
+            ///   - endDate:
+            ///   - reason:
+            ///   - status:
+            ///   - decidedBy:
+            ///   - decidedAt:
+            ///   - decisionComment: Mandatory on return/reject; present only when set.
+            ///   - apRunId: The engine AP- run, when the submittable definition exists.
+            ///   - createdAt:
+            public init(
+                id: Components.Schemas.Uuid,
+                branchId: Components.Schemas.Uuid,
+                requesterUserId: Components.Schemas.Uuid,
+                subjectEmployeeId: Components.Schemas.Uuid,
+                leaveType: Components.Schemas.LeaveRequestView.LeaveTypePayload,
+                days: Swift.Double,
+                startDate: Swift.String,
+                endDate: Swift.String,
+                reason: Swift.String,
+                status: Components.Schemas.LeaveRequestView.StatusPayload,
+                decidedBy: Swift.String? = nil,
+                decidedAt: Foundation.Date? = nil,
+                decisionComment: Swift.String? = nil,
+                apRunId: Swift.String? = nil,
+                createdAt: Components.Schemas.Timestamp
+            ) {
+                self.id = id
+                self.branchId = branchId
+                self.requesterUserId = requesterUserId
+                self.subjectEmployeeId = subjectEmployeeId
+                self.leaveType = leaveType
+                self.days = days
+                self.startDate = startDate
+                self.endDate = endDate
+                self.reason = reason
+                self.status = status
+                self.decidedBy = decidedBy
+                self.decidedAt = decidedAt
+                self.decisionComment = decisionComment
+                self.apRunId = apRunId
+                self.createdAt = createdAt
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case branchId = "branch_id"
+                case requesterUserId = "requester_user_id"
+                case subjectEmployeeId = "subject_employee_id"
+                case leaveType = "leave_type"
+                case days
+                case startDate = "start_date"
+                case endDate = "end_date"
+                case reason
+                case status
+                case decidedBy = "decided_by"
+                case decidedAt = "decided_at"
+                case decisionComment = "decision_comment"
+                case apRunId = "ap_run_id"
+                case createdAt = "created_at"
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveRequestPage`.
+        public struct LeaveRequestPage: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestPage/items`.
+            public var items: [Components.Schemas.LeaveRequestView]
+            /// Creates a new `LeaveRequestPage`.
+            ///
+            /// - Parameters:
+            ///   - items:
+            public init(items: [Components.Schemas.LeaveRequestView]) {
+                self.items = items
+            }
+            public enum CodingKeys: String, CodingKey {
+                case items
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveDecideRequest`.
+        public struct LeaveDecideRequest: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideRequest/decision`.
+            @frozen public enum DecisionPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case approve = "approve"
+                case _return = "return"
+                case reject = "reject"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideRequest/decision`.
+            public var decision: Components.Schemas.LeaveDecideRequest.DecisionPayload
+            /// Mandatory for return/reject; optional for approve.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideRequest/comment`.
+            public var comment: Swift.String?
+            /// Creates a new `LeaveDecideRequest`.
+            ///
+            /// - Parameters:
+            ///   - decision:
+            ///   - comment: Mandatory for return/reject; optional for approve.
+            public init(
+                decision: Components.Schemas.LeaveDecideRequest.DecisionPayload,
+                comment: Swift.String? = nil
+            ) {
+                self.decision = decision
+                self.comment = comment
+            }
+            public enum CodingKeys: String, CodingKey {
+                case decision
+                case comment
+            }
+        }
+        /// One employee's annual-leave balance row (직원별 연차 현황).
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry`.
+        public struct LeaveRosterEntry: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/employee_id`.
+            public var employeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/name`.
+            public var name: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/team`.
+            public var team: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/grant`.
+            public var grant: Swift.Double
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/used`.
+            public var used: Swift.Double
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/left`.
+            public var left: Swift.Double
+            /// Bar color / 촉진 bucket — one of ok, promote, low.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/tone`.
+            @frozen public enum TonePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case ok = "ok"
+                case promote = "promote"
+                case low = "low"
+            }
+            /// Bar color / 촉진 bucket — one of ok, promote, low.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry/tone`.
+            public var tone: Components.Schemas.LeaveRosterEntry.TonePayload
+            /// Creates a new `LeaveRosterEntry`.
+            ///
+            /// - Parameters:
+            ///   - employeeId:
+            ///   - name:
+            ///   - team:
+            ///   - grant:
+            ///   - used:
+            ///   - left:
+            ///   - tone: Bar color / 촉진 bucket — one of ok, promote, low.
+            public init(
+                employeeId: Components.Schemas.Uuid,
+                name: Swift.String,
+                team: Swift.String? = nil,
+                grant: Swift.Double,
+                used: Swift.Double,
+                left: Swift.Double,
+                tone: Components.Schemas.LeaveRosterEntry.TonePayload
+            ) {
+                self.employeeId = employeeId
+                self.name = name
+                self.team = team
+                self.grant = grant
+                self.used = used
+                self.left = left
+                self.tone = tone
+            }
+            public enum CodingKeys: String, CodingKey {
+                case employeeId = "employee_id"
+                case name
+                case team
+                case grant
+                case used
+                case left
+                case tone
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveRosterPage`.
+        public struct LeaveRosterPage: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRosterPage/items`.
+            public var items: [Components.Schemas.LeaveRosterEntry]
+            /// Creates a new `LeaveRosterPage`.
+            ///
+            /// - Parameters:
+            ///   - items:
+            public init(items: [Components.Schemas.LeaveRosterEntry]) {
+                self.items = items
+            }
+            public enum CodingKeys: String, CodingKey {
+                case items
+            }
+        }
+        /// A §61 연차 사용 촉진 push to a target employee.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest`.
+        public struct LeavePromotionRequest: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/target_user_id`.
+            public var targetUserId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/target_employee_id`.
+            public var targetEmployeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/target_name`.
+            public var targetName: Swift.String
+            /// §61 round — 1 (사용 촉구) or 2 (시기 지정).
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/round`.
+            public var round: Swift.Int32
+            /// Unused annual-leave days motivating the push.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeavePromotionRequest/unused_days`.
+            public var unusedDays: Swift.Double?
+            /// Creates a new `LeavePromotionRequest`.
+            ///
+            /// - Parameters:
+            ///   - branchId:
+            ///   - targetUserId:
+            ///   - targetEmployeeId:
+            ///   - targetName:
+            ///   - round: §61 round — 1 (사용 촉구) or 2 (시기 지정).
+            ///   - unusedDays: Unused annual-leave days motivating the push.
+            public init(
+                branchId: Components.Schemas.Uuid,
+                targetUserId: Components.Schemas.Uuid,
+                targetEmployeeId: Components.Schemas.Uuid,
+                targetName: Swift.String,
+                round: Swift.Int32,
+                unusedDays: Swift.Double? = nil
+            ) {
+                self.branchId = branchId
+                self.targetUserId = targetUserId
+                self.targetEmployeeId = targetEmployeeId
+                self.targetName = targetName
+                self.round = round
+                self.unusedDays = unusedDays
+            }
+            public enum CodingKeys: String, CodingKey {
+                case branchId = "branch_id"
+                case targetUserId = "target_user_id"
+                case targetEmployeeId = "target_employee_id"
+                case targetName = "target_name"
+                case round
+                case unusedDays = "unused_days"
+            }
+        }
+        /// A 노무수령거부 notice served after a round-2 promotion.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest`.
+        public struct LeaveRefusalRequest: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest/target_user_id`.
+            public var targetUserId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest/target_employee_id`.
+            public var targetEmployeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest/target_name`.
+            public var targetName: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRefusalRequest/unused_days`.
+            public var unusedDays: Swift.Double?
+            /// Creates a new `LeaveRefusalRequest`.
+            ///
+            /// - Parameters:
+            ///   - branchId:
+            ///   - targetUserId:
+            ///   - targetEmployeeId:
+            ///   - targetName:
+            ///   - unusedDays:
+            public init(
+                branchId: Components.Schemas.Uuid,
+                targetUserId: Components.Schemas.Uuid,
+                targetEmployeeId: Components.Schemas.Uuid,
+                targetName: Swift.String,
+                unusedDays: Swift.Double? = nil
+            ) {
+                self.branchId = branchId
+                self.targetUserId = targetUserId
+                self.targetEmployeeId = targetEmployeeId
+                self.targetName = targetName
+                self.unusedDays = unusedDays
+            }
+            public enum CodingKeys: String, CodingKey {
+                case branchId = "branch_id"
+                case targetUserId = "target_user_id"
+                case targetEmployeeId = "target_employee_id"
+                case targetName = "target_name"
+                case unusedDays = "unused_days"
+            }
+        }
+        /// The result of a §61 push — the delivered notice + engine state.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView`.
+        public struct LeaveStatutoryPushView: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/id`.
+            public var id: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/kind`.
+            @frozen public enum KindPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case promotion = "promotion"
+                case refusal = "refusal"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/kind`.
+            public var kind: Components.Schemas.LeaveStatutoryPushView.KindPayload
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/round`.
+            public var round: Swift.Int32
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/target_user_id`.
+            public var targetUserId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/inbox_doc_id`.
+            public var inboxDocId: Components.Schemas.Uuid
+            /// The engine AP- run, when the submittable definition exists.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/ap_run_id`.
+            public var apRunId: Swift.String?
+            /// submitted when a run was started, else pending_engine_definition.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/ap_submission`.
+            @frozen public enum ApSubmissionPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case submitted = "submitted"
+                case pendingEngineDefinition = "pending_engine_definition"
+            }
+            /// submitted when a run was started, else pending_engine_definition.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveStatutoryPushView/ap_submission`.
+            public var apSubmission: Components.Schemas.LeaveStatutoryPushView.ApSubmissionPayload
+            /// Creates a new `LeaveStatutoryPushView`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - kind:
+            ///   - round:
+            ///   - targetUserId:
+            ///   - inboxDocId:
+            ///   - apRunId: The engine AP- run, when the submittable definition exists.
+            ///   - apSubmission: submitted when a run was started, else pending_engine_definition.
+            public init(
+                id: Components.Schemas.Uuid,
+                kind: Components.Schemas.LeaveStatutoryPushView.KindPayload,
+                round: Swift.Int32,
+                targetUserId: Components.Schemas.Uuid,
+                inboxDocId: Components.Schemas.Uuid,
+                apRunId: Swift.String? = nil,
+                apSubmission: Components.Schemas.LeaveStatutoryPushView.ApSubmissionPayload
+            ) {
+                self.id = id
+                self.kind = kind
+                self.round = round
+                self.targetUserId = targetUserId
+                self.inboxDocId = inboxDocId
+                self.apRunId = apRunId
+                self.apSubmission = apSubmission
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case kind
+                case round
+                case targetUserId = "target_user_id"
+                case inboxDocId = "inbox_doc_id"
+                case apRunId = "ap_run_id"
+                case apSubmission = "ap_submission"
             }
         }
         /// One scope chip or object link: a reference to a domain object by kind + id with an optional display-label snapshot. `kind` is an extensible free-form string (frontend object-registry kinds), not an enum.
@@ -59993,6 +60511,1159 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)`.
+    public enum ListLeaveRequests {
+        public static let id: Swift.String = "listLeaveRequests"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/query/status`.
+                @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                    case pending = "pending"
+                    case approved = "approved"
+                    case returned = "returned"
+                    case rejected = "rejected"
+                }
+                /// Filter to one status; omitted returns all four.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/query/status`.
+                public var status: Operations.ListLeaveRequests.Input.Query.StatusPayload?
+                /// Page size (clamped server-side to 1..=200; default 100).
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/query/limit`.
+                public var limit: Swift.Int64?
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - status: Filter to one status; omitted returns all four.
+                ///   - limit: Page size (clamped server-side to 1..=200; default 100).
+                public init(
+                    status: Operations.ListLeaveRequests.Input.Query.StatusPayload? = nil,
+                    limit: Swift.Int64? = nil
+                ) {
+                    self.status = status
+                    self.limit = limit
+                }
+            }
+            public var query: Operations.ListLeaveRequests.Input.Query
+            /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveRequests.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveRequests.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListLeaveRequests.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.ListLeaveRequests.Input.Query = .init(),
+                headers: Operations.ListLeaveRequests.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveRequestPage)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRequestPage {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveRequests.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveRequests.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// A branch-scoped page of leave requests.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListLeaveRequests.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListLeaveRequests.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/requests/GET/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveRequests.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveRequests.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// JWT verification is not configured.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/get(listLeaveRequests)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.ListLeaveRequests.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.ListLeaveRequests.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += days, remaining -= days) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. A non-pending request is 409; an out-of-branch / unknown request is 404.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)`.
+    public enum DecideLeaveRequest {
+        public static let id: Swift.String = "decideLeaveRequest"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.DecideLeaveRequest.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.DecideLeaveRequest.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.DecideLeaveRequest.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.DecideLeaveRequest.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeaveDecideRequest)
+            }
+            public var body: Operations.DecideLeaveRequest.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            ///   - body:
+            public init(
+                path: Operations.DecideLeaveRequest.Input.Path,
+                headers: Operations.DecideLeaveRequest.Input.Headers = .init(),
+                body: Operations.DecideLeaveRequest.Input.Body
+            ) {
+                self.path = path
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveRequestView)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRequestView {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequest.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequest.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The decided leave request.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.DecideLeaveRequest.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.DecideLeaveRequest.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/409/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/409/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequest.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequest.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// The request is not pending and cannot be decided again.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.DecideLeaveRequest.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Operations.DecideLeaveRequest.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct UnprocessableContent: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/422/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/requests/{id}/decide/POST/responses/422/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequest.Output.UnprocessableContent.Body
+                /// Creates a new `UnprocessableContent`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequest.Output.UnprocessableContent.Body) {
+                    self.body = body
+                }
+            }
+            /// Missing mandatory comment or unknown decision.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.DecideLeaveRequest.Output.UnprocessableContent)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Operations.DecideLeaveRequest.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Per-employee annual-leave balance roster (직원별 연차 현황)
+    ///
+    /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
+    ///
+    /// - Remark: HTTP `GET /api/v1/leave/balances`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)`.
+    public enum ListLeaveBalances {
+        public static let id: Swift.String = "listLeaveBalances"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/leave/balances/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveBalances.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveBalances.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListLeaveBalances.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            public init(headers: Operations.ListLeaveBalances.Input.Headers = .init()) {
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/balances/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/balances/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveRosterPage)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRosterPage {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveBalances.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveBalances.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The leave-balance roster.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListLeaveBalances.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListLeaveBalances.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/balances/GET/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/balances/GET/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveBalances.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveBalances.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// JWT verification is not configured.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/balances/get(listLeaveBalances)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.ListLeaveBalances.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.ListLeaveBalances.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Serve a §61 연차 사용 촉진 (round 1 or 2)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id` (which is validated against the actor's scope). Delivers a receipt-gated 연차촉진 notice into the target's 개인 수신함 and records the push. The engine AP- run binds once the 연차촉진 submittable definition exists; until then the push carries `ap_submission: pending_engine_definition`. Idempotent per (target, round).
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/promotions`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)`.
+    public enum PushLeavePromotion {
+        public static let id: Swift.String = "pushLeavePromotion"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PushLeavePromotion.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PushLeavePromotion.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.PushLeavePromotion.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeavePromotionRequest)
+            }
+            public var body: Operations.PushLeavePromotion.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            public init(
+                headers: Operations.PushLeavePromotion.Input.Headers = .init(),
+                body: Operations.PushLeavePromotion.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveStatutoryPushView)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveStatutoryPushView {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.PushLeavePromotion.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.PushLeavePromotion.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The recorded push, including the delivered notice id.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.PushLeavePromotion.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.PushLeavePromotion.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct UnprocessableContent: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/responses/422/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/promotions/POST/responses/422/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.PushLeavePromotion.Output.UnprocessableContent.Body
+                /// Creates a new `UnprocessableContent`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.PushLeavePromotion.Output.UnprocessableContent.Body) {
+                    self.body = body
+                }
+            }
+            /// Invalid round (§61 allows 1 or 2).
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/promotions/post(pushLeavePromotion)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.PushLeavePromotion.Output.UnprocessableContent)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Operations.PushLeavePromotion.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Serve a 노무수령거부 notice (after a round-2 promotion)
+    ///
+    /// Requires `employee_directory_manage` in the target `branch_id`. Delivers a receipt-gated 노무수령거부 notice into the target's 개인 수신함 and records the push. Same engine-binding semantics as promotions. Idempotent per target.
+    ///
+    /// - Remark: HTTP `POST /api/v1/leave/refusal-notices`.
+    /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)`.
+    public enum PushLeaveRefusalNotice {
+        public static let id: Swift.String = "pushLeaveRefusalNotice"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/leave/refusal-notices/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PushLeaveRefusalNotice.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PushLeaveRefusalNotice.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.PushLeaveRefusalNotice.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/leave/refusal-notices/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/refusal-notices/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeaveRefusalRequest)
+            }
+            public var body: Operations.PushLeaveRefusalNotice.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            public init(
+                headers: Operations.PushLeaveRefusalNotice.Input.Headers = .init(),
+                body: Operations.PushLeaveRefusalNotice.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/leave/refusal-notices/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/leave/refusal-notices/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveStatutoryPushView)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveStatutoryPushView {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.PushLeaveRefusalNotice.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.PushLeaveRefusalNotice.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The recorded refusal push, including the delivered notice id.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.PushLeaveRefusalNotice.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.PushLeaveRefusalNotice.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/leave/refusal-notices/post(pushLeaveRefusalNotice)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
                             response: self
                         )
                     }
