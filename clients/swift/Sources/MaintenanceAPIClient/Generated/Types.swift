@@ -1681,6 +1681,55 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `GET /api/objects/{kind}/{id}/graph`.
     /// - Remark: Generated from `#/paths//api/objects/{kind}/{id}/graph/get(getObjectGraph)`.
     func getObjectGraph(_ input: Operations.GetObjectGraph.Input) async throws -> Operations.GetObjectGraph.Output
+    /// List the object-type registry with caller-visible instance counts
+    ///
+    /// Returns every seeded object kind (kind, code_prefix, label, lifecycle status) plus active_count — the number of instances of that kind visible to the caller. The count respects the SAME per-kind visibility as resolveObject: org via forced RLS (no cross-org counting), narrowed by the caller's branch scope and the domain feature gate; a kind the caller cannot read counts 0. Type proposal/transition flows are out of scope for this slice (read surface + status only).
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)`.
+    func listObjectTypes(_ input: Operations.ListObjectTypes.Input) async throws -> Operations.ListObjectTypes.Output
+    /// Fetch one object type with its caller-visible instance count
+    ///
+    /// Returns a single object type by kind slug (404 if unknown), with the same caller-visible active_count as listObjectTypes.
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types/{kind}`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)`.
+    func getObjectType(_ input: Operations.GetObjectType.Input) async throws -> Operations.GetObjectType.Output
+    /// List the edge-type registry (object-link relationship vocabulary)
+    ///
+    /// Returns the seeded, platform-wide set of relationship labels an object_link may use. createObjectLink validates link_type against this registry.
+    ///
+    /// - Remark: HTTP `GET /api/v1/link-types`.
+    /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)`.
+    func listLinkTypes(_ input: Operations.ListLinkTypes.Input) async throws -> Operations.ListLinkTypes.Output
+    /// Create an SR- series and attach its first instance
+    ///
+    /// Creates an org-scoped series with a canonical SR- code and attaches the first instance. The instance must resolve for the caller (deny-by-omission): you cannot found a series on an object you cannot see. Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series`.
+    /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)`.
+    func createSeries(_ input: Operations.CreateSeries.Input) async throws -> Operations.CreateSeries.Output
+    /// Find which series an object belongs to
+    ///
+    /// Returns the series a given (kind, id) instance belongs to, or null. Membership is revealed only when the caller can resolve the instance, so series membership is never an existence oracle for out-of-scope objects.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/by-instance`.
+    /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)`.
+    func getSeriesByInstance(_ input: Operations.GetSeriesByInstance.Input) async throws -> Operations.GetSeriesByInstance.Output
+    /// Read a series and its ordered, caller-visible instances
+    ///
+    /// Returns the series head and its instances resolved to ObjectHeads, ordered by attach time. Instances that no longer resolve for the caller are omitted (deny-by-omission). Current/next derivation is left to the client. An unknown id or another tenant's series is 404.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/{id}`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)`.
+    func getSeries(_ input: Operations.GetSeries.Input) async throws -> Operations.GetSeries.Output
+    /// Attach an instance to an existing series
+    ///
+    /// Attaches a (kind, id) instance to the series. The series must exist for the caller and the instance must resolve for the caller (both deny-by-omission -> 404). An object already in a series is rejected with 409 (the not-yet-in-a-series promotion invariant). Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series/{id}/instances`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)`.
+    func attachSeriesInstance(_ input: Operations.AttachSeriesInstance.Input) async throws -> Operations.AttachSeriesInstance.Output
     /// Fetch the current user's purchase request workspace preferences
     ///
     /// - Remark: HTTP `GET /api/v1/financial/purchase-requests/preferences`.
@@ -5494,6 +5543,101 @@ extension APIProtocol {
             headers: headers
         ))
     }
+    /// List the object-type registry with caller-visible instance counts
+    ///
+    /// Returns every seeded object kind (kind, code_prefix, label, lifecycle status) plus active_count — the number of instances of that kind visible to the caller. The count respects the SAME per-kind visibility as resolveObject: org via forced RLS (no cross-org counting), narrowed by the caller's branch scope and the domain feature gate; a kind the caller cannot read counts 0. Type proposal/transition flows are out of scope for this slice (read surface + status only).
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)`.
+    public func listObjectTypes(headers: Operations.ListObjectTypes.Input.Headers = .init()) async throws -> Operations.ListObjectTypes.Output {
+        try await listObjectTypes(Operations.ListObjectTypes.Input(headers: headers))
+    }
+    /// Fetch one object type with its caller-visible instance count
+    ///
+    /// Returns a single object type by kind slug (404 if unknown), with the same caller-visible active_count as listObjectTypes.
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types/{kind}`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)`.
+    public func getObjectType(
+        path: Operations.GetObjectType.Input.Path,
+        headers: Operations.GetObjectType.Input.Headers = .init()
+    ) async throws -> Operations.GetObjectType.Output {
+        try await getObjectType(Operations.GetObjectType.Input(
+            path: path,
+            headers: headers
+        ))
+    }
+    /// List the edge-type registry (object-link relationship vocabulary)
+    ///
+    /// Returns the seeded, platform-wide set of relationship labels an object_link may use. createObjectLink validates link_type against this registry.
+    ///
+    /// - Remark: HTTP `GET /api/v1/link-types`.
+    /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)`.
+    public func listLinkTypes(headers: Operations.ListLinkTypes.Input.Headers = .init()) async throws -> Operations.ListLinkTypes.Output {
+        try await listLinkTypes(Operations.ListLinkTypes.Input(headers: headers))
+    }
+    /// Create an SR- series and attach its first instance
+    ///
+    /// Creates an org-scoped series with a canonical SR- code and attaches the first instance. The instance must resolve for the caller (deny-by-omission): you cannot found a series on an object you cannot see. Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series`.
+    /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)`.
+    public func createSeries(
+        headers: Operations.CreateSeries.Input.Headers = .init(),
+        body: Operations.CreateSeries.Input.Body
+    ) async throws -> Operations.CreateSeries.Output {
+        try await createSeries(Operations.CreateSeries.Input(
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Find which series an object belongs to
+    ///
+    /// Returns the series a given (kind, id) instance belongs to, or null. Membership is revealed only when the caller can resolve the instance, so series membership is never an existence oracle for out-of-scope objects.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/by-instance`.
+    /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)`.
+    public func getSeriesByInstance(
+        query: Operations.GetSeriesByInstance.Input.Query,
+        headers: Operations.GetSeriesByInstance.Input.Headers = .init()
+    ) async throws -> Operations.GetSeriesByInstance.Output {
+        try await getSeriesByInstance(Operations.GetSeriesByInstance.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// Read a series and its ordered, caller-visible instances
+    ///
+    /// Returns the series head and its instances resolved to ObjectHeads, ordered by attach time. Instances that no longer resolve for the caller are omitted (deny-by-omission). Current/next derivation is left to the client. An unknown id or another tenant's series is 404.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/{id}`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)`.
+    public func getSeries(
+        path: Operations.GetSeries.Input.Path,
+        headers: Operations.GetSeries.Input.Headers = .init()
+    ) async throws -> Operations.GetSeries.Output {
+        try await getSeries(Operations.GetSeries.Input(
+            path: path,
+            headers: headers
+        ))
+    }
+    /// Attach an instance to an existing series
+    ///
+    /// Attaches a (kind, id) instance to the series. The series must exist for the caller and the instance must resolve for the caller (both deny-by-omission -> 404). An object already in a series is rejected with 409 (the not-yet-in-a-series promotion invariant). Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series/{id}/instances`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)`.
+    public func attachSeriesInstance(
+        path: Operations.AttachSeriesInstance.Input.Path,
+        headers: Operations.AttachSeriesInstance.Input.Headers = .init(),
+        body: Operations.AttachSeriesInstance.Input.Body
+    ) async throws -> Operations.AttachSeriesInstance.Output {
+        try await attachSeriesInstance(Operations.AttachSeriesInstance.Input(
+            path: path,
+            headers: headers,
+            body: body
+        ))
+    }
     /// Fetch the current user's purchase request workspace preferences
     ///
     /// - Remark: HTTP `GET /api/v1/financial/purchase-requests/preferences`.
@@ -5966,6 +6110,284 @@ public enum Components {
             }
             public enum CodingKeys: String, CodingKey {
                 case results
+            }
+        }
+        /// An object-type registry row plus the caller-visible active instance count.
+        ///
+        /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse`.
+        public struct ObjectTypeResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/kind`.
+            public var kind: Swift.String
+            /// Canonical per-kind code prefix (e.g. AP-, CS-); absent for id/name-referenced kinds.
+            ///
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/code_prefix`.
+            public var codePrefix: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/description`.
+            public var description: Swift.String
+            /// Type lifecycle state (draft, active, archived).
+            ///
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/status`.
+            @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case draft = "draft"
+                case active = "active"
+                case archived = "archived"
+            }
+            /// Type lifecycle state (draft, active, archived).
+            ///
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/status`.
+            public var status: Components.Schemas.ObjectTypeResponse.StatusPayload
+            /// Instances of this kind visible to the caller (same per-kind visibility as resolveObject).
+            ///
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeResponse/active_count`.
+            public var activeCount: Swift.Int64
+            /// Creates a new `ObjectTypeResponse`.
+            ///
+            /// - Parameters:
+            ///   - kind:
+            ///   - codePrefix: Canonical per-kind code prefix (e.g. AP-, CS-); absent for id/name-referenced kinds.
+            ///   - description:
+            ///   - status: Type lifecycle state (draft, active, archived).
+            ///   - activeCount: Instances of this kind visible to the caller (same per-kind visibility as resolveObject).
+            public init(
+                kind: Swift.String,
+                codePrefix: Swift.String? = nil,
+                description: Swift.String,
+                status: Components.Schemas.ObjectTypeResponse.StatusPayload,
+                activeCount: Swift.Int64
+            ) {
+                self.kind = kind
+                self.codePrefix = codePrefix
+                self.description = description
+                self.status = status
+                self.activeCount = activeCount
+            }
+            public enum CodingKeys: String, CodingKey {
+                case kind
+                case codePrefix = "code_prefix"
+                case description
+                case status
+                case activeCount = "active_count"
+            }
+        }
+        /// A registered edge type (object-link relationship label).
+        ///
+        /// - Remark: Generated from `#/components/schemas/LinkTypeResponse`.
+        public struct LinkTypeResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LinkTypeResponse/link_type`.
+            public var linkType: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LinkTypeResponse/description`.
+            public var description: Swift.String
+            /// Edge-type lifecycle state (draft, active, archived).
+            ///
+            /// - Remark: Generated from `#/components/schemas/LinkTypeResponse/status`.
+            @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case draft = "draft"
+                case active = "active"
+                case archived = "archived"
+            }
+            /// Edge-type lifecycle state (draft, active, archived).
+            ///
+            /// - Remark: Generated from `#/components/schemas/LinkTypeResponse/status`.
+            public var status: Components.Schemas.LinkTypeResponse.StatusPayload
+            /// Creates a new `LinkTypeResponse`.
+            ///
+            /// - Parameters:
+            ///   - linkType:
+            ///   - description:
+            ///   - status: Edge-type lifecycle state (draft, active, archived).
+            public init(
+                linkType: Swift.String,
+                description: Swift.String,
+                status: Components.Schemas.LinkTypeResponse.StatusPayload
+            ) {
+                self.linkType = linkType
+                self.description = description
+                self.status = status
+            }
+            public enum CodingKeys: String, CodingKey {
+                case linkType = "link_type"
+                case description
+                case status
+            }
+        }
+        /// Create a series and attach its first instance.
+        ///
+        /// - Remark: Generated from `#/components/schemas/CreateSeriesRequest`.
+        public struct CreateSeriesRequest: Codable, Hashable, Sendable {
+            /// Human label for the series (1-200 chars).
+            ///
+            /// - Remark: Generated from `#/components/schemas/CreateSeriesRequest/label`.
+            public var label: Swift.String
+            /// First instance object kind slug.
+            ///
+            /// - Remark: Generated from `#/components/schemas/CreateSeriesRequest/kind`.
+            public var kind: Swift.String
+            /// First instance object id/reference (≤200 chars).
+            ///
+            /// - Remark: Generated from `#/components/schemas/CreateSeriesRequest/id`.
+            public var id: Swift.String
+            /// Creates a new `CreateSeriesRequest`.
+            ///
+            /// - Parameters:
+            ///   - label: Human label for the series (1-200 chars).
+            ///   - kind: First instance object kind slug.
+            ///   - id: First instance object id/reference (≤200 chars).
+            public init(
+                label: Swift.String,
+                kind: Swift.String,
+                id: Swift.String
+            ) {
+                self.label = label
+                self.kind = kind
+                self.id = id
+            }
+            public enum CodingKeys: String, CodingKey {
+                case label
+                case kind
+                case id
+            }
+        }
+        /// Attach an instance (kind, id) to a series.
+        ///
+        /// - Remark: Generated from `#/components/schemas/AttachInstanceRequest`.
+        public struct AttachInstanceRequest: Codable, Hashable, Sendable {
+            /// Instance object kind slug.
+            ///
+            /// - Remark: Generated from `#/components/schemas/AttachInstanceRequest/kind`.
+            public var kind: Swift.String
+            /// Instance object id/reference (≤200 chars).
+            ///
+            /// - Remark: Generated from `#/components/schemas/AttachInstanceRequest/id`.
+            public var id: Swift.String
+            /// Creates a new `AttachInstanceRequest`.
+            ///
+            /// - Parameters:
+            ///   - kind: Instance object kind slug.
+            ///   - id: Instance object id/reference (≤200 chars).
+            public init(
+                kind: Swift.String,
+                id: Swift.String
+            ) {
+                self.kind = kind
+                self.id = id
+            }
+            public enum CodingKeys: String, CodingKey {
+                case kind
+                case id
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/AttachInstanceAck`.
+        public struct AttachInstanceAck: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/AttachInstanceAck/attached`.
+            public var attached: Swift.Bool
+            /// Creates a new `AttachInstanceAck`.
+            ///
+            /// - Parameters:
+            ///   - attached:
+            public init(attached: Swift.Bool) {
+                self.attached = attached
+            }
+            public enum CodingKeys: String, CodingKey {
+                case attached
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/SeriesHead`.
+        public struct SeriesHead: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SeriesHead/id`.
+            public var id: Components.Schemas.Uuid
+            /// Canonical SR- code.
+            ///
+            /// - Remark: Generated from `#/components/schemas/SeriesHead/code`.
+            public var code: Swift.String
+            /// - Remark: Generated from `#/components/schemas/SeriesHead/label`.
+            public var label: Swift.String
+            /// - Remark: Generated from `#/components/schemas/SeriesHead/created_at`.
+            public var createdAt: Components.Schemas.Timestamp
+            /// Creates a new `SeriesHead`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - code: Canonical SR- code.
+            ///   - label:
+            ///   - createdAt:
+            public init(
+                id: Components.Schemas.Uuid,
+                code: Swift.String,
+                label: Swift.String,
+                createdAt: Components.Schemas.Timestamp
+            ) {
+                self.id = id
+                self.code = code
+                self.label = label
+                self.createdAt = createdAt
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case code
+                case label
+                case createdAt = "created_at"
+            }
+        }
+        /// A series head plus its instances resolved to ObjectHeads, ordered by attach time. Instances not resolvable for the caller are omitted (deny-by-omission).
+        ///
+        /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse`.
+        public struct SeriesDetailResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse/id`.
+            public var id: Components.Schemas.Uuid
+            /// Canonical SR- code.
+            ///
+            /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse/code`.
+            public var code: Swift.String
+            /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse/label`.
+            public var label: Swift.String
+            /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse/created_at`.
+            public var createdAt: Components.Schemas.Timestamp
+            /// - Remark: Generated from `#/components/schemas/SeriesDetailResponse/instances`.
+            public var instances: [Components.Schemas.ObjectHead]
+            /// Creates a new `SeriesDetailResponse`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - code: Canonical SR- code.
+            ///   - label:
+            ///   - createdAt:
+            ///   - instances:
+            public init(
+                id: Components.Schemas.Uuid,
+                code: Swift.String,
+                label: Swift.String,
+                createdAt: Components.Schemas.Timestamp,
+                instances: [Components.Schemas.ObjectHead]
+            ) {
+                self.id = id
+                self.code = code
+                self.label = label
+                self.createdAt = createdAt
+                self.instances = instances
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case code
+                case label
+                case createdAt = "created_at"
+                case instances
+            }
+        }
+        /// The series an instance belongs to, or null.
+        ///
+        /// - Remark: Generated from `#/components/schemas/SeriesByInstanceResponse`.
+        public struct SeriesByInstanceResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SeriesByInstanceResponse/series`.
+            public var series: Components.Schemas.SeriesHead?
+            /// Creates a new `SeriesByInstanceResponse`.
+            ///
+            /// - Parameters:
+            ///   - series:
+            public init(series: Components.Schemas.SeriesHead? = nil) {
+                self.series = series
+            }
+            public enum CodingKeys: String, CodingKey {
+                case series
             }
         }
         /// - Remark: Generated from `#/components/schemas/CollaborationScopeType`.
@@ -83369,6 +83791,1447 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// List the object-type registry with caller-visible instance counts
+    ///
+    /// Returns every seeded object kind (kind, code_prefix, label, lifecycle status) plus active_count — the number of instances of that kind visible to the caller. The count respects the SAME per-kind visibility as resolveObject: org via forced RLS (no cross-org counting), narrowed by the caller's branch scope and the domain feature gate; a kind the caller cannot read counts 0. Type proposal/transition flows are out of scope for this slice (read surface + status only).
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)`.
+    public enum ListObjectTypes {
+        public static let id: Swift.String = "listObjectTypes"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/object-types/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListObjectTypes.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListObjectTypes.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListObjectTypes.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            public init(headers: Operations.ListObjectTypes.Input.Headers = .init()) {
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/object-types/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/object-types/GET/responses/200/content/application\/json`.
+                    case json([Components.Schemas.ObjectTypeResponse])
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: [Components.Schemas.ObjectTypeResponse] {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListObjectTypes.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListObjectTypes.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The object-type registry.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListObjectTypes.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListObjectTypes.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/get(listObjectTypes)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Fetch one object type with its caller-visible instance count
+    ///
+    /// Returns a single object type by kind slug (404 if unknown), with the same caller-visible active_count as listObjectTypes.
+    ///
+    /// - Remark: HTTP `GET /api/v1/object-types/{kind}`.
+    /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)`.
+    public enum GetObjectType {
+        public static let id: Swift.String = "getObjectType"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/object-types/{kind}/GET/path`.
+            public struct Path: Sendable, Hashable {
+                /// Object kind slug.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/object-types/{kind}/GET/path/kind`.
+                public var kind: Swift.String
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - kind: Object kind slug.
+                public init(kind: Swift.String) {
+                    self.kind = kind
+                }
+            }
+            public var path: Operations.GetObjectType.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/object-types/{kind}/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetObjectType.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetObjectType.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetObjectType.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            public init(
+                path: Operations.GetObjectType.Input.Path,
+                headers: Operations.GetObjectType.Input.Headers = .init()
+            ) {
+                self.path = path
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/object-types/{kind}/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/object-types/{kind}/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.ObjectTypeResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ObjectTypeResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetObjectType.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetObjectType.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The object type.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetObjectType.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetObjectType.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/object-types/{kind}/get(getObjectType)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// List the edge-type registry (object-link relationship vocabulary)
+    ///
+    /// Returns the seeded, platform-wide set of relationship labels an object_link may use. createObjectLink validates link_type against this registry.
+    ///
+    /// - Remark: HTTP `GET /api/v1/link-types`.
+    /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)`.
+    public enum ListLinkTypes {
+        public static let id: Swift.String = "listLinkTypes"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/link-types/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLinkTypes.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLinkTypes.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListLinkTypes.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            public init(headers: Operations.ListLinkTypes.Input.Headers = .init()) {
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/link-types/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/link-types/GET/responses/200/content/application\/json`.
+                    case json([Components.Schemas.LinkTypeResponse])
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: [Components.Schemas.LinkTypeResponse] {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLinkTypes.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLinkTypes.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The edge-type registry.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListLinkTypes.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListLinkTypes.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/link-types/get(listLinkTypes)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Create an SR- series and attach its first instance
+    ///
+    /// Creates an org-scoped series with a canonical SR- code and attaches the first instance. The instance must resolve for the caller (deny-by-omission): you cannot found a series on an object you cannot see. Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series`.
+    /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)`.
+    public enum CreateSeries {
+        public static let id: Swift.String = "createSeries"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/series/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.CreateSeries.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.CreateSeries.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.CreateSeries.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/series/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.CreateSeriesRequest)
+            }
+            public var body: Operations.CreateSeries.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            public init(
+                headers: Operations.CreateSeries.Input.Headers = .init(),
+                body: Operations.CreateSeries.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/series/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.SeriesDetailResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.SeriesDetailResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.CreateSeries.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.CreateSeries.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The created series with its first resolved instance.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.CreateSeries.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.CreateSeries.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// State conflict or illegal transition.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Components.Responses.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Components.Responses.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/post(createSeries)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Find which series an object belongs to
+    ///
+    /// Returns the series a given (kind, id) instance belongs to, or null. Membership is revealed only when the caller can resolve the instance, so series membership is never an existence oracle for out-of-scope objects.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/by-instance`.
+    /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)`.
+    public enum GetSeriesByInstance {
+        public static let id: Swift.String = "getSeriesByInstance"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// Instance object kind slug.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/query/kind`.
+                public var kind: Swift.String
+                /// Instance object id/reference.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/query/id`.
+                public var id: Swift.String
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - kind: Instance object kind slug.
+                ///   - id: Instance object id/reference.
+                public init(
+                    kind: Swift.String,
+                    id: Swift.String
+                ) {
+                    self.kind = kind
+                    self.id = id
+                }
+            }
+            public var query: Operations.GetSeriesByInstance.Input.Query
+            /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetSeriesByInstance.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetSeriesByInstance.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetSeriesByInstance.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.GetSeriesByInstance.Input.Query,
+                headers: Operations.GetSeriesByInstance.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/series/by-instance/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.SeriesByInstanceResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.SeriesByInstanceResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetSeriesByInstance.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetSeriesByInstance.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The series the instance belongs to (series=null when none / not resolvable).
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetSeriesByInstance.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetSeriesByInstance.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/by-instance/get(getSeriesByInstance)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Read a series and its ordered, caller-visible instances
+    ///
+    /// Returns the series head and its instances resolved to ObjectHeads, ordered by attach time. Instances that no longer resolve for the caller are omitted (deny-by-omission). Current/next derivation is left to the client. An unknown id or another tenant's series is 404.
+    ///
+    /// - Remark: HTTP `GET /api/v1/series/{id}`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)`.
+    public enum GetSeries {
+        public static let id: Swift.String = "getSeries"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/series/{id}/GET/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/{id}/GET/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.GetSeries.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/series/{id}/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetSeries.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetSeries.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetSeries.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            public init(
+                path: Operations.GetSeries.Input.Path,
+                headers: Operations.GetSeries.Input.Headers = .init()
+            ) {
+                self.path = path
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/{id}/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/series/{id}/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.SeriesDetailResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.SeriesDetailResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetSeries.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetSeries.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The series with its ordered, resolved instances.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetSeries.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetSeries.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/get(getSeries)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Attach an instance to an existing series
+    ///
+    /// Attaches a (kind, id) instance to the series. The series must exist for the caller and the instance must resolve for the caller (both deny-by-omission -> 404). An object already in a series is rejected with 409 (the not-yet-in-a-series promotion invariant). Audited.
+    ///
+    /// - Remark: HTTP `POST /api/v1/series/{id}/instances`.
+    /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)`.
+    public enum AttachSeriesInstance {
+        public static let id: Swift.String = "attachSeriesInstance"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.AttachSeriesInstance.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.AttachSeriesInstance.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.AttachSeriesInstance.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.AttachSeriesInstance.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.AttachInstanceRequest)
+            }
+            public var body: Operations.AttachSeriesInstance.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            ///   - body:
+            public init(
+                path: Operations.AttachSeriesInstance.Input.Path,
+                headers: Operations.AttachSeriesInstance.Input.Headers = .init(),
+                body: Operations.AttachSeriesInstance.Input.Body
+            ) {
+                self.path = path
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/series/{id}/instances/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.AttachInstanceAck)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.AttachInstanceAck {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.AttachSeriesInstance.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.AttachSeriesInstance.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The instance was attached.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.AttachSeriesInstance.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.AttachSeriesInstance.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// State conflict or illegal transition.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Components.Responses.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Components.Responses.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/series/{id}/instances/post(attachSeriesInstance)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
                             response: self
                         )
                     }
