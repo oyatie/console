@@ -23,23 +23,32 @@
 
 package com.maintenance.api.client.model
 
-import com.maintenance.api.client.model.PasskeyStepUpAssertion
+import com.maintenance.api.client.model.TriggerBindingResponse
+import com.maintenance.api.client.model.WorkflowDefinitionResponse
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * The fresh passkey assertion proving present possession of an authenticator. Its absence yields 428 (precondition required).
  *
- * @param stepUp
+ *
+ * @param kind
+ * @param definitions
+ * @param bindings
  */
 @Serializable
 
-data class InboxDocConfirmReceiptRequest (
+data class DefinitionsByObjectKindResponse (
 
-    @SerialName(value = "step_up")
-    val stepUp: PasskeyStepUpAssertion
+    @SerialName(value = "kind")
+    val kind: kotlin.String,
+
+    @SerialName(value = "definitions")
+    val definitions: kotlin.collections.List<WorkflowDefinitionResponse>,
+
+    @SerialName(value = "bindings")
+    val bindings: kotlin.collections.List<TriggerBindingResponse>
 
 ) {
 
