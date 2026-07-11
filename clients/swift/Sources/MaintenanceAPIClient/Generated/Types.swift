@@ -33001,29 +33001,6 @@ public enum Components {
             case posted = "POSTED"
             case reversed = "REVERSED"
         }
-        /// - Remark: Generated from `#/components/schemas/VoucherSourceRef`.
-        public struct VoucherSourceRef: Codable, Hashable, Sendable {
-            /// - Remark: Generated from `#/components/schemas/VoucherSourceRef/object_type`.
-            public var objectType: Swift.String
-            /// - Remark: Generated from `#/components/schemas/VoucherSourceRef/object_id`.
-            public var objectId: Swift.String
-            /// Creates a new `VoucherSourceRef`.
-            ///
-            /// - Parameters:
-            ///   - objectType:
-            ///   - objectId:
-            public init(
-                objectType: Swift.String,
-                objectId: Swift.String
-            ) {
-                self.objectType = objectType
-                self.objectId = objectId
-            }
-            public enum CodingKeys: String, CodingKey {
-                case objectType = "object_type"
-                case objectId = "object_id"
-            }
-        }
         /// - Remark: Generated from `#/components/schemas/VoucherLineInput`.
         public struct VoucherLineInput: Codable, Hashable, Sendable {
             /// - Remark: Generated from `#/components/schemas/VoucherLineInput/account_code`.
@@ -33178,6 +33155,8 @@ public enum Components {
             public var lines: [Components.Schemas.VoucherLineSummary]
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/created_by`.
             public var createdBy: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/VoucherSummary/approved_by`.
+            public var approvedBy: Swift.String?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/posted_at`.
             public var postedAt: Foundation.Date?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/created_at`.
@@ -33200,6 +33179,7 @@ public enum Components {
             ///   - creditTotalWon:
             ///   - lines:
             ///   - createdBy:
+            ///   - approvedBy:
             ///   - postedAt:
             ///   - createdAt:
             ///   - updatedAt:
@@ -33217,6 +33197,7 @@ public enum Components {
                 creditTotalWon: Swift.Int64,
                 lines: [Components.Schemas.VoucherLineSummary],
                 createdBy: Components.Schemas.Uuid,
+                approvedBy: Swift.String? = nil,
                 postedAt: Foundation.Date? = nil,
                 createdAt: Components.Schemas.Timestamp,
                 updatedAt: Components.Schemas.Timestamp
@@ -33234,6 +33215,7 @@ public enum Components {
                 self.creditTotalWon = creditTotalWon
                 self.lines = lines
                 self.createdBy = createdBy
+                self.approvedBy = approvedBy
                 self.postedAt = postedAt
                 self.createdAt = createdAt
                 self.updatedAt = updatedAt
@@ -33252,6 +33234,7 @@ public enum Components {
                 case creditTotalWon = "credit_total_won"
                 case lines
                 case createdBy = "created_by"
+                case approvedBy = "approved_by"
                 case postedAt = "posted_at"
                 case createdAt = "created_at"
                 case updatedAt = "updated_at"
