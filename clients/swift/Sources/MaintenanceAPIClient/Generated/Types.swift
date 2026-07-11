@@ -33135,6 +33135,8 @@ public enum Components {
             public var voucherNo: Swift.String
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/branch_id`.
             public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/VoucherSummary/branch_name`.
+            public var branchName: Swift.String?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/status`.
             public var status: Components.Schemas.VoucherStatus
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/memo`.
@@ -33155,8 +33157,12 @@ public enum Components {
             public var lines: [Components.Schemas.VoucherLineSummary]
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/created_by`.
             public var createdBy: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/VoucherSummary/created_by_name`.
+            public var createdByName: Swift.String?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/approved_by`.
             public var approvedBy: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/VoucherSummary/approved_by_name`.
+            public var approvedByName: Swift.String?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/posted_at`.
             public var postedAt: Foundation.Date?
             /// - Remark: Generated from `#/components/schemas/VoucherSummary/created_at`.
@@ -33169,6 +33175,7 @@ public enum Components {
             ///   - id:
             ///   - voucherNo:
             ///   - branchId:
+            ///   - branchName:
             ///   - status:
             ///   - memo:
             ///   - sourceObjectType:
@@ -33179,7 +33186,9 @@ public enum Components {
             ///   - creditTotalWon:
             ///   - lines:
             ///   - createdBy:
+            ///   - createdByName:
             ///   - approvedBy:
+            ///   - approvedByName:
             ///   - postedAt:
             ///   - createdAt:
             ///   - updatedAt:
@@ -33187,6 +33196,7 @@ public enum Components {
                 id: Components.Schemas.Uuid,
                 voucherNo: Swift.String,
                 branchId: Components.Schemas.Uuid,
+                branchName: Swift.String? = nil,
                 status: Components.Schemas.VoucherStatus,
                 memo: Swift.String,
                 sourceObjectType: Swift.String? = nil,
@@ -33197,7 +33207,9 @@ public enum Components {
                 creditTotalWon: Swift.Int64,
                 lines: [Components.Schemas.VoucherLineSummary],
                 createdBy: Components.Schemas.Uuid,
+                createdByName: Swift.String? = nil,
                 approvedBy: Swift.String? = nil,
+                approvedByName: Swift.String? = nil,
                 postedAt: Foundation.Date? = nil,
                 createdAt: Components.Schemas.Timestamp,
                 updatedAt: Components.Schemas.Timestamp
@@ -33205,6 +33217,7 @@ public enum Components {
                 self.id = id
                 self.voucherNo = voucherNo
                 self.branchId = branchId
+                self.branchName = branchName
                 self.status = status
                 self.memo = memo
                 self.sourceObjectType = sourceObjectType
@@ -33215,7 +33228,9 @@ public enum Components {
                 self.creditTotalWon = creditTotalWon
                 self.lines = lines
                 self.createdBy = createdBy
+                self.createdByName = createdByName
                 self.approvedBy = approvedBy
+                self.approvedByName = approvedByName
                 self.postedAt = postedAt
                 self.createdAt = createdAt
                 self.updatedAt = updatedAt
@@ -33224,6 +33239,7 @@ public enum Components {
                 case id
                 case voucherNo = "voucher_no"
                 case branchId = "branch_id"
+                case branchName = "branch_name"
                 case status
                 case memo
                 case sourceObjectType = "source_object_type"
@@ -33234,7 +33250,9 @@ public enum Components {
                 case creditTotalWon = "credit_total_won"
                 case lines
                 case createdBy = "created_by"
+                case createdByName = "created_by_name"
                 case approvedBy = "approved_by"
+                case approvedByName = "approved_by_name"
                 case postedAt = "posted_at"
                 case createdAt = "created_at"
                 case updatedAt = "updated_at"
