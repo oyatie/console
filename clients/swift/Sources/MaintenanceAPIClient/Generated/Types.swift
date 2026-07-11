@@ -111768,6 +111768,10 @@ public enum Operations {
                     public var requestRef: Swift.String
                     /// - Remark: Generated from `#/paths/api/v1/governance/approvals/POST/requestBody/json/kind`.
                     public var kind: Swift.String
+                    /// The object this approval is FOR (a hold id, a workflow definition id, an ontology instance id). A four-eyes gate binds the approval to the action's target, so an approval decided for one object can never satisfy a gate for another. Omit for create-style actions with no pre-existing target.
+                    ///
+                    /// - Remark: Generated from `#/paths/api/v1/governance/approvals/POST/requestBody/json/target_ref`.
+                    public var targetRef: Swift.String?
                     /// - Remark: Generated from `#/paths/api/v1/governance/approvals/POST/requestBody/json/payload_summary`.
                     public struct PayloadSummaryPayload: Codable, Hashable, Sendable {
                         /// A container of undocumented properties.
@@ -111793,19 +111797,23 @@ public enum Operations {
                     /// - Parameters:
                     ///   - requestRef:
                     ///   - kind:
+                    ///   - targetRef: The object this approval is FOR (a hold id, a workflow definition id, an ontology instance id). A four-eyes gate binds the approval to the action's target, so an approval decided for one object can never satisfy a gate for another. Omit for create-style actions with no pre-existing target.
                     ///   - payloadSummary:
                     public init(
                         requestRef: Swift.String,
                         kind: Swift.String,
+                        targetRef: Swift.String? = nil,
                         payloadSummary: Operations.CreateGovernanceApproval.Input.Body.JsonPayload.PayloadSummaryPayload? = nil
                     ) {
                         self.requestRef = requestRef
                         self.kind = kind
+                        self.targetRef = targetRef
                         self.payloadSummary = payloadSummary
                     }
                     public enum CodingKeys: String, CodingKey {
                         case requestRef = "request_ref"
                         case kind
+                        case targetRef = "target_ref"
                         case payloadSummary = "payload_summary"
                     }
                 }
