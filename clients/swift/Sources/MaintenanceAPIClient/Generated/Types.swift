@@ -288,6 +288,13 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `GET /api/v1/employees`.
     /// - Remark: Generated from `#/paths//api/v1/employees/get(listEmployees)`.
     func listEmployees(_ input: Operations.ListEmployees.Input) async throws -> Operations.ListEmployees.Output
+    /// Assign an employee's authoritative home branch
+    ///
+    /// Audited explicit assignment; the server never infers a branch from user memberships. The target branch must be active and in the same tenant. Reassignment requires EmployeeDirectoryManage for both the prior and new branch. An employee with no prior branch requires org-wide manage authority. `expected_updated_at` prevents silent concurrent overwrite.
+    ///
+    /// - Remark: HTTP `PUT /api/v1/employees/{id}/home-branch`.
+    /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)`.
+    func setEmployeeHomeBranch(_ input: Operations.SetEmployeeHomeBranch.Input) async throws -> Operations.SetEmployeeHomeBranch.Output
     /// List audited employee lifecycle events
     ///
     /// Tenant-scoped append-only lifecycle ledger for onboarding, offboarding, termination, and intra-group/company transfer decisions.
@@ -1155,6 +1162,41 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `POST /api/v1/leave/requests/{id}/decide`.
     /// - Remark: Generated from `#/paths//api/v1/leave/requests/{id}/decide/post(decideLeaveRequest)`.
     func decideLeaveRequest(_ input: Operations.DecideLeaveRequest.Input) async throws -> Operations.DecideLeaveRequest.Output
+    /// Read the authenticated employee's own leave balance and history
+    ///
+    /// Base employee self-service. The server binds both user and linked employee identity; no employee-directory feature is required and no employee or branch identifier is accepted from the client. The balance includes a closed filing state so a missing or inactive home branch is visible before submission rather than discovered only after a 409.
+    ///
+    /// - Remark: HTTP `GET /api/v2/me/leave`.
+    /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)`.
+    func getMyLeaveV2(_ input: Operations.GetMyLeaveV2.Input) async throws -> Operations.GetMyLeaveV2.Output
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)`.
+    func listLeaveRequestsV2(_ input: Operations.ListLeaveRequestsV2.Input) async throws -> Operations.ListLeaveRequestsV2.Output
+    /// File a self-service 연차/반차 request (본인 연차 신청)
+    ///
+    /// The caller files a leave request for THEMSELVES. `subject_employee_id` and the routing `branch_id` are resolved server-side from the caller's own account and employee.home_branch_id — never from input — so a caller can only file for their own employee record. No directory feature is required (filing one's own leave is a base employee capability); the gate is an active account linked to an active employee; an unlinked or inactive subject is denied with 403. Missing home-branch authority returns the stable 409 `leave_home_branch_review_required`. The request preserves date and AM/PM intent in `review_required`; no calendar-day or fixed-half quantity is invented. A separate resolver pins authoritative evidence before any approval can move the ledger. Modern clients generate one `idempotency_key` per user intent and reuse it after an unknown or lost response. The same key and canonical client intent return the original request without another mutation or audit; a different intent conflicts.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)`.
+    func createLeaveRequestV2(_ input: Operations.CreateLeaveRequestV2.Input) async throws -> Operations.CreateLeaveRequestV2.Output
+    /// Record an audited exact leave-charge resolution
+    ///
+    /// Requires EmployeeDirectoryManage in the request branch. The body carries reviewed per-date obligations and source revision references, never a client total or digest. The server validates complete date coverage, canonicalizes, totals, hashes, and records an immutable resolution. `expected_version` is the current mutable request_version; the charge_version is assigned independently to the evidence snapshot.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/charge-resolution`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)`.
+    func resolveLeaveChargeV2(_ input: Operations.ResolveLeaveChargeV2.Input) async throws -> Operations.ResolveLeaveChargeV2.Output
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += exact resolved charge units, remaining -= exact resolved charge units) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. Approval additionally requires a resolved exact charge and a distinct resolver. Clients must carry the current request_version as `expected_version`; omission is rejected so every v2 decision is an explicit compare-and-swap. charge_version identifies immutable evidence and is never a request mutation precondition. A successful decision increments request_version only; charge_version remains unchanged. An unresolved approval returns 409 `leave_calendar_review_required` plus review reasons, audits the blocked attempt, and changes neither request nor ledger.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)`.
+    func decideLeaveRequestV2(_ input: Operations.DecideLeaveRequestV2.Input) async throws -> Operations.DecideLeaveRequestV2.Output
     /// Per-employee annual-leave balance roster (직원별 연차 현황)
     ///
     /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
@@ -1232,7 +1274,7 @@ public protocol APIProtocol: Sendable {
     func listMyDispatchOffers(_ input: Operations.ListMyDispatchOffers.Input) async throws -> Operations.ListMyDispatchOffers.Output
     /// Unified action inbox for the authenticated principal
     ///
-    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet).
+    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet). Results use an immutable `(created_at, kind:id)` traversal key plus an `as_of` admission boundary, so rows created after the first page are excluded. Membership is deliberately live rather than a repeatable full-state snapshot: resolved, reassigned, or expired rows can disappear between page requests. Totals are recalculated from live membership admitted by `as_of`; `total_is_exact` is false when an authorization-filtered source reaches its bounded counting budget. Source failures fail the whole request rather than returning a deceptively partial queue.
     ///
     /// - Remark: HTTP `GET /api/v1/me/action-inbox`.
     /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)`.
@@ -2087,6 +2129,14 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `PUT /api/v1/ontology/object-types/{key}`.
     /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)`.
     func stageObjectTypeRevision(_ input: Operations.StageObjectTypeRevision.Input) async throws -> Operations.StageObjectTypeRevision.Output
+    /// Acting rules keyed by object-type
+    ///
+    /// Automations (bound workflow definitions) and object policies acting on the object type identified by stable key. Type-centric sibling of /instances/{id}/acting — it may return rules for a type that has no instances yet. An unknown key is 404 (deny-by-omission, RLS-scoped).
+    ///
+    ///
+    /// - Remark: HTTP `GET /api/v1/ontology/object-types/{key}/acting`.
+    /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)`.
+    func listObjectTypeActing(_ input: Operations.ListObjectTypeActing.Input) async throws -> Operations.ListObjectTypeActing.Output
     /// List object instances of a type
     ///
     /// Lists current-state instances of one object type (RLS-scoped, Cedar residual-filtered). The type is the object-type version id whose head instances to list.
@@ -3081,6 +3131,23 @@ extension APIProtocol {
         try await listEmployees(Operations.ListEmployees.Input(
             query: query,
             headers: headers
+        ))
+    }
+    /// Assign an employee's authoritative home branch
+    ///
+    /// Audited explicit assignment; the server never infers a branch from user memberships. The target branch must be active and in the same tenant. Reassignment requires EmployeeDirectoryManage for both the prior and new branch. An employee with no prior branch requires org-wide manage authority. `expected_updated_at` prevents silent concurrent overwrite.
+    ///
+    /// - Remark: HTTP `PUT /api/v1/employees/{id}/home-branch`.
+    /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)`.
+    public func setEmployeeHomeBranch(
+        path: Operations.SetEmployeeHomeBranch.Input.Path,
+        headers: Operations.SetEmployeeHomeBranch.Input.Headers = .init(),
+        body: Operations.SetEmployeeHomeBranch.Input.Body
+    ) async throws -> Operations.SetEmployeeHomeBranch.Output {
+        try await setEmployeeHomeBranch(Operations.SetEmployeeHomeBranch.Input(
+            path: path,
+            headers: headers,
+            body: body
         ))
     }
     /// List audited employee lifecycle events
@@ -5030,6 +5097,85 @@ extension APIProtocol {
             body: body
         ))
     }
+    /// Read the authenticated employee's own leave balance and history
+    ///
+    /// Base employee self-service. The server binds both user and linked employee identity; no employee-directory feature is required and no employee or branch identifier is accepted from the client. The balance includes a closed filing state so a missing or inactive home branch is visible before submission rather than discovered only after a 409.
+    ///
+    /// - Remark: HTTP `GET /api/v2/me/leave`.
+    /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)`.
+    public func getMyLeaveV2(
+        query: Operations.GetMyLeaveV2.Input.Query = .init(),
+        headers: Operations.GetMyLeaveV2.Input.Headers = .init()
+    ) async throws -> Operations.GetMyLeaveV2.Output {
+        try await getMyLeaveV2(Operations.GetMyLeaveV2.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)`.
+    public func listLeaveRequestsV2(
+        query: Operations.ListLeaveRequestsV2.Input.Query = .init(),
+        headers: Operations.ListLeaveRequestsV2.Input.Headers = .init()
+    ) async throws -> Operations.ListLeaveRequestsV2.Output {
+        try await listLeaveRequestsV2(Operations.ListLeaveRequestsV2.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// File a self-service 연차/반차 request (본인 연차 신청)
+    ///
+    /// The caller files a leave request for THEMSELVES. `subject_employee_id` and the routing `branch_id` are resolved server-side from the caller's own account and employee.home_branch_id — never from input — so a caller can only file for their own employee record. No directory feature is required (filing one's own leave is a base employee capability); the gate is an active account linked to an active employee; an unlinked or inactive subject is denied with 403. Missing home-branch authority returns the stable 409 `leave_home_branch_review_required`. The request preserves date and AM/PM intent in `review_required`; no calendar-day or fixed-half quantity is invented. A separate resolver pins authoritative evidence before any approval can move the ledger. Modern clients generate one `idempotency_key` per user intent and reuse it after an unknown or lost response. The same key and canonical client intent return the original request without another mutation or audit; a different intent conflicts.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)`.
+    public func createLeaveRequestV2(
+        headers: Operations.CreateLeaveRequestV2.Input.Headers = .init(),
+        body: Operations.CreateLeaveRequestV2.Input.Body
+    ) async throws -> Operations.CreateLeaveRequestV2.Output {
+        try await createLeaveRequestV2(Operations.CreateLeaveRequestV2.Input(
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Record an audited exact leave-charge resolution
+    ///
+    /// Requires EmployeeDirectoryManage in the request branch. The body carries reviewed per-date obligations and source revision references, never a client total or digest. The server validates complete date coverage, canonicalizes, totals, hashes, and records an immutable resolution. `expected_version` is the current mutable request_version; the charge_version is assigned independently to the evidence snapshot.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/charge-resolution`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)`.
+    public func resolveLeaveChargeV2(
+        path: Operations.ResolveLeaveChargeV2.Input.Path,
+        headers: Operations.ResolveLeaveChargeV2.Input.Headers = .init(),
+        body: Operations.ResolveLeaveChargeV2.Input.Body
+    ) async throws -> Operations.ResolveLeaveChargeV2.Output {
+        try await resolveLeaveChargeV2(Operations.ResolveLeaveChargeV2.Input(
+            path: path,
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += exact resolved charge units, remaining -= exact resolved charge units) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. Approval additionally requires a resolved exact charge and a distinct resolver. Clients must carry the current request_version as `expected_version`; omission is rejected so every v2 decision is an explicit compare-and-swap. charge_version identifies immutable evidence and is never a request mutation precondition. A successful decision increments request_version only; charge_version remains unchanged. An unresolved approval returns 409 `leave_calendar_review_required` plus review reasons, audits the blocked attempt, and changes neither request nor ledger.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)`.
+    public func decideLeaveRequestV2(
+        path: Operations.DecideLeaveRequestV2.Input.Path,
+        headers: Operations.DecideLeaveRequestV2.Input.Headers = .init(),
+        body: Operations.DecideLeaveRequestV2.Input.Body
+    ) async throws -> Operations.DecideLeaveRequestV2.Output {
+        try await decideLeaveRequestV2(Operations.DecideLeaveRequestV2.Input(
+            path: path,
+            headers: headers,
+            body: body
+        ))
+    }
     /// Per-employee annual-leave balance roster (직원별 연차 현황)
     ///
     /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
@@ -5187,12 +5333,18 @@ extension APIProtocol {
     }
     /// Unified action inbox for the authenticated principal
     ///
-    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet).
+    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet). Results use an immutable `(created_at, kind:id)` traversal key plus an `as_of` admission boundary, so rows created after the first page are excluded. Membership is deliberately live rather than a repeatable full-state snapshot: resolved, reassigned, or expired rows can disappear between page requests. Totals are recalculated from live membership admitted by `as_of`; `total_is_exact` is false when an authorization-filtered source reaches its bounded counting budget. Source failures fail the whole request rather than returning a deceptively partial queue.
     ///
     /// - Remark: HTTP `GET /api/v1/me/action-inbox`.
     /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)`.
-    public func listMyActionInbox(headers: Operations.ListMyActionInbox.Input.Headers = .init()) async throws -> Operations.ListMyActionInbox.Output {
-        try await listMyActionInbox(Operations.ListMyActionInbox.Input(headers: headers))
+    public func listMyActionInbox(
+        query: Operations.ListMyActionInbox.Input.Query = .init(),
+        headers: Operations.ListMyActionInbox.Input.Headers = .init()
+    ) async throws -> Operations.ListMyActionInbox.Output {
+        try await listMyActionInbox(Operations.ListMyActionInbox.Input(
+            query: query,
+            headers: headers
+        ))
     }
     /// Get the authenticated user's own profile
     ///
@@ -6987,13 +7139,29 @@ extension APIProtocol {
     /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)`.
     public func stageObjectTypeRevision(
         path: Operations.StageObjectTypeRevision.Input.Path,
-        headers: Operations.StageObjectTypeRevision.Input.Headers = .init(),
+        headers: Operations.StageObjectTypeRevision.Input.Headers,
         body: Operations.StageObjectTypeRevision.Input.Body
     ) async throws -> Operations.StageObjectTypeRevision.Output {
         try await stageObjectTypeRevision(Operations.StageObjectTypeRevision.Input(
             path: path,
             headers: headers,
             body: body
+        ))
+    }
+    /// Acting rules keyed by object-type
+    ///
+    /// Automations (bound workflow definitions) and object policies acting on the object type identified by stable key. Type-centric sibling of /instances/{id}/acting — it may return rules for a type that has no instances yet. An unknown key is 404 (deny-by-omission, RLS-scoped).
+    ///
+    ///
+    /// - Remark: HTTP `GET /api/v1/ontology/object-types/{key}/acting`.
+    /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)`.
+    public func listObjectTypeActing(
+        path: Operations.ListObjectTypeActing.Input.Path,
+        headers: Operations.ListObjectTypeActing.Input.Headers = .init()
+    ) async throws -> Operations.ListObjectTypeActing.Output {
+        try await listObjectTypeActing(Operations.ListObjectTypeActing.Input(
+            path: path,
+            headers: headers
         ))
     }
     /// List object instances of a type
@@ -7828,6 +7996,131 @@ public enum Servers {}
 public enum Components {
     /// Types generated from the `#/components/schemas` section of the OpenAPI document.
     public enum Schemas {
+        @propertyWrapper
+        public struct RequiredNullable<Value: Codable & Hashable & Sendable>: Codable, Hashable, Sendable {
+            public var wrappedValue: Value?
+            public init(wrappedValue: Value?) {
+                self.wrappedValue = wrappedValue
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                self.wrappedValue = container.decodeNil() ? nil : try container.decode(Value.self)
+            }
+            public func encode(to encoder: any Swift.Encoder) throws {
+                var container = encoder.singleValueContainer()
+                if let wrappedValue {
+                    try container.encode(wrappedValue)
+                } else {
+                    try container.encodeNil()
+                }
+            }
+        }
+        /// A self-service leave-request filing. The subject employee and branch are NOT accepted here — they are resolved from the authenticated caller.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest`.
+        public struct LeaveCreateRequest: Codable, Hashable, Sendable {
+            /// Stable client submission id. Reuse it only to retry the same canonical client intent after an unknown or lost response.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/idempotency_key`.
+            public var idempotencyKey: Swift.String
+            /// Full-day or partial-day intent; quantity is resolved only from evidence.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/leave_type`.
+            @frozen public enum LeaveTypePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case annual = "annual"
+                case halfDay = "half_day"
+            }
+            /// Full-day or partial-day intent; quantity is resolved only from evidence.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/leave_type`.
+            public var leaveType: Components.Schemas.LeaveCreateRequest.LeaveTypePayload
+            /// Required exactly when leave_type is half_day.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/partial_day_period`.
+            @frozen public enum PartialDayPeriodPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case am = "am"
+                case pm = "pm"
+            }
+            /// Required exactly when leave_type is half_day.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/partial_day_period`.
+            public var partialDayPeriod: Components.Schemas.LeaveCreateRequest.PartialDayPeriodPayload?
+            /// YYYY-MM-DD. A half-day request must use the same start and end date.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/start_date`.
+            public var startDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/end_date`.
+            public var endDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveCreateRequest/reason`.
+            public var reason: Swift.String
+            /// Creates a new `LeaveCreateRequest`.
+            ///
+            /// - Parameters:
+            ///   - idempotencyKey: Stable client submission id. Reuse it only to retry the same canonical client intent after an unknown or lost response.
+            ///   - leaveType: Full-day or partial-day intent; quantity is resolved only from evidence.
+            ///   - partialDayPeriod: Required exactly when leave_type is half_day.
+            ///   - startDate: YYYY-MM-DD. A half-day request must use the same start and end date.
+            ///   - endDate:
+            ///   - reason:
+            public init(
+                idempotencyKey: Swift.String,
+                leaveType: Components.Schemas.LeaveCreateRequest.LeaveTypePayload,
+                partialDayPeriod: Components.Schemas.LeaveCreateRequest.PartialDayPeriodPayload? = nil,
+                startDate: Swift.String,
+                endDate: Swift.String,
+                reason: Swift.String
+            ) {
+                self.idempotencyKey = idempotencyKey
+                self.leaveType = leaveType
+                self.partialDayPeriod = partialDayPeriod
+                self.startDate = startDate
+                self.endDate = endDate
+                self.reason = reason
+            }
+            public enum CodingKeys: String, CodingKey {
+                case idempotencyKey = "idempotency_key"
+                case leaveType = "leave_type"
+                case partialDayPeriod = "partial_day_period"
+                case startDate = "start_date"
+                case endDate = "end_date"
+                case reason
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.idempotencyKey = try container.decode(
+                    Swift.String.self,
+                    forKey: .idempotencyKey
+                )
+                self.leaveType = try container.decode(
+                    Components.Schemas.LeaveCreateRequest.LeaveTypePayload.self,
+                    forKey: .leaveType
+                )
+                self.partialDayPeriod = try container.decodeIfPresent(
+                    Components.Schemas.LeaveCreateRequest.PartialDayPeriodPayload.self,
+                    forKey: .partialDayPeriod
+                )
+                self.startDate = try container.decode(
+                    Swift.String.self,
+                    forKey: .startDate
+                )
+                self.endDate = try container.decode(
+                    Swift.String.self,
+                    forKey: .endDate
+                )
+                self.reason = try container.decode(
+                    Swift.String.self,
+                    forKey: .reason
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "idempotency_key",
+                    "leave_type",
+                    "partial_day_period",
+                    "start_date",
+                    "end_date",
+                    "reason"
+                ])
+            }
+        }
         /// - Remark: Generated from `#/components/schemas/ProjectionRequest`.
         public struct ProjectionRequest: Codable, Hashable, Sendable {
             /// Ordered historical values, oldest first (min 3).
@@ -15392,6 +15685,16 @@ public enum Components {
             public var leaveUsed: Swift.String?
             /// - Remark: Generated from `#/components/schemas/Employee/leave_remaining`.
             public var leaveRemaining: Swift.String?
+            /// Active authoritative leave-routing branch; null requires HR review before self-service filing.
+            ///
+            /// - Remark: Generated from `#/components/schemas/Employee/home_branch_id`.
+            public var homeBranchId: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/Employee/home_branch_name`.
+            public var homeBranchName: Swift.String?
+            /// True when no active authoritative home branch is configured.
+            ///
+            /// - Remark: Generated from `#/components/schemas/Employee/home_branch_review_required`.
+            public var homeBranchReviewRequired: Swift.Bool
             /// Non-PII strategy used to keep same-name employees from being merged by name alone.
             ///
             /// - Remark: Generated from `#/components/schemas/Employee/identity_resolution_strategy`.
@@ -15447,6 +15750,9 @@ public enum Components {
             ///   - leaveAccrued:
             ///   - leaveUsed:
             ///   - leaveRemaining:
+            ///   - homeBranchId: Active authoritative leave-routing branch; null requires HR review before self-service filing.
+            ///   - homeBranchName:
+            ///   - homeBranchReviewRequired: True when no active authoritative home branch is configured.
             ///   - identityResolutionStrategy: Non-PII strategy used to keep same-name employees from being merged by name alone.
             ///   - identityResolutionConfidence: Confidence derived from the accepted identity strategy; never from user-supplied labels.
             ///   - identityReviewRequired: True when HR must manually verify the employee identity before account linkage or duplicate cleanup.
@@ -15469,6 +15775,9 @@ public enum Components {
                 leaveAccrued: Swift.String? = nil,
                 leaveUsed: Swift.String? = nil,
                 leaveRemaining: Swift.String? = nil,
+                homeBranchId: Swift.String? = nil,
+                homeBranchName: Swift.String? = nil,
+                homeBranchReviewRequired: Swift.Bool,
                 identityResolutionStrategy: Components.Schemas.Employee.IdentityResolutionStrategyPayload,
                 identityResolutionConfidence: Components.Schemas.Employee.IdentityResolutionConfidencePayload,
                 identityReviewRequired: Swift.Bool,
@@ -15491,6 +15800,9 @@ public enum Components {
                 self.leaveAccrued = leaveAccrued
                 self.leaveUsed = leaveUsed
                 self.leaveRemaining = leaveRemaining
+                self.homeBranchId = homeBranchId
+                self.homeBranchName = homeBranchName
+                self.homeBranchReviewRequired = homeBranchReviewRequired
                 self.identityResolutionStrategy = identityResolutionStrategy
                 self.identityResolutionConfidence = identityResolutionConfidence
                 self.identityReviewRequired = identityReviewRequired
@@ -15514,11 +15826,87 @@ public enum Components {
                 case leaveAccrued = "leave_accrued"
                 case leaveUsed = "leave_used"
                 case leaveRemaining = "leave_remaining"
+                case homeBranchId = "home_branch_id"
+                case homeBranchName = "home_branch_name"
+                case homeBranchReviewRequired = "home_branch_review_required"
                 case identityResolutionStrategy = "identity_resolution_strategy"
                 case identityResolutionConfidence = "identity_resolution_confidence"
                 case identityReviewRequired = "identity_review_required"
                 case identityNameOnlyMerge = "identity_name_only_merge"
                 case createdAt = "created_at"
+                case updatedAt = "updated_at"
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/SetEmployeeHomeBranchRequest`.
+        public struct SetEmployeeHomeBranchRequest: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SetEmployeeHomeBranchRequest/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/SetEmployeeHomeBranchRequest/expected_updated_at`.
+            public var expectedUpdatedAt: Components.Schemas.Timestamp
+            /// Creates a new `SetEmployeeHomeBranchRequest`.
+            ///
+            /// - Parameters:
+            ///   - branchId:
+            ///   - expectedUpdatedAt:
+            public init(
+                branchId: Components.Schemas.Uuid,
+                expectedUpdatedAt: Components.Schemas.Timestamp
+            ) {
+                self.branchId = branchId
+                self.expectedUpdatedAt = expectedUpdatedAt
+            }
+            public enum CodingKeys: String, CodingKey {
+                case branchId = "branch_id"
+                case expectedUpdatedAt = "expected_updated_at"
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.branchId = try container.decode(
+                    Components.Schemas.Uuid.self,
+                    forKey: .branchId
+                )
+                self.expectedUpdatedAt = try container.decode(
+                    Components.Schemas.Timestamp.self,
+                    forKey: .expectedUpdatedAt
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "branch_id",
+                    "expected_updated_at"
+                ])
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/EmployeeHomeBranch`.
+        public struct EmployeeHomeBranch: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/EmployeeHomeBranch/employee_id`.
+            public var employeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/EmployeeHomeBranch/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/EmployeeHomeBranch/branch_name`.
+            public var branchName: Swift.String
+            /// - Remark: Generated from `#/components/schemas/EmployeeHomeBranch/updated_at`.
+            public var updatedAt: Components.Schemas.Timestamp
+            /// Creates a new `EmployeeHomeBranch`.
+            ///
+            /// - Parameters:
+            ///   - employeeId:
+            ///   - branchId:
+            ///   - branchName:
+            ///   - updatedAt:
+            public init(
+                employeeId: Components.Schemas.Uuid,
+                branchId: Components.Schemas.Uuid,
+                branchName: Swift.String,
+                updatedAt: Components.Schemas.Timestamp
+            ) {
+                self.employeeId = employeeId
+                self.branchId = branchId
+                self.branchName = branchName
+                self.updatedAt = updatedAt
+            }
+            public enum CodingKeys: String, CodingKey {
+                case employeeId = "employee_id"
+                case branchId = "branch_id"
+                case branchName = "branch_name"
                 case updatedAt = "updated_at"
             }
         }
@@ -15817,6 +16205,8 @@ public enum Components {
             public var inserted: Swift.Int
             /// - Remark: Generated from `#/components/schemas/EmployeeImportCompanySummary/updated`.
             public var updated: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/EmployeeImportCompanySummary/skipped`.
+            public var skipped: Swift.Int
             /// Creates a new `EmployeeImportCompanySummary`.
             ///
             /// - Parameters:
@@ -15824,22 +16214,26 @@ public enum Components {
             ///   - inputRows:
             ///   - inserted:
             ///   - updated:
+            ///   - skipped:
             public init(
                 company: Swift.String,
                 inputRows: Swift.Int,
                 inserted: Swift.Int,
-                updated: Swift.Int
+                updated: Swift.Int,
+                skipped: Swift.Int
             ) {
                 self.company = company
                 self.inputRows = inputRows
                 self.inserted = inserted
                 self.updated = updated
+                self.skipped = skipped
             }
             public enum CodingKeys: String, CodingKey {
                 case company
                 case inputRows = "input_rows"
                 case inserted
                 case updated
+                case skipped
             }
         }
         /// - Remark: Generated from `#/components/schemas/EmployeeImportColumn`.
@@ -16119,6 +16513,8 @@ public enum Components {
             public var inserted: Swift.Int
             /// - Remark: Generated from `#/components/schemas/EmployeeImportReport/updated`.
             public var updated: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/EmployeeImportReport/skipped`.
+            public var skipped: Swift.Int
             /// - Remark: Generated from `#/components/schemas/EmployeeImportReport/companies`.
             public var companies: [Components.Schemas.EmployeeImportCompanySummary]
             /// Creates a new `EmployeeImportReport`.
@@ -16127,22 +16523,26 @@ public enum Components {
             ///   - inputRows:
             ///   - inserted:
             ///   - updated:
+            ///   - skipped:
             ///   - companies:
             public init(
                 inputRows: Swift.Int,
                 inserted: Swift.Int,
                 updated: Swift.Int,
+                skipped: Swift.Int,
                 companies: [Components.Schemas.EmployeeImportCompanySummary]
             ) {
                 self.inputRows = inputRows
                 self.inserted = inserted
                 self.updated = updated
+                self.skipped = skipped
                 self.companies = companies
             }
             public enum CodingKeys: String, CodingKey {
                 case inputRows = "input_rows"
                 case inserted
                 case updated
+                case skipped
                 case companies
             }
         }
@@ -20939,21 +21339,35 @@ public enum Components {
                 public var code: Swift.String
                 /// - Remark: Generated from `#/components/schemas/ErrorBody/error/message`.
                 public var message: Swift.String
+                /// Stable machine-readable reasons for review-required conflicts, when applicable.
+                ///
+                /// - Remark: Generated from `#/components/schemas/ErrorBody/error/reasons`.
+                public var reasons: [Swift.String]?
+                /// - Remark: Generated from `#/components/schemas/ErrorBody/error/current_key_write_revision`.
+                public var currentKeyWriteRevision: Swift.Int64?
                 /// Creates a new `_ErrorPayload`.
                 ///
                 /// - Parameters:
                 ///   - code:
                 ///   - message:
+                ///   - reasons: Stable machine-readable reasons for review-required conflicts, when applicable.
+                ///   - currentKeyWriteRevision:
                 public init(
                     code: Swift.String,
-                    message: Swift.String
+                    message: Swift.String,
+                    reasons: [Swift.String]? = nil,
+                    currentKeyWriteRevision: Swift.Int64? = nil
                 ) {
                     self.code = code
                     self.message = message
+                    self.reasons = reasons
+                    self.currentKeyWriteRevision = currentKeyWriteRevision
                 }
                 public enum CodingKeys: String, CodingKey {
                     case code
                     case message
+                    case reasons
+                    case currentKeyWriteRevision = "current_key_write_revision"
                 }
             }
             /// - Remark: Generated from `#/components/schemas/ErrorBody/error`.
@@ -22209,6 +22623,822 @@ public enum Components {
                 case comment
             }
         }
+        /// One leave request in the approval queue (결재함 leave variant).
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View`.
+        public struct LeaveRequestV2View: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/id`.
+            public var id: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/branch_id`.
+            public var branchId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/requester_user_id`.
+            public var requesterUserId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/subject_employee_id`.
+            public var subjectEmployeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/leave_type`.
+            @frozen public enum LeaveTypePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case annual = "annual"
+                case halfDay = "half_day"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/leave_type`.
+            public var leaveType: Components.Schemas.LeaveRequestV2View.LeaveTypePayload
+            /// Non-null legacy compatibility projection; never authoritative for new approvals.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/days`.
+            @available(*, deprecated)
+            public var days: Swift.Double
+            /// Exact resolved charge; null while review is required or no charge applies.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_units`.
+            @RequiredNullable public var chargeUnits: Components.Schemas.LeaveUnits?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_state`.
+            @frozen public enum ChargeStatePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case reviewRequired = "review_required"
+                case resolved = "resolved"
+                case notRequired = "not_required"
+                case legacyUnverified = "legacy_unverified"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_state`.
+            public var chargeState: Components.Schemas.LeaveRequestV2View.ChargeStatePayload
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_review_reasons`.
+            public var chargeReviewReasons: [Components.Schemas.LeaveChargeReviewReason]
+            /// Mutable request/workflow CAS token; submit as expected_version for resolve or decide.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/request_version`.
+            public var requestVersion: Swift.Int64
+            /// Monotonic immutable charge-evidence revision counter; decisions do not advance it and it is never a request mutation precondition.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_version`.
+            public var chargeVersion: Swift.Int64
+            /// Server digest of the immutable resolution snapshot, when resolved.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_digest`.
+            public var chargeDigest: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_resolved_by`.
+            public var chargeResolvedBy: Components.Schemas.Uuid?
+            /// Provenance of the current immutable charge snapshot, when one exists.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_resolution_origin`.
+            @frozen public enum ChargeResolutionOriginPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case automated = "automated"
+                case manual = "manual"
+            }
+            /// Provenance of the current immutable charge snapshot, when one exists.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/charge_resolution_origin`.
+            public var chargeResolutionOrigin: Components.Schemas.LeaveRequestV2View.ChargeResolutionOriginPayload?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/partial_day_period`.
+            @frozen public enum PartialDayPeriodPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case am = "am"
+                case pm = "pm"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/partial_day_period`.
+            public var partialDayPeriod: Components.Schemas.LeaveRequestV2View.PartialDayPeriodPayload?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/start_date`.
+            public var startDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/end_date`.
+            public var endDate: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/reason`.
+            public var reason: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/status`.
+            @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case pending = "pending"
+                case approved = "approved"
+                case returned = "returned"
+                case rejected = "rejected"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/status`.
+            public var status: Components.Schemas.LeaveRequestV2View.StatusPayload
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/decided_by`.
+            public var decidedBy: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/decided_at`.
+            public var decidedAt: Foundation.Date?
+            /// Mandatory on return/reject; present only when set.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/decision_comment`.
+            public var decisionComment: Swift.String?
+            /// The engine AP- run, when the submittable definition exists.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/ap_run_id`.
+            public var apRunId: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2View/created_at`.
+            public var createdAt: Components.Schemas.Timestamp
+            /// Creates a new `LeaveRequestV2View`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - branchId:
+            ///   - requesterUserId:
+            ///   - subjectEmployeeId:
+            ///   - leaveType:
+            ///   - days: Non-null legacy compatibility projection; never authoritative for new approvals.
+            ///   - chargeState:
+            ///   - chargeReviewReasons:
+            ///   - requestVersion: Mutable request/workflow CAS token; submit as expected_version for resolve or decide.
+            ///   - chargeVersion: Monotonic immutable charge-evidence revision counter; decisions do not advance it and it is never a request mutation precondition.
+            ///   - chargeDigest: Server digest of the immutable resolution snapshot, when resolved.
+            ///   - chargeResolvedBy:
+            ///   - chargeResolutionOrigin: Provenance of the current immutable charge snapshot, when one exists.
+            ///   - partialDayPeriod:
+            ///   - startDate:
+            ///   - endDate:
+            ///   - reason:
+            ///   - status:
+            ///   - decidedBy:
+            ///   - decidedAt:
+            ///   - decisionComment: Mandatory on return/reject; present only when set.
+            ///   - apRunId: The engine AP- run, when the submittable definition exists.
+            ///   - createdAt:
+            public init(
+                id: Components.Schemas.Uuid,
+                branchId: Components.Schemas.Uuid,
+                requesterUserId: Components.Schemas.Uuid,
+                subjectEmployeeId: Components.Schemas.Uuid,
+                leaveType: Components.Schemas.LeaveRequestV2View.LeaveTypePayload,
+                days: Swift.Double,
+                chargeUnits: Components.Schemas.LeaveUnits?,
+                chargeState: Components.Schemas.LeaveRequestV2View.ChargeStatePayload,
+                chargeReviewReasons: [Components.Schemas.LeaveChargeReviewReason],
+                requestVersion: Swift.Int64,
+                chargeVersion: Swift.Int64,
+                chargeDigest: Swift.String? = nil,
+                chargeResolvedBy: Components.Schemas.Uuid? = nil,
+                chargeResolutionOrigin: Components.Schemas.LeaveRequestV2View.ChargeResolutionOriginPayload? = nil,
+                partialDayPeriod: Components.Schemas.LeaveRequestV2View.PartialDayPeriodPayload? = nil,
+                startDate: Swift.String,
+                endDate: Swift.String,
+                reason: Swift.String,
+                status: Components.Schemas.LeaveRequestV2View.StatusPayload,
+                decidedBy: Swift.String? = nil,
+                decidedAt: Foundation.Date? = nil,
+                decisionComment: Swift.String? = nil,
+                apRunId: Swift.String? = nil,
+                createdAt: Components.Schemas.Timestamp
+            ) {
+                self.id = id
+                self.branchId = branchId
+                self.requesterUserId = requesterUserId
+                self.subjectEmployeeId = subjectEmployeeId
+                self.leaveType = leaveType
+                self.days = days
+                self.chargeUnits = chargeUnits
+                self.chargeState = chargeState
+                self.chargeReviewReasons = chargeReviewReasons
+                self.requestVersion = requestVersion
+                self.chargeVersion = chargeVersion
+                self.chargeDigest = chargeDigest
+                self.chargeResolvedBy = chargeResolvedBy
+                self.chargeResolutionOrigin = chargeResolutionOrigin
+                self.partialDayPeriod = partialDayPeriod
+                self.startDate = startDate
+                self.endDate = endDate
+                self.reason = reason
+                self.status = status
+                self.decidedBy = decidedBy
+                self.decidedAt = decidedAt
+                self.decisionComment = decisionComment
+                self.apRunId = apRunId
+                self.createdAt = createdAt
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case branchId = "branch_id"
+                case requesterUserId = "requester_user_id"
+                case subjectEmployeeId = "subject_employee_id"
+                case leaveType = "leave_type"
+                case days
+                case chargeUnits = "charge_units"
+                case chargeState = "charge_state"
+                case chargeReviewReasons = "charge_review_reasons"
+                case requestVersion = "request_version"
+                case chargeVersion = "charge_version"
+                case chargeDigest = "charge_digest"
+                case chargeResolvedBy = "charge_resolved_by"
+                case chargeResolutionOrigin = "charge_resolution_origin"
+                case partialDayPeriod = "partial_day_period"
+                case startDate = "start_date"
+                case endDate = "end_date"
+                case reason
+                case status
+                case decidedBy = "decided_by"
+                case decidedAt = "decided_at"
+                case decisionComment = "decision_comment"
+                case apRunId = "ap_run_id"
+                case createdAt = "created_at"
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveRequestV2Page`.
+        public struct LeaveRequestV2Page: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2Page/items`.
+            public var items: [Components.Schemas.LeaveRequestV2View]
+            /// Last request id for the next stable keyset page, or null when exhausted.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveRequestV2Page/next_cursor`.
+            @RequiredNullable public var nextCursor: Swift.String?
+            /// Creates a new `LeaveRequestV2Page`.
+            ///
+            /// - Parameters:
+            ///   - items:
+            ///   - nextCursor: Last request id for the next stable keyset page, or null when exhausted.
+            public init(
+                items: [Components.Schemas.LeaveRequestV2View],
+                nextCursor: Swift.String?
+            ) {
+                self.items = items
+                self.nextCursor = nextCursor
+            }
+            public enum CodingKeys: String, CodingKey {
+                case items
+                case nextCursor = "next_cursor"
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveDecideV2Request`.
+        public struct LeaveDecideV2Request: Codable, Hashable, Sendable {
+            /// Required mutable request_version compare-and-swap token; never use charge_version.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideV2Request/expected_version`.
+            public var expectedVersion: Swift.Int64
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideV2Request/decision`.
+            @frozen public enum DecisionPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case approve = "approve"
+                case _return = "return"
+                case reject = "reject"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideV2Request/decision`.
+            public var decision: Components.Schemas.LeaveDecideV2Request.DecisionPayload
+            /// Mandatory for return/reject; optional for approve.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveDecideV2Request/comment`.
+            public var comment: Swift.String?
+            /// Creates a new `LeaveDecideV2Request`.
+            ///
+            /// - Parameters:
+            ///   - expectedVersion: Required mutable request_version compare-and-swap token; never use charge_version.
+            ///   - decision:
+            ///   - comment: Mandatory for return/reject; optional for approve.
+            public init(
+                expectedVersion: Swift.Int64,
+                decision: Components.Schemas.LeaveDecideV2Request.DecisionPayload,
+                comment: Swift.String? = nil
+            ) {
+                self.expectedVersion = expectedVersion
+                self.decision = decision
+                self.comment = comment
+            }
+            public enum CodingKeys: String, CodingKey {
+                case expectedVersion = "expected_version"
+                case decision
+                case comment
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.expectedVersion = try container.decode(
+                    Swift.Int64.self,
+                    forKey: .expectedVersion
+                )
+                self.decision = try container.decode(
+                    Components.Schemas.LeaveDecideV2Request.DecisionPayload.self,
+                    forKey: .decision
+                )
+                self.comment = try container.decodeIfPresent(
+                    Swift.String.self,
+                    forKey: .comment
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "expected_version",
+                    "decision",
+                    "comment"
+                ])
+            }
+        }
+        /// Exact fixed-scale leave days; six fractional digits and no floating-point semantics.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveUnits`.
+        public typealias LeaveUnits = Swift.String
+        /// Exact signed fixed-scale ledger days; historical imports may legitimately be negative.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LeaveBalanceAmount`.
+        public typealias LeaveBalanceAmount = Swift.String
+        /// - Remark: Generated from `#/components/schemas/LeaveChargeReviewReason`.
+        @frozen public enum LeaveChargeReviewReason: String, Codable, Hashable, Sendable, CaseIterable {
+            case missingCalendar = "missing_calendar"
+            case ambiguousCalendar = "ambiguous_calendar"
+            case calendarSourceUnavailable = "calendar_source_unavailable"
+            case missingPolicy = "missing_policy"
+            case ambiguousPolicy = "ambiguous_policy"
+            case policySourceUnavailable = "policy_source_unavailable"
+        }
+        /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance`.
+        public struct SelfLeaveBalance: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/employee_id`.
+            public var employeeId: Components.Schemas.Uuid
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/name`.
+            public var name: Swift.String
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/accrued_units`.
+            public struct AccruedUnitsPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/accrued_units/value1`.
+                public var value1: Components.Schemas.LeaveBalanceAmount
+                /// Creates a new `AccruedUnitsPayload`.
+                ///
+                /// - Parameters:
+                ///   - value1:
+                public init(value1: Components.Schemas.LeaveBalanceAmount) {
+                    self.value1 = value1
+                }
+                public init(from decoder: any Swift.Decoder) throws {
+                    self.value1 = try decoder.decodeFromSingleValueContainer()
+                }
+                public func encode(to encoder: any Swift.Encoder) throws {
+                    try encoder.encodeToSingleValueContainer(self.value1)
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/accrued_units`.
+            public var accruedUnits: Components.Schemas.SelfLeaveBalance.AccruedUnitsPayload?
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/used_units`.
+            public struct UsedUnitsPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/used_units/value1`.
+                public var value1: Components.Schemas.LeaveBalanceAmount
+                /// Creates a new `UsedUnitsPayload`.
+                ///
+                /// - Parameters:
+                ///   - value1:
+                public init(value1: Components.Schemas.LeaveBalanceAmount) {
+                    self.value1 = value1
+                }
+                public init(from decoder: any Swift.Decoder) throws {
+                    self.value1 = try decoder.decodeFromSingleValueContainer()
+                }
+                public func encode(to encoder: any Swift.Encoder) throws {
+                    try encoder.encodeToSingleValueContainer(self.value1)
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/used_units`.
+            public var usedUnits: Components.Schemas.SelfLeaveBalance.UsedUnitsPayload?
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/remaining_units`.
+            public struct RemainingUnitsPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/remaining_units/value1`.
+                public var value1: Components.Schemas.LeaveBalanceAmount
+                /// Creates a new `RemainingUnitsPayload`.
+                ///
+                /// - Parameters:
+                ///   - value1:
+                public init(value1: Components.Schemas.LeaveBalanceAmount) {
+                    self.value1 = value1
+                }
+                public init(from decoder: any Swift.Decoder) throws {
+                    self.value1 = try decoder.decodeFromSingleValueContainer()
+                }
+                public func encode(to encoder: any Swift.Encoder) throws {
+                    try encoder.encodeToSingleValueContainer(self.value1)
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/remaining_units`.
+            public var remainingUnits: Components.Schemas.SelfLeaveBalance.RemainingUnitsPayload?
+            /// Whether self-service filing currently has an active authoritative home branch.
+            ///
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/filing_state`.
+            @frozen public enum FilingStatePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case ready = "ready"
+                case homeBranchRequired = "home_branch_required"
+            }
+            /// Whether self-service filing currently has an active authoritative home branch.
+            ///
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/filing_state`.
+            public var filingState: Components.Schemas.SelfLeaveBalance.FilingStatePayload
+            /// Active authoritative routing branch; null exactly when filing_state is home_branch_required.
+            ///
+            /// - Remark: Generated from `#/components/schemas/SelfLeaveBalance/home_branch_id`.
+            public var homeBranchId: Swift.String?
+            /// Creates a new `SelfLeaveBalance`.
+            ///
+            /// - Parameters:
+            ///   - employeeId:
+            ///   - name:
+            ///   - accruedUnits:
+            ///   - usedUnits:
+            ///   - remainingUnits:
+            ///   - filingState: Whether self-service filing currently has an active authoritative home branch.
+            ///   - homeBranchId: Active authoritative routing branch; null exactly when filing_state is home_branch_required.
+            public init(
+                employeeId: Components.Schemas.Uuid,
+                name: Swift.String,
+                accruedUnits: Components.Schemas.SelfLeaveBalance.AccruedUnitsPayload? = nil,
+                usedUnits: Components.Schemas.SelfLeaveBalance.UsedUnitsPayload? = nil,
+                remainingUnits: Components.Schemas.SelfLeaveBalance.RemainingUnitsPayload? = nil,
+                filingState: Components.Schemas.SelfLeaveBalance.FilingStatePayload,
+                homeBranchId: Swift.String? = nil
+            ) {
+                self.employeeId = employeeId
+                self.name = name
+                self.accruedUnits = accruedUnits
+                self.usedUnits = usedUnits
+                self.remainingUnits = remainingUnits
+                self.filingState = filingState
+                self.homeBranchId = homeBranchId
+            }
+            public enum CodingKeys: String, CodingKey {
+                case employeeId = "employee_id"
+                case name
+                case accruedUnits = "accrued_units"
+                case usedUnits = "used_units"
+                case remainingUnits = "remaining_units"
+                case filingState = "filing_state"
+                case homeBranchId = "home_branch_id"
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/MyLeaveV2Overview`.
+        public struct MyLeaveV2Overview: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/MyLeaveV2Overview/balance`.
+            public var balance: Components.Schemas.SelfLeaveBalance
+            /// - Remark: Generated from `#/components/schemas/MyLeaveV2Overview/requests`.
+            public var requests: Components.Schemas.LeaveRequestV2Page
+            /// Creates a new `MyLeaveV2Overview`.
+            ///
+            /// - Parameters:
+            ///   - balance:
+            ///   - requests:
+            public init(
+                balance: Components.Schemas.SelfLeaveBalance,
+                requests: Components.Schemas.LeaveRequestV2Page
+            ) {
+                self.balance = balance
+                self.requests = requests
+            }
+            public enum CodingKeys: String, CodingKey {
+                case balance
+                case requests
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveSourceRevisionRef`.
+        public struct LeaveSourceRevisionRef: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveSourceRevisionRef/kind`.
+            public var kind: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveSourceRevisionRef/reference`.
+            public var reference: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveSourceRevisionRef/revision`.
+            public var revision: Swift.String
+            /// Creates a new `LeaveSourceRevisionRef`.
+            ///
+            /// - Parameters:
+            ///   - kind:
+            ///   - reference:
+            ///   - revision:
+            public init(
+                kind: Swift.String,
+                reference: Swift.String,
+                revision: Swift.String
+            ) {
+                self.kind = kind
+                self.reference = reference
+                self.revision = revision
+            }
+            public enum CodingKeys: String, CodingKey {
+                case kind
+                case reference
+                case revision
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.kind = try container.decode(
+                    Swift.String.self,
+                    forKey: .kind
+                )
+                self.reference = try container.decode(
+                    Swift.String.self,
+                    forKey: .reference
+                )
+                self.revision = try container.decode(
+                    Swift.String.self,
+                    forKey: .revision
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "kind",
+                    "reference",
+                    "revision"
+                ])
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveDateCharge`.
+        public struct LeaveDateCharge: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/date`.
+            public var date: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation`.
+            @frozen public enum ObligationPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case1`.
+                public struct Case1Payload: Codable, Hashable, Sendable {
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case1/kind`.
+                    @frozen public enum KindPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                        case scheduled = "scheduled"
+                    }
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case1/kind`.
+                    public var kind: Components.Schemas.LeaveDateCharge.ObligationPayload.Case1Payload.KindPayload
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case1/minutes`.
+                    public var minutes: Swift.Int32
+                    /// Creates a new `Case1Payload`.
+                    ///
+                    /// - Parameters:
+                    ///   - kind:
+                    ///   - minutes:
+                    public init(
+                        kind: Components.Schemas.LeaveDateCharge.ObligationPayload.Case1Payload.KindPayload,
+                        minutes: Swift.Int32
+                    ) {
+                        self.kind = kind
+                        self.minutes = minutes
+                    }
+                    public enum CodingKeys: String, CodingKey {
+                        case kind
+                        case minutes
+                    }
+                    public init(from decoder: any Swift.Decoder) throws {
+                        let container = try decoder.container(keyedBy: CodingKeys.self)
+                        self.kind = try container.decode(
+                            Components.Schemas.LeaveDateCharge.ObligationPayload.Case1Payload.KindPayload.self,
+                            forKey: .kind
+                        )
+                        self.minutes = try container.decode(
+                            Swift.Int32.self,
+                            forKey: .minutes
+                        )
+                        try decoder.ensureNoAdditionalProperties(knownKeys: [
+                            "kind",
+                            "minutes"
+                        ])
+                    }
+                }
+                /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case1`.
+                case case1(Components.Schemas.LeaveDateCharge.ObligationPayload.Case1Payload)
+                /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2`.
+                public struct Case2Payload: Codable, Hashable, Sendable {
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2/kind`.
+                    @frozen public enum KindPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                        case notScheduled = "not_scheduled"
+                    }
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2/kind`.
+                    public var kind: Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.KindPayload
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2/basis`.
+                    @frozen public enum BasisPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                        case restDay = "rest_day"
+                        case publicHoliday = "public_holiday"
+                        case substituteHoliday = "substitute_holiday"
+                        case contractualDayOff = "contractual_day_off"
+                        case other = "other"
+                    }
+                    /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2/basis`.
+                    public var basis: Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.BasisPayload
+                    /// Creates a new `Case2Payload`.
+                    ///
+                    /// - Parameters:
+                    ///   - kind:
+                    ///   - basis:
+                    public init(
+                        kind: Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.KindPayload,
+                        basis: Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.BasisPayload
+                    ) {
+                        self.kind = kind
+                        self.basis = basis
+                    }
+                    public enum CodingKeys: String, CodingKey {
+                        case kind
+                        case basis
+                    }
+                    public init(from decoder: any Swift.Decoder) throws {
+                        let container = try decoder.container(keyedBy: CodingKeys.self)
+                        self.kind = try container.decode(
+                            Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.KindPayload.self,
+                            forKey: .kind
+                        )
+                        self.basis = try container.decode(
+                            Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload.BasisPayload.self,
+                            forKey: .basis
+                        )
+                        try decoder.ensureNoAdditionalProperties(knownKeys: [
+                            "kind",
+                            "basis"
+                        ])
+                    }
+                }
+                /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation/case2`.
+                case case2(Components.Schemas.LeaveDateCharge.ObligationPayload.Case2Payload)
+                public init(from decoder: any Swift.Decoder) throws {
+                    var errors: [any Swift.Error] = []
+                    do {
+                        self = .case1(try .init(from: decoder))
+                        return
+                    } catch {
+                        errors.append(error)
+                    }
+                    do {
+                        self = .case2(try .init(from: decoder))
+                        return
+                    } catch {
+                        errors.append(error)
+                    }
+                    throw Swift.DecodingError.failedToDecodeOneOfSchema(
+                        type: Self.self,
+                        codingPath: decoder.codingPath,
+                        errors: errors
+                    )
+                }
+                public func encode(to encoder: any Swift.Encoder) throws {
+                    switch self {
+                    case let .case1(value):
+                        try value.encode(to: encoder)
+                    case let .case2(value):
+                        try value.encode(to: encoder)
+                    }
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/obligation`.
+            public var obligation: Components.Schemas.LeaveDateCharge.ObligationPayload
+            /// - Remark: Generated from `#/components/schemas/LeaveDateCharge/charge_units`.
+            public var chargeUnits: Components.Schemas.LeaveUnits
+            /// Creates a new `LeaveDateCharge`.
+            ///
+            /// - Parameters:
+            ///   - date:
+            ///   - obligation:
+            ///   - chargeUnits:
+            public init(
+                date: Swift.String,
+                obligation: Components.Schemas.LeaveDateCharge.ObligationPayload,
+                chargeUnits: Components.Schemas.LeaveUnits
+            ) {
+                self.date = date
+                self.obligation = obligation
+                self.chargeUnits = chargeUnits
+            }
+            public enum CodingKeys: String, CodingKey {
+                case date
+                case obligation
+                case chargeUnits = "charge_units"
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.date = try container.decode(
+                    Swift.String.self,
+                    forKey: .date
+                )
+                self.obligation = try container.decode(
+                    Components.Schemas.LeaveDateCharge.ObligationPayload.self,
+                    forKey: .obligation
+                )
+                self.chargeUnits = try container.decode(
+                    Components.Schemas.LeaveUnits.self,
+                    forKey: .chargeUnits
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "date",
+                    "obligation",
+                    "charge_units"
+                ])
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest`.
+        public struct LeaveChargeResolutionRequest: Codable, Hashable, Sendable {
+            /// Expected mutable request_version; charge_version is evidence-only.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest/expected_version`.
+            public var expectedVersion: Swift.Int64
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest/date_charges`.
+            public var dateCharges: [Components.Schemas.LeaveDateCharge]
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest/calendar_revision_ref`.
+            public var calendarRevisionRef: Components.Schemas.LeaveSourceRevisionRef
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest/policy_revision_ref`.
+            public var policyRevisionRef: Components.Schemas.LeaveSourceRevisionRef
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionRequest/supporting_source_refs`.
+            public var supportingSourceRefs: [Components.Schemas.LeaveSourceRevisionRef]?
+            /// Creates a new `LeaveChargeResolutionRequest`.
+            ///
+            /// - Parameters:
+            ///   - expectedVersion: Expected mutable request_version; charge_version is evidence-only.
+            ///   - dateCharges:
+            ///   - calendarRevisionRef:
+            ///   - policyRevisionRef:
+            ///   - supportingSourceRefs:
+            public init(
+                expectedVersion: Swift.Int64,
+                dateCharges: [Components.Schemas.LeaveDateCharge],
+                calendarRevisionRef: Components.Schemas.LeaveSourceRevisionRef,
+                policyRevisionRef: Components.Schemas.LeaveSourceRevisionRef,
+                supportingSourceRefs: [Components.Schemas.LeaveSourceRevisionRef]? = nil
+            ) {
+                self.expectedVersion = expectedVersion
+                self.dateCharges = dateCharges
+                self.calendarRevisionRef = calendarRevisionRef
+                self.policyRevisionRef = policyRevisionRef
+                self.supportingSourceRefs = supportingSourceRefs
+            }
+            public enum CodingKeys: String, CodingKey {
+                case expectedVersion = "expected_version"
+                case dateCharges = "date_charges"
+                case calendarRevisionRef = "calendar_revision_ref"
+                case policyRevisionRef = "policy_revision_ref"
+                case supportingSourceRefs = "supporting_source_refs"
+            }
+            public init(from decoder: any Swift.Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.expectedVersion = try container.decode(
+                    Swift.Int64.self,
+                    forKey: .expectedVersion
+                )
+                self.dateCharges = try container.decode(
+                    [Components.Schemas.LeaveDateCharge].self,
+                    forKey: .dateCharges
+                )
+                self.calendarRevisionRef = try container.decode(
+                    Components.Schemas.LeaveSourceRevisionRef.self,
+                    forKey: .calendarRevisionRef
+                )
+                self.policyRevisionRef = try container.decode(
+                    Components.Schemas.LeaveSourceRevisionRef.self,
+                    forKey: .policyRevisionRef
+                )
+                self.supportingSourceRefs = try container.decodeIfPresent(
+                    [Components.Schemas.LeaveSourceRevisionRef].self,
+                    forKey: .supportingSourceRefs
+                )
+                try decoder.ensureNoAdditionalProperties(knownKeys: [
+                    "expected_version",
+                    "date_charges",
+                    "calendar_revision_ref",
+                    "policy_revision_ref",
+                    "supporting_source_refs"
+                ])
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView`.
+        public struct LeaveChargeResolutionView: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/request_id`.
+            public var requestId: Components.Schemas.Uuid
+            /// New mutable request/workflow CAS token after the resolution commits.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/request_version`.
+            public var requestVersion: Swift.Int64
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/charge_units`.
+            public var chargeUnits: Components.Schemas.LeaveUnits
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/charge_state`.
+            @frozen public enum ChargeStatePayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case resolved = "resolved"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/charge_state`.
+            public var chargeState: Components.Schemas.LeaveChargeResolutionView.ChargeStatePayload
+            /// Immutable revision of the newly recorded charge-evidence snapshot.
+            ///
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/charge_version`.
+            public var chargeVersion: Swift.Int64
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/server_digest`.
+            public var serverDigest: Swift.String
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/resolution_origin`.
+            @frozen public enum ResolutionOriginPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case automated = "automated"
+                case manual = "manual"
+            }
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/resolution_origin`.
+            public var resolutionOrigin: Components.Schemas.LeaveChargeResolutionView.ResolutionOriginPayload
+            /// - Remark: Generated from `#/components/schemas/LeaveChargeResolutionView/resolved_by`.
+            public var resolvedBy: Swift.String?
+            /// Creates a new `LeaveChargeResolutionView`.
+            ///
+            /// - Parameters:
+            ///   - requestId:
+            ///   - requestVersion: New mutable request/workflow CAS token after the resolution commits.
+            ///   - chargeUnits:
+            ///   - chargeState:
+            ///   - chargeVersion: Immutable revision of the newly recorded charge-evidence snapshot.
+            ///   - serverDigest:
+            ///   - resolutionOrigin:
+            ///   - resolvedBy:
+            public init(
+                requestId: Components.Schemas.Uuid,
+                requestVersion: Swift.Int64,
+                chargeUnits: Components.Schemas.LeaveUnits,
+                chargeState: Components.Schemas.LeaveChargeResolutionView.ChargeStatePayload,
+                chargeVersion: Swift.Int64,
+                serverDigest: Swift.String,
+                resolutionOrigin: Components.Schemas.LeaveChargeResolutionView.ResolutionOriginPayload,
+                resolvedBy: Swift.String? = nil
+            ) {
+                self.requestId = requestId
+                self.requestVersion = requestVersion
+                self.chargeUnits = chargeUnits
+                self.chargeState = chargeState
+                self.chargeVersion = chargeVersion
+                self.serverDigest = serverDigest
+                self.resolutionOrigin = resolutionOrigin
+                self.resolvedBy = resolvedBy
+            }
+            public enum CodingKeys: String, CodingKey {
+                case requestId = "request_id"
+                case requestVersion = "request_version"
+                case chargeUnits = "charge_units"
+                case chargeState = "charge_state"
+                case chargeVersion = "charge_version"
+                case serverDigest = "server_digest"
+                case resolutionOrigin = "resolution_origin"
+                case resolvedBy = "resolved_by"
+            }
+        }
         /// One employee's annual-leave balance row (직원별 연차 현황).
         ///
         /// - Remark: Generated from `#/components/schemas/LeaveRosterEntry`.
@@ -22685,14 +23915,16 @@ public enum Components {
                 case items
             }
         }
-        /// A bounded cross-object reference for an action-inbox item.
+        /// One server-ordered canonical source-object reference for an action-inbox item. Clients resolve only explicitly registered kind/id pairs; current browser-linkable kinds are approval_run, work_order, and support_ticket. Unknown kinds remain valid for forward compatibility and MUST stay inert until a client registry adds support. Clients MUST NOT accept a server URL or infer a destination from the enclosing item kind, item id, label, or a code prefix.
         ///
         /// - Remark: Generated from `#/components/schemas/ActionInboxLink`.
         public struct ActionInboxLink: Codable, Hashable, Sendable {
-            /// Object type label (e.g. work_order, workflow_run).
+            /// Canonical source-object kind. Current browser-linkable values are approval_run, work_order, and support_ticket; other strings are forward-compatible but inert.
             ///
             /// - Remark: Generated from `#/components/schemas/ActionInboxLink/kind`.
             public var kind: Swift.String
+            /// Canonical source-object identifier. Clients trim surrounding whitespace and reject a blank result before route construction.
+            ///
             /// - Remark: Generated from `#/components/schemas/ActionInboxLink/id`.
             public var id: Swift.String
             /// - Remark: Generated from `#/components/schemas/ActionInboxLink/label`.
@@ -22700,8 +23932,8 @@ public enum Components {
             /// Creates a new `ActionInboxLink`.
             ///
             /// - Parameters:
-            ///   - kind: Object type label (e.g. work_order, workflow_run).
-            ///   - id:
+            ///   - kind: Canonical source-object kind. Current browser-linkable values are approval_run, work_order, and support_ticket; other strings are forward-compatible but inert.
+            ///   - id: Canonical source-object identifier. Clients trim surrounding whitespace and reject a blank result before route construction.
             ///   - label:
             public init(
                 kind: Swift.String,
@@ -22830,23 +24062,41 @@ public enum Components {
         public struct ActionInboxResponse: Codable, Hashable, Sendable {
             /// - Remark: Generated from `#/components/schemas/ActionInboxResponse/items`.
             public var items: [Components.Schemas.ActionInboxItem]
+            /// Live visible item count across sources admitted by as_of; inspect total_is_exact before treating it as authoritative.
+            ///
             /// - Remark: Generated from `#/components/schemas/ActionInboxResponse/total`.
             public var total: Swift.Int
+            /// False only when a bounded authorization-filtered count reached its scan budget.
+            ///
+            /// - Remark: Generated from `#/components/schemas/ActionInboxResponse/total_is_exact`.
+            public var totalIsExact: Swift.Bool
+            /// Opaque cursor for the next immutable-keyset page, or null when exhausted.
+            ///
+            /// - Remark: Generated from `#/components/schemas/ActionInboxResponse/next_cursor`.
+            @RequiredNullable public var nextCursor: Swift.String?
             /// Creates a new `ActionInboxResponse`.
             ///
             /// - Parameters:
             ///   - items:
-            ///   - total:
+            ///   - total: Live visible item count across sources admitted by as_of; inspect total_is_exact before treating it as authoritative.
+            ///   - totalIsExact: False only when a bounded authorization-filtered count reached its scan budget.
+            ///   - nextCursor: Opaque cursor for the next immutable-keyset page, or null when exhausted.
             public init(
                 items: [Components.Schemas.ActionInboxItem],
-                total: Swift.Int
+                total: Swift.Int,
+                totalIsExact: Swift.Bool,
+                nextCursor: Swift.String?
             ) {
                 self.items = items
                 self.total = total
+                self.totalIsExact = totalIsExact
+                self.nextCursor = nextCursor
             }
             public enum CodingKeys: String, CodingKey {
                 case items
                 case total
+                case totalIsExact = "total_is_exact"
+                case nextCursor = "next_cursor"
             }
         }
         /// - Remark: Generated from `#/components/schemas/EquipmentStatus`.
@@ -31974,6 +33224,10 @@ public enum Components {
             }
             /// - Remark: Generated from `#/components/schemas/ObjectTypeSummary/lifecycle_state`.
             public var lifecycleState: Components.Schemas.ObjectTypeSummary.LifecycleStatePayload
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeSummary/key_write_revision`.
+            public var keyWriteRevision: Swift.Int64
+            /// - Remark: Generated from `#/components/schemas/ObjectTypeSummary/key_write_etag`.
+            public var keyWriteEtag: Swift.String
             /// Creates a new `ObjectTypeSummary`.
             ///
             /// - Parameters:
@@ -31983,13 +33237,17 @@ public enum Components {
             ///   - backingKind:
             ///   - schemaVersion:
             ///   - lifecycleState:
+            ///   - keyWriteRevision:
+            ///   - keyWriteEtag:
             public init(
                 id: Swift.String,
                 stableKey: Swift.String,
                 title: Swift.String,
                 backingKind: Components.Schemas.ObjectTypeSummary.BackingKindPayload,
                 schemaVersion: Swift.Int64,
-                lifecycleState: Components.Schemas.ObjectTypeSummary.LifecycleStatePayload
+                lifecycleState: Components.Schemas.ObjectTypeSummary.LifecycleStatePayload,
+                keyWriteRevision: Swift.Int64,
+                keyWriteEtag: Swift.String
             ) {
                 self.id = id
                 self.stableKey = stableKey
@@ -31997,6 +33255,8 @@ public enum Components {
                 self.backingKind = backingKind
                 self.schemaVersion = schemaVersion
                 self.lifecycleState = lifecycleState
+                self.keyWriteRevision = keyWriteRevision
+                self.keyWriteEtag = keyWriteEtag
             }
             public enum CodingKeys: String, CodingKey {
                 case id
@@ -32005,6 +33265,8 @@ public enum Components {
                 case backingKind = "backing_kind"
                 case schemaVersion = "schema_version"
                 case lifecycleState = "lifecycle_state"
+                case keyWriteRevision = "key_write_revision"
+                case keyWriteEtag = "key_write_etag"
             }
         }
         /// - Remark: Generated from `#/components/schemas/InstanceLifecycleState`.
@@ -33871,6 +35133,34 @@ public enum Components {
                 self.body = body
             }
         }
+        public struct BadRequest: Sendable, Hashable {
+            /// - Remark: Generated from `#/components/responses/BadRequest/content`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/components/responses/BadRequest/content/application\/json`.
+                case json(Components.Schemas.ErrorBody)
+                /// The associated value of the enum case if `self` is `.json`.
+                ///
+                /// - Throws: An error if `self` is not `.json`.
+                /// - SeeAlso: `.json`.
+                public var json: Components.Schemas.ErrorBody {
+                    get throws {
+                        switch self {
+                        case let .json(body):
+                            return body
+                        }
+                    }
+                }
+            }
+            /// Received HTTP response body
+            public var body: Components.Responses.BadRequest.Body
+            /// Creates a new `BadRequest`.
+            ///
+            /// - Parameters:
+            ///   - body: Received HTTP response body
+            public init(body: Components.Responses.BadRequest.Body) {
+                self.body = body
+            }
+        }
         public struct ValidationError: Sendable, Hashable {
             /// - Remark: Generated from `#/components/responses/ValidationError/content`.
             @frozen public enum Body: Sendable, Hashable {
@@ -33952,6 +35242,66 @@ public enum Components {
             /// - Parameters:
             ///   - body: Received HTTP response body
             public init(body: Components.Responses.Conflict.Body) {
+                self.body = body
+            }
+        }
+        public struct PreconditionFailed: Sendable, Hashable {
+            /// - Remark: Generated from `#/components/responses/PreconditionFailed/headers`.
+            public struct Headers: Sendable, Hashable {
+                /// Current strong tenant/key write validator.
+                ///
+                /// - Remark: Generated from `#/components/responses/PreconditionFailed/headers/ETag`.
+                public var eTag: Swift.String?
+                /// - Remark: Generated from `#/components/responses/PreconditionFailed/headers/Cache-Control`.
+                @frozen public enum CacheControlPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                    case noStore = "no-store"
+                }
+                /// - Remark: Generated from `#/components/responses/PreconditionFailed/headers/Cache-Control`.
+                public var cacheControl: Components.Responses.PreconditionFailed.Headers.CacheControlPayload?
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - eTag: Current strong tenant/key write validator.
+                ///   - cacheControl:
+                public init(
+                    eTag: Swift.String? = nil,
+                    cacheControl: Components.Responses.PreconditionFailed.Headers.CacheControlPayload? = nil
+                ) {
+                    self.eTag = eTag
+                    self.cacheControl = cacheControl
+                }
+            }
+            /// Received HTTP response headers
+            public var headers: Components.Responses.PreconditionFailed.Headers
+            /// - Remark: Generated from `#/components/responses/PreconditionFailed/content`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/components/responses/PreconditionFailed/content/application\/json`.
+                case json(Components.Schemas.ErrorBody)
+                /// The associated value of the enum case if `self` is `.json`.
+                ///
+                /// - Throws: An error if `self` is not `.json`.
+                /// - SeeAlso: `.json`.
+                public var json: Components.Schemas.ErrorBody {
+                    get throws {
+                        switch self {
+                        case let .json(body):
+                            return body
+                        }
+                    }
+                }
+            }
+            /// Received HTTP response body
+            public var body: Components.Responses.PreconditionFailed.Body
+            /// Creates a new `PreconditionFailed`.
+            ///
+            /// - Parameters:
+            ///   - headers: Received HTTP response headers
+            ///   - body: Received HTTP response body
+            public init(
+                headers: Components.Responses.PreconditionFailed.Headers = .init(),
+                body: Components.Responses.PreconditionFailed.Body
+            ) {
+                self.headers = headers
                 self.body = body
             }
         }
@@ -43467,6 +44817,10 @@ public enum Operations {
                 ///
                 /// - Remark: Generated from `#/paths/api/v1/employees/GET/query/company`.
                 public var company: Swift.String?
+                /// Filter to employees whose active authoritative home branch is missing/inactive (true) or usable (false).
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/employees/GET/query/home_branch_review_required`.
+                public var homeBranchReviewRequired: Swift.Bool?
                 /// - Remark: Generated from `#/paths/api/v1/employees/GET/query/limit`.
                 public var limit: Swift.Int64?
                 /// - Remark: Generated from `#/paths/api/v1/employees/GET/query/offset`.
@@ -43475,14 +44829,17 @@ public enum Operations {
                 ///
                 /// - Parameters:
                 ///   - company: Filter by workbook sheet/company name.
+                ///   - homeBranchReviewRequired: Filter to employees whose active authoritative home branch is missing/inactive (true) or usable (false).
                 ///   - limit:
                 ///   - offset:
                 public init(
                     company: Swift.String? = nil,
+                    homeBranchReviewRequired: Swift.Bool? = nil,
                     limit: Swift.Int64? = nil,
                     offset: Swift.Int64? = nil
                 ) {
                     self.company = company
+                    self.homeBranchReviewRequired = homeBranchReviewRequired
                     self.limit = limit
                     self.offset = offset
                 }
@@ -43606,6 +44963,339 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Assign an employee's authoritative home branch
+    ///
+    /// Audited explicit assignment; the server never infers a branch from user memberships. The target branch must be active and in the same tenant. Reassignment requires EmployeeDirectoryManage for both the prior and new branch. An employee with no prior branch requires org-wide manage authority. `expected_updated_at` prevents silent concurrent overwrite.
+    ///
+    /// - Remark: HTTP `PUT /api/v1/employees/{id}/home-branch`.
+    /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)`.
+    public enum SetEmployeeHomeBranch {
+        public static let id: Swift.String = "setEmployeeHomeBranch"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.SetEmployeeHomeBranch.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.SetEmployeeHomeBranch.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.SetEmployeeHomeBranch.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.SetEmployeeHomeBranch.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/requestBody/content/application\/json`.
+                case json(Components.Schemas.SetEmployeeHomeBranchRequest)
+            }
+            public var body: Operations.SetEmployeeHomeBranch.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            ///   - body:
+            public init(
+                path: Operations.SetEmployeeHomeBranch.Input.Path,
+                headers: Operations.SetEmployeeHomeBranch.Input.Headers = .init(),
+                body: Operations.SetEmployeeHomeBranch.Input.Body
+            ) {
+                self.path = path
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/200/content/application\/json`.
+                    case json(Components.Schemas.EmployeeHomeBranch)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.EmployeeHomeBranch {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.SetEmployeeHomeBranch.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.SetEmployeeHomeBranch.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The explicit authoritative home-branch assignment.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.SetEmployeeHomeBranch.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.SetEmployeeHomeBranch.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/409/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/409/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.SetEmployeeHomeBranch.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.SetEmployeeHomeBranch.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// The employee changed after the supplied precondition; reload before retrying.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.SetEmployeeHomeBranch.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Operations.SetEmployeeHomeBranch.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/employees/{id}/home-branch/PUT/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.SetEmployeeHomeBranch.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.SetEmployeeHomeBranch.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// The separately credentialed leave command database is not configured or unavailable.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/employees/{id}/home-branch/put(setEmployeeHomeBranch)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.SetEmployeeHomeBranch.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.SetEmployeeHomeBranch.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
                             response: self
                         )
                     }
@@ -74311,6 +76001,1482 @@ public enum Operations {
             }
         }
     }
+    /// Read the authenticated employee's own leave balance and history
+    ///
+    /// Base employee self-service. The server binds both user and linked employee identity; no employee-directory feature is required and no employee or branch identifier is accepted from the client. The balance includes a closed filing state so a missing or inactive home branch is visible before submission rather than discovered only after a 409.
+    ///
+    /// - Remark: HTTP `GET /api/v2/me/leave`.
+    /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)`.
+    public enum GetMyLeaveV2 {
+        public static let id: Swift.String = "getMyLeaveV2"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/query/limit`.
+                public var limit: Swift.Int64?
+                /// Last request id from the preceding stable self-service page.
+                ///
+                /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/query/cursor`.
+                public var cursor: Swift.String?
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - limit:
+                ///   - cursor: Last request id from the preceding stable self-service page.
+                public init(
+                    limit: Swift.Int64? = nil,
+                    cursor: Swift.String? = nil
+                ) {
+                    self.limit = limit
+                    self.cursor = cursor
+                }
+            }
+            public var query: Operations.GetMyLeaveV2.Input.Query
+            /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetMyLeaveV2.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetMyLeaveV2.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetMyLeaveV2.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.GetMyLeaveV2.Input.Query = .init(),
+                headers: Operations.GetMyLeaveV2.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/me/leave/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.MyLeaveV2Overview)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.MyLeaveV2Overview {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetMyLeaveV2.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetMyLeaveV2.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Exact self balance plus self-only request history.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetMyLeaveV2.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetMyLeaveV2.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Required storage or platform dependency is not configured.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/me/leave/get(getMyLeaveV2)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Components.Responses.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Components.Responses.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// List the branch-scoped leave-request approval queue (연차 결재함)
+    ///
+    /// Pending-first, then newest. Requires `employee_directory_read`. The queue is confined to the caller's branches (resolved from the JWT); an out-of-scope request is invisible (deny-by-omission).
+    ///
+    /// - Remark: HTTP `GET /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)`.
+    public enum ListLeaveRequestsV2 {
+        public static let id: Swift.String = "listLeaveRequestsV2"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/query/status`.
+                @frozen public enum StatusPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                    case pending = "pending"
+                    case approved = "approved"
+                    case returned = "returned"
+                    case rejected = "rejected"
+                }
+                /// Filter to one status; omitted returns all four.
+                ///
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/query/status`.
+                public var status: Operations.ListLeaveRequestsV2.Input.Query.StatusPayload?
+                /// Page size for the stable pending-first queue.
+                ///
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/query/limit`.
+                public var limit: Swift.Int64?
+                /// Last request id from the preceding branch-scoped page.
+                ///
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/query/cursor`.
+                public var cursor: Swift.String?
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - status: Filter to one status; omitted returns all four.
+                ///   - limit: Page size for the stable pending-first queue.
+                ///   - cursor: Last request id from the preceding branch-scoped page.
+                public init(
+                    status: Operations.ListLeaveRequestsV2.Input.Query.StatusPayload? = nil,
+                    limit: Swift.Int64? = nil,
+                    cursor: Swift.String? = nil
+                ) {
+                    self.status = status
+                    self.limit = limit
+                    self.cursor = cursor
+                }
+            }
+            public var query: Operations.ListLeaveRequestsV2.Input.Query
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveRequestsV2.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListLeaveRequestsV2.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListLeaveRequestsV2.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.ListLeaveRequestsV2.Input.Query = .init(),
+                headers: Operations.ListLeaveRequestsV2.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveRequestV2Page)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRequestV2Page {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveRequestsV2.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveRequestsV2.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// A branch-scoped page of leave requests.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListLeaveRequestsV2.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListLeaveRequestsV2.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/GET/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListLeaveRequestsV2.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListLeaveRequestsV2.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// JWT verification is not configured.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/get(listLeaveRequestsV2)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.ListLeaveRequestsV2.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.ListLeaveRequestsV2.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// File a self-service 연차/반차 request (본인 연차 신청)
+    ///
+    /// The caller files a leave request for THEMSELVES. `subject_employee_id` and the routing `branch_id` are resolved server-side from the caller's own account and employee.home_branch_id — never from input — so a caller can only file for their own employee record. No directory feature is required (filing one's own leave is a base employee capability); the gate is an active account linked to an active employee; an unlinked or inactive subject is denied with 403. Missing home-branch authority returns the stable 409 `leave_home_branch_review_required`. The request preserves date and AM/PM intent in `review_required`; no calendar-day or fixed-half quantity is invented. A separate resolver pins authoritative evidence before any approval can move the ledger. Modern clients generate one `idempotency_key` per user intent and reuse it after an unknown or lost response. The same key and canonical client intent return the original request without another mutation or audit; a different intent conflicts.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)`.
+    public enum CreateLeaveRequestV2 {
+        public static let id: Swift.String = "createLeaveRequestV2"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.CreateLeaveRequestV2.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.CreateLeaveRequestV2.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.CreateLeaveRequestV2.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeaveCreateRequest)
+            }
+            public var body: Operations.CreateLeaveRequestV2.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            public init(
+                headers: Operations.CreateLeaveRequestV2.Input.Headers = .init(),
+                body: Operations.CreateLeaveRequestV2.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Created: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/201/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/201/content/application\/json`.
+                    case json(Components.Schemas.LeaveRequestV2View)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRequestV2View {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.CreateLeaveRequestV2.Output.Created.Body
+                /// Creates a new `Created`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.CreateLeaveRequestV2.Output.Created.Body) {
+                    self.body = body
+                }
+            }
+            /// The created pending leave request.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/201`.
+            ///
+            /// HTTP response code: `201 created`.
+            case created(Operations.CreateLeaveRequestV2.Output.Created)
+            /// The associated value of the enum case if `self` is `.created`.
+            ///
+            /// - Throws: An error if `self` is not `.created`.
+            /// - SeeAlso: `.created`.
+            public var created: Operations.CreateLeaveRequestV2.Output.Created {
+                get throws {
+                    switch self {
+                    case let .created(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "created",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/409/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/409/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.CreateLeaveRequestV2.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.CreateLeaveRequestV2.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// The linked active employee has no explicit home branch (`leave_home_branch_review_required`), or the supplied `idempotency_key` is already bound to different client intent (`leave_create.idempotency_conflict`).
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.CreateLeaveRequestV2.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Operations.CreateLeaveRequestV2.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct UnprocessableContent: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/422/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/422/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.CreateLeaveRequestV2.Output.UnprocessableContent.Body
+                /// Creates a new `UnprocessableContent`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.CreateLeaveRequestV2.Output.UnprocessableContent.Body) {
+                    self.body = body
+                }
+            }
+            /// Invalid leave type, date range, reason, or partial-day intent.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.CreateLeaveRequestV2.Output.UnprocessableContent)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Operations.CreateLeaveRequestV2.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/POST/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.CreateLeaveRequestV2.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.CreateLeaveRequestV2.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// JWT verification or the separately credentialed leave command database is not configured.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/post(createLeaveRequestV2)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.CreateLeaveRequestV2.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.CreateLeaveRequestV2.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Record an audited exact leave-charge resolution
+    ///
+    /// Requires EmployeeDirectoryManage in the request branch. The body carries reviewed per-date obligations and source revision references, never a client total or digest. The server validates complete date coverage, canonicalizes, totals, hashes, and records an immutable resolution. `expected_version` is the current mutable request_version; the charge_version is assigned independently to the evidence snapshot.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/charge-resolution`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)`.
+    public enum ResolveLeaveChargeV2 {
+        public static let id: Swift.String = "resolveLeaveChargeV2"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.ResolveLeaveChargeV2.Input.Path
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ResolveLeaveChargeV2.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ResolveLeaveChargeV2.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ResolveLeaveChargeV2.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeaveChargeResolutionRequest)
+            }
+            public var body: Operations.ResolveLeaveChargeV2.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            ///   - body:
+            public init(
+                path: Operations.ResolveLeaveChargeV2.Input.Path,
+                headers: Operations.ResolveLeaveChargeV2.Input.Headers = .init(),
+                body: Operations.ResolveLeaveChargeV2.Input.Body
+            ) {
+                self.path = path
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveChargeResolutionView)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveChargeResolutionView {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ResolveLeaveChargeV2.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ResolveLeaveChargeV2.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Server-computed exact charge and digest with the new request CAS and charge-evidence revisions.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ResolveLeaveChargeV2.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ResolveLeaveChargeV2.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/409/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/409/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ResolveLeaveChargeV2.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ResolveLeaveChargeV2.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// The request is no longer pending or expected_version does not match the current request_version (`leave_concurrent_modification`).
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.ResolveLeaveChargeV2.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Operations.ResolveLeaveChargeV2.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request failed validation.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Components.Responses.ValidationError)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Components.Responses.ValidationError {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/charge-resolution/POST/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ResolveLeaveChargeV2.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ResolveLeaveChargeV2.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// The separately credentialed leave command database is not configured or unavailable.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/charge-resolution/post(resolveLeaveChargeV2)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.ResolveLeaveChargeV2.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.ResolveLeaveChargeV2.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Approve, return, or reject a pending leave request
+    ///
+    /// Requires `employee_directory_manage` in the request's branch. An APPROVE writes the leave ledger (used += exact resolved charge units, remaining -= exact resolved charge units) in the same audited transaction. Separation of duties — a request cannot be decided by its own requester (403). `return`/`reject` require a comment. Approval additionally requires a resolved exact charge and a distinct resolver. Clients must carry the current request_version as `expected_version`; omission is rejected so every v2 decision is an explicit compare-and-swap. charge_version identifies immutable evidence and is never a request mutation precondition. A successful decision increments request_version only; charge_version remains unchanged. An unresolved approval returns 409 `leave_calendar_review_required` plus review reasons, audits the blocked attempt, and changes neither request nor ledger.
+    ///
+    /// - Remark: HTTP `POST /api/v2/leave/requests/{id}/decide`.
+    /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)`.
+    public enum DecideLeaveRequestV2 {
+        public static let id: Swift.String = "decideLeaveRequestV2"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/path/id`.
+                public var id: Components.Schemas.Uuid
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(id: Components.Schemas.Uuid) {
+                    self.id = id
+                }
+            }
+            public var path: Operations.DecideLeaveRequestV2.Input.Path
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.DecideLeaveRequestV2.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.DecideLeaveRequestV2.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.DecideLeaveRequestV2.Input.Headers
+            /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.LeaveDecideV2Request)
+            }
+            public var body: Operations.DecideLeaveRequestV2.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            ///   - body:
+            public init(
+                path: Operations.DecideLeaveRequestV2.Input.Path,
+                headers: Operations.DecideLeaveRequestV2.Input.Headers = .init(),
+                body: Operations.DecideLeaveRequestV2.Input.Body
+            ) {
+                self.path = path
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/200/content/application\/json`.
+                    case json(Components.Schemas.LeaveRequestV2View)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.LeaveRequestV2View {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequestV2.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequestV2.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// The decided leave request.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.DecideLeaveRequestV2.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.DecideLeaveRequestV2.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/409/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/409/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequestV2.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequestV2.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// Not pending, stale expected request_version (`leave_concurrent_modification`), or unresolved calendar/policy evidence.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.DecideLeaveRequestV2.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            public var conflict: Operations.DecideLeaveRequestV2.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct UnprocessableContent: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/422/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/422/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequestV2.Output.UnprocessableContent.Body
+                /// Creates a new `UnprocessableContent`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequestV2.Output.UnprocessableContent.Body) {
+                    self.body = body
+                }
+            }
+            /// Missing mandatory comment or unknown decision.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.DecideLeaveRequestV2.Output.UnprocessableContent)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Operations.DecideLeaveRequestV2.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct ServiceUnavailable: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/503/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v2/leave/requests/{id}/decide/POST/responses/503/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.DecideLeaveRequestV2.Output.ServiceUnavailable.Body
+                /// Creates a new `ServiceUnavailable`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.DecideLeaveRequestV2.Output.ServiceUnavailable.Body) {
+                    self.body = body
+                }
+            }
+            /// The separately credentialed leave command database is not configured or unavailable.
+            ///
+            /// - Remark: Generated from `#/paths//api/v2/leave/requests/{id}/decide/post(decideLeaveRequestV2)/responses/503`.
+            ///
+            /// HTTP response code: `503 serviceUnavailable`.
+            case serviceUnavailable(Operations.DecideLeaveRequestV2.Output.ServiceUnavailable)
+            /// The associated value of the enum case if `self` is `.serviceUnavailable`.
+            ///
+            /// - Throws: An error if `self` is not `.serviceUnavailable`.
+            /// - SeeAlso: `.serviceUnavailable`.
+            public var serviceUnavailable: Operations.DecideLeaveRequestV2.Output.ServiceUnavailable {
+                get throws {
+                    switch self {
+                    case let .serviceUnavailable(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
     /// Per-employee annual-leave balance roster (직원별 연차 현황)
     ///
     /// Reads the existing employee leave ledger (grant/used/left) — the same source of truth as the balances aggregate; not a second store. Requires `employee_directory_read`. Org-scoped.
@@ -76822,13 +79988,37 @@ public enum Operations {
     }
     /// Unified action inbox for the authenticated principal
     ///
-    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet).
+    /// One server-side fan-in of the caller's actionable items across every source that owns a person-scoped list: workflow/approval tasks awaiting the caller (the ?assignee=me path), pending P1 dispatch offers, support tickets assigned to the caller, and work orders assigned to the caller. Each source is queried through the exact predicate its own list endpoint uses, so the aggregate never widens visibility (deny-by-omission). Items are bucketed by urgency (now/today/wait) with a derived due tone. Fields the overview prototype carries but no backend source can supply are omitted (entity, amount, detail, files, stats, mailId); site/who/submitted are present only for the sources that carry them. Attendance exceptions are not aggregated (no exception object exists yet). Results use an immutable `(created_at, kind:id)` traversal key plus an `as_of` admission boundary, so rows created after the first page are excluded. Membership is deliberately live rather than a repeatable full-state snapshot: resolved, reassigned, or expired rows can disappear between page requests. Totals are recalculated from live membership admitted by `as_of`; `total_is_exact` is false when an authorization-filtered source reaches its bounded counting budget. Source failures fail the whole request rather than returning a deceptively partial queue.
     ///
     /// - Remark: HTTP `GET /api/v1/me/action-inbox`.
     /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)`.
     public enum ListMyActionInbox {
         public static let id: Swift.String = "listMyActionInbox"
         public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// Page size, clamped server-side to 1..=200.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/query/limit`.
+                public var limit: Swift.Int?
+                /// Opaque immutable-traversal cursor returned as `next_cursor` by the previous page.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/query/cursor`.
+                public var cursor: Swift.String?
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - limit: Page size, clamped server-side to 1..=200.
+                ///   - cursor: Opaque immutable-traversal cursor returned as `next_cursor` by the previous page.
+                public init(
+                    limit: Swift.Int? = nil,
+                    cursor: Swift.String? = nil
+                ) {
+                    self.limit = limit
+                    self.cursor = cursor
+                }
+            }
+            public var query: Operations.ListMyActionInbox.Input.Query
             /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/header`.
             public struct Headers: Sendable, Hashable {
                 public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListMyActionInbox.AcceptableContentType>]
@@ -76844,8 +80034,13 @@ public enum Operations {
             /// Creates a new `Input`.
             ///
             /// - Parameters:
+            ///   - query:
             ///   - headers:
-            public init(headers: Operations.ListMyActionInbox.Input.Headers = .init()) {
+            public init(
+                query: Operations.ListMyActionInbox.Input.Query = .init(),
+                headers: Operations.ListMyActionInbox.Input.Headers = .init()
+            ) {
+                self.query = query
                 self.headers = headers
             }
         }
@@ -76878,7 +80073,7 @@ public enum Operations {
                     self.body = body
                 }
             }
-            /// The caller's actionable items, most urgent first.
+            /// The caller's actionable items in immutable creation order.
             ///
             /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)/responses/200`.
             ///
@@ -76919,6 +80114,108 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct UnprocessableContent: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/responses/422/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/responses/422/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListMyActionInbox.Output.UnprocessableContent.Body
+                /// Creates a new `UnprocessableContent`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListMyActionInbox.Output.UnprocessableContent.Body) {
+                    self.body = body
+                }
+            }
+            /// The action-inbox cursor is malformed.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.ListMyActionInbox.Output.UnprocessableContent)
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            public var unprocessableContent: Operations.ListMyActionInbox.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct InternalServerError: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/responses/500/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/me/action-inbox/GET/responses/500/content/application\/json`.
+                    case json(Components.Schemas.ErrorBody)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorBody {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListMyActionInbox.Output.InternalServerError.Body
+                /// Creates a new `InternalServerError`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListMyActionInbox.Output.InternalServerError.Body) {
+                    self.body = body
+                }
+            }
+            /// A source failed; no partial action-inbox response is returned.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/me/action-inbox/get(listMyActionInbox)/responses/500`.
+            ///
+            /// HTTP response code: `500 internalServerError`.
+            case internalServerError(Operations.ListMyActionInbox.Output.InternalServerError)
+            /// The associated value of the enum case if `self` is `.internalServerError`.
+            ///
+            /// - Throws: An error if `self` is not `.internalServerError`.
+            /// - SeeAlso: `.internalServerError`.
+            public var internalServerError: Operations.ListMyActionInbox.Output.InternalServerError {
+                get throws {
+                    switch self {
+                    case let .internalServerError(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "internalServerError",
                             response: self
                         )
                     }
@@ -105168,33 +108465,31 @@ public enum Operations {
         }
         @frozen public enum Output: Sendable, Hashable {
             public struct Created: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/POST/responses/201/headers`.
+                public struct Headers: Sendable, Hashable {
+                    /// Strong tenant/key write validator for the created object type.
+                    ///
+                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/POST/responses/201/headers/ETag`.
+                    public var eTag: Swift.String?
+                    /// Creates a new `Headers`.
+                    ///
+                    /// - Parameters:
+                    ///   - eTag: Strong tenant/key write validator for the created object type.
+                    public init(eTag: Swift.String? = nil) {
+                        self.eTag = eTag
+                    }
+                }
+                /// Received HTTP response headers
+                public var headers: Operations.CreateObjectType.Output.Created.Headers
                 /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/POST/responses/201/content`.
                 @frozen public enum Body: Sendable, Hashable {
-                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/POST/responses/201/content/json`.
-                    public struct JsonPayload: Codable, Hashable, Sendable {
-                        /// A container of undocumented properties.
-                        public var additionalProperties: OpenAPIRuntime.OpenAPIObjectContainer
-                        /// Creates a new `JsonPayload`.
-                        ///
-                        /// - Parameters:
-                        ///   - additionalProperties: A container of undocumented properties.
-                        public init(additionalProperties: OpenAPIRuntime.OpenAPIObjectContainer = .init()) {
-                            self.additionalProperties = additionalProperties
-                        }
-                        public init(from decoder: any Swift.Decoder) throws {
-                            additionalProperties = try decoder.decodeAdditionalProperties(knownKeys: [])
-                        }
-                        public func encode(to encoder: any Swift.Encoder) throws {
-                            try encoder.encodeAdditionalProperties(additionalProperties)
-                        }
-                    }
                     /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/POST/responses/201/content/application\/json`.
-                    case json(Operations.CreateObjectType.Output.Created.Body.JsonPayload)
+                    case json(Components.Schemas.ObjectTypeSummary)
                     /// The associated value of the enum case if `self` is `.json`.
                     ///
                     /// - Throws: An error if `self` is not `.json`.
                     /// - SeeAlso: `.json`.
-                    public var json: Operations.CreateObjectType.Output.Created.Body.JsonPayload {
+                    public var json: Components.Schemas.ObjectTypeSummary {
                         get throws {
                             switch self {
                             case let .json(body):
@@ -105208,8 +108503,13 @@ public enum Operations {
                 /// Creates a new `Created`.
                 ///
                 /// - Parameters:
+                ///   - headers: Received HTTP response headers
                 ///   - body: Received HTTP response body
-                public init(body: Operations.CreateObjectType.Output.Created.Body) {
+                public init(
+                    headers: Operations.CreateObjectType.Output.Created.Headers = .init(),
+                    body: Operations.CreateObjectType.Output.Created.Body
+                ) {
+                    self.headers = headers
                     self.body = body
                 }
             }
@@ -105447,6 +108747,22 @@ public enum Operations {
         }
         @frozen public enum Output: Sendable, Hashable {
             public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/GET/responses/200/headers`.
+                public struct Headers: Sendable, Hashable {
+                    /// Strong tenant/key write validator for subsequent mutations.
+                    ///
+                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/GET/responses/200/headers/ETag`.
+                    public var eTag: Swift.String?
+                    /// Creates a new `Headers`.
+                    ///
+                    /// - Parameters:
+                    ///   - eTag: Strong tenant/key write validator for subsequent mutations.
+                    public init(eTag: Swift.String? = nil) {
+                        self.eTag = eTag
+                    }
+                }
+                /// Received HTTP response headers
+                public var headers: Operations.GetObjectType.Output.Ok.Headers
                 /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/GET/responses/200/content`.
                 @frozen public enum Body: Sendable, Hashable {
                     /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/GET/responses/200/content/json`.
@@ -105487,8 +108803,13 @@ public enum Operations {
                 /// Creates a new `Ok`.
                 ///
                 /// - Parameters:
+                ///   - headers: Received HTTP response headers
                 ///   - body: Received HTTP response body
-                public init(body: Operations.GetObjectType.Output.Ok.Body) {
+                public init(
+                    headers: Operations.GetObjectType.Output.Ok.Headers = .init(),
+                    body: Operations.GetObjectType.Output.Ok.Body
+                ) {
+                    self.headers = headers
                     self.body = body
                 }
             }
@@ -105662,12 +108983,21 @@ public enum Operations {
             public var path: Operations.StageObjectTypeRevision.Input.Path
             /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/header`.
             public struct Headers: Sendable, Hashable {
+                /// Exactly one strong ontology tenant/key write validator.
+                ///
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/header/If-Match`.
+                public var ifMatch: Swift.String
                 public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.StageObjectTypeRevision.AcceptableContentType>]
                 /// Creates a new `Headers`.
                 ///
                 /// - Parameters:
+                ///   - ifMatch: Exactly one strong ontology tenant/key write validator.
                 ///   - accept:
-                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.StageObjectTypeRevision.AcceptableContentType>] = .defaultValues()) {
+                public init(
+                    ifMatch: Swift.String,
+                    accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.StageObjectTypeRevision.AcceptableContentType>] = .defaultValues()
+                ) {
+                    self.ifMatch = ifMatch
                     self.accept = accept
                 }
             }
@@ -105686,7 +109016,7 @@ public enum Operations {
             ///   - body:
             public init(
                 path: Operations.StageObjectTypeRevision.Input.Path,
-                headers: Operations.StageObjectTypeRevision.Input.Headers = .init(),
+                headers: Operations.StageObjectTypeRevision.Input.Headers,
                 body: Operations.StageObjectTypeRevision.Input.Body
             ) {
                 self.path = path
@@ -105696,33 +109026,31 @@ public enum Operations {
         }
         @frozen public enum Output: Sendable, Hashable {
             public struct Created: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/responses/201/headers`.
+                public struct Headers: Sendable, Hashable {
+                    /// Strong successor tenant/key write validator.
+                    ///
+                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/responses/201/headers/ETag`.
+                    public var eTag: Swift.String?
+                    /// Creates a new `Headers`.
+                    ///
+                    /// - Parameters:
+                    ///   - eTag: Strong successor tenant/key write validator.
+                    public init(eTag: Swift.String? = nil) {
+                        self.eTag = eTag
+                    }
+                }
+                /// Received HTTP response headers
+                public var headers: Operations.StageObjectTypeRevision.Output.Created.Headers
                 /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/responses/201/content`.
                 @frozen public enum Body: Sendable, Hashable {
-                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/responses/201/content/json`.
-                    public struct JsonPayload: Codable, Hashable, Sendable {
-                        /// A container of undocumented properties.
-                        public var additionalProperties: OpenAPIRuntime.OpenAPIObjectContainer
-                        /// Creates a new `JsonPayload`.
-                        ///
-                        /// - Parameters:
-                        ///   - additionalProperties: A container of undocumented properties.
-                        public init(additionalProperties: OpenAPIRuntime.OpenAPIObjectContainer = .init()) {
-                            self.additionalProperties = additionalProperties
-                        }
-                        public init(from decoder: any Swift.Decoder) throws {
-                            additionalProperties = try decoder.decodeAdditionalProperties(knownKeys: [])
-                        }
-                        public func encode(to encoder: any Swift.Encoder) throws {
-                            try encoder.encodeAdditionalProperties(additionalProperties)
-                        }
-                    }
                     /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/PUT/responses/201/content/application\/json`.
-                    case json(Operations.StageObjectTypeRevision.Output.Created.Body.JsonPayload)
+                    case json(Components.Schemas.ObjectTypeSummary)
                     /// The associated value of the enum case if `self` is `.json`.
                     ///
                     /// - Throws: An error if `self` is not `.json`.
                     /// - SeeAlso: `.json`.
-                    public var json: Operations.StageObjectTypeRevision.Output.Created.Body.JsonPayload {
+                    public var json: Components.Schemas.ObjectTypeSummary {
                         get throws {
                             switch self {
                             case let .json(body):
@@ -105736,8 +109064,13 @@ public enum Operations {
                 /// Creates a new `Created`.
                 ///
                 /// - Parameters:
+                ///   - headers: Received HTTP response headers
                 ///   - body: Received HTTP response body
-                public init(body: Operations.StageObjectTypeRevision.Output.Created.Body) {
+                public init(
+                    headers: Operations.StageObjectTypeRevision.Output.Created.Headers = .init(),
+                    body: Operations.StageObjectTypeRevision.Output.Created.Body
+                ) {
+                    self.headers = headers
                     self.body = body
                 }
             }
@@ -105759,6 +109092,29 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "created",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Request syntax or conditional validator is malformed.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            case badRequest(Components.Responses.BadRequest)
+            /// The associated value of the enum case if `self` is `.badRequest`.
+            ///
+            /// - Throws: An error if `self` is not `.badRequest`.
+            /// - SeeAlso: `.badRequest`.
+            public var badRequest: Components.Responses.BadRequest {
+                get throws {
+                    switch self {
+                    case let .badRequest(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "badRequest",
                             response: self
                         )
                     }
@@ -105856,6 +109212,29 @@ public enum Operations {
                     }
                 }
             }
+            /// The submitted ontology key write validator is stale.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)/responses/412`.
+            ///
+            /// HTTP response code: `412 preconditionFailed`.
+            case preconditionFailed(Components.Responses.PreconditionFailed)
+            /// The associated value of the enum case if `self` is `.preconditionFailed`.
+            ///
+            /// - Throws: An error if `self` is not `.preconditionFailed`.
+            /// - SeeAlso: `.preconditionFailed`.
+            public var preconditionFailed: Components.Responses.PreconditionFailed {
+                get throws {
+                    switch self {
+                    case let .preconditionFailed(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "preconditionFailed",
+                            response: self
+                        )
+                    }
+                }
+            }
             /// Request failed validation.
             ///
             /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)/responses/422`.
@@ -105879,6 +109258,29 @@ public enum Operations {
                     }
                 }
             }
+            /// A required passkey step-up or other precondition is missing.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)/responses/428`.
+            ///
+            /// HTTP response code: `428 preconditionRequired`.
+            case preconditionRequired(Components.Responses.PreconditionRequired)
+            /// The associated value of the enum case if `self` is `.preconditionRequired`.
+            ///
+            /// - Throws: An error if `self` is not `.preconditionRequired`.
+            /// - SeeAlso: `.preconditionRequired`.
+            public var preconditionRequired: Components.Responses.PreconditionRequired {
+                get throws {
+                    switch self {
+                    case let .preconditionRequired(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "preconditionRequired",
+                            response: self
+                        )
+                    }
+                }
+            }
             /// Required storage or platform dependency is not configured.
             ///
             /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/put(stageObjectTypeRevision)/responses/503`.
@@ -105897,6 +109299,206 @@ public enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "serviceUnavailable",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Acting rules keyed by object-type
+    ///
+    /// Automations (bound workflow definitions) and object policies acting on the object type identified by stable key. Type-centric sibling of /instances/{id}/acting — it may return rules for a type that has no instances yet. An unknown key is 404 (deny-by-omission, RLS-scoped).
+    ///
+    ///
+    /// - Remark: HTTP `GET /api/v1/ontology/object-types/{key}/acting`.
+    /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)`.
+    public enum ListObjectTypeActing {
+        public static let id: Swift.String = "listObjectTypeActing"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/acting/GET/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/acting/GET/path/key`.
+                public var key: Swift.String
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - key:
+                public init(key: Swift.String) {
+                    self.key = key
+                }
+            }
+            public var path: Operations.ListObjectTypeActing.Input.Path
+            /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/acting/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListObjectTypeActing.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.ListObjectTypeActing.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.ListObjectTypeActing.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - headers:
+            public init(
+                path: Operations.ListObjectTypeActing.Input.Path,
+                headers: Operations.ListObjectTypeActing.Input.Headers = .init()
+            ) {
+                self.path = path
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/acting/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/v1/ontology/object-types/{key}/acting/GET/responses/200/content/application\/json`.
+                    case json([Components.Schemas.ActingRule])
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: [Components.Schemas.ActingRule] {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.ListObjectTypeActing.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.ListObjectTypeActing.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// automation rules + policies acting on the object type
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.ListObjectTypeActing.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.ListObjectTypeActing.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Missing or invalid bearer token.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Components.Responses.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Components.Responses.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Principal lacks role or branch authority.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Components.Responses.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Components.Responses.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Resource was not found in branch scope.
+            ///
+            /// - Remark: Generated from `#/paths//api/v1/ontology/object-types/{key}/acting/get(listObjectTypeActing)/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Components.Responses.NotFound)
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            public var notFound: Components.Responses.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
                             response: self
                         )
                     }
