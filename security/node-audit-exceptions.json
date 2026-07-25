@@ -1,0 +1,29 @@
+{
+  "schema_version": "node-audit-exceptions-v1",
+  "entries": [
+    {
+      "advisory": "GHSA-mh99-v99m-4gvg",
+      "package": "brace-expansion",
+      "version": "2.1.2",
+      "path": "node_modules/@redocly/openapi-core/node_modules/brace-expansion",
+      "scope": "dev-codegen",
+      "owner": "platform-security",
+      "tracking": "SEC-OPENAPI-REDOCLY-001",
+      "rationale": "The current openapi-typescript 7 generator pins Redocly v1/minimatch 5, whose CommonJS contract is incompatible with brace-expansion 5. The dependency is used only by checked-in client code generation against trusted repository OpenAPI input.",
+      "expires_on": "2026-08-24",
+      "trivy_statement": "Dev-only openapi-typescript/Redocly v1 generator path; tracked by SEC-OPENAPI-REDOCLY-001."
+    },
+    {
+      "advisory": "GHSA-mh99-v99m-4gvg",
+      "package": "brace-expansion",
+      "version": "5.0.7",
+      "path": "node_modules/brace-expansion",
+      "scope": "dev-codegen",
+      "owner": "platform-security",
+      "tracking": "SEC-OPENAPI-REDOCLY-001",
+      "rationale": "This transitive CLI-only matcher is retained pending an upstream-compatible update. It is not installed by the production omit-dev dependency graph.",
+      "expires_on": "2026-08-24",
+      "trivy_statement": "Dev-only OpenAPI generator CLI matcher path; tracked by SEC-OPENAPI-REDOCLY-001."
+    }
+  ]
+}

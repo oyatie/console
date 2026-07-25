@@ -1413,6 +1413,41 @@ export function evaluateWorkflowHardeningChecks(readText) {
     "security workflow portable gate: active npm audit",
     "security workflow must actively run npm audit --audit-level=high",
   );
+  requirement(
+    result,
+    workflowHasRun(securityWorkflow, [
+      /npm audit --omit=dev --audit-level=high --json/,
+      /check-node-audit-exceptions\.mjs --mode production/,
+    ]),
+    "security workflow portable gate: unfiltered production npm audit",
+    "security workflow must run omit-dev npm audit through the no-exception production gate",
+  );
+  requirement(
+    result,
+    workflowHasRun(securityWorkflow, [
+      /npm audit --audit-level=high --json/,
+      /check-node-audit-exceptions\.mjs --mode dev-codegen/,
+    ]),
+    "security workflow portable gate: fail-closed dev/codegen npm exceptions",
+    "security workflow must run the full npm audit through the exact dev/codegen exception gate",
+  );
+  requirement(
+    result,
+    workflowHasRun(securityWorkflow, [
+      /trivy\s+fs/,
+      /--ignorefile\s+security\/trivy-dev-codegen-exceptions\.yaml/,
+    ]),
+    "security workflow portable gate: scoped Trivy exceptions",
+    "security workflow must scope full-scan Trivy exceptions to the checked-in YAML policy",
+  );
+  requirement(
+    result,
+    workflowHasRun(securityWorkflow, [
+      /node scripts\/generate-trivy-dev-codegen-exceptions\.mjs --check/,
+    ]),
+    "security workflow portable gate: canonical Trivy exception projection",
+    "security workflow must verify canonical Trivy exception parity before the full-scan YAML policy is used",
+  );
 
   return result;
 }

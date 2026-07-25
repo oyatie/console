@@ -31,6 +31,7 @@
     "check:dispatch-map": "node scripts/check-dispatch-map.mjs",
     "check:adrs": "node scripts/check-adrs.mjs",
     "check:foundation-gates": "node scripts/check-foundation-gates.mjs",
+    "test:console-authority-bootstrap": "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs",
     "check:package-lock": "npm install --package-lock-only --ignore-scripts --no-audit --no-fund && git diff --exit-code -- package-lock.json",
     "check:root-workspaces": "node scripts/check-root-workspaces.mjs",
     "test:root-workspaces": "node --test scripts/check-root-workspaces.test.mjs",
@@ -81,13 +82,17 @@
     "check:korean-institutional-connectivity": "node scripts/check-korean-institutional-connectivity.mjs",
     "kic:scrape-public-docs": "node scripts/korean-connectivity/public-doc-scraper.mjs",
     "kic:generate-nhis-loss-report-fixture": "node scripts/korean-connectivity/nhis-edi-loss-report.mjs",
-    "kic:local-cert-login-fixture": "node scripts/korean-connectivity/local-certificate-agent.mjs"
+    "kic:local-cert-login-fixture": "node scripts/korean-connectivity/local-certificate-agent.mjs",
+    "check:node-audit-exceptions": "node scripts/check-node-audit-exceptions.mjs",
+    "test:node-audit-exceptions": "node --test scripts/check-node-audit-exceptions.test.mjs",
+    "check:trivy-dev-codegen-exceptions": "node scripts/generate-trivy-dev-codegen-exceptions.mjs --check",
+    "test:trivy-dev-codegen-exceptions": "node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs"
   },
   "dependencies": {
     "pg": "8.21.0"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "2.38.0",
+    "@openapitools/openapi-generator-cli": "2.40.1",
     "@types/node": "25.9.3",
     "@types/pg": "8.20.0",
     "openapi-typescript": "7.13.0",
@@ -96,6 +101,7 @@
   },
   "overrides": {
     "js-yaml@4.x": "4.3.0",
-    "shell-quote": "1.10.0"
+    "shell-quote": "1.10.0",
+    "postcss": "8.5.23"
   }
 }

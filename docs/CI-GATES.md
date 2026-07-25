@@ -15,6 +15,35 @@ story evidence, and CI jobs for the touched surfaces are green.
 
 ## Review evidence gate
 
+## Console authority bootstrap
+
+`Console authority bootstrap` is a protected-`main` `pull_request_target`
+gate for console authority trains targeting `main`. It intentionally checks out only
+protected `main` code with the complete Git graph, fetches PR Git objects without
+checking them out, verifies signed candidate
+`C` and direct authority tip `T` against the pinned SSH signer, and treats the
+GitHub synthetic merge `M` only as an unsigned structural object. Git commands and
+candidate subprocesses run with a sanitized Git environment that ignores inherited
+Git config and `HOME`/XDG configuration. Only after that
+does it create a detached `C` worktree to run the candidate validator, planner, and
+their unit tests.  It has no secrets, cache restore, npm install, or PR executable
+step before authentication.  This bootstrap must be merged to `main` before PR 488
+is rerun; a workflow supplied by the PR cannot establish its own trust root.
+
+On a closed, merged same-repository `main` PR, the separate squash-binding job first
+checks out exact `S`, verifies that `HEAD` is `S`, then hook-disabled detaches to
+protected `S^` before it invokes any repository script. It verifies that the
+one-parent squash commit `S` is bound to the signed `C`/`T` authority train: its only
+parent is the trusted pre-merge base and its tree is exactly `T`'s tree. It emits the non-release
+`console-squash-binding-v1` receipt with `TREE_BOUND_HOLD_PRESERVED` and release
+disposition `HOLD`; it never checks out or executes `T` or `M`. `S` is checked out
+only as an object/tree source, `HEAD` is verified as `S`, and the job then
+hook-disabled detaches to `S^` before any repository code executes, so no repository
+code from `S` runs. Before binding,
+the protected `S^` process fetches `refs/pull/<number>/head` into a private namespace
+and requires its SHA to equal the closed-event authority-tip SHA, so a deleted PR head
+branch cannot make the signed `T` object unavailable.
+
 For user-facing features, PR/review evidence must prove the shipped workflow, not
 just the transport seam. API endpoint tests, handler tests, or generated-client
 round trips are necessary contract evidence, but they are **not sufficient** for
@@ -869,3 +898,18 @@ dependencies are available:
   CI-contextual gates.
 - Gate provenance and the incidents that motivated several checks are recorded in
   [MISTAKES-LEDGER.md](MISTAKES-LEDGER.md).
+
+## Node dependency advisories
+
+`security.yml` first runs `npm audit --omit=dev --audit-level=high` through the
+repository-owned gate with **zero exceptions**. It then evaluates the full
+workspace audit against `security/node-audit-exceptions.json`. That registry is
+fail-closed: every entry must match the exact GHSA, package, installed version,
+and lockfile path; it must name an owner/tracker/rationale, be `dev-codegen`
+scoped, and expire within 30 days. A stale entry, an unmatched advisory, or any
+new HIGH/CRITICAL result fails CI. The full Trivy filesystem scan uses only the
+matching, explicit `security/trivy-dev-codegen-exceptions.yaml`. That YAML is a
+byte-for-byte deterministic projection of the canonical JSON registry and CI
+verifies the projection immediately before passing it to Trivy, so rogue,
+widened, missing, stale, or expiry-mismatched YAML entries fail before scanning.
+Production npm audit is intentionally unfiltered.

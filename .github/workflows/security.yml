@@ -28,9 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: ./.github/actions/setup-trivy
-      - name: Trivy filesystem scan (vuln + secret)
+      - name: Verify canonical Trivy exception projection
+        run: node scripts/generate-trivy-dev-codegen-exceptions.mjs --check
+      - name: Trivy filesystem scan (vuln + secret, dev/codegen exceptions only)
         run: |
           trivy fs --scanners vuln,secret --ignore-unfixed \
+            --ignorefile security/trivy-dev-codegen-exceptions.yaml \
             --severity HIGH,CRITICAL --exit-code 1 .
 
   iac:
@@ -96,5 +99,13 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci
-      # High/critical advisories fail the job; moderate are reported only.
-      - run: npm audit --audit-level=high
+      - name: Production dependency audit (no exceptions)
+        run: |
+          report="$(mktemp)"
+          if npm audit --omit=dev --audit-level=high --json > "$report"; then true; else true; fi
+          node scripts/check-node-audit-exceptions.mjs --mode production --audit-report "$report"
+      - name: Full dependency audit (strict dev/codegen exceptions only)
+        run: |
+          report="$(mktemp)"
+          if npm audit --audit-level=high --json > "$report"; then true; else true; fi
+          node scripts/check-node-audit-exceptions.mjs --mode dev-codegen --audit-report "$report"
