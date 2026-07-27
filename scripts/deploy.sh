@@ -69,8 +69,8 @@ fi
 SHA="${1:-$(git rev-parse HEAD)}"
 SHORT_SHA="${SHA:0:7}"
 WORKFLOW="image-release.yml"
-APP_NAME="maintenance"             # ArgoCD Application name
-NAMESPACE="maintenance"            # cluster namespace for the rollouts
+APP_NAME="console"             # ArgoCD Application name
+NAMESPACE="console"            # cluster namespace for the rollouts
 ROLLOUTS=(console-app console-web)
 WORKER_DEPLOYMENT="console-worker"
 ENDPOINTS=(https://console.knllogistic.com https://knllogistic.com)

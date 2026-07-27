@@ -122,7 +122,7 @@ The live OCI cluster retains the two-role and PreSync behavior above. PR 473's
 six-role topology, ordered Sync waves, command credentials, connection budget,
 rotation procedure, recovery bundle, and rollback evidence are held in the
 unreferenced
-[`governed-command-database` component runbook](apps/maintenance/components/governed-command-database/README.md).
+[`governed-command-database` component runbook](apps/console/components/governed-command-database/README.md).
 Do not apply that component to this cluster, selectively sync its migration or
 serving resources, or treat a successful render as a live readiness claim.
 

@@ -55,7 +55,7 @@ tickets, evidence bundles, or shell history.
 
 The default `deploy/apps/secrets-management/wiring/kustomization.yaml` excludes
 this directory. A promotion must compose the secrets component and database
-component together, then sync the complete maintenance Application through waves
+component together, then sync the complete console Application through waves
 0–3. Do not activate only the ExternalSecrets, only the database roles, or only
 the API environment variables. Do not selectively sync migration or serving
 resources.

@@ -308,7 +308,11 @@ console_rt|console_topology_test|work_mem=8MB
 console_rt|topology_other|application_name=preserve_database_runtime_guc'
 actual_runtime_settings="$(docker exec "${fresh_container}" psql -U "${CONSOLE_POSTGRES_ADMIN_USER}" -d "${CONSOLE_POSTGRES_DB}" -At -F '|' -c \
   "SELECT role.rolname, CASE settings.setdatabase WHEN 0 THEN 'global' ELSE database.datname END, setting FROM pg_db_role_setting settings JOIN pg_roles role ON role.oid=settings.setrole LEFT JOIN pg_database database ON database.oid=settings.setdatabase CROSS JOIN LATERAL unnest(settings.setconfig) setting WHERE role.rolname IN ('console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd') ORDER BY 1,2,3")"
-test "${actual_runtime_settings}" = "${expected_runtime_settings}"
+# ponytail: compare as sets. The query's ORDER BY sorts on the database name,
+# which collates against the literal 'global', so renaming the test database
+# reshuffles these rows and breaks a hardcoded order. Membership is the
+# property under test; row order is not.
+test "$(LC_ALL=C sort <<<"${actual_runtime_settings}")" = "$(LC_ALL=C sort <<<"${expected_runtime_settings}")"
 for direct_login in \
   "console_rt|${CONSOLE_RT_POSTGRES_PASSWORD}" \
   "console_leave_cmd|${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD}" \

@@ -114,9 +114,9 @@ function fixture() {
   };
   const files = {
     [paths[0]]:
-      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: maintenance\nspec:\n  source:\n    targetRevision: main\n",
+      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: console\nspec:\n  source:\n    targetRevision: main\n",
     [paths[1]]:
-      'apiVersion: argoproj.io/v1alpha1\nkind: AppProject\nmetadata:\n  name: maintenance\nspec:\n  destinations:\n    - server: https://kubernetes.default.svc\n      namespace: "*"\n  clusterResourceWhitelist:\n    - group: "*"\n      kind: "*"\n  namespaceResourceWhitelist:\n    - group: "*"\n      kind: "*"\n',
+      'apiVersion: argoproj.io/v1alpha1\nkind: AppProject\nmetadata:\n  name: console\nspec:\n  destinations:\n    - server: https://kubernetes.default.svc\n      namespace: "*"\n  clusterResourceWhitelist:\n    - group: "*"\n      kind: "*"\n  namespaceResourceWhitelist:\n    - group: "*"\n      kind: "*"\n',
     [paths[2]]:
       "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: root\nspec:\n  source:\n    targetRevision: main\n",
     [paths[3]]: cardinalityText,
@@ -617,7 +617,7 @@ describe("production authority blocked observation CLI", () => {
       [
         paths[1],
         '      namespace: "*"',
-        "      namespace: maintenance",
+        "      namespace: console",
         "OBSERVATION_NOT_ESTABLISHED",
       ],
       [
@@ -674,8 +674,8 @@ describe("production authority blocked observation CLI", () => {
     {
       const { root, files } = fixture();
       const text = files[paths[0]].replace(
-        "  name: maintenance",
-        "  <<: *defaults\n  name: maintenance",
+        "  name: console",
+        "  <<: *defaults\n  name: console",
       );
       assertFailure(
         run(root, commitFile(root, paths[0], text)),
@@ -881,7 +881,7 @@ describe("production authority blocked observation CLI", () => {
   it("rejects direct route merge keys but permits nested opaque special syntax", () => {
     const direct = [
       [paths[0], "apiVersion:", "<<: *defaults\napiVersion:"],
-      [paths[0], "  name: maintenance", "  <<: *defaults\n  name: maintenance"],
+      [paths[0], "  name: console", "  <<: *defaults\n  name: console"],
       [paths[0], "  source:", "  <<: *defaults\n  source:"],
       [
         paths[0],
@@ -1001,8 +1001,8 @@ describe("production authority blocked observation CLI", () => {
     const cases = [
       [paths[0], "apiVersion: argoproj.io/v1alpha1", "apiVersion: &v argoproj.io/v1alpha1"],
       [paths[0], "kind: Application", "kind: !Application Application"],
-      [paths[0], "  name: maintenance", "  name: [maintenance]"],
-      [paths[0], "  name: maintenance", "  name: maintenance\n  name: maintenance"],
+      [paths[0], "  name: console", "  name: [console]"],
+      [paths[0], "  name: console", "  name: console\n  name: console"],
       [paths[0], "metadata:", " metadata:"],
       [paths[2], "targetRevision: main", "targetRevision: *main"],
       [paths[2], "targetRevision: main", "targetRevision: >\n      main"],
@@ -1011,9 +1011,9 @@ describe("production authority blocked observation CLI", () => {
       assertEvaluateFailure(files, { [path]: files[path].replace(from, to) }, "INPUT_YAML_AMBIGUOUS");
     }
   });
-  it("classifies every root and maintenance targetRevision route mutation", () => {
+  it("classifies every root and console targetRevision route mutation", () => {
     const { files } = fixture();
-    for (const [path, name] of [[paths[0], "maintenance"], [paths[2], "root"]]) {
+    for (const [path, name] of [[paths[0], "console"], [paths[2], "root"]]) {
       const source = files[path];
       const cases = [
         [`${name} missing`, source.replace("    targetRevision: main\n", ""), "OBSERVATION_NOT_ESTABLISHED"],

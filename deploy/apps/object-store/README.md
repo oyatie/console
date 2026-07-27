@@ -305,14 +305,14 @@ evidence, backup, WORM, or validation data exists only on that volume.
 
 Use a maintenance window. Stop or drain writes if there is any chance new
 evidence or Barman objects were written to self-hosted S3 and must be copied back
-to OCI. Then roll the maintenance Application back to the previous context:
+to OCI. Then roll the console Application back to the previous context:
 
 1. Restore the maintenance Argo Application source path to
    `deploy/apps/console/overlays/prod` (or `overlays/oci-guest` if that is the
    explicit live path at rollback time), or sync the last known-good commit.
 2. Restore the OCI-backed `console-secrets` S3 keys and `oci-objectstore-creds` from
    OCI Vault. Do not reuse self-hosted S3 credentials against OCI.
-3. Sync the maintenance Application and restart workloads if the cluster does not
+3. Sync the console Application and restart workloads if the cluster does not
    automatically roll pods after the ConfigMap/Secret change:
 
    ```sh

@@ -130,7 +130,7 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
     "deploy/apps/secrets-management/wiring/kustomization.yaml",
   );
 
-  assert.match(argo, /path: deploy\/apps\/maintenance\/overlays\/prod/);
+  assert.match(argo, /path: deploy\/apps\/console\/overlays\/prod/);
   assert.match(argo, /targetRevision: main/);
   assert.match(prod, /resources:\s*\n\s+- \.\.\/\.\.\/base/);
   assert.doesNotMatch(prod, /components:|pr-473|governed-command-database/);
@@ -382,7 +382,7 @@ test("governed command-database component declares seven roles, topology readbac
   assert.doesNotMatch(topology, /console-db-superuser/);
   assert.match(component, /enableSuperuserAccess[\s\S]*?value: false/);
   assert.equal(
-    component.match(/maintenance\.oyatie\.com\/database-role-defaults: "0167"/g)
+    component.match(/console\.oyatie\.com\/database-role-defaults: "0167"/g)
       ?.length,
     2,
   );
@@ -451,11 +451,11 @@ test("DARK operating contract locks whole-Application activation, credentials, r
 
   assert.match(
     databaseDocs,
-    /Never selectively sync[\s\S]*?Sync the\s+whole maintenance Application/,
+    /Never selectively sync[\s\S]*?Sync the\s+whole console Application/,
   );
   assert.match(
     secretDocs,
-    /sync the complete maintenance Application[\s\S]*?Do not selectively sync/,
+    /sync the complete console Application[\s\S]*?Do not selectively sync/,
   );
   assert.match(docs, /32-byte hexadecimal/);
   assert.match(docs, /percent-encode/);

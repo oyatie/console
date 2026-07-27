@@ -125,7 +125,7 @@ data:
       ],
       "refresh": "30s",
       "schemaVersion": 39,
-      "tags": ["maintenance", "dark", "observability"],
+      "tags": ["console", "dark", "observability"],
       "templating": { "list": [] },
       "time": { "from": "now-1h", "to": "now" },
       "timezone": "browser",

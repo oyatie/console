@@ -88,7 +88,7 @@ Workloads (`deploy/apps/console`): `console-app` (API, blue/green Rollout ×2),
 
 Schema migrations run **automatically** on every Argo CD sync — no manual
 `sqlx migrate run` step. The `console-migrate` Job
-(`apps/maintenance/base/migrate-job.yaml`) runs the **same signed `console-app`
+(`apps/console/base/migrate-job.yaml`) runs the **same signed `console-app`
 image** in its `migrate` run-mode (`CONSOLE_APP_ROLE=migrate`): it connects as the
 table **OWNER** (`console_app`, via the `console-db-app` secret `uri`), applies the
 embedded migrations, then exits.
@@ -125,7 +125,7 @@ Application. The current live contract above remains the two-role
 gotchas recorded in [`OPS-RUNBOOK.md`](OPS-RUNBOOK.md).
 
 Start with the component's
-[`activation and evidence contract`](apps/maintenance/components/governed-command-database/README.md).
+[`activation and evidence contract`](apps/console/components/governed-command-database/README.md).
 Use the self-host/on-prem overlay as the north-star adapter and the OCI-guest
 overlay as a first-class cloud adapter. A render is only static evidence; it is
 not activation, deployment, migration, readiness, rollback, or claim authority.
@@ -146,7 +146,7 @@ not activation, deployment, migration, readiness, rollback, or claim authority.
 - [ ] `console-secrets` + `oci-objectstore-creds` exist in the `maintenance` namespace.
 - [ ] NetworkPolicy isolation is proven against the target cluster before it is
       claimed. The NetworkPolicy manifests in
-      `apps/maintenance/base/networkpolicy.yaml` render through CI, but a clean
+      `apps/console/base/networkpolicy.yaml` render through CI, but a clean
       manifest render alone is not enforcement evidence. Run these with
       `kubectl` pointed at the target:
 

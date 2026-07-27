@@ -100,7 +100,7 @@ The component converts the live PreSync migration into an ordered Sync sequence:
 | 3 | `console-app` Rollout and `console-worker` Deployment | serving workloads start only after both database gates pass |
 
 Never selectively sync the topology Job, migration Job, API, or worker. Sync the
-whole maintenance Application so all prerequisite waves run. A topology or
+whole console Application so all prerequisite waves run. A topology or
 migration failure must stop the serving rollout.
 
 ### Legacy Apalis ownership is an activation blocker
@@ -155,7 +155,7 @@ steps in a non-production environment before any production proposal:
 4. Reconcile all five login credentials, then prove their Kubernetes Secret type,
    key set, labels, non-empty values, and pairwise distinction without logging
    secret material.
-5. Sync the complete maintenance Application. Record every wave and retain the
+5. Sync the complete console Application. Record every wave and retain the
    topology and migration Job logs and terminal status.
 6. Prove API and worker readiness, authenticated role identity, command success,
    audit persistence, denied direct DML for both command roles, and denied DDL or

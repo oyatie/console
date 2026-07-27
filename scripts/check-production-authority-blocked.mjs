@@ -540,7 +540,7 @@ function projectObserved(text) {
   return (
     root.apiVersion === "argoproj.io/v1alpha1" &&
     root.kind === "AppProject" &&
-    root.metadata?.name === "maintenance" &&
+    root.metadata?.name === "console" &&
     exactItem(spec?.destinations, ["server", "namespace"], {
       server: "https://kubernetes.default.svc",
       namespace: "*",
@@ -635,7 +635,7 @@ export function evaluate(argv, runGit = git) {
     textOf(bytes[2], "INPUT_YAML_AMBIGUOUS"),
   ];
   const yaml = [
-    appObserved(yamlTexts[0], "maintenance"),
+    appObserved(yamlTexts[0], "console"),
     projectObserved(yamlTexts[1]),
     appObserved(yamlTexts[2], "root"),
   ];

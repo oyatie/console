@@ -98,7 +98,7 @@ class PromotionAuthorityTest(unittest.TestCase):
             "observed_running_revision": self.candidate_sha,
             "observed_database_topology": {
                 "cluster_name": "console-db",
-                "namespace": "maintenance",
+                "namespace": "console",
                 "writer_endpoint": "console-db-rw.console.svc.cluster.local",
                 "reader_endpoint": "console-db-ro.console.svc.cluster.local",
                 "instances": [
