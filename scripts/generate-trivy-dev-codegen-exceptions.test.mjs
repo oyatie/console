@@ -11,7 +11,21 @@ const canonical = JSON.parse(readFileSync(join(root, "security/node-audit-except
 const expiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), "trivy-exception-parity-"));
-  const registry = { ...canonical, entries: canonical.entries.map((entry) => ({ ...entry, expires_on: expiry })) };
+  const registry = {
+    ...canonical,
+    entries: [{
+      advisory: "GHSA-mh99-v99m-4gvg",
+      package: "brace-expansion",
+      version: "5.0.8",
+      path: "node_modules/brace-expansion",
+      scope: "dev-codegen",
+      owner: "platform-security",
+      tracking: "SEC-TEST-001",
+      rationale: "Synthetic exact-match regression fixture.",
+      expires_on: expiry,
+      trivy_statement: "Synthetic exact-match regression fixture.",
+    }],
+  };
   const registryPath = join(dir, "registry.json");
   const outputPath = join(dir, "exceptions.yaml");
   writeFileSync(registryPath, JSON.stringify(registry));
@@ -25,6 +39,12 @@ test("Trivy YAML is the exact canonical JSON projection", () => {
   const { registryPath, outputPath } = fixture();
   assert.match(check(registryPath, outputPath)(), /PARITY_PASS/);
 });
+test("committed Trivy YAML represents an empty remediated registry", () => {
+  assert.match(
+    execFileSync(process.execPath, [script, "--check"], { cwd: root, encoding: "utf8", stdio: "pipe" }),
+    /PARITY_PASS/,
+  );
+});
 test("Trivy parity rejects a rogue YAML entry", () => {
   const { registryPath, outputPath } = fixture();
   writeFileSync(outputPath, `${readFileSync(outputPath, "utf8")}  - id: GHSA-aaaa-bbbb-cccc\n`);
@@ -33,10 +53,10 @@ test("Trivy parity rejects a rogue YAML entry", () => {
 test("Trivy parity rejects widened or missing package constraints", () => {
   const { registryPath, outputPath } = fixture();
   const yaml = readFileSync(outputPath, "utf8");
-  writeFileSync(outputPath, yaml.replace("pkg:npm/brace-expansion@2.1.2", "pkg:npm/brace-expansion@*"));
+  writeFileSync(outputPath, yaml.replace("pkg:npm/brace-expansion@5.0.8", "pkg:npm/brace-expansion@*"));
   assert.throws(check(registryPath, outputPath), /differs from the canonical JSON projection/);
   const second = fixture();
-  writeFileSync(second.outputPath, readFileSync(second.outputPath, "utf8").replace("    paths:\n      - node_modules/@redocly/openapi-core/node_modules/brace-expansion\n", ""));
+  writeFileSync(second.outputPath, readFileSync(second.outputPath, "utf8").replace("    paths:\n      - node_modules/brace-expansion\n", ""));
   assert.throws(check(second.registryPath, second.outputPath), /differs from the canonical JSON projection/);
 });
 test("Trivy parity rejects expired canonical entries and expiry mismatch", () => {

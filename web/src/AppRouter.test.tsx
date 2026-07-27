@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -125,30 +125,46 @@ describe("AppRouter development-only routes", () => {
 });
 
 describe("AppRouter console rollout boundary", () => {
-  it("keeps the mounted console unreachable without consulting rollout authority when no screen has ADR-0025 evidence", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps the mounted sales inventory DARK without independent exposure evidence", async () => {
     isConsoleHost.mockReturnValue(false);
     const api = {
-      GET: vi.fn().mockResolvedValue({
-        data: {
-          flag_key: "console_carbon_copy",
-          org_enabled: true,
-          org_rollout_enabled: true,
-          user_opted_in: true,
-          legacy_kill_switch_enabled: false,
-          kill_switch_active: false,
-          effective_new_console: true,
-          effective_route: "new_console",
-          effective_route_for_opted_in_user: "new_console",
-          effective_route_for_opted_out_user: "legacy",
-          overrides_individual_toggles: false,
-        },
-      }),
+      GET: vi.fn().mockResolvedValue({ data: undefined }),
+      PATCH: vi.fn(),
+      POST: vi.fn(),
     } as unknown as ConsoleApiClient;
 
-    renderAt("/console/overview", { auth: authenticatedContext(api) });
+    renderAt("/console/sales", { auth: authenticatedContext(api) });
 
-    expect(screen.getByTestId("location")).toHaveTextContent("/overview");
+    await waitFor(() => {
+      expect(screen.getByTestId("location")).toHaveTextContent("/overview");
+    });
     expect(document.querySelector("[data-console-root]")).toBeNull();
-    expect(api.GET).not.toHaveBeenCalled();
+    expect(api.GET).not.toHaveBeenCalledWith(
+      "/api/v1/console/rollout",
+      expect.anything(),
+    );
+  });
+
+  it("renders mounted inventory only with the explicit development preview opt-in", async () => {
+    isConsoleHost.mockReturnValue(false);
+    vi.stubEnv("DEV", true);
+    vi.stubEnv("VITE_CONSOLE_DEV_PREVIEW", "1");
+    const api = {
+      GET: vi.fn().mockResolvedValue({ data: undefined }),
+      POST: vi.fn().mockResolvedValue({ data: undefined }),
+      DELETE: vi.fn().mockResolvedValue({ data: undefined }),
+    } as unknown as ConsoleApiClient;
+
+    renderAt("/console/mywork", { auth: authenticatedContext(api) });
+
+    await waitFor(() => {
+      expect(document.querySelector("[data-console-root]")).not.toBeNull();
+    });
+    expect(await screen.findByTestId("location")).toHaveTextContent("/console/mywork");
   });
 });

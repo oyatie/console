@@ -3,11 +3,12 @@
 // Automate, and config rules.
 //
 // Mount, in short:
-//   const [doc, setDoc] = useState(stubCanvasDoc());   // or parseDoc(persisted)
+//   const [doc, setDoc] = useState(emptyDoc());        // or parseDoc(persisted)
 //   <BlockCanvas doc={doc} strings={ko.console...canvas} onChange={setDoc} />
 //   <PredicateEditor group={g} registry={FIELD_REGISTRY} strings={s} onChange={setG} />
 //   <SimulationPanel group={g} registry={FIELD_REGISTRY} strings={s} samples={SAMPLES} />
-// where FIELD_REGISTRY is the consumer's typed field registry (§2 property defs).
+// where FIELD_REGISTRY and SAMPLES come from the consumer's governed data
+// contract. Test fixtures are deliberately not exported from this barrel.
 
 export { BlockCanvas, type BlockCanvasProps } from "./BlockCanvas";
 export { CanvasNodeCard, type CanvasNodeCardProps } from "./CanvasNodeCard";
@@ -37,8 +38,6 @@ export {
   runSimulation,
   type SimulationResult,
 } from "./predicate";
-
-export { STUB_FIELD_REGISTRY, STUB_SAMPLES, stubCanvasDoc } from "./stub";
 
 export {
   CANVAS_NODE_KINDS,

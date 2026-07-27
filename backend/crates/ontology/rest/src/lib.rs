@@ -48,16 +48,26 @@ use mnt_ontology_application::{
     ActionDispatch, apply_edits, egress_evidence, evaluate_submission_criteria, evaluation_context,
     parse_control_points, validate_params,
 };
-use mnt_ontology_domain::{InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId};
+use mnt_ontology_domain::{
+    FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId,
+};
 use mnt_platform_auth::JwtVerifier;
+use mnt_platform_authz::cedar_pbac::authoring::DeclaredAttr;
+use mnt_platform_authz::cedar_pbac::authoring::{ConditionOp, ConditionValue, NoCodeBlocks};
 use mnt_platform_authz::cedar_pbac::evaluate_legacy_contract;
+use mnt_platform_authz::cedar_pbac::residual::{
+    ObjectPolicy, Predicate, PredicateValue, ResidualOp, SqlValue, SubjectAttrs,
+};
 use mnt_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, Feature, Principal, authorize_org_wide,
 };
+use mnt_platform_authz_rest::PgCedarPolicyStore;
 use mnt_platform_db::{DbError, with_audits};
 use mnt_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
+use sqlx::Row;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -74,6 +84,7 @@ pub struct OntologyRestState {
     registry: PgOntologyStore,
     instances: PgInstanceStore,
     governance: PgGovernanceStore,
+    policies: PgCedarPolicyStore,
     jwt_verifier: Option<JwtVerifier>,
     /// Routes a `projected_usecase` action to the OWNING domain crate's use-case.
     /// Empty by default ⇒ every projected dispatch fails closed (`NotWiredYet`),
@@ -90,9 +101,11 @@ impl OntologyRestState {
         governance: PgGovernanceStore,
         jwt_verifier: Option<JwtVerifier>,
     ) -> Self {
+        let policies = PgCedarPolicyStore::new(registry.pool().clone());
         Self {
             registry,
             instances,
+            policies,
             governance,
             jwt_verifier,
             projected_dispatch: ProjectedDispatchRegistry::new(),
@@ -393,13 +406,114 @@ async fn list_instances(
     headers: HeaderMap,
     Query(query): Query<InstanceListQuery>,
 ) -> Result<Json<Vec<InstanceState>>, RestError> {
-    authorize_ontology(&state, &headers).await?;
+    let principal = authorize_ontology(&state, &headers).await?;
+    let object_type = state
+        .registry
+        .list_object_types()
+        .await
+        .map_err(RestError::from_ontology)?
+        .into_iter()
+        .find(|candidate| candidate.id == ObjectTypeId::from_uuid(query.r#type))
+        .ok_or_else(|| {
+            RestError::from_kernel(KernelError::not_found("object type was not found"))
+        })?;
+    // The object type's own declared properties are admissible in policies
+    // scoped to it. The residual lowering already reads arbitrary instance
+    // attributes; supplying the declared set lets the authoring validator agree,
+    // with each property spliced into the Cedar schema so reads stay proven.
+    // Only Text and Boolean are representable as optional Cedar attributes; a
+    // policy over any other kind fails closed in the validator.
+    let declared: Vec<DeclaredAttr> = state
+        .registry
+        .get_object_type(&object_type.stable_key, None)
+        .await
+        .map_err(RestError::from_ontology)?
+        .properties
+        .iter()
+        .filter_map(|property| match property.field_kind {
+            FieldKind::Boolean => Some(DeclaredAttr {
+                key: property.key.clone(),
+                boolean: true,
+            }),
+            FieldKind::Text => Some(DeclaredAttr {
+                key: property.key.clone(),
+                boolean: false,
+            }),
+            _ => None,
+        })
+        .collect();
+    let blocks = state
+        .policies
+        .load_enforced_object_policy_blocks(query.r#type, &declared)
+        .await
+        .map_err(|error| {
+            tracing::error!(%error, "ontology object-policy load failed");
+            RestError::internal("unable to evaluate object visibility policy")
+        })?;
+    let policies = applicable_object_policies(&blocks, &object_type.stable_key);
+    let subject = ontology_subject(&principal);
     let list = state
         .instances
-        .list_instances(ObjectTypeId::from_uuid(query.r#type))
+        .list_instances_filtered(ObjectTypeId::from_uuid(query.r#type), &subject, &policies)
         .await
         .map_err(RestError::from_ontology)?;
     Ok(Json(list))
+}
+
+/// Convert only the already-validated no-code row-policy subset into the SQL
+/// residual grammar. A condition unsupported by residual lowering is retained
+/// as an intentionally untranslatable predicate, making the adapter return
+/// `WHERE FALSE`; it can never silently widen a list.
+fn applicable_object_policies(blocks: &[NoCodeBlocks], stable_key: &str) -> Vec<ObjectPolicy> {
+    blocks
+        .iter()
+        .filter(|block| block.action == "view" && block.resource_type == stable_key)
+        .map(|block| ObjectPolicy {
+            effect: block.effect,
+            predicates: block.conditions.iter().map(residual_predicate).collect(),
+        })
+        .collect()
+}
+
+fn residual_predicate(
+    condition: &mnt_platform_authz::cedar_pbac::authoring::Condition,
+) -> Predicate {
+    let op = match condition.op {
+        ConditionOp::Eq => ResidualOp::Eq,
+        ConditionOp::Ne => ResidualOp::Ne,
+        // `contains` has no row-field equivalent. Use a deliberately missing
+        // subject attribute so lowering fails closed for the whole request.
+        ConditionOp::Contains => ResidualOp::In,
+    };
+    let value = match (&condition.op, &condition.value) {
+        (ConditionOp::Contains, _) => {
+            PredicateValue::SubjectAttr("__unsupported_contains__".to_owned())
+        }
+        (_, ConditionValue::Literal(value)) => {
+            PredicateValue::Literal(SqlValue::Text(value.clone()))
+        }
+        (_, ConditionValue::Bool(value)) => PredicateValue::Literal(SqlValue::Bool(*value)),
+        (_, ConditionValue::SubjectAttr(value)) => PredicateValue::SubjectAttr(value.clone()),
+    };
+    Predicate {
+        field: condition.attr.clone(),
+        op,
+        value,
+    }
+}
+
+fn ontology_subject(principal: &Principal) -> SubjectAttrs {
+    SubjectAttrs::default()
+        .with_scalar("user_id", principal.user_id.to_string())
+        .with_scalar("org", principal.org_id.to_string())
+        .with_set(
+            "roles",
+            principal
+                .roles
+                .iter()
+                .map(|role| role.as_str().to_owned())
+                .collect(),
+        )
 }
 
 #[derive(Debug, Deserialize)]
@@ -493,6 +607,10 @@ pub struct ActionCommand {
     /// Four-eyes request ref; its decision is read from the DB, never trusted
     /// from the caller.
     pub four_eyes_request_ref: Option<Uuid>,
+    /// Stable client id reused for a network retry of this command.
+    pub command_id: Option<Uuid>,
+    /// Required current revision for an instance edit (create has no prior head).
+    pub expected_revision: Option<i64>,
 }
 
 /// The HTTP body for both preflight and execute (JSON with bare UUIDs); converted
@@ -514,6 +632,10 @@ struct ActionRequest {
     checklist_all_acknowledged: Option<bool>,
     #[serde(default)]
     four_eyes_request_ref: Option<Uuid>,
+    #[serde(default)]
+    command_id: Option<Uuid>,
+    #[serde(default)]
+    expected_revision: Option<i64>,
 }
 
 impl ActionRequest {
@@ -527,6 +649,8 @@ impl ActionRequest {
             valid_from: self.valid_from,
             checklist_all_acknowledged: self.checklist_all_acknowledged,
             four_eyes_request_ref: self.four_eyes_request_ref,
+            command_id: self.command_id,
+            expected_revision: self.expected_revision,
         }
     }
 }
@@ -562,6 +686,19 @@ pub struct ExecuteOutcome {
     /// dispatch (the engine wrote nothing; the owning domain crate did).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub projected: Option<Value>,
+    /// Immutable evidence for an instance-revision command. Projected actions
+    /// retain their established domain-owned contract and have no engine receipt.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receipt: Option<CommandReceipt>,
+}
+
+/// Immutable, replayable evidence of one accepted instance action command.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandReceipt {
+    pub command_id: Uuid,
+    pub payload_digest: String,
+    pub instance: InstanceState,
+    pub gates: GateChainOutcome,
 }
 
 /// Typed action failure, distinct from a raw DB error so callers (and tests) can
@@ -642,21 +779,18 @@ impl OntologyRestState {
     ) -> Result<ExecuteOutcome, ActionError> {
         let prepared = self.prepare(action_key, &command).await?;
 
-        // Fail-closed pre-tx: an unmet gate / failed criterion writes nothing.
-        let gates = self.evaluate_gates(principal, &prepared, &command).await?;
-        if !gates.allow {
-            let reason = gates.first_blocking().map_or_else(
-                || "an action gate is not satisfied".to_owned(),
-                |g| format!("gate {:?} blocked: {:?}", g.gate, g.status),
-            );
-            return Err(ActionError::GateDenied(reason));
-        }
         if let Err(err) = &prepared.criteria {
             return Err(ActionError::CriteriaFailed(err.message.clone()));
         }
 
         match prepared.action.dispatch {
             ActionDispatch::ProjectedUsecase => {
+                let gates = self.evaluate_gates(principal, &prepared, &command).await?;
+                if !gates.allow {
+                    return Err(ActionError::GateDenied(
+                        "an action gate is not satisfied".to_owned(),
+                    ));
+                }
                 // No engine writeback: route to the owning domain crate's use-case,
                 // which owns its own RLS + audit + tx (§9.3 — no second source of
                 // truth). An unwired/unknown target fails closed (`NotWiredYet`).
@@ -731,6 +865,7 @@ impl OntologyRestState {
                     gates,
                     instance: None,
                     projected: Some(projected),
+                    receipt: None,
                 })
             }
             ActionDispatch::InstanceRevision => {
@@ -741,17 +876,27 @@ impl OntologyRestState {
                     &prepared.base_attrs,
                 )
                 .map_err(|e| ActionError::Validation(e.message))?;
-                let instance = self
+                let receipt = self
                     .execute_instance_revision(
                         principal, action_key, &command, &prepared, new_attrs,
                     )
                     .await
-                    .map_err(ActionError::Store)?;
+                    .map_err(|error| match &error {
+                        PgOntologyError::Domain(kernel)
+                            if kernel.kind == ErrorKind::Forbidden
+                                && kernel.message
+                                    == "action gate re-check failed inside the writeback transaction" =>
+                        {
+                            ActionError::GateDenied("an action gate is not satisfied".to_owned())
+                        }
+                        _ => ActionError::Store(error),
+                    })?;
                 Ok(ExecuteOutcome {
                     dispatch: ActionDispatch::InstanceRevision,
-                    gates,
-                    instance: Some(instance),
+                    gates: receipt.gates.clone(),
+                    instance: Some(receipt.instance.clone()),
                     projected: None,
+                    receipt: Some(receipt),
                 })
             }
         }
@@ -844,7 +989,7 @@ impl OntologyRestState {
         command: &ActionCommand,
         prepared: &Prepared,
         new_attrs: Value,
-    ) -> Result<InstanceState, PgOntologyError> {
+    ) -> Result<CommandReceipt, PgOntologyError> {
         instance_revision_writeback(self, principal, action_key, command, prepared, new_attrs).await
     }
 }
@@ -923,7 +1068,7 @@ async fn instance_revision_writeback(
     command: &ActionCommand,
     prepared: &Prepared,
     new_attrs: Value,
-) -> Result<InstanceState, PgOntologyError> {
+) -> Result<CommandReceipt, PgOntologyError> {
     let body = command;
     let org = current_org().map_err(KernelError::from)?;
     let actor = principal.user_id;
@@ -938,12 +1083,55 @@ async fn instance_revision_writeback(
     let title = body.title.clone();
     let reason = body.reason.clone();
     let valid_from = body.valid_from;
+    let expected_revision = body.expected_revision;
     let (expected_kind, expected_target) = action_four_eyes_binding(prepared, command);
     let expected_kind = expected_kind.to_owned();
     let action_key = action_key.to_owned();
+    let command_id = body.command_id.ok_or_else(|| {
+        KernelError::validation("command_id is required for instance_revision actions")
+    })?;
+    if instance_id.is_some() && body.expected_revision.is_none() {
+        return Err(
+            KernelError::validation("expected_revision is required for an instance edit").into(),
+        );
+    }
+    let payload_digest = action_command_digest(&action_key, body, &new_attrs)?;
 
-    with_audits::<_, InstanceState, PgOntologyError>(state.registry.pool(), org, move |tx| {
+    with_audits::<_, CommandReceipt, PgOntologyError>(state.registry.pool(), org, move |tx| {
         Box::pin(async move {
+            // Serialize same-id attempts before inspecting the immutable receipt.
+            // This is tenant-scoped by the receipt key and keeps a retry from
+            // consuming approvals or appending another revision.
+            sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+                .bind(command_id.to_string())
+                .execute(tx.as_mut()).await?;
+            if let Some(row) = sqlx::query(
+                "SELECT actor_id, payload_digest, receipt FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+            )
+            .bind(*org.as_uuid()).bind(command_id).fetch_optional(tx.as_mut()).await? {
+                let receipt_actor: Uuid = row.try_get("actor_id")?;
+                if receipt_actor != *actor.as_uuid() {
+                    return Err(KernelError::forbidden("command_id belongs to another principal").into());
+                }
+                let stored: Vec<u8> = row.try_get("payload_digest")?;
+                if stored != payload_digest {
+                    return Err(KernelError::conflict("command_id was already used with a different payload").into());
+                }
+                return Ok((row.try_get::<serde_json::Value, _>("receipt")
+                    .map_err(|e| KernelError::validation(format!("invalid command receipt: {e}")))
+                    .and_then(|value| serde_json::from_value(value).map_err(|e| KernelError::validation(format!("invalid command receipt: {e}"))))?, vec![]));
+            }
+
+            // Lock and compare the edit head before consuming a four-eyes approval.
+            if let (Some(id), Some(expected)) = (instance_id, expected_revision) {
+                let current: i64 = sqlx::query_scalar(
+                    "SELECT r.version FROM ont_instances i JOIN ont_instance_revisions r ON r.id = i.current_revision_id WHERE i.id = $1 FOR UPDATE",
+                ).bind(*id.as_uuid()).fetch_optional(tx.as_mut()).await?
+                    .ok_or_else(|| KernelError::not_found("instance was not found"))?;
+                if current != expected {
+                    return Err(PgOntologyError::ActionPreconditionFailed { current });
+                }
+            }
             // TOCTOU re-check: bind-match AND consume the four-eyes approval inside
             // THIS tx, then re-run the whole chain. Anything not satisfied now ⇒ deny
             // ⇒ rollback (0 rows, and the consumption rolls back too so a legitimate
@@ -966,7 +1154,8 @@ async fn instance_revision_writeback(
                 four_eyes_approved,
                 egress_cleared: egress,
             };
-            if !evaluate_gate_chain(config, &evidence).allow {
+            let gates = evaluate_gate_chain(config, &evidence);
+            if !gates.allow {
                 return Err(KernelError::forbidden(
                     "action gate re-check failed inside the writeback transaction",
                 )
@@ -1027,13 +1216,66 @@ async fn instance_revision_writeback(
                     "attributes": result.revision.attributes,
                 })),
             );
-            Ok((result, vec![event]))
+            let receipt = CommandReceipt {
+                command_id,
+                payload_digest: digest_hex(&payload_digest),
+                instance: result,
+                gates,
+            };
+            sqlx::query(
+                "INSERT INTO ont_action_command_receipts (org_id, command_id, actor_id, payload_digest, receipt, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
+            ).bind(*org.as_uuid()).bind(command_id).bind(*actor.as_uuid()).bind(&payload_digest)
+                .bind(serde_json::to_value(&receipt).map_err(|e| KernelError::validation(format!("command receipt did not serialize: {e}")))?)
+                .bind(now).execute(tx.as_mut()).await?;
+            Ok((receipt, vec![event]))
         })
     })
     .await
     // Side-effects (notify / webhook / WORM attachment) run AFTER commit and must
     // be idempotent. None are dispatched in v1.
     // ponytail: side-effect dispatch lands with the §13 egress / comms lane.
+}
+
+fn action_command_digest(
+    action_key: &str,
+    command: &ActionCommand,
+    _attributes: &Value,
+) -> Result<Vec<u8>, PgOntologyError> {
+    let canonical = serde_json::json!({
+        "action_key": action_key,
+        "object_type_id": command.object_type_id.to_string(),
+        "instance_id": command.instance_id.map(|id| id.to_string()),
+        "title": command.title.clone(),
+        "params": command.params.clone(),
+        "reason": command.reason.clone(),
+        "valid_from": command.valid_from,
+        "checklist_all_acknowledged": command.checklist_all_acknowledged,
+        "four_eyes_request_ref": command.four_eyes_request_ref,
+        "expected_revision": command.expected_revision,
+    });
+    let bytes = serde_json::to_vec(&canonical_json(&canonical))
+        .map_err(|e| KernelError::validation(format!("command payload did not serialize: {e}")))?;
+    Ok(Sha256::digest(bytes).to_vec())
+}
+
+/// Recursively sort JSON object keys before digesting a client command. The
+/// digest intentionally excludes derived/current instance attributes: those can
+/// change after a transport loss without changing the command being retried.
+fn canonical_json(value: &Value) -> Value {
+    match value {
+        Value::Array(values) => Value::Array(values.iter().map(canonical_json).collect()),
+        Value::Object(values) => Value::Object(
+            values
+                .iter()
+                .map(|(key, value)| (key.clone(), canonical_json(value)))
+                .collect(),
+        ),
+        primitive => primitive.clone(),
+    }
+}
+
+fn digest_hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 /// Map the governance store error onto the ontology error so both can flow
@@ -1535,6 +1777,12 @@ impl RestError {
                 message: "stale ontology object type write validator".to_owned(),
                 current: Some(current),
             },
+            PgOntologyError::ActionPreconditionFailed { current } => Self {
+                status: StatusCode::PRECONDITION_FAILED,
+                code: "ontology_action_revision_precondition_failed",
+                message: format!("stale action revision; current revision is {current}"),
+                current: None,
+            },
             PgOntologyError::CommandUnavailable => Self {
                 status: StatusCode::SERVICE_UNAVAILABLE,
                 code: "ontology_command_unavailable",
@@ -1770,5 +2018,43 @@ mod tests {
             current.etag.as_str()
         );
         assert_eq!(response.headers().get("cache-control").unwrap(), "no-store");
+    }
+
+    #[test]
+    fn command_digest_canonicalizer_sorts_nested_payload_keys() {
+        let left = serde_json::json!({"z": {"b": 2, "a": 1}, "a": [ {"d": 4, "c": 3} ]});
+        let right = serde_json::json!({"a": [ {"c": 3, "d": 4} ], "z": {"a": 1, "b": 2}});
+        assert_eq!(canonical_json(&left), canonical_json(&right));
+    }
+
+    #[test]
+    fn command_digest_ignores_current_instance_attributes() {
+        let command = ActionCommand {
+            object_type_id: ObjectTypeId::from_uuid(Uuid::new_v4()),
+            instance_id: Some(InstanceId::from_uuid(Uuid::new_v4())),
+            title: None,
+            params: serde_json::json!({"priority": "hi"}),
+            reason: Some("operator request".to_owned()),
+            valid_from: None,
+            checklist_all_acknowledged: Some(true),
+            four_eyes_request_ref: None,
+            command_id: Some(Uuid::new_v4()),
+            expected_revision: Some(7),
+        };
+
+        let before = action_command_digest(
+            "set_priority",
+            &command,
+            &serde_json::json!({"priority": "lo", "unrelated": "before"}),
+        )
+        .unwrap();
+        let after = action_command_digest(
+            "set_priority",
+            &command,
+            &serde_json::json!({"priority": "lo", "unrelated": "after"}),
+        )
+        .unwrap();
+
+        assert_eq!(before, after);
     }
 }

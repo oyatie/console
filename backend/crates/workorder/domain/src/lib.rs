@@ -97,6 +97,78 @@ domain_enum! {
 }
 
 domain_enum! {
+    /// Maintenance classification: what kind of work the order is (유형).
+    pub enum MaintenanceType {
+        Emergency => "EMERGENCY",
+        Corrective => "CORRECTIVE",
+        Preventive => "PREVENTIVE",
+        Inspection => "INSPECTION",
+    }
+}
+
+domain_enum! {
+    /// Maintenance classification: why the order exists (원인).
+    pub enum MaintenanceCause {
+        Breakdown => "BREAKDOWN",
+        ReturnPrep => "RETURN_PREP",
+        Scheduled => "SCHEDULED",
+        InspectionFinding => "INSPECTION_FINDING",
+        Other => "OTHER",
+    }
+}
+
+domain_enum! {
+    /// Cost-settlement lifecycle (정산 → 전표).
+    pub enum SettlementStatus {
+        Draft => "DRAFT",
+        Submitted => "SUBMITTED",
+        Approved => "APPROVED",
+        Void => "VOID",
+    }
+}
+
+domain_enum! {
+    /// Cost-settlement line classification.
+    pub enum SettlementLineKind {
+        Labor => "LABOR",
+        Part => "PART",
+        Outsource => "OUTSOURCE",
+        Other => "OTHER",
+    }
+}
+
+/// Work-order statuses from which a cost settlement may be opened: the report
+/// exists (REPORT_SUBMITTED / ADMIN_REVIEW) or the order is already closed
+/// (FINAL_COMPLETED) and its cost is being booked.
+pub const SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES: &[WorkOrderStatus; 3] = &[
+    WorkOrderStatus::ReportSubmitted,
+    WorkOrderStatus::AdminReview,
+    WorkOrderStatus::FinalCompleted,
+];
+
+/// Settlement FSM edges (design-contract §3.2). Four-eyes (approver ≠
+/// submitter) and comment/reason requirements are enforced by the callers that
+/// know the actors; this table is the pure legal-edge set.
+pub const SETTLEMENT_TRANSITIONS: &[(SettlementStatus, SettlementStatus)] = &[
+    (SettlementStatus::Draft, SettlementStatus::Submitted),
+    (SettlementStatus::Submitted, SettlementStatus::Approved),
+    (SettlementStatus::Submitted, SettlementStatus::Draft),
+    (SettlementStatus::Draft, SettlementStatus::Void),
+    (SettlementStatus::Submitted, SettlementStatus::Void),
+];
+
+pub fn validate_settlement_transition(
+    from: SettlementStatus,
+    to: SettlementStatus,
+) -> Result<Transition<SettlementStatus>, KernelError> {
+    SETTLEMENT_TRANSITIONS
+        .iter()
+        .find(|(rule_from, rule_to)| *rule_from == from && *rule_to == to)
+        .map(|_| Transition { from, to })
+        .ok_or_else(|| TransitionError { from, to }.into())
+}
+
+domain_enum! {
     /// Reason a work order is delayed or blocked.
     pub enum DelayReason {
         PartWaiting => "PART_WAITING",

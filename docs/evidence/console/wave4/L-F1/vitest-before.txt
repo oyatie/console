@@ -1,0 +1,1049 @@
+
+ RUN  v4.1.8 /Users/jasonlee/Developer/maintenance-worktrees/w4-f1-window-20260725/web
+
+ ❯ src/console/screens/explore/ExploreBody.test.tsx (10 tests | 2 failed) 410ms
+     × has no render-time API identity inference and mounts no window host of its own 5ms
+     × adds no second window host inside the shell's, in either StrictMode root 25ms
+ ❯ src/console/screens/ontology-manager/OntologyManagerBody.test.tsx (24 tests | 1 failed) 1931ms
+     × mounts no window host of its own across API recreation or authority change 14ms
+ ❯ src/console/window/consoleShellWindowHost.test.tsx (5 tests | 5 failed) 20230ms
+     × mounts exactly one window host, and it wraps every screen body 68ms
+     × keeps the previously pinned object recoverable when a second one is opened 36ms
+     × keeps the pinned panel and the tray across screen navigation 31ms
+     × gives a session with no owned incarnation the full in-memory model and no storage 30ms
+     × partitions the saved layout by the exact session incarnation 20065ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/console/window/consoleShellWindowHost.test.tsx > console shell window host > mounts exactly one window host, and it wraps every screen body
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/console/window/consoleShellWindowHost.test.tsx:173:19
+    171|
+    172|     const hosts = windowHosts();
+    173|     expect(hosts).toHaveLength(1);
+       |                   ^
+    174|     // Wrapping the shell root (not sitting inside the screen section)…
+    175|     // makes the split padding move the sidebar and comms rail out of …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/console/window/consoleShellWindowHost.test.tsx > console shell window host > keeps the previously pinned object recoverable when a second one is opened
+TestingLibraryElementError: Unable to find an element by: [data-testid="probe-open-a"]
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="console"
+      data-console-root="true"
+      data-console-theme="system"
+      style="height: 100dvh; width: 100%; display: flex; flex-direction: column; min-height: 0px; background: var(--canvas); color: var(--ink); font-family: var(--font-sans);"
+    >
+      <div
+        data-cshell-layout="desktop"
+        data-cshell-root="true"
+        style="flex: 1 1 auto; display: flex; min-height: 0px; min-width: 0px; overflow-x: hidden;"
+      >
+        <div
+          data-collapsed="false"
+          data-cshell-sidebar="true"
+          style="flex: 0 0 auto; width: 236px; transition: width 0.18s ease; overflow: hidden; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-height: 0px;"
+        >
+          <div
+            style="flex: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 10px; padding: 0px 16px; border-bottom: 1px solid var(--border-soft);"
+          >
+            <span
+              aria-hidden="true"
+              style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: var(--signal); color: rgb(20, 26, 33); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;"
+            >
+              A
+            </span>
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.2px; white-space: nowrap;"
+              >
+                KnL
+              </div>
+              <div
+                style="font-size: 9.5px; font-weight: 700; color: var(--faint); letter-spacing: 0.6px; white-space: nowrap;"
+              >
+                그룹 통합 운영 콘솔
+              </div>
+            </div>
+            <button
+              aria-label="밝은 테마"
+              class="cshell-hoverable cshell-focusable"
+              style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 7px; border: medium; background: transparent; color: var(--steel);"
+              title="밝은 테마"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                fill="none"
+                focusable="false"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                style="flex: 0 0 auto;"
+                viewBox="0 0 24 24"
+                width="15"
+              >
+                <path
+                  d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41"
+                />
+              </svg>
+            </button>
+          </div>
+          <nav
+            aria-label="주 메뉴"
+            style="flex: 1 1 auto; min-height: 0px; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 16px; display: flex; flex-direction: column; gap: 20px;"
+          >
+            <div
+              style="display: flex; flex-direction: column; gap: 2px;"
+            >
+              <p
+                style="margin: 0px 0px 5px; padding: 0px 12px; font-size: 10px; font-weight: 800; letter-spacing: 0.9px; color: var(--faint); white-space: nowrap;"
+              >
+                개요
+              </p>
+              <button
+                aria-current="true"
+                aria-label="통합 개요"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: var(--muted); color: var(--ink); font-size: 13px; font-weight: 800; text-align: left; white-space: nowrap;"
+                title="통합 개요"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  focusable="false"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.9"
+                  style="flex: 0 0 auto;"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <path
+                    d="M5 3h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 3h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 12h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z M5 14h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z"
+                  />
+                </svg>
+                <span
+                  style="flex: 1 1 0%; min-width: 0px; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  통합 개요
+                </span>
+              </button>
+              <button
+                aria-label="내 업무"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: tran...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/window/consoleShellWindowHost.test.tsx:187:28
+    185|     renderConsole(UNOWNED_SESSION);
+    186|
+    187|     fireEvent.click(screen.getByTestId("probe-open-a"));
+       |                            ^
+    188|     expect(screen.getByRole("region", { name: ENTRY_A_TITLE })).toBeVi…
+    189|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/console/window/consoleShellWindowHost.test.tsx > console shell window host > keeps the pinned panel and the tray across screen navigation
+TestingLibraryElementError: Unable to find an element by: [data-testid="probe-open-a"]
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="console"
+      data-console-root="true"
+      data-console-theme="system"
+      style="height: 100dvh; width: 100%; display: flex; flex-direction: column; min-height: 0px; background: var(--canvas); color: var(--ink); font-family: var(--font-sans);"
+    >
+      <div
+        data-cshell-layout="desktop"
+        data-cshell-root="true"
+        style="flex: 1 1 auto; display: flex; min-height: 0px; min-width: 0px; overflow-x: hidden;"
+      >
+        <div
+          data-collapsed="false"
+          data-cshell-sidebar="true"
+          style="flex: 0 0 auto; width: 236px; transition: width 0.18s ease; overflow: hidden; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-height: 0px;"
+        >
+          <div
+            style="flex: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 10px; padding: 0px 16px; border-bottom: 1px solid var(--border-soft);"
+          >
+            <span
+              aria-hidden="true"
+              style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: var(--signal); color: rgb(20, 26, 33); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;"
+            >
+              A
+            </span>
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.2px; white-space: nowrap;"
+              >
+                KnL
+              </div>
+              <div
+                style="font-size: 9.5px; font-weight: 700; color: var(--faint); letter-spacing: 0.6px; white-space: nowrap;"
+              >
+                그룹 통합 운영 콘솔
+              </div>
+            </div>
+            <button
+              aria-label="밝은 테마"
+              class="cshell-hoverable cshell-focusable"
+              style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 7px; border: medium; background: transparent; color: var(--steel);"
+              title="밝은 테마"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                fill="none"
+                focusable="false"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                style="flex: 0 0 auto;"
+                viewBox="0 0 24 24"
+                width="15"
+              >
+                <path
+                  d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41"
+                />
+              </svg>
+            </button>
+          </div>
+          <nav
+            aria-label="주 메뉴"
+            style="flex: 1 1 auto; min-height: 0px; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 16px; display: flex; flex-direction: column; gap: 20px;"
+          >
+            <div
+              style="display: flex; flex-direction: column; gap: 2px;"
+            >
+              <p
+                style="margin: 0px 0px 5px; padding: 0px 12px; font-size: 10px; font-weight: 800; letter-spacing: 0.9px; color: var(--faint); white-space: nowrap;"
+              >
+                개요
+              </p>
+              <button
+                aria-current="true"
+                aria-label="통합 개요"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: var(--muted); color: var(--ink); font-size: 13px; font-weight: 800; text-align: left; white-space: nowrap;"
+                title="통합 개요"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  focusable="false"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.9"
+                  style="flex: 0 0 auto;"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <path
+                    d="M5 3h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 3h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 12h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z M5 14h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z"
+                  />
+                </svg>
+                <span
+                  style="flex: 1 1 0%; min-width: 0px; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  통합 개요
+                </span>
+              </button>
+              <button
+                aria-label="내 업무"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: tran...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/window/consoleShellWindowHost.test.tsx:219:28
+    217|       ?.getAttribute("data-cshell-screen");
+    218|
+    219|     fireEvent.click(screen.getByTestId("probe-open-a"));
+       |                            ^
+    220|     fireEvent.click(screen.getByTestId("probe-open-b"));
+    221|     fireEvent.click(screen.getByTestId("goto-explorer"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/console/window/consoleShellWindowHost.test.tsx > console shell window host > gives a session with no owned incarnation the full in-memory model and no storage
+TestingLibraryElementError: Unable to find an element by: [data-testid="probe-open-a"]
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="console"
+      data-console-root="true"
+      data-console-theme="system"
+      style="height: 100dvh; width: 100%; display: flex; flex-direction: column; min-height: 0px; background: var(--canvas); color: var(--ink); font-family: var(--font-sans);"
+    >
+      <div
+        data-cshell-layout="desktop"
+        data-cshell-root="true"
+        style="flex: 1 1 auto; display: flex; min-height: 0px; min-width: 0px; overflow-x: hidden;"
+      >
+        <div
+          data-collapsed="false"
+          data-cshell-sidebar="true"
+          style="flex: 0 0 auto; width: 236px; transition: width 0.18s ease; overflow: hidden; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-height: 0px;"
+        >
+          <div
+            style="flex: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 10px; padding: 0px 16px; border-bottom: 1px solid var(--border-soft);"
+          >
+            <span
+              aria-hidden="true"
+              style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: var(--signal); color: rgb(20, 26, 33); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;"
+            >
+              A
+            </span>
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.2px; white-space: nowrap;"
+              >
+                KnL
+              </div>
+              <div
+                style="font-size: 9.5px; font-weight: 700; color: var(--faint); letter-spacing: 0.6px; white-space: nowrap;"
+              >
+                그룹 통합 운영 콘솔
+              </div>
+            </div>
+            <button
+              aria-label="밝은 테마"
+              class="cshell-hoverable cshell-focusable"
+              style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 7px; border: medium; background: transparent; color: var(--steel);"
+              title="밝은 테마"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                fill="none"
+                focusable="false"
+                height="15"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                style="flex: 0 0 auto;"
+                viewBox="0 0 24 24"
+                width="15"
+              >
+                <path
+                  d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41"
+                />
+              </svg>
+            </button>
+          </div>
+          <nav
+            aria-label="주 메뉴"
+            style="flex: 1 1 auto; min-height: 0px; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 16px; display: flex; flex-direction: column; gap: 20px;"
+          >
+            <div
+              style="display: flex; flex-direction: column; gap: 2px;"
+            >
+              <p
+                style="margin: 0px 0px 5px; padding: 0px 12px; font-size: 10px; font-weight: 800; letter-spacing: 0.9px; color: var(--faint); white-space: nowrap;"
+              >
+                개요
+              </p>
+              <button
+                aria-current="true"
+                aria-label="통합 개요"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: var(--muted); color: var(--ink); font-size: 13px; font-weight: 800; text-align: left; white-space: nowrap;"
+                title="통합 개요"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  focusable="false"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.9"
+                  style="flex: 0 0 auto;"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <path
+                    d="M5 3h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 3h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 12h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z M5 14h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z"
+                  />
+                </svg>
+                <span
+                  style="flex: 1 1 0%; min-width: 0px; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  통합 개요
+                </span>
+              </button>
+              <button
+                aria-label="내 업무"
+                class="cshell-hoverable cshell-focusable"
+                style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: tran...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/window/consoleShellWindowHost.test.tsx:241:28
+    239|     renderConsole(UNOWNED_SESSION);
+    240|
+    241|     fireEvent.click(screen.getByTestId("probe-open-a"));
+       |                            ^
+    242|
+    243|     expect(screen.getByRole("region", { name: ENTRY_A_TITLE })).toBeVi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/console/window/consoleShellWindowHost.test.tsx > console shell window host > partitions the saved layout by the exact session incarnation
+AssertionError: expected +0 to be 2 // Object.is equality
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="console"
+        data-console-root="true"
+        data-console-theme="system"
+        style="height: 100dvh; width: 100%; display: flex; flex-direction: column; min-height: 0px; background: var(--canvas); color: var(--ink); font-family: var(--font-sans);"
+      >
+        <div
+          data-cshell-layout="desktop"
+          data-cshell-root="true"
+          style="flex: 1 1 auto; display: flex; min-height: 0px; min-width: 0px; overflow-x: hidden;"
+        >
+          <div
+            data-collapsed="false"
+            data-cshell-sidebar="true"
+            style="flex: 0 0 auto; width: 236px; transition: width 0.18s ease; overflow: hidden; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-height: 0px;"
+          >
+            <div
+              style="flex: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 10px; padding: 0px 16px; border-bottom: 1px solid var(--border-soft);"
+            >
+              <span
+                aria-hidden="true"
+                style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: var(--signal); color: rgb(20, 26, 33); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;"
+              >
+                A
+              </span>
+              <div
+                style="min-width: 0px; flex: 1 1 0%;"
+              >
+                <div
+                  style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.2px; white-space: nowrap;"
+                >
+                  KnL
+                </div>
+                <div
+                  style="font-size: 9.5px; font-weight: 700; color: var(--faint); letter-spacing: 0.6px; white-space: nowrap;"
+                >
+                  그룹 통합 운영 콘솔
+                </div>
+              </div>
+              <button
+                aria-label="밝은 테마"
+                class="cshell-hoverable cshell-focusable"
+                style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 7px; border: medium; background: transparent; color: var(--steel);"
+                title="밝은 테마"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  focusable="false"
+                  height="15"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  style="flex: 0 0 auto;"
+                  viewBox="0 0 24 24"
+                  width="15"
+                >
+                  <path
+                    d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41"
+                  />
+                </svg>
+              </button>
+            </div>
+            <nav
+              aria-label="주 메뉴"
+              style="flex: 1 1 auto; min-height: 0px; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 16px; display: flex; flex-direction: column; gap: 20px;"
+            >
+              <div
+                style="display: flex; flex-direction: column; gap: 2px;"
+              >
+                <p
+                  style="margin: 0px 0px 5px; padding: 0px 12px; font-size: 10px; font-weight: 800; letter-spacing: 0.9px; color: var(--faint); white-space: nowrap;"
+                >
+                  개요
+                </p>
+                <button
+                  aria-current="true"
+                  aria-label="통합 개요"
+                  class="cshell-hoverable cshell-focusable"
+                  style="position: relative; display: flex; align-items: center; gap: 11px; width: 100%; padding: 7.5px 12px; border-radius: 8px; border: medium; background: var(--muted); color: var(--ink); font-size: 13px; font-weight: 800; text-align: left; white-space: nowrap;"
+                  title="통합 개요"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    focusable="false"
+                    height="16"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.9"
+                    style="flex: 0 0 auto;"
+                    viewBox="0 0 24 24"
+                    width="16"
+                  >
+                    <path
+                      d="M5 3h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 3h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M15 12h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z M5 14h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z"
+                    />
+                  </svg>
+                  <span
+                    style="flex: 1 1 0%; min-width: 0px; overflow: hidden; text-overflow: ellipsis;"
+                  >
+                    통합 개요
+                  </span>
+                </button>
+                <button
+                  aria-label="내 업무"
+       ...
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/console/window/consoleShellWindowHost.test.tsx:278:31
+    276|         ),
+    277|       );
+    278|       expect(layoutKeys.size).toBe(2);
+       |                               ^
+    279|     });
+    280|     // The unpartitioned key is the cross-tenant leak this partitionin…
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/console/screens/explore/ExploreBody.test.tsx > ExploreBody > has no render-time API identity inference and mounts no window host of its own
+AssertionError: expected 'import { useMemo, useRef, useState, t…' not to contain 'WindowManagerProvider'
+
+- Expected
++ Received
+
+- WindowManagerProvider
++ import { useMemo, useRef, useState, type CSSProperties } from "react";
++
++ import { ko } from "../../../i18n/ko";
++ import type { ConsoleApiClient } from "../../../api/client";
++ import { OntologyManagerScreen } from "../../ontology";
++ import {
++   OntologyAnalyticsWorkbench,
++   type OntologyAnalyticsDrill,
++ } from "../../ontology/analytics";
++ import { GraphExplorer } from "./GraphExplorer";
++ import { BulkPolicyGateProvider } from "../../policy";
++ import { WindowManagerProvider } from "../../window";
++ import "../../tokens.css";
++ import {
++   FeedbackBanner,
++   StatStrip,
++   WorkspaceEmpty,
++   WorkspaceError,
++   WorkspaceLoading,
++   WorkspacePartialFailure,
++   type WorkspaceStat,
++ } from "./WorkspaceChrome";
++ import {
++   ONTOLOGY_GATE_ACTIONS,
++   useOntologyWorkspace,
++ } from "./useOntologyWorkspace";
++ import { screenHeaderStyle, screenTitleStyle } from "../screenHeader";
++
++ const ON = ko.console.ontology;
++ const TABS = ko.ontology.tabs;
++
++ export type WorkspaceTab = "manager" | "graph";
++
++ // Evidence/support header grammar (§ rhythm): the shell owns the outer padding
++ // via the .console class, so the body is just a gap-4 grid — no double padding,
++ // no minHeight/background repaint, one title header (the graph pane no longer
++ // ships its own), which fixes R3's floating-title + whitespace-gap defects.
++ const rootStyle: CSSProperties = {
++   display: "grid",
++   gap: "var(--sp-4)",
++   color: "var(--ink)",
++   fontFamily: "var(--font-sans)",
++ };
++
++ const headerStyle = screenHeaderStyle;
++ const titleStyle = screenTitleStyle;
++
++ const tabBarStyle: CSSProperties = {
++   display: "flex",
++   flexWrap: "wrap",
++   borderBottom: "1px solid var(--border)",
++ };
++
++ const tabStyle: CSSProperties = {
++   minHeight: 44,
++   padding: "0 var(--sp-4)",
++   border: 0,
++   borderBottom: "2px solid transparent",
++   background: "transparent",
++   color: "var(--steel)",
++   fontSize: "var(--text-sm)",
++   fontWeight: "var(--fw-strong)",
++   cursor: "pointer",
++ };
++
++ const tabActiveStyle: CSSProperties = {
++   ...tabStyle,
++   borderBottomColor: "var(--signal-deep)",
++   color: "var(--ink)",
++ };
++
++ const headerActionsStyle: CSSProperties = {
++   display: "flex",
++   alignItems: "center",
++   gap: "var(--sp-2)",
++ };
++
++ const actionButtonStyle: CSSProperties = {
++   minHeight: 44,
++   padding: "0 var(--sp-4)",
++   border: "1px solid var(--border)",
++   borderRadius: "var(--radius-control)",
++   background: "var(--surface)",
++   color: "var(--ink)",
++   fontSize: "var(--text-sm)",
++   fontWeight: "var(--fw-strong)",
++   cursor: "pointer",
++ };
++
++ const drillResultStyle: CSSProperties = {
++   display: "grid",
++   gap: "var(--sp-3)",
++   padding: "var(--sp-4)",
++   border: "1px solid var(--border)",
++   borderRadius: "var(--radius-card)",
++   background: "var(--surface)",
++   boxShadow: "var(--shadow)",
++ };
++
++ const drillResultHeaderStyle: CSSProperties = {
++   display: "flex",
++   flexWrap: "wrap",
++   alignItems: "start",
++   justifyContent: "space-between",
++   gap: "var(--sp-3)",
++ };
++
++ const drillResultListStyle: CSSProperties = {
++   display: "grid",
++   gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
++   gap: "var(--sp-2)",
++   margin: 0,
++   padding: 0,
++   listStyle: "none",
++ };
++
++ interface AuthorityAnalyticsDrill {
++   authorityKey: string | undefined;
++   value: OntologyAnalyticsDrill;
++ }
++
++ interface AuthorityFocusRequest {
++   authorityKey: string | undefined;
++   instanceId: string;
++ }
++
++ interface OntologyWorkspaceBodyBaseProps {
++   api: ConsoleApiClient;
++   /** Screen title (온톨로지 for the manager, 객체 탐색 for the explorer). */
++   title: string;
++   /** Tab focused first; the explorer defaults to the graph. */
++   defaultTab: WorkspaceTab;
++ }
++
++ export type OntologyWorkspaceBodyProps = OntologyWorkspaceBodyBaseProps &
++   (
++     | {
++         /** The authoring host must provide explicit authority independent of its token. */
++         allowManager: true;
++         authorityKey: string;
++       }
++     | {
++         allowManager: false;
++         authorityKey?: string;
++       }
++   );
++
++ /**
++  * Shared ontology workspace — the graph explorer + object inspector both
++  * ontology screens center on (§4-18 reuse: one implementation, two mounts).
++  * `allowManager` adds the 타입·매니저 authoring tab (draft/publish); the
++  * explorer omits it and shows the graph alone.
++  *
++  * The inspector is the pinned ObjectCard: clicking a graph node opens it as the
++  * docked right panel via WindowManagerProvider. Projected instances that can't
++  * be resolved (S23) degrade to their graph fields inside the card — no
++  * fabricated properties.
++  */
++ export function OntologyWorkspaceBody({
++   api,
++   authorityKey,
++   title,
++   defaultTab,
++   allowManager,
++ }: OntologyWorkspaceBodyProps) {
++   const authorityPartition = authorityKey?.trim() || undefined;
++   const ws = useOntologyWorkspace(
++     api,
++     { saveFailed: ko.users.form.saveFailed },
++     authorityPartition,
++   );
++   const [tab, setTab] = useState<WorkspaceTab>(allowManager ? defaultTab : "graph");
++   const [analyticsOpen, setAnalyticsOpen] = useState(false);
++   const [analyticsDrill, setAnalyticsDrill] =
++     useState<AuthorityAnalyticsDrill>();
++   const [focusRequest, setFocusRequest] = useState<AuthorityFocusRequest>();
++   const graphRef = useRef<HTMLDivElement>(null);
++
++   const visibleAnalyticsDrill =
++     analyticsDrill && analyticsDrill.authorityKey === authorityPartition
++       ? analyticsDrill.value
++       : undefined;
++   const visibleFocusRequest =
++     focusRequest && focusRequest.authorityKey === authorityPartition
++       ? focusRequest
++       : undefined;
++   const instanceById = useMemo(
++     () =>
++       new Map(
++         ws.registry.flatMap((objectType) =>
++           objectType.instances.map((instance) => [
++             instance.id,
++             { instance, objectType },
++           ] as const),
++         ),
++       ),
++     [ws.registry],
++   );
++
++   const stats = useMemo<WorkspaceStat[]>(
++     () => [
++       { key: "types", label: ON.typeList.title, value: ws.stats.types, drillAria: `${ON.typeList.title} ${ON.count(ws.stats.types)}` },
++       { key: "instances", label: ON.subtabs.instances, value: ws.stats.instances, drillAria: `${ON.subtabs.instances} ${ON.count(ws.stats.instances)}` },
++       { key: "links", label: ON.subtabs.links, value: ws.stats.links, drillAria: `${ON.subtabs.links} ${ON.count(ws.stats.links)}` },
++     ],
++     [ws.stats],
++   );
++
++   function scrollGraphIntoView(): void {
++     // The lib type marks scrollIntoView as always-present, but jsdom (tests) and
++     // very old engines omit it — cast so the runtime guard is honest.
++     (graphRef.current as { scrollIntoView?: (opts: ScrollIntoViewOptions) => void } | null)
++       ?.scrollIntoView?.({ block: "nearest" });
++   }
++
++   function handleDrill(key: string): void {
++     // §4-11: every stat is a jump. In the manager the 타입 stat lands on the
++     // authoring tab; instances/relations land on the graph. The explorer has no
++     // tabs, so a stat scrolls the graph into view.
++     if (allowManager) {
++       setTab(key === "types" ? "manager" : "graph");
++       if (key !== "types") scrollGraphIntoView();
++     } else {
++       scrollGraphIntoView();
++     }
++   }
++
++   const showManagerTab = allowManager && tab === "manager";
++   const partialFailureMessage = ws.partialFailures.length > 0
++     ? `${ko.page.loadFailed} (${ws.partialFailures
++         .map((failure) =>
++           failure.kind === "acting"
++             ? `${failure.scopeLabel} · ${ON.subtabs.automations}`
++             : `${failure.scopeLabel} · ${TABS.graph}`,
++         )
++         .join(", ")})`
++     : undefined;
++
++   return (
++     <section className="console" aria-label={title} style={rootStyle}>
++       <header style={headerStyle}>
++         <h1 style={titleStyle}>{title}</h1>
++         <div style={headerActionsStyle}>
++           <button
++             type="button"
++             onClick={() => {
++               setAnalyticsOpen(true);
++             }}
++             style={actionButtonStyle}
++           >
++             {ON.analysis.open}
++           </button>
++         </div>
++       </header>
++       <StatStrip stats={stats} onDrill={handleDrill} ariaLabel={title} />
++       {allowManager ? (
++         <div role="tablist" aria-label={title} style={tabBarStyle}>
++           {(["manager", "graph"] as const).map((key) => (
++             <button
++               key={key}
++               type="button"
++               role="tab"
++               aria-selected={tab === key}
++               onClick={() => {
++                 setTab(key);
++               }}
++               style={tab === key ? tabActiveStyle : tabStyle}
++             >
++               {key === "manager" ? TABS.manager : TABS.graph}
++             </button>
++           ))}
++         </div>
++       ) : null}
++
++       {ws.feedback ? (
++         <FeedbackBanner message={ws.feedback} onDismiss={ws.clearFeedback} />
++       ) : null}
++       {partialFailureMessage ? (
++         <WorkspacePartialFailure
++           message={partialFailureMessage}
++           onRetry={() => {
++             void ws.retryPartialFailures();
++           }}
++         />
++       ) : null}
++
++       {ws.readState === "loading" ? (
++         <WorkspaceLoading />
++       ) : ws.readState === "error" ? (
++         <WorkspaceError
++           onRetry={() => {
++             void ws.reload();
++           }}
++         />
++       ) : ws.isEmpty ? (
++         <WorkspaceEmpty />
++       ) : (
++         <BulkPolicyGateProvider actions={ONTOLOGY_GATE_ACTIONS}>
++           <WindowManagerProvider
++             key={authorityPartition}
++             authorityPartition={authorityPartition}
++             retentionEnabled={authorityPartition !== undefined}
++           >
++             {showManagerTab ? (
++               <OntologyManagerScreen
++                 registry={ws.registry}
++                 onCreateType={ws.onCreateType}
++                 onCommitRevision={ws.onCommitRevision}
++                 resolveInstanceCard={ws.resolveInstanceCard}
++               />
++             ) : (
++               <div ref={graphRef}>
++                 {visibleAnalyticsDrill ? (
++                   <section
++                     aria-labelledby="ontology-analytics-result-title"
++                     style={drillResultStyle}
++                   >
++                     <div style={drillResultHeaderStyle}>
++                       <div>
++                         <h2
++                           id="ontology-analytics-result-title"
++                           style={{ margin: 0, fontSize: "var(--text-md)" }}
++                         >
++                           {ON.analysis.result.title}
++                         </h2>
++                         <p
++                           style={{
++                             margin: "var(--sp-1) 0 0",
++                             color: "var(--steel)",
++                           }}
++                         >
++                           {ON.analysis.result.summary(
++                             visibleAnalyticsDrill.objectType.title,
++                             visibleAnalyticsDrill.dimensionLabel,
++                             visibleAnalyticsDrill.value,
++                             visibleAnalyticsDrill.instanceIds.length,
++                           )}
++                         </p>
++                       </div>
++                       <button
++                         type="button"
++                         onClick={() => {
++                           setAnalyticsDrill(undefined);
++                           setFocusRequest(undefined);
++                         }}
++                         style={actionButtonStyle}
++                       >
++                         {ON.analysis.result.clear}
++                       </button>
++                     </div>
++                     <ul style={drillResultListStyle}>
++                       {visibleAnalyticsDrill.instanceIds.map((instanceId) => {
++                         const registered = instanceById.get(instanceId);
++                         const label = registered
++                           ? `${registered.instance.code} · ${registered.instance.title}`
++                           : instanceId;
++                         return (
++                           <li key={instanceId}>
++                             <button
++                               type="button"
++                               onClick={() => {
++                                 setFocusRequest({
++                                   authorityKey: authorityPartition,
++                                   instanceId,
++                                 });
++                                 ws.onGraphFocusChange(instanceId);
++                               }}
++                               style={{ ...actionButtonStyle, width: "100%" }}
++                             >
++                               {ON.analysis.result.openInstance(label)}
++                             </button>
++                           </li>
++                         );
++                       })}
++                     </ul>
++                   </section>
++                 ) : null}
++                 <GraphExplorer
++                   api={api}
++                   model={ws.explorerModel}
++                   onFocusChange={(instanceId) => {
++                     setFocusRequest(undefined);
++                     ws.onGraphFocusChange(instanceId);
++                   }}
++                   resolveNodeDescriptor={ws.resolveNodeDescriptor}
++                   projectedTypeIds={ws.projectedTypeIds}
++                   requestedFocusId={visibleFocusRequest?.instanceId}
++                 />
++               </div>
++             )}
++           </WindowManagerProvider>
++         </BulkPolicyGateProvider>
++       )}
++       <OntologyAnalyticsWorkbench
++         key={authorityPartition ?? "authority-unavailable"}
++         api={api}
++         authorityKey={authorityPartition}
++         open={analyticsOpen}
++         onClose={() => {
++           setAnalyticsOpen(false);
++         }}
++         onDrill={(drill) => {
++           setAnalyticsOpen(false);
++           setAnalyticsDrill({
++             authorityKey: authorityPartition,
++             value: drill,
++           });
++           setFocusRequest(undefined);
++           if (allowManager) setTab("graph");
++           scrollGraphIntoView();
++         }}
++       />
++     </section>
++   );
++ }
++
+
+ ❯ src/console/screens/explore/ExploreBody.test.tsx:269:24
+    267|     // body (see console/window/consoleShellWindowHost.test.tsx). A pr…
+    268|     // forked the arrangement into two trays and two layout partitions.
+    269|     expect(source).not.toContain("WindowManagerProvider");
+       |                        ^
+    270|     expect(() =>
+    271|       renderToString(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/console/screens/explore/ExploreBody.test.tsx > ExploreBody > adds no second window host inside the shell's, in either StrictMode root
+AssertionError: expected …(2) to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/console/screens/explore/ExploreBody.test.tsx:301:68
+    299|     });
+    300|     await screen.findAllByText(instanceFixture.instance.title);
+    301|     expect(first.container.querySelectorAll("[data-window-host]")).toH…
+       |                                                                    ^
+    302|     expect(second.container.querySelectorAll("[data-window-host]")).to…
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  src/console/screens/ontology-manager/OntologyManagerBody.test.tsx > OntologyManagerBody > mounts no window host of its own across API recreation or authority change
+AssertionError: expected …(2) to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/console/screens/ontology-manager/OntologyManagerBody.test.tsx:891:67
+    889|     );
+    890|     await screen.findAllByText(summaryFixture.title);
+    891|     expect(view.container.querySelectorAll("[data-window-host]")).toHa…
+       |                                                                   ^
+    892|
+    893|     view.rerender(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  8 failed | 31 passed (39)
+   Start at  04:10:05
+   Duration  20.83s (transform 667ms, setup 210ms, import 836ms, tests 22.57s, environment 751ms)
+

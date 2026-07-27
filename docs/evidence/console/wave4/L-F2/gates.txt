@@ -1,0 +1,2 @@
+check-ui-strings: OK
+check-console-purity OK — 569 console and inspection-entry file(s) clean.

@@ -1,11 +1,13 @@
 //! Notice-board (게시판 NT- 공지) REST API.
 //!
-//! A published notice's title/body/progress is readable by any authenticated
-//! org member; drafts and the publish/progress-read mutations are gated
-//! behind [`Feature::NoticeManage`] (the HQ/announcement tier). 수령확인
-//! (receipt acknowledgment) is recipient-scoped from the authenticated
-//! principal, exactly like the notifications mark-read idiom — never from
-//! request input.
+//! A published notice's title/body/audience is readable by any authenticated
+//! org member; drafts, draft edits, publish, progress, and the receipts drill
+//! are gated behind [`Feature::NoticeManage`] (the HQ/announcement tier).
+//! 수령확인 (receipt acknowledgment) is recipient-scoped from the
+//! authenticated principal, exactly like the notifications mark-read idiom —
+//! never from request input. Draft existence never leaks to non-managers
+//! (404/list omission); manager-only aggregates answer 403 (the feature's
+//! existence is not a secret, its data is).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use axum::extract::{Path, Query, State};
@@ -16,8 +18,9 @@ use axum::{Json, Router};
 use mnt_kernel_core::{ErrorKind, KernelError, NoticeId, TraceContext};
 use mnt_notices_adapter_postgres::{PgNoticeError, PgNoticeStore};
 use mnt_notices_application::{
-    AcknowledgeNoticeCommand, CreateDraftNoticeCommand, GetNoticeQuery, ListNoticesQuery,
-    NoticeProgressQuery, PublishNoticeCommand,
+    AcknowledgeNoticeCommand, CreateDraftNoticeCommand, GetNoticeQuery, ListNoticeReceiptsQuery,
+    ListNoticesQuery, NoticeAudienceInput, NoticeProgressQuery, PublishNoticeCommand,
+    UpdateDraftNoticeCommand,
 };
 use mnt_platform_auth::JwtVerifier;
 use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
@@ -29,6 +32,7 @@ pub const NOTICE_PATH_TEMPLATE: &str = "/api/v1/notices/{id}";
 pub const NOTICE_PUBLISH_PATH_TEMPLATE: &str = "/api/v1/notices/{id}/publish";
 pub const NOTICE_ACK_PATH_TEMPLATE: &str = "/api/v1/notices/{id}/ack";
 pub const NOTICE_PROGRESS_PATH_TEMPLATE: &str = "/api/v1/notices/{id}/progress";
+pub const NOTICE_RECEIPTS_PATH_TEMPLATE: &str = "/api/v1/notices/{id}/receipts";
 
 pub const NOTICES_ROUTE_PATHS: &[&str] = &[
     NOTICES_PATH,
@@ -36,7 +40,11 @@ pub const NOTICES_ROUTE_PATHS: &[&str] = &[
     NOTICE_PUBLISH_PATH_TEMPLATE,
     NOTICE_ACK_PATH_TEMPLATE,
     NOTICE_PROGRESS_PATH_TEMPLATE,
+    NOTICE_RECEIPTS_PATH_TEMPLATE,
 ];
+
+const RECEIPTS_DEFAULT_LIMIT: i64 = 50;
+const RECEIPTS_MAX_LIMIT: i64 = 200;
 
 #[derive(Debug, Clone)]
 pub struct NoticeRestState {
@@ -59,10 +67,11 @@ pub fn router(state: NoticeRestState) -> Router {
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(NOTICES_PATH, get(list_notices).post(create_draft))
-        .route(NOTICE_PATH_TEMPLATE, get(get_notice))
+        .route(NOTICE_PATH_TEMPLATE, get(get_notice).patch(update_draft))
         .route(NOTICE_PUBLISH_PATH_TEMPLATE, post(publish_notice))
         .route(NOTICE_ACK_PATH_TEMPLATE, post(acknowledge_notice))
         .route(NOTICE_PROGRESS_PATH_TEMPLATE, get(notice_progress))
+        .route(NOTICE_RECEIPTS_PATH_TEMPLATE, get(notice_receipts))
         .with_state(state);
     mnt_platform_request_context::with_request_context(router, verifier, pool)
 }
@@ -71,6 +80,16 @@ pub fn router(state: NoticeRestState) -> Router {
 struct CreateDraftBody {
     title: String,
     body: String,
+    category: Option<String>,
+    audience: Option<NoticeAudienceInput>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UpdateDraftBody {
+    title: Option<String>,
+    body: Option<String>,
+    category: Option<String>,
+    audience: Option<NoticeAudienceInput>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -78,9 +97,17 @@ struct ListParams {
     limit: Option<i64>,
 }
 
+#[derive(Debug, Deserialize)]
+struct ReceiptsParams {
+    acknowledged: Option<bool>,
+    limit: Option<i64>,
+    offset: Option<i64>,
+}
+
 /// `true` when the principal holds the publish tier (draft visibility +
-/// publish/progress). Deny-by-default on the authz check: any error (missing
-/// grant, scope failure, …) is treated as "not a manager", not surfaced.
+/// publish/progress/receipts + per-row progress hydration). Deny-by-default
+/// on the authz check: any error (missing grant, scope failure, …) is treated
+/// as "not a manager", not surfaced.
 fn is_notice_manager(principal: &Principal) -> bool {
     authorize_org_wide(principal, Action::new(Feature::NoticeManage)).is_ok()
 }
@@ -103,12 +130,39 @@ async fn create_draft(
             author: principal.user_id,
             title: body.title,
             body: body.body,
+            category: body.category,
+            audience: body.audience,
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
         })
         .await
         .map_err(RestError::from_store)?;
     Ok((StatusCode::CREATED, Json(summary)).into_response())
+}
+
+async fn update_draft(
+    State(state): State<NoticeRestState>,
+    headers: HeaderMap,
+    Path(notice_id): Path<NoticeId>,
+    Json(body): Json<UpdateDraftBody>,
+) -> Result<Response, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    require_notice_manager(&principal)?;
+    let summary = state
+        .store
+        .update_draft(UpdateDraftNoticeCommand {
+            notice_id,
+            editor: principal.user_id,
+            title: body.title,
+            body: body.body,
+            category: body.category,
+            audience: body.audience,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(summary).into_response())
 }
 
 async fn list_notices(
@@ -122,6 +176,7 @@ async fn list_notices(
         .list(ListNoticesQuery {
             include_drafts: is_notice_manager(&principal),
             limit: params.limit.unwrap_or(50),
+            viewer: principal.user_id,
         })
         .await
         .map_err(RestError::from_store)?;
@@ -136,7 +191,13 @@ async fn get_notice(
     let principal = principal_from_headers(&state, &headers).await?;
     let summary = state
         .store
-        .get(GetNoticeQuery { notice_id }, is_notice_manager(&principal))
+        .get(
+            GetNoticeQuery {
+                notice_id,
+                viewer: principal.user_id,
+            },
+            is_notice_manager(&principal),
+        )
         .await
         .map_err(RestError::from_store)?;
     Ok(Json(summary).into_response())
@@ -194,6 +255,30 @@ async fn notice_progress(
         .await
         .map_err(RestError::from_store)?;
     Ok(Json(progress).into_response())
+}
+
+async fn notice_receipts(
+    State(state): State<NoticeRestState>,
+    headers: HeaderMap,
+    Path(notice_id): Path<NoticeId>,
+    Query(params): Query<ReceiptsParams>,
+) -> Result<Response, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    require_notice_manager(&principal)?;
+    let page = state
+        .store
+        .list_receipts(ListNoticeReceiptsQuery {
+            notice_id,
+            acknowledged: params.acknowledged,
+            limit: params
+                .limit
+                .unwrap_or(RECEIPTS_DEFAULT_LIMIT)
+                .clamp(1, RECEIPTS_MAX_LIMIT),
+            offset: params.offset.unwrap_or(0).max(0),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(page).into_response())
 }
 
 #[derive(Debug, Serialize)]

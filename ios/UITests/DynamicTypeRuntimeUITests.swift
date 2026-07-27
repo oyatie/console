@@ -54,6 +54,39 @@ final class DynamicTypeRuntimeUITests: FieldUITestCase {
 
         close.tap()
         XCTAssertTrue(close.waitForNonExistence(timeout: 10), "Consent sheet must dismiss before changing tabs.")
+
+        let messenger = app.collectionViews[AID.messengerTab]
+        XCTAssertTrue(tapTab(KO.messengerTitle, destination: messenger))
+        XCTAssertTrue(messenger.waitForExistence(timeout: 10))
+        let threadID = try UITestFixture.requiredID(UITestFixture.messengerThreadID)
+        let thread = app.buttons[AID.messengerThreadRow(threadID)]
+        XCTAssertTrue(thread.waitForExistence(timeout: 15))
+        let navigationBar = app.navigationBars.firstMatch
+        XCTAssertTrue(
+            navigationBar.waitForExistence(timeout: 10),
+            "Accessibility Dynamic Type must expose Messenger navigation chrome before thread geometry is audited."
+        )
+        XCTAssertGreaterThanOrEqual(
+            thread.frame.minY,
+            navigationBar.frame.maxY,
+            "Accessibility Dynamic Type must keep the complete selected Messenger thread outside navigation chrome."
+        )
+        let threadTexts = thread.descendants(matching: .staticText).allElementsBoundByIndex
+        XCTAssertGreaterThanOrEqual(threadTexts.count, 3, "Accessibility Dynamic Type must retain the full thread title, kind, and member count.")
+        let title = threadTexts[0]
+        let chip = threadTexts[1]
+        let member = threadTexts[2]
+        for text in [title, chip, member] {
+            XCTAssertTrue(text.isHittable, "Accessibility Dynamic Type thread content must remain hittable: \(text.label)")
+            XCTAssertTrue(visible(text.frame, in: messenger.frame), "Accessibility Dynamic Type thread content must remain visible: \(text.label)")
+            XCTAssertClearOfChrome(text.frame)
+        }
+        XCTAssertGreaterThan(
+            member.frame.minY,
+            max(title.frame.maxY, chip.frame.maxY),
+            "Accessibility Dynamic Type must place the complete member count below the title and kind chip."
+        )
+
         let (body, timestamp, container) = try await openSeededMessengerMessage()
         XCTAssertTrue(body.isHittable)
         XCTAssertTrue(timestamp.isHittable)
@@ -93,14 +126,31 @@ final class DynamicTypeRuntimeUITests: FieldUITestCase {
         let deadline = Date().addingTimeInterval(timeout)
         guard container.waitForExistence(timeout: min(timeout, 2)) else { return false }
 
+        // Stop on the condition the caller actually asserts. `isHittable` is
+        // satisfied by a row whose bottom edge is still clipped by the list, so
+        // this helper handed back a timestamp that then failed the caller's
+        // strict containment check. Positioning the message FOR that check is
+        // the helper's job; making it merely tappable is not enough.
         for _ in 0..<maxSwipes {
-            if body.exists, body.isHittable, timestamp.exists, timestamp.isHittable {
+            if messagePositioned(body: body, timestamp: timestamp, in: container) {
                 return true
             }
             guard Date() < deadline else { return false }
             container.swipeUp()
         }
-        return body.exists && body.isHittable && timestamp.exists && timestamp.isHittable
+        return messagePositioned(body: body, timestamp: timestamp, in: container)
+    }
+
+    private func messagePositioned(
+        body: XCUIElement,
+        timestamp: XCUIElement,
+        in container: XCUIElement
+    ) -> Bool {
+        guard body.exists, body.isHittable, timestamp.exists, timestamp.isHittable else {
+            return false
+        }
+        let bounds = container.frame
+        return visible(body.frame, in: bounds) && visible(timestamp.frame, in: bounds)
     }
 
     private func sameHorizontalBand(_ lhs: CGRect, _ rhs: CGRect) -> Bool {

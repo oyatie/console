@@ -97,14 +97,21 @@ data class MyPayrollLine (
     /**
      *
      *
-     * Values: STAGED,BLOCKED_LEGAL_GATE,READY_FOR_REVIEW,APPROVED,ISSUED,VOID
+     * Values: STAGED,BLOCKED_LEGAL_GATE,READY_FOR_REVIEW,ATTENDANCE_CLOSED,CALCULATING,CALCULATED,SUBMITTED,REJECTED,APPROVED,DISBURSEMENT_SCHEDULED,PAID,ISSUED,VOID
      */
     @Serializable
     enum class RunStatus(val value: kotlin.String) {
         @SerialName(value = "STAGED") STAGED("STAGED"),
         @SerialName(value = "BLOCKED_LEGAL_GATE") BLOCKED_LEGAL_GATE("BLOCKED_LEGAL_GATE"),
         @SerialName(value = "READY_FOR_REVIEW") READY_FOR_REVIEW("READY_FOR_REVIEW"),
+        @SerialName(value = "ATTENDANCE_CLOSED") ATTENDANCE_CLOSED("ATTENDANCE_CLOSED"),
+        @SerialName(value = "CALCULATING") CALCULATING("CALCULATING"),
+        @SerialName(value = "CALCULATED") CALCULATED("CALCULATED"),
+        @SerialName(value = "SUBMITTED") SUBMITTED("SUBMITTED"),
+        @SerialName(value = "REJECTED") REJECTED("REJECTED"),
         @SerialName(value = "APPROVED") APPROVED("APPROVED"),
+        @SerialName(value = "DISBURSEMENT_SCHEDULED") DISBURSEMENT_SCHEDULED("DISBURSEMENT_SCHEDULED"),
+        @SerialName(value = "PAID") PAID("PAID"),
         @SerialName(value = "ISSUED") ISSUED("ISSUED"),
         @SerialName(value = "VOID") VOID("VOID");
     }

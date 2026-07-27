@@ -112,13 +112,27 @@ targets:
         # entitlement: only the app and separately signed seeder hold that
         # capability, preserving the real process-boundary proof.
 
+  MaintenanceFieldAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/MaintenanceFieldAppTests
+    dependencies:
+      - target: MaintenanceFieldApp
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_BUNDLE_IDENTIFIER: "$(MNT_IOS_BUNDLE_ID).AppTests"
+
 schemes:
   MaintenanceFieldApp:
     build:
       targets:
         MaintenanceFieldApp: all
         MaintenanceFieldUITests: [test]
+        MaintenanceFieldAppTests: [test]
     test:
       targets:
         - MaintenanceFieldUITests
+        - MaintenanceFieldAppTests
       gatherCoverageData: false

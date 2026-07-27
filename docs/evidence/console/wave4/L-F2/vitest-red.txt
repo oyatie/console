@@ -1,0 +1,2601 @@
+
+ RUN  v4.1.8 /Users/jasonlee/Developer/maintenance-worktrees/w4-f2-a11y-20260725/web
+
+ ❯ src/console/objectcard/ObjectCard.test.tsx (26 tests | 8 failed) 557ms
+     × renders the header object code as a focusable button, not an inert span 50ms
+     × renders every relation row's far-end reference as a focusable button 44ms
+     × copies the exact drag payload token on keyboard activation 40ms
+     × reports a failed copy instead of dying silently 38ms
+     × keeps Tab inside the dialog (forward wrap) 25ms
+     × keeps Shift+Tab inside the dialog (backward wrap) 23ms
+     × returns focus to the invoking control when Escape closes the dialog 19ms
+     × returns focus to the invoking control when the close button closes the dialog 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCard drag host is a keyboard-operable control > renders the header object code as a focusable button, not an inert span
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Copy reference WO-2643 4호기 유압 점검"
+
+Here are the accessible roles:
+
+  article:
+
+  Name "4호기 유압 점검 객체 카드":
+  [36m<article[39m
+    [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "4호기 유압 점검":
+  [36m<h2[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+  [36m/>[39m
+
+  Name "속성·관계":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "속성":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "생애주기·이력":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "작용·액션":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "속성":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "관계":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"관계"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"생애주기"[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"버전 이력"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"이중 승인"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33maria-current[39m=[32m"step"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "관계 해제 EQ-118 5호기 지게차":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 EQ-118 5호기 지게차"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "관계 해제 AP-3121 정비 결재 AP-3121":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 AP-3121 정비 결재 AP-3121"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "연결":
+  [36m<button[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--signal); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--signal);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "데이터 오버라이드":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "자동화 wf-wo-review 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"자동화 wf-wo-review 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "정책 pbac-wo-edit 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"정책 pbac-wo-edit 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "담당 재지정 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"담당 재지정 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "작업 종료 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"작업 종료 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "폐기 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"폐기 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "개체 코드":
+  [36m<input[39m
+    [33maria-label[39m=[32m"개체 코드"[39m
+    [33mplaceholder[39m=[32m"WO-2643"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "관계 유형":
+  [36m<input[39m
+    [33maria-label[39m=[32m"관계 유형"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m"relates_to"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<article[39m
+      [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+      [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+          [36m>[39m
+            [0m4호기 유압 점검[0m
+          [36m</h2>[39m
+          [36m<span[39m
+            [33mdata-obj-code[39m=[32m"WO-2643"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"[39m
+            [33mtitle[39m=[32m"4호기 유압 점검 참조로 끌기"[39m
+          [36m>[39m
+            [0mWO-2643[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"작업지시 유형"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m작업지시[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"생애주기 활성"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m활성[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m스키마 v2[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m데이터 오버라이드[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-4);"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+        [36m>[39m
+          [0m속성·관계[0m
+        [36m</h3>[39m
+        [36m<section[39m
+          [33maria-labelledby[39m=[32m"object-card-properties"[39m
+          [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mid[39m=[32m"object-card-properties"[39m
+              [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+            [36m>[39m
+              [0m속성[0m
+            [36m</h3>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+            [36m>[39m
+              [0m4개[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"[39m
+              [36m>[39m
+                [0m우선순위[0m
+                [36m<span[39m
+                  [33maria-label[39m=[32m"choice 유형"[39m
+                  [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+                [36m>[39m
+                  [0mchoice[0m
+                [36m</span>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"[39m
+              [36m>[39m
+                [0m긴급[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/objectcard/ObjectCard.test.tsx:204:25
+    202|   it("renders the header object code as a focusable button, not an ine…
+    203|     renderCard(allowGate);
+    204|     const host = screen.getByRole("button", { name: headerName });
+       |                         ^
+    205|     expect(host.tagName).toBe("BUTTON");
+    206|     expect(host.getAttribute("draggable")).toBe("true");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCard drag host is a keyboard-operable control > renders every relation row's far-end reference as a focusable button
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Copy reference EQ-118 5호기 지게차"
+
+Here are the accessible roles:
+
+  article:
+
+  Name "4호기 유압 점검 객체 카드":
+  [36m<article[39m
+    [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "4호기 유압 점검":
+  [36m<h2[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+  [36m/>[39m
+
+  Name "속성·관계":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "속성":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "생애주기·이력":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "작용·액션":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "속성":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "관계":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"관계"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"생애주기"[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"버전 이력"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"이중 승인"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33maria-current[39m=[32m"step"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "관계 해제 EQ-118 5호기 지게차":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 EQ-118 5호기 지게차"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "관계 해제 AP-3121 정비 결재 AP-3121":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 AP-3121 정비 결재 AP-3121"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "연결":
+  [36m<button[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--signal); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--signal);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "데이터 오버라이드":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "자동화 wf-wo-review 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"자동화 wf-wo-review 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "정책 pbac-wo-edit 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"정책 pbac-wo-edit 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "담당 재지정 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"담당 재지정 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "작업 종료 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"작업 종료 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "폐기 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"폐기 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "개체 코드":
+  [36m<input[39m
+    [33maria-label[39m=[32m"개체 코드"[39m
+    [33mplaceholder[39m=[32m"WO-2643"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "관계 유형":
+  [36m<input[39m
+    [33maria-label[39m=[32m"관계 유형"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m"relates_to"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<article[39m
+      [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+      [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+          [36m>[39m
+            [0m4호기 유압 점검[0m
+          [36m</h2>[39m
+          [36m<span[39m
+            [33mdata-obj-code[39m=[32m"WO-2643"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"[39m
+            [33mtitle[39m=[32m"4호기 유압 점검 참조로 끌기"[39m
+          [36m>[39m
+            [0mWO-2643[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"작업지시 유형"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m작업지시[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"생애주기 활성"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m활성[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m스키마 v2[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m데이터 오버라이드[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-4);"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+        [36m>[39m
+          [0m속성·관계[0m
+        [36m</h3>[39m
+        [36m<section[39m
+          [33maria-labelledby[39m=[32m"object-card-properties"[39m
+          [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mid[39m=[32m"object-card-properties"[39m
+              [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+            [36m>[39m
+              [0m속성[0m
+            [36m</h3>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+            [36m>[39m
+              [0m4개[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"[39m
+              [36m>[39m
+                [0m우선순위[0m
+                [36m<span[39m
+                  [33maria-label[39m=[32m"choice 유형"[39m
+                  [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+                [36m>[39m
+                  [0mchoice[0m
+                [36m</span>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"[39m
+              [36m>[39m
+                [0m긴급[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/objectcard/ObjectCard.test.tsx:213:25
+    211|     renderCard(allowGate);
+    212|     const relation = stub.relations[0];
+    213|     const host = screen.getByRole("button", {
+       |                         ^
+    214|       name: A11Y.copyRefAria(relation.code, relation.title),
+    215|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCard drag host is a keyboard-operable control > copies the exact drag payload token on keyboard activation
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Copy reference WO-2643 4호기 유압 점검"
+
+Here are the accessible roles:
+
+  article:
+
+  Name "4호기 유압 점검 객체 카드":
+  [36m<article[39m
+    [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "4호기 유압 점검":
+  [36m<h2[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+  [36m/>[39m
+
+  Name "속성·관계":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "속성":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "생애주기·이력":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "작용·액션":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "속성":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "관계":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"관계"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"생애주기"[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"버전 이력"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"이중 승인"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33maria-current[39m=[32m"step"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "관계 해제 EQ-118 5호기 지게차":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 EQ-118 5호기 지게차"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "관계 해제 AP-3121 정비 결재 AP-3121":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 AP-3121 정비 결재 AP-3121"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "연결":
+  [36m<button[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--signal); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--signal);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "데이터 오버라이드":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "자동화 wf-wo-review 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"자동화 wf-wo-review 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "정책 pbac-wo-edit 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"정책 pbac-wo-edit 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "담당 재지정 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"담당 재지정 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "작업 종료 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"작업 종료 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "폐기 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"폐기 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "개체 코드":
+  [36m<input[39m
+    [33maria-label[39m=[32m"개체 코드"[39m
+    [33mplaceholder[39m=[32m"WO-2643"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "관계 유형":
+  [36m<input[39m
+    [33maria-label[39m=[32m"관계 유형"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m"relates_to"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<article[39m
+      [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+      [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+          [36m>[39m
+            [0m4호기 유압 점검[0m
+          [36m</h2>[39m
+          [36m<span[39m
+            [33mdata-obj-code[39m=[32m"WO-2643"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"[39m
+            [33mtitle[39m=[32m"4호기 유압 점검 참조로 끌기"[39m
+          [36m>[39m
+            [0mWO-2643[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"작업지시 유형"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m작업지시[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"생애주기 활성"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m활성[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m스키마 v2[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m데이터 오버라이드[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-4);"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+        [36m>[39m
+          [0m속성·관계[0m
+        [36m</h3>[39m
+        [36m<section[39m
+          [33maria-labelledby[39m=[32m"object-card-properties"[39m
+          [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mid[39m=[32m"object-card-properties"[39m
+              [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+            [36m>[39m
+              [0m속성[0m
+            [36m</h3>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+            [36m>[39m
+              [0m4개[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"[39m
+              [36m>[39m
+                [0m우선순위[0m
+                [36m<span[39m
+                  [33maria-label[39m=[32m"choice 유형"[39m
+                  [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+                [36m>[39m
+                  [0mchoice[0m
+                [36m</span>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"[39m
+              [36m>[39m
+                [0m긴급[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/objectcard/ObjectCard.test.tsx:227:25
+    225|     });
+    226|     renderCard(allowGate);
+    227|     const host = screen.getByRole("button", { name: headerName });
+       |                         ^
+    228|     host.focus();
+    229|     expect(document.activeElement).toBe(host);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCard drag host is a keyboard-operable control > reports a failed copy instead of dying silently
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Copy reference WO-2643 4호기 유압 점검"
+
+Here are the accessible roles:
+
+  article:
+
+  Name "4호기 유압 점검 객체 카드":
+  [36m<article[39m
+    [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "4호기 유압 점검":
+  [36m<h2[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+  [36m/>[39m
+
+  Name "속성·관계":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "속성":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "생애주기·이력":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "작용·액션":
+  [36m<h3[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<h3[39m
+    [33mid[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "속성":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-properties"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relations"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "관계 연결":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-relation-draw"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-lifecycle"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-history"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-approvals"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "작용 중":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-acting"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  Name "액션":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"object-card-actions"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "관계":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"관계"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "생애주기":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"생애주기"[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "버전 이력":
+  [36m<ol[39m
+    [33maria-label[39m=[32m"버전 이력"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  Name "이중 승인":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"이중 승인"[39m
+    [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33maria-current[39m=[32m"step"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "관계 해제 EQ-118 5호기 지게차":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 EQ-118 5호기 지게차"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "관계 해제 AP-3121 정비 결재 AP-3121":
+  [36m<button[39m
+    [33maria-label[39m=[32m"관계 해제 AP-3121 정비 결재 AP-3121"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "연결":
+  [36m<button[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--signal); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--signal);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "데이터 오버라이드":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "자동화 wf-wo-review 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"자동화 wf-wo-review 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "정책 pbac-wo-edit 열기":
+  [36m<button[39m
+    [33maria-label[39m=[32m"정책 pbac-wo-edit 열기"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "담당 재지정 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"담당 재지정 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "작업 종료 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"작업 종료 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "폐기 실행":
+  [36m<button[39m
+    [33maria-label[39m=[32m"폐기 실행"[39m
+    [33mdata-window-control[39m=[32m"true"[39m
+    [33mstyle[39m=[32m"min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "개체 코드":
+  [36m<input[39m
+    [33maria-label[39m=[32m"개체 코드"[39m
+    [33mplaceholder[39m=[32m"WO-2643"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "관계 유형":
+  [36m<input[39m
+    [33maria-label[39m=[32m"관계 유형"[39m
+    [33mstyle[39m=[32m"min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"[39m
+    [33mvalue[39m=[32m"relates_to"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<span[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<article[39m
+      [33maria-label[39m=[32m"4호기 유압 점검 객체 카드"[39m
+      [33mstyle[39m=[32m"display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-2);"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"[39m
+          [36m>[39m
+            [0m4호기 유압 점검[0m
+          [36m</h2>[39m
+          [36m<span[39m
+            [33mdata-obj-code[39m=[32m"WO-2643"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"[39m
+            [33mtitle[39m=[32m"4호기 유압 점검 참조로 끌기"[39m
+          [36m>[39m
+            [0mWO-2643[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"작업지시 유형"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m작업지시[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33maria-label[39m=[32m"생애주기 활성"[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m활성[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m스키마 v2[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+          [36m>[39m
+            [0m데이터 오버라이드[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: grid; gap: var(--sp-4);"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mstyle[39m=[32m"margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"[39m
+        [36m>[39m
+          [0m속성·관계[0m
+        [36m</h3>[39m
+        [36m<section[39m
+          [33maria-labelledby[39m=[32m"object-card-properties"[39m
+          [33mstyle[39m=[32m"display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mid[39m=[32m"object-card-properties"[39m
+              [33mstyle[39m=[32m"margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"[39m
+            [36m>[39m
+              [0m속성[0m
+            [36m</h3>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+            [36m>[39m
+              [0m4개[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"[39m
+              [36m>[39m
+                [0m우선순위[0m
+                [36m<span[39m
+                  [33maria-label[39m=[32m"choice 유형"[39m
+                  [33mstyle[39m=[32m"display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"[39m
+                [36m>[39m
+                  [0mchoice[0m
+                [36m</span>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mstyle[39m=[32m"color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"[39m
+              [36m>[39m
+                [0m긴급[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mstyle[39m=[32m"display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"[39m
+            [36...
+ ❯ Object.getElementError ../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/console/objectcard/ObjectCard.test.tsx:241:25
+    239|     stubClipboard(() => Promise.reject(new Error("denied")));
+    240|     renderCard(allowGate);
+    241|     const host = screen.getByRole("button", { name: headerName });
+       |                         ^
+    242|     host.focus();
+    243|     await user.keyboard("{Enter}");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCardModal focus management > keeps Tab inside the dialog (forward wrap)
+AssertionError: expected <body><div>…(2)</div></body> to be <button type="button" …(3)></button> // Object.is equality
+
+- Expected
++ Received
+
++ <body>
++   <div>
+      <button
++       type="button"
++     >
++       open-card
++     </button>
++     <div
++       aria-label="4호기 유압 점검 상세"
++       aria-modal="true"
++       class="console"
++       role="dialog"
++       style="position: fixed; inset: 0px; display: grid; place-items: start center; padding: var(--sp-6); overflow-y: auto; background: color-mix(in srgb, var(--canvas) 86%, transparent); z-index: 60;"
++     >
++       <div
++         style="border-radius: var(--radius-card); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-pop);"
++       >
++         <div
++           style="display: flex; justify-content: flex-end; padding: var(--sp-3) var(--sp-3) 0;"
++         >
++           <button
+              aria-label="닫기"
+              data-window-control="true"
+              style="min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"
+              type="button"
+            >
+              닫기
++           </button>
++         </div>
++         <article
++           aria-label="4호기 유압 점검 객체 카드"
++           style="display: grid; gap: var(--sp-5); padding: var(--sp-5); background: var(--surface); color: var(--ink); font-family: var(--font-sans);"
++         >
++           <header
++             style="display: grid; gap: var(--sp-2);"
++           >
++             <div
++               style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++             >
++               <h2
++                 style="margin: 0px; color: var(--ink); font-size: var(--text-h1); font-weight: var(--fw-strong); letter-spacing: var(--tracking-tight);"
++               >
++                 4호기 유압 점검
++               </h2>
++               <span
++                 data-obj-code="WO-2643"
++                 draggable="true"
++                 style="color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"
++                 title="4호기 유압 점검 참조로 끌기"
++               >
++                 WO-2643
++               </span>
++             </div>
++             <div
++               style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++             >
++               <span
++                 aria-label="작업지시 유형"
++                 style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++               >
++                 작업지시
++               </span>
++               <span
++                 aria-label="생애주기 활성"
++                 style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++               >
++                 활성
++               </span>
++               <span
++                 style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++               >
++                 스키마 v2
++               </span>
++               <span
++                 style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++               >
++                 데이터 오버라이드
++               </span>
++             </div>
++           </header>
++           <div
++             style="display: grid; gap: var(--sp-4);"
++           >
++             <h3
++               style="margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"
++             >
++               속성·관계
++             </h3>
++             <section
++               aria-labelledby="object-card-properties"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-properties"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   속성
++                 </h3>
++                 <span
++                   style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                 >
++                   4개
++                 </span>
++               </div>
++               <div
++                 style="display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"
++               >
++                 <div
++                   style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"
++                 >
++                   <span
++                     style="display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                   >
++                     우선순위
++                     <span
++                       aria-label="choice 유형"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       choice
++                     </span>
++                   </span>
++                   <span
++                     style="color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"
++                   >
++                     긴급
++                   </span>
++                 </div>
++                 <div
++                   style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"
++                 >
++                   <span
++                     style="display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                   >
++                     담당자
++                     <span
++                       aria-label="user 유형"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       user
++                     </span>
++                   </span>
++                   <span
++                     style="color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"
++                   >
++                     박정비
++                   </span>
++                 </div>
++                 <div
++                   style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"
++                 >
++                   <span
++                     style="display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                   >
++                     완료 기한
++                     <span
++                       aria-label="date 유형"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       date
++                     </span>
++                   </span>
++                   <span
++                     style="color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"
++                   >
++                     2026-07-12
++                   </span>
++                 </div>
++                 <div
++                   style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border-soft);"
++                 >
++                   <span
++                     style="display: flex; align-items: center; gap: var(--sp-2); color: var(--steel); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                   >
++                     예상 비용
++                     <span
++                       aria-label="currency 유형"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       currency
++                     </span>
++                   </span>
++                   <span
++                     style="color: var(--ink); font-size: var(--text-body); font-weight: var(--fw-medium); text-align: right; word-break: break-word;"
++                   >
++                     ₩1,850,000
++                   </span>
++                 </div>
++               </div>
++             </section>
++             <section
++               aria-labelledby="object-card-relations"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-relations"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   관계
++                 </h3>
++                 <span
++                   style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                 >
++                   2개
++                 </span>
++               </div>
++               <ul
++                 aria-label="관계"
++                 style="display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"
++               >
++                 <li
++                   style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"
++                 >
++                   <span
++                     data-obj-code="EQ-118"
++                     draggable="true"
++                     style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++                     title="5호기 지게차 참조로 끌기"
++                   >
++                     <span
++                       aria-label="입력 관계"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       ←
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       대상 장비
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       N:N
++                     </span>
++                     <span
++                       style="color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"
++                     >
++                       EQ-118
++                     </span>
++                     <span
++                       style="color: var(--ink); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                     >
++                       5호기 지게차
++                     </span>
++                   </span>
++                   <button
++                     aria-label="관계 해제 EQ-118 5호기 지게차"
++                     data-window-control="true"
++                     style="min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"
++                     type="button"
++                   >
++                     해제
++                   </button>
++                 </li>
++                 <li
++                   style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"
++                 >
++                   <span
++                     data-obj-code="AP-3121"
++                     draggable="true"
++                     style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++                     title="정비 결재 AP-3121 참조로 끌기"
++                   >
++                     <span
++                       aria-label="출력 관계"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       →
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       연결 결재
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       1:1
++                     </span>
++                     <span
++                       style="color: var(--faint); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-strong);"
++                     >
++                       AP-3121
++                     </span>
++                     <span
++                       style="color: var(--ink); font-size: var(--text-sm); font-weight: var(--fw-strong);"
++                     >
++                       정비 결재 AP-3121
++                     </span>
++                   </span>
++                   <button
++                     aria-label="관계 해제 AP-3121 정비 결재 AP-3121"
++                     data-window-control="true"
++                     style="min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"
++                     type="button"
++                   >
++                     해제
+                    </button>
++                 </li>
++               </ul>
++             </section>
++             <section
++               aria-labelledby="object-card-relation-draw"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-relation-draw"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   관계 연결
++                 </h3>
++               </div>
++               <div
++                 style="display: grid; gap: var(--sp-3);"
++               >
++                 <div
++                   style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: var(--sp-2); align-items: end;"
++                 >
++                   <label
++                     style="display: grid; gap: var(--sp-1); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong);"
++                   >
++                     개체 코드
++                     <input
++                       aria-label="개체 코드"
++                       placeholder="WO-2643"
++                       style="min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"
++                       value=""
++                     />
++                   </label>
++                   <label
++                     style="display: grid; gap: var(--sp-1); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong);"
++                   >
++                     관계 유형
++                     <input
++                       aria-label="관계 유형"
++                       style="min-height: 44px; min-width: 0px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-3); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--fw-body);"
++                       value="relates_to"
++                     />
++                   </label>
++                   <button
++                     data-window-control="true"
++                     style="min-height: 44px; border-radius: var(--radius-md); background: var(--signal); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--signal);"
++                     type="button"
++                   >
++                     연결
++                   </button>
++                 </div>
++                 <div
++                   style="display: grid; gap: var(--sp-2); padding: var(--sp-4); border: 1px dashed var(--canvas-grid-bd); border-radius: var(--radius-md); background: var(--canvas-grid-bg); color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-medium); text-align: center;"
++                 >
++                   여기로 개체를 끌어 놓기
++                 </div>
++               </div>
++             </section>
++           </div>
++           <div
++             style="display: grid; gap: var(--sp-4);"
++           >
++             <h3
++               style="margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"
++             >
++               생애주기·이력
++             </h3>
++             <section
++               aria-labelledby="object-card-lifecycle"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-lifecycle"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   생애주기
++                 </h3>
++               </div>
++               <ol
++                 aria-label="생애주기"
++                 style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"
++               >
++                 <li>
++                   <span
++                     aria-label="생애주기 초안"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     초안
++                   </span>
++                 </li>
++                 <li
++                   aria-current="step"
++                 >
++                   <span
++                     aria-label="생애주기 활성"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     활성
++                   </span>
++                 </li>
++                 <li>
++                   <span
++                     aria-label="생애주기 보관"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     보관
++                   </span>
++                 </li>
++                 <li>
++                   <span
++                     aria-label="생애주기 폐기"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     폐기
++                   </span>
++                 </li>
++               </ol>
++               <div
++                 style="display: grid; gap: var(--sp-3);"
++               >
++                 <button
++                   aria-expanded="false"
++                   data-window-control="true"
++                   style="min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"
++                   type="button"
++                 >
++                   데이터 오버라이드
++                 </button>
++               </div>
++             </section>
++             <section
++               aria-labelledby="object-card-history"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-history"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   버전 이력
++                 </h3>
++                 <span
++                   style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                 >
++                   2개
++                 </span>
++               </div>
++               <ol
++                 aria-label="버전 이력"
++                 style="display: grid; gap: var(--sp-3); margin: 0px; padding: 0px; list-style: none;"
++               >
++                 <li
++                   style="position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"
++                 >
++                   <span
++                     aria-hidden="true"
++                     style="position: absolute; inset-block-start: var(--sp-4); inset-inline-start: var(--sp-4); width: 10px; height: 10px; border-radius: var(--radius-pill); border: 2px solid var(--timeline-dot-bd); background: var(--timeline-dot-bg);"
++                   />
++                   <div
++                     style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-medium);"
++                   >
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       v2
++                     </span>
++                     <span
++                       role="status"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       해시 검증
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       reassign
++                     </span>
++                     <span>
++                       2026-07-08 14:20 · 조이슨
++                     </span>
++                   </div>
++                 </li>
++                 <li
++                   style="position: relative; display: grid; gap: var(--sp-2); padding: var(--sp-3); padding-inline-start: calc(var(--sp-6) + var(--sp-2)); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface);"
++                 >
++                   <span
++                     aria-hidden="true"
++                     style="position: absolute; inset-block-start: var(--sp-4); inset-inline-start: var(--sp-4); width: 10px; height: 10px; border-radius: var(--radius-pill); border: 2px solid var(--timeline-dot-bd); background: var(--timeline-dot-bg);"
++                   />
++                   <div
++                     style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-medium);"
++                   >
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--info-bd); background: var(--info-bg); color: var(--info-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       v1
++                     </span>
++                     <span
++                       role="status"
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       해시 검증
++                     </span>
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       create
++                     </span>
++                     <span>
++                       2026-07-07 09:03 · 조이슨
++                     </span>
++                   </div>
++                 </li>
++               </ol>
++             </section>
++             <section
++               aria-labelledby="object-card-approvals"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-approvals"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   이중 승인
++                 </h3>
++                 <span
++                   style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                 >
++                   1개
++                 </span>
++               </div>
++               <ul
++                 aria-label="이중 승인"
++                 style="display: grid; gap: var(--sp-2); margin: 0px; padding: 0px; list-style: none;"
++               >
++                 <li
++                   style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--muted);"
++                 >
++                   <span
++                     style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++                   >
++                     <span
++                       style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                     >
++                       데이터 오버라이드
++                     </span>
++                     <span
++                       style="color: var(--ink); font-size: var(--text-sm); font-weight: var(--fw-medium);"
++                     >
++                       조이슨 → 박정비
++                     </span>
++                   </span>
++                   <span
++                     role="status"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--ok-bd); background: var(--ok-bg); color: var(--ok-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     승인
++                   </span>
++                 </li>
++               </ul>
++             </section>
++           </div>
++           <div
++             style="display: grid; gap: var(--sp-4);"
++           >
++             <h3
++               style="margin: 0px; color: var(--faint); font-size: var(--text-xs); font-weight: var(--fw-strong); letter-spacing: var(--tracking-label); text-transform: uppercase;"
++             >
++               작용·액션
++             </h3>
++             <section
++               aria-labelledby="object-card-acting"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-acting"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   작용 중
++                 </h3>
++               </div>
++               <div
++                 aria-label="작용 중"
++                 style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++               >
++                 <button
++                   aria-label="자동화 wf-wo-review 열기"
++                   data-window-control="true"
++                   disabled=""
++                   style="display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"
++                   type="button"
++                 >
++                   <span
++                     aria-label="자동화"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--accent-bd); background: var(--accent-bg); color: var(--accent-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     wf-wo-review
++                   </span>
++                 </button>
++                 <button
++                   aria-label="정책 pbac-wo-edit 열기"
++                   data-window-control="true"
++                   disabled=""
++                   style="display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 var(--sp-1); border: medium; background: transparent; cursor: pointer;"
++                   type="button"
++                 >
++                   <span
++                     aria-label="정책"
++                     style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--purple-bd); background: var(--purple-bg); color: var(--purple-tx); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                   >
++                     pbac-wo-edit
++                   </span>
++                 </button>
++               </div>
++             </section>
++             <section
++               aria-labelledby="object-card-actions"
++               style="display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow);"
++             >
++               <div
++                 style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2);"
++               >
++                 <h3
++                   id="object-card-actions"
++                   style="margin: 0px; color: var(--ink); font-size: var(--text-card-title); font-weight: var(--fw-strong);"
++                 >
++                   액션
++                 </h3>
++                 <span
++                   style="display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 var(--sp-2); border-radius: var(--radius-chip); border: 1px solid var(--border); background: var(--muted); color: var(--steel); font-size: var(--text-xs); font-weight: var(--fw-strong); line-height: 1; white-space: nowrap;"
++                 >
++                   3개
++                 </span>
++               </div>
++               <div
++                 style="display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;"
++               >
++                 <button
++                   aria-label="담당 재지정 실행"
++                   data-window-control="true"
++                   style="min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"
++                   type="button"
++                 >
++                   담당 재지정
++                 </button>
++                 <button
++                   aria-label="작업 종료 실행"
++                   data-window-control="true"
++                   style="min-height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 0 var(--sp-4); font-size: var(--text-sm); font-weight: var(--fw-strong); cursor: pointer;"
++                   type="button"
++                 >
++                   작업 종료
++                 </button>
++                 <button
++                   aria-label="폐기 실행"
++                   data-window-control="true"
++                   style="min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"
++                   type="button"
++                 >
++                   폐기
++                 </button>
++               </div>
++             </section>
++           </div>
++         </article>
++       </div>
++     </div>
++   </div>
++ </body>
+
+ ❯ src/console/objectcard/ObjectCard.test.tsx:293:36
+    291|     focusable[focusable.length - 1].focus();
+    292|     await user.tab();
+    293|     expect(document.activeElement).toBe(focusable[0]);
+       |                                    ^
+    294|   });
+    295|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCardModal focus management > keeps Shift+Tab inside the dialog (backward wrap)
+AssertionError: expected <button type="button"></button> to be <button type="button" …(3)></button> // Object.is equality
+
+- Expected
++ Received
+
+  <button
+-   aria-label="폐기 실행"
+-   data-window-control="true"
+-   style="min-height: 44px; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-tx); padding: 0 var(--sp-3); font-size: var(--text-xs); font-weight: var(--fw-strong); cursor: pointer; border-color: var(--danger-bd);"
+    type="button"
+  >
+-   폐기
++   open-card
+  </button>
+
+ ❯ src/console/objectcard/ObjectCard.test.tsx:304:36
+    302|     focusable[0].focus();
+    303|     await user.tab({ shift: true });
+    304|     expect(document.activeElement).toBe(focusable[focusable.length - 1…
+       |                                    ^
+    305|   });
+    306|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCardModal focus management > returns focus to the invoking control when Escape closes the dialog
+AssertionError: expected <body><div>…(1)</div></body> to be <button type="button"></button> // Object.is equality
+
+- Expected
++ Received
+
++ <body>
++   <div>
+      <button
+        type="button"
+      >
+        open-card
+      </button>
++   </div>
++ </body>
+
+ ❯ src/console/objectcard/ObjectCard.test.tsx:317:36
+    315|       expect(screen.queryByRole("dialog")).toBeNull();
+    316|     });
+    317|     expect(document.activeElement).toBe(opener);
+       |                                    ^
+    318|   });
+    319|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  src/console/objectcard/ObjectCard.test.tsx > ObjectCardModal focus management > returns focus to the invoking control when the close button closes the dialog
+AssertionError: expected <body><div>…(1)</div></body> to be <button type="button"></button> // Object.is equality
+
+- Expected
++ Received
+
++ <body>
++   <div>
+      <button
+        type="button"
+      >
+        open-card
+      </button>
++   </div>
++ </body>
+
+ ❯ src/console/objectcard/ObjectCard.test.tsx:329:36
+    327|       expect(screen.queryByRole("dialog")).toBeNull();
+    328|     });
+    329|     expect(document.activeElement).toBe(opener);
+       |                                    ^
+    330|   });
+    331| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 18 passed (26)
+   Start at  03:47:25
+   Duration  1.07s (transform 148ms, setup 61ms, import 164ms, tests 557ms, environment 226ms)
+

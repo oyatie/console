@@ -3,7 +3,11 @@ import { Navigate, Route, Routes } from "react-router";
 
 import { isConsoleHost } from "./lib/consoleUrl";
 import { ConsoleRolloutBoundary } from "./console/rollout/ConsoleRolloutBoundary";
-import { EXPOSED_SCREEN_KEYS } from "./console/shell/nav";
+import { isConsoleDevelopmentPreviewEnabled } from "./console/rollout/developmentPreview";
+import {
+  EXPOSED_SCREEN_KEYS,
+  MOUNTED_SCREEN_KEYS,
+} from "./console/shell/nav";
 
 import { PublicLayout } from "./components/public/PublicLayout";
 import { AppShell } from "./components/shell/AppShell";
@@ -127,6 +131,9 @@ const MailPage = lazy(() =>
 );
 const SupportPage = lazy(() =>
   import("./pages/SupportPage").then((m) => ({ default: m.SupportPage })),
+);
+const FacilitiesPage = lazy(() =>
+  import("./pages/FacilitiesPage").then((m) => ({ default: m.FacilitiesPage })),
 );
 const EquipmentPage = lazy(() =>
   import("./pages/EquipmentPage").then((m) => ({ default: m.EquipmentPage })),
@@ -284,6 +291,13 @@ export function AppRouter() {
   // the console at its root, apex/www keep the storefront. localhost/dev is not
   // a console host, so dev e2e still lands on `/` = storefront.
   const consoleHost = isConsoleHost();
+  // Local-only full-console preview. Both guards are required: Vite replaces
+  // DEV with false in production builds, while the explicit flag keeps normal
+  // development and test runs on the production-faithful rollout path.
+  const consoleDevelopmentPreview = isConsoleDevelopmentPreviewEnabled({
+    dev: import.meta.env.DEV,
+    flag: import.meta.env.VITE_CONSOLE_DEV_PREVIEW,
+  });
   return (
     <Routes>
       {/* Shell-less full-screen routes */}
@@ -423,9 +437,13 @@ export function AppRouter() {
           element={
             <RouteErrorBoundary>
               <Suspense fallback={<PageSpinner />}>
-                <ConsoleRolloutBoundary approvedScreenKeys={EXPOSED_SCREEN_KEYS}>
-                  <ConsoleApp screenKeys={EXPOSED_SCREEN_KEYS} />
-                </ConsoleRolloutBoundary>
+                {consoleDevelopmentPreview ? (
+                  <ConsoleApp screenKeys={MOUNTED_SCREEN_KEYS} />
+                ) : (
+                  <ConsoleRolloutBoundary approvedScreenKeys={EXPOSED_SCREEN_KEYS}>
+                    <ConsoleApp screenKeys={EXPOSED_SCREEN_KEYS} />
+                  </ConsoleRolloutBoundary>
+                )}
               </Suspense>
             </RouteErrorBoundary>
           }
@@ -559,6 +577,9 @@ export function AppRouter() {
             <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
             {/* Legacy equipment page: kept at /equipment/legacy during transition */}
             <Route path="/equipment/legacy" element={<EquipmentPage />} />
+          </Route>
+          <Route element={<RequireNavItemRoute itemKey="facilities" />}>
+            <Route path="/facilities" element={<FacilitiesPage />} />
           </Route>
           <Route element={<RequireNavItemRoute itemKey="financial" />}>
             <Route path="/financial" element={<FinancialPage />} />

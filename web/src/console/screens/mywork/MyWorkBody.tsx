@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent,
 } from "react";
 import { useNavigate } from "react-router";
 
@@ -13,13 +14,23 @@ import { resolveRowTitle } from "../../../lib/rowTitle";
 import { StatusChip } from "../../components";
 import "../../tokens.css";
 import { screenHeaderStyle, screenTitleStyle } from "../screenHeader";
-import type { MyWorkApi, TodoSummary } from "./myWorkApi";
+import { MyWorkDetailPanel } from "./MyWorkDetailPanel";
+import type { CalendarEventResponse, MyWorkApi, TodoSummary, MyWorkbenchResponse } from "./myWorkApi";
 import {
+  actionInboxDue,
+  actionInboxDoneTone,
+  actionInboxTone,
+  actionStatusLabel,
   actionInboxLinkRoute,
+  createdCalendarRoute,
+  calendarTargetRoute,
+  calendarWorkbenchState,
   dueCountOn,
   filterAssigned,
   kindLabel,
+  kstLocalDateTimeToIso,
   myWorkStrings,
+  urgencyLabel,
   weekDays,
   type ActionInboxItem,
   type DayFilter,
@@ -38,28 +49,38 @@ function ownedBy<T>(api: object, value: T): ApiOwned<T> {
   return { api, value };
 }
 
+function assignedDetailId(itemId: string): string {
+  return `mywork-assigned-detail-${encodeURIComponent(itemId)}`;
+}
+
 export interface MyWorkBodyProps {
   api: MyWorkApi;
   now?: Date;
   /** Assigned-item drill; invoked only when a canonical source-object link resolves. */
   onOpen?: (item: ActionInboxItem) => void;
+  /** Mirrors the collaboration route guard; receipt navigation is omitted when
+   * the authenticated session cannot enter the owner surface. */
+  canOpenCalendarOwner?: boolean;
 }
 
-export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
+export function MyWorkBody({ api, now, onOpen, canOpenCalendarOwner = false }: MyWorkBodyProps) {
   const S = useMemo(() => myWorkStrings(), []);
   const navigate = useNavigate();
   const today = useMemo(() => now ?? new Date(), [now]);
   const currentApiRef = useRef<MyWorkApi | undefined>(api);
   const todosRequest = useRef(0);
+  const workbenchRequest = useRef(0);
   const inboxCursors = useRef(new Set<string>());
 
   useLayoutEffect(() => {
     currentApiRef.current = api;
     inboxCursors.current = new Set();
     todosRequest.current += 1;
+    workbenchRequest.current += 1;
     return () => {
       if (currentApiRef.current === api) currentApiRef.current = undefined;
       todosRequest.current += 1;
+      workbenchRequest.current += 1;
     };
   }, [api]);
 
@@ -77,6 +98,8 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
   );
   const [dayFilter, setDayFilter] = useState<DayFilter>("all");
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedItemId, setSelectedItemId] = useState<string>();
+  const assignedRowRefs = useRef(new Map<string, HTMLButtonElement>());
 
   const [todosStateOwned, setTodosStateOwned] = useState<ApiOwned<LoadState>>(() =>
     ownedBy(api, "loading"),
@@ -90,6 +113,23 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
   const [todoErrorOwned, setTodoErrorOwned] = useState<ApiOwned<string | undefined>>(() =>
     ownedBy(api, undefined),
   );
+  const [workbenchOwned, setWorkbenchOwned] = useState<ApiOwned<MyWorkbenchResponse | undefined>>(() =>
+    ownedBy(api, undefined),
+  );
+  const [workbenchLoadStateOwned, setWorkbenchLoadStateOwned] = useState<ApiOwned<LoadState>>(() =>
+    ownedBy(api, "loading"),
+  );
+  const [workbenchReloadKey, setWorkbenchReloadKey] = useState(0);
+  const [calendarTitleOwned, setCalendarTitleOwned] = useState<ApiOwned<string>>(() => ownedBy(api, ""));
+  const [calendarStartsOwned, setCalendarStartsOwned] = useState<ApiOwned<string>>(() => ownedBy(api, ""));
+  const [calendarEndsOwned, setCalendarEndsOwned] = useState<ApiOwned<string>>(() => ownedBy(api, ""));
+  const [calendarBusyOwned, setCalendarBusyOwned] = useState<ApiOwned<boolean>>(() => ownedBy(api, false));
+  const [calendarMessageOwned, setCalendarMessageOwned] = useState<ApiOwned<string | undefined>>(() =>
+    ownedBy(api, undefined),
+  );
+  const [createdCalendarEventOwned, setCreatedCalendarEventOwned] = useState<
+    ApiOwned<CalendarEventResponse | undefined>
+  >(() => ownedBy(api, undefined));
   const showDoneRef = useRef(showDone);
 
   const inboxState = inboxStateOwned.api === api ? inboxStateOwned.value : "loading";
@@ -101,9 +141,27 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
   const text = textOwned.api === api ? textOwned.value : "";
   const busy = busyOwned.api === api ? busyOwned.value : false;
   const todoError = todoErrorOwned.api === api ? todoErrorOwned.value : undefined;
+  const workbench = workbenchOwned.api === api ? workbenchOwned.value : undefined;
+  const workbenchLoadState = workbenchLoadStateOwned.api === api ? workbenchLoadStateOwned.value : "loading";
+  const calendarTitle = calendarTitleOwned.api === api ? calendarTitleOwned.value : "";
+  const calendarStarts = calendarStartsOwned.api === api ? calendarStartsOwned.value : "";
+  const calendarEnds = calendarEndsOwned.api === api ? calendarEndsOwned.value : "";
+  const calendarBusy = calendarBusyOwned.api === api && calendarBusyOwned.value;
+  const calendarMessage = calendarMessageOwned.api === api ? calendarMessageOwned.value : undefined;
+  const createdCalendarEvent = createdCalendarEventOwned.api === api
+    ? createdCalendarEventOwned.value
+    : undefined;
 
-  const timeFmt = useMemo(
-    () => new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false }),
+  const dueFmt = useMemo(
+    () =>
+      new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
     [],
   );
   const dowFmt = useMemo(() => new Intl.DateTimeFormat("ko-KR", { weekday: "narrow" }), []);
@@ -117,6 +175,9 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
       .then((res) => {
         if (!live || currentApiRef.current !== api) return;
         setItemsOwned(ownedBy(api, res.items));
+        setSelectedItemId((current) => {
+          return current && res.items.some((item) => item.id === current) ? current : undefined;
+        });
         const next = res.next_cursor ?? null;
         inboxCursors.current = new Set(next ? [next] : []);
         setNextCursorOwned(ownedBy(api, next));
@@ -131,6 +192,27 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
       live = false;
     };
   }, [api, reloadKey]);
+
+  useEffect(() => {
+    let live = true;
+    const request = workbenchRequest.current + 1;
+    workbenchRequest.current = request;
+    api
+      .loadWorkbench()
+      .then((snapshot) => {
+        if (!live || currentApiRef.current !== api || workbenchRequest.current !== request) return;
+        setWorkbenchOwned(ownedBy(api, snapshot));
+        setWorkbenchLoadStateOwned(ownedBy(api, "ready"));
+      })
+      .catch(() => {
+        if (live && currentApiRef.current === api && workbenchRequest.current === request) {
+          setWorkbenchLoadStateOwned(ownedBy(api, "error"));
+        }
+      });
+    return () => {
+      live = false;
+    };
+  }, [api, workbenchReloadKey]);
 
   const loadMoreInbox = useCallback(() => {
     if (!nextCursor || loadingMore || currentApiRef.current !== api) return;
@@ -267,13 +349,100 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
     [api, loadTodos, S],
   );
 
+  const calendarState = calendarWorkbenchState(workbench);
+  const scheduleFocusBlock = useCallback(() => {
+    const title = calendarTitle.trim();
+    const startsAt = kstLocalDateTimeToIso(calendarStarts);
+    const endsAt = kstLocalDateTimeToIso(calendarEnds);
+    if (calendarBusy || currentApiRef.current !== api) return;
+    if (!startsAt || !endsAt || new Date(endsAt) <= new Date(startsAt)) {
+      setCalendarMessageOwned(ownedBy(api, S.calendar.invalidRange));
+      return;
+    }
+    if (!title) return;
+    setCalendarBusyOwned(ownedBy(api, true));
+    setCalendarMessageOwned(ownedBy(api, undefined));
+    setCreatedCalendarEventOwned(ownedBy(api, undefined));
+    api
+      .createPersonalCalendarEvent({ title, startsAt, endsAt })
+      .then((created) => {
+        if (currentApiRef.current !== api) return;
+        setCalendarTitleOwned(ownedBy(api, ""));
+        setCalendarMessageOwned(ownedBy(api, S.calendar.scheduled));
+        setCreatedCalendarEventOwned(ownedBy(api, created));
+      })
+      .catch(() => {
+        if (currentApiRef.current === api) {
+          setCalendarMessageOwned(ownedBy(api, S.calendar.scheduleFailed));
+        }
+      })
+      .finally(() => {
+        if (currentApiRef.current === api) setCalendarBusyOwned(ownedBy(api, false));
+      });
+  }, [api, calendarBusy, calendarEnds, calendarStarts, calendarTitle, S]);
+
   const days = useMemo(() => weekDays(today), [today]);
   const sameDay = (a: Date, b: Date) =>
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const rows = useMemo(() => filterAssigned(items, dayFilter), [items, dayFilter]);
+  const selectedItem = useMemo(
+    () => rows.find((item) => item.id === selectedItemId),
+    [rows, selectedItemId],
+  );
+
+  const setAssignedDayFilter = useCallback(
+    (nextFilter: DayFilter) => {
+      setDayFilter(nextFilter);
+      if (nextFilter === "all" || !selectedItem) return;
+      const selectedDue = actionInboxDue(selectedItem.due);
+      if (!selectedDue || !sameDay(selectedDue, nextFilter.day)) {
+        setSelectedItemId(undefined);
+      }
+    },
+    [selectedItem],
+  );
+
+  const closeDetail = useCallback(() => {
+    const previousId = selectedItemId;
+    setSelectedItemId(undefined);
+    if (previousId) assignedRowRefs.current.get(previousId)?.focus();
+  }, [selectedItemId]);
+
+  const moveAssignedFocus = useCallback(
+    (event: KeyboardEvent<HTMLUListElement>) => {
+      const key = event.key.toLowerCase();
+      const direction = key === "j" || key === "arrowdown" ? 1 : key === "k" || key === "arrowup" ? -1 : 0;
+      if (!direction) return;
+
+      const controls = rows
+        .map((item) => assignedRowRefs.current.get(item.id))
+        .filter((control): control is HTMLButtonElement => control !== undefined);
+      if (controls.length === 0) return;
+
+      const currentIndex = controls.findIndex((control) => control === document.activeElement);
+      const nextIndex =
+        currentIndex === -1
+          ? direction > 0
+            ? 0
+            : controls.length - 1
+          : (currentIndex + direction + controls.length) % controls.length;
+      event.preventDefault();
+      controls[nextIndex]?.focus();
+    },
+    [rows],
+  );
 
   return (
-    <div className="console" style={rootStyle}>
+    <div
+      className="console"
+      style={rootStyle}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && selectedItem) {
+          event.preventDefault();
+          closeDetail();
+        }
+      }}
+    >
       <header style={headerStyle}>
         <h1 style={titleStyle}>{S.title}</h1>
       </header>
@@ -401,7 +570,7 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
               aria-pressed={dayFilter === "all"}
               style={allDayChipStyle(dayFilter === "all")}
               onClick={() => {
-                setDayFilter("all");
+                setAssignedDayFilter("all");
               }}
             >
               {S.assigned.allDays}
@@ -419,7 +588,7 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
                   aria-label={`${dowFmt.format(day)} ${String(day.getDate())} · ${String(count)}`}
                   style={weekCellStyle(active, isToday)}
                   onClick={() => {
-                    setDayFilter({ day });
+                    setAssignedDayFilter({ day });
                   }}
                 >
                   <span style={weekDowStyle}>{dowFmt.format(day)}</span>
@@ -442,7 +611,9 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
                 onClick={() => {
                   if (currentApiRef.current !== api) return;
                   setInboxStateOwned(ownedBy(api, "loading"));
-                  setReloadKey((k) => k + 1);
+                  setReloadKey((k) => {
+                    return k + 1;
+                  });
                 }}
               >
                 {S.retry}
@@ -453,10 +624,16 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
           ) : rows.length === 0 ? (
             <p style={emptyStyle}>{S.assigned.empty}</p>
           ) : (
-            <div style={{ display: "grid", gap: "var(--sp-3)" }}>
-              <ul style={listStyle}>
+            <div style={assignedWorkspaceStyle}>
+              <ul
+                style={listStyle}
+                aria-keyshortcuts="J K ArrowDown ArrowUp Enter Escape"
+                onKeyDown={moveAssignedFocus}
+              >
                 {rows.map((item) => {
                 const destination = actionInboxLinkRoute(item);
+                const selected = selectedItem?.id === item.id;
+                const due = actionInboxDue(item.due);
                 const resolved = resolveRowTitle(
                   item.title,
                   item.ref,
@@ -466,17 +643,44 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
                 const meta = [siteInTitle ? undefined : item.site, item.who].filter(Boolean).join(" · ");
                 return (
                   <li key={item.id} style={assignedRowStyle}>
-                    <StatusChip tone={item.done ? "ok" : "neutral"}>{kindLabel(item.kind, S)}</StatusChip>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={rowTitleStyle}>
-                        <span style={titleTextStyle}>{resolved.title}</span>
-                        {resolved.code ? <span style={rowCodeStyle}>{resolved.code}</span> : null}
-                      </div>
+                    <StatusChip tone={actionInboxDoneTone(item.done)}>{kindLabel(item.kind, S)}</StatusChip>
+                    <StatusChip tone={actionInboxTone(item.dueTone)}>{urgencyLabel(item.urg, S)}</StatusChip>
+                    <div style={assignedContentStyle}>
+                      <button
+                        ref={(control) => {
+                          if (control) assignedRowRefs.current.set(item.id, control);
+                          else assignedRowRefs.current.delete(item.id);
+                        }}
+                        type="button"
+                        data-window-control="true"
+                        aria-expanded={selected}
+                        aria-controls={selected ? assignedDetailId(item.id) : undefined}
+                        style={assignedSelectStyle(selected)}
+                        onClick={() => {
+                          setSelectedItemId(item.id);
+                        }}
+                      >
+                        <span style={rowTitleStyle}>
+                          <span style={titleTextStyle}>{resolved.title}</span>
+                          {resolved.code ? <span style={rowCodeStyle}>{resolved.code}</span> : null}
+                        </span>
+                      </button>
                       {meta ? <div style={rowMetaStyle}>{meta}</div> : null}
                     </div>
-                    {item.due ? (
-                      <StatusChip tone={item.dueTone}>{timeFmt.format(new Date(item.due))}</StatusChip>
+                    {due ? (
+                      <time
+                        dateTime={item.due}
+                        aria-label={S.assigned.dueAt(dueFmt.format(due))}
+                        style={dueStyle}
+                      >
+                        {S.assigned.dueAt(dueFmt.format(due))}
+                      </time>
+                    ) : item.due != null ? (
+                      <StatusChip tone="neutral">{S.assigned.dueUnavailable}</StatusChip>
                     ) : null}
+                    <StatusChip tone={actionInboxDoneTone(item.done)}>
+                      {actionStatusLabel(item.done, S)}
+                    </StatusChip>
                     <button
                       type="button"
                       data-window-control="true"
@@ -492,6 +696,16 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
                 );
                 })}
               </ul>
+              {selectedItem ? (
+                <MyWorkDetailPanel
+                  detailId={assignedDetailId(selectedItem.id)}
+                  item={selectedItem}
+                  dueFmt={dueFmt}
+                  onClose={closeDetail}
+                  onOpen={openItem}
+                  strings={S}
+                />
+              ) : null}
               {nextCursor ? (
                 <button
                   type="button"
@@ -504,6 +718,161 @@ export function MyWorkBody({ api, now, onOpen }: MyWorkBodyProps) {
                 </button>
               ) : null}
             </div>
+          )}
+        </section>
+
+        <section style={panelStyle} aria-label={S.calendar.title}>
+          <div style={panelHeadStyle}>
+            <h2 style={panelTitleStyle}>{S.calendar.title}</h2>
+            {calendarState.kind === "ready" ? (
+              <span style={countBadgeStyle}>{calendarState.total}</span>
+            ) : null}
+          </div>
+
+          {workbenchLoadState === "error" ? (
+            <div role="alert" style={{ display: "grid", gap: "var(--sp-2)" }}>
+              <p style={{ margin: 0, color: "var(--steel)" }}>{S.calendar.loadFailed}</p>
+              <button
+                type="button"
+                data-window-control="true"
+                style={ghostButtonStyle}
+                onClick={() => {
+                  if (currentApiRef.current !== api) return;
+                  setWorkbenchLoadStateOwned(ownedBy(api, "loading"));
+                  setWorkbenchReloadKey((key) => {
+                    return key + 1;
+                  });
+                }}
+              >
+                {S.retry}
+              </button>
+            </div>
+          ) : calendarState.kind === "loading" ? (
+            <StatusChip role="status">{S.loading}</StatusChip>
+          ) : calendarState.kind !== "ready" ? (
+            <p style={emptyStyle}>{S.calendar.unavailable}</p>
+          ) : (
+            <>
+              <time dateTime={calendarState.range.from} style={rowMetaStyle}>
+                {S.calendar.range(
+                  dueFmt.format(new Date(calendarState.range.from)),
+                  dueFmt.format(new Date(calendarState.range.to)),
+                )}
+              </time>
+              {calendarState.partial ? <p style={calendarNoticeStyle}>{S.calendar.partial}</p> : null}
+              {calendarState.truncated ? <p style={calendarNoticeStyle}>{S.calendar.truncated}</p> : null}
+              {calendarState.items.length === 0 ? (
+                <p style={emptyStyle}>{S.calendar.empty}</p>
+              ) : (
+                <ul style={listStyle}>
+                  {calendarState.items.map((event) => {
+                    const route = calendarTargetRoute(event);
+                    return (
+                      <li key={event.id} style={calendarRowStyle}>
+                        <div style={assignedContentStyle}>
+                          <strong style={titleTextStyle}>{event.title}</strong>
+                          <time dateTime={event.starts_at} style={rowMetaStyle}>
+                            {dueFmt.format(new Date(event.starts_at))} – {dueFmt.format(new Date(event.ends_at))}
+                          </time>
+                        </div>
+                        <button
+                          type="button"
+                          data-window-control="true"
+                          style={ghostButtonStyle}
+                          disabled={!route}
+                          onClick={() => {
+                            if (route) void navigate(route);
+                          }}
+                        >
+                          {S.calendar.open}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <form
+                style={calendarFormStyle}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  scheduleFocusBlock();
+                }}
+              >
+                <label style={calendarLabelStyle}>
+                  {S.calendar.focusTitle}
+                  <input
+                    type="text"
+                    required
+                    maxLength={160}
+                    value={calendarTitle}
+                    aria-label={S.calendar.focusTitle}
+                    onChange={(event) => {
+                      setCalendarTitleOwned(ownedBy(api, event.currentTarget.value));
+                    }}
+                    style={inputStyle}
+                  />
+                </label>
+                <label style={calendarLabelStyle}>
+                  {S.calendar.startsAt}
+                  <input
+                    type="datetime-local"
+                    required
+                    value={calendarStarts}
+                    aria-label={S.calendar.startsAt}
+                    onChange={(event) => {
+                      setCalendarStartsOwned(ownedBy(api, event.currentTarget.value));
+                    }}
+                    style={inputStyle}
+                  />
+                </label>
+                <label style={calendarLabelStyle}>
+                  {S.calendar.endsAt}
+                  <input
+                    type="datetime-local"
+                    required
+                    value={calendarEnds}
+                    aria-label={S.calendar.endsAt}
+                    onChange={(event) => {
+                      setCalendarEndsOwned(ownedBy(api, event.currentTarget.value));
+                    }}
+                    style={inputStyle}
+                  />
+                </label>
+                <button
+                  type="submit"
+                  data-window-control="true"
+                  disabled={calendarBusy || calendarTitle.trim().length === 0}
+                  style={addButtonStyle}
+                >
+                  {S.calendar.schedule}
+                </button>
+              </form>
+              {calendarMessage ? <p role="status" style={{ margin: 0, color: "var(--steel)" }}>{calendarMessage}</p> : null}
+              {createdCalendarEvent ? (
+                <div style={createdCalendarStyle} role="status">
+                  <div style={assignedContentStyle}>
+                    <strong style={titleTextStyle}>{S.calendar.created}: {createdCalendarEvent.title}</strong>
+                    <time dateTime={createdCalendarEvent.starts_at} style={rowMetaStyle}>
+                      {dueFmt.format(new Date(createdCalendarEvent.starts_at))} – {dueFmt.format(new Date(createdCalendarEvent.ends_at))}
+                    </time>
+                  </div>
+                  {canOpenCalendarOwner && createdCalendarRoute(createdCalendarEvent) ? (
+                    <button
+                      type="button"
+                      data-window-control="true"
+                      style={ghostButtonStyle}
+                      onClick={() => {
+                        const route = createdCalendarRoute(createdCalendarEvent);
+                        if (route) void navigate(route);
+                      }}
+                    >
+                      {S.calendar.openCreated}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
           )}
         </section>
       </div>
@@ -529,7 +898,10 @@ const titleStyle = screenTitleStyle;
 const gridStyle: CSSProperties = {
   display: "grid",
   gap: "var(--sp-5)",
-  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
+  // Two dense panels when space permits; one column before either queue loses
+  // readable task actions or metadata. `min(100%, …)` also keeps narrow
+  // embedded/windowed console views from overflowing.
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 24rem), 1fr))",
   alignItems: "start",
 };
 
@@ -710,11 +1082,82 @@ const weekDotEmptyStyle: CSSProperties = {
 
 const assignedRowStyle: CSSProperties = {
   display: "flex",
+  flexWrap: "wrap",
   alignItems: "center",
   gap: "var(--sp-3)",
   padding: "var(--sp-3) 0",
   borderTop: "1px solid var(--border-soft)",
 };
+
+const assignedWorkspaceStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
+  alignItems: "start",
+  gap: "var(--sp-4)",
+};
+
+const calendarRowStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  gap: "var(--sp-3)",
+  padding: "var(--sp-3) 0",
+  borderTop: "1px solid var(--border-soft)",
+};
+
+const calendarFormStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 11rem), 1fr))",
+  alignItems: "end",
+  gap: "var(--sp-3)",
+  paddingTop: "var(--sp-2)",
+  borderTop: "1px solid var(--border-soft)",
+};
+
+const calendarLabelStyle: CSSProperties = {
+  display: "grid",
+  gap: "var(--sp-1)",
+  color: "var(--steel)",
+  fontSize: "var(--text-sm)",
+};
+
+const calendarNoticeStyle: CSSProperties = {
+  margin: 0,
+  color: "var(--steel)",
+  fontSize: "var(--text-sm)",
+};
+
+const createdCalendarStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  gap: "var(--sp-3)",
+  padding: "var(--sp-3)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius-sm)",
+  background: "var(--muted)",
+};
+
+const assignedContentStyle: CSSProperties = {
+  flex: "1 1 12rem",
+  minWidth: "min(100%, 12rem)",
+};
+
+function assignedSelectStyle(selected: boolean): CSSProperties {
+  return {
+    display: "block",
+    width: "100%",
+    padding: 0,
+    border: "none",
+    background: "transparent",
+    color: "inherit",
+    textAlign: "left",
+    cursor: "pointer",
+    borderRadius: "var(--radius-sm)",
+    outlineOffset: 2,
+    ...(selected ? { color: "var(--teal)" } : undefined),
+  };
+}
 
 const rowTitleStyle: CSSProperties = {
   display: "flex",
@@ -744,6 +1187,14 @@ const rowCodeStyle: CSSProperties = {
 const rowMetaStyle: CSSProperties = {
   fontSize: "var(--text-sm)",
   color: "var(--steel)",
+};
+
+const dueStyle: CSSProperties = {
+  flex: "none",
+  color: "var(--steel)",
+  fontSize: "var(--text-sm)",
+  fontVariantNumeric: "tabular-nums",
+  whiteSpace: "nowrap",
 };
 
 const ghostButtonStyle: CSSProperties = {

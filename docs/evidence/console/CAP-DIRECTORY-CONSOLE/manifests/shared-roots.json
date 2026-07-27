@@ -1,0 +1,26 @@
+{
+  "lane": "CAP-DIRECTORY-CONSOLE",
+  "stage": "scout",
+  "entries": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "append \"directory\" to MOUNTED_SCREEN_KEYS",
+      "note": "nav item { screen: \"directory\", labelKey: \"console.shell.nav.directory\", icon: \"book\" } already exists in the comms group, ungated; EXPOSED_SCREEN_KEYS untouched (DARK until ADR-0025 approval)"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "add entry `directory: DirectoryScreenBody` importing from \"../directory\"",
+      "note": "registry values are no-prop ComponentType; body binds session via useAuth/useActiveBranchId like MessengerScreenBody"
+    },
+    {
+      "file": "web/src/i18n/ko.ts",
+      "change": "none",
+      "note": "ko.console.shell.nav.directory = \"주소록\" already present; module strings go in module-owned web/src/i18n/directory.ts"
+    },
+    {
+      "file": "backend/openapi/openapi.yaml",
+      "change": "conditional — only if a GAP-DIR-* endpoint lands (see backend-gap.md); every new operation needs a per-domain tags: entry",
+      "note": "identity crate HOT; no backend lane in this charter"
+    }
+  ]
+}

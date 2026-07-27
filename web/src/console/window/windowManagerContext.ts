@@ -9,7 +9,12 @@ export interface WindowManagerContextValue {
   panelWidth: number;
   narrow: boolean;
   stateOf: (id: string) => WindowState;
-  /** Add/replace an entry, applying any user-saved state for its id (no forced pin). */
+  /**
+   * Add/replace an entry, applying any user-saved state for its id (no forced
+   * pin). No production surface calls this — see the inert-storage note in
+   * `WindowManager.tsx`; it is the restore half of a layout feature with no
+   * writer.
+   */
   register: (entry: WindowEntry) => void;
   /** Open the object as the right pin (§4.7-3 default open gesture). */
   open: (entry: WindowEntry) => void;
@@ -21,9 +26,17 @@ export interface WindowManagerContextValue {
   /** Pin toggle: pin the entry, or unpin it (→ default) when it is already pinned. */
   togglePin: (entry: WindowEntry) => void;
   setPanelWidth: (width: number) => void;
-  /** Persist the current arrangement as the user's saved layout. */
+  /**
+   * Persist the current arrangement as the user's saved layout. UNCALLED in the
+   * shipped app (no 배치 저장 control exists), which is why the layout key is
+   * never written — see the inert-storage note in `WindowManager.tsx`.
+   */
   saveLayout: () => void;
-  /** Reset every window to the default arrangement and clear the saved layout. */
+  /**
+   * Reset every window to the default arrangement and clear the saved layout.
+   * Also uncalled: the design's 기본 배치 semantics is carried by the per-card X
+   * control (`close`), not by a global reset.
+   */
   restoreDefault: () => void;
 }
 

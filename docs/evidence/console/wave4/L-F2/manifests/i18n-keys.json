@@ -1,0 +1,43 @@
+{
+  "lane": "L-F2",
+  "collision_root": "web/src/i18n/ko.ts",
+  "owner": "integrator",
+  "reason": "The L-F2 drag host is now a real control and needs a Korean accessible name plus Korean copy/copy-failed status chips. ko.ts is a serialized collision root, so the lane ships the English fallback in web/src/console/objectcard/strings.ts (objectCardA11yStrings) and requests the Korean wire-up here.",
+  "operation": "add",
+  "namespace": "ko.console.objectcardA11y",
+  "insert_after": "ko.console.objectcardDyn",
+  "satisfies_type": {
+    "name": "ObjectCardA11yStrings",
+    "import_from": "web/src/console/objectcard/strings.ts"
+  },
+  "keys": [
+    {
+      "key": "copyRefAria",
+      "kind": "function",
+      "signature": "(code: string, title: string) => string",
+      "ko": "(code, title) => `${code} ${title} 참조 복사`",
+      "en_fallback_shipped": "(code, title) => `Copy reference ${code} ${title}`",
+      "usage": "aria-label of the object-reference drag host (ObjectCard header code + every relation row)."
+    },
+    {
+      "key": "copied",
+      "kind": "string",
+      "ko": "참조 복사됨",
+      "en_fallback_shipped": "Reference copied",
+      "usage": "StatusChip tone=ok role=status after a successful clipboard write."
+    },
+    {
+      "key": "copyFailed",
+      "kind": "string",
+      "ko": "참조 복사 실패",
+      "en_fallback_shipped": "Copy failed",
+      "usage": "StatusChip tone=danger role=alert when navigator.clipboard rejects."
+    }
+  ],
+  "apply_notes": [
+    "Add the block with `satisfies ObjectCardA11yStrings`, matching the existing `objectcardDyn` block's style.",
+    "No lane-side change is needed after the wire-up: objectCardA11yStrings() already prefers ko.console.objectcardA11y and only falls back to English when the key is absent.",
+    "Do NOT widen ObjectCardDynStrings to carry these keys — ko.console.objectcardDyn has a `satisfies ObjectCardDynStrings` clause, so widening that interface forces a ko.ts edit from every lane that adds a dynamic-layer string. The separate namespace is what keeps ko.ts serialized.",
+    "web/src/console/objectcard/ObjectCard.test.tsx reads the strings through the accessor, not through literals, so the tests pass unchanged before and after the wire-up."
+  ]
+}

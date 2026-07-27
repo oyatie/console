@@ -493,6 +493,7 @@ const validPr473Files = {
           RT_PASSWORD="$(openssl rand -hex 32)"
           LEAVE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           ONTOLOGY_COMMAND_PASSWORD="$(openssl rand -hex 32)"
+          PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           docker run --rm --network host \
             -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
             -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci \
@@ -501,6 +502,7 @@ const validPr473Files = {
             -e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
             -e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
             -e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
             --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             /usr/local/bin/postgres-reconcile-topology
 
@@ -512,9 +514,23 @@ const validPr473Files = {
             -c "DROP DATABASE IF EXISTS mnt_apalis_contract WITH (FORCE)" \
             -c "CREATE DATABASE mnt_apalis_contract OWNER mnt_app"
 
+          BUCK_ADMIN_PASSWORD="$(openssl rand -hex 32)"
+          umask 077
+          printf "CREATE ROLE mnt_buck_admin SUPERUSER LOGIN PASSWORD '%s';\\n" \
+            "$BUCK_ADMIN_PASSWORD" > "$RUNNER_TEMP/buck-admin.sql"
+          docker run --rm --network host \
+            -e PGPASSWORD=postgres \
+            -v "$RUNNER_TEMP/buck-admin.sql:/buck-admin.sql:ro" \
+            --entrypoint psql \
+            postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
+            -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 -f /buck-admin.sql
+          rm -f "$RUNNER_TEMP/buck-admin.sql"
+
           echo "::add-mask::$APP_PASSWORD"
           echo "::add-mask::$RT_PASSWORD"
+          echo "::add-mask::$BUCK_ADMIN_PASSWORD"
           {
+            echo "MNT_BUCK_ADMIN_DATABASE_URL=postgres://mnt_buck_admin:\${BUCK_ADMIN_PASSWORD}@localhost:5432/mnt_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
             echo "MNT_APALIS_OWNER_DATABASE_URL=postgres://mnt_app:\${APP_PASSWORD}@localhost:5432/mnt_apalis_contract"
             echo "MNT_APALIS_RUNTIME_DATABASE_URL=postgres://mnt_rt:\${RT_PASSWORD}@localhost:5432/mnt_apalis_contract"
             echo "MNT_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/mnt_apalis_contract"
@@ -681,6 +697,24 @@ describe("production hardening PR 473 typed operational gate", () => {
       ),
     });
     assertHasFailure(fakeTopology, "must invoke the exact reconcile command");
+
+    const missingPlatformForceTopology = evaluatePr473({
+      ".github/workflows/ci.yml": validPr473Files[
+        ".github/workflows/ci.yml"
+      ]
+        .replace(
+          '          PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"\n',
+          "",
+        )
+        .replace(
+          '            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \\\n',
+          "",
+        ),
+    });
+    assertHasFailure(
+      missingPlatformForceTopology,
+      "must invoke the exact reconcile command",
+    );
   });
 
   it("rejects shell-control topology command bypasses", () => {
@@ -822,10 +856,12 @@ const validProductionEvidenceText = `${JSON.stringify(
 
 const validWorkflowFiles = {
   "scripts/check-production-authority-blocked.mjs": "#!/usr/bin/env node\n",
+  "scripts/check-openapi-toolchain-security.test.mjs":
+    "import { test } from 'node:test';\ntest('compatibility', () => {});\n",
   "package.json": JSON.stringify({
     scripts: {
       "test:production-hardening":
-        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/wait-for-protected-main-ci.test.mjs",
+        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs",
       "check:production-authority-blocked":
         "node scripts/check-production-authority-blocked.mjs",
     },
@@ -892,6 +928,8 @@ jobs:
         run: cargo deny --manifest-path backend/Cargo.toml check
   node-advisories:
     steps:
+      - name: OpenAPI toolchain compatibility
+        run: npm run test:openapi-toolchain-security
       - name: npm audit
         run: |
           npm audit --omit=dev --audit-level=high --json > report.json
@@ -909,18 +947,15 @@ on:
         default: false
         type: boolean
 jobs:
-  ci-gate:
-    steps:
-      - name: Wait for CI success
-        run: bash scripts/wait-for-protected-main-ci.sh
   release-probe:
     permissions:
       contents: read
       packages: read
     steps:
       - name: Checkout
-        uses: actions/checkout@${"a".repeat(40)}
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: \${{ needs.ci-admission.outputs.release_sha }}
           persist-credentials: false
       - name: Provision topology
         run: cat ops/postgres-reconcile-topology.sh
@@ -1026,15 +1061,19 @@ git("diff-tree")
 raise RuntimeError("origin/main advanced after authorization")
 raise RuntimeError("activation requires a separate accepted higher-authority ADR/cutover")
 `,
-  "scripts/wait-for-protected-main-ci.sh": `#!/usr/bin/env bash
-set -euo pipefail
-runs="$(gh run list --workflow ci.yml --commit "$SHA" --event push --branch main --json status,conclusion,url,event,headBranch)"
-runs="$(jq '[.[] | select(.event == "push" and .headBranch == "main")]' <<<"$runs")"
-conclusion="$(jq -r '.[0].conclusion // ""' <<<"$runs")"
-if [[ "$conclusion" == "success" ]]; then exit 0; fi
-exit 1
-`,
+
 };
+
+// The acceptance fixture is the checked-in release contract. Negative cases below
+// mutate it; this prevents a toy workflow from drifting away from the real gate.
+validWorkflowFiles["package.json"] = readFileSync(
+  new URL("../package.json", import.meta.url),
+  "utf8",
+);
+validWorkflowFiles[".github/workflows/image-release.yml"] = readFileSync(
+  new URL("../.github/workflows/image-release.yml", import.meta.url),
+  "utf8",
+);
 
 function evaluateWorkflows(overrides = {}) {
   const files = { ...validWorkflowFiles, ...overrides };
@@ -1088,6 +1127,27 @@ describe("production hardening workflow gates", () => {
   });
   it("accepts active CI, security, and image-release workflow gates", () => {
     assert.deepEqual(evaluateWorkflows().failures, []);
+  });
+
+  it("rejects removing the OpenAPI toolchain compatibility regression", () => {
+    const pkg = JSON.parse(validWorkflowFiles["package.json"]);
+    delete pkg.scripts["test:openapi-toolchain-security"];
+    assertHasFailure(
+      evaluateWorkflows({ "package.json": JSON.stringify(pkg) }),
+      "OpenAPI toolchain security regression test and exact package CLI wiring",
+    );
+
+    assertHasFailure(
+      evaluateWorkflows({
+        ".github/workflows/security.yml": validWorkflowFiles[
+          ".github/workflows/security.yml"
+        ].replace(
+          "        run: npm run test:openapi-toolchain-security\n",
+          "        run: echo compatibility gate removed\n",
+        ),
+      }),
+      "security workflow must actively run npm run test:openapi-toolchain-security",
+    );
   });
 
   it("binds the documented GitHub environment Team response shape exactly", () => {
@@ -1205,6 +1265,26 @@ describe("production hardening workflow gates", () => {
     );
   });
 
+  it("rejects recovery without an exact required candidate SHA", () => {
+    const releaseWorkflow =
+      validWorkflowFiles[".github/workflows/image-release.yml"];
+    const result = evaluateWorkflows({
+      ".github/workflows/image-release.yml": releaseWorkflow.replace(
+        `      candidate_sha:
+        description: Exact current-main SHA whose successful push CI authorizes recovery
+        required: true
+        type: string
+`,
+        "",
+      ),
+    });
+
+    assertHasFailure(
+      result,
+      "workflow_dispatch recovery must require a lowercase 40-character candidate_sha",
+    );
+  });
+
   it("rejects production digest promotion without an explicit required false-by-default dispatch input", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
@@ -1231,11 +1311,11 @@ describe("production hardening workflow gates", () => {
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
       ".github/workflows/image-release.yml": releaseWorkflow
-        .replace(
+        .replaceAll(
           "github.event_name == 'workflow_dispatch'",
           "github.event_name == 'push'",
         )
-        .replace(
+        .replaceAll(
           "github.ref == 'refs/heads/main'",
           "startsWith(github.ref, 'refs/heads/')",
         ),
@@ -1267,7 +1347,6 @@ describe("production hardening workflow gates", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
     for (const mutated of [
-      releaseWorkflow.replace("      actions: read\n", ""),
       releaseWorkflow.replace(
         "prevent_self_review == true",
         "prevent_self_review == false",
@@ -1288,10 +1367,6 @@ describe("production hardening workflow gates", () => {
       ),
       releaseWorkflow.replace(
         "          TRIGGERING_ACTOR: \${{ github.triggering_actor }}\n",
-        "",
-      ),
-      releaseWorkflow.replace(
-        "          RUN_ATTEMPT: \${{ github.run_attempt }}\n",
         "",
       ),
       releaseWorkflow.replaceAll(
@@ -1328,7 +1403,7 @@ describe("production hardening workflow gates", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
-      ".github/workflows/image-release.yml": releaseWorkflow.replace(
+      ".github/workflows/image-release.yml": releaseWorkflow.replaceAll(
         "      contents: read\n",
         "",
       ),
@@ -1344,8 +1419,8 @@ describe("production hardening workflow gates", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
-      ".github/workflows/image-release.yml": releaseWorkflow.replace(
-        `actions/checkout@${"a".repeat(40)}`,
+      ".github/workflows/image-release.yml": releaseWorkflow.replaceAll(
+        `actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0`,
         "actions/checkout@v7",
       ),
     });
@@ -1359,18 +1434,11 @@ describe("production hardening workflow gates", () => {
   it("rejects release-probe topology use before checkout", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
-    const checkout = `      - name: Checkout
-        uses: actions/checkout@${"a".repeat(40)}
-        with:
-          persist-credentials: false
-`;
-    const topology = `      - name: Provision topology
-        run: cat ops/postgres-reconcile-topology.sh
-`;
     const result = evaluateWorkflows({
-      ".github/workflows/image-release.yml": releaseWorkflow
-        .replace(checkout, "")
-        .replace(topology, `${topology}${checkout}`),
+      ".github/workflows/image-release.yml": releaseWorkflow.replaceAll(
+        "ops/postgres-reconcile-topology.sh",
+        "removed-topology-script.sh",
+      ),
     });
 
     assertHasFailure(result, "before using ops/postgres-reconcile-topology.sh");
@@ -1380,7 +1448,7 @@ describe("production hardening workflow gates", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
-      ".github/workflows/image-release.yml": releaseWorkflow.replace(
+      ".github/workflows/image-release.yml": releaseWorkflow.replaceAll(
         "          persist-credentials: false\n",
         "          persist-credentials: true\n",
       ),
@@ -1400,21 +1468,15 @@ describe("production hardening workflow gates", () => {
         `      packages: read
 `,
       )
-      .replace(
-        `      - name: Checkout
-        uses: actions/checkout@${"a".repeat(40)}
-        with:
-          persist-credentials: false
-      - name: Provision topology
-        run: cat ops/postgres-reconcile-topology.sh
-`,
-        "",
+      .replaceAll(
+        "ops/postgres-reconcile-topology.sh",
+        "removed-topology-script.sh",
       )
       .replace(
         "  production-promotion-preflight:\n",
         `  production-promotion-preflight:
     # These strings must not leak backward into release-probe validation.
-    # contents: read; actions/checkout@${"a".repeat(40)}; persist-credentials: false
+    # contents: read; actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0; persist-credentials: false
     # ops/postgres-reconcile-topology.sh
 `,
       );
@@ -1450,8 +1512,8 @@ jobs:
 `,
       ".github/workflows/image-release.yml": `name: Image Release
 env:
-  UNUSED_RELEASE_TEXT: "Wait for CI success Trivy scan (fail on HIGH/CRITICAL) cosign sign --yes attest-build-provenance bump-prod-digests"
-# - name: Wait for CI success
+  UNUSED_RELEASE_TEXT: "completed CI admission Trivy scan (fail on HIGH/CRITICAL) cosign sign --yes attest-build-provenance bump-prod-digests"
+# - name: completed CI admission
 # - name: Trivy scan (fail on HIGH/CRITICAL)
 # - run: cosign sign --yes "$IMAGE"
 # - uses: actions/attest-build-provenance@v4
@@ -1477,7 +1539,7 @@ jobs:
     );
     assertHasFailure(
       result,
-      "image-release must actively wait for successful protected-main push CI",
+      "image-release must trigger only from completed CI",
     );
     assertHasFailure(result, "image-release must actively cosign sign");
   });

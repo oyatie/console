@@ -23,6 +23,8 @@ uuid = { workspace = true }
 
 [dev-dependencies]
 mnt-platform-test-support = { workspace = true }
+# Integration tests exercise concurrent command replay with `tokio::join!`.
+tokio = { workspace = true }
 
 [lints]
 workspace = true

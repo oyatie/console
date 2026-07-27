@@ -1,0 +1,9 @@
+
+ RUN  v4.1.8 /Users/jasonlee/Developer/maintenance-worktrees/w4-f1-window-20260725/web
+
+
+ Test Files  335 passed (335)
+      Tests  2810 passed (2810)
+   Start at  04:46:19
+   Duration  21.32s (transform 12.90s, setup 29.64s, import 41.23s, tests 136.52s, environment 123.10s)
+

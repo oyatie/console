@@ -212,6 +212,8 @@ async fn seed_work_order(owner_pool: &PgPool, org: OrgId) -> (BranchId, WorkOrde
         let store = PgWorkOrderStore::new(owner_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id,
                 management_no: management_no.to_owned(),
@@ -338,6 +340,8 @@ async fn create_work_order_resolves_hogi_decorated_management_no_as_runtime_role
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id: branch,
                 management_no: "3호기".to_owned(),
@@ -377,6 +381,8 @@ async fn create_work_order_missing_equipment_is_not_found_as_runtime_role(owner_
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id: branch,
                 management_no: "999호기".to_owned(),
@@ -432,6 +438,8 @@ async fn admin_list_scope_surfaces_off_branch_work_order_as_runtime_role(owner_p
         let store = PgWorkOrderStore::new(owner_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id: branch_b,
                 management_no: "77".to_owned(),
@@ -712,6 +720,8 @@ async fn management_no_lookup_is_exact_then_unique_normalized_as_runtime_role(ow
                 let store = PgWorkOrderStore::new(rt_pool.clone());
                 store
                     .create_work_order(CreateWorkOrderCommand {
+                        maintenance_type: None,
+                        maintenance_cause: None,
                         actor: receptionist,
                         branch_id: branch,
                         management_no: value,
@@ -937,6 +947,8 @@ async fn create_work_order_exact_duplicate_management_no_is_conflict_as_runtime_
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id: branch,
                 management_no: "10".to_owned(),

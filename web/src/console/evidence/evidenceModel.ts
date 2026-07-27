@@ -72,23 +72,9 @@ export function derivativesOf(copies: readonly EvidenceCopy[]): EvidenceCopy[] {
   return copies.filter((copy) => copy.kind === "DERIVATIVE");
 }
 
-// Audit action → custody stage (contract §11 audit actions → §4.5 ledger).
-// Legacy/stub fallback only — real custody events carry the wire CustodyStage
-// directly (see WIRE_CUSTODY_STAGES below).
-const AUDIT_CUSTODY_STAGE: Record<string, CustodyStage | undefined> = {
-  "evidence_object.register": "REGISTERED",
-  "evidence_copy.register_original": "HASH_RECORDED",
-  "evidence_copy.confirm_upload": "HASH_RECORDED",
-  "evidence_copy.worm_verified": "WORM_REPLICATED",
-  "evidence_tsa.verify": "TSA_VERIFIED",
-  "evidence_custody.transition": "CUSTODY_TRANSFERRED",
-  "evidence_legal_hold.apply": "LEGAL_HOLD_APPLIED",
-  "evidence_legal_hold.release": "LEGAL_HOLD_RELEASED",
-  "evidence_export.create": "EXPORTED",
-  "evidence_disposal.request": "DISPOSAL_REQUESTED",
-  "evidence_disposal.complete": "DISPOSED",
-};
-
+// Custody stages are emitted by docs-rest as the generated CustodyStage enum.
+// The console accepts only that authoritative ledger value; it never infers a
+// stage from a read/audit action or from a local transition suggestion.
 const WIRE_CUSTODY_STAGES: ReadonlySet<string> = new Set<CustodyStage>([
   "REGISTERED",
   "HASH_RECORDED",
@@ -106,18 +92,8 @@ const WIRE_CUSTODY_STAGES: ReadonlySet<string> = new Set<CustodyStage>([
   "DISPOSED",
 ]);
 
-/**
- * Map a custody-event action to a display stage. Real CustodyEventView rows
- * (evidenceApi.mapCustodyEvent) carry the literal wire CustodyStage as the
- * action — recognized directly. Read/access-shaped audit actions become
- * ACCESSED; anything else unknown returns null (timeline shows the raw action).
- */
 export function custodyStageOfAudit(action: string): CustodyStage | null {
-  if (WIRE_CUSTODY_STAGES.has(action)) return action as CustodyStage;
-  const direct = AUDIT_CUSTODY_STAGE[action];
-  if (direct) return direct;
-  if (/read|view|access|download|list/.test(action.toLowerCase())) return "ACCESSED";
-  return null;
+  return WIRE_CUSTODY_STAGES.has(action) ? (action as CustodyStage) : null;
 }
 
 export function custodyStageLabel(stage: CustodyStage): string {

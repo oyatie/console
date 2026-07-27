@@ -4,7 +4,7 @@
 // Real-wired: GET /api/v1/evidence/objects (list) + GET .../{id} (detail on
 // open) + verify/hold via evidenceApi. After every mutation the full detail is
 // refetched — never client-synthesized (§4-25-⑥).
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { ko } from "../../i18n/ko";
@@ -16,7 +16,7 @@ import {
   applyLegalHold,
   decideHoldReleaseApproval,
   getEvidenceObjectDetail,
-  listEvidenceObjects,
+  listEvidenceObjectPage,
   releaseLegalHold,
   requestHoldReleaseApproval,
   verifyEvidenceObject,
@@ -25,17 +25,16 @@ import {
   admissibilityLabel,
   admissibilityTone,
   custodyStageLabel,
-  holdActive,
   originalOf,
   shortDigest,
 } from "./evidenceModel";
-import type { AdmissibilityStatus, EvidenceObjectDetail } from "./types";
+import { EvidenceDetailRefreshError, type AdmissibilityStatus, type EvidenceObjectDetail } from "./types";
 import "../tokens.css";
 
 const T = ko.console.evidence;
 const TA = ko.console.audit;
 
-type RecordsFilter = "ALL" | AdmissibilityStatus | "HOLD";
+type RecordsFilter = "ALL" | AdmissibilityStatus;
 type ListState = "loading" | "ready" | "error";
 
 const ADMISSIBILITY_ORDER: readonly AdmissibilityStatus[] = [
@@ -185,18 +184,34 @@ function timestampLabel(value: string): string {
 
 export interface EvidenceRecordsProps {
   api: ConsoleApiClient;
+  /** Effective-session boundary; a new incarnation must discard prior data synchronously. */
+  sessionIncarnation: string | undefined;
   /** The signed-in user — blocks a self-decide in the hold-release UI. */
   currentUserId?: string;
 }
 
-export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
-  const [rows, setRows] = useState<EvidenceObjectDetail[]>([]);
+export function EvidenceRecords({ api, currentUserId, sessionIncarnation }: EvidenceRecordsProps) {
+  return (
+    <EvidenceRecordsContent
+      key={sessionIncarnation ?? "evidence-anonymous"}
+      api={api}
+      currentUserId={currentUserId}
+    />
+  );
+}
+
+function EvidenceRecordsContent({ api, currentUserId }: Omit<EvidenceRecordsProps, "sessionIncarnation">) {
+  // Wire truth, undecorated. Display-name resolution is a render concern and
+  // must never become an input to fetching — see the `rows` memo below.
+  const [wireRows, setWireRows] = useState<EvidenceObjectDetail[]>([]);
   const [listState, setListState] = useState<ListState>("loading");
   const [users, setUsers] = useState<Map<string, string>>(new Map());
   const [filter, setFilter] = useState<RecordsFilter>("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openError, setOpenError] = useState<string | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const listRequest = useRef(0);
+  const listController = useRef<AbortController | null>(null);
   const windowManager = useOptionalWindowManager();
 
   const resolveName = useCallback(
@@ -216,44 +231,65 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
     [resolveName],
   );
 
+  // Names resolve here, not at fetch time. Decorating inside `loadList` made the
+  // user directory an input to the list effect: when `/api/v1/users` resolved it
+  // changed `resolveNames` -> `loadList` -> the effect re-fired and re-seeded the
+  // rows from the *list* endpoint, replacing an opened object's authoritative
+  // detail with a list row that carries no holds, custody or copies. A held
+  // object then rendered as unheld — the exact falsehood the sibling
+  // "does not synthesize a hold from a list-row flag" test forbids.
+  const rows = useMemo(() => wireRows.map(resolveNames), [wireRows, resolveNames]);
+
   const loadList = useCallback(async () => {
+    listController.current?.abort();
+    const controller = new AbortController();
+    listController.current = controller;
+    const request = ++listRequest.current;
     setListState("loading");
     try {
-      const items = await listEvidenceObjects(api);
-      setRows(items.map(resolveNames));
+      const page = await listEvidenceObjectPage(api, 200, 0, controller.signal);
+      if (controller.signal.aborted || request !== listRequest.current) return;
+      setWireRows(page.items);
       setListState("ready");
     } catch {
+      if (controller.signal.aborted || request !== listRequest.current) return;
       setListState("error");
     }
-  }, [api, resolveNames]);
+  }, [api]);
 
   useEffect(() => {
     void Promise.resolve().then(loadList);
+    return () => {
+      listController.current?.abort();
+    };
   }, [loadList]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let current = true;
     void api
-      .GET("/api/v1/users")
+      .GET("/api/v1/users", { signal: controller.signal })
       .then((res) => {
-        if (!res.data) return;
+        if (!current || controller.signal.aborted || !res.data) return;
         setUsers(new Map(res.data.items.map((u) => [u.id, u.display_name])));
       })
       .catch(() => undefined);
+    return () => {
+      current = false;
+      controller.abort();
+    };
   }, [api]);
 
   const counts = useMemo(() => {
     const byStatus = new Map<AdmissibilityStatus, number>();
-    let hold = 0;
     for (const row of rows) {
       byStatus.set(row.admissibility, (byStatus.get(row.admissibility) ?? 0) + 1);
-      if (holdActive(row.holds)) hold += 1;
     }
-    return { byStatus, hold };
+    return { byStatus };
   }, [rows]);
 
   const visible = useMemo(() => {
     if (filter === "ALL") return rows;
-    if (filter === "HOLD") return rows.filter((row) => holdActive(row.holds));
     return rows.filter((row) => row.admissibility === filter);
   }, [rows, filter]);
 
@@ -264,13 +300,16 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
   // declaration hoisting instead of fighting the hooks lint's forward-
   // reference rule.
   async function refreshDetail(id: string): Promise<void> {
+    const fresh = await getEvidenceObjectDetail(api, id);
+    setWireRows((current) => current.map((row) => (row.id === id ? fresh : row)));
+    mountEntry(resolveNames(fresh));
+  }
+
+  async function refreshAfterMutation(id: string): Promise<void> {
     try {
-      const fresh = resolveNames(await getEvidenceObjectDetail(api, id));
-      setRows((current) => current.map((row) => (row.id === id ? fresh : row)));
-      mountEntry(fresh);
+      await refreshDetail(id);
     } catch {
-      // Best-effort refresh — the mutation itself already surfaced its own
-      // error to the caller; the row keeps showing the last-known state.
+      throw new EvidenceDetailRefreshError(() => refreshDetail(id));
     }
   }
 
@@ -280,14 +319,14 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
       verify: (detail) => verifyEvidenceObject(api, detail.id),
       applyHold: async (body) => {
         await applyLegalHold(api, id, body);
-        await refreshDetail(id);
+        await refreshAfterMutation(id);
       },
       requestHoldRelease: (holdId) => requestHoldReleaseApproval(api, id, holdId),
       decideHoldRelease: (requestRef, requestedBy, decision) =>
         decideHoldReleaseApproval(api, requestRef, requestedBy, decision),
       releaseHold: async (body) => {
         await releaseLegalHold(api, id, body);
-        await refreshDetail(id);
+        await refreshAfterMutation(id);
       },
     };
   }
@@ -304,9 +343,9 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
     setOpenError(null);
     setOpeningId(row.id);
     try {
-      const fresh = resolveNames(await getEvidenceObjectDetail(api, row.id));
-      setRows((current) => current.map((r) => (r.id === row.id ? fresh : r)));
-      mountEntry(fresh);
+      const fresh = await getEvidenceObjectDetail(api, row.id);
+      setWireRows((current) => current.map((r) => (r.id === row.id ? fresh : r)));
+      mountEntry(resolveNames(fresh));
     } catch {
       setOpenError(T.records.openFailed);
     } finally {
@@ -367,7 +406,6 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
         {ADMISSIBILITY_ORDER.map((status) =>
           statButton(status, admissibilityLabel(status), counts.byStatus.get(status) ?? 0),
         )}
-        {statButton("HOLD", T.hold.active, counts.hold)}
       </div>
 
       {openError ? (
@@ -409,9 +447,6 @@ export function EvidenceRecords({ api, currentUserId }: EvidenceRecordsProps) {
                       <StatusChip tone={admissibilityTone(row.admissibility)}>
                         {admissibilityLabel(row.admissibility)}
                       </StatusChip>
-                      {holdActive(row.holds) ? (
-                        <StatusChip tone="purple">{T.hold.active}</StatusChip>
-                      ) : null}
                       <StatusChip tone="neutral">{custodyStageLabel(row.custodyStage)}</StatusChip>
                       {original ? (
                         <span style={monoStyle}>{shortDigest(original.digestSha256)}</span>

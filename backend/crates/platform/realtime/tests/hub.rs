@@ -118,6 +118,7 @@ async fn notification_fans_out_only_to_its_recipient() {
         created_at: OffsetDateTime::now_utc(),
         read_at: None,
         resolved_at: None,
+        muted: false,
     };
     hub.dispatch_notification_for_test(recipient, summary.clone())
         .await;

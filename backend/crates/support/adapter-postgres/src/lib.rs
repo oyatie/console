@@ -7,17 +7,25 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use mnt_kernel_core::{
-    BranchId, BranchScope, ErrorKind, KernelError, SupportTicketCommentId, SupportTicketId, UserId,
+    BranchId, BranchScope, CustomerId, ErrorKind, KernelError, SiteId, SupportTicketCommentId,
+    SupportTicketId, UserId, WorkOrderId,
 };
 use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use mnt_platform_request_context::current_org;
 use mnt_support_application::{
     AddCommentCommand, AssignTicketCommand, CommentAudience, CommentView,
-    CreateCustomerIntakeCommand, CreateInternalTicketCommand, ListTicketsQuery, TicketDetail,
-    TicketNotification, TicketNotificationKind, TicketPage, TicketSummary, TransitionTicketCommand,
+    CreateCustomerIntakeCommand, CreateInternalTicketCommand, FieldAttendanceEvent,
+    FieldSiteDetail, FieldSitePage, FieldSiteRow, FieldSiteSummary, FieldSlaSummary,
+    FieldWorkOrderRef, LinkTicketCommand, ListFieldSitesQuery, ListTicketsQuery,
+    RecordAcceptanceCommand, TicketAcceptanceView, TicketDetail, TicketNotification,
+    TicketNotificationKind, TicketPage, TicketSummary, TransitionTicketCommand,
     support_audit_event,
 };
-use mnt_support_domain::{SlaPolicy, TicketCategory, TicketOrigin, TicketPriority, TicketStatus};
+use mnt_support_domain::{
+    AcceptanceChannel, AcceptanceKind, FieldSlaState, SlaPolicy, TicketCategory, TicketOrigin,
+    TicketPriority, TicketStatus,
+};
+use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 use time::OffsetDateTime;
 
@@ -51,6 +59,51 @@ impl From<sqlx::Error> for PgSupportError {
         Self::Db(DbError::Sqlx(value))
     }
 }
+
+/// Single source for the [`TicketSummary`] projection (used by list/detail/
+/// mutation-return/action-inbox reads alike, so a column added once shows up
+/// everywhere `summary_from_row` decodes). The correlated subqueries are
+/// same-org lookups (RLS-scoped to `app.current_org`, exactly like the LEFT
+/// JOINs they stand in for) resolving display names — NULL when the reference
+/// is unset or the referent is gone; the web renders them through `safeLabel`
+/// so a missing name never leaks a UUID.
+const TICKET_SUMMARY_SELECT: &str = "SELECT \
+     id, branch_id, origin, category, priority, status, title, \
+     requester_user_id, requester_name, assignee_user_id, \
+     (SELECT u.display_name FROM users u \
+       WHERE u.id = support_tickets.assignee_user_id) AS assignee_name, \
+     due_at, created_at, updated_at, resolved_at, closed_at, \
+     site_id, customer_id, work_order_id, \
+     (SELECT rs.name FROM registry_sites rs \
+       WHERE rs.id = support_tickets.site_id) AS site_name, \
+     (SELECT rc.name FROM registry_customers rc \
+       WHERE rc.id = support_tickets.customer_id) AS customer_name \
+     FROM support_tickets";
+
+/// Deterministic per-site SLA state (§4-28 no-AI; single evaluation site shared
+/// by the overview rows, the `sla` filter, and the detail rollup): BREACHED if
+/// any open ticket is past `due_at`; else AT_RISK if any is due within 24h;
+/// else OK. Open = OPEN/IN_PROGRESS/ON_HOLD. Expects `breached_ticket_count`
+/// and `next_due_at` columns in scope.
+const FIELD_SLA_CASE: &str = "CASE \
+     WHEN breached_ticket_count > 0 THEN 'BREACHED' \
+     WHEN next_due_at < now() + interval '24 hours' THEN 'AT_RISK' \
+     ELSE 'OK' END";
+
+/// Work-order statuses that no longer count as an active visit (the workorder
+/// crate's terminal vocabulary; rendered read-only here).
+const WORK_ORDER_TERMINAL_STATUSES: &str = "('FINAL_COMPLETED','REJECTED','ARCHIVED','CANCELLED')";
+
+/// Single source for the [`TicketAcceptanceView`] projection (replay lookup,
+/// detail history, and post-insert readback all decode the same columns via
+/// [`acceptance_from_row`]). Aliased `a` so history reads can join the ticket.
+const ACCEPTANCE_SELECT: &str = "SELECT \
+     a.id, a.ticket_id, a.kind, a.channel, a.accepted_by, a.note, \
+     a.recorded_by_user_id, \
+     (SELECT u.display_name FROM users u \
+       WHERE u.id = a.recorded_by_user_id) AS recorded_by_name, \
+     a.occurred_at, a.request_fingerprint \
+     FROM support_ticket_acceptances a";
 
 #[derive(Debug, Clone)]
 pub struct PgSupportStore {
@@ -476,6 +529,7 @@ impl PgSupportStore {
         let category = query.category;
         let origin = query.origin;
         let assignee_user_id = query.assignee_user_id;
+        let site_id = query.site_id;
         let push_filters = move |builder: &mut QueryBuilder<Postgres>| {
             builder.push("(");
             push_branch_scope(builder, &branch_scope, include_untriaged);
@@ -500,28 +554,18 @@ impl PgSupportStore {
                 builder.push(" AND assignee_user_id = ");
                 builder.push_bind(*assignee.as_uuid());
             }
+            if let Some(site) = site_id {
+                // Field-console per-site queue (partial index in 0194).
+                builder.push(" AND site_id = ");
+                builder.push_bind(*site.as_uuid());
+            }
         };
 
         let mut count_builder =
             QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM support_tickets WHERE ");
         push_filters(&mut count_builder);
 
-        let mut builder = QueryBuilder::<Postgres>::new(
-            r#"
-            SELECT
-                id, branch_id, origin, category, priority, status, title,
-                requester_user_id, requester_name, assignee_user_id,
-                -- Same-org correlated lookup (RLS-scoped to app.current_org,
-                -- exactly like the LEFT JOIN it stands in for): resolves the
-                -- assignee's display name, NULL when unassigned or deleted.
-                (SELECT u.display_name FROM users u
-                  WHERE u.id = support_tickets.assignee_user_id) AS assignee_name,
-                due_at,
-                created_at, updated_at, resolved_at, closed_at
-            FROM support_tickets
-            WHERE
-            "#,
-        );
+        let mut builder = QueryBuilder::<Postgres>::new(format!("{TICKET_SUMMARY_SELECT} WHERE "));
         push_filters(&mut builder);
         // Keyset: strictly after the cursor on the (created_at DESC, id) order.
         if let Some((created_at, id)) = cursor {
@@ -593,14 +637,7 @@ impl PgSupportStore {
         let mut count_builder =
             QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM support_tickets WHERE ");
         push_filters(&mut count_builder);
-        let mut builder = QueryBuilder::<Postgres>::new(
-            "SELECT id, branch_id, origin, category, priority, status, title, \
-             requester_user_id, requester_name, assignee_user_id, \
-             (SELECT u.display_name FROM users u \
-               WHERE u.id = support_tickets.assignee_user_id) AS assignee_name, \
-             due_at, created_at, updated_at, resolved_at, closed_at \
-             FROM support_tickets WHERE ",
-        );
+        let mut builder = QueryBuilder::<Postgres>::new(format!("{TICKET_SUMMARY_SELECT} WHERE "));
         push_filters(&mut builder);
         if let (Some(after_created_at), Some(after_id)) = (after_created_at, after_id) {
             builder.push(" AND (created_at > ");
@@ -643,22 +680,8 @@ impl PgSupportStore {
         branch_scope: &BranchScope,
         audience: CommentAudience,
     ) -> Result<TicketDetail, PgSupportError> {
-        let mut builder = QueryBuilder::<Postgres>::new(
-            r#"
-            SELECT
-                id, branch_id, origin, category, priority, status, title,
-                requester_user_id, requester_name, assignee_user_id,
-                -- Same-org correlated lookup (RLS-scoped to app.current_org,
-                -- exactly like the LEFT JOIN it stands in for): resolves the
-                -- assignee's display name, NULL when unassigned or deleted.
-                (SELECT u.display_name FROM users u
-                  WHERE u.id = support_tickets.assignee_user_id) AS assignee_name,
-                due_at,
-                created_at, updated_at, resolved_at, closed_at
-            FROM support_tickets
-            WHERE id =
-            "#,
-        );
+        let mut builder =
+            QueryBuilder::<Postgres>::new(format!("{TICKET_SUMMARY_SELECT} WHERE id = "));
         builder.push_bind(*ticket_id.as_uuid());
         builder.push(" AND (");
         // A branch-less customer ticket is only visible to cross-branch staff.
@@ -783,6 +806,660 @@ impl PgSupportStore {
         let branch_id: Option<uuid::Uuid> = row.try_get("branch_id")?;
         Ok(branch_id.map(BranchId::from_uuid))
     }
+
+    /// Resolve a site's branch within the principal's scope, for REST
+    /// authorization of the field detail route. Out-of-scope sites are a
+    /// not-found (404, never 403) so their existence does not leak.
+    pub async fn site_branch_in_scope(
+        &self,
+        site_id: SiteId,
+        branch_scope: &BranchScope,
+    ) -> Result<BranchId, PgSupportError> {
+        let mut builder =
+            QueryBuilder::<Postgres>::new("SELECT branch_id FROM registry_sites WHERE id = ");
+        builder.push_bind(*site_id.as_uuid());
+        builder.push(" AND (");
+        push_site_scope(&mut builder, branch_scope);
+        builder.push(")");
+        let org = current_org().map_err(KernelError::from)?;
+        let row = with_org_conn::<_, _, PgSupportError>(&self.pool, org, move |tx| {
+            Box::pin(async move { Ok(builder.build().fetch_optional(tx.as_mut()).await?) })
+        })
+        .await?
+        .ok_or_else(|| KernelError::not_found("site was not found"))?;
+        Ok(BranchId::from_uuid(row.try_get("branch_id")?))
+    }
+
+    // -----------------------------------------------------------------------
+    // list_field_sites (field-console overview; branch-scoped aggregation)
+    // -----------------------------------------------------------------------
+    /// One keyset page of the per-site field overview. Every count and the SLA
+    /// state derive from the same aggregation the rows come from, so the stat
+    /// bar can never disagree with the list (§4-11). Cross-crate reads of
+    /// `work_orders` / `site_attendance_events` / `registry_*` are documented
+    /// coupling (gap-analysis §6.1); writes/DDL stay with their owners.
+    pub async fn list_field_sites(
+        &self,
+        query: ListFieldSitesQuery,
+    ) -> Result<FieldSitePage, PgSupportError> {
+        let limit = normalized_limit(query.limit);
+        // Resolve the keyset cursor up front, scope-confined: an out-of-scope
+        // or unknown cursor is a not-found, not an information leak.
+        let cursor = match query.cursor {
+            Some(cursor_id) => {
+                Some(field_site_cursor(&self.pool, cursor_id, &query.branch_scope).await?)
+            }
+            None => None,
+        };
+        let needle = query
+            .q
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(escape_like);
+
+        // COUNT shares scope + filters (including the derived-SLA filter) but
+        // never the cursor, so `total` is stable across pages.
+        let mut count_builder = QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM (");
+        push_field_sites_inner(
+            &mut count_builder,
+            &query.branch_scope,
+            needle.as_deref(),
+            query.customer_id,
+            None,
+        );
+        count_builder.push(") s");
+        if let Some(sla) = query.sla {
+            count_builder.push(format!(" WHERE {FIELD_SLA_CASE} = "));
+            count_builder.push_bind(sla.as_db_str());
+        }
+
+        let mut builder =
+            QueryBuilder::<Postgres>::new(format!("SELECT s.*, {FIELD_SLA_CASE} AS sla FROM ("));
+        push_field_sites_inner(
+            &mut builder,
+            &query.branch_scope,
+            needle.as_deref(),
+            query.customer_id,
+            cursor.as_ref(),
+        );
+        builder.push(") s");
+        if let Some(sla) = query.sla {
+            builder.push(format!(" WHERE {FIELD_SLA_CASE} = "));
+            builder.push_bind(sla.as_db_str());
+        }
+        // Fetch one extra row to know whether a further page exists.
+        builder.push(" ORDER BY site_name, site_id LIMIT ");
+        builder.push_bind(limit + 1);
+
+        let org = current_org().map_err(KernelError::from)?;
+        let (total, rows) = with_org_conn::<_, _, PgSupportError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let total: i64 = count_builder
+                    .build_query_scalar()
+                    .fetch_one(tx.as_mut())
+                    .await?;
+                let rows = builder.build().fetch_all(tx.as_mut()).await?;
+                Ok((total, rows))
+            })
+        })
+        .await?;
+
+        let mut items = rows
+            .iter()
+            .map(field_site_row_from_row)
+            .collect::<Result<Vec<_>, _>>()?;
+        let next_cursor = if i64::try_from(items.len()).unwrap_or(0) > limit {
+            items.truncate(usize::try_from(limit).unwrap_or(items.len()));
+            items.last().map(|site| site.site_id)
+        } else {
+            None
+        };
+        Ok(FieldSitePage {
+            items,
+            next_cursor,
+            total,
+        })
+    }
+
+    // -----------------------------------------------------------------------
+    // field_site_detail (object + history layers)
+    // -----------------------------------------------------------------------
+    /// The field detail panel: site master facts, the SLA rollup, and the
+    /// traversable history chain (tickets, work orders, attendance,
+    /// acceptances — each capped at 50). Scope-confined: an out-of-scope site
+    /// is a not-found.
+    pub async fn field_site_detail(
+        &self,
+        site_id: SiteId,
+        branch_scope: &BranchScope,
+    ) -> Result<FieldSiteDetail, PgSupportError> {
+        let mut site_builder = QueryBuilder::<Postgres>::new(
+            "SELECT id, name, branch_id, customer_id, \
+             (SELECT rc.name FROM registry_customers rc \
+               WHERE rc.id = registry_sites.customer_id) AS customer_name, \
+             address, province, city, postal_code, latitude, longitude, \
+             geofence_radius_m, contact_name, contact_phone \
+             FROM registry_sites WHERE id = ",
+        );
+        site_builder.push_bind(*site_id.as_uuid());
+        site_builder.push(" AND (");
+        push_site_scope(&mut site_builder, branch_scope);
+        site_builder.push(")");
+
+        let org = current_org().map_err(KernelError::from)?;
+        let site_uuid = *site_id.as_uuid();
+        let (site_row, sla_row, ticket_rows, wo_rows, att_rows, acc_rows) =
+            with_org_conn::<_, _, PgSupportError>(&self.pool, org, move |tx| {
+                Box::pin(async move {
+                    let site_row = site_builder
+                        .build()
+                        .fetch_optional(tx.as_mut())
+                        .await?
+                        .ok_or_else(|| {
+                            PgSupportError::from(KernelError::not_found("site was not found"))
+                        })?;
+                    // SLA rollup: current open/breached/next-due plus the 90-day
+                    // resolution record. Tickets without a due date are excluded
+                    // from the 90-day split rather than guessed (§4-28).
+                    let sla_sql = format!(
+                        "SELECT open_ticket_count, breached_ticket_count, next_due_at, \
+                         resolved_within_sla_90d, resolved_breached_90d, {FIELD_SLA_CASE} AS sla \
+                         FROM ( \
+                           SELECT \
+                             COUNT(*) FILTER (WHERE status IN ('OPEN','IN_PROGRESS','ON_HOLD')) AS open_ticket_count, \
+                             COUNT(*) FILTER (WHERE status IN ('OPEN','IN_PROGRESS','ON_HOLD') AND due_at < now()) AS breached_ticket_count, \
+                             MIN(due_at) FILTER (WHERE status IN ('OPEN','IN_PROGRESS','ON_HOLD')) AS next_due_at, \
+                             COUNT(*) FILTER (WHERE resolved_at IS NOT NULL \
+                               AND resolved_at >= now() - interval '90 days' \
+                               AND due_at IS NOT NULL AND resolved_at <= due_at) AS resolved_within_sla_90d, \
+                             COUNT(*) FILTER (WHERE resolved_at IS NOT NULL \
+                               AND resolved_at >= now() - interval '90 days' \
+                               AND due_at IS NOT NULL AND resolved_at > due_at) AS resolved_breached_90d \
+                           FROM support_tickets WHERE site_id = $1 \
+                         ) x"
+                    );
+                    let sla_row = sqlx::query(sqlx::AssertSqlSafe(sla_sql))
+                        .bind(site_uuid)
+                        .fetch_one(tx.as_mut())
+                        .await?;
+                    // History layers, most relevant first: open tickets before
+                    // closed, then newest.
+                    let tickets_sql = format!(
+                        "{TICKET_SUMMARY_SELECT} WHERE site_id = $1 \
+                         ORDER BY (status IN ('OPEN','IN_PROGRESS','ON_HOLD')) DESC, \
+                         created_at DESC LIMIT 50"
+                    );
+                    let ticket_rows = sqlx::query(sqlx::AssertSqlSafe(tickets_sql))
+                        .bind(site_uuid)
+                        .fetch_all(tx.as_mut())
+                        .await?;
+                    let wo_rows = sqlx::query(
+                        "SELECT id, request_no, status, priority, target_due_at, \
+                         report_submitted_at, result_type, created_at \
+                         FROM work_orders WHERE site_id = $1 \
+                         ORDER BY created_at DESC LIMIT 50",
+                    )
+                    .bind(site_uuid)
+                    .fetch_all(tx.as_mut())
+                    .await?;
+                    let att_rows = sqlx::query(
+                        "SELECT user_id, \
+                         (SELECT u.display_name FROM users u \
+                           WHERE u.id = site_attendance_events.user_id) AS user_name, \
+                         work_order_id, kind, occurred_at \
+                         FROM site_attendance_events WHERE site_id = $1 \
+                         ORDER BY occurred_at DESC, id DESC LIMIT 50",
+                    )
+                    .bind(site_uuid)
+                    .fetch_all(tx.as_mut())
+                    .await?;
+                    let acc_sql = format!(
+                        "{ACCEPTANCE_SELECT} JOIN support_tickets st ON st.id = a.ticket_id \
+                         WHERE st.site_id = $1 ORDER BY a.occurred_at DESC LIMIT 50"
+                    );
+                    let acc_rows = sqlx::query(sqlx::AssertSqlSafe(acc_sql))
+                        .bind(site_uuid)
+                        .fetch_all(tx.as_mut())
+                        .await?;
+                    Ok((site_row, sla_row, ticket_rows, wo_rows, att_rows, acc_rows))
+                })
+            })
+            .await?;
+
+        let sla_state_raw: String = sla_row.try_get("sla")?;
+        Ok(FieldSiteDetail {
+            site: FieldSiteSummary {
+                id: SiteId::from_uuid(site_row.try_get("id")?),
+                name: site_row.try_get("name")?,
+                branch_id: BranchId::from_uuid(site_row.try_get("branch_id")?),
+                customer_id: CustomerId::from_uuid(site_row.try_get("customer_id")?),
+                customer_name: site_row.try_get("customer_name")?,
+                address: site_row.try_get("address")?,
+                province: site_row.try_get("province")?,
+                city: site_row.try_get("city")?,
+                postal_code: site_row.try_get("postal_code")?,
+                latitude: site_row.try_get("latitude")?,
+                longitude: site_row.try_get("longitude")?,
+                geofence_radius_m: site_row.try_get("geofence_radius_m")?,
+                contact_name: site_row.try_get("contact_name")?,
+                contact_phone: site_row.try_get("contact_phone")?,
+            },
+            sla: FieldSlaSummary {
+                state: FieldSlaState::from_db_str(&sla_state_raw)?,
+                open: sla_row.try_get("open_ticket_count")?,
+                breached: sla_row.try_get("breached_ticket_count")?,
+                next_due_at: sla_row.try_get("next_due_at")?,
+                resolved_within_sla_90d: sla_row.try_get("resolved_within_sla_90d")?,
+                resolved_breached_90d: sla_row.try_get("resolved_breached_90d")?,
+            },
+            tickets: ticket_rows
+                .iter()
+                .map(summary_from_row)
+                .collect::<Result<Vec<_>, _>>()?,
+            work_orders: wo_rows
+                .iter()
+                .map(work_order_ref_from_row)
+                .collect::<Result<Vec<_>, _>>()?,
+            attendance: att_rows
+                .iter()
+                .map(attendance_event_from_row)
+                .collect::<Result<Vec<_>, _>>()?,
+            acceptances: acc_rows
+                .iter()
+                .map(acceptance_from_row)
+                .collect::<Result<Vec<_>, _>>()?,
+        })
+    }
+
+    // -----------------------------------------------------------------------
+    // link_ticket (bind intake to the field object chain)
+    // -----------------------------------------------------------------------
+    /// Bind a ticket to a customer site and/or the work order dispatched for
+    /// the visit. Linking a site to an untriaged customer ticket also sets its
+    /// branch (= triage). `customer_id` is always denormalized from the site.
+    pub async fn link_ticket(
+        &self,
+        command: LinkTicketCommand,
+    ) -> Result<TicketSummary, PgSupportError> {
+        if command.site_id.is_none() && command.work_order_id.is_none() {
+            return Err(KernelError::validation(
+                "at least one of site_id or work_order_id is required",
+            )
+            .into());
+        }
+        let org = current_org().map_err(KernelError::from)?;
+        with_audits::<_, TicketSummary, PgSupportError>(&self.pool, org, |tx| {
+            Box::pin(async move {
+                let ticket = lock_ticket_tx(tx, command.ticket_id).await?;
+                if ticket.status == TicketStatus::Closed {
+                    return Err(
+                        KernelError::conflict("links cannot change on a closed ticket").into(),
+                    );
+                }
+
+                // Resolve the target site, confined to the principal's branch
+                // scope (deny-by-omission: an out-of-scope site is a 404).
+                let (new_site, linked_site_branch, new_customer) = match command.site_id {
+                    None => (ticket.site_id, None, ticket.customer_id),
+                    Some(None) => (None, None, None),
+                    Some(Some(site_id)) => {
+                        let mut builder = QueryBuilder::<Postgres>::new(
+                            "SELECT branch_id, customer_id FROM registry_sites WHERE id = ",
+                        );
+                        builder.push_bind(*site_id.as_uuid());
+                        builder.push(" AND (");
+                        push_site_scope(&mut builder, &command.branch_scope);
+                        builder.push(")");
+                        let row = builder
+                            .build()
+                            .fetch_optional(tx.as_mut())
+                            .await?
+                            .ok_or_else(|| KernelError::not_found("site was not found"))?;
+                        (
+                            Some(site_id),
+                            Some(BranchId::from_uuid(row.try_get("branch_id")?)),
+                            Some(CustomerId::from_uuid(row.try_get("customer_id")?)),
+                        )
+                    }
+                };
+
+                // A linked work order must be dispatched to the ticket's site
+                // (referential guardrail; the 0194 CHECK is the backstop). The
+                // lookup is scope-confined like the site lookup: an
+                // out-of-scope work order is a 404, never a 409 existence leak.
+                let new_work_order = match command.work_order_id {
+                    None => ticket.work_order_id,
+                    Some(None) => None,
+                    Some(Some(work_order_id)) => {
+                        let mut builder = QueryBuilder::<Postgres>::new(
+                            "SELECT site_id FROM work_orders WHERE id = ",
+                        );
+                        builder.push_bind(*work_order_id.as_uuid());
+                        builder.push(" AND (");
+                        push_site_scope(&mut builder, &command.branch_scope);
+                        builder.push(")");
+                        let row = builder
+                            .build()
+                            .fetch_optional(tx.as_mut())
+                            .await?
+                            .ok_or_else(|| KernelError::not_found("work order was not found"))?;
+                        let work_order_site = SiteId::from_uuid(row.try_get("site_id")?);
+                        if new_site != Some(work_order_site) {
+                            return Err(KernelError::conflict(
+                                "work order is not dispatched to the ticket's linked site",
+                            )
+                            .into());
+                        }
+                        Some(work_order_id)
+                    }
+                };
+                if new_work_order.is_some() && new_site.is_none() {
+                    return Err(
+                        KernelError::conflict("a work-order link requires a site link").into(),
+                    );
+                }
+
+                // Branch: linking a site to an untriaged ticket IS triage; a
+                // triaged ticket can only link sites of its own branch.
+                let new_branch = match (ticket.branch_id, linked_site_branch) {
+                    (Some(branch), Some(site_branch)) => {
+                        if site_branch != branch {
+                            return Err(KernelError::conflict(
+                                "site belongs to a different branch than the ticket",
+                            )
+                            .into());
+                        }
+                        Some(branch)
+                    }
+                    (None, Some(site_branch)) => Some(site_branch),
+                    (branch, None) => branch,
+                };
+
+                sqlx::query(
+                    r#"
+                    UPDATE support_tickets
+                    SET site_id = $2,
+                        customer_id = $3,
+                        work_order_id = $4,
+                        branch_id = $5,
+                        updated_at = $6
+                    WHERE id = $1
+                    "#,
+                )
+                .bind(*command.ticket_id.as_uuid())
+                .bind(new_site.map(|id| *id.as_uuid()))
+                .bind(new_customer.map(|id| *id.as_uuid()))
+                .bind(new_work_order.map(|id| *id.as_uuid()))
+                .bind(new_branch.map(|id| *id.as_uuid()))
+                .bind(command.occurred_at)
+                .execute(tx.as_mut())
+                .await?;
+
+                let summary = fetch_summary_tx(tx, command.ticket_id).await?;
+                let event = support_audit_event(
+                    "support.ticket.linked",
+                    Some(command.actor),
+                    new_branch,
+                    "support_ticket",
+                    command.ticket_id,
+                    command.trace.clone(),
+                    command.occurred_at,
+                )?
+                .with_snapshots(
+                    Some(serde_json::json!({
+                        "site_id": ticket.site_id.map(|id| id.to_string()),
+                        "customer_id": ticket.customer_id.map(|id| id.to_string()),
+                        "work_order_id": ticket.work_order_id.map(|id| id.to_string()),
+                        "branch_id": ticket.branch_id.map(|id| id.to_string()),
+                    })),
+                    Some(serde_json::json!({
+                        "site_id": new_site.map(|id| id.to_string()),
+                        "customer_id": new_customer.map(|id| id.to_string()),
+                        "work_order_id": new_work_order.map(|id| id.to_string()),
+                        "branch_id": new_branch.map(|id| id.to_string()),
+                    })),
+                )
+                .with_org(org);
+                Ok((summary, vec![event]))
+            })
+        })
+        .await
+    }
+
+    // -----------------------------------------------------------------------
+    // record_acceptance (audited closure evidence; idempotent)
+    // -----------------------------------------------------------------------
+    /// Record the customer's acceptance verdict for a RESOLVED ticket and drive
+    /// the existing FSM edge (accept ⇒ CLOSED, decline ⇒ reopen IN_PROGRESS +
+    /// customer-visible comment). Sibling-pilot idempotency semantics: a replay
+    /// with the same `Idempotency-Key` and request returns the stored
+    /// acceptance (`replayed = true`); reuse with a different request is a
+    /// conflict. Returns `(view, notifications, replayed)`.
+    pub async fn record_acceptance(
+        &self,
+        command: RecordAcceptanceCommand,
+    ) -> Result<(TicketAcceptanceView, Vec<TicketNotification>, bool), PgSupportError> {
+        let accepted_by = require_non_empty(&command.accepted_by, "accepted_by is required")?;
+        require_max_chars(
+            &accepted_by,
+            MAX_ACCEPTED_BY_CHARS,
+            "accepted_by is too long",
+        )?;
+        let note = match command.note.as_deref().map(str::trim) {
+            Some("") | None => None,
+            Some(trimmed) => {
+                require_max_chars(
+                    trimmed,
+                    MAX_ACCEPTANCE_NOTE_CHARS,
+                    "acceptance note is too long",
+                )?;
+                Some(trimmed.to_owned())
+            }
+        };
+        // Fail-closed form (§4-27): a decline reopens the ticket, and the
+        // customer-visible comment carrying the customer's reason is the note —
+        // so a decline without a note is rejected, not silently commentless.
+        if command.kind == AcceptanceKind::CustomerDeclined && note.is_none() {
+            return Err(KernelError::validation(
+                "a declined acceptance requires a note with the customer's reason",
+            )
+            .into());
+        }
+        let key = command.idempotency_key.trim().to_owned();
+        // Character count, not bytes — the 0194 CHECK is char_length, so a
+        // multibyte key must fail here as validation, not later as a 500.
+        let key_chars = key.chars().count();
+        if !(16..=200).contains(&key_chars) {
+            return Err(
+                KernelError::validation("Idempotency-Key must be 16..=200 characters").into(),
+            );
+        }
+        let fingerprint = acceptance_fingerprint(
+            command.ticket_id,
+            command.kind,
+            command.channel,
+            &accepted_by,
+            note.as_deref(),
+        );
+        let org = current_org().map_err(KernelError::from)?;
+        let org_uuid = *org.as_uuid();
+        let acceptance_id = uuid::Uuid::new_v4();
+
+        with_audits::<_, (TicketAcceptanceView, Vec<TicketNotification>, bool), PgSupportError>(
+            &self.pool,
+            org,
+            |tx| {
+                Box::pin(async move {
+                    // Idempotent replay: same key + same request returns the
+                    // stored acceptance without re-transitioning or re-auditing.
+                    let replay_sql = format!("{ACCEPTANCE_SELECT} WHERE a.idempotency_key = $1");
+                    if let Some(row) = sqlx::query(sqlx::AssertSqlSafe(replay_sql))
+                        .bind(&key)
+                        .fetch_optional(tx.as_mut())
+                        .await?
+                    {
+                        let prior_fingerprint: String = row.try_get("request_fingerprint")?;
+                        let view = acceptance_from_row(&row)?;
+                        if prior_fingerprint != fingerprint || view.ticket_id != command.ticket_id {
+                            return Err(KernelError::conflict(
+                                "idempotency key was reused with a different request",
+                            )
+                            .into());
+                        }
+                        return Ok(((view, Vec::new(), true), Vec::new()));
+                    }
+
+                    let ticket = lock_ticket_tx(tx, command.ticket_id).await?;
+                    if ticket.status != TicketStatus::Resolved {
+                        return Err(KernelError::conflict(
+                            "acceptance can only be recorded on a RESOLVED ticket",
+                        )
+                        .into());
+                    }
+                    // FSM enforcement stays in the pure domain: acceptance only
+                    // drives the existing RESOLVED edges.
+                    let transition = ticket
+                        .status
+                        .transition_to(command.kind.transition_target())?;
+
+                    sqlx::query(
+                        r#"
+                        INSERT INTO support_ticket_acceptances (
+                            id, org_id, ticket_id, kind, channel, accepted_by, note,
+                            recorded_by_user_id, occurred_at, created_at,
+                            idempotency_key, request_fingerprint
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11)
+                        "#,
+                    )
+                    .bind(acceptance_id)
+                    .bind(org_uuid)
+                    .bind(*command.ticket_id.as_uuid())
+                    .bind(command.kind.as_db_str())
+                    .bind(command.channel.as_db_str())
+                    .bind(&accepted_by)
+                    .bind(note.as_deref())
+                    .bind(*command.actor.as_uuid())
+                    .bind(command.occurred_at)
+                    .bind(&key)
+                    .bind(&fingerprint)
+                    .execute(tx.as_mut())
+                    .await?;
+
+                    let resolved_at =
+                        resolved_timestamp(ticket.resolved_at, transition.to, command.occurred_at);
+                    let closed_at =
+                        closed_timestamp(ticket.closed_at, transition.to, command.occurred_at);
+                    sqlx::query(
+                        r#"
+                        UPDATE support_tickets
+                        SET status = $2,
+                            resolved_at = $3,
+                            closed_at = $4,
+                            updated_at = $5
+                        WHERE id = $1
+                        "#,
+                    )
+                    .bind(*command.ticket_id.as_uuid())
+                    .bind(transition.to.as_db_str())
+                    .bind(resolved_at)
+                    .bind(closed_at)
+                    .bind(command.occurred_at)
+                    .execute(tx.as_mut())
+                    .await?;
+
+                    // `accepted_by` is a business fact (like requester_name):
+                    // stored in the row, never copied into audit snapshots.
+                    let acceptance_event = support_audit_event(
+                        "support.ticket.acceptance",
+                        Some(command.actor),
+                        ticket.branch_id,
+                        "support_ticket_acceptance",
+                        acceptance_id,
+                        command.trace.clone(),
+                        command.occurred_at,
+                    )?
+                    .with_snapshots(
+                        None,
+                        Some(serde_json::json!({
+                            "ticket_id": command.ticket_id.to_string(),
+                            "kind": command.kind.as_db_str(),
+                            "channel": command.channel.as_db_str(),
+                            "status_from": transition.from.as_db_str(),
+                            "status_to": transition.to.as_db_str(),
+                        })),
+                    )
+                    .with_org(org);
+                    let transition_event = support_audit_event(
+                        "support.ticket.transition",
+                        Some(command.actor),
+                        ticket.branch_id,
+                        "support_ticket",
+                        command.ticket_id,
+                        command.trace.clone(),
+                        command.occurred_at,
+                    )?
+                    .with_snapshots(
+                        Some(serde_json::json!({ "status": transition.from.as_db_str() })),
+                        Some(serde_json::json!({ "status": transition.to.as_db_str() })),
+                    )
+                    .with_org(org);
+                    let mut events = vec![acceptance_event, transition_event];
+
+                    // Decline: the note becomes a customer-visible comment so
+                    // the requester sees why the ticket reopened.
+                    if command.kind == AcceptanceKind::CustomerDeclined
+                        && let Some(note) = note.as_deref()
+                    {
+                        let comment_id = SupportTicketCommentId::new();
+                        sqlx::query(
+                            r#"
+                            INSERT INTO support_ticket_comments (
+                                id, ticket_id, author_user_id, body,
+                                is_internal_note, created_at, org_id
+                            )
+                            VALUES ($1, $2, $3, $4, FALSE, $5, $6)
+                            "#,
+                        )
+                        .bind(*comment_id.as_uuid())
+                        .bind(*command.ticket_id.as_uuid())
+                        .bind(*command.actor.as_uuid())
+                        .bind(note)
+                        .bind(command.occurred_at)
+                        .bind(org_uuid)
+                        .execute(tx.as_mut())
+                        .await?;
+                        events.push(
+                            support_audit_event(
+                                "support.ticket.comment",
+                                Some(command.actor),
+                                ticket.branch_id,
+                                "support_ticket_comment",
+                                comment_id,
+                                command.trace.clone(),
+                                command.occurred_at,
+                            )?
+                            .with_snapshots(
+                                None,
+                                Some(serde_json::json!({
+                                    "ticket_id": command.ticket_id.to_string(),
+                                    "is_internal_note": false,
+                                })),
+                            )
+                            .with_org(org),
+                        );
+                    }
+
+                    let view = fetch_acceptance_tx(tx, acceptance_id).await?;
+                    let notifications =
+                        status_change_notifications(&ticket, command.ticket_id, transition.to);
+                    Ok(((view, notifications, false), events))
+                })
+            },
+        )
+        .await
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -798,6 +1475,9 @@ struct LockedTicket {
     assignee_user_id: Option<UserId>,
     resolved_at: Option<OffsetDateTime>,
     closed_at: Option<OffsetDateTime>,
+    site_id: Option<SiteId>,
+    customer_id: Option<CustomerId>,
+    work_order_id: Option<WorkOrderId>,
 }
 
 async fn lock_ticket_tx(
@@ -807,7 +1487,7 @@ async fn lock_ticket_tx(
     let row = sqlx::query(
         r#"
         SELECT branch_id, origin, status, requester_user_id, assignee_user_id,
-               resolved_at, closed_at
+               resolved_at, closed_at, site_id, customer_id, work_order_id
         FROM support_tickets
         WHERE id = $1
         FOR UPDATE
@@ -833,6 +1513,15 @@ async fn lock_ticket_tx(
             .map(UserId::from_uuid),
         resolved_at: row.try_get("resolved_at")?,
         closed_at: row.try_get("closed_at")?,
+        site_id: row
+            .try_get::<Option<uuid::Uuid>, _>("site_id")?
+            .map(SiteId::from_uuid),
+        customer_id: row
+            .try_get::<Option<uuid::Uuid>, _>("customer_id")?
+            .map(CustomerId::from_uuid),
+        work_order_id: row
+            .try_get::<Option<uuid::Uuid>, _>("work_order_id")?
+            .map(WorkOrderId::from_uuid),
     })
 }
 
@@ -897,22 +1586,12 @@ async fn fetch_summary_tx(
     tx: &mut Transaction<'_, Postgres>,
     ticket_id: SupportTicketId,
 ) -> Result<TicketSummary, PgSupportError> {
-    let row = sqlx::query(
-        r#"
-        SELECT
-            id, branch_id, origin, category, priority, status, title,
-            requester_user_id, requester_name, assignee_user_id,
-            (SELECT u.display_name FROM users u
-              WHERE u.id = support_tickets.assignee_user_id) AS assignee_name,
-            due_at,
-            created_at, updated_at, resolved_at, closed_at
-        FROM support_tickets
-        WHERE id = $1
-        "#,
-    )
-    .bind(*ticket_id.as_uuid())
-    .fetch_one(tx.as_mut())
-    .await?;
+    // Composed from compile-time const fragments only — audit-sound.
+    let sql = format!("{TICKET_SUMMARY_SELECT} WHERE id = $1");
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql))
+        .bind(*ticket_id.as_uuid())
+        .fetch_one(tx.as_mut())
+        .await?;
     summary_from_row(&row)
 }
 
@@ -969,6 +1648,9 @@ pub const MAX_TITLE_CHARS: usize = 200;
 pub const MAX_BODY_CHARS: usize = 8000;
 pub const MAX_REQUESTER_NAME_CHARS: usize = 200;
 pub const MAX_REQUESTER_CONTACT_CHARS: usize = 200;
+/// Acceptance bounds mirror the 0194 CHECK constraints exactly.
+pub const MAX_ACCEPTED_BY_CHARS: usize = 200;
+pub const MAX_ACCEPTANCE_NOTE_CHARS: usize = 2000;
 
 fn require_non_empty(value: &str, message: &'static str) -> Result<String, PgSupportError> {
     let trimmed = value.trim();
@@ -1124,6 +1806,222 @@ fn push_branch_scope(
     }
 }
 
+/// Branch-scope predicate for `registry_sites` / `work_orders` reads. Those
+/// rows always carry a branch (NOT NULL), so unlike [`push_branch_scope`] there
+/// is no untriaged escape hatch: `All` sees every row, a branch list sees
+/// exactly its branches, and an empty list sees nothing (fail-closed).
+fn push_site_scope(builder: &mut QueryBuilder<Postgres>, branch_scope: &BranchScope) {
+    match branch_scope {
+        BranchScope::All => {
+            builder.push("TRUE");
+        }
+        BranchScope::Branches(branches) if branches.is_empty() => {
+            builder.push("FALSE");
+        }
+        BranchScope::Branches(branches) => {
+            let branch_ids = branches
+                .iter()
+                .map(|branch_id| *branch_id.as_uuid())
+                .collect::<Vec<_>>();
+            builder.push("branch_id = ANY(");
+            builder.push_bind(branch_ids);
+            builder.push(")");
+        }
+    }
+}
+
+/// Escape LIKE metacharacters so a user literally searching `100%` or `A_1`
+/// matches those characters instead of wildcarding. Pair with `ESCAPE '\'`.
+fn escape_like(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
+}
+
+/// Resolve the keyset cursor for [`PgSupportStore::list_field_sites`] to its
+/// `(site_name, site_id)` sort key, confined to the principal's scope: an
+/// unknown or out-of-scope cursor is a not-found, never an information leak.
+async fn field_site_cursor(
+    pool: &PgPool,
+    cursor_id: SiteId,
+    branch_scope: &BranchScope,
+) -> Result<(String, uuid::Uuid), PgSupportError> {
+    let mut builder = QueryBuilder::<Postgres>::new("SELECT name FROM registry_sites WHERE id = ");
+    builder.push_bind(*cursor_id.as_uuid());
+    builder.push(" AND (");
+    push_site_scope(&mut builder, branch_scope);
+    builder.push(")");
+    let org = current_org().map_err(KernelError::from)?;
+    let row = with_org_conn::<_, _, PgSupportError>(pool, org, move |tx| {
+        Box::pin(async move { Ok(builder.build().fetch_optional(tx.as_mut()).await?) })
+    })
+    .await?
+    .ok_or_else(|| KernelError::not_found("cursor was not found"))?;
+    Ok((row.try_get("name")?, *cursor_id.as_uuid()))
+}
+
+/// Push the inner per-site aggregation of the field overview: one row per
+/// in-scope `registry_sites` row with correlated same-org counts over
+/// `support_tickets` / `work_orders` / `site_attendance_events` (documented
+/// cross-crate READS; all RLS-scoped to `app.current_org`). Emits a complete
+/// SELECT (with WHERE) so callers can wrap it as a subquery for the derived
+/// SLA filter and pagination.
+fn push_field_sites_inner(
+    builder: &mut QueryBuilder<Postgres>,
+    branch_scope: &BranchScope,
+    needle: Option<&str>,
+    customer_id: Option<CustomerId>,
+    cursor: Option<&(String, uuid::Uuid)>,
+) {
+    builder.push(format!(
+        "SELECT id AS site_id, name AS site_name, branch_id, customer_id, \
+         (SELECT rc.name FROM registry_customers rc \
+           WHERE rc.id = registry_sites.customer_id) AS customer_name, \
+         address, latitude, longitude, \
+         (SELECT COUNT(*) FROM support_tickets t WHERE t.site_id = registry_sites.id \
+           AND t.status IN ('OPEN','IN_PROGRESS','ON_HOLD')) AS open_ticket_count, \
+         (SELECT COUNT(*) FROM support_tickets t WHERE t.site_id = registry_sites.id \
+           AND t.status IN ('OPEN','IN_PROGRESS','ON_HOLD') \
+           AND t.due_at < now()) AS breached_ticket_count, \
+         (SELECT MIN(t.due_at) FROM support_tickets t WHERE t.site_id = registry_sites.id \
+           AND t.status IN ('OPEN','IN_PROGRESS','ON_HOLD')) AS next_due_at, \
+         (SELECT COUNT(*) FROM work_orders w WHERE w.site_id = registry_sites.id \
+           AND w.status NOT IN {WORK_ORDER_TERMINAL_STATUSES}) AS active_work_order_count, \
+         (SELECT MAX(e.occurred_at) FROM site_attendance_events e \
+           WHERE e.site_id = registry_sites.id \
+           AND e.kind = 'ARRIVAL') AS last_arrival_at \
+         FROM registry_sites WHERE ("
+    ));
+    push_site_scope(builder, branch_scope);
+    builder.push(")");
+    if let Some(needle) = needle {
+        let pattern = format!("%{needle}%");
+        builder.push(" AND (name ILIKE ");
+        builder.push_bind(pattern.clone());
+        builder.push(
+            " ESCAPE '\\' OR EXISTS (SELECT 1 FROM registry_customers rc \
+             WHERE rc.id = registry_sites.customer_id AND rc.name ILIKE ",
+        );
+        builder.push_bind(pattern);
+        builder.push(" ESCAPE '\\'))");
+    }
+    if let Some(customer) = customer_id {
+        builder.push(" AND customer_id = ");
+        builder.push_bind(*customer.as_uuid());
+    }
+    if let Some((cursor_name, cursor_id)) = cursor {
+        // Keyset: strictly after the cursor on the (name, id) ascending order.
+        builder.push(" AND (name, id) > (");
+        builder.push_bind(cursor_name.clone());
+        builder.push(", ");
+        builder.push_bind(*cursor_id);
+        builder.push(")");
+    }
+}
+
+fn field_site_row_from_row(row: &sqlx::postgres::PgRow) -> Result<FieldSiteRow, PgSupportError> {
+    let sla_raw: String = row.try_get("sla")?;
+    Ok(FieldSiteRow {
+        site_id: SiteId::from_uuid(row.try_get("site_id")?),
+        site_name: row.try_get("site_name")?,
+        branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
+        customer_id: CustomerId::from_uuid(row.try_get("customer_id")?),
+        customer_name: row.try_get("customer_name")?,
+        address: row.try_get("address")?,
+        latitude: row.try_get("latitude")?,
+        longitude: row.try_get("longitude")?,
+        open_ticket_count: row.try_get("open_ticket_count")?,
+        breached_ticket_count: row.try_get("breached_ticket_count")?,
+        next_due_at: row.try_get("next_due_at")?,
+        active_work_order_count: row.try_get("active_work_order_count")?,
+        last_arrival_at: row.try_get("last_arrival_at")?,
+        sla: FieldSlaState::from_db_str(&sla_raw)?,
+    })
+}
+
+fn work_order_ref_from_row(
+    row: &sqlx::postgres::PgRow,
+) -> Result<FieldWorkOrderRef, PgSupportError> {
+    Ok(FieldWorkOrderRef {
+        id: WorkOrderId::from_uuid(row.try_get("id")?),
+        request_no: row.try_get("request_no")?,
+        status: row.try_get("status")?,
+        priority: row.try_get("priority")?,
+        target_due_at: row.try_get("target_due_at")?,
+        report_submitted_at: row.try_get("report_submitted_at")?,
+        result_type: row.try_get("result_type")?,
+        created_at: row.try_get("created_at")?,
+    })
+}
+
+fn attendance_event_from_row(
+    row: &sqlx::postgres::PgRow,
+) -> Result<FieldAttendanceEvent, PgSupportError> {
+    Ok(FieldAttendanceEvent {
+        user_id: UserId::from_uuid(row.try_get("user_id")?),
+        user_name: row.try_get("user_name")?,
+        work_order_id: WorkOrderId::from_uuid(row.try_get("work_order_id")?),
+        kind: row.try_get("kind")?,
+        occurred_at: row.try_get("occurred_at")?,
+    })
+}
+
+fn acceptance_from_row(
+    row: &sqlx::postgres::PgRow,
+) -> Result<TicketAcceptanceView, PgSupportError> {
+    let kind_raw: String = row.try_get("kind")?;
+    let channel_raw: String = row.try_get("channel")?;
+    Ok(TicketAcceptanceView {
+        id: row.try_get("id")?,
+        ticket_id: SupportTicketId::from_uuid(row.try_get("ticket_id")?),
+        kind: AcceptanceKind::from_db_str(&kind_raw)?,
+        channel: AcceptanceChannel::from_db_str(&channel_raw)?,
+        accepted_by: row.try_get("accepted_by")?,
+        note: row.try_get("note")?,
+        recorded_by_user_id: UserId::from_uuid(row.try_get("recorded_by_user_id")?),
+        recorded_by_name: row.try_get("recorded_by_name")?,
+        occurred_at: row.try_get("occurred_at")?,
+    })
+}
+
+async fn fetch_acceptance_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    acceptance_id: uuid::Uuid,
+) -> Result<TicketAcceptanceView, PgSupportError> {
+    // Composed from compile-time const fragments only — audit-sound.
+    let sql = format!("{ACCEPTANCE_SELECT} WHERE a.id = $1");
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql))
+        .bind(acceptance_id)
+        .fetch_one(tx.as_mut())
+        .await?;
+    acceptance_from_row(&row)
+}
+
+/// Canonical request fingerprint for acceptance idempotency: SHA-256 (lowercase
+/// hex, matching the 0194 CHECK) over the semantic fields, unit-separated so no
+/// two distinct requests can collide by concatenation. A replay must match this
+/// exactly; a same-key request with a different fingerprint is a conflict.
+fn acceptance_fingerprint(
+    ticket_id: SupportTicketId,
+    kind: AcceptanceKind,
+    channel: AcceptanceChannel,
+    accepted_by: &str,
+    note: Option<&str>,
+) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(ticket_id.to_string().as_bytes());
+    hasher.update([0x1f]);
+    hasher.update(kind.as_db_str().as_bytes());
+    hasher.update([0x1f]);
+    hasher.update(channel.as_db_str().as_bytes());
+    hasher.update([0x1f]);
+    hasher.update(accepted_by.as_bytes());
+    hasher.update([0x1f]);
+    hasher.update(note.unwrap_or_default().as_bytes());
+    hex::encode(hasher.finalize())
+}
+
 fn summary_from_row(row: &sqlx::postgres::PgRow) -> Result<TicketSummary, PgSupportError> {
     let origin_raw: String = row.try_get("origin")?;
     let category_raw: String = row.try_get("category")?;
@@ -1152,6 +2050,17 @@ fn summary_from_row(row: &sqlx::postgres::PgRow) -> Result<TicketSummary, PgSupp
         updated_at: row.try_get("updated_at")?,
         resolved_at: row.try_get("resolved_at")?,
         closed_at: row.try_get("closed_at")?,
+        site_id: row
+            .try_get::<Option<uuid::Uuid>, _>("site_id")?
+            .map(SiteId::from_uuid),
+        site_name: row.try_get("site_name")?,
+        customer_id: row
+            .try_get::<Option<uuid::Uuid>, _>("customer_id")?
+            .map(CustomerId::from_uuid),
+        customer_name: row.try_get("customer_name")?,
+        work_order_id: row
+            .try_get::<Option<uuid::Uuid>, _>("work_order_id")?
+            .map(WorkOrderId::from_uuid),
     })
 }
 

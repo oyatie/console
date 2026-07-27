@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { SimulationPanel } from "./SimulationPanel";
 import { DEFAULT_CANVAS_STRINGS } from "./strings";
-import { STUB_FIELD_REGISTRY, STUB_SAMPLES } from "./stub";
+import { TEST_FIELD_REGISTRY, TEST_SAMPLES } from "./testFixtures";
 import type { PredicateGroup } from "./types";
 
 const S = DEFAULT_CANVAS_STRINGS;
@@ -14,7 +14,7 @@ describe("SimulationPanel", () => {
       join: "and",
       predicates: [{ id: "r1", field: "absence_count", op: "gte", value: { kind: "number", value: 3 } }],
     };
-    render(<SimulationPanel group={group} registry={STUB_FIELD_REGISTRY} strings={S} samples={STUB_SAMPLES} />);
+    render(<SimulationPanel group={group} registry={TEST_FIELD_REGISTRY} strings={S} samples={TEST_SAMPLES} />);
 
     // No result until the action runs (not a decorative always-on toast).
     expect(screen.queryByRole("status")).not.toBeInTheDocument();

@@ -35,16 +35,18 @@ use mnt_platform_storage::{
 use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use mnt_workorder_adapter_postgres::{PgWorkOrderError, PgWorkOrderStore};
 use mnt_workorder_application::{
-    AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateWorkOrderCommand,
-    DailyPlanItemInput, DailyPlanListQuery, DailyPlanStatus, DailyPlanSummary,
-    RejectWorkOrderCommand, ReviewDailyPlanCommand, ReviewTargetChangeCommand,
-    SendDailyPlanForReviewCommand, SubmitReportCommand, TargetChangeDecision,
-    TargetChangeRequestCommand, TargetChangeRequestSummary, TargetChangeStatus,
-    UpdatePriorityCommand, UpdateWorkOrderIntakeCommand, WorkOrderApprovalCommand,
-    WorkOrderAssignmentCommand, WorkOrderStartCommand,
+    AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateSettlementCommand,
+    CreateWorkOrderCommand, DailyPlanItemInput, DailyPlanListQuery, DailyPlanStatus,
+    DailyPlanSummary, RejectWorkOrderCommand, ReviewDailyPlanCommand, ReviewSettlementCommand,
+    ReviewTargetChangeCommand, SendDailyPlanForReviewCommand, SettlementLineInput,
+    SettlementReviewDecision, SettlementSummary, SubmitReportCommand, SubmitSettlementCommand,
+    TargetChangeDecision, TargetChangeRequestCommand, TargetChangeRequestSummary,
+    TargetChangeStatus, UpdatePriorityCommand, UpdateWorkOrderIntakeCommand, VoidSettlementCommand,
+    WorkOrderApprovalCommand, WorkOrderAssignmentCommand, WorkOrderStartCommand,
 };
 use mnt_workorder_domain::{
-    AssignmentRole, AttachmentStage, PriorityLevel, WorkOrderStatus, WorkResultType,
+    AssignmentRole, AttachmentStage, MaintenanceCause, MaintenanceType, PriorityLevel,
+    SettlementLineKind, WorkOrderStatus, WorkResultType,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -91,6 +93,11 @@ pub const DAILY_WORK_PLAN_REVIEW_PATH_TEMPLATE: &str = "/api/daily-work-plans/{p
 pub const DAILY_WORK_PLAN_CONFIRM_PATH_TEMPLATE: &str = "/api/daily-work-plans/{plan_id}/confirm";
 pub const WORKORDER_OUTSOURCE_WORKS_PATH_TEMPLATE: &str =
     "/api/work-orders/{work_order_id}/outsource-works";
+pub const WORKORDER_SETTLEMENT_V1_PATH_TEMPLATE: &str =
+    "/api/v1/work-orders/{work_order_id}/settlement";
+pub const SETTLEMENT_SUBMIT_V1_PATH_TEMPLATE: &str = "/api/v1/settlements/{settlement_id}/submit";
+pub const SETTLEMENT_REVIEW_V1_PATH_TEMPLATE: &str = "/api/v1/settlements/{settlement_id}/review";
+pub const SETTLEMENT_VOID_V1_PATH_TEMPLATE: &str = "/api/v1/settlements/{settlement_id}/void";
 pub const SYNC_PATH: &str = "/api/v1/sync";
 pub const EVIDENCE_PRESIGN_PATH: &str = "/api/v1/evidence/presign";
 pub const EVIDENCE_CONFIRM_PATH_TEMPLATE: &str = "/api/v1/evidence/{evidenceId}/confirm";
@@ -124,6 +131,10 @@ pub const WORKORDER_ROUTE_PATHS: &[&str] = &[
     DAILY_WORK_PLAN_REVIEW_PATH_TEMPLATE,
     DAILY_WORK_PLAN_CONFIRM_PATH_TEMPLATE,
     WORKORDER_OUTSOURCE_WORKS_PATH_TEMPLATE,
+    WORKORDER_SETTLEMENT_V1_PATH_TEMPLATE,
+    SETTLEMENT_SUBMIT_V1_PATH_TEMPLATE,
+    SETTLEMENT_REVIEW_V1_PATH_TEMPLATE,
+    SETTLEMENT_VOID_V1_PATH_TEMPLATE,
 ];
 pub const MOBILE_ROUTE_PATHS: &[&str] = &[
     SYNC_PATH,
@@ -281,6 +292,13 @@ pub fn router(state: WorkOrderRestState) -> Router {
             WORKORDER_OUTSOURCE_WORKS_PATH_TEMPLATE,
             post(create_outsource_work),
         )
+        .route(
+            WORKORDER_SETTLEMENT_V1_PATH_TEMPLATE,
+            get(get_settlement).post(create_settlement),
+        )
+        .route(SETTLEMENT_SUBMIT_V1_PATH_TEMPLATE, post(submit_settlement))
+        .route(SETTLEMENT_REVIEW_V1_PATH_TEMPLATE, post(review_settlement))
+        .route(SETTLEMENT_VOID_V1_PATH_TEMPLATE, post(void_settlement))
         .with_state(state);
     mnt_platform_request_context::with_request_context(router, verifier, pool)
 }
@@ -317,12 +335,55 @@ struct CreateWorkOrderRequest {
     customer_request: Option<String>,
     #[serde(default, with = "time::serde::rfc3339::option")]
     target_due_at: Option<time::OffsetDateTime>,
+    /// Typed maintenance classification (유형). Optional on the wire so legacy
+    /// mobile callers stay valid; the console intake requires it client-side.
+    #[serde(default)]
+    maintenance_type: Option<MaintenanceType>,
+    /// Typed maintenance cause (원인). Optional on the wire.
+    #[serde(default)]
+    maintenance_cause: Option<MaintenanceCause>,
 }
 
 #[derive(Debug, Deserialize)]
 struct UpdateWorkOrderIntakeRequest {
     symptom: Option<String>,
     customer_request: Option<String>,
+    #[serde(default)]
+    maintenance_type: Option<MaintenanceType>,
+    #[serde(default)]
+    maintenance_cause: Option<MaintenanceCause>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SettlementLineRequest {
+    kind: SettlementLineKind,
+    label: String,
+    amount_krw: i64,
+    #[serde(default)]
+    source_ref: Option<String>,
+    #[serde(default)]
+    sort_order: Option<i32>,
+}
+
+/// `Serialize` is derived so the accepted body can be re-serialized into the
+/// canonical form that is hashed for `Idempotency-Key` replay comparison.
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateSettlementRequest {
+    lines: Vec<SettlementLineRequest>,
+    #[serde(default)]
+    note: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReviewSettlementRequest {
+    decision: SettlementReviewDecision,
+    #[serde(default)]
+    comment: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct VoidSettlementRequest {
+    reason: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -514,9 +575,13 @@ struct CreateOutsourceWorkRequest {
 struct WorkOrderListQuery {
     status: Vec<String>,
     priority: Vec<String>,
+    maintenance_type: Vec<String>,
+    maintenance_cause: Vec<String>,
     assigned_to: Option<String>,
     customer_id: Option<uuid::Uuid>,
     site_id: Option<uuid::Uuid>,
+    branch_id: Option<uuid::Uuid>,
+    equipment_id: Option<uuid::Uuid>,
     around_work_order_id: Option<uuid::Uuid>,
     target_due_from: Option<time::OffsetDateTime>,
     target_due_to: Option<time::OffsetDateTime>,
@@ -528,9 +593,13 @@ struct WorkOrderListQuery {
 struct NormalizedWorkOrderListQuery {
     statuses: Vec<String>,
     priorities: Vec<String>,
+    maintenance_types: Vec<String>,
+    maintenance_causes: Vec<String>,
     assigned_to: Option<UserId>,
     customer_id: Option<uuid::Uuid>,
     site_id: Option<uuid::Uuid>,
+    branch_id: Option<uuid::Uuid>,
+    equipment_id: Option<uuid::Uuid>,
     around_work_order_id: Option<uuid::Uuid>,
     target_due_from: Option<time::OffsetDateTime>,
     target_due_to: Option<time::OffsetDateTime>,
@@ -571,6 +640,8 @@ struct WorkOrderListItem {
     status: String,
     priority: String,
     result_type: String,
+    maintenance_type: Option<String>,
+    maintenance_cause: Option<String>,
     #[serde(with = "time::serde::rfc3339::option")]
     target_due_at: Option<time::OffsetDateTime>,
     #[serde(with = "time::serde::rfc3339")]
@@ -594,6 +665,8 @@ struct WorkOrderDetail {
     status: String,
     priority: String,
     result_type: String,
+    maintenance_type: Option<String>,
+    maintenance_cause: Option<String>,
     symptom: String,
     customer_request: Option<String>,
     #[serde(with = "time::serde::rfc3339::option")]
@@ -622,6 +695,8 @@ struct WorkOrderDetail {
     approval_line: Vec<ApprovalStepSummary>,
     status_history: Vec<StatusHistorySummary>,
     evidence: Vec<EvidenceSummary>,
+    /// The live (non-VOID) cost settlement of this order, if one exists.
+    settlement: Option<SettlementSummary>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -673,12 +748,22 @@ struct WorkOrderLensAggregates {
     p1_count: i64,
     overdue_open_count: i64,
     unassigned_count: i64,
+    /// Share (0..=1) of closed preventive orders that reached FINAL_COMPLETED
+    /// no later than their target due date. `null` when the filtered set has no
+    /// closed preventive order with a target — never a fabricated 0 or 100.
+    preventive_on_time_rate: Option<f64>,
+    /// Mean minutes from the first IN_PROGRESS transition to the first
+    /// REPORT_SUBMITTED transition (OT-13 MTTR). `null` when no order in the
+    /// filtered set has completed that span.
+    mttr_minutes: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]
 struct WorkOrderLensFacets {
     status: Vec<WorkOrderFacetBucket>,
     priority: Vec<WorkOrderFacetBucket>,
+    maintenance_type: Vec<WorkOrderFacetBucket>,
+    maintenance_cause: Vec<WorkOrderFacetBucket>,
 }
 
 #[derive(Debug, Serialize)]
@@ -2294,6 +2379,7 @@ async fn list_work_orders(
         r#"
         SELECT
             w.id, w.request_no, w.branch_id, w.status, w.priority, w.result_type,
+            w.maintenance_type, w.maintenance_cause,
             w.target_due_at, w.created_at, w.updated_at,
             e.id AS equipment_id, e.equipment_no, e.management_no, e.model,
             e.status AS equipment_status, e.specification, e.ton_text,
@@ -2411,6 +2497,26 @@ async fn fetch_work_order_object_set_lens(
     let priority =
         fetch_work_order_string_facet(pool, org, branch_scope, query, "w.priority", "priority")
             .await?;
+    // Classification facets skip legacy rows with no classification: an absent
+    // value is rendered as an absent chip, never a facet bucket.
+    let maintenance_type = fetch_work_order_string_facet(
+        pool,
+        org,
+        branch_scope,
+        query,
+        "w.maintenance_type",
+        "maintenance_type",
+    )
+    .await?;
+    let maintenance_cause = fetch_work_order_string_facet(
+        pool,
+        org,
+        branch_scope,
+        query,
+        "w.maintenance_cause",
+        "maintenance_cause",
+    )
+    .await?;
     let target_due_date = fetch_work_order_due_histogram(pool, org, branch_scope, query).await?;
     let customers = fetch_work_order_named_listogram(
         pool,
@@ -2442,7 +2548,12 @@ async fn fetch_work_order_object_set_lens(
     Ok(WorkOrderObjectSetLens {
         object_type: "work_order",
         aggregates,
-        facets: WorkOrderLensFacets { status, priority },
+        facets: WorkOrderLensFacets {
+            status,
+            priority,
+            maintenance_type,
+            maintenance_cause,
+        },
         histograms: WorkOrderLensHistograms { target_due_date },
         listograms: WorkOrderLensListograms { customers, sites },
     })
@@ -2469,8 +2580,38 @@ async fn fetch_work_order_lens_aggregates(
                     FROM work_order_assignments a
                     WHERE a.work_order_id = w.id
                 )
-            ) AS unassigned_count
+            ) AS unassigned_count,
+            (AVG(
+                CASE WHEN completed.occurred_at <= w.target_due_at THEN 1.0 ELSE 0.0 END
+            ) FILTER (
+                WHERE w.maintenance_type = 'PREVENTIVE'
+                  AND w.status = 'FINAL_COMPLETED'
+                  AND w.target_due_at IS NOT NULL
+                  AND completed.occurred_at IS NOT NULL
+            ))::float8 AS preventive_on_time_rate,
+            (AVG(
+                EXTRACT(EPOCH FROM (reported.occurred_at - started.occurred_at)) / 60.0
+            ) FILTER (
+                WHERE started.occurred_at IS NOT NULL
+                  AND reported.occurred_at IS NOT NULL
+                  AND reported.occurred_at >= started.occurred_at
+            ))::float8 AS mttr_minutes
         FROM work_orders w
+        LEFT JOIN LATERAL (
+            SELECT MIN(h.occurred_at) AS occurred_at
+            FROM work_order_status_history h
+            WHERE h.work_order_id = w.id AND h.to_status = 'FINAL_COMPLETED'
+        ) completed ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT MIN(h.occurred_at) AS occurred_at
+            FROM work_order_status_history h
+            WHERE h.work_order_id = w.id AND h.to_status = 'IN_PROGRESS'
+        ) started ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT MIN(h.occurred_at) AS occurred_at
+            FROM work_order_status_history h
+            WHERE h.work_order_id = w.id AND h.to_status = 'REPORT_SUBMITTED'
+        ) reported ON TRUE
         WHERE
         "#,
     );
@@ -2485,6 +2626,8 @@ async fn fetch_work_order_lens_aggregates(
         p1_count: row.try_get("p1_count")?,
         overdue_open_count: row.try_get("overdue_open_count")?,
         unassigned_count: row.try_get("unassigned_count")?,
+        preventive_on_time_rate: row.try_get("preventive_on_time_rate")?,
+        mttr_minutes: row.try_get("mttr_minutes")?,
     })
 }
 
@@ -2505,7 +2648,11 @@ async fn fetch_work_order_string_facet(
         "#,
     );
     push_work_order_filters(&mut builder, branch_scope, query)?;
-    builder.push(" GROUP BY ");
+    // NULL cells (legacy rows with no classification) are absent chips, not a
+    // bucket; non-nullable columns are unaffected by this predicate.
+    builder.push(" AND ");
+    builder.push(column);
+    builder.push(" IS NOT NULL GROUP BY ");
     builder.push(column);
     builder.push(" ORDER BY count DESC, value ASC LIMIT 16");
     let rows = with_org_conn::<_, _, RestError>(pool, org, move |tx| {
@@ -2650,6 +2797,7 @@ async fn get_work_order_detail(
         r#"
         SELECT
             w.id, w.request_no, w.branch_id, w.status, w.priority, w.result_type,
+            w.maintenance_type, w.maintenance_cause,
             w.symptom, w.customer_request, w.target_due_at, w.delay_reason, w.delay_note,
             w.diagnosis, w.action_taken, w.report_submitted_by, w.report_submitted_at,
             w.kpi_excluded, w.created_at, w.updated_at,
@@ -2700,6 +2848,11 @@ async fn get_work_order_detail(
     let approval_line = fetch_approval_line(pool, work_order_id).await?;
     let status_history = fetch_status_history(pool, work_order_id).await?;
     let evidence = fetch_evidence_summaries(pool, work_order_id).await?;
+    let settlement = state
+        .store
+        .live_settlement_for_work_order(work_order_id)
+        .await
+        .map_err(RestError::from_store)?;
 
     Ok(Json(work_order_detail_from_row(
         &row,
@@ -2707,6 +2860,7 @@ async fn get_work_order_detail(
         approval_line,
         status_history,
         evidence,
+        settlement,
     )?))
 }
 
@@ -2894,6 +3048,251 @@ async fn reject_work_order(
     Ok(Json(summary))
 }
 
+/// Minimum accepted `Idempotency-Key` length, mirrored by the DB CHECK on
+/// `work_order_settlements.idempotency_key` so a short key fails as 422 here
+/// rather than a 500 at the constraint.
+const MIN_IDEMPOTENCY_KEY_LEN: usize = 16;
+
+fn idempotency_key_from_headers(headers: &HeaderMap) -> Result<String, RestError> {
+    let key = headers
+        .get("Idempotency-Key")
+        .and_then(|value| value.to_str().ok())
+        .map(str::trim)
+        .unwrap_or_default();
+    if key.len() < MIN_IDEMPOTENCY_KEY_LEN {
+        return Err(RestError::from_kernel(KernelError::validation(
+            "an Idempotency-Key header of at least 16 characters is required",
+        )));
+    }
+    Ok(key.to_owned())
+}
+
+async fn create_settlement(
+    State(state): State<WorkOrderRestState>,
+    headers: HeaderMap,
+    Path(work_order_id): Path<uuid::Uuid>,
+    Json(body): Json<CreateSettlementRequest>,
+) -> Result<impl IntoResponse, RestError> {
+    let work_order_id = WorkOrderId::from_uuid(work_order_id);
+    let principal = principal_from_headers(&state, &headers).await?;
+    let summary = state
+        .store
+        .work_order(work_order_id)
+        .await
+        .map_err(RestError::from_store)?;
+    // Reviewer path: CompletionReview on the order's branch. Mechanic path:
+    // WorkReportSubmit AND an assignment on this exact order (the assignment is
+    // re-checked inside the audited transaction). Deny-by-default otherwise.
+    let require_actor_assignment = if authorize(
+        &principal,
+        Action::new(Feature::CompletionReview),
+        summary.branch_id,
+    )
+    .is_ok()
+    {
+        false
+    } else {
+        authorize(
+            &principal,
+            Action::new(Feature::WorkReportSubmit),
+            summary.branch_id,
+        )
+        .map_err(RestError::from_kernel)?;
+        true
+    };
+    let idempotency_key = idempotency_key_from_headers(&headers)?;
+    let request_hash = hex::encode(Sha256::digest(serde_json::to_vec(&body)?));
+    let lines = body
+        .lines
+        .into_iter()
+        .map(|line| SettlementLineInput {
+            kind: line.kind,
+            label: line.label,
+            amount_krw: line.amount_krw,
+            source_ref: line.source_ref,
+            sort_order: line.sort_order,
+        })
+        .collect();
+    let settlement = state
+        .store
+        .create_settlement(CreateSettlementCommand {
+            actor: principal.user_id,
+            work_order_id,
+            lines,
+            note: body.note,
+            idempotency_key,
+            request_hash,
+            require_actor_assignment,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok((StatusCode::CREATED, Json(settlement)))
+}
+
+async fn get_settlement(
+    State(state): State<WorkOrderRestState>,
+    headers: HeaderMap,
+    Path(work_order_id): Path<uuid::Uuid>,
+) -> Result<Json<SettlementSummary>, RestError> {
+    let work_order_id = WorkOrderId::from_uuid(work_order_id);
+    let principal = principal_from_headers(&state, &headers).await?;
+    let summary = state
+        .store
+        .work_order(work_order_id)
+        .await
+        .map_err(RestError::from_store)?;
+    authorize(
+        &principal,
+        Action::new(Feature::WorkOrderReadAll),
+        summary.branch_id,
+    )
+    .map_err(RestError::from_kernel)?;
+    let settlement = state
+        .store
+        .live_settlement_for_work_order(work_order_id)
+        .await
+        .map_err(RestError::from_store)?
+        .ok_or_else(|| {
+            RestError::from_kernel(KernelError::not_found("settlement was not found"))
+        })?;
+    Ok(Json(settlement))
+}
+
+/// A settlement may be submitted by a completion reviewer, or by its creator
+/// (who drafted it under `WorkReportSubmit`). Anyone else is denied without
+/// revealing whether they merely lack the branch or the feature.
+fn authorize_settlement_submitter(
+    principal: &Principal,
+    settlement: &SettlementSummary,
+) -> Result<(), RestError> {
+    if authorize(
+        principal,
+        Action::new(Feature::CompletionReview),
+        settlement.branch_id,
+    )
+    .is_ok()
+    {
+        return Ok(());
+    }
+    if settlement.created_by == principal.user_id {
+        return authorize(
+            principal,
+            Action::new(Feature::WorkReportSubmit),
+            settlement.branch_id,
+        )
+        .map_err(RestError::from_kernel);
+    }
+    Err(RestError::from_kernel(KernelError::forbidden(
+        "only the settlement creator or a completion reviewer may submit",
+    )))
+}
+
+async fn submit_settlement(
+    State(state): State<WorkOrderRestState>,
+    headers: HeaderMap,
+    Path(settlement_id): Path<uuid::Uuid>,
+) -> Result<Json<SettlementSummary>, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    let current = state
+        .store
+        .settlement(settlement_id)
+        .await
+        .map_err(RestError::from_store)?;
+    authorize_settlement_submitter(&principal, &current)?;
+    let settlement = state
+        .store
+        .submit_settlement(SubmitSettlementCommand {
+            actor: principal.user_id,
+            settlement_id,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(settlement))
+}
+
+async fn review_settlement(
+    State(state): State<WorkOrderRestState>,
+    headers: HeaderMap,
+    Path(settlement_id): Path<uuid::Uuid>,
+    Json(body): Json<ReviewSettlementRequest>,
+) -> Result<Json<SettlementSummary>, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    let current = state
+        .store
+        .settlement(settlement_id)
+        .await
+        .map_err(RestError::from_store)?;
+    authorize(
+        &principal,
+        Action::new(Feature::CompletionReview),
+        current.branch_id,
+    )
+    .map_err(RestError::from_kernel)?;
+    // Four-eyes (approver ≠ submitter) and the RETURNED-requires-comment rule
+    // are enforced inside the audited transaction.
+    let settlement = state
+        .store
+        .review_settlement(ReviewSettlementCommand {
+            actor: principal.user_id,
+            settlement_id,
+            decision: body.decision,
+            comment: body.comment,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(settlement))
+}
+
+async fn void_settlement(
+    State(state): State<WorkOrderRestState>,
+    headers: HeaderMap,
+    Path(settlement_id): Path<uuid::Uuid>,
+    Json(body): Json<VoidSettlementRequest>,
+) -> Result<Json<SettlementSummary>, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    let current = state
+        .store
+        .settlement(settlement_id)
+        .await
+        .map_err(RestError::from_store)?;
+    authorize(
+        &principal,
+        Action::new(Feature::CompletionReview),
+        current.branch_id,
+    )
+    .map_err(RestError::from_kernel)?;
+    // Void is a correction of financial record state: on top of the feature it
+    // requires a built-in admin-tier role, so a custom-role grant of
+    // completion_review alone can never erase a settlement.
+    if !principal
+        .roles
+        .iter()
+        .any(|role| matches!(role, Role::Admin | Role::SuperAdmin | Role::Executive))
+    {
+        return Err(RestError::from_kernel(KernelError::forbidden(
+            "voiding a settlement requires an admin role",
+        )));
+    }
+    let settlement = state
+        .store
+        .void_settlement(VoidSettlementCommand {
+            actor: principal.user_id,
+            settlement_id,
+            reason: body.reason,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(settlement))
+}
+
 async fn create_work_order(
     State(state): State<WorkOrderRestState>,
     headers: HeaderMap,
@@ -2916,6 +3315,8 @@ async fn create_work_order(
             symptom: body.symptom,
             customer_request: body.customer_request,
             target_due_at: body.target_due_at,
+            maintenance_type: body.maintenance_type,
+            maintenance_cause: body.maintenance_cause,
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
         })
@@ -2966,6 +3367,8 @@ async fn update_work_order_intake(
             work_order_id,
             symptom: body.symptom,
             customer_request: body.customer_request,
+            maintenance_type: body.maintenance_type,
+            maintenance_cause: body.maintenance_cause,
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
         })
@@ -3660,6 +4063,8 @@ async fn fetch_approval_rows(
             w.status,
             w.priority,
             w.result_type,
+            w.maintenance_type,
+            w.maintenance_cause,
             w.target_due_at,
             w.created_at,
             w.updated_at,
@@ -3888,9 +4293,15 @@ fn parse_work_order_list_query(
             match key.as_str() {
                 "status" | "status[]" => query.status.push(value),
                 "priority" | "priority[]" => query.priority.push(value),
+                "maintenance_type" | "maintenance_type[]" => query.maintenance_type.push(value),
+                "maintenance_cause" | "maintenance_cause[]" => query.maintenance_cause.push(value),
                 "assigned_to" => query.assigned_to = non_empty_query_value(value),
                 "customer_id" => query.customer_id = parse_uuid_query_value("customer_id", value)?,
                 "site_id" => query.site_id = parse_uuid_query_value("site_id", value)?,
+                "branch_id" => query.branch_id = parse_uuid_query_value("branch_id", value)?,
+                "equipment_id" => {
+                    query.equipment_id = parse_uuid_query_value("equipment_id", value)?;
+                }
                 "around_work_order_id" | "search_around_work_order_id" => {
                     query.around_work_order_id =
                         parse_uuid_query_value("around_work_order_id", value)?;
@@ -3910,9 +4321,13 @@ fn parse_work_order_list_query(
     Ok(NormalizedWorkOrderListQuery {
         statuses: normalize_status_filters(query.status)?,
         priorities: normalize_priority_filters(query.priority)?,
+        maintenance_types: normalize_maintenance_type_filters(query.maintenance_type)?,
+        maintenance_causes: normalize_maintenance_cause_filters(query.maintenance_cause)?,
         assigned_to: normalize_assigned_to(query.assigned_to, actor)?,
         customer_id: query.customer_id,
         site_id: query.site_id,
+        branch_id: query.branch_id,
+        equipment_id: query.equipment_id,
         around_work_order_id: query.around_work_order_id,
         target_due_from: query.target_due_from,
         target_due_to: query.target_due_to,
@@ -3939,6 +4354,28 @@ fn normalize_priority_filters(raw: Vec<String>) -> Result<Vec<String>, RestError
         priorities.push(priority.as_db_str().to_owned());
     }
     Ok(priorities)
+}
+
+fn normalize_maintenance_type_filters(raw: Vec<String>) -> Result<Vec<String>, RestError> {
+    let mut types = Vec::new();
+    for value in expand_query_values(raw) {
+        let normalized = value.to_ascii_uppercase();
+        let maintenance_type =
+            MaintenanceType::from_db_str(&normalized).map_err(RestError::from_kernel)?;
+        types.push(maintenance_type.as_db_str().to_owned());
+    }
+    Ok(types)
+}
+
+fn normalize_maintenance_cause_filters(raw: Vec<String>) -> Result<Vec<String>, RestError> {
+    let mut causes = Vec::new();
+    for value in expand_query_values(raw) {
+        let normalized = value.to_ascii_uppercase();
+        let maintenance_cause =
+            MaintenanceCause::from_db_str(&normalized).map_err(RestError::from_kernel)?;
+        causes.push(maintenance_cause.as_db_str().to_owned());
+    }
+    Ok(causes)
 }
 
 fn expand_query_values(raw: Vec<String>) -> Vec<String> {
@@ -4121,6 +4558,16 @@ fn push_work_order_filters(
         builder.push_bind(query.priorities.clone());
         builder.push(")");
     }
+    if !query.maintenance_types.is_empty() {
+        builder.push(" AND w.maintenance_type = ANY(");
+        builder.push_bind(query.maintenance_types.clone());
+        builder.push(")");
+    }
+    if !query.maintenance_causes.is_empty() {
+        builder.push(" AND w.maintenance_cause = ANY(");
+        builder.push_bind(query.maintenance_causes.clone());
+        builder.push(")");
+    }
     if let Some(assigned_to) = query.assigned_to {
         builder.push(
             r#"
@@ -4141,6 +4588,14 @@ fn push_work_order_filters(
     if let Some(site_id) = query.site_id {
         builder.push(" AND w.site_id = ");
         builder.push_bind(site_id);
+    }
+    if let Some(branch_id) = query.branch_id {
+        builder.push(" AND w.branch_id = ");
+        builder.push_bind(branch_id);
+    }
+    if let Some(equipment_id) = query.equipment_id {
+        builder.push(" AND w.equipment_id = ");
+        builder.push_bind(equipment_id);
     }
     if let Some(around_work_order_id) = query.around_work_order_id {
         builder.push(
@@ -4359,6 +4814,8 @@ fn work_order_list_item_from_row(
         status: row.try_get("status")?,
         priority: row.try_get("priority")?,
         result_type: row.try_get("result_type")?,
+        maintenance_type: row.try_get("maintenance_type")?,
+        maintenance_cause: row.try_get("maintenance_cause")?,
         target_due_at: row.try_get("target_due_at")?,
         created_at: row.try_get("created_at")?,
         updated_at: row.try_get("updated_at")?,
@@ -4553,6 +5010,7 @@ fn work_order_detail_from_row(
     approval_line: Vec<ApprovalStepSummary>,
     status_history: Vec<StatusHistorySummary>,
     evidence: Vec<EvidenceSummary>,
+    settlement: Option<SettlementSummary>,
 ) -> Result<WorkOrderDetail, RestError> {
     Ok(WorkOrderDetail {
         id: WorkOrderId::from_uuid(row.try_get("id")?),
@@ -4561,6 +5019,8 @@ fn work_order_detail_from_row(
         status: row.try_get("status")?,
         priority: row.try_get("priority")?,
         result_type: row.try_get("result_type")?,
+        maintenance_type: row.try_get("maintenance_type")?,
+        maintenance_cause: row.try_get("maintenance_cause")?,
         symptom: row.try_get("symptom")?,
         customer_request: row.try_get("customer_request")?,
         target_due_at: row.try_get("target_due_at")?,
@@ -4590,6 +5050,7 @@ fn work_order_detail_from_row(
         approval_line,
         status_history,
         evidence,
+        settlement,
     })
 }
 
@@ -4895,6 +5356,8 @@ mod tests {
             status: "ASSIGNED".to_owned(),
             priority: "P2".to_owned(),
             result_type: "REPAIR".to_owned(),
+            maintenance_type: Some("PREVENTIVE".to_owned()),
+            maintenance_cause: Some("SCHEDULED".to_owned()),
             target_due_at: Some(timestamp),
             created_at: timestamp,
             updated_at: timestamp,
@@ -5044,6 +5507,8 @@ mod tests {
             status: "ASSIGNED".to_owned(),
             priority: "P2".to_owned(),
             result_type: "REPAIR".to_owned(),
+            maintenance_type: Some("EMERGENCY".to_owned()),
+            maintenance_cause: Some("BREAKDOWN".to_owned()),
             symptom: "Test symptom".to_owned(),
             customer_request: None,
             target_due_at: Some(timestamp),
@@ -5094,6 +5559,7 @@ mod tests {
                 verified_at: Some(timestamp),
                 created_at: timestamp,
             }],
+            settlement: None,
         };
 
         let json = serde_json::to_value(detail).unwrap();

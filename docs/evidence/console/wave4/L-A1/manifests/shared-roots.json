@@ -1,0 +1,100 @@
+{
+ "lane": "w4-a1-catalog",
+ "charter_id": "L-A1",
+ "branch": "claude/w4-a1-catalog-20260725",
+ "date": "2026-07-25",
+ "subject": "ontology catalog additive-upgrade path",
+ "shared_root_touches": [
+  {
+   "root": "backend/crates/platform/db/migrations/**",
+   "path": "backend/crates/platform/db/migrations/0204_ontology_catalog_additive_upgrade.sql",
+   "slot": "0204",
+   "slot_source": "docs/program/wave4-migration-slot-ledger.md, as reassigned by the integrator on 2026-07-25",
+   "slot_self_assigned": false,
+   "slot_history": "First assigned 0203 (ledger section 4 row 2) and committed against it. The integrator then swapped 0203<->0211 in ledger commit b33cbc4d, while 0203_leave_api_revoke_directory_manager_helper.sql merged onto the spine under the old number. Renamed to 0211, then renumbered again to 0204 by the integrator at merge time per ledger section 5 (assign at land, keeping the sequence contiguous); no 0203 reference survives anywhere in L-A1's diff.",
+   "written_in_tree": true,
+   "written_in_tree_rationale": "The ledger's own recorded integrator deviation (section 5 note, 2026-07-25) accepts a lane writing its assigned migration directly when the integrator lands it in the same pass; a manifest round-trip would add a copy step with drift risk and no safety gain. The number came from the ledger, never from `ls`.",
+   "new_tables": "none",
+   "schema_changes": [
+    "ALTER TABLE ont_builtin_catalog_installs: PRIMARY KEY (org_id) -> PRIMARY KEY (org_id, catalog_version); the table becomes an append-only per-tenant history of applied catalog versions. FORCE RLS org_isolation policy, org-immutable trigger, and the 0165 grants (mnt_ontology_writer SELECT+INSERT, no UPDATE; mnt_rt SELECT only) are all unchanged. No object in the repository references this table by foreign key.",
+    "CREATE OR REPLACE FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT): identical signature and return type; body becomes an idempotent additive install. Ownership (mnt_ontology_writer) and the EXECUTE grant (mnt_ontology_cmd only, never mnt_rt) are re-asserted explicitly."
+   ],
+   "new_audit_actions": [
+    "ontology.builtin_catalog.install",
+    "ontology.builtin_catalog.upgrade"
+   ],
+   "new_error_codes": [
+    "ontology_builtin.existing_key_projection_conflict (SQLSTATE 23514)"
+   ],
+   "removed_error_codes": [
+    "ontology_builtin.different_catalog_already_installed (SQLSTATE 23505) - superseded by the additive path; no test, crate, client or document referenced it"
+   ],
+   "retained_error_codes": [
+    "ontology_builtin.empty_org_required - still raised for a tenant's FIRST catalog install",
+    "ontology_builtin.manifest_not_allowlisted",
+    "ontology_builtin.physical_link_id_forbidden",
+    "ontology_builtin.link_target_not_found",
+    "ontology_builtin.invalid_manifest_shape"
+   ]
+  },
+  {
+   "root": "tools/buck/gen_first_party.py",
+   "change": "one appended line in TEST_RESOURCE_REQUIREMENTS['mnt-ontology-adapter-postgres']['integration']: 'tests/builtin_catalog_additive_upgrade_as_runtime_role.rs': 'postgres'",
+   "why": "The generator refuses to emit any BUCK file unless every discovered test target has a reviewed resource declaration. Registering the new test keeps this lane from adding to that debt.",
+   "generator_could_not_be_run_on_this_branch": true,
+   "generator_blocker": "gen_first_party.py aborted on 14 PRE-EXISTING unregistered targets from other lanes (mnt-app board_ack_api / evaluation_cycle_api / field_visit_api / maintenance_chain_api / notif_routing_api / org_change_api / recruiting_pipeline_api; mnt-orgchange-domain unit; mnt-payroll-adapter-postgres payroll_lifecycle_rls_as_runtime_role + unit; mnt-payroll-rest run_lifecycle_api; mnt-recruiting-application unit; mnt-recruiting-domain unit; mnt-workorder-domain settlement_fsm). Reproduced before this lane's change.",
+   "generator_blocker_resolved_by": "Intervening spine commits, not a dedicated lane. The hf-buck-preflight lane (claude/hf-buck-preflight-20260725 @ b84c2598) measured at 74eeb648 - the spine tip before its own first commit - that all 14 were ALREADY declared; it declared zero of the 14. Its contribution was a genuine 15th (mnt-platform-db tests/lifecycle_maker_checker.rs, introduced by the four-eyes merge after the CI run this lane read) plus a post-merge regen of backend/crates/leave/domain/BUCK. Net: gen_first_party.py exits 0, tools/buck/preflight.sh exits 0 (was 1).",
+   "compensating_action": "The rust_test target in backend/crates/ontology/adapter-postgres/BUCK was hand-written to byte-match the neighbouring generated targets (identical env, labels and deps) and placed at the generator's alphabetical position.",
+   "compensating_action_verified": "CONFIRMED byte-identical by the hf-buck-preflight lane: L-A1's evidence commit was taken into a throwaway worktree, that lane's branch merged in to supply the full declaration table, and the generator re-run - 166 BUCK files generated, exit 0, `git status --short` empty, backend/crates/ontology/adapter-postgres/BUCK unchanged. No follow-up needed beyond taking the spine."
+  }
+ ],
+ "not_touched": [
+  "web/**",
+  "backend/openapi/openapi.yaml",
+  "clients/**",
+  "backend/app/src/lib.rs",
+  "backend/app/src/objects.rs",
+  "web/src/i18n/ko.ts",
+  "web/src/console/shell/nav.ts",
+  "web/src/console/screens/registry.ts"
+ ],
+ "raised_by_this_lane_owned_elsewhere": [
+  {
+   "id": "L-A1-D1",
+   "severity": "ship-blocking for the whole wave, pre-existing, not caused by this lane",
+   "issue": "mnt-gate-migration-safety fails with [NonContiguousMigrationVersion] missing migration version 0201 before 0202. The ledger deliberately reserves 0201 as an unavailable gap; the gate requires contiguous versions. Reproduced with this lane's migration removed - identical failure.",
+   "status": "TAKEN BY THE INTEGRATOR 2026-07-25. L-A1 was instructed not to fill or renumber around 0201. No action in this lane."
+  },
+  {
+   "id": "L-A1-D2",
+   "severity": "blocks any lane adding a test file, pre-existing, not caused by this lane",
+   "issue": "gen_first_party.py aborted on 14 unregistered test targets, so BUCK could not be regenerated.",
+   "status": "RESOLVED by the hf-buck-preflight lane; this lane's hand-written target independently verified byte-identical to generator output. See the tools/buck/gen_first_party.py entry above."
+  },
+  {
+   "id": "L-A1-D3",
+   "severity": "red test on the branch, pre-existing, not caused by this lane",
+   "issue": "mnt-ontology-rest --test object_type_cas_as_runtime_role: blocker_queue_is_tenant_scoped_cascades_and_attachment_effects_are_write_checked and instance_list_composes_enforced_permit_forbid_and_tenant_scope fail with 'unable to evaluate object visibility policy'. Verified identical with and without this lane's migration.",
+   "status": "Reported to the integrator 2026-07-25; acknowledged and being routed. No action in this lane."
+  },
+  {
+   "id": "L-A1-D4",
+   "severity": "blocks the VALUE of L-X7, not this lane; would ship a type no existing tenant ever receives",
+   "raised_by": "stage-2 verification 2026-07-25",
+   "issue": "This lane makes the catalog upgrade possible; nothing makes it happen. TenantConfigSeeder (backend/app/src/lib.rs:2847) has exactly ONE call site - the tenant-onboarding handler at backend/crates/platform/platform-rest/src/lib.rs:602, for a brand-new organization. There is no re-seed route, no startup reconcile, and no migration that calls the installer. After L-X7 bumps BUILTIN_CATALOG_VERSION, tenants onboarded before the deploy stay at 27 types forever: no deal type, no DL- resolution, an absent CRM ontology surface.",
+   "owner": "L-X7",
+   "required": "An existing-tenant upgrade trigger at the ordinary bar - mnt_ontology_cmd credentials, scope_org per tenant, deny-by-default authz, an audit row, and a test against a tenant seeded at the OLDER version. The installer is already idempotent, so the trigger needs no guard rails of its own. See report section 6.1.",
+   "status": "OPEN - named, not fixed. Out of this lane's scope (backend/app/** and the platform router are not its roots) and not constructible here, since there is no new catalog version to upgrade to until L-X7 ships one."
+  },
+  {
+   "id": "L-A1-D5",
+   "severity": "hardening recommendation, narrow; NOT a regression",
+   "raised_by": "stage-2 verification 2026-07-25",
+   "issue": "The two audit actions 0204 adds (ontology.builtin_catalog.install / .upgrade) are not in the protected array of ontology_api.protected_audit_writer_guard (0165:297), while their per-type sibling ontology.object_type.builtin_install - emitted by the same function in the same transaction - is. mnt_rt holds INSERT on audit_events (0031:85), so it can write a row claiming a tenant was upgraded to a version and digest it never received. An auditor reading the chain cannot tell the two classes apart.",
+   "not_a_regression_because": "Before 0204 the marker append was audited by nothing at all, so 0204 strictly adds evidence. Every audit action in the repository outside those four names (and 0166's leave set) is equally forgeable by mnt_rt.",
+   "not_fixed_here_because": "0204 is already merged on the spine; editing it in place would change an applied migration's sqlx checksum for anyone who has run it. backend/crates/platform/db/migrations/** is a shared collision root and this lane may not self-assign a follow-up slot.",
+   "proposed_fix": "One new integrator-assigned slot: a second BEFORE INSERT trigger on audit_events that rejects those two actions unless ontology_api.invoker_role() = 'mnt_ontology_cmd', mirroring the existing guard's SECURITY DEFINER / mnt_ontology_writer shape. About 15 lines; it does not restate the 60-line guard, so the two cannot drift.",
+   "status": "OPEN - integrator to schedule or decline. See report section 5.7."
+  }
+ ]
+}

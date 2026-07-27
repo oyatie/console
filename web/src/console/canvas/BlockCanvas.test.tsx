@@ -4,14 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import { BlockCanvas } from "./BlockCanvas";
 import { DEFAULT_CANVAS_STRINGS } from "./strings";
-import { stubCanvasDoc } from "./stub";
+import { testCanvasDoc } from "./testFixtures";
 import type { CanvasDoc } from "./types";
 
 const S = DEFAULT_CANVAS_STRINGS;
 
 describe("BlockCanvas", () => {
   it("renders every node and shows the empty state when there are none", () => {
-    const { rerender } = render(<BlockCanvas doc={stubCanvasDoc()} strings={S} />);
+    const { rerender } = render(<BlockCanvas doc={testCanvasDoc()} strings={S} />);
     // each node's dedicated header button carries the node name; assert ≥1 each.
     expect(screen.getAllByRole("button", { name: S.nodeAria("trigger") }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: S.nodeAria("action") }).length).toBeGreaterThan(0);
@@ -21,13 +21,13 @@ describe("BlockCanvas", () => {
   });
 
   it("renders a branch node with its two labeled outputs", () => {
-    render(<BlockCanvas doc={stubCanvasDoc()} strings={S} />);
+    render(<BlockCanvas doc={testCanvasDoc()} strings={S} />);
     expect(screen.getByRole("button", { name: S.portAria("yes") })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: S.portAria("no") })).toBeInTheDocument();
   });
 
   it("never labels an implicit output port with the raw 'out' machine key", () => {
-    render(<BlockCanvas doc={stubCanvasDoc()} strings={S} />);
+    render(<BlockCanvas doc={testCanvasDoc()} strings={S} />);
     // The implicit output is reachable by its neutral glyph label…
     expect(screen.getAllByRole("button", { name: S.portAria("→") }).length).toBeGreaterThan(0);
     // …and the machine key never leaks into the UI as a port name.
@@ -36,7 +36,7 @@ describe("BlockCanvas", () => {
 
   it("connects by activating a source port then a target node (keyboard/click path)", () => {
     function Harness() {
-      const [doc, setDoc] = useState<CanvasDoc>(stubCanvasDoc());
+      const [doc, setDoc] = useState<CanvasDoc>(testCanvasDoc());
       return <BlockCanvas doc={doc} strings={S} onChange={setDoc} />;
     }
     render(<Harness />);
@@ -48,14 +48,14 @@ describe("BlockCanvas", () => {
     const actionNode = screen.getAllByRole("button", { name: S.nodeAria("action") })[0];
     fireEvent.click(actionNode);
 
-    // An SVG line now exists for the new edge (stub had 3, now 4).
+    // An SVG line now exists for the new edge (fixture had 3, now 4).
     const lines = document.querySelectorAll("line");
     expect(lines.length).toBe(4);
   });
 
   it("does not mutate the doc for an invalid self-connect", () => {
     const onChange = vi.fn();
-    render(<BlockCanvas doc={stubCanvasDoc()} strings={S} onChange={onChange} />);
+    render(<BlockCanvas doc={testCanvasDoc()} strings={S} onChange={onChange} />);
     // Arm from trigger's port, then click the SAME trigger node → no-op.
     fireEvent.click(screen.getAllByRole("button", { name: S.portAria("→") })[0]);
     const triggerNode = screen.getAllByRole("button", { name: S.nodeAria("trigger") })[0];

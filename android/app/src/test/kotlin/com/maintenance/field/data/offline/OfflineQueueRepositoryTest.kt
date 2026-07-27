@@ -118,6 +118,10 @@ class OfflineQueueRepositoryTest {
         status = status,
         priority = PriorityLevel.P1,
         resultType = WorkResultType.UNKNOWN,
+        // Required-but-nullable on the wire; the field app has no domain field
+        // for either, so the queue round-trips them as sent.
+        maintenanceType = null,
+        maintenanceCause = null,
         evidenceVerified = false,
     )
 }

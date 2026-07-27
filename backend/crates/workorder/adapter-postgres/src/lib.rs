@@ -12,20 +12,23 @@ use mnt_platform_request_context::current_org;
 use mnt_workorder_application::{
     ActionInboxPosition, ActionInboxWorkOrderFuture, ActionInboxWorkOrderPort,
     AssignedActionInboxWorkOrder, AssignedActionInboxWorkOrderPage, CreateDailyPlanCommand,
-    CreateOutsourceWorkCommand, CreateWorkOrderCommand, DailyPlanItemSummary, DailyPlanListPage,
-    DailyPlanListQuery, DailyPlanStatus, DailyPlanSummary, OutsourceWorkStatus,
-    OutsourceWorkSummary, RejectWorkOrderCommand, ReviewDailyPlanCommand,
-    ReviewTargetChangeCommand, SendDailyPlanForReviewCommand, SubmitReportCommand,
-    TargetChangeDecision, TargetChangeRequestCommand, TargetChangeRequestSummary,
-    TargetChangeStatus, UpdatePriorityCommand, UpdateWorkOrderIntakeCommand,
-    WorkOrderApprovalCommand, WorkOrderAssignmentCommand, WorkOrderCreatedEvent,
-    WorkOrderCreatedListener, WorkOrderStartCommand, WorkOrderSummary, daily_plan_audit_event,
+    CreateOutsourceWorkCommand, CreateSettlementCommand, CreateWorkOrderCommand,
+    DailyPlanItemSummary, DailyPlanListPage, DailyPlanListQuery, DailyPlanStatus, DailyPlanSummary,
+    OutsourceWorkStatus, OutsourceWorkSummary, RejectWorkOrderCommand, ReviewDailyPlanCommand,
+    ReviewSettlementCommand, ReviewTargetChangeCommand, SendDailyPlanForReviewCommand,
+    SettlementLineSummary, SettlementReviewDecision, SettlementSummary, SubmitReportCommand,
+    SubmitSettlementCommand, TargetChangeDecision, TargetChangeRequestCommand,
+    TargetChangeRequestSummary, TargetChangeStatus, UpdatePriorityCommand,
+    UpdateWorkOrderIntakeCommand, VoidSettlementCommand, WorkOrderApprovalCommand,
+    WorkOrderAssignmentCommand, WorkOrderCreatedEvent, WorkOrderCreatedListener,
+    WorkOrderStartCommand, WorkOrderSummary, daily_plan_audit_event, settlement_audit_event,
     work_order_audit_event,
 };
 use mnt_workorder_domain::{
-    ApprovalRole, AssignmentRole, PriorityLevel, TransitionActor, TransitionGuardContext,
-    WorkOrderAssignment, WorkOrderAssignments, WorkOrderStatus, WorkResultType,
-    validate_status_transition,
+    ApprovalRole, AssignmentRole, MaintenanceCause, MaintenanceType, PriorityLevel,
+    SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES, SettlementLineKind, SettlementStatus, TransitionActor,
+    TransitionGuardContext, WorkOrderAssignment, WorkOrderAssignments, WorkOrderStatus,
+    WorkResultType, validate_settlement_transition, validate_status_transition,
 };
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 use time::Date;
@@ -118,6 +121,8 @@ impl PgWorkOrderStore {
         let symptom = command.symptom;
         let customer_request = command.customer_request;
         let target_due_at = command.target_due_at;
+        let maintenance_type = command.maintenance_type;
+        let maintenance_cause = command.maintenance_cause;
         let occurred_at = command.occurred_at;
         let trace = command.trace.clone();
         let request_date = occurred_at.date();
@@ -154,12 +159,14 @@ impl PgWorkOrderStore {
                     INSERT INTO work_orders (
                         id, request_no, branch_id, equipment_id, customer_id, site_id,
                         requested_by, status, priority, symptom, customer_request,
-                        target_due_at, created_at, updated_at, org_id
+                        target_due_at, maintenance_type, maintenance_cause,
+                        created_at, updated_at, org_id
                     )
                     VALUES (
                         $1, $2, $3, $4, $5, $6,
                         $7, $8, $9, $10, $11,
-                        $12, $13, $13, $14
+                        $12, $13, $14,
+                        $15, $15, $16
                     )
                     "#,
                     )
@@ -175,6 +182,8 @@ impl PgWorkOrderStore {
                     .bind(symptom.trim())
                     .bind(customer_request.as_deref().map(str::trim))
                     .bind(target_due_at)
+                    .bind(maintenance_type.map(MaintenanceType::as_db_str))
+                    .bind(maintenance_cause.map(MaintenanceCause::as_db_str))
                     .bind(occurred_at)
                     .bind(org_uuid)
                     .execute(tx.as_mut())
@@ -269,7 +278,13 @@ impl PgWorkOrderStore {
             .customer_request
             .map(|value| value.trim().to_owned())
             .filter(|value| !value.is_empty());
-        if symptom.is_none() && !customer_request_was_set {
+        let maintenance_type = command.maintenance_type;
+        let maintenance_cause = command.maintenance_cause;
+        if symptom.is_none()
+            && !customer_request_was_set
+            && maintenance_type.is_none()
+            && maintenance_cause.is_none()
+        {
             return Err(
                 KernelError::validation("no work-order intake fields were provided").into(),
             );
@@ -291,7 +306,9 @@ impl PgWorkOrderStore {
                     UPDATE work_orders
                     SET symptom = COALESCE($2, symptom),
                         customer_request = CASE WHEN $3 THEN $4 ELSE customer_request END,
-                        updated_at = $5
+                        maintenance_type = COALESCE($5, maintenance_type),
+                        maintenance_cause = COALESCE($6, maintenance_cause),
+                        updated_at = $7
                     WHERE id = $1
                     "#,
                 )
@@ -299,6 +316,8 @@ impl PgWorkOrderStore {
                 .bind(symptom.as_deref())
                 .bind(customer_request_was_set)
                 .bind(customer_request.as_deref())
+                .bind(maintenance_type.map(MaintenanceType::as_db_str))
+                .bind(maintenance_cause.map(MaintenanceCause::as_db_str))
                 .bind(occurred_at)
                 .execute(tx.as_mut())
                 .await?;
@@ -708,7 +727,9 @@ impl PgWorkOrderStore {
                     .await?;
                 }
 
-                update_status(
+                let completed_work_order = (to == WorkOrderStatus::FinalCompleted)
+                    .then_some((WorkOrderId::from_uuid(row.id), row.equipment_id));
+                let summary = update_status(
                     tx,
                     row,
                     actor,
@@ -717,7 +738,18 @@ impl PgWorkOrderStore {
                     occurred_at,
                     org_uuid,
                 )
-                .await
+                .await?;
+                if let Some((completed_work_order_id, equipment_id)) = completed_work_order {
+                    append_equipment_maintenance_history(
+                        tx,
+                        completed_work_order_id,
+                        equipment_id,
+                        occurred_at,
+                        org_uuid,
+                    )
+                    .await?;
+                }
+                Ok(summary)
             })
         })
         .await
@@ -1319,6 +1351,385 @@ impl PgWorkOrderStore {
         self.daily_plan_target(plan_id).await
     }
 
+    /// Open a DRAFT cost settlement on a settlement-eligible work order.
+    ///
+    /// Replaying the same `Idempotency-Key` with an identical request returns
+    /// the existing settlement; a different request under the same key
+    /// conflicts. At most one live (non-VOID) settlement may exist per order
+    /// (partial unique index).
+    pub async fn create_settlement(
+        &self,
+        command: CreateSettlementCommand,
+    ) -> Result<SettlementSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let org_uuid = *org.as_uuid();
+        if command.lines.is_empty() {
+            return Err(
+                KernelError::validation("settlement requires at least one cost line").into(),
+            );
+        }
+        let mut total_amount_krw: i64 = 0;
+        for line in &command.lines {
+            if line.label.trim().is_empty() {
+                return Err(KernelError::validation("settlement line label is required").into());
+            }
+            if line.amount_krw < 0 {
+                return Err(
+                    KernelError::validation("settlement line amount must not be negative").into(),
+                );
+            }
+            total_amount_krw = total_amount_krw
+                .checked_add(line.amount_krw)
+                .ok_or_else(|| KernelError::validation("settlement total overflows"))?;
+        }
+
+        // Idempotent replay: read outside the audited transaction (a replay
+        // must not append a second audit event). A create racing this check
+        // falls through to the unique (org_id, idempotency_key) index → 409.
+        let idempotency_key = command.idempotency_key.clone();
+        let replay = with_org_conn::<_, _, PgWorkOrderError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                Ok(sqlx::query(
+                    r#"
+                    SELECT id, work_order_id, request_hash
+                    FROM work_order_settlements
+                    WHERE idempotency_key = $1
+                    "#,
+                )
+                .bind(idempotency_key)
+                .fetch_optional(tx.as_mut())
+                .await?)
+            })
+        })
+        .await?;
+        if let Some(row) = replay {
+            let existing_hash: String = row.try_get("request_hash")?;
+            let existing_work_order: uuid::Uuid = row.try_get("work_order_id")?;
+            if existing_hash == command.request_hash
+                && existing_work_order == *command.work_order_id.as_uuid()
+            {
+                let existing_id: uuid::Uuid = row.try_get("id")?;
+                return self.settlement(existing_id).await;
+            }
+            return Err(
+                KernelError::conflict("idempotency key was used with a different request").into(),
+            );
+        }
+
+        let branch_id = self.branch_for_work_order(command.work_order_id).await?;
+        let settlement_id = uuid::Uuid::new_v4();
+        let work_order_id = command.work_order_id;
+        let actor = command.actor;
+        let lines = command.lines;
+        let note = command.note;
+        let idempotency_key = command.idempotency_key;
+        let request_hash = command.request_hash;
+        let require_actor_assignment = command.require_actor_assignment;
+        let occurred_at = command.occurred_at;
+        let event = settlement_audit_event(
+            "work_order_settlement.create",
+            actor,
+            branch_id,
+            settlement_id,
+            command.trace,
+            occurred_at,
+        )?
+        .with_org(org);
+
+        with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
+            Box::pin(async move {
+                let order = lock_work_order(tx, work_order_id).await?;
+                if !SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES.contains(&order.status) {
+                    return Err(KernelError::conflict(
+                        "settlement requires a submitted report, admin review, or final completion",
+                    )
+                    .into());
+                }
+                if require_actor_assignment {
+                    ensure_actor_assignment(
+                        tx,
+                        work_order_id,
+                        actor,
+                        AssignmentRequirement::Required,
+                    )
+                    .await?;
+                }
+
+                sqlx::query(
+                    r#"
+                    INSERT INTO work_order_settlements (
+                        id, org_id, work_order_id, branch_id, status, total_amount_krw,
+                        note, idempotency_key, request_hash, created_by, created_at, updated_at
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
+                    "#,
+                )
+                .bind(settlement_id)
+                .bind(org_uuid)
+                .bind(*work_order_id.as_uuid())
+                .bind(*branch_id.as_uuid())
+                .bind(SettlementStatus::Draft.as_db_str())
+                .bind(total_amount_krw)
+                .bind(note.as_deref().map(str::trim))
+                .bind(idempotency_key)
+                .bind(request_hash)
+                .bind(*actor.as_uuid())
+                .bind(occurred_at)
+                .execute(tx.as_mut())
+                .await?;
+
+                for (index, line) in lines.iter().enumerate() {
+                    sqlx::query(
+                        r#"
+                        INSERT INTO work_order_settlement_lines (
+                            org_id, settlement_id, kind, label, amount_krw, source_ref, sort_order
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        "#,
+                    )
+                    .bind(org_uuid)
+                    .bind(settlement_id)
+                    .bind(line.kind.as_db_str())
+                    .bind(line.label.trim())
+                    .bind(line.amount_krw)
+                    .bind(line.source_ref.as_deref().map(str::trim))
+                    .bind(
+                        line.sort_order
+                            .unwrap_or(i32::try_from(index).unwrap_or(i32::MAX)),
+                    )
+                    .execute(tx.as_mut())
+                    .await?;
+                }
+
+                fetch_settlement_summary_tx(tx, settlement_id).await
+            })
+        })
+        .await
+    }
+
+    pub async fn settlement(
+        &self,
+        settlement_id: uuid::Uuid,
+    ) -> Result<SettlementSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        with_org_conn::<_, _, PgWorkOrderError>(&self.pool, org, move |tx| {
+            Box::pin(async move { fetch_settlement_summary_tx(tx, settlement_id).await })
+        })
+        .await
+    }
+
+    /// The live (non-VOID) settlement of a work order, if any.
+    pub async fn live_settlement_for_work_order(
+        &self,
+        work_order_id: WorkOrderId,
+    ) -> Result<Option<SettlementSummary>, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        with_org_conn::<_, _, PgWorkOrderError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let id: Option<uuid::Uuid> = sqlx::query_scalar(
+                    r#"
+                    SELECT id
+                    FROM work_order_settlements
+                    WHERE work_order_id = $1 AND status <> 'VOID'
+                    "#,
+                )
+                .bind(*work_order_id.as_uuid())
+                .fetch_optional(tx.as_mut())
+                .await?;
+                match id {
+                    Some(id) => Ok(Some(fetch_settlement_summary_tx(tx, id).await?)),
+                    None => Ok(None),
+                }
+            })
+        })
+        .await
+    }
+
+    pub async fn submit_settlement(
+        &self,
+        command: SubmitSettlementCommand,
+    ) -> Result<SettlementSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let current = self.settlement(command.settlement_id).await?;
+        let settlement_id = command.settlement_id;
+        let actor = command.actor;
+        let occurred_at = command.occurred_at;
+        let event = settlement_audit_event(
+            "work_order_settlement.submit",
+            actor,
+            current.branch_id,
+            settlement_id,
+            command.trace,
+            occurred_at,
+        )?
+        .with_org(org);
+
+        with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
+            Box::pin(async move {
+                let row = lock_settlement(tx, settlement_id).await?;
+                validate_settlement_transition(row.status, SettlementStatus::Submitted)?;
+                sqlx::query(
+                    r#"
+                    UPDATE work_order_settlements
+                    SET status = $2, submitted_by = $3, submitted_at = $4, updated_at = $4
+                    WHERE id = $1
+                    "#,
+                )
+                .bind(settlement_id)
+                .bind(SettlementStatus::Submitted.as_db_str())
+                .bind(*actor.as_uuid())
+                .bind(occurred_at)
+                .execute(tx.as_mut())
+                .await?;
+                fetch_settlement_summary_tx(tx, settlement_id).await
+            })
+        })
+        .await
+    }
+
+    /// Four-eyes review of a SUBMITTED settlement: APPROVED closes it, RETURNED
+    /// sends it back to DRAFT (comment required — recorded on the audit event).
+    pub async fn review_settlement(
+        &self,
+        command: ReviewSettlementCommand,
+    ) -> Result<SettlementSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let comment = command
+            .comment
+            .as_deref()
+            .map(str::trim)
+            .filter(|comment| !comment.is_empty())
+            .map(str::to_owned);
+        if command.decision == SettlementReviewDecision::Returned && comment.is_none() {
+            return Err(
+                KernelError::validation("a comment is required to return a settlement").into(),
+            );
+        }
+        let current = self.settlement(command.settlement_id).await?;
+        let settlement_id = command.settlement_id;
+        let actor = command.actor;
+        let decision = command.decision;
+        let occurred_at = command.occurred_at;
+        let event = settlement_audit_event(
+            "work_order_settlement.review",
+            actor,
+            current.branch_id,
+            settlement_id,
+            command.trace,
+            occurred_at,
+        )?
+        .with_org(org)
+        .with_snapshots(
+            Some(serde_json::json!({ "status": current.status.as_db_str() })),
+            Some(serde_json::json!({
+                "decision": decision.as_db_str(),
+                "comment": comment,
+            })),
+        );
+
+        with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
+            Box::pin(async move {
+                let row = lock_settlement(tx, settlement_id).await?;
+                if row.submitted_by == Some(*actor.as_uuid()) {
+                    return Err(KernelError::forbidden(
+                        "settlement review requires a reviewer other than the submitter",
+                    )
+                    .into());
+                }
+                match decision {
+                    SettlementReviewDecision::Approved => {
+                        validate_settlement_transition(row.status, SettlementStatus::Approved)?;
+                        sqlx::query(
+                            r#"
+                            UPDATE work_order_settlements
+                            SET status = $2, approved_by = $3, approved_at = $4, updated_at = $4
+                            WHERE id = $1
+                            "#,
+                        )
+                        .bind(settlement_id)
+                        .bind(SettlementStatus::Approved.as_db_str())
+                        .bind(*actor.as_uuid())
+                        .bind(occurred_at)
+                        .execute(tx.as_mut())
+                        .await?;
+                    }
+                    SettlementReviewDecision::Returned => {
+                        validate_settlement_transition(row.status, SettlementStatus::Draft)?;
+                        sqlx::query(
+                            r#"
+                            UPDATE work_order_settlements
+                            SET status = $2, submitted_by = NULL, submitted_at = NULL,
+                                updated_at = $3
+                            WHERE id = $1
+                            "#,
+                        )
+                        .bind(settlement_id)
+                        .bind(SettlementStatus::Draft.as_db_str())
+                        .bind(occurred_at)
+                        .execute(tx.as_mut())
+                        .await?;
+                    }
+                }
+                fetch_settlement_summary_tx(tx, settlement_id).await
+            })
+        })
+        .await
+    }
+
+    /// Void a DRAFT or SUBMITTED settlement (reason required — recorded on the
+    /// audit event). VOID frees the one-live-settlement slot; nothing is
+    /// hard-deleted.
+    pub async fn void_settlement(
+        &self,
+        command: VoidSettlementCommand,
+    ) -> Result<SettlementSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let reason = command.reason.trim().to_owned();
+        if reason.is_empty() {
+            return Err(
+                KernelError::validation("a reason is required to void a settlement").into(),
+            );
+        }
+        let current = self.settlement(command.settlement_id).await?;
+        let settlement_id = command.settlement_id;
+        let actor = command.actor;
+        let occurred_at = command.occurred_at;
+        let event = settlement_audit_event(
+            "work_order_settlement.void",
+            actor,
+            current.branch_id,
+            settlement_id,
+            command.trace,
+            occurred_at,
+        )?
+        .with_org(org)
+        .with_snapshots(
+            Some(serde_json::json!({ "status": current.status.as_db_str() })),
+            Some(serde_json::json!({ "reason": reason })),
+        );
+
+        with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
+            Box::pin(async move {
+                let row = lock_settlement(tx, settlement_id).await?;
+                validate_settlement_transition(row.status, SettlementStatus::Void)?;
+                sqlx::query(
+                    r#"
+                    UPDATE work_order_settlements
+                    SET status = $2, updated_at = $3
+                    WHERE id = $1
+                    "#,
+                )
+                .bind(settlement_id)
+                .bind(SettlementStatus::Void.as_db_str())
+                .bind(occurred_at)
+                .execute(tx.as_mut())
+                .await?;
+                fetch_settlement_summary_tx(tx, settlement_id).await
+            })
+        })
+        .await
+    }
+
     async fn branch_for_work_order(
         &self,
         work_order_id: WorkOrderId,
@@ -1630,6 +2041,8 @@ struct WorkOrderRow {
     status: WorkOrderStatus,
     priority: PriorityLevel,
     result_type: WorkResultType,
+    maintenance_type: Option<MaintenanceType>,
+    maintenance_cause: Option<MaintenanceCause>,
     evidence_verified: bool,
 }
 
@@ -1796,7 +2209,7 @@ async fn lock_work_order(
     let row = sqlx::query(
         r#"
         SELECT id, request_no, branch_id, equipment_id, customer_id, site_id,
-               status, priority, result_type,
+               status, priority, result_type, maintenance_type, maintenance_cause,
                EXISTS (
                    SELECT 1
                    FROM evidence_media e
@@ -1830,7 +2243,7 @@ async fn fetch_work_order_summary_tx(
     let row = sqlx::query(
         r#"
         SELECT id, request_no, branch_id, equipment_id, customer_id, site_id,
-               status, priority, result_type,
+               status, priority, result_type, maintenance_type, maintenance_cause,
                EXISTS (
                    SELECT 1
                    FROM evidence_media e
@@ -1862,7 +2275,7 @@ async fn fetch_work_order_summary_pool(
     let row = sqlx::query(
         r#"
         SELECT id, request_no, branch_id, equipment_id, customer_id, site_id,
-               status, priority, result_type,
+               status, priority, result_type, maintenance_type, maintenance_cause,
                EXISTS (
                    SELECT 1
                    FROM evidence_media e
@@ -1891,6 +2304,8 @@ fn work_order_row_from_row(row: &sqlx::postgres::PgRow) -> Result<WorkOrderRow, 
     let status: String = row.try_get("status")?;
     let priority: String = row.try_get("priority")?;
     let result_type: String = row.try_get("result_type")?;
+    let maintenance_type: Option<String> = row.try_get("maintenance_type")?;
+    let maintenance_cause: Option<String> = row.try_get("maintenance_cause")?;
     Ok(WorkOrderRow {
         id: row.try_get("id")?,
         request_no: row.try_get("request_no")?,
@@ -1901,6 +2316,14 @@ fn work_order_row_from_row(row: &sqlx::postgres::PgRow) -> Result<WorkOrderRow, 
         status: WorkOrderStatus::from_db_str(&status)?,
         priority: PriorityLevel::from_db_str(&priority)?,
         result_type: WorkResultType::from_db_str(&result_type)?,
+        maintenance_type: maintenance_type
+            .as_deref()
+            .map(MaintenanceType::from_db_str)
+            .transpose()?,
+        maintenance_cause: maintenance_cause
+            .as_deref()
+            .map(MaintenanceCause::from_db_str)
+            .transpose()?,
         evidence_verified: row.try_get("evidence_verified")?,
     })
 }
@@ -1919,7 +2342,105 @@ fn work_order_summary_from_row(
         status: row.status,
         priority: row.priority,
         result_type: row.result_type,
+        maintenance_type: row.maintenance_type,
+        maintenance_cause: row.maintenance_cause,
         evidence_verified: row.evidence_verified,
+    })
+}
+
+/// Minimal locked view of a settlement for transition decisions.
+struct SettlementRow {
+    status: SettlementStatus,
+    submitted_by: Option<uuid::Uuid>,
+}
+
+async fn lock_settlement(
+    tx: &mut Transaction<'_, Postgres>,
+    settlement_id: uuid::Uuid,
+) -> Result<SettlementRow, PgWorkOrderError> {
+    let row = sqlx::query(
+        r#"
+        SELECT status, submitted_by
+        FROM work_order_settlements
+        WHERE id = $1
+        FOR UPDATE
+        "#,
+    )
+    .bind(settlement_id)
+    .fetch_optional(tx.as_mut())
+    .await?
+    .ok_or_else(|| KernelError::not_found("settlement was not found"))?;
+    let status: String = row.try_get("status")?;
+    Ok(SettlementRow {
+        status: SettlementStatus::from_db_str(&status)?,
+        submitted_by: row.try_get("submitted_by")?,
+    })
+}
+
+async fn fetch_settlement_summary_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    settlement_id: uuid::Uuid,
+) -> Result<SettlementSummary, PgWorkOrderError> {
+    let row = sqlx::query(
+        r#"
+        SELECT id, work_order_id, branch_id, status, total_amount_krw, voucher_ref,
+               note, created_by, submitted_by, submitted_at, approved_by, approved_at,
+               created_at, updated_at
+        FROM work_order_settlements
+        WHERE id = $1
+        "#,
+    )
+    .bind(settlement_id)
+    .fetch_optional(tx.as_mut())
+    .await?
+    .ok_or_else(|| KernelError::not_found("settlement was not found"))?;
+    let status: String = row.try_get("status")?;
+    let line_rows = sqlx::query(
+        r#"
+        SELECT id, kind, label, amount_krw, source_ref, sort_order
+        FROM work_order_settlement_lines
+        WHERE settlement_id = $1
+        ORDER BY sort_order, id
+        "#,
+    )
+    .bind(settlement_id)
+    .fetch_all(tx.as_mut())
+    .await?;
+    let lines = line_rows
+        .iter()
+        .map(|line| {
+            let kind: String = line.try_get("kind")?;
+            Ok(SettlementLineSummary {
+                id: line.try_get("id")?,
+                kind: SettlementLineKind::from_db_str(&kind)?,
+                label: line.try_get("label")?,
+                amount_krw: line.try_get("amount_krw")?,
+                source_ref: line.try_get("source_ref")?,
+                sort_order: line.try_get("sort_order")?,
+            })
+        })
+        .collect::<Result<Vec<_>, PgWorkOrderError>>()?;
+
+    Ok(SettlementSummary {
+        id: row.try_get("id")?,
+        work_order_id: WorkOrderId::from_uuid(row.try_get("work_order_id")?),
+        branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
+        status: SettlementStatus::from_db_str(&status)?,
+        total_amount_krw: row.try_get("total_amount_krw")?,
+        voucher_ref: row.try_get("voucher_ref")?,
+        note: row.try_get("note")?,
+        lines,
+        created_by: UserId::from_uuid(row.try_get("created_by")?),
+        submitted_by: row
+            .try_get::<Option<uuid::Uuid>, _>("submitted_by")?
+            .map(UserId::from_uuid),
+        submitted_at: row.try_get("submitted_at")?,
+        approved_by: row
+            .try_get::<Option<uuid::Uuid>, _>("approved_by")?
+            .map(UserId::from_uuid),
+        approved_at: row.try_get("approved_at")?,
+        created_at: row.try_get("created_at")?,
+        updated_at: row.try_get("updated_at")?,
     })
 }
 
@@ -1951,6 +2472,30 @@ async fn insert_status_history(
     .bind(org_uuid)
     .execute(tx.as_mut())
     .await?;
+    Ok(())
+}
+
+/// Append the terminal maintenance snapshot after the current work-order FSM
+/// has reached FINAL_COMPLETED. The DB migration repeats all terminal/evidence
+/// and tenant checks; this adapter only projects already-existing evidence and
+/// cost-ledger identities, never inventing a cost.
+async fn append_equipment_maintenance_history(
+    tx: &mut Transaction<'_, Postgres>,
+    work_order_id: WorkOrderId,
+    equipment_id: EquipmentId,
+    completed_at: mnt_kernel_core::Timestamp,
+    org_uuid: uuid::Uuid,
+) -> Result<(), PgWorkOrderError> {
+    sqlx::query_scalar::<_, uuid::Uuid>(
+        "SELECT append_equipment_maintenance_history($1, $2, $3, $4)",
+    )
+    .bind(org_uuid)
+    .bind(*equipment_id.as_uuid())
+    .bind(*work_order_id.as_uuid())
+    .bind(completed_at)
+    .fetch_one(tx.as_mut())
+    .await?;
+
     Ok(())
 }
 

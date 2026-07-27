@@ -23,7 +23,10 @@
 
 package com.maintenance.api.client.model
 
+import com.maintenance.api.client.model.PayrollDisbursement
 import com.maintenance.api.client.model.PayrollLineSummary
+import com.maintenance.api.client.model.PayrollPayslipDeliverySummary
+import com.maintenance.api.client.model.PayrollRunCalcSummary
 import com.maintenance.api.client.model.PayrollRunSummary
 
 import kotlinx.serialization.Serializable
@@ -40,6 +43,11 @@ import kotlinx.serialization.Contextual
  * @param linesTotal
  * @param linesLimit
  * @param linesOffset
+ * @param exceptionsOpen
+ * @param exceptionsTotal
+ * @param calculation Latest stored calculation version; null until the run has been calculated.
+ * @param disbursement
+ * @param payslipDelivery Unpaginated delivery summary; null until at least one payslip has been issued.
  */
 @Serializable
 
@@ -64,7 +72,24 @@ data class PayrollRunDetail (
     val linesLimit: kotlin.Long,
 
     @SerialName(value = "lines_offset")
-    val linesOffset: kotlin.Long
+    val linesOffset: kotlin.Long,
+
+    @SerialName(value = "exceptions_open")
+    val exceptionsOpen: kotlin.Long,
+
+    @SerialName(value = "exceptions_total")
+    val exceptionsTotal: kotlin.Long,
+
+    /* Latest stored calculation version; null until the run has been calculated. */
+    @SerialName(value = "calculation")
+    val calculation: PayrollRunCalcSummary?,
+
+    @SerialName(value = "disbursement")
+    val disbursement: PayrollDisbursement?,
+
+    /* Unpaginated delivery summary; null until at least one payslip has been issued. */
+    @SerialName(value = "payslip_delivery")
+    val payslipDelivery: PayrollPayslipDeliverySummary?
 
 ) {
 

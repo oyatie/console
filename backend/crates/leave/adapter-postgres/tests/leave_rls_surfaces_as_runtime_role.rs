@@ -33,11 +33,12 @@ use mnt_leave_application::{
 };
 use mnt_leave_domain::{
     LeaveChargeAssessment, LeaveChargeEvidence, LeaveChargeState, LeaveDateCharge, LeaveDecision,
-    LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest, PromotionKind, SourceRevisionRef,
-    WorkObligation,
+    LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest, PromotionKind, PromotionTrack,
+    SourceRevisionRef, WorkObligation,
 };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
+use time::macros::{date, datetime};
 use time::{Month, OffsetDateTime};
 use uuid::Uuid;
 
@@ -895,13 +896,31 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
         command_functions,
         vec![
             "apply_employee_import_batch".to_owned(),
+            "create_employee".to_owned(),
             "create_request".to_owned(),
             "decide_request".to_owned(),
             "import_employee_leave_balance".to_owned(),
             "resolve_charge".to_owned(),
             "set_employee_home_branch".to_owned(),
         ],
-        "command role receives exactly six public entrypoints and no helpers"
+        "command role receives exactly seven public entrypoints and no helpers"
+    );
+    // Named, not counted: the directory-manager predicate is SECURITY DEFINER
+    // over users/role assignments and takes an arbitrary org, so it must stay
+    // reachable only to its owner. `fetch_one` also fails if the helper is
+    // renamed away rather than revoked.
+    let (helper_cmd_execute, helper_rt_execute): (bool, bool) = sqlx::query_as(
+        "SELECT has_function_privilege('mnt_leave_cmd',p.oid,'EXECUTE'), \
+                has_function_privilege('mnt_rt',p.oid,'EXECUTE') \
+         FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
+         WHERE n.nspname='leave_api' AND p.proname='assert_employee_directory_manager'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .expect("the directory-manager predicate must exist to be proven unreachable");
+    assert!(
+        !helper_cmd_execute && !helper_rt_execute,
+        "the SECURITY DEFINER directory-manager predicate stays owner-only"
     );
     let runtime_execute_count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
@@ -914,10 +933,16 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
         runtime_execute_count, 0,
         "mnt_rt executes no leave command or helper"
     );
+    // A function that was never revoked from carries a NULL `proacl` and still
+    // holds PostgreSQL's implicit default EXECUTE TO PUBLIC, which `aclexplode`
+    // alone reports as an empty set. Counting the NULL case is what makes this
+    // a real deny-by-default check for every future leave_api function.
     let public_execute_count: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace, \
-                LATERAL aclexplode(p.proacl) acl \
-         WHERE n.nspname='leave_api' AND acl.grantee=0 AND acl.privilege_type='EXECUTE'",
+        "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
+         WHERE n.nspname='leave_api' \
+           AND (p.proacl IS NULL \
+                OR EXISTS (SELECT 1 FROM aclexplode(p.proacl) acl \
+                           WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'))",
     )
     .fetch_one(&owner_pool)
     .await
@@ -2149,14 +2174,57 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
     assert_eq!(denied.kind(), ErrorKind::Conflict);
 }
 
+/// Overwrite the recorded service instant so a later round reads the same KST
+/// date the push was validated against. In production `occurred_at` and
+/// `created_at` are the same instant; a test that drives §61 dates must keep
+/// them consistent by hand.
+async fn backdate_promotion(owner_pool: &PgPool, id: Uuid, at: OffsetDateTime) {
+    sqlx::query("UPDATE leave_promotions SET created_at = $1 WHERE id = $2")
+        .bind(at)
+        .bind(id)
+        .execute(owner_pool)
+        .await
+        .unwrap();
+}
+
+/// `trg_employees_leave_command_only` exempts only `mnt_leave_definer`, so the
+/// fixture drops to it the same way `seed_employee` does. Nothing in production
+/// may clear a balance this way — that is the point of the guard.
+async fn clear_leave_remaining(owner_pool: &PgPool, org: Uuid, employee: Uuid) {
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE employees SET leave_remaining = NULL WHERE id = $1 AND org_id = $2")
+        .bind(employee)
+        .bind(org)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+}
+
+async fn notice_payload(owner_pool: &PgPool, inbox_doc_id: Uuid) -> serde_json::Value {
+    sqlx::query_scalar("SELECT payload FROM inbox_docs WHERE id = $1")
+        .bind(inbox_doc_id)
+        .fetch_one(owner_pool)
+        .await
+        .unwrap()
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn statutory_push_delivers_receipt_doc_and_is_idempotent(owner_pool: PgPool) {
+async fn statutory_push_target_binding_is_enforced_as_runtime_role(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
     let command_pool = leave_command_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let knl_uuid = *knl.as_uuid();
     let branch = seed_branch(&owner_pool, knl_uuid).await;
-    let actor = seed_user(&owner_pool, knl_uuid).await;
     let target = seed_user(&owner_pool, knl_uuid).await;
     let target_emp = seed_employee(&owner_pool, knl_uuid, 15.0, 2.0, 13.0).await;
     let other_emp = seed_employee(&owner_pool, knl_uuid, 10.0, 1.0, 9.0).await;
@@ -2190,8 +2258,38 @@ async fn statutory_push_delivers_receipt_doc_and_is_idempotent(owner_pool: PgPoo
     .await
     .expect_err("target must belong to authorized branch");
     assert_eq!(wrong_branch_result.kind(), ErrorKind::Forbidden);
+}
 
-    let push = |kind: PromotionKind, round: i16| {
+/// 근로기준법 제61조 timing, as the runtime role.
+///
+/// Before this lane the only check on a §61 push was `round ∈ {1, 2}`: the
+/// three notices below could all be served on the same afternoon and the
+/// refusal told the worker their 미사용수당 claim had been extinguished. Every
+/// assertion here is a window the statute imposes and the code did not.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn statutory_push_enforces_the_section_61_windows_as_runtime_role(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let command_pool = leave_command_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let knl_uuid = *knl.as_uuid();
+    let branch = seed_branch(&owner_pool, knl_uuid).await;
+    let actor = seed_user(&owner_pool, knl_uuid).await;
+    let target = seed_user(&owner_pool, knl_uuid).await;
+    // A half-day remainder: proves the notice trims the NUMERIC(16,6) storage
+    // scale without rounding the fraction away.
+    let target_emp = seed_employee(&owner_pool, knl_uuid, 15.5, 2.0, 13.5).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, target, target_emp, branch).await;
+
+    let store = test_store(&rt, &command_pool);
+    // 회계연도(1/1–12/31) 기준: 1차 촉구 7/1~7/10, 2차 통보 기한 10/31.
+    let period_end = date!(2026 - 12 - 31);
+
+    let push = |kind: PromotionKind,
+                round: i16,
+                at: OffsetDateTime,
+                designated: Vec<time::Date>,
+                employee: Uuid,
+                end: time::Date| {
         let store = store.clone();
         async move {
             mnt_platform_request_context::scope_org(knl, async move {
@@ -2200,13 +2298,15 @@ async fn statutory_push_delivers_receipt_doc_and_is_idempotent(owner_pool: PgPoo
                         actor,
                         branch_id: branch,
                         target_user_id: target,
-                        target_employee_id: target_emp,
+                        target_employee_id: employee,
                         target_name: "홍길동".to_owned(),
                         kind,
                         round,
-                        unused_days: 13.0,
+                        track: PromotionTrack::Annual,
+                        leave_period_end: end,
+                        designated_dates: designated,
                         trace: TraceContext::generate(),
-                        occurred_at: OffsetDateTime::now_utc(),
+                        occurred_at: at,
                     })
                     .await
             })
@@ -2214,56 +2314,178 @@ async fn statutory_push_delivers_receipt_doc_and_is_idempotent(owner_pool: PgPoo
         }
     };
 
-    // Round-1 promotion: delivers a locked legal notice + records the push.
-    let r1 = push(PromotionKind::Promotion, 1)
-        .await
-        .expect("round 1 push");
-    assert_eq!(r1.kind, PromotionKind::Promotion);
+    // --- Round 1: the 6개월 전 기준 10일 window (§61①1) -----------------------
+    let early = push(
+        PromotionKind::Promotion,
+        1,
+        datetime!(2026-06-30 10:00:00 +9),
+        vec![],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("2026-06-30 is one day before the 1차 촉구 window opens");
+    assert_eq!(early.kind(), ErrorKind::Validation);
+
+    let late = push(
+        PromotionKind::Promotion,
+        1,
+        datetime!(2026-07-11 10:00:00 +9),
+        vec![],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("2026-07-11 is one day after the 1차 촉구 window closes");
+    assert_eq!(late.kind(), ErrorKind::Validation);
+
+    // A 1차 촉구 does not designate dates — the worker does (§61①1).
+    let designating_round_one = push(
+        PromotionKind::Promotion,
+        1,
+        datetime!(2026-07-01 10:00:00 +9),
+        vec![date!(2026 - 12 - 24)],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("round 1 must not designate 사용 시기");
+    assert_eq!(designating_round_one.kind(), ErrorKind::Validation);
+
+    let r1_at = datetime!(2026-07-01 10:00:00 +9);
+    let r1 = push(
+        PromotionKind::Promotion,
+        1,
+        r1_at,
+        vec![],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect("2026-07-01 opens the 1차 촉구 window");
     assert_eq!(r1.round, 1);
-    assert!(r1.ap_run_id.is_none());
     assert_eq!(r1.ap_submission, ApSubmission::PendingEngineDefinition);
+    backdate_promotion(&owner_pool, *r1.id.as_uuid(), r1_at).await;
 
-    // The delivered notice is a LOCKED legal notice for the target.
-    let (kind, notice_type, recipient): (String, Option<String>, Uuid) =
-        sqlx::query_as("SELECT kind, notice_type, recipient_user_id FROM inbox_docs WHERE id = $1")
-            .bind(r1.inbox_doc_id)
-            .fetch_one(&owner_pool)
-            .await
-            .unwrap();
-    assert_eq!(kind, "legal_notice");
-    assert_eq!(notice_type.as_deref(), Some("연차촉진"));
-    assert_eq!(recipient, *target.as_uuid());
+    // The notice states the roster's own figure, exactly, not a client float —
+    // and not the raw `13.500000` the NUMERIC(16,6) column renders.
+    let r1_payload = notice_payload(&owner_pool, r1.inbox_doc_id).await;
+    assert_eq!(r1_payload["unused_days"], serde_json::json!("13.5"));
+    assert_eq!(
+        r1_payload["legal_basis"],
+        serde_json::json!("근로기준법 제61조제1항제1호")
+    );
 
-    // Idempotent: a second round-1 push returns the same promotion row and does
-    // NOT double-deliver the notice.
-    let r1_again = push(PromotionKind::Promotion, 1)
-        .await
-        .expect("round 1 again");
-    assert_eq!(r1_again.id, r1.id, "duplicate push is idempotent");
-    let promo_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM leave_promotions WHERE target_employee_id = $1 AND kind = 'promotion' AND round = 1",
+    // Idempotent inside the same 사용기간.
+    let r1_again = push(
+        PromotionKind::Promotion,
+        1,
+        r1_at,
+        vec![],
+        target_emp,
+        period_end,
     )
-    .bind(target_emp)
-    .fetch_one(&owner_pool)
     .await
-    .unwrap();
-    assert_eq!(promo_count, 1, "no duplicate promotion row");
-    let doc_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM inbox_docs WHERE recipient_user_id = $1 AND notice_type = '연차촉진'",
-    )
-    .bind(target.as_uuid())
-    .fetch_one(&owner_pool)
-    .await
-    .unwrap();
-    assert_eq!(doc_count, 1, "dedup: the notice is delivered exactly once");
+    .expect("a duplicate round-1 push is idempotent");
+    assert_eq!(r1_again.id, r1.id);
 
-    // Round 2 then refusal are distinct pushes.
-    let r2 = push(PromotionKind::Promotion, 2).await.expect("round 2");
+    // A push for a DIFFERENT 사용기간 collides on the per-employee unique key.
+    // It must fail closed, never silently return last period's row.
+    let other_period = push(
+        PromotionKind::Promotion,
+        1,
+        datetime!(2027-07-01 10:00:00 +9),
+        vec![],
+        target_emp,
+        date!(2027 - 12 - 31),
+    )
+    .await
+    .expect_err("a second 사용기간 cannot be recorded on the current unique key");
+    assert_eq!(other_period.kind(), ErrorKind::Conflict);
+
+    // --- Round 2: the worker's 10-day reply window, then the 2개월 전 기한 ----
+    let too_soon = push(
+        PromotionKind::Promotion,
+        2,
+        datetime!(2026-07-11 10:00:00 +9),
+        vec![date!(2026 - 12 - 24)],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("day 10 after the 촉구 still belongs to the worker (§61①2)");
+    assert_eq!(too_soon.kind(), ErrorKind::Validation);
+
+    let past_deadline = push(
+        PromotionKind::Promotion,
+        2,
+        datetime!(2026-11-01 10:00:00 +9),
+        vec![date!(2026 - 12 - 24)],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("the 2차 통보 기한 is 2026-10-31");
+    assert_eq!(past_deadline.kind(), ErrorKind::Validation);
+
+    let undesignated = push(
+        PromotionKind::Promotion,
+        2,
+        datetime!(2026-10-31 10:00:00 +9),
+        vec![],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect_err("a 2차 통보 that designates nothing is not a §61 통보");
+    assert_eq!(undesignated.kind(), ErrorKind::Validation);
+
+    let r2_at = datetime!(2026-10-31 10:00:00 +9);
+    let r2 = push(
+        PromotionKind::Promotion,
+        2,
+        r2_at,
+        vec![date!(2026 - 12 - 23), date!(2026 - 12 - 24)],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect("2026-10-31 is the last valid 2차 통보 day");
     assert_eq!(r2.round, 2);
-    assert_ne!(r2.id, r1.id);
-    let refusal = push(PromotionKind::Refusal, 0).await.expect("refusal");
-    assert_eq!(refusal.kind, PromotionKind::Refusal);
-    assert_eq!(refusal.round, 2, "a refusal follows round 2");
+    backdate_promotion(&owner_pool, *r2.id.as_uuid(), r2_at).await;
+    let r2_payload = notice_payload(&owner_pool, r2.inbox_doc_id).await;
+    assert_eq!(
+        r2_payload["designated_dates"],
+        serde_json::json!(["2026-12-23", "2026-12-24"])
+    );
+
+    // --- 노무수령거부: follows the designation, quotes it, claims nothing ----
+    let refusal = push(
+        PromotionKind::Refusal,
+        0,
+        datetime!(2026-12-23 08:30:00 +9),
+        vec![],
+        target_emp,
+        period_end,
+    )
+    .await
+    .expect("a refusal on a designated day, after the 2차 통보");
+    assert_eq!(refusal.round, 2, "a refusal is stored against round 2");
+    let refusal_payload = notice_payload(&owner_pool, refusal.inbox_doc_id).await;
+    assert_eq!(
+        refusal_payload["designated_dates"],
+        serde_json::json!(["2026-12-23", "2026-12-24"]),
+        "the refusal quotes the recorded designation, it does not restate one"
+    );
+    let refusal_text = refusal_payload["paragraphs"].to_string();
+    assert!(
+        !refusal_text.contains("소멸함"),
+        "the refusal must not assert that the 보상 의무 is extinguished: {refusal_text}"
+    );
+    assert!(
+        refusal_text.contains("2019다279283"),
+        "the refusal names the authority that makes it a condition, not a conclusion"
+    );
 
     let total_promotions: i64 =
         sqlx::query_scalar("SELECT COUNT(*) FROM leave_promotions WHERE target_employee_id = $1")
@@ -2272,4 +2494,48 @@ async fn statutory_push_delivers_receipt_doc_and_is_idempotent(owner_pool: PgPoo
             .await
             .unwrap();
     assert_eq!(total_promotions, 3, "round1 + round2 + refusal");
+
+    // --- Ordering and evidence gates on a fresh employee --------------------
+    let fresh_user = seed_user(&owner_pool, knl_uuid).await;
+    let fresh_emp = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, fresh_user, fresh_emp, branch).await;
+
+    let orphan_round_two = push(
+        PromotionKind::Promotion,
+        2,
+        datetime!(2026-10-31 10:00:00 +9),
+        vec![date!(2026 - 12 - 24)],
+        fresh_emp,
+        period_end,
+    )
+    .await
+    .expect_err("round 2 without a recorded 1차 촉구");
+    assert_eq!(orphan_round_two.kind(), ErrorKind::Conflict);
+
+    let orphan_refusal = push(
+        PromotionKind::Refusal,
+        0,
+        datetime!(2026-12-23 08:30:00 +9),
+        vec![],
+        fresh_emp,
+        period_end,
+    )
+    .await
+    .expect_err("a refusal without a recorded 2차 통보");
+    assert_eq!(orphan_refusal.kind(), ErrorKind::Conflict);
+
+    // §61①1 requires the notice to state the unused-day count. An employee the
+    // roster has not established one for gets a refusal, never a printed zero.
+    clear_leave_remaining(&owner_pool, knl_uuid, fresh_emp).await;
+    let unknown_days = push(
+        PromotionKind::Promotion,
+        1,
+        datetime!(2026-07-01 10:00:00 +9),
+        vec![],
+        fresh_emp,
+        period_end,
+    )
+    .await
+    .expect_err("no roster figure means no notice");
+    assert_eq!(unknown_days.kind(), ErrorKind::Conflict);
 }

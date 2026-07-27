@@ -12,7 +12,11 @@ import { createElement } from "react";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { complianceModuleScreen } from "../compliance";
-import { registeredObjectType } from "../ontology/typeRegistrySource";
+import {
+  loadCanonicalObjectType,
+  registeredObjectType,
+} from "../ontology/typeRegistrySource";
+import { instanceCode } from "../ontology/wire";
 import { VoucherComposeForm } from "../finance/VoucherComposeForm";
 import { FINANCE_MODULE_ACTIONS, makeFinanceDataAdapter } from "../finance/financeModel";
 import { choiceStatus, getObjectType } from "./typeRegistry";
@@ -31,6 +35,66 @@ import type {
 // Re-exported for existing callers of the finance policy-action map; owned in
 // financeModel.ts to avoid a config↔domain import cycle.
 export { FINANCE_MODULE_ACTIONS };
+
+/** Marker for a generic surface backed by canonical ontology detail/instances. */
+export const CANONICAL_ONTOLOGY_LIST = "/api/v1/ontology/instances";
+
+function scalarAttribute(value: unknown): string | number | undefined {
+  if (typeof value === "string" || typeof value === "number") return value;
+  if (typeof value === "boolean") return String(value);
+  return undefined;
+}
+
+function attributeRecord(value: unknown): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("canonical ontology instance attributes must be an object");
+  }
+  return value as Record<string, unknown>;
+}
+
+/**
+ * The generic module's real data adapter. It reads schema detail first, then
+ * pins the instance read to that returned version UUID. Missing authority is a
+ * hard failure so a session cannot reuse another session's cached snapshot.
+ */
+export function canonicalOntologyDataAdapter(kind: string, authorityKey: string | undefined): ModuleDataAdapter {
+  return {
+    async loadRows({ api, signal, query }) {
+      if (!authorityKey) throw new Error("canonical ontology module requires an authority key");
+      const canonical = await loadCanonicalObjectType(api, kind, authorityKey, signal);
+      const properties = canonical.definition.properties.map((property) => property.key);
+      const rows = canonical.instances.map((state) => {
+        const attributes = attributeRecord(state.revision.attributes);
+        const values: ModuleRow["cells"] = {};
+        for (const key of properties) {
+          const value = scalarAttribute(attributes[key]);
+          if (value !== undefined) values[key] = value;
+        }
+        return {
+          id: state.instance.id,
+          code: instanceCode(state.instance.id),
+          title: state.instance.title,
+          cells: values,
+          detail: values,
+          sourceRecord: state,
+        } satisfies ModuleRow;
+      });
+      const search = query.trim().toLocaleLowerCase();
+      const visibleRows = search
+        ? rows.filter((row) =>
+            [row.title, row.code, ...Object.values(row.cells)]
+              .filter((value): value is string | number => value !== undefined)
+              .some((value) => String(value).toLocaleLowerCase().includes(search)),
+          )
+        : rows;
+      return {
+        rows: visibleRows,
+        stats: { instances: canonical.instances.length },
+        selectedRowId: visibleRows[0]?.id,
+      };
+    },
+  };
+}
 
 export const ASSET_MODULE_ACTIONS = {
   read: "work_order_read_all",
@@ -617,18 +681,13 @@ export type ModuleScreenId = keyof typeof MOD_SCREENS;
 
 /**
  * A registered-but-not-hand-authored kind as a generic module surface: it opens
- * and renders (frame, stat strip, empty state) with NO config edit. Columns and
- * detail fields derive from the (generic) ONT_TYPES def; there is no list
- * endpoint for an arbitrary kind yet, so it stays blocked-until-backend (empty
- * state per §4-10, never fabricated rows). Read is gated by the generic
- * `object.view` action (deny-by-omission).
- * wire-pending: W1-be-ontology GET /api/v1/ontology/instances?type= for
- * arbitrary registered kinds → real rows + statbar counts.
+ * and renders from the canonical ontology detail plus instances APIs. The
+ * screen shell owns only bootstrap identity/prefix/count; schema and values
+ * arrive through `canonicalOntologyDataAdapter` in GenericModuleScreen.
  */
 function genericModuleScreen(kind: string): ModuleScreenConfig {
   const type = getObjectType(kind);
   const registered = registeredObjectType(kind);
-  const columns = (type?.propSchema ?? []).map((prop) => ({ key: prop.id }));
   return {
     id: kind,
     screen: kind,
@@ -637,12 +696,11 @@ function genericModuleScreen(kind: string): ModuleScreenConfig {
     titleKey: type?.nameKey ?? kind,
     objectNameKey: type?.nameKey ?? kind,
     objectKind: kind,
-    typeKey: type?.key,
+    typeKey: type?.key ?? kind,
     codePrefix: registered?.codePrefix ?? type?.codePrefix ?? "",
-    emptyMode: "blocked-until-backend",
-    blockedChipKey: "console.modules.generic.emptyBlockedChip",
+    emptyMode: "live",
     policy: { read: "object.view" },
-    data: {},
+    data: { list: CANONICAL_ONTOLOGY_LIST },
     statbar: [
       {
         key: "instances",
@@ -655,7 +713,7 @@ function genericModuleScreen(kind: string): ModuleScreenConfig {
     list: {
       keyboard: ["J", "K", "Enter"],
       sharedTrack: `${kind}Track`,
-      columns,
+      columns: (type?.propSchema ?? []).map((prop) => ({ key: prop.id })),
     },
     detail: {
       fields: (type?.propSchema ?? []).map((prop) => ({ key: prop.id })),

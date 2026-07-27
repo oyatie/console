@@ -12,11 +12,13 @@
 use mnt_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
 use mnt_notifications_adapter_postgres::PgNotificationStore;
 use mnt_notifications_application::{
-    EmitNotificationCommand, ListNotificationsQuery, MarkAllNotificationsReadCommand,
-    MarkNotificationReadCommand, NotificationCreatedNotification, NotificationNotifier,
-    NotificationNotifyFuture, UnreadNotificationCountQuery,
+    DeleteNotificationPolicyCommand, EmitNotificationCommand, ListNotificationObjectGroupsQuery,
+    ListNotificationPoliciesQuery, ListNotificationsQuery, MarkAllNotificationsReadCommand,
+    MarkNotificationReadCommand, MarkNotificationUnreadCommand, NotificationCountsSummaryQuery,
+    NotificationCreatedNotification, NotificationNotifier, NotificationNotifyFuture,
+    UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
 };
-use mnt_notifications_domain::NotificationLink;
+use mnt_notifications_domain::{NotificationCategory, NotificationLink, NotificationPolicyScope};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::{Arc, Mutex};
@@ -559,4 +561,586 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
         cross_tenant_sweep, 0,
         "another tenant's sweep resolves none of knl's notifications"
     );
+}
+
+/// The swipe toggle's reverse arc: mark_unread flips the attention flag back
+/// WITHOUT clearing `read_at` (forensic first-read stamp), cross-user ids are
+/// NotFound, and both directions land audit rows.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn mark_unread_toggles_but_preserves_first_read_as_runtime_role(owner_pool: PgPool) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let user_a = seed_user(&owner_pool, *knl.as_uuid(), "Toggle A").await;
+    let user_b = seed_user(&owner_pool, *knl.as_uuid(), "Toggle B").await;
+    let store = PgNotificationStore::new(rt_pool.clone());
+
+    let notif = mnt_platform_request_context::scope_org(knl, async {
+        store.emit_notification(emit_to(user_a, "결재", None)).await
+    })
+    .await
+    .expect("emit");
+
+    let read = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_read(MarkNotificationReadCommand {
+                recipient: user_a,
+                notification_id: notif.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("mark read");
+    let first_read_at = read.read_at.expect("read_at set on first read");
+
+    // Toggle back to unread: unread=true, read_at UNCHANGED.
+    let unread = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_unread(MarkNotificationUnreadCommand {
+                recipient: user_a,
+                notification_id: notif.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("mark unread");
+    assert!(unread.unread, "row is unread again");
+    assert_eq!(
+        unread.read_at,
+        Some(first_read_at),
+        "read_at stays the forensic FIRST-read timestamp"
+    );
+
+    // Re-reading keeps the original first-read stamp (COALESCE), too.
+    let reread = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_read(MarkNotificationReadCommand {
+                recipient: user_a,
+                notification_id: notif.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("second mark read");
+    assert_eq!(reread.read_at, Some(first_read_at));
+
+    // Cross-user toggle is NotFound, indistinguishable from absent.
+    let cross = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_unread(MarkNotificationUnreadCommand {
+                recipient: user_b,
+                notification_id: notif.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await;
+    assert_eq!(
+        cross.expect_err("B toggling A's notification fails").kind(),
+        ErrorKind::NotFound
+    );
+
+    // Audit readback: the toggle transitions are on the audit trail.
+    let unread_audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events WHERE action = 'notification.unread' AND target_id = $1",
+    )
+    .bind(notif.id.to_string())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(unread_audits, 1, "notification.unread audited exactly once");
+}
+
+/// Mute policies route ATTENTION, never data: counts and the realtime notifier
+/// honor them, the list only annotates; policy CRUD is recipient-owned and
+/// audited; RLS keeps another tenant's policies invisible.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let other = OrgId::from_uuid(OTHER_ORG);
+    seed_org(&owner_pool, OTHER_ORG, "Other").await;
+    let user_a = seed_user(&owner_pool, *knl.as_uuid(), "Mute A").await;
+    let user_b = seed_user(&owner_pool, *knl.as_uuid(), "Mute B").await;
+
+    let notifier = Arc::new(RecordingNotifier::default());
+    let store = PgNotificationStore::new(rt_pool.clone()).with_notifier(notifier.clone());
+
+    mnt_platform_request_context::scope_org(knl, async {
+        store.emit_notification(emit_to(user_a, "결재", None)).await
+    })
+    .await
+    .expect("emit 결재");
+    mnt_platform_request_context::scope_org(knl, async {
+        store.emit_notification(emit_to(user_a, "멘션", None)).await
+    })
+    .await
+    .expect("emit 멘션");
+    assert_eq!(notifier.calls.lock().unwrap().len(), 2);
+
+    // Category mute: badge counts drop, summary tallies the hidden unread.
+    let policy = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .upsert_policy(UpsertNotificationPolicyCommand {
+                recipient: user_a,
+                scope: NotificationPolicyScope::Category(
+                    NotificationCategory::new("결재".to_owned()).unwrap(),
+                ),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("upsert category mute");
+    assert_eq!(policy.scope, "category");
+    assert_eq!(policy.category.as_deref(), Some("결재"));
+    assert_eq!(policy.action, "mute");
+
+    let count = mnt_platform_request_context::scope_org(knl, async {
+        store.unread_count(unread_count_of(user_a)).await
+    })
+    .await
+    .expect("count under category mute");
+    assert_eq!(count, 1, "muted 결재 row leaves only 멘션 in the badge");
+
+    let summary = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .summary(NotificationCountsSummaryQuery { recipient: user_a })
+            .await
+    })
+    .await
+    .expect("summary under category mute");
+    assert_eq!(summary.total_unread, 1);
+    assert_eq!(summary.muted_unread, 1, "hidden unread surfaced honestly");
+    assert!(
+        summary.by_category.iter().all(|c| c.category != "결재"),
+        "an all-muted category is absent from the breakdown"
+    );
+
+    // The list is NEVER filtered — rows only get annotated.
+    let listed = mnt_platform_request_context::scope_org(knl, async {
+        store.list(list_unread(user_a)).await
+    })
+    .await
+    .expect("list under category mute");
+    assert_eq!(listed.items.len(), 2, "mute suppresses attention, not data");
+    let muted_row = listed
+        .items
+        .iter()
+        .find(|n| n.category == "결재")
+        .expect("결재 row still listed");
+    assert!(muted_row.muted, "muted row is annotated");
+    assert!(
+        !listed
+            .items
+            .iter()
+            .find(|n| n.category == "멘션")
+            .expect("멘션 row listed")
+            .muted
+    );
+
+    // Emit-time routing: a muted emit persists + audits but stays silent.
+    let calls_before = notifier.calls.lock().unwrap().len();
+    let muted_emit = mnt_platform_request_context::scope_org(knl, async {
+        store.emit_notification(emit_to(user_a, "결재", None)).await
+    })
+    .await
+    .expect("muted emit persists");
+    assert!(muted_emit.muted);
+    assert_eq!(
+        notifier.calls.lock().unwrap().len(),
+        calls_before,
+        "realtime notifier stays silent for a muted row"
+    );
+    let listed_after = mnt_platform_request_context::scope_org(knl, async {
+        store.list(list_unread(user_a)).await
+    })
+    .await
+    .expect("list after muted emit");
+    assert_eq!(listed_after.items.len(), 3, "the muted row IS persisted");
+
+    // PUT is an upsert: same target returns the same policy row.
+    let again = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .upsert_policy(UpsertNotificationPolicyCommand {
+                recipient: user_a,
+                scope: NotificationPolicyScope::Category(
+                    NotificationCategory::new("결재".to_owned()).unwrap(),
+                ),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("second upsert");
+    assert_eq!(again.id, policy.id, "same target upserts the same row");
+
+    // Recipient isolation: B sees no policies, and B deleting A's is NotFound.
+    let b_policies = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_policies(ListNotificationPoliciesQuery { recipient: user_b })
+            .await
+    })
+    .await
+    .expect("B lists policies");
+    assert!(b_policies.is_empty());
+    let cross_delete = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .delete_policy(DeleteNotificationPolicyCommand {
+                recipient: user_b,
+                policy_id: policy.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await;
+    assert_eq!(
+        cross_delete
+            .expect_err("B deleting A's policy fails")
+            .kind(),
+        ErrorKind::NotFound
+    );
+
+    // RLS: under another tenant's GUC the policy is invisible.
+    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+        store
+            .list_policies(ListNotificationPoliciesQuery { recipient: user_a })
+            .await
+    })
+    .await
+    .expect("cross-tenant policy list succeeds");
+    assert!(
+        cross_tenant.is_empty(),
+        "RLS hides another tenant's policies"
+    );
+
+    // Scope=all is the same mechanism (DND): every count goes quiet.
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .upsert_policy(UpsertNotificationPolicyCommand {
+                recipient: user_a,
+                scope: NotificationPolicyScope::All,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("upsert all-scope mute");
+    let dnd_count = mnt_platform_request_context::scope_org(knl, async {
+        store.unread_count(unread_count_of(user_a)).await
+    })
+    .await
+    .expect("count under DND");
+    assert_eq!(dnd_count, 0, "scope=all silences the whole badge");
+
+    // Delete = unmute: category policy removal restores its rows' attention.
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .delete_policy(DeleteNotificationPolicyCommand {
+                recipient: user_a,
+                policy_id: policy.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("A deletes own policy");
+    let a_policies = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_policies(ListNotificationPoliciesQuery { recipient: user_a })
+            .await
+    })
+    .await
+    .expect("A lists after delete");
+    assert_eq!(a_policies.len(), 1, "only the all-scope policy remains");
+
+    // Audit readback for the policy lifecycle.
+    let set_audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events WHERE action = 'notification.policy_set'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    let clear_audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events WHERE action = 'notification.policy_clear'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        set_audits, 3,
+        "each upsert (incl. idempotent re-set) audited"
+    );
+    assert_eq!(clear_audits, 1, "the successful delete audited");
+}
+
+/// 개체별 view: one group per distinct link with totals, category breakdown,
+/// latest preview and the caller's object-mute state; keyset-paginated behind
+/// an opaque fail-closed cursor; recipient- and tenant-isolated.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let other = OrgId::from_uuid(OTHER_ORG);
+    seed_org(&owner_pool, OTHER_ORG, "Other").await;
+    let user_a = seed_user(&owner_pool, *knl.as_uuid(), "Group A").await;
+    let user_b = seed_user(&owner_pool, *knl.as_uuid(), "Group B").await;
+    let store = PgNotificationStore::new(rt_pool.clone());
+
+    let approval_link = NotificationLink::Object {
+        kind: "approval".to_owned(),
+        id: "ap-2026-001".to_owned(),
+    };
+    let workorder_link = NotificationLink::Object {
+        kind: "workorder".to_owned(),
+        id: "wo-2026-009".to_owned(),
+    };
+    let emit_link =
+        |recipient: UserId, category: &str, link: &NotificationLink| EmitNotificationCommand {
+            actor: None,
+            recipient,
+            category: category.to_owned(),
+            kind: "info".to_owned(),
+            text: "결재 문서가 도착했습니다".to_owned(),
+            link: link.clone(),
+            dedup_key: None,
+            trace: TraceContext::generate(),
+            occurred_at: OffsetDateTime::now_utc(),
+        };
+
+    // A: two rows on the approval, then one newer row on the workorder.
+    // B: one row on the SAME approval link (must never leak into A's groups).
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .emit_notification(emit_link(user_a, "결재", &approval_link))
+            .await
+    })
+    .await
+    .expect("emit A approval #1");
+    let approval_latest = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .emit_notification(emit_link(user_a, "멘션", &approval_link))
+            .await
+    })
+    .await
+    .expect("emit A approval #2");
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .emit_notification(emit_link(user_a, "근태", &workorder_link))
+            .await
+    })
+    .await
+    .expect("emit A workorder");
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .emit_notification(emit_link(user_b, "결재", &approval_link))
+            .await
+    })
+    .await
+    .expect("emit B approval");
+
+    let groups_of = |recipient: UserId, unread_only: bool, before: Option<String>, limit: i64| {
+        ListNotificationObjectGroupsQuery {
+            recipient,
+            unread_only,
+            before,
+            limit,
+        }
+    };
+
+    let page = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, false, None, 50))
+            .await
+    })
+    .await
+    .expect("A groups");
+    assert_eq!(page.items.len(), 2, "one group per distinct link");
+    assert!(page.next_cursor.is_none());
+    // Newest activity first: the workorder row was emitted last.
+    assert_eq!(page.items[0].link, workorder_link);
+    let approval_group = &page.items[1];
+    assert_eq!(approval_group.link, approval_link);
+    assert_eq!(
+        approval_group.total, 2,
+        "B's row on the same link never counts into A's group"
+    );
+    assert_eq!(approval_group.unread, 2);
+    assert_eq!(approval_group.latest.id, approval_latest.id);
+    assert!(!approval_group.muted);
+    let mut cats: Vec<(&str, i64)> = approval_group
+        .categories
+        .iter()
+        .map(|c| (c.category.as_str(), c.unread))
+        .collect();
+    cats.sort_unstable();
+    assert_eq!(cats, vec![("결재", 1), ("멘션", 1)]);
+
+    // Reading a row updates the group's unread + category breakdown.
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_read(MarkNotificationReadCommand {
+                recipient: user_a,
+                notification_id: approval_latest.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("read latest approval row");
+    let after_read = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, false, None, 50))
+            .await
+    })
+    .await
+    .expect("groups after read");
+    let approval_after = after_read
+        .items
+        .iter()
+        .find(|g| g.link == approval_link)
+        .expect("approval group still present");
+    assert_eq!(approval_after.total, 2);
+    assert_eq!(approval_after.unread, 1);
+    assert_eq!(
+        approval_after.categories.len(),
+        1,
+        "read category drops out"
+    );
+    assert_eq!(approval_after.categories[0].category, "결재");
+
+    // unread_only: a fully-read group disappears from the filtered view.
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .mark_all_read(MarkAllNotificationsReadCommand {
+                recipient: user_a,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("read everything");
+    let unread_view = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, true, None, 50))
+            .await
+    })
+    .await
+    .expect("unread-only view");
+    assert!(unread_view.items.is_empty(), "no unread => no groups");
+
+    // Object-mute flips the group's bell; a category policy must NOT (the
+    // bell could never un-toggle it), though rows still annotate.
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .upsert_policy(UpsertNotificationPolicyCommand {
+                recipient: user_a,
+                scope: NotificationPolicyScope::Object(approval_link.clone()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("mute the approval object");
+    mnt_platform_request_context::scope_org(knl, async {
+        store
+            .upsert_policy(UpsertNotificationPolicyCommand {
+                recipient: user_a,
+                scope: NotificationPolicyScope::Category(
+                    NotificationCategory::new("근태".to_owned()).unwrap(),
+                ),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("mute the 근태 category");
+    let muted_view = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, false, None, 50))
+            .await
+    })
+    .await
+    .expect("groups under policies");
+    let approval_muted = muted_view
+        .items
+        .iter()
+        .find(|g| g.link == approval_link)
+        .unwrap();
+    assert!(approval_muted.muted, "object policy mutes its group bell");
+    let workorder_muted = muted_view
+        .items
+        .iter()
+        .find(|g| g.link == workorder_link)
+        .unwrap();
+    assert!(
+        !workorder_muted.muted,
+        "a category policy never flips the group bell"
+    );
+    assert!(
+        workorder_muted.latest.muted,
+        "…but the row itself is annotated muted"
+    );
+
+    // Keyset pagination behind the opaque cursor.
+    let first = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, false, None, 1))
+            .await
+    })
+    .await
+    .expect("page 1");
+    assert_eq!(first.items.len(), 1);
+    assert_eq!(first.items[0].link, workorder_link);
+    let cursor = first.next_cursor.expect("full page carries a cursor");
+    let second = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(user_a, false, Some(cursor), 1))
+            .await
+    })
+    .await
+    .expect("page 2");
+    assert_eq!(second.items.len(), 1);
+    assert_eq!(second.items[0].link, approval_link);
+
+    // A cursor this server never issued fails CLOSED: empty page, no error.
+    let forged = mnt_platform_request_context::scope_org(knl, async {
+        store
+            .list_object_groups(groups_of(
+                user_a,
+                false,
+                Some("never-issued-cursor".to_owned()),
+                50,
+            ))
+            .await
+    })
+    .await
+    .expect("forged cursor still 200s");
+    assert!(forged.items.is_empty());
+    assert!(forged.next_cursor.is_none());
+
+    // Cross-tenant: another org's GUC sees no groups at all.
+    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+        store
+            .list_object_groups(groups_of(user_a, false, None, 50))
+            .await
+    })
+    .await
+    .expect("cross-tenant groups succeed");
+    assert!(cross_tenant.items.is_empty());
 }

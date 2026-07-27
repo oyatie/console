@@ -1,0 +1,22 @@
+{
+  "capability": "CAP-EVALUATION-CONSOLE",
+  "lane": "frontend",
+  "purpose": "Sync points with the parallel backend lane. DTOs are typed locally in web/src/console/evaluation/evaluationApi.ts until backend/openapi + clients regenerate; the shared capability contract is authoritative and any divergence is a defect to reconcile at consolidation.",
+  "base_path": "/api/v1/evaluation",
+  "locally_typed_module": "web/src/console/evaluation/evaluationApi.ts",
+  "assumptions_beyond_contract": [
+    "EvaluationCyclePage / EvaluationTaskPage use the SalesListingPage shape {items, limit, offset, total}",
+    "GET /employees/{employeeId}/reviews returns {items: EvaluationLedgerEntry[]}",
+    "EvaluationTaskSummary fields assumed: subject_id, cycle_id, cycle_name, period_label, due_date, kind, employee_id, employee_name",
+    "Cycle transition POSTs (open/start-calibration/finalize/archive) and POST /cycles return EvaluationCycleDetail",
+    "POST /subjects and POST /subjects/{id}/calibrate and PUT /subjects/{id}/goals return EvaluationSubjectDetail",
+    "PUT /subjects/{id}/reviews/{kind} and .../submit return EvaluationReview",
+    "SaveEvaluationReviewRequest = {grade?, note?, evidence_links[{object_kind, object_ref, label, sort_order}]}",
+    "EvaluationPreflightReport = {next_transition: stage|null, blockers: string[], advisories: string[]}; blocker/advisory strings rendered verbatim",
+    "review kind path segment is lowercase (self|manager)"
+  ],
+  "cross_module_calls": [
+    "GET /api/v1/employees?search= (typed, generated client) — add-subject typeahead",
+    "GET /api/v1/users?limit=100 (typed, generated client) — manager picker, first page only"
+  ]
+}

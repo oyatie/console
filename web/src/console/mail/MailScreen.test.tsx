@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { MemoryRouter, useLocation, useNavigate } from "react-router";
 
 import { createConsoleApiClient } from "../../api/client";
 import { AuthContext, type AuthContextValue, type AuthSession } from "../../context/auth";
@@ -215,18 +216,38 @@ function mockMailbox() {
   );
 }
 
-function renderMailScreen(gate: PolicyGate = allowAll, ctx = makeAuthContext()) {
+function LocationProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <button type="button" data-testid="mail-history-back" onClick={() => { void navigate(-1); }}>history back</button>
+      <button type="button" data-testid="mail-history-forward" onClick={() => { void navigate(1); }}>history forward</button>
+      <output data-testid="mail-location">{`${location.pathname}${location.search}`}</output>
+    </>
+  );
+}
+
+function renderMailScreen(
+  gate: PolicyGate = allowAll,
+  ctx = makeAuthContext(),
+  initialEntries: string | string[] = "/console/mail",
+) {
+  const entries = Array.isArray(initialEntries) ? initialEntries : [initialEntries];
   return render(
-    <AuthContext.Provider value={ctx}>
-      <PolicyGateProvider gate={gate}>
-        <MailScreen />
-      </PolicyGateProvider>
-    </AuthContext.Provider>,
+    <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
+      <AuthContext.Provider value={ctx}>
+        <PolicyGateProvider gate={gate}>
+          <MailScreen />
+          <LocationProbe />
+        </PolicyGateProvider>
+      </AuthContext.Provider>
+    </MemoryRouter>,
   );
 }
 
 describe("MailScreen", () => {
-  it("renders the console mail panes, governed chips, attachment ingest CTA, and sanitized bodies", async () => {
+  it("renders the responsive console mail panes, governed chips, download-only attachments, and sanitized bodies", async () => {
     mockMailbox();
 
     renderMailScreen();
@@ -243,9 +264,16 @@ describe("MailScreen", () => {
     expect(screen.getAllByText("보존 R7").length).toBeGreaterThan(0);
     expect(screen.getAllByText("보존명령").length).toBeGreaterThan(0);
     expect(screen.getByText("DMARC 실패")).toBeVisible();
-    expect(screen.getByRole("button", { name: "invoice.pdf 인제스트" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "invoice.pdf 증거 등재" })).toBeVisible();
     expect(screen.getByRole("button", { name: "invoice.pdf 다운로드" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "invoice.pdf 인제스트" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "invoice.pdf 증거 등재" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "개체 첨부" })).not.toBeInTheDocument();
+
+    const surface = screen.getByRole("navigation", { name: "메일 폴더" }).closest(".mail-screen__surface");
+    expect(surface).not.toBeNull();
+    expect(surface).toHaveClass("mail-screen__surface");
+    expect(surface?.querySelector(".mail-screen__threads")).toBeTruthy();
+    expect(surface?.querySelector(".mail-screen__reader")).toBeTruthy();
 
     const body = screen.getByTestId("mail-html-body");
     expect(body.querySelector("img, script")).toBeNull();
@@ -254,6 +282,37 @@ describe("MailScreen", () => {
     const safeLink = within(body).getByRole("link", { name: "공식 링크" });
     expect(safeLink).toHaveAttribute("target", "_blank");
     expect(safeLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("keeps selection and draft in URL-backed explicit master, detail, and compose mobile states", async () => {
+    mockMailbox();
+    const user = userEvent.setup();
+    renderMailScreen(allowAll, makeAuthContext(), "/console/mail?scope=union&mail_thread=22222222-2222-4222-8222-333333333333&mail_view=detail");
+
+    const surface = await screen.findByTestId("mail-responsive-surface");
+    await waitFor(() => {
+      expect(surface).toHaveAttribute("data-mail-view", "detail");
+      expect(screen.getByTestId("mail-location")).toHaveTextContent("mail_thread=22222222-2222-4222-8222-333333333333");
+    });
+    expect(await screen.findByText("월간 보고 본문")).toBeVisible();
+
+    const composeTrigger = surface.querySelector<HTMLButtonElement>(".mail-screen__compose-trigger");
+    expect(composeTrigger).not.toBeNull();
+    await user.click(composeTrigger as HTMLButtonElement);
+    expect(surface).toHaveAttribute("data-mail-view", "compose");
+    await user.type(screen.getByLabelText("받는 사람"), "ops@cossok.com");
+    await waitFor(() => { expect(screen.getByLabelText("받는 사람")).toHaveValue("ops@cossok.com"); });
+    await user.click(screen.getByRole("button", { name: "메일 목록" }));
+    expect(surface).toHaveAttribute("data-mail-view", "master");
+    expect(screen.getByTestId("mail-location")).toHaveTextContent("mail_view=master");
+
+    const selectedThread = within(screen.getByRole("list", { name: "메일 스레드" })).getByText("월간 보고").closest("button");
+    expect(selectedThread).not.toBeNull();
+    await user.click(selectedThread as HTMLButtonElement);
+    expect(surface).toHaveAttribute("data-mail-view", "detail");
+    await user.click(composeTrigger as HTMLButtonElement);
+    await waitFor(() => { expect(surface).toHaveAttribute("data-mail-view", "compose"); });
+    expect(screen.getByLabelText("받는 사람")).toHaveValue("ops@cossok.com");
   });
 
   it("supports J/K thread selection, Enter read-state, and explicit mark-read calls", async () => {
@@ -270,6 +329,9 @@ describe("MailScreen", () => {
 
     const list = await screen.findByRole("list", { name: "메일 스레드" });
     fireEvent.keyDown(list, { key: "j" });
+    await waitFor(() => {
+      expect(screen.getByTestId("mail-location")).toHaveTextContent(`mail_thread=${threads[1].id}`);
+    });
     expect(
       await screen.findByText("월간 보고 본문", { exact: false }, { timeout: 20_000 }),
     ).toBeVisible();
@@ -277,6 +339,9 @@ describe("MailScreen", () => {
     expect(safeObjectLink).toHaveAttribute("href", "/work-orders/77");
     expect(screen.queryByRole("link", { name: "CS-9" })).not.toBeInTheDocument();
     fireEvent.keyDown(list, { key: "k" });
+    await waitFor(() => {
+      expect(screen.getByTestId("mail-location")).toHaveTextContent(`mail_thread=${threads[0].id}`);
+    });
     fireEvent.keyDown(list, { key: "Enter" });
 
     await waitFor(() => {
@@ -285,6 +350,102 @@ describe("MailScreen", () => {
     await userEvent.click(await screen.findByRole("button", { name: "읽지 않음으로 표시" }));
     await waitFor(() => {
       expect(patched).toHaveBeenLastCalledWith({ seen: false });
+    });
+  });
+
+  it("treats browser history as canonical mail state", async () => {
+    mockMailbox();
+    renderMailScreen(
+      allowAll,
+      makeAuthContext(),
+      [
+        `/console/mail?mail_thread=${threads[0].id}&mail_view=detail`,
+        `/console/mail?mail_thread=${threads[1].id}&mail_view=detail`,
+      ],
+    );
+
+    expect(await screen.findByText("월간 보고 본문")).toBeVisible();
+    await userEvent.click(screen.getByTestId("mail-history-back"));
+    expect(await screen.findByText("안전 HTML 본문")).toBeVisible();
+    expect(screen.getByTestId("mail-location")).toHaveTextContent(`mail_thread=${threads[0].id}`);
+
+    await userEvent.click(screen.getByTestId("mail-history-forward"));
+    expect(await screen.findByText("월간 보고 본문")).toBeVisible();
+    expect(screen.getByTestId("mail-location")).toHaveTextContent(`mail_thread=${threads[1].id}`);
+  });
+
+  it("replaces stale thread URLs reached through browser history with the loaded mailbox selection", async () => {
+    mockMailbox();
+    renderMailScreen(
+      allowAll,
+      makeAuthContext(),
+      [
+        "/console/mail?mail_thread=00000000-0000-4000-8000-000000000000&mail_view=detail",
+        `/console/mail?mail_thread=${threads[1].id}&mail_view=detail`,
+      ],
+    );
+
+    expect(await screen.findByText("월간 보고 본문")).toBeVisible();
+    await userEvent.click(screen.getByTestId("mail-history-back"));
+    expect(await screen.findByText("안전 HTML 본문")).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByTestId("mail-location")).toHaveTextContent(`mail_thread=${threads[0].id}`);
+      expect(screen.getByTestId("mail-location")).not.toHaveTextContent("00000000-0000-4000-8000-000000000000");
+    });
+  });
+
+  it("closes every compose mode, restores the selected detail, and manages the folder dialog focus", async () => {
+    const accountRequests = vi.fn();
+    mockMailbox();
+    server.use(http.get("*/api/v1/mail/account", () => {
+      accountRequests();
+      return HttpResponse.json({ id: "acct", status: "ACTIVE" });
+    }));
+    const user = userEvent.setup();
+    renderMailScreen();
+
+    const surface = await screen.findByTestId("mail-responsive-surface");
+    const composeTrigger = surface.querySelector<HTMLButtonElement>(".mail-screen__compose-trigger");
+    expect(composeTrigger).not.toBeNull();
+    await user.click(composeTrigger as HTMLButtonElement);
+    const composer = await screen.findByRole("form", { name: "메일 작성" });
+    await user.type(within(composer).getByLabelText("받는 사람"), "ops@cossok.com");
+    await user.click(within(composer).getByRole("button", { name: "작성 취소" }));
+    await waitFor(() => {
+      expect(surface).toHaveAttribute("data-mail-view", "detail");
+      expect(screen.getByLabelText("받는 사람")).toHaveValue("");
+    });
+
+    await user.click(screen.getByRole("button", { name: "메일 폴더 열기" }));
+    const folderDialog = screen.getByRole("dialog", { name: "메일 폴더" });
+    expect(folderDialog).toHaveAttribute("aria-modal", "true");
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "메일 폴더 닫기" })).toHaveFocus();
+    });
+    screen.getByRole("button", { name: "새로고침", hidden: true }).focus();
+    await waitFor(() => { expect(screen.getByRole("button", { name: "메일 폴더 닫기" })).toHaveFocus(); });
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "메일 폴더 열기" })).toHaveFocus();
+    });
+
+    await user.click(screen.getByRole("button", { name: "메일 폴더 열기" }));
+    const requestsBeforeBlockedRefresh = accountRequests.mock.calls.length;
+    const refresh = screen.getByRole("button", { name: "새로고침", hidden: true });
+    expect(refresh.closest("header")).toBeTruthy();
+    await user.click(refresh);
+    expect(accountRequests).toHaveBeenCalledTimes(requestsBeforeBlockedRefresh);
+    expect(surface).toHaveAttribute("data-folder-open", "true");
+    fireEvent.click(document.querySelector(".mail-screen__folder-backdrop") as HTMLElement);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "메일 폴더 열기" })).toHaveFocus();
+    });
+
+    await user.click(screen.getByRole("button", { name: "메일 폴더 열기" }));
+    await user.click(within(screen.getByRole("dialog", { name: "메일 폴더" })).getByRole("button", { name: /받은 편지함/ }));
+    await waitFor(() => {
+      expect(surface.querySelector<HTMLElement>(".mail-screen__threads")).toHaveFocus();
+      expect(surface).toHaveAttribute("data-mail-view", "master");
     });
   });
 
@@ -325,8 +486,11 @@ describe("MailScreen", () => {
     });
 
     await user.click(await screen.findByRole("button", { name: "답장" }));
-    await user.type(within(composer).getByLabelText("본문"), "확인했습니다.");
-    await user.click(within(composer).getByRole("button", { name: "답장 보내기" }));
+    await screen.findByRole("heading", { name: "답장 작성" });
+    const replyComposer = await screen.findByRole("form", { name: "메일 작성" });
+    await waitFor(() => { expect(within(replyComposer).getByLabelText("제목")).toHaveValue("Re: 급여명세서 확인"); });
+    await user.type(within(replyComposer).getByLabelText("본문"), "확인했습니다.");
+    await user.click(within(replyComposer).getByRole("button", { name: "답장 보내기" }));
     await waitFor(() => { expect(replied).toHaveBeenCalledTimes(1); });
     expect(replied.mock.calls[0][0]).toMatchObject({
       to: [{ address: "hr@example.com" }],
@@ -336,9 +500,12 @@ describe("MailScreen", () => {
     });
 
     await user.click(await screen.findByRole("button", { name: "전달" }));
-    await user.type(within(composer).getByLabelText("받는 사람"), "manager@example.com");
-    await user.type(within(composer).getByLabelText("본문"), "검토 부탁드립니다.");
-    await user.click(within(composer).getByRole("button", { name: "전달 보내기" }));
+    await screen.findByRole("heading", { name: "전달 작성" });
+    const forwardComposer = await screen.findByRole("form", { name: "메일 작성" });
+    await waitFor(() => { expect(within(forwardComposer).getByLabelText("제목")).toHaveValue("Fwd: 급여명세서 확인"); });
+    await user.type(within(forwardComposer).getByLabelText("받는 사람"), "manager@example.com");
+    await user.type(within(forwardComposer).getByLabelText("본문"), "검토 부탁드립니다.");
+    await user.click(within(forwardComposer).getByRole("button", { name: "전달 보내기" }));
     await waitFor(() => { expect(forwarded).toHaveBeenCalledTimes(1); });
     expect(forwarded.mock.calls[0][0]).toMatchObject({
       to: [{ address: "manager@example.com" }],
@@ -346,6 +513,105 @@ describe("MailScreen", () => {
       in_reply_to: "<m1@example.com>",
       references: ["<previous@example.com>", "<m1@example.com>"],
     });
+  });
+
+  it("does not erase a newer reply draft when an earlier send resolves", async () => {
+    const user = userEvent.setup();
+    let resolveSend: (response: HttpResponse) => void = () => {};
+    const pendingSend = new Promise<HttpResponse>((resolve) => { resolveSend = resolve; });
+    mockMailbox();
+    server.use(http.post("*/api/v1/mail/send", () => pendingSend));
+
+    renderMailScreen();
+    const composer = await screen.findByRole("form", { name: "메일 작성" });
+    await user.type(within(composer).getByLabelText("받는 사람"), "payroll@example.com");
+    await user.type(within(composer).getByLabelText("제목"), "정산 확인");
+    await user.type(within(composer).getByLabelText("본문"), "첫 번째 발송");
+    await user.click(within(composer).getByRole("button", { name: "메일 보내기" }));
+
+    await user.click(await screen.findByRole("button", { name: "답장" }));
+    await screen.findByRole("heading", { name: "답장 작성" });
+    const replyComposer = screen.getByRole("form", { name: "메일 작성" });
+    await waitFor(() => { expect(within(replyComposer).getByLabelText("제목")).toHaveValue("Re: 급여명세서 확인"); });
+    await user.type(within(replyComposer).getByLabelText("본문"), "답장 초안 유지");
+
+    resolveSend(HttpResponse.json({ message_id: "sent", rfc_message_id: "<sent@example.com>" }, { status: 201 }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "답장 작성" })).toBeVisible();
+      expect(within(screen.getByRole("form", { name: "메일 작성" })).getByLabelText("본문")).toHaveValue("답장 초안 유지");
+    });
+  });
+
+  it("ignores delayed 503 and thrown send failures after a successor draft starts", async () => {
+    const user = userEvent.setup();
+    let resolveFirst: (response: HttpResponse) => void = () => {};
+    const first = new Promise<HttpResponse>((resolve) => { resolveFirst = resolve; });
+    mockMailbox();
+    server.use(http.post("*/api/v1/mail/send", () => first));
+    renderMailScreen();
+    const composer = await screen.findByRole("form", { name: "메일 작성" });
+    await user.type(within(composer).getByLabelText("받는 사람"), "payroll@example.com");
+    await user.type(within(composer).getByLabelText("제목"), "A");
+    await user.type(within(composer).getByLabelText("본문"), "A");
+    await user.click(within(composer).getByRole("button", { name: "메일 보내기" }));
+    await user.click(await screen.findByRole("button", { name: "답장" }));
+    const successor = screen.getByRole("form", { name: "메일 작성" });
+    await waitFor(() => { expect(within(successor).getByLabelText("제목")).toHaveValue("Re: 급여명세서 확인"); });
+    await user.type(within(successor).getByLabelText("본문"), "후속 초안");
+    resolveFirst(new HttpResponse(null, { status: 503 }));
+    await waitFor(() => { expect(within(screen.getByRole("form", { name: "메일 작성" })).getByLabelText("본문")).toHaveValue("후속 초안"); });
+    expect(screen.queryByText("회사 메일함 준비 중")).not.toBeInTheDocument();
+    expect(screen.queryByText("메일을 보내지 못했습니다.")).not.toBeInTheDocument();
+  });
+
+  it("ignores a delayed thrown send failure after a successor classification edit", async () => {
+    const user = userEvent.setup();
+    let rejectFirst: (reason?: unknown) => void = () => {};
+    const first = new Promise<HttpResponse>((_resolve, reject) => { rejectFirst = reject; });
+    mockMailbox();
+    server.use(http.post("*/api/v1/mail/send", () => first));
+    renderMailScreen();
+    const composer = await screen.findByRole("form", { name: "메일 작성" });
+    await user.type(within(composer).getByLabelText("받는 사람"), "payroll@example.com");
+    await user.type(within(composer).getByLabelText("제목"), "A");
+    await user.type(within(composer).getByLabelText("본문"), "초안");
+    await user.click(within(composer).getByRole("button", { name: "메일 보내기" }));
+    await user.click(within(composer).getByRole("button", { name: "민감" }));
+    rejectFirst(new Error("network"));
+    await waitFor(() => { expect(within(screen.getByRole("form", { name: "메일 작성" })).getByRole("button", { name: "민감" })).toHaveAttribute("aria-pressed", "true"); });
+    expect(within(screen.getByRole("form", { name: "메일 작성" })).getByLabelText("본문")).toHaveValue("초안");
+    expect(screen.queryByText("메일을 보내지 못했습니다.")).not.toBeInTheDocument();
+  });
+
+  it("lets a successor reply send while an older send remains pending", async () => {
+    const user = userEvent.setup();
+    let resolveFirst: (response: HttpResponse) => void = () => {};
+    const first = new Promise<HttpResponse>((resolve) => { resolveFirst = resolve; });
+    const replied = vi.fn();
+    mockMailbox();
+    server.use(
+      http.post("*/api/v1/mail/send", () => first),
+      http.post("*/api/v1/mail/reply", async ({ request }) => {
+        replied(await request.json());
+        return HttpResponse.json({ message_id: "reply", rfc_message_id: "<reply@example.com>" }, { status: 201 });
+      }),
+    );
+    renderMailScreen();
+    const composer = await screen.findByRole("form", { name: "메일 작성" });
+    await user.type(within(composer).getByLabelText("받는 사람"), "payroll@example.com");
+    await user.type(within(composer).getByLabelText("제목"), "A");
+    await user.type(within(composer).getByLabelText("본문"), "A");
+    await user.click(within(composer).getByRole("button", { name: "메일 보내기" }));
+    await user.click(await screen.findByRole("button", { name: "답장" }));
+    const replyComposer = screen.getByRole("form", { name: "메일 작성" });
+    await waitFor(() => { expect(within(replyComposer).getByLabelText("제목")).toHaveValue("Re: 급여명세서 확인"); });
+    const replySend = within(replyComposer).getByRole("button", { name: "답장 보내기" });
+    expect(replySend).toBeEnabled();
+    await user.type(within(replyComposer).getByLabelText("본문"), "B");
+    await user.click(replySend);
+    await waitFor(() => { expect(replied).toHaveBeenCalledTimes(1); });
+    resolveFirst(HttpResponse.json({ message_id: "sent", rfc_message_id: "<sent@example.com>" }, { status: 201 }));
   });
 
   it("omits policy-denied affordances and uses stable mail policy action names", async () => {
@@ -395,6 +661,8 @@ describe("MailScreen", () => {
 
     expect(await screen.findByRole("alert", { name: "반출 차단" })).toBeVisible();
     expect(screen.getAllByText("민감").length).toBeGreaterThan(0);
+    expect(screen.getByText("승인 요청")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "승인 요청" })).not.toBeInTheDocument();
     expect(sent).not.toHaveBeenCalled();
   });
 });

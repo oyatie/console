@@ -42,6 +42,286 @@ function run(command, args, options = {}) {
   }
 }
 
+function replaceExactlyOnce(text, generated, patched, context) {
+  const first = text.indexOf(generated);
+  if (first === -1) {
+    throw new Error(`${context}: expected generated anchor not found`);
+  }
+  if (text.indexOf(generated, first + generated.length) !== -1) {
+    throw new Error(`${context}: generated anchor is ambiguous`);
+  }
+  return text.replace(generated, patched);
+}
+
+function collectEvaluationRequiredNullableFields(openApiText) {
+  const schemasStart = openApiText.indexOf("\n  schemas:\n");
+  if (schemasStart === -1) {
+    throw new Error("required-nullable discovery: OpenAPI components.schemas anchor not found");
+  }
+
+  const lines = openApiText.slice(schemasStart).split("\n");
+  const fields = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const schemaMatch = lines[index].match(/^    (Evaluation[A-Za-z0-9_]+):\s*$/);
+    if (!schemaMatch) {
+      continue;
+    }
+
+    const schemaName = schemaMatch[1];
+    let end = index + 1;
+    while (end < lines.length && !/^    [A-Za-z0-9_]+:\s*$/.test(lines[end])) {
+      end += 1;
+    }
+    const schemaLines = lines.slice(index + 1, end);
+    const requiredLine = schemaLines.find((line) => /^      required:\s*\[/.test(line));
+    if (!requiredLine) {
+      index = end - 1;
+      continue;
+    }
+    const required = new Set(
+      requiredLine
+        .replace(/^      required:\s*\[/, "")
+        .replace(/\]\s*$/, "")
+        .split(",")
+        .map((field) => field.trim().replace(/^['"]|['"]$/g, "")),
+    );
+
+    for (let propertyIndex = 0; propertyIndex < schemaLines.length; propertyIndex += 1) {
+      const propertyMatch = schemaLines[propertyIndex].match(
+        /^        ([A-Za-z0-9_]+):\s*(.*)$/,
+      );
+      if (!propertyMatch || !required.has(propertyMatch[1])) {
+        continue;
+      }
+      let propertyText = propertyMatch[2];
+      let continuation = propertyIndex + 1;
+      while (
+        continuation < schemaLines.length &&
+        !/^        [A-Za-z0-9_]+:\s*/.test(schemaLines[continuation]) &&
+        !/^      [A-Za-z0-9_]+:\s*/.test(schemaLines[continuation])
+      ) {
+        propertyText += `\n${schemaLines[continuation]}`;
+        continuation += 1;
+      }
+      if (
+        /nullable:\s*true/.test(propertyText) ||
+        /type:\s*\[[^\]]*(?:'null'|"null"|null)[^\]]*\]/.test(propertyText) ||
+        /type:\s*(?:'null'|"null")/.test(propertyText)
+      ) {
+        fields.push(`${schemaName}.${propertyMatch[1]}`);
+      }
+    }
+    index = end - 1;
+  }
+  return fields.sort();
+}
+
+function patchRequiredNullableModel(text, modelName, fields) {
+  const structAnchor = `        public struct ${modelName}: Codable, Hashable, Sendable {`;
+  const structStart = text.indexOf(structAnchor);
+  if (structStart === -1) {
+    throw new Error(`required-nullable patch: generated ${modelName} struct not found`);
+  }
+  const nextSchema = text.indexOf(
+    "\n        /// - Remark: Generated from `#/components/schemas/",
+    structStart + structAnchor.length,
+  );
+  if (nextSchema === -1) {
+    throw new Error(`required-nullable patch: generated ${modelName} boundary not found`);
+  }
+
+  let block = text.slice(structStart, nextSchema);
+  const omitted = [];
+  for (const field of fields) {
+    const property = `            public var ${field.swiftName}: ${field.swiftType}?`;
+    const remark = `#/components/schemas/${modelName}/${field.wireName}`;
+    if (!block.includes(property)) {
+      if (block.includes(remark)) {
+        throw new Error(
+          `required-nullable patch: ${modelName}.${field.wireName} has an unexpected generated shape`,
+        );
+      }
+      omitted.push(field);
+      continue;
+    }
+
+    block = replaceExactlyOnce(
+      block,
+      property,
+      `            @RequiredNullable public var ${field.swiftName}: ${field.swiftType}?`,
+      `required-nullable patch ${modelName}.${field.wireName} property`,
+    );
+    block = replaceExactlyOnce(
+      block,
+      `${field.swiftName}: ${field.swiftType}? = nil`,
+      `${field.swiftName}: ${field.swiftType}?`,
+      `required-nullable patch ${modelName}.${field.wireName} initializer`,
+    );
+    block = replaceExactlyOnce(
+      block,
+      `                self.${field.swiftName} = try container.decodeIfPresent(
+                    ${field.swiftType}.self,
+                    forKey: .${field.swiftName}
+                )`,
+      `                self._${field.swiftName} = try container.decode(
+                    RequiredNullable<${field.swiftType}>.self,
+                    forKey: .${field.swiftName}
+                )`,
+      `required-nullable patch ${modelName}.${field.wireName} decoder`,
+    );
+  }
+
+  if (omitted.length > 0) {
+    const propertyDeclarations = omitted
+      .map(
+        (field) =>
+          `            /// - Remark: Generated from \`#/components/schemas/${modelName}/${field.wireName}\`.
+            @RequiredNullable public var ${field.swiftName}: ${field.swiftType}?`,
+      )
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "            /// Creates a new `",
+      `${propertyDeclarations}
+            /// Creates a new \``,
+      `required-nullable patch ${modelName} property insertion`,
+    );
+
+    const parameterDocs = omitted
+      .map((field) => `            ///   - ${field.swiftName}:`)
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "            public init(\n",
+      `${parameterDocs}
+            public init(
+`,
+      `required-nullable patch ${modelName} initializer documentation`,
+    );
+
+    const parameters = omitted
+      .map((field) => `                ${field.swiftName}: ${field.swiftType}?,`)
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "            public init(\n",
+      `            public init(
+${parameters}
+`,
+      `required-nullable patch ${modelName} initializer parameters`,
+    );
+
+    const assignments = omitted
+      .map((field) => `                self.${field.swiftName} = ${field.swiftName}`)
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "            ) {\n",
+      `            ) {
+${assignments}
+`,
+      `required-nullable patch ${modelName} initializer assignments`,
+    );
+
+    const codingKeys = omitted
+      .map((field) =>
+        field.swiftName === field.wireName
+          ? `                case ${field.swiftName}`
+          : `                case ${field.swiftName} = "${field.wireName}"`,
+      )
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "            public enum CodingKeys: String, CodingKey {\n",
+      `            public enum CodingKeys: String, CodingKey {
+${codingKeys}
+`,
+      `required-nullable patch ${modelName} coding keys`,
+    );
+
+    const decoders = omitted
+      .map(
+        (field) =>
+          `                self._${field.swiftName} = try container.decode(
+                    RequiredNullable<${field.swiftType}>.self,
+                    forKey: .${field.swiftName}
+                )`,
+      )
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "                let container = try decoder.container(keyedBy: CodingKeys.self)\n",
+      `                let container = try decoder.container(keyedBy: CodingKeys.self)
+${decoders}
+`,
+      `required-nullable patch ${modelName} decoder insertion`,
+    );
+
+    const knownKeys = omitted
+      .map((field) => `                    "${field.wireName}",`)
+      .join("\n");
+    block = replaceExactlyOnce(
+      block,
+      "                try decoder.ensureNoAdditionalProperties(knownKeys: [\n",
+      `                try decoder.ensureNoAdditionalProperties(knownKeys: [
+${knownKeys}
+`,
+      `required-nullable patch ${modelName} known keys`,
+    );
+  }
+
+  return `${text.slice(0, structStart)}${block}${text.slice(nextSchema)}`;
+}
+
+const evaluationRequiredNullableFields = [
+  { model: "EvaluationUnitProgress", wireName: "org_unit", swiftName: "orgUnit", swiftType: "Swift.String" },
+  { model: "EvaluationSubjectSummary", wireName: "org_unit", swiftName: "orgUnit", swiftType: "Swift.String" },
+  { model: "EvaluationSubjectSummary", wireName: "final_grade", swiftName: "finalGrade", swiftType: "Components.Schemas.EvaluationGrade" },
+  { model: "EvaluationSubjectSummary", wireName: "rv_code", swiftName: "rvCode", swiftType: "Swift.String" },
+  { model: "EvaluationCycleDetail", wireName: "opened_at", swiftName: "openedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationCycleDetail", wireName: "calibration_started_at", swiftName: "calibrationStartedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationCycleDetail", wireName: "finalized_at", swiftName: "finalizedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationCycleDetail", wireName: "archived_at", swiftName: "archivedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationReview", wireName: "grade", swiftName: "grade", swiftType: "Components.Schemas.EvaluationGrade" },
+  { model: "EvaluationReview", wireName: "note", swiftName: "note", swiftType: "Swift.String" },
+  { model: "EvaluationReview", wireName: "submitted_at", swiftName: "submittedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationSubjectDetail", wireName: "org_unit", swiftName: "orgUnit", swiftType: "Swift.String" },
+  { model: "EvaluationSubjectDetail", wireName: "final_grade", swiftName: "finalGrade", swiftType: "Components.Schemas.EvaluationGrade" },
+  { model: "EvaluationSubjectDetail", wireName: "rv_code", swiftName: "rvCode", swiftType: "Swift.String" },
+  { model: "EvaluationSubjectDetail", wireName: "calibrated_grade", swiftName: "calibratedGrade", swiftType: "Components.Schemas.EvaluationGrade" },
+  { model: "EvaluationSubjectDetail", wireName: "calibration_reason", swiftName: "calibrationReason", swiftType: "Swift.String" },
+  { model: "EvaluationSubjectDetail", wireName: "calibrated_by", swiftName: "calibratedBy", swiftType: "Components.Schemas.Uuid" },
+  { model: "EvaluationSubjectDetail", wireName: "calibrated_at", swiftName: "calibratedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationSubjectDetail", wireName: "finalized_at", swiftName: "finalizedAt", swiftType: "Components.Schemas.Timestamp" },
+  { model: "EvaluationPreflightItem", wireName: "subject_id", swiftName: "subjectId", swiftType: "Components.Schemas.Uuid" },
+  { model: "EvaluationPreflightReport", wireName: "next_transition", swiftName: "nextTransition", swiftType: "Components.Schemas.EvaluationCycleTransition" },
+  { model: "EvaluationTaskItem", wireName: "review_status", swiftName: "reviewStatus", swiftType: "Components.Schemas.EvaluationReviewStatus" },
+];
+
+function patchEvaluationRequiredNullableFields(text) {
+  const discovered = collectEvaluationRequiredNullableFields(readFileSync(inputSpec, "utf8"));
+  const declared = evaluationRequiredNullableFields
+    .map((field) => `${field.model}.${field.wireName}`)
+    .sort();
+  if (JSON.stringify(discovered) !== JSON.stringify(declared)) {
+    throw new Error(
+      "required-nullable patch: Evaluation OpenAPI fields drifted; " +
+        `discovered=${JSON.stringify(discovered)} declared=${JSON.stringify(declared)}`,
+    );
+  }
+
+  const models = new Map();
+  for (const field of evaluationRequiredNullableFields) {
+    const fields = models.get(field.model) ?? [];
+    fields.push(field);
+    models.set(field.model, fields);
+  }
+  for (const [modelName, fields] of models) {
+    text = patchRequiredNullableModel(text, modelName, fields);
+  }
+  return text;
+}
+
 function patchKnownGeneratorGaps(stagingDir) {
   // swift-openapi-generator 1.12 skips the `null` branch for a required
   // oneOf[$ref, null] property and emits an empty struct. The OpenAPI contract
@@ -194,6 +474,20 @@ function patchKnownGeneratorGaps(stagingDir) {
                 totalIsExact: Swift.Bool,
                 nextCursor: Swift.String?`,
     ],
+    [
+      `            /// - Remark: Generated from \`#/components/schemas/EvidenceObjectPage/next_cursor\`.
+            public var nextCursor: Swift.String?`,
+      `            /// - Remark: Generated from \`#/components/schemas/EvidenceObjectPage/next_cursor\`.
+            @RequiredNullable public var nextCursor: Swift.String?`,
+    ],
+    [
+      `                total: Swift.Int64,
+                asOf: Swift.Int64,
+                nextCursor: Swift.String? = nil`,
+      `                total: Swift.Int64,
+                asOf: Swift.Int64,
+                nextCursor: Swift.String?`,
+    ],
   ];
   for (const [generated, patched] of requiredNullablePagePatchPairs) {
     if (text.includes(generated)) {
@@ -206,6 +500,7 @@ function patchKnownGeneratorGaps(stagingDir) {
     }
   }
 
+  text = patchEvaluationRequiredNullableFields(text);
   writeFileSync(typesFile, text, "utf8");
 }
 

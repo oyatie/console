@@ -1,0 +1,63 @@
+{
+  "lane": "hf-lifecycle-foureyes",
+  "branch": "claude/hf-lifecycle-foureyes-20260725",
+  "base": "4cabe239",
+  "generated": "2026-07-25",
+  "shared_root_requests": [],
+  "findings_for_integrator": [
+    {
+      "id": "F-1",
+      "title": "benefit_catalog_conditions.cedar_policy_ref accepts dangling policy references",
+      "severity": "high",
+      "status": "not-fixed-out-of-lane-roots",
+      "why_not_fixed_here": "Lives in backend/crates/benefit/** plus the shared collision roots backend/openapi/openapi.yaml and clients/**. This lane owns only backend/crates/platform/db/{src/lifecycle.rs,tests/**} and its evidence dir.",
+      "evidence": [
+        "backend/crates/platform/db/migrations/0157_create_benefit_catalog.sql:116 — cedar_policy_ref TEXT NULL CHECK (cedar_policy_ref IS NULL OR char_length(cedar_policy_ref) <= 200). No FK, no existence check.",
+        "backend/crates/benefit/adapter-postgres/src/lib.rs:695-699 — the only validation is normalize_optional_text(condition.cedar_policy_ref, 200, \"cedar_policy_ref\"), i.e. trim + length.",
+        "A real registry exists and is not consulted: cedar_policy_catalog_entries (backend/crates/platform/db/migrations/0150_create_cedar_policy_staging.sql:8).",
+        "All 12 backend occurrences of cedar_policy_ref (benefit/application 2, benefit/adapter-postgres 8, 2 in tests) are storage/serialization only. The value is never resolved and never evaluated anywhere."
+      ],
+      "impact": "A benefit-catalog condition can be stored and rendered as policy-governed while pointing at a Cedar policy that does not exist. The condition then silently governs nothing, which is a fail-OPEN eligibility rule presented to operators as fail-closed. Contradicts DESIGN 3.10 (fail-closed, deny-by-default) and the typed-fields discipline in DESIGN item 19.",
+      "suggested_fix": "Resolve cedar_policy_ref against cedar_policy_catalog_entries inside the write transaction and reject unknown refs with the canonical validation envelope; or drop the column if the benefit conditions are not in fact Cedar-governed yet (D-5: dead code = delete). Either way the openapi.yaml schema note and the regenerated ts/kotlin/swift clients must follow.",
+      "touches_shared_roots": [
+        "backend/openapi/openapi.yaml",
+        "clients/**"
+      ]
+    },
+    {
+      "id": "F-2",
+      "title": "OPTIONAL: promote CHECKER_TRANSITIONS into lifecycle_transition_rules",
+      "severity": "informational",
+      "status": "deliberate-design-choice",
+      "detail": "The maker-checker set landed as a compiled constant in backend/crates/platform/db/src/lifecycle.rs rather than a lifecycle_transition_rules.requires_checker column, because migrations/** is a serialized collision root (a lane cannot take a ledger slot) and because a compiled preventive security control cannot be widened by a data change. The set is still declarative data, not a per-domain match arm.",
+      "if_promoted": "Needs one ledger migration slot: ALTER TABLE lifecycle_transition_rules ADD COLUMN requires_checker BOOLEAN NOT NULL DEFAULT false; then UPDATE for ('document','submitted','approved') and ('benefit_catalog_item','pending','finalized'); then swap is_checker_transition() for a lookup. The existing tests cover the behaviour either way.",
+      "recommendation": "No action required. Only promote if the integrator wants the rule tunable per deployment."
+    },
+    {
+      "id": "F-3",
+      "title": "archived -> disposed is NOT gated as a four-eyes transition (open design question)",
+      "severity": "informational",
+      "status": "deliberately-not-claimed",
+      "detail": "DESIGN 3.9.1 lists maker-checker under governance mechanisms common to create/change/dispose, but the gate it actually names for 폐지 is the 참조 무결성 게이트 / 정산 completeness, and the FSM has no 'dispose requested' state, so there is no recorded maker to compare a disposer against. Disposal stays gated on legal_hold + retention_until only. Inventing a second approver here would be the blanket same-actor ban the charter forbids.",
+      "recommendation": "Founder/design call: if 폐기 needs 결재, the FSM needs a dispose-request state first."
+    }
+  ],
+  "environment_notes": [
+    {
+      "id": "E-1",
+      "title": "dev-PG mnt_buck_admin harness password was unset; one was set",
+      "detail": "backend crate tests using #[sqlx::test] must satisfy migration 0196: CURRENT_USER = mnt_buck_admin AND startup option mnt.sqlx_test_bootstrap = buck-sqlx-superuser-v1. The role existed on the shared dev PG with no password. Set to mnt-buck-admin-local (dev-only, local-bound container).",
+      "reusable_dsn": "postgres://mnt_buck_admin:mnt-buck-admin-local@127.0.0.1:55432/mnt_dev?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+    },
+    {
+      "id": "E-2",
+      "title": "shared dev Postgres crashed mid-lane on a full Docker volume",
+      "detail": "The Docker VM volume backing mnt-dev-postgres-1 hit 197G/0 avail and Postgres entered a restart loop (FATAL: could not write lock file postmaster.pid). Cause was 684 orphaned anonymous docker volumes (~85GB) left by disposable Buck2 PG harness containers across lanes; PGDATA itself was 597MB. Escalated to main and cleared with docker volume prune. Recommend adding the prune to wave teardown."
+    },
+    {
+      "id": "E-3",
+      "title": "pre-existing parallel-execution flake, not caused by this lane",
+      "detail": "mnt-platform-db --test attendance_console_migration_contract::platform_force_migration_rejects_partially_drifted_force_table_owner intermittently fails with XX000 'tuple concurrently updated' on ALTER TABLE registry_customers OWNER TO mnt_buck_admin (shared catalog contention). Deterministically green with --test-threads=1."
+    }
+  ]
+}

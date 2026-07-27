@@ -1,12 +1,11 @@
 // Console screen composition for the automate surface (nav 워크플로 스튜디오 —
 // no single 자동화 hub owns the whole nav item, this screen IS the studio).
-// §4-18: reuses the SAME AutomateHub the legacy /automate route mounts
-// (AutomatePage.tsx) — rule list (활성/중지 chips + run count), the
-// trigger→condition→action flow builder (console/canvas BlockCanvas, the
-// canonical graph builder), 실행 이력, and the §3.9.0 version-pending banner
-// (개정대기/적용승인/철회) all live in AutomateHub already, wired to the real
-// workflow-studio REST. This file only supplies the console-grammar mount
-// point (the policy gate) — no new UI, per the composition mandate.
+// Rules and monitors reuse AutomateHub (AutomatePage.tsx): rule list, the
+// trigger→condition→action graph builder, and workflow-definition lifecycle
+// controls. /console/scheduled deliberately mounts the durable
+// workflow_schedules workspace instead: it owns schedule creation, editing,
+// lifecycle, execution history, and the explicit relationship to a workflow
+// definition. This keeps one schedule authority per route.
 //
 // R4 empty-surface fix: the hub gates its tabs on `console.automate.tab.*.view`
 // resolved through Cedar bulk-authorize, but Cedar is shadow-only today (legacy
@@ -26,6 +25,7 @@ import {
   type AutomateTab,
 } from "../../../pages/AutomatePage";
 import { PolicyGateProvider, type PolicyGate } from "../../policy";
+import { WorkflowScheduleOperations } from "../../workflows/WorkflowScheduleOperations";
 
 // System-tier surface — mirrors the nav's ROLE_MANAGE_ROLES gate on "workflow".
 const AUTOMATE_MANAGE_ROLES = new Set(["SUPER_ADMIN"]);
@@ -100,7 +100,11 @@ export function AutomateBody() {
 
   return (
     <PolicyGateProvider gate={gate}>
-      <AutomateHub tab={routeTab} onTabChange={navigateToTab} />
+      {routeTab === "schedules" ? (
+        <WorkflowScheduleOperations />
+      ) : (
+        <AutomateHub tab={routeTab} onTabChange={navigateToTab} />
+      )}
     </PolicyGateProvider>
   );
 }

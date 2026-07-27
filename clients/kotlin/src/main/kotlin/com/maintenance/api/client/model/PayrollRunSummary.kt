@@ -42,6 +42,13 @@ import kotlinx.serialization.Contextual
  * @param createdBy
  * @param approvedBy
  * @param approvedAt
+ * @param closeReceipt Attestation receipt written by the attendance close — the preflight checks, the attesting user, and the attestation time.
+ * @param submittedBy
+ * @param submittedAt
+ * @param decidedBy Maker-checker counterparty; a DB CHECK forbids it from equalling submitted_by.
+ * @param decidedAt
+ * @param decisionReason
+ * @param approvalRef Reserved for the future AP- workflow-engine object; never written today.
  */
 @Serializable
 
@@ -78,21 +85,52 @@ data class PayrollRunSummary (
     val approvedBy: java.util.UUID? = null,
 
     @Contextual @SerialName(value = "approved_at")
-    val approvedAt: java.time.OffsetDateTime? = null
+    val approvedAt: java.time.OffsetDateTime? = null,
+
+    /* Attestation receipt written by the attendance close — the preflight checks, the attesting user, and the attestation time. */
+    @Contextual @SerialName(value = "close_receipt")
+    val closeReceipt: kotlin.Any? = null,
+
+    @Contextual @SerialName(value = "submitted_by")
+    val submittedBy: java.util.UUID? = null,
+
+    @Contextual @SerialName(value = "submitted_at")
+    val submittedAt: java.time.OffsetDateTime? = null,
+
+    /* Maker-checker counterparty; a DB CHECK forbids it from equalling submitted_by. */
+    @Contextual @SerialName(value = "decided_by")
+    val decidedBy: java.util.UUID? = null,
+
+    @Contextual @SerialName(value = "decided_at")
+    val decidedAt: java.time.OffsetDateTime? = null,
+
+    @SerialName(value = "decision_reason")
+    val decisionReason: kotlin.String? = null,
+
+    /* Reserved for the future AP- workflow-engine object; never written today. */
+    @Contextual @SerialName(value = "approval_ref")
+    val approvalRef: java.util.UUID? = null
 
 ) {
 
     /**
      *
      *
-     * Values: STAGED,BLOCKED_LEGAL_GATE,READY_FOR_REVIEW,APPROVED,ISSUED,VOID
+     * Values: STAGED,BLOCKED_LEGAL_GATE,READY_FOR_REVIEW,ATTENDANCE_CLOSED,CALCULATING,CALCULATED,SUBMITTED,REJECTED,APPROVED,DISBURSEMENT_SCHEDULED,PAID,ISSUED,VOID
      */
     @Serializable
     enum class Status(val value: kotlin.String) {
         @SerialName(value = "STAGED") STAGED("STAGED"),
         @SerialName(value = "BLOCKED_LEGAL_GATE") BLOCKED_LEGAL_GATE("BLOCKED_LEGAL_GATE"),
         @SerialName(value = "READY_FOR_REVIEW") READY_FOR_REVIEW("READY_FOR_REVIEW"),
+        @SerialName(value = "ATTENDANCE_CLOSED") ATTENDANCE_CLOSED("ATTENDANCE_CLOSED"),
+        @SerialName(value = "CALCULATING") CALCULATING("CALCULATING"),
+        @SerialName(value = "CALCULATED") CALCULATED("CALCULATED"),
+        @SerialName(value = "SUBMITTED") SUBMITTED("SUBMITTED"),
+        @SerialName(value = "REJECTED") REJECTED("REJECTED"),
         @SerialName(value = "APPROVED") APPROVED("APPROVED"),
+        @SerialName(value = "DISBURSEMENT_SCHEDULED") DISBURSEMENT_SCHEDULED("DISBURSEMENT_SCHEDULED"),
+        @SerialName(value = "PAID") PAID("PAID"),
         @SerialName(value = "ISSUED") ISSUED("ISSUED"),
         @SerialName(value = "VOID") VOID("VOID");
     }

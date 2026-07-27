@@ -1,0 +1,1934 @@
+{
+ "schema": "wave4-backend-blocked-index-v1",
+ "produced": "2026-07-25",
+ "purpose": "One row per backend-blocked fidelity finding. Depth-first (D-0) drops 13 of 15 module lanes, so this ledger of what is NOT being done is the wave's main honesty artifact and the integrator's completion checklist.",
+ "generated_from": {
+  "register": "docs/evidence/console/wave4/inputs/fidelity-registers.json",
+  "register_schema": "wave4-fidelity-registers-v1",
+  "total_findings": 180,
+  "backend_blocked_findings": 69,
+  "modules": 15
+ },
+ "column_semantics": {
+  "backend_surface": "The backend surface that owns the block. Row bodies come from the committed register; this classification is hand-authored in the generator and reviewable against the register text.",
+  "crm_relevant": "True when the owning surface is exercised, extended, or explicitly gap-manifested by a wave-4 CRM (sales) lane, so wave-4 CRM work moves this row. False means no wave-4 lane touches it.",
+  "wave4_disposition": {
+   "unblocked_by_wave4_registration": "instance_acting / object_type_acting are already live (ontology/rest/src/lib.rs:1562-1588); the module needs type REGISTRATION, not a new endpoint. L-X7 proves the path.",
+   "unblocked_by_wave4_exposure": "D-1 / L-X14 exposing `sales` gives the row its first reachable target.",
+   "pattern_proven_by_wave4_crm": "Wave 4 builds the same primitive for sales; this row still needs its own contract.",
+   "gap_manifested_only": "A wave-4 CRM lane names the same gap with anchors but does not close it.",
+   "deferred_no_wave4_lane": "No wave-4 lane touches this at all."
+  },
+  "wave4_owning_lane": "Always null this wave: depth-first assigns no lane to the 13 undeepened modules. Recorded explicitly rather than left blank."
+ },
+ "counts": {
+  "rows": 69,
+  "crm_relevant": 30,
+  "not_crm_relevant": 39,
+  "by_severity": {
+   "blocker": 6,
+   "major": 44,
+   "minor": 19
+  },
+  "by_disposition": {
+   "deferred_no_wave4_lane": 39,
+   "gap_manifested_only": 13,
+   "pattern_proven_by_wave4_crm": 11,
+   "unblocked_by_wave4_exposure": 2,
+   "unblocked_by_wave4_registration": 4
+  },
+  "by_module": {
+   "attendance": 6,
+   "board": 2,
+   "directory": 5,
+   "dispatch": 5,
+   "docs": 7,
+   "equipment": 5,
+   "evaluation": 3,
+   "field": 7,
+   "inventory": 6,
+   "logistics": 1,
+   "maintenance": 3,
+   "notif": 3,
+   "org": 7,
+   "payroll": 5,
+   "recruiting": 4
+  }
+ },
+ "surfaces": [
+  {
+   "id": "ADR-0025-EXPOSURE-MANIFEST",
+   "what_is_missing": "Not a backend surface: EXPOSED_SCREEN_KEYS. Dark screens are legitimately unreachable targets; the count of dead-ends is the artifact.",
+   "primary_for": [
+    "notif.findings[1]"
+   ]
+  },
+  {
+   "id": "APPR-COMPOSE",
+   "what_is_missing": "Console 기안/전자결재 composer surface with prefill, and the draft→approve lifecycle in front of direct writes (§3.9.0).",
+   "primary_for": [
+    "inventory.findings[5]",
+    "dispatch.findings[5]",
+    "field.findings[5]",
+    "equipment.findings[4]"
+   ]
+  },
+  {
+   "id": "ATT-CLOSE-DEADLINE",
+   "what_is_missing": "Deadline field on the attendance close board.",
+   "primary_for": [
+    "attendance.findings[11]"
+   ]
+  },
+  {
+   "id": "ATT-COVER-FORWARD-QUEUE",
+   "what_is_missing": "Approved+pending leave for D+7 by cover-required role, feeding the preventive cover planner.",
+   "primary_for": [
+    "attendance.findings[4]"
+   ]
+  },
+  {
+   "id": "ATT-SCHEDULE-READ",
+   "what_is_missing": "Schedule/timetable read surface — the 계획 half of 계획 vs 실적. No schedule registry exists.",
+   "primary_for": [
+    "attendance.findings[1]"
+   ]
+  },
+  {
+   "id": "ATT-SITE-ATTRIBUTION",
+   "what_is_missing": "Site/team attribution on attendance records (or a roster join) for grouping, filters and group notes.",
+   "primary_for": [
+    "attendance.findings[5]"
+   ]
+  },
+  {
+   "id": "BOARD-NOTICE-LINKED-OBJECTS",
+   "what_is_missing": "Linked-object references on the notices contract (mail send, inbox delivery batch, records registration).",
+   "primary_for": [
+    "board.findings[6]"
+   ]
+  },
+  {
+   "id": "CONSOLE-COMMAND-PALETTE",
+   "what_is_missing": "Console command palette, and the collaborative-sheet export surface.",
+   "primary_for": [
+    "directory.findings[5]"
+   ]
+  },
+  {
+   "id": "CUSTOMER-REGISTRY-READ",
+   "what_is_missing": "Read/resolve surface over registry_customers so customer identity renders and drills outside the owning crate.",
+   "primary_for": [
+    "dispatch.findings[4]"
+   ]
+  },
+  {
+   "id": "DIR-CONTACT-PROFILE",
+   "what_is_missing": "ext/phone/email on MessengerMemberSummary and Employee (or a directory-profile endpoint).",
+   "primary_for": [
+    "directory.findings[0]"
+   ]
+  },
+  {
+   "id": "DIR-ROSTER-ENRICHMENT",
+   "what_is_missing": "PBAC-safe title/company/ext on the non-privileged roster endpoint (or one merged list with per-field deny-by-omission).",
+   "primary_for": [
+    "directory.findings[1]"
+   ]
+  },
+  {
+   "id": "DOC-PROVENANCE-FILE-READ",
+   "what_is_missing": "Original-document (provenance) read endpoint that logs an audited view.",
+   "primary_for": [
+    "recruiting.findings[11]"
+   ]
+  },
+  {
+   "id": "DOCS-EXPORT-EGRESS",
+   "what_is_missing": "Evidence/records export REST behind the §3.10-⑤ egress gate (only the audit action is defined; no endpoint).",
+   "primary_for": [
+    "docs.findings[3]"
+   ]
+  },
+  {
+   "id": "DOCS-FINALIZATION-STATE",
+   "what_is_missing": "종결/finalization state on the records wire.",
+   "primary_for": [
+    "docs.findings[9]"
+   ]
+  },
+  {
+   "id": "DOCS-RECORDS-REGISTRY",
+   "what_is_missing": "Records-registry list REST covering the non-EV finalized types (AP-/JL-/NT-/IN-/C-).",
+   "primary_for": [
+    "docs.findings[0]"
+   ]
+  },
+  {
+   "id": "DOCS-REGISTER-PENDING-APPROVAL",
+   "what_is_missing": "Pending/approve stage on the records register contract (registration is immediate today).",
+   "primary_for": [
+    "docs.findings[4]"
+   ]
+  },
+  {
+   "id": "EQ-DISPOSITION-LINK-GL",
+   "what_is_missing": "Disposition REPAIR → WO- object creation/link, and finance GL/voucher posting readback (financeGlPosting is hard-typed null).",
+   "primary_for": [
+    "equipment.findings[7]"
+   ]
+  },
+  {
+   "id": "EVIDENCE-DERIVED-PREVIEW",
+   "what_is_missing": "GET copies/{id}/derived-preview + the ZIP entry-index REST behind the watermarked viewer.",
+   "primary_for": [
+    "docs.findings[5]"
+   ]
+  },
+  {
+   "id": "EVIDENCE-ORIGINAL-FORBID-AUDIT",
+   "what_is_missing": "Server-side original-copy stream endpoint so a blocked attempt is recorded as an audited forbid instead of a client-side denial.",
+   "primary_for": [
+    "docs.findings[7]"
+   ]
+  },
+  {
+   "id": "EVIDENCE-READ-PRESIGN",
+   "what_is_missing": "Evidence read / presigned-GET so an evidence entry opens and can be verify-inspected.",
+   "primary_for": [
+    "maintenance.findings[6]"
+   ]
+  },
+  {
+   "id": "EXTENSIBLE-ENUM-SCHEMA",
+   "what_is_missing": "N+1 「직접 입력」 enum extension flowing back to the type schema (§4-27-3).",
+   "primary_for": [
+    "evaluation.findings[11]"
+   ]
+  },
+  {
+   "id": "FIELD-CONTRACT-DIM",
+   "what_is_missing": "site → 계약 (C- 코드·서비스 유형) and 상주 headcount on FieldSiteRow/FieldSiteDetail.",
+   "primary_for": [
+    "field.findings[3]"
+   ]
+  },
+  {
+   "id": "FIELD-SERVICE-TYPE-ENUM",
+   "what_is_missing": "Service-type enum on the contract, for the row/det en chip and its filter.",
+   "primary_for": [
+    "field.findings[13]"
+   ]
+  },
+  {
+   "id": "INV-INGEST",
+   "what_is_missing": "실사 업로드 data-ingest surface, and backend modelling of in-transit stock.",
+   "primary_for": [
+    "inventory.findings[13]"
+   ]
+  },
+  {
+   "id": "LIST-SERVER-SORT",
+   "what_is_missing": "Server-side sort/keyset parameters on a list endpoint so header sort stays truthful across pages.",
+   "primary_for": [
+    "directory.findings[4]"
+   ]
+  },
+  {
+   "id": "LOGISTICS-READ-ENDPOINTS",
+   "what_is_missing": "GET list endpoints for ASNs/fulfillments/shipments (+ stock projection) scoped by branch; the pilot router is write-only.",
+   "primary_for": [
+    "logistics.findings[6]"
+   ]
+  },
+  {
+   "id": "ONT-DYNAMICS-ACTING",
+   "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint.",
+   "primary_for": [
+    "inventory.findings[3]",
+    "dispatch.findings[7]",
+    "field.findings[6]",
+    "equipment.findings[1]"
+   ]
+  },
+  {
+   "id": "ONT-LINK-RESOLVER",
+   "what_is_missing": "Cross-module object-link resolution/drill registry so a code token in any module resolves to its object (§4.7-10 언급=링크).",
+   "primary_for": [
+    "inventory.findings[4]",
+    "field.findings[4]",
+    "docs.findings[6]"
+   ]
+  },
+  {
+   "id": "ONT-OBJECT-CARD-READ",
+   "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only.",
+   "primary_for": [
+    "dispatch.findings[3]",
+    "maintenance.findings[3]",
+    "field.findings[8]",
+    "notif.findings[0]",
+    "directory.findings[3]"
+   ]
+  },
+  {
+   "id": "ONT-OBJECT-SEARCH",
+   "what_is_missing": "PBAC-filtered cross-object code/typeahead search (§4-27-4). Contract is owned by codex/console-search-object-fabric-20260724.",
+   "primary_for": [
+    "evaluation.findings[4]",
+    "inventory.findings[1]",
+    "maintenance.findings[1]",
+    "equipment.findings[5]"
+   ]
+  },
+  {
+   "id": "ONT-SERIES",
+   "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface.",
+   "primary_for": [
+    "payroll.findings[4]"
+   ]
+  },
+  {
+   "id": "ONT-TYPE-REGISTRY",
+   "what_is_missing": "OT- type card / type-explore surface bound to a module header chip. GET /api/v1/object-types exists and primes codeGrammar; the type-card screen does not.",
+   "primary_for": [
+    "inventory.findings[7]",
+    "board.findings[7]"
+   ]
+  },
+  {
+   "id": "OPS-MAP-GEO",
+   "what_is_missing": "Ops-map console surface: site/unit geo read API + map module.",
+   "primary_for": [
+    "dispatch.findings[2]"
+   ]
+  },
+  {
+   "id": "ORG-CHANGE-OP-VOCAB",
+   "what_is_missing": "Org-change proposal op vocabulary extensions (site-scoped reassign, dissolve org-unit, rename entity) — digest + backend.",
+   "primary_for": [
+    "org.findings[3]",
+    "org.findings[7]",
+    "org.findings[8]"
+   ]
+  },
+  {
+   "id": "ORG-ENTITY-CREATE",
+   "what_is_missing": "org-entity create (or a CREATE_ENTITY proposal op); /api/v1/org-entities is read-only.",
+   "primary_for": [
+    "org.findings[4]"
+   ]
+  },
+  {
+   "id": "ORG-ENTITY-PROFILE-FINANCE",
+   "what_is_missing": "Entity profile (등록/관할) + PBAC-gated finance summary + view-audit event on expand.",
+   "primary_for": [
+    "org.findings[5]"
+   ]
+  },
+  {
+   "id": "ORG-UNIT-BRANCH-LINK",
+   "what_is_missing": "branch ↔ org_unit linkage and per-branch headcount on the hr org-chart / identity contract.",
+   "primary_for": [
+    "org.findings[2]"
+   ]
+  },
+  {
+   "id": "PAYROLL-LINE-AMOUNTS",
+   "what_is_missing": "기본급/수당/공제/실지급 (+ prior-run delta) on the payroll line DTO.",
+   "primary_for": [
+    "payroll.findings[1]"
+   ]
+  },
+  {
+   "id": "PAYROLL-RUN-CALC-BREAKDOWN",
+   "what_is_missing": "Per-법인 totals, prior-run delta and 사업자 부담 on the run calc summary contract.",
+   "primary_for": [
+    "payroll.findings[5]"
+   ]
+  },
+  {
+   "id": "PAYROLL-RUN-DEADLINE",
+   "what_is_missing": "Decision-due timestamp on the payroll run contract.",
+   "primary_for": [
+    "payroll.findings[9]"
+   ]
+  },
+  {
+   "id": "PERSON-CARD-SURFACE",
+   "what_is_missing": "Exposed person/인사 카드 surface a @mention or directory row can open.",
+   "primary_for": [
+    "notif.findings[4]"
+   ]
+  },
+  {
+   "id": "PLATFORM-CODE-ISSUANCE",
+   "what_is_missing": "Human display-code issuance on a domain contract (PS-, EQ-, RC-) with a code counter, so the object carries a reference token (§4.7-3).",
+   "primary_for": [
+    "payroll.findings[13]",
+    "equipment.findings[3]"
+   ]
+  },
+  {
+   "id": "RECRUIT-TALENTPOOL-REFS",
+   "what_is_missing": "applicant_id / posting_id on the talent-pool payload so the row can drill.",
+   "primary_for": [
+    "recruiting.findings[6]"
+   ]
+  },
+  {
+   "id": "TYPED-REASON-ENUM",
+   "what_is_missing": "Curated reason enum on a mutation DTO instead of free text (§4-19, §4.8).",
+   "primary_for": [
+    "org.findings[11]"
+   ]
+  },
+  {
+   "id": "WORK-JOURNAL-JL",
+   "what_is_missing": "업무일지 (JL-) object and API.",
+   "primary_for": [
+    "field.findings[14]"
+   ]
+  },
+  {
+   "id": "WORKFORCE-POOL",
+   "what_is_missing": "Workforce/talent-pool registry (유형·단가·자격·평점·가용성, per-assignment contract issuance) and its registration/proposal mutations.",
+   "primary_for": [
+    "recruiting.findings[0]",
+    "recruiting.findings[1]",
+    "attendance.findings[9]"
+   ]
+  },
+  {
+   "id": "WORKITEM-CREATE",
+   "what_is_missing": "Follow-up work-item create/link surface (mywork).",
+   "primary_for": [
+    "attendance.findings[8]"
+   ]
+  },
+  {
+   "id": "XMOD-SUBJECT-CONTEXT",
+   "what_is_missing": "Per-subject cross-module context read (attendance summary + recent tasks + KPI) for scorecard auto-attach.",
+   "primary_for": [
+    "evaluation.findings[2]"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "payroll.findings[1]",
+   "module": "payroll",
+   "capability_id": "CAP-PAYROLL-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "급여 명부 rows carry the pay itself: 기본급·수당·공제·실지급 mono right-aligned + 전월 대비 delta (toned) + 직책 subline under the name — dc.html 2247-2259 template, 8610-8620 PAY_ROWS, 19265-19301 payHeads/payRows; footer '단위 ₩ · 공제 = 4대보험 + 소득세' (2268)",
+    "code_does": "Roster columns are 근무일/연장/원천 chips/계산 상태 only — zero pay amounts and no MoM delta anywhere in the table (PayrollScreen.tsx:971-1068); amounts surface only on exceptions and the single total. Generated PayrollLineSummary carries no amount fields (payrollApi.ts:20)",
+    "fix": "Extend the line DTO/openapi with base/allowance/deduction/net (+ prior-run delta) and render them as masked-by-default mono amount columns with delta tone, restoring the roster as a pay table"
+   },
+   "backend_surface": {
+    "id": "PAYROLL-LINE-AMOUNTS",
+    "what_is_missing": "기본급/수당/공제/실지급 (+ prior-run delta) on the payroll line DTO."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Payroll depth is R-1's wave; payroll must not be exposed until L-D0/L-D4 land.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "payroll.findings[4]",
+   "module": "payroll",
+   "capability_id": "CAP-PAYROLL-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Header carries the 회차 시리즈 button opening the SR-205 series card (이력·추세·다음 회차) — dc.html 2118, onPaySeries=lcOpen('SR-205') at 20132, series def 13403; §4-15 '월 급여 회차는 부모 시리즈 개체(SR-)로 캡처' with instance-card mini timeline",
+    "code_does": "No series affordance anywhere; the left run list (PayrollScreen.tsx:910-928) shows sibling runs but no series object, rule, trend, or next-scheduled instance",
+    "fix": "Add a header 회차 시리즈 entry once a series surface exists; until then at least link the run list header to the series/laborcost trend. Needs an SR-/series read surface the backend does not expose"
+   },
+   "backend_surface": {
+    "id": "ONT-SERIES",
+    "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "L-X7 registers projected types but creates no SR- series; §8 keeps the series chip out of wave 4.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "payroll.findings[5]",
+   "module": "payroll",
+   "capability_id": "CAP-PAYROLL-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "지급 총액 card = big total + 전월 % + per-법인 breakdown bars with amounts (PAY_ENT_COST 8623-8628, template 2352-2364) + 사업자 부담 · 4대보험+퇴직 row (2366-2370) + 지급 계좌 상태 row",
+    "code_does": "Total (masked), calc-lines/payable chips, account-status chip, rate-table chip, laborcost link only (PayrollScreen.tsx:1191-1224) — no entity breakdown, no MoM delta, no employer-burden figure; RunCalcSummary has none of these fields (payrollApi.ts:62-72)",
+    "fix": "Add per-entity totals, prior-run delta, and employer-burden to the run calc summary contract and render the prototype's bar rows (bars must drill to the filtered roster per §4.7-9)"
+   },
+   "backend_surface": {
+    "id": "PAYROLL-RUN-CALC-BREAKDOWN",
+    "what_is_missing": "Per-법인 totals, prior-run delta and 사업자 부담 on the run calc summary contract."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "payroll.findings[9]",
+   "module": "payroll",
+   "capability_id": "CAP-PAYROLL-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Header chip is deadline-driven with clock icon: '승인 기한 7/8 (수) 16:00' warn → '결재 대기 · 기한 7/8 16:00' info → '이체 예약 7/10 04:00' ok (15302, 2147-2150)",
+    "code_does": "Status-only chips with correct tones but no due/deadline content (PayrollScreen.tsx:653-661); the contract carries no approval-deadline field",
+    "fix": "Add a decision-due timestamp to the run contract and fold it into the header chip text"
+   },
+   "backend_surface": {
+    "id": "PAYROLL-RUN-DEADLINE",
+    "what_is_missing": "Decision-due timestamp on the payroll run contract."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "payroll.findings[13]",
+   "module": "payroll",
+   "capability_id": "CAP-PAYROLL-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Payroll objects carry human codes used as reference tokens everywhere: 회차/명세 PS-2606, 결재 AP-3124 (9220, 9733, OT-06 '회차▸명세 PS-' 8714); §4.7-3 코드 발급 + 참조 토큰",
+    "code_does": "The run is identified only by source_label + uuid; no PS- style code is displayed or copyable anywhere in the module",
+    "fix": "Issue a display code (PS-YYMM style) on the run contract and render it as the standard mono code chip (drag source per finding 7)"
+   },
+   "backend_surface": {
+    "id": "PLATFORM-CODE-ISSUANCE",
+    "what_is_missing": "Human display-code issuance on a domain contract (PS-, EQ-, RC-) with a code counter, so the object carries a reference token (§4.7-3)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X7 issues the DL- prefix + code counter through the legacy object_types registry, and L-F3 makes the frontend cost of a new prefix zero. PS- issuance is the same move on the payroll contract.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "recruiting.findings[0]",
+   "module": "recruiting",
+   "capability_id": "CAP-RECRUITING",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "Pool postings (일용직/인력풀) terminate the pipeline by registering the candidate into the workforce pool, not by creating an employee: nextLabel/ctaLabel = rp.pool ? '인력풀 등재(— 비상근)' : '입사 확정' (dc.html 19708, 19754) and rcAdvance registers wpJoined with '재직 명부 비합산 · 대근 편성 대상' (dc.html 12752-12758). The composer even promises it: '확정 = 인력풀 등재 · 비상근' chip (dc.html 680).",
+    "code_does": "nextActionLabel excludes POOL_DAILY (RecruitingScreen.tsx:80) and CandidateCard's hireable requires !isPool (CandidateCard.tsx:109-114), so an OFFER-stage applicant on a POOL_DAILY posting has NO primary CTA anywhere — the pipeline dead-ends while the composer still shows the '확정 = 인력풀 등재 · 비상근' promise chip (PostingComposer.tsx:144-146).",
+    "fix": "Add a pool-registration terminal action for OFFER-stage applicants on POOL_DAILY postings (POST …/applicants/{id}/register-pool → workforce-pool entry with src=JP-, avail=본인 동의/즉시), wired as the card CTA and subrow next-action. Until the endpoint exists, list in the gap manifest — do not fake it client-side."
+   },
+   "backend_surface": {
+    "id": "WORKFORCE-POOL",
+    "what_is_missing": "Workforce/talent-pool registry (유형·단가·자격·평점·가용성, per-assignment contract issuance) and its registration/proposal mutations."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Blocker: an OFFER-stage POOL_DAILY applicant has no primary CTA anywhere — the pipeline dead-ends.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "recruiting.findings[1]",
+   "module": "recruiting",
+   "capability_id": "CAP-RECRUITING",
+   "severity": "major",
+   "finding": {
+    "design_says": "Rejected-candidate banner carries TWO actions: '인력풀 등재 제안' (talent-pool → workforce-pool conversion, Greenhouse→WFM chain, rcPoolPropose dc.html 1540 + 10524-10530) and '탈락 철회 · 재검토'.",
+    "code_does": "CandidateCard rejected banner has only reinstate (CandidateCard.tsx:205-212); the pool-propose path does not exist in the module or the API contract (recruitingApi.ts has no workforce-pool mutation).",
+    "fix": "Add '인력풀 등재 제안' button on the rejected banner calling a workforce-pool proposal endpoint (avail=본인 동의 대기, src=posting code); needs a backend surface."
+   },
+   "backend_surface": {
+    "id": "WORKFORCE-POOL",
+    "what_is_missing": "Workforce/talent-pool registry (유형·단가·자격·평점·가용성, per-assignment contract issuance) and its registration/proposal mutations."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "recruiting.findings[6]",
+   "module": "recruiting",
+   "capability_id": "CAP-RECRUITING",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4-1 connectivity / §4-22 (every element serves ≥2 stories): talent pool exists to feed re-engagement — reconsider and 인력풀 전환 제안 both operate on the pooled candidate (dc.html 10524-10530, 12525); nouns must click or drag.",
+    "code_does": "The 인재풀 section renders inert rows — name, APL- code chip, reason, timestamp with no click, no drag, no action (RecruitingScreen.tsx:712-733); RecruitTalentPoolItem carries no applicant id (recruitingApi.ts:124-130), so no drill is even possible.",
+    "fix": "Add applicant_id (and posting_id) to the talent-pool payload; row click opens the candidate card (which then carries reinstate/pool-propose); make the APL- chip a drag source."
+   },
+   "backend_surface": {
+    "id": "RECRUIT-TALENTPOOL-REFS",
+    "what_is_missing": "applicant_id / posting_id on the talent-pool payload so the row can drill."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-LINK-RESOLVER",
+     "what_is_missing": "Cross-module object-link resolution/drill registry so a code token in any module resolves to its object (§4.7-10 언급=링크)."
+    }
+   ],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "recruiting.findings[11]",
+   "module": "recruiting",
+   "capability_id": "CAP-RECRUITING",
+   "severity": "minor",
+   "finding": {
+    "design_says": "The provenance chip '원본 · {file}' is a button: clicking logs an audited view and surfaces the provenance path (dc.html 1548, 19740) — §4-13 file demoted to a secondary but live link.",
+    "code_does": "Rendered as a static span with a title tooltip (CandidateCard.tsx:217-221) — not clickable, no audited view.",
+    "fix": "Make it a button that fetches/audits the original document; needs an original-file (provenance) endpoint."
+   },
+   "backend_surface": {
+    "id": "DOC-PROVENANCE-FILE-READ",
+    "what_is_missing": "Original-document (provenance) read endpoint that logs an audited view."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[1]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "dc.html 1963-1990 + buildAttDayTL 14094-14154: every day row has a dashed 계획(plan) track (incl. 연장 예정 dashed-accent, 승인 휴가 purple) above the 실적(real) track (work/휴게/지각/결근/연장 kinds), legend 계획·실적·휴게·지각·미출·연장·결근·승인 휴가 — 계획 vs 실적 is the module's core concept (grep anchors 계획/실적)",
+    "code_does": "attendanceModel.ts:62-100 derives only work/away spans from clock events; DayRowView (AttendanceScreen.tsx:1030-1080) renders a single lane; attendanceModel.ts:1-4 states 'no schedule registry exists yet, nothing synthesized' — the board is actual-only",
+    "fix": "Add the schedule/timetable read surface, then render the dashed plan lane plus late/absent/OT/leave segment kinds and the full 7-entry legend; keep the truthful actual-only board until then"
+   },
+   "backend_surface": {
+    "id": "ATT-SCHEDULE-READ",
+    "what_is_missing": "Schedule/timetable read surface — the 계획 half of 계획 vs 실적. No schedule registry exists."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Blocker: 계획 vs 실적 is the module's core concept and the plan half does not exist.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[4]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html 1719-1744 + coverPlan() 14049-14092: cover planner is a D+7 forward queue = approved/pending absences (연차·근무 승인) × cover-required roles, with a 4-state chip machine (편성됨/미편성/승인 대기/장기 — 충원), per-state CTA routing (대근 편성 / 결재 큐→연차 / 충원→채용), partial-cover windows, empty copy '연차·근무 승인 시 자동 합류'",
+    "code_does": "coverPlanRows (attendanceModel.ts:281-312) = today's open NO_SHOW exceptions + already-assigned subs only; two states, one CTA (AttendanceScreen.tsx:334-378) — reactive, not preventive",
+    "fix": "Feed approved+pending leave for the next 7 days (cover-required roles) into the queue, add the 승인 대기/장기 states with routing to the leave and recruiting surfaces"
+   },
+   "backend_surface": {
+    "id": "ATT-COVER-FORWARD-QUEUE",
+    "what_is_missing": "Approved+pending leave for D+7 by cover-required role, feeding the preventive cover planner."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[5]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/BESTEC) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
+    "code_does": "DayBoard (AttendanceScreen.tsx:882-1028) renders one flat name-sorted list; HR records carry no site/team so no grouping, filter, or group notes exist",
+    "fix": "Group rows by site/team (needs site attribution on attendance records or a roster join) with fold + entity segment filter; site header links to org drill"
+   },
+   "backend_surface": {
+    "id": "ATT-SITE-ATTRIBUTION",
+    "what_is_missing": "Site/team attribution on attendance records (or a roster join) for grouping, filters and group notes."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[8]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "dc.html 19163-19169: 주52 근무 조정 creates a follow-up to-do ('주 52시간 근무 조정 협의' @who) + result toast, then flips to 요청됨",
+    "code_does": "onAck (AttendanceScreen.tsx:582-603) posts the week52 ack and flips the chip; no follow-up artifact or confirmation toast",
+    "fix": "On ack, create/link the follow-up work item and confirm with a result toast when the work-item surface exists"
+   },
+   "backend_surface": {
+    "id": "WORKITEM-CREATE",
+    "what_is_missing": "Follow-up work-item create/link surface (mywork)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[9]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "dc.html 11328-11334 + subPool: substitute pool = workforce registry (유형 일용직/파견·단가·자격·평점·거리·건별 근로계약 발행)",
+    "code_does": "SubModal pool (AttendanceScreen.tsx:1719-1764) = HR attendance-summary names + last event time; worker_type hard-coded 'EMPLOYEE' (1757)",
+    "fix": "Consume a workforce-pool registry surface (rates/skills/availability, per-assignment contract issuance) when it exists; the employee-only pool is a truthful interim"
+   },
+   "backend_surface": {
+    "id": "WORKFORCE-POOL",
+    "what_is_missing": "Workforce/talent-pool registry (유형·단가·자격·평점·가용성, per-assignment contract issuance) and its registration/proposal mutations."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "attendance.findings[11]",
+   "module": "attendance",
+   "capability_id": "CAP-ATTENDANCE-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "dc.html 2069-2104: close chip carries the deadline ('기한 7/4 (토)'); done banner routes 급여로 이동 (pay pipeline step 1)",
+    "code_does": "Deadline chip is static '진행 중' with no date (i18n/attendance.ts:110); done banner links to 인건비 laborcost (AttendanceScreen.tsx:1364-1369) because no payroll screen exists",
+    "fix": "Add a deadline field to the close board and render it in the chip; retarget the banner to the payroll surface when it lands"
+   },
+   "backend_surface": {
+    "id": "ATT-CLOSE-DEADLINE",
+    "what_is_missing": "Deadline field on the attendance close board."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[2]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Sites contain teams: 법인 › 사업장 › 팀 nesting with T-spine connectors, site click = 팀 접기/펼치기, collapsed sites show a '+N' team-count chip and a mono headcount per site (dc.html 1343-1415, 19481-19519)",
+    "code_does": "orgTree.ts:46-105 renders identity branches (sites) and hr org-chart units (teams) as flat sibling lists under the entity column — teams never nest under a site; site click opens a thin OrgSiteCard (region only, OrgCards.tsx:95-124) instead of expanding teams; per-site headcount and +N chips absent; the tree connector system is reduced to one border-left (org.css:373-379).",
+    "fix": "Gap manifest: hr org-chart / identity contract has no branch↔org_unit linkage or per-branch headcount, so true nesting needs a backend surface. Meanwhile restore the prototype interaction shape: per-site disclosure with +N chip and spine styling, and keep the site card as the info affordance (i-button) rather than the row click."
+   },
+   "backend_surface": {
+    "id": "ORG-UNIT-BRANCH-LINK",
+    "what_is_missing": "branch ↔ org_unit linkage and per-branch headcount on the hr org-chart / identity contract."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[3]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Edit mode lets you drag a team to another site — team rows become draggable (dragOn), site rows are drop targets (onDropTeam), drop = sandbox move + '팀 이동됨 — 실제 반영은 조직 개편 결재로 상신됩니다' toast (dc.html 1361, 1384, 19493-19503, 9649-9661)",
+    "code_does": "No team drag-and-drop exists; the only team edit is a rename input whose blur emits REASSIGN_ORG_UNIT from→to within a company scope (OrgChartScreen.tsx:597-614). The op vocabulary (orgApi.ts:46) scopes REASSIGN_ORG_UNIT to {company} only, so a site-level team move cannot even be expressed.",
+    "fix": "Add HTML5 DnD between team rows and site rows producing a proposal op; requires extending the org-change op vocabulary (digest + backend) with a site-scoped reassignment before the FE can express it."
+   },
+   "backend_surface": {
+    "id": "ORG-CHANGE-OP-VOCAB",
+    "what_is_missing": "Org-change proposal op vocabulary extensions (site-scoped reassign, dissolve org-unit, rename entity) — digest + backend."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[4]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "법인 신설 = 3-step progressive wizard (AGENTS 128/168/170; dc.html 12674-12704): 기본(법인명·약칭·업종·대표자·사업자번호 auto-mask 000-00-00000·소재지) → 조직(최초 사업장 필수 fail-closed·팀 칩·결재선 프리셋) → 통합(셋업 채널·알림·주52h 감시 시드) — creation joins scope/조직도/graph/messenger and confirms via 개편 결재; §4-27-1 names the 사업자번호 mask as a reference implementation",
+    "code_does": "No entity-creation path exists. The change modal offers kind=NEW (OrgChangeModal.tsx:322-339) but only against an existing entity target; proposal ops (orgApi.ts:37-46) have no CREATE_ENTITY, and /api/v1/org-entities is read-only (orgApi.ts:226-227).",
+    "fix": "Gap manifest: entity creation (with registration-number field) needs a backend surface (org-entity create or a CREATE_ENTITY proposal op). Then build the 3-step wizard with the §4-27 input mask and fail-closed first-site gate."
+   },
+   "backend_surface": {
+    "id": "ORG-ENTITY-CREATE",
+    "what_is_missing": "org-entity create (or a CREATE_ENTITY proposal op); /api/v1/org-entities is read-only."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[5]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Entity card is a rich object card: 대표이사(편집)·설립·사업자번호·소재지·조직 grid, 관할(jurisdiction) chips driving 컴플라이언스 drill, PBAC-gated 재무 요약 (deny-by-omission section, 펼침=열람 감사, 대시보드 법인 스코프 drill) (dc.html 7174-7209, 19543-19608)",
+    "code_does": "OrgEntityCard (OrgCards.tsx:45-93) shows only avatar/slug/status chip + 재직 headcount + site/team counts and two buttons — no registration fields, no jurisdiction chips, no gated finance section, no audit-on-expand.",
+    "fix": "Gap manifest: OrgEntitySummary carries only org_id/slug/name/status — registration/jurisdiction/finance need backend surfaces (entity profile + PBAC'd finance summary + view-audit event). FE then renders the gated section deny-by-omission per §4.5."
+   },
+   "backend_surface": {
+    "id": "ORG-ENTITY-PROFILE-FINANCE",
+    "what_is_missing": "Entity profile (등록/관할) + PBAC-gated finance summary + view-audit event on expand."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X8 builds the audited-sensitive-view + masking + deny-by-omission primitive for lead PII; the gated 재무 요약 needs the same primitive over its own contract.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[7]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Team removal is fail-closed only for teams with people: hc>0 blocks with forbid audit + toast naming the re-placement path; hc=0 removes the team as a counted sandbox proposal (dc.html 19504-19516, AGENTS 140)",
+    "code_does": "OrgChartScreen.tsx:631-640 unconditionally shows the blocked guard for every team — an empty team can never be proposed for removal, and the proposal vocabulary has no org-unit dissolve op.",
+    "fix": "Allow unit.total === 0 to enqueue a removal proposal once the op vocabulary gains a dissolve-org-unit op (digest extension); keep the guard for total > 0."
+   },
+   "backend_surface": {
+    "id": "ORG-CHANGE-OP-VOCAB",
+    "what_is_missing": "Org-change proposal op vocabulary extensions (site-scoped reassign, dissolve org-unit, rename entity) — digest + backend."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[8]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Edit mode supports renaming the 법인 inline (input on the entity card, dc.html 1353, orgRenameEnt 12710-12712) and adding sites to any column",
+    "code_does": "Entity name is never editable (OrgChartScreen.tsx:429-444 always renders the button) and site editing is restricted to the viewer's own column (editableSites, line 425); no rename-entity op exists in the vocabulary.",
+    "fix": "Gap manifest: entity rename needs an org-change op / entity PATCH surface; the viewer-column restriction is a legitimate authz narrowing but should be stated in the capability model rather than silently hidden."
+   },
+   "backend_surface": {
+    "id": "ORG-CHANGE-OP-VOCAB",
+    "what_is_missing": "Org-change proposal op vocabulary extensions (site-scoped reassign, dissolve org-unit, rename entity) — digest + backend."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "org.findings[11]",
+   "module": "org",
+   "capability_id": "CAP-ORG-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "사유/reason fields are curated enums with optional free-text detail (§4-19 typed fields, §4.8 '사유는 자유 텍스트가 아니라 enum')",
+    "code_does": "Org-change reason is a bare textarea whose only gate is non-empty (OrgChangeModal.tsx:191-193, 356-369); reject/cancel memos are likewise free text.",
+    "fix": "Add a reason-kind enum (신설/개편/폐지-specific presets + 직접 입력 N+1 per §4-27-3) with detail text; needs a reason_kind field in the org-change DTO."
+   },
+   "backend_surface": {
+    "id": "TYPED-REASON-ENUM",
+    "what_is_missing": "Curated reason enum on a mutation DTO instead of free text (§4-19, §4.8)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X3 ships the Closed-Lost reason enum for sales — the same §4-19 typed-reason move; org-change needs its own reason_kind field.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "evaluation.findings[2]",
+   "module": "evaluation",
+   "capability_id": "CAP-EVALUATION-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html 7649–7676 + 19785–19808 (AGENTS 149, #18 컨텍스트 자동 첨부): the scorecard auto-attaches 3 context chips per subject — 근태 (월 출근/지각)·최근 업무·KPI — each clickable to drill to att/mywork/dashboard; submit toast names 「컨텍스트 3종 첨부」.",
+    "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1869-1966 ScorecardForm — evidence is entirely evaluator-typed (kind select + free-text 개체 코드 + label). No context is auto-attached; the evaluator must manually discover and transcribe attendance/task/KPI facts.",
+    "fix": "Auto-attach a computed subject context block (attendance summary, recent completed tasks, KPI) as pre-populated drillable evidence chips when the scorecard opens. Requires a per-subject cross-module context endpoint that does not exist in /api/v1/evaluation."
+   },
+   "backend_surface": {
+    "id": "XMOD-SUBJECT-CONTEXT",
+    "what_is_missing": "Per-subject cross-module context read (attendance summary + recent tasks + KPI) for scorecard auto-attach."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "evaluation.findings[4]",
+   "module": "evaluation",
+   "capability_id": "CAP-EVALUATION-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "DESIGN.md §4.7-7 token grammar (!CODE links resolve only to PBAC-authorized objects; candidates come from a search dropdown), §4.7-10 완전 추적성 (언급=링크 — a code that isn't a real link is banned), §4-27-4 (object pickers are typeaheads).",
+    "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1926-1943 — evidence 개체 코드 is an unvalidated free-text input: any string becomes an object_ref rendered as a code chip; drill (drillEvidence :597-602) navigates to a module screen, never resolving or verifying the referenced object.",
+    "fix": "Replace the free-text ref with a typeahead over real object codes (PBAC-filtered candidates) and store only validated refs; drill should land on the referenced object. Needs a cross-object code-search API surface that does not exist yet."
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-SEARCH",
+    "what_is_missing": "PBAC-filtered cross-object code/typeahead search (§4-27-4). Contract is owned by codex/console-search-object-fabric-20260724."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "Charter §7: the object typeahead/search contract is owned by codex/console-search-object-fabric-20260724 and L-X10 gap-manifests rather than builds it. Sales carries the identical free-text-ref hazard.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "evaluation.findings[11]",
+   "module": "evaluation",
+   "capability_id": "CAP-EVALUATION-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "DESIGN.md §4-27-3 N+1 enum: every enum/preset list is extendable with 「+ 직접 입력」; new values flow back to the type schema.",
+    "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:981-987 cycle 구분 is a closed 2-value select (REGULAR/PROBATION) fixed by the backend enum; no direct-input extension path.",
+    "fix": "Backend enum is closed — needs an extensible cycle-kind surface (or a documented exemption) before the UI can offer N+1 input."
+   },
+   "backend_surface": {
+    "id": "EXTENSIBLE-ENUM-SCHEMA",
+    "what_is_missing": "N+1 「직접 입력」 enum extension flowing back to the type schema (§4-27-3)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Honest note: L-X3's Closed-Lost enum is also closed, so wave-4 CRM inherits the same §4-27-3 gap rather than resolving it.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[1]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "§4-27-4 (DESIGN.md L230): 개체·인물 선택은 전량 열거 칩이 아니라 타입어헤드 — 자유 텍스트로 개체를 지정하게 하지 않는다; §4.7-7 개체 링크는 검색형 드롭다운으로 확정",
+    "code_does": "InventoryScreen.tsx:1495-1498 consume form asks the user to type a raw 작업 지시/배차 ID into a plain text input (`<input name=\"source_id\" required />`) — a UUID paste field with no lookup, no validation beyond non-empty",
+    "fix": "Replace with a typeahead over work orders / P1 dispatches (code + title, PBAC-filtered) inserting a typed reference; requires a WO/dispatch search surface this dark module's contract does not carry"
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-SEARCH",
+    "what_is_missing": "PBAC-filtered cross-object code/typeahead search (§4-27-4). Contract is owned by codex/console-search-object-fabric-20260724."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "Blocker: a UUID paste field for a WO/dispatch reference. Same missing search fabric as evaluation.findings[4].",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[3]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4-14 module 3-layer audit + dc.html L4789-4790 (시리즈·개체 카드 buttons), L4960-4966 (작용 자동화 chips + 「+ 감시 규칙」): every module detail surfaces the dynamics layer — lifecycle object card, series, acting automations, monitor-rule creation",
+    "code_does": "ItemDetail (InventoryScreen.tsx:1354-1510) and CountDetail (1538-1680) expose only semantic (kv) and kinetic (movements/lifecycle status) layers; no 개체 카드, no 시리즈, no automation chips, no monitor entry",
+    "fix": "Add the dynamics row and object-card entry once automation/ontology surfaces exist in the consolidated console; until then this is a named gap, not fillable truthfully"
+   },
+   "backend_surface": {
+    "id": "ONT-DYNAMICS-ACTING",
+    "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-OBJECT-CARD-READ",
+     "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+    },
+    {
+     "id": "ONT-SERIES",
+     "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_registration",
+   "wave4_note": "The automation-chip half needs no endpoint — instance_acting/object_type_acting are live; registering the inventory types is the whole fix. L-X7 proves the path on deal/listing/inquiry. Object-card and series halves stay blocked.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[4]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4.7-10 완전 추적성 (언급=링크) + dc.html L16363-16369: movement-timeline labels with WO-/PO- codes are live drill buttons (objectLinkGo); dc L11086 links PO-121/WO-2643 as navigable chips",
+    "code_does": "MovementSourceToken (InventoryScreen.tsx:1301-1304) renders work_order/p1_dispatch ids and external_ref strings as inert mono spans; linked-docs section (1440-1442) renders external refs as inert chips — only cycle-count codes are clickable",
+    "fix": "Route WO/PO/dispatch refs through a shared object-link resolver (and make them drag-source tokens meanwhile); blocked on the cross-module route/link registry absent from this dark module"
+   },
+   "backend_surface": {
+    "id": "ONT-LINK-RESOLVER",
+    "what_is_missing": "Cross-module object-link resolution/drill registry so a code token in any module resolves to its object (§4.7-10 언급=링크)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X7 must add a `deal` row to RESOLVABLE_KIND_AUTH (integrator manifest + security review) — the same chokepoint that would resolve WO-/PO-/dispatch tokens.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[5]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html L11085-11086: MRP row carries act 「PO 자동 제안 — 부족 1건」 and short items carry 「긴급 구매 기안」 — both prefill a purchase 기안 (appr composer); shortage is actionable, not just displayed",
+    "code_does": "MrpDetail (InventoryScreen.tsx:1264-1270) shows the proposed order quantity as a display-only danger chip; ItemDetail offers no purchase-draft CTA on low-stock items — the closed loop 부족→발주 does not exist",
+    "fix": "Add a 「구매 기안」 CTA on short MRP lines and low-stock item detail prefilled with the deterministic proposal; blocked on an appr/purchase composer surface"
+   },
+   "backend_surface": {
+    "id": "APPR-COMPOSE",
+    "what_is_missing": "Console 기안/전자결재 composer surface with prefill, and the draft→approve lifecycle in front of direct writes (§3.9.0)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X5 builds a guarded composer for Won → contract C-; 부족 → 구매 기안 is the same closed loop on a different contract.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[7]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html L4566-4571/L16283-16286: module header type chip is a button showing the OT- code (OT-17 재고) that opens the ontology type card; §4-16 forbids function-less labels",
+    "code_does": "InventoryScreen.tsx:883 renders `<span className=\"inventory__type\">IV</span>` — a static, non-interactive chip with a non-design code ('IV', not 'OT-17')",
+    "fix": "Remove the inert chip now (frontend-only), reintroduce as the OT-17 type-card button when the ontology surface lands"
+   },
+   "backend_surface": {
+    "id": "ONT-TYPE-REGISTRY",
+    "what_is_missing": "OT- type card / type-explore surface bound to a module header chip. GET /api/v1/object-types exists and primes codeGrammar; the type-card screen does not."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "L-X7 seeds the legacy object_types row so /api/v1/object-types primes codeGrammar, but no type-card screen lands this wave. Interim fix is frontend-only: delete the inert 'IV' chip.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "inventory.findings[13]",
+   "module": "inventory",
+   "capability_id": "CAP-INVENTORY-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "dc.html L11080: primary action = 「실사 업로드」 → ingest (change-log 190: 재고 실사=인제스트); header stat set is 부족/이동 중/품목",
+    "code_does": "InventoryScreen.tsx:924-931 CTA is a mode toggle to a manual cycle-count list (a stronger governed lifecycle than the prototype's link, consistent with §3.10 four-eyes and change-log 184 WMS research); 이동 중 stat replaced by server-derived 검토 대기 실사 — honest, since no in-transit concept exists in the backend",
+    "fix": "Keep the count lifecycle; add the 실사 업로드 ingest entry alongside it when a data-ingest surface exists; add an in-transit stat only when the backend models it"
+   },
+   "backend_surface": {
+    "id": "INV-INGEST",
+    "what_is_missing": "실사 업로드 data-ingest surface, and backend modelling of in-transit stock."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "dispatch.findings[2]",
+   "module": "dispatch",
+   "capability_id": "CAP-DISPATCH-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Dispatch ↔ ops-map round-trip: every dispatch row has a 「지도에서 보기」 link carrying {scr:'map', extra:{mapOv:'wo', mapSel:…}} and the map's 배차 큐 overlay panel links back to the 배차·처리 패널 (dc.html 11058-11060, 17941, 17974; AGENTS entry (15))",
+    "code_does": "No map integration exists: panel links are only 작업 지시/장비/담당 기사 (DispatchScreen.tsx:699-734); nothing references a map screen or geo context even though candidates carry gps_ranked/distance_meters",
+    "fix": "Blocked on an ops-map console surface (site/unit geo read API + map module) that does not exist in the built console — register in the gap manifest as the dispatch→map link contract; wire the link once the surface lands"
+   },
+   "backend_surface": {
+    "id": "OPS-MAP-GEO",
+    "what_is_missing": "Ops-map console surface: site/unit geo read API + map module."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "dispatch.findings[3]",
+   "module": "dispatch",
+   "capability_id": "CAP-DISPATCH-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Object drill opens the 3-layer 개체 카드 (lcOpen 단일 모달: 생애주기 스텝퍼·속성·이력·결재선·게이트·역학 칩·관계 그리기 — DESIGN §4-14-②, §4-18-②; det header 개체 카드 button dc.html 4790)",
+    "code_does": "Links resolve via GET /api/objects/{kind}/{id} into a centered peek that renders only code/title/status (DispatchScreen.tsx:899-905, dispatchApi.ts resolveObject) — a head, not an object card; no lifecycle, relations, history, or dynamics",
+    "fix": "Needs a richer canonical object-card read surface (properties/relations/lifecycle/audit per kind) — ObjectHead only carries code/title/status; keep peek as interim, register full-card contract in the gap manifest"
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-CARD-READ",
+    "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "L-X10 consumes the legacy object-card stack for deal and gap-manifests the useObjectCard/ObjectExplorerModel split; the richer canonical read surface is not built.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "dispatch.findings[4]",
+   "module": "dispatch",
+   "capability_id": "CAP-DISPATCH-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Row c2 = customer/impact context (\"대한제강 상차 중단\", \"렌탈 반납 준비\") under cols 오더/작업·현장/기사/SLA·기한 (dc.html 11058-11060, 11307)",
+    "code_does": "The 작업·현장 column shows symptom + status chips only (DispatchScreen.tsx:607-618); customer_id exists on DispatchQueueItem but registry_customers has no read surface, so customer names cannot render (dispatchApi.ts:9-14 records this)",
+    "fix": "Blocked on a customer name-resolution read surface (objects resolver customer kind or a console customer head endpoint); once present, render customer context as the second line of 작업·현장 and include it in the search haystack"
+   },
+   "backend_surface": {
+    "id": "CUSTOMER-REGISTRY-READ",
+    "what_is_missing": "Read/resolve surface over registry_customers so customer identity renders and drills outside the owning crate."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "L-X7 links deal → the seeded `customer` type, which makes a customer read/resolve surface a shared need; no wave-4 lane builds registry_customers reads.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "dispatch.findings[5]",
+   "module": "dispatch",
+   "capability_id": "CAP-DISPATCH-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Primary action = 「배차 요청 기안」 → approval compose prefill (appr:'general', atitle:'배차 요청 — ') — creation flows through the 기안→결재 lifecycle (dc.html 11307, 16288 modApprPrefill; §3.9, §4-22 목록=새 행 생성 진입; AGENTS 171: WO- typed-wizard creation completes the 미배정 배차 재구성 경로)",
+    "code_does": "Primary button 「배차 요청」 directly POSTs a P1 broadcast on the already-selected work order (DispatchScreen.tsx:414-421, 534-543); there is no path to create a new work order / dispatch request from this module at all",
+    "fix": "Keep the broadcast trigger (it is the real FSM), but the creation entry (배차 요청 기안 → approval compose / typed WO wizard) needs the console approval-compose surface that this build lacks — register as cross-surface contract"
+   },
+   "backend_surface": {
+    "id": "APPR-COMPOSE",
+    "what_is_missing": "Console 기안/전자결재 composer surface with prefill, and the draft→approve lifecycle in front of direct writes (§3.9.0)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "dispatch.findings[7]",
+   "module": "dispatch",
+   "capability_id": "CAP-DISPATCH-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Detail pane surfaces the dynamics layer: 작용 자동화 rule chips (1-click to the rule) and 「+ 감시 규칙」 (dc.html 4964-4970; §4.7-8 역학 노출, §4-14-③)",
+    "code_does": "The panel renders broadcast/candidates/responses/history but nothing about automations or monitors acting on the WO/dispatch (DispatchScreen.tsx:648-873)",
+    "fix": "Blocked on an automation-rules read surface (rules touching a given object type/instance); register in gap manifest and add the chips when it exists"
+   },
+   "backend_surface": {
+    "id": "ONT-DYNAMICS-ACTING",
+    "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_registration",
+   "wave4_note": "Registration alone; the acting routes are live.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "maintenance.findings[1]",
+   "module": "maintenance",
+   "capability_id": "CAP-MAINTENANCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4-27-4 (DESIGN.md 230): 개체·인물 선택은 열거 금지·타입어헤드(검색 상위 n + 제안 + 선택값 유지), production-scale assumption; prototype detail kv shows named candidate mechanics ('후보 기사 김성호 (안산 35분)…', dc.html 11058). §4.6: non-developers must operate without docs.",
+    "code_does": "ActionsSection (MaintenanceScreen.tsx:1167-1177) assigns via a raw '담당 정비사 ID' text input — the operator must know and paste a mechanic UUID; composer likewise takes equipment as free-text 장비 관리번호 (782-785).",
+    "fix": "Mechanic and equipment pickers as typeahead selectors over a directory/equipment search; until a mechanic-search endpoint exists, land the HANDOFF contract — the raw-ID input cannot ship as the assignment UX."
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-SEARCH",
+    "what_is_missing": "PBAC-filtered cross-object code/typeahead search (§4-27-4). Contract is owned by codex/console-search-object-fabric-20260724."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "A raw mechanic-UUID text input cannot ship as the assignment UX.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "maintenance.findings[3]",
+   "module": "maintenance",
+   "capability_id": "CAP-MAINTENANCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "dc.html 4789-4790 + 4960-4965 + §4-14/§4.7-8: detail header carries a '시리즈' chip (WO orders belong to SR- 정비 이력 — dc.html 13400) and an '개체 카드' chip (lifecycle 3-layer card, e2e-proven on WO-2643 in change-log 117), and the detail footer surfaces 작용 자동화 workflow chips plus '+ 감시 규칙' (Object Monitor). Header also carries the OT-13 ontology type chip (4566-4571, 8719).",
+    "code_does": "DetailPanel (MaintenanceScreen.tsx:842-1061) renders kv/flow/links/acts/settlement/evidence/approval/history only — no object-card entry (console/objectcard/kinds.ts has no WO kind), no series chip, no automation/dynamics zone, no type chip; the 역학 layer of the 3-layer audit is entirely dark.",
+    "fix": "Register a work-order kind in console/objectcard and render the 개체 카드 chip now (FE-only); series chip and automation/monitor chips when SR-series and workflow-engine surfaces exist — record those in the gap manifest."
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-CARD-READ",
+    "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-SERIES",
+     "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface."
+    },
+    {
+     "id": "ONT-DYNAMICS-ACTING",
+     "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "Registering a work_order kind in console/objectcard is frontend-only and available now; series and automation chips stay blocked.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "maintenance.findings[6]",
+   "module": "maintenance",
+   "capability_id": "CAP-MAINTENANCE-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "§4-1/§4-13: evidence entries are objects — structured view primary, original file as an auxiliary '원본' link; every noun clicks or drags.",
+    "code_does": "EvidenceSection (MaintenanceScreen.tsx:1494-1507) lists stage/WORM/content-type/time as inert text+chips; no way to open or verify-inspect an evidence record (api has presign-upload/confirm only).",
+    "fix": "Add an evidence read/presigned-GET endpoint and make each entry open the evidence object (viewer + hash/WORM detail)."
+   },
+   "backend_surface": {
+    "id": "EVIDENCE-READ-PRESIGN",
+    "what_is_missing": "Evidence read / presigned-GET so an evidence entry opens and can be verify-inspected."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[3]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "field 정체성 = 현장×계약×SLA: cols [현장, 고객, 계약, SLA] + 스탯 「상주 현장 12」, 행 c3=C-207 경비 등 계약 코드 drill (dc.html:11155, AGENTS (56))",
+    "code_does": "fieldApi.ts:47-62 FieldSiteRow에 계약·상주 인원 필드가 없어 i18n/field.ts 헤더 주석대로 이슈·작업 열 + 현장 총수 스탯으로 치환 — 계약 차원이 화면에서 소실",
+    "fix": "갭 매니페스트: site→계약(C- 코드·서비스 유형)·상주 headcount를 FieldSiteRow/FieldSiteDetail 계약에 추가 후 계약 열·상주 스탯·계약 링크 칩 복원"
+   },
+   "backend_surface": {
+    "id": "FIELD-CONTRACT-DIM",
+    "what_is_missing": "site → 계약 (C- 코드·서비스 유형) and 상주 headcount on FieldSiteRow/FieldSiteDetail."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X5 mints the C- contract object from a Won deal — the upstream half of field's contract dimension. The site↔contract read join is not built.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[4]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "det 링크 칩: 거래처 CL-, 그래프—현장 체인(node), 계약 C-, 근태 현황(scr), 지도에서 보기(mapOv/mapSel 프리셋 — AGENTS (147) §4-14-④), 메일 스레드, 담당 person 개체 (dc.html:11156-11159, 4944-4951)",
+    "code_does": "FieldScreen.tsx:871-1044 SitePane — 고객→목록 필터, 담당→검색어 주입, WO→/dispatch 링크뿐. lat/lon(fieldApi.ts:54-55)을 받고도 지도 경로 없음, 거래처·계약·그래프·메일 링크 없음",
+    "fix": "존재하는 콘솔 표면(dispatch)은 즉시 링크, 지도·객체 그래프·거래처 카드·메일은 갭 매니페스트로 등재 후 화면 생기는 대로 링크 칩 추가"
+   },
+   "backend_surface": {
+    "id": "ONT-LINK-RESOLVER",
+    "what_is_missing": "Cross-module object-link resolution/drill registry so a code token in any module resolves to its object (§4.7-10 언급=링크)."
+   },
+   "additional_surfaces": [
+    {
+     "id": "CUSTOMER-REGISTRY-READ",
+     "what_is_missing": "Read/resolve surface over registry_customers so customer identity renders and drills outside the owning crate."
+    },
+    {
+     "id": "OPS-MAP-GEO",
+     "what_is_missing": "Ops-map console surface: site/unit geo read API + map module."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[5]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "행 acts = 단일 CTA 「연장 계약 기안」(appr contract 프리필 — ST-04, dc.html:11157, 4954-4960) — 현장에서 기안 체인으로 상류 이동",
+    "code_does": "FieldScreen.tsx — 기안(전자결재) 경로 없음: 티켓 전이/배정/연결/인수확인만 존재",
+    "fix": "갭 매니페스트: 전자결재(appr) 모듈·계약 컴포저가 콘솔에 없음 — 생기면 현장 det에 계약 기안 CTA 프리필 연결"
+   },
+   "backend_surface": {
+    "id": "APPR-COMPOSE",
+    "what_is_missing": "Console 기안/전자결재 composer surface with prefill, and the draft→approve lifecycle in front of direct writes (§3.9.0)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[6]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "det 하단 역학 노출: 「작용 자동화」 워크플로 칩 + 「+ 감시 규칙」(타입 트리거 프리필 — dc.html:4962-4968, 16376-16377 · §4.7-8 · §4-14 3계층 audit)",
+    "code_does": "모듈 전체에 자동화·정책 표면 없음 — 의미(속성·관계)·동작(전이·인수확인)만 노출, 역학 0",
+    "fix": "갭 매니페스트: 워크플로 스튜디오/규칙 조회 API가 콘솔에 없음 — 도입 시 현장 타입에 작용하는 규칙 칩 + 감시 규칙 진입 추가"
+   },
+   "backend_surface": {
+    "id": "ONT-DYNAMICS-ACTING",
+    "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_registration",
+   "wave4_note": "Registration alone; the acting routes are live. 역학 0 today.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[8]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "det 헤더 = 「개체 카드」(lcOpen 생애주기·관계·역학)·「시리즈」 버튼 (dc.html:4791-4793)",
+    "code_does": "SitePane:885-892 — 현장명 h2 + SLA 칩만; 개체 카드/시리즈 진입 없음",
+    "fix": "개체 카드 렌더러(생애주기 모달)가 콘솔에 생기면 det 헤더에 진입 버튼 추가"
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-CARD-READ",
+    "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-SERIES",
+     "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[13]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "행 en enum 칩(서비스 · 경비/미화/지게차 임대) — det 칩 클릭=modQ 필터 (dc.html:11156 en, 16315, AGENTS (136) · §4-19 typed fields)",
+    "code_does": "계약에 서비스 유형 enum 필드가 없어 en 칩 계층 부재 — SLA 칩 필터가 부분 대체",
+    "fix": "갭 매니페스트: site 서비스 유형 enum을 계약에 추가 → 행·det enum 칩 + 클릭 필터"
+   },
+   "backend_surface": {
+    "id": "FIELD-SERVICE-TYPE-ENUM",
+    "what_is_missing": "Service-type enum on the contract, for the row/det en chip and its filter."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "field.findings[14]",
+   "module": "field",
+   "capability_id": "CAP-FIELD-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "현장 체인에 업무일지 JL- 링크(WO-2638 kv 「일지 JL-0702 연동」, CL-03 chain WO↔JL — dc.html:11060, 13377; CAP 앵커 일지/JL-)",
+    "code_does": "SitePane work_orders(974-1001) — report_submitted_at 칩(「보고 제출」)이 유일한 일지 흔적, JL- 개체·문서 연결 없음",
+    "fix": "갭 매니페스트: 업무일지(JL-) API 부재 — 도입 시 WO 항목에 JL- 링크 칩"
+   },
+   "backend_surface": {
+    "id": "WORK-JOURNAL-JL",
+    "what_is_missing": "업무일지 (JL-) object and API."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[0]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "docs is the archive of ALL finalized records: DOCS()+docRegistered mixes 계약 C-, 결재 AP-, 업무일지 JL-, 공지 NT-, 접수 IN-, 증거 EV- rows behind 7 type-filter chips (전체/결재/공지/업무일지/계약/접수/증거) and search over code+title+who+type; row click = lcOpen lifecycle card for any code (dc.html 3039-3067, 12447-12465, 17604-17621; DESIGN §2 종결 규칙 — 종결된 문서만 문서함으로 이동)",
+    "code_does": "DocsScreen.tsx:1-7 declares 'Scope: the EV- evidence archive only — non-EV record types are a separate future records lane'; only GET /api/v1/evidence/objects is listed (EvidenceRecords.tsx:262), no type-filter chip row exists, and the already-landed i18n for it (ko.ts:3181-3189 documents.types 전체/결재/공지/업무일지/계약/접수/증거) is unused",
+    "fix": "Add the 7-chip type filter row and merge non-EV finalized records (AP-/JL-/NT-/IN-/C-) into the archive list once a records-registry list REST exists; until then render the type chips with EV live and other types as fail-closed disabled-with-count-0 is NOT allowed (deny-by-omission) — so this goes to the gap manifest: records-registry list/read endpoints for non-EV finalized objects"
+   },
+   "backend_surface": {
+    "id": "DOCS-RECORDS-REGISTRY",
+    "what_is_missing": "Records-registry list REST covering the non-EV finalized types (AP-/JL-/NT-/IN-/C-)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Blocker: the module ships as the EV- archive only; the 7-type record archive the design specifies needs a records-registry list REST.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[3]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Header carries 내보내기 (export) beside 기록물 등재; clicking it passes the §3.10-⑤ egress gate and logs '내보내기 (egress)' audit (dc.html 3004-3007, 17758)",
+    "code_does": "DocsScreen.tsx:190-205 header has only the 기록물 등재 primary; no export affordance anywhere in the module (ko.ts:3209 documents.actions.export exists unused)",
+    "fix": "Add the egress-gated export action once an evidence/records export REST exists (contract only defines the evidence_export.create audit action, no endpoint) — gap manifest item; the button must be deny-by-omission until then"
+   },
+   "backend_surface": {
+    "id": "DOCS-EXPORT-EGRESS",
+    "what_is_missing": "Evidence/records export REST behind the §3.10-⑤ egress gate (only the audit action is defined; no endpoint)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[4]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "기록물 등재 modal picks 유형 (계약/결재/공지/업무일지/접수) + 보존기한; submit issues a code with pending=true → row shows warn 등재 대기 chip, closed=등재 대기, and the archive is confirmed only after 기록관리자 승인 (dc.html 8350-8352, 12133-12142, 3059)",
+    "code_does": "DocsRegisterModal.tsx:19-27,284-301 replaces the 유형 axis with classification chips (GENERAL…SECRET) and POST /api/v1/evidence/objects (evidenceApi.ts:413-420) creates the EV object immediately — no records-manager approval stage, no 등재 대기 pending chip in the list",
+    "fix": "Registration should land in a review/pending stage (§3.9 생성=등재 → 검토) with the 등재 대기 chip until a records-manager approves; needs a pending/approve surface on the register contract (currently register is immediate) — gap manifest; the 유형 field returns with the non-EV records lane (finding 1), classification can stay as an additional axis"
+   },
+   "backend_surface": {
+    "id": "DOCS-REGISTER-PENDING-APPROVAL",
+    "what_is_missing": "Pending/approve stage on the records register contract (registration is immediate today)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[5]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Derivative preview opens the in-console watermarked viewer/player: viewer-name watermark tiles, video play/seek, audio + STT 파생 label, ZIP entry preview, SHA-256·TSA strip, custody timeline, 범위 다운로드 — 승인 필요 egress button; every open logs 열람 감사 with watermark identity (dc.html 7810-7879, 12416-12427; AGENTS 145)",
+    "code_does": "EvidenceCard.tsx:230-240 evPreview returns a static message pane ('previewPending' text) — no viewer modal, no watermark, no player chrome, no ranged-download egress affordance; ZipEntryTree (EvidenceCard.tsx:847-869) renders one 'pending' placeholder row instead of the 12-entry path/size/sha index",
+    "fix": "Wire-pending on GET copies/{id}/derived-preview and the ZIP entry-index REST (t_15b1a1ec follow-up) — gap manifest; when they land, build the watermark viewer modal per dc.html 7810-7879 rather than a text pane, and render the real entry index (path/sz/sha grid, 읽기 전용 chip)"
+   },
+   "backend_surface": {
+    "id": "EVIDENCE-DERIVED-PREVIEW",
+    "what_is_missing": "GET copies/{id}/derived-preview + the ZIP entry-index REST behind the watermarked viewer."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[6]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "EV- detail carries link chips to connected objects — EV-101 links WO-2643·FL-2643, EV-102 links AP-3125 — one-click up/downstream moves (dc.html 12384,12392,12207; DESIGN §5 통합 원칙, §4.7-3 링크 칩)",
+    "code_does": "types.ts:143 + evidenceModel.ts:239-250 expose only the single `source` ref as an ObjectCard relation (its title is the source-TYPE label from mapSource, evidenceApi.ts:67-73, not the source object's title); the wire EvidenceObjectDetail carries no linked-objects array, so WO-/AP-/FL- chains cannot render",
+    "fix": "Extend the EV wire contract with linked-object refs (or a generic object-links read) so the card can render drag-able link chips; meanwhile surface source_code as a real drag/link chip with the source object's title once the wire carries it — gap manifest"
+   },
+   "backend_surface": {
+    "id": "ONT-LINK-RESOLVER",
+    "what_is_missing": "Cross-module object-link resolution/drill registry so a code token in any module resolves to its object (§4.7-10 언급=링크)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[7]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Attempting to open the WORM-sealed original is itself audited: evPreview('orig') logs a forbid event '원본 접근 차단 … fail-closed' before the toast (dc.html 12417-12422; DESIGN §3.10-⑥ 무권한 시도 = 감사)",
+    "code_does": "EvidenceCard.tsx:230-236 denies the original client-side with a message pane and explicitly notes 'no network surface to deny, so the UI itself is the fail-closed boundary' — the attempt leaves no audit trace",
+    "fix": "When the original-copy stream endpoint lands, route the attempt through it so the server records the forbid; until then this is a gap-manifest item (audited-forbid REST for original access attempts)"
+   },
+   "backend_surface": {
+    "id": "EVIDENCE-ORIGINAL-FORBID-AUDIT",
+    "what_is_missing": "Server-side original-copy stream endpoint so a blocked attempt is recorded as an audited forbid instead of a client-side denial."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "The UI is currently the fail-closed boundary, so a blocked attempt leaves no audit trace.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "docs.findings[9]",
+   "module": "docs",
+   "capability_id": "CAP-DOCS-EVIDENCE-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "docKpis[1] = 이번 달 종결 · 문서함 편입 — counts records finalized into the 문서함 this month (dc.html 17601; DESIGN §2 종결 규칙)",
+    "code_does": "DocsScreen.tsx:210 substitutes 이번달 등록 (registered_after=month start) because the wire has no finalization/종결 concept — a truthful but different metric",
+    "fix": "Keep the truthful 등록 count until a finalization state exists on the records wire; log the 종결 metric as a gap-manifest item tied to the non-EV records lane"
+   },
+   "backend_surface": {
+    "id": "DOCS-FINALIZATION-STATE",
+    "what_is_missing": "종결/finalization state on the records wire."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "notif.findings[0]",
+   "module": "notif",
+   "capability_id": "CAP-NOTIF-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Notification = pointer to an object; activating it follows the pointer to the source object (DESIGN §2 '알림은 개체를 가리키는 포인터'; §4.7-3 클릭 시 상세는 핀 패널; dc.html 14891-14903 notifClick → openDetail/openThread/objectLinkGo, 15215-15233 objectLinkGo drill chain)",
+    "code_does": "activateRow for a link.type==='object' row sets an in-module timeline filter (setLinkFilter + setView('time')) and never opens the source object; token-chip clicks do the same (NotifScreen.tsx:264-271, 330-336; notifModel.ts:23-24 computes the object target but the screen discards it as navigation)",
+    "fix": "When an exposed object-card/pin-panel surface exists, route rowTarget {type:'object'} and openToken to it (single chokepoint in notifModel.rowTarget); keep the object-filter as the fallback for unresolvable heads. Today no exposed object surface exists anywhere in the production console (ADR-0025 manifest = ['sales']; objectExplorer is mounted-dark), so this goes to the gap manifest, not an FE patch."
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-CARD-READ",
+    "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ADR-0025-EXPOSURE-MANIFEST",
+     "what_is_missing": "Not a backend surface: EXPOSED_SCREEN_KEYS. Dark screens are legitimately unreachable targets; the count of dead-ends is the artifact."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_exposure",
+   "wave4_note": "The finding's own fix says 'no exposed object surface exists anywhere'. D-1/L-X14 exposing `sales` with an object card creates the first target notifModel.rowTarget can route to.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "notif.findings[1]",
+   "module": "notif",
+   "capability_id": "CAP-NOTIF-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Screen-linked notifications navigate to the linked screen (dc.html 14898-14899 notifClick → setState({screen: n.link.screen}); e.g. seed na1 links pay)",
+    "code_does": "rowTarget returns undefined for every screen key outside EXPOSED_SCREEN_KEYS=['sales'], so mywork/pay/appr/... screen links are ack-only rows with no navigation (notifModel.ts:23-28; shell/nav.ts:121; tested in NotifScreen.test.tsx:233-250)",
+    "fix": "No code change — behavior is authority-sanctioned fail-closed (ADR-0025) and self-heals as the exposure manifest grows; register in the gap manifest that N notification screen-link targets are dark so exposure reviews see the dead-end count."
+   },
+   "backend_surface": {
+    "id": "ADR-0025-EXPOSURE-MANIFEST",
+    "what_is_missing": "Not a backend surface: EXPOSED_SCREEN_KEYS. Dark screens are legitimately unreachable targets; the count of dead-ends is the artifact."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_exposure",
+   "wave4_note": "Not a defect: authority-sanctioned ADR-0025 fail-closed. Adding `sales` to EXPOSED_SCREEN_KEYS self-heals exactly one screen-link target; the remaining dark targets are the count exposure reviews must see.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "notif.findings[4]",
+   "module": "notif",
+   "capability_id": "CAP-NOTIF-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Prototype full-view rows make @사람 tokens live links → openPerson (dc.html 15200, applied to notif rows via msgParts at 17985)",
+    "code_does": "TokenText renders mentions as inert styled spans with no onClick (composer/TokenText.tsx:88-93), and NotifScreen's resolveToken only resolves object codes from resolved heads, so @mentions in notification text are plain text (NotifScreen.tsx:322-329)",
+    "fix": "Give TokenText mentions an optional onOpenPerson and feed it from the directory-scoped person provider once a person-card surface is exposed; until then the inert span is the deny-by-omission-correct fallback."
+   },
+   "backend_surface": {
+    "id": "PERSON-CARD-SURFACE",
+    "what_is_missing": "Exposed person/인사 카드 surface a @mention or directory row can open."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "board.findings[6]",
+   "module": "board",
+   "capability_id": "CAP-BOARD-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Detail links are the cross-module object chain: 발송 메일→mail, 연차 촉진→leave, 개인 수신함→inbox, 컴플라이언스→compliance, 기록물 NT-0701 (code link), 현장 node (dc.html 11230-11233, 16374 modLinkGo); OT-19 linkTypes 수령 대상→직원 1:N, 기록물 등재 1:1 (13887); plus 작용 자동화 chips + 「+ 감시 규칙」 (4960-4966)",
+    "code_does": "detail.links returns only audience-branch chips whose click merely filters the SAME list (boardModuleConfig.ts:161, BoardScreenBody.tsx:135-143); no mail/inbox/compliance/records linkage, no automation surface",
+    "fix": "When the notices contract grows linked-object references (mail send, inbox delivery batch, records registration), emit them as LinkChips routed to real module navigation; automation chips wait on an automation module"
+   },
+   "backend_surface": {
+    "id": "BOARD-NOTICE-LINKED-OBJECTS",
+    "what_is_missing": "Linked-object references on the notices contract (mail send, inbox delivery batch, records registration)."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-DYNAMICS-ACTING",
+     "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+    }
+   ],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "The automation-chip half is unblocked by registration like the other dynamics rows, but the notices link contract is module-specific and no wave-4 lane touches it.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "board.findings[7]",
+   "module": "board",
+   "capability_id": "CAP-BOARD-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "Module header carries the bound ontology type chip — OT-19 공지, click = type card / explore (dc.html 4566-4571, 16283-16286, 13887; change-log 60)",
+    "code_does": "No type chip; the built console has no ontology type registry or explore surface to target",
+    "fix": "Add the OT- chip to the shared module header once a type-registry surface exists; until then omit (dead chip would violate §4-16)"
+   },
+   "backend_surface": {
+    "id": "ONT-TYPE-REGISTRY",
+    "what_is_missing": "OT- type card / type-explore surface bound to a module header chip. GET /api/v1/object-types exists and primes codeGrammar; the type-card screen does not."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "directory.findings[0]",
+   "module": "directory",
+   "capability_id": "CAP-DIRECTORY-CONSOLE",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "First list column is 연락처 (내선 NNN / 현장 mono code) and the person card carries kv 이메일 plus a 메일 action — dc.html 11055 dirRows: code=\"내선 \"+ext, kv=[직책,소속,이메일,입사], acts=[메시지,메일]; cols=[연락처,이름,직책,소속] (11310)",
+    "code_does": "Neither segment renders any contact channel: members grid is name+team only (DirectoryScreen.tsx:460-511, dir-grid-members 2 cols), employees code column is 사번 (560), employee kv has no email/phone (664-674), and there is no 메일 action anywhere — an address book with zero contact data",
+    "fix": "Add ext/phone/email to MessengerMemberSummary and Employee (or a directory-profile endpoint), render 연락처 as the lead mono column and 이메일 kv, and add a 메일 act once a mail surface exists"
+   },
+   "backend_surface": {
+    "id": "DIR-CONTACT-PROFILE",
+    "what_is_missing": "ext/phone/email on MessengerMemberSummary and Employee (or a directory-profile endpoint)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "Blocker: a directory with no contact channel at all — neither segment renders 연락처, email, or a 메일 action.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "directory.findings[1]",
+   "module": "directory",
+   "capability_id": "CAP-DIRECTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "One unified people list: every person row shows 연락처·이름·직책·소속 + 법인 status chip regardless of which store backs it (dc.html 11055/11310; single MOD_SCREENS list 4750-4781)",
+    "code_does": "Two disjoint permission segments (DirectoryScreen.tsx:16,109-113,458-577): the messenger-tier 구성원 list shows only 이름·소속 (no 직책, no 법인, no code), and the rich columns exist only behind the ADMIN/EXECUTIVE-gated 임직원 register — a MEMBER-tier employee sees a 2-column name list, far below the prototype's baseline all-employee surface (§4.8: 주소록 is an all-employee module)",
+    "fix": "Enrich the non-privileged roster endpoint with title/company/ext (PBAC-safe fields) so the baseline segment matches the prototype's column set, or merge both tiers into one list with per-field deny-by-omission"
+   },
+   "backend_surface": {
+    "id": "DIR-ROSTER-ENRICHMENT",
+    "what_is_missing": "PBAC-safe title/company/ext on the non-privileged roster endpoint (or one merged list with per-field deny-by-omission)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "directory.findings[3]",
+   "module": "directory",
+   "capability_id": "CAP-DIRECTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Detail panel surfaces the object layer: 개체 카드 button in the header (4790), 작용 자동화 chips + 「+ 감시 규칙」 footer (4960-4966), and det-mode 'card' opens lcOpen object card (16298); links=[인사 카드] navigates to the HR person card (11055, 16374)",
+    "code_does": "Both cards end at kv + filter chips + (member-only) 메시지 CTA — no object card, no automation/policy chips, no monitor-rule entry, no 인사 카드 link, and no cross-link between the member and employee representations of the same person (DirectoryScreen.tsx:580-718)",
+    "fix": "Add the dynamics footer and object-card entry once the console ontology/automation runtime exists; near-term, cross-link member card → employee register row (and back) where the caller holds both tiers"
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-CARD-READ",
+    "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-DYNAMICS-ACTING",
+     "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "directory.findings[4]",
+   "module": "directory",
+   "capability_id": "CAP-DIRECTORY-CONSOLE",
+   "severity": "major",
+   "finding": {
+    "design_says": "Every module-list column header is click-to-sort with ↑/↓/clear cycling, numeric-aware (dc.html 4753, 16146-16152, 16295 — §4.7-1 grammar)",
+    "code_does": "Only the members segment sorts (name/team, DirectoryScreen.tsx:358-364,461-466); the employees register headers are inert spans (516-523), so the module's primary large list cannot be reordered",
+    "fix": "Add a sort param to GET /api/v1/employees (server-side, paging-consistent) and wire header cycling on all five columns; client-side sort of a partial page would be untruthful"
+   },
+   "backend_surface": {
+    "id": "LIST-SERVER-SORT",
+    "what_is_missing": "Server-side sort/keyset parameters on a list endpoint so header sort stays truthful across pages."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "L-X9 (keyset pagination) and L-X11 (ARIA grid semantics) build the truthful server-side list grammar for sales. §8 explicitly defers L-F4, so the primitive is NOT extracted this wave — directory would still need its own sort param.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "directory.findings[5]",
+   "module": "directory",
+   "capability_id": "CAP-DIRECTORY-CONSOLE",
+   "severity": "minor",
+   "finding": {
+    "design_says": "CTA 새 대화 opens the command palette (action:{palette:true} — 11310, 16288), and a 시트로 열기 button exports the current filtered list to a collaborative sheet (4602, 16191)",
+    "code_does": "새 대화 focuses the search input (DirectoryScreen.tsx:450); no sheet-open button exists",
+    "fix": "Point 새 대화 at the console command palette when one lands; add 시트로 열기 when the sheet surface exists — current focus-search fallback is a reasonable interim"
+   },
+   "backend_surface": {
+    "id": "CONSOLE-COMMAND-PALETTE",
+    "what_is_missing": "Console command palette, and the collaborative-sheet export surface."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "logistics.findings[6]",
+   "module": "logistics",
+   "capability_id": "CAP-LOGISTICS-PILOT",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4-25-6 목업 독립성 + §5: the module must surface real org data today; every aggregate must be reachable, and count chips represent real scope. The module-surface contract (config.ts:117-119) requires a live read ('load' binds a real endpoint).",
+    "code_does": "LogisticsScreen.tsx:25-30 (honest comment): the backend is a write-only pilot router — no list/read endpoints — so all queues start empty every session and show only session-created aggregates; cross-session/org objects are invisible and the stat chips describe only this session.",
+    "fix": "Backend read surface: GET list endpoints for ASNs/fulfillments/shipments (+ stock projection) scoped by branch, then replace the session working set with server truth. Frontend is honestly built around the gap."
+   },
+   "backend_surface": {
+    "id": "LOGISTICS-READ-ENDPOINTS",
+    "what_is_missing": "GET list endpoints for ASNs/fulfillments/shipments (+ stock projection) scoped by branch; the pilot router is write-only."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "The backend is a write-only pilot router: every queue starts empty each session and cross-session/org objects are invisible.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "equipment.findings[1]",
+   "module": "equipment",
+   "capability_id": "CAP-EQUIPMENT-3R-PILOT",
+   "severity": "blocker",
+   "finding": {
+    "design_says": "Module detail must expose all 3 ontology layers: semantic (kv), kinetic (lifecycle/history), dynamic (acting automations/policies/series) — module detail renders dynAutos chips + onMonitor and 개체 카드/시리즈 buttons (dc.html 16374-16379, 4790-4792); §4-14 says any missing layer is a violation",
+    "code_does": "Unit detail (EquipmentUnitDetail.tsx:153-286) and case detail (EquipmentCaseDetail.tsx:269-577) show kv + history/stepper only — no object card, no acting automations/policies, no series, no derived analytics anywhere",
+    "fix": "Add an object-card affordance and a dynamics strip on both details; real content (automation registry, series SR-, Cedar policy chips) needs backend surfaces that do not exist for this module — record in the gap manifest"
+   },
+   "backend_surface": {
+    "id": "ONT-DYNAMICS-ACTING",
+    "what_is_missing": "Acting automations/policies for a type or instance. NOT missing: ontology/rest/src/lib.rs:1562-1588 already serves instance_acting / object_type_acting — blocked on the module type being REGISTERED, not on a new endpoint."
+   },
+   "additional_surfaces": [
+    {
+     "id": "ONT-OBJECT-CARD-READ",
+     "what_is_missing": "Canonical 3-layer object-card read (properties/relations/lifecycle/audit per kind). Today GET /api/objects/{kind}/{id} returns ObjectHead = code/title/status only."
+    },
+    {
+     "id": "ONT-SERIES",
+     "what_is_missing": "SR- parent series objects (이력·추세·다음 회차) and their read surface."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "unblocked_by_wave4_registration",
+   "wave4_note": "Blocker. The dynamics third of the §4-14 layer test needs registration only; object card and series stay blocked.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "equipment.findings[3]",
+   "module": "equipment",
+   "capability_id": "CAP-EQUIPMENT-3R-PILOT",
+   "severity": "major",
+   "finding": {
+    "design_says": "Objects carry issued codes rendered as mono chips and live links with human labels (FL-2643, WO-2643 rows in dc.html 11092-11095; §4.7-3, §4-8 텍스트 규율)",
+    "code_does": "Raw UUIDs are shown as user-facing text: activeCaseId as a link label (EquipmentUnitDetail.tsx:178-186), unitId as a link label (EquipmentCaseDetail.tsx:288-292), branchId (169, 299-300) and createdBy/actorId (301-302, 279) as plain values",
+    "fix": "Resolve links to human labels the client already has (serialNo for units, customer·site for cases); true code issuance (e.g. EQ-/RC- display codes) needs a backend contract field — gap manifest"
+   },
+   "backend_surface": {
+    "id": "PLATFORM-CODE-ISSUANCE",
+    "what_is_missing": "Human display-code issuance on a domain contract (PS-, EQ-, RC-) with a code counter, so the object carries a reference token (§4.7-3)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "Raw UUIDs are user-facing text today. Same issuance move as L-X7's DL- prefix + counter.",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "equipment.findings[4]",
+   "module": "equipment",
+   "capability_id": "CAP-EQUIPMENT-3R-PILOT",
+   "severity": "major",
+   "finding": {
+    "design_says": "Asset acquisition is an approval draft: MOD_SCREENS.asset primary action = 「취득 기안」 prefilled purchase 기안 (dc.html 11091); §3.9.0 declares un-whitelisted direct saves a design violation",
+    "code_does": "registerUnit (EquipmentScreen.tsx:182-205) POSTs /units directly from an inline always-open form; the unit is live immediately with no draft/attestation/approval stage",
+    "fix": "Route registration through a draft→approve lifecycle; requires a backend draft/approval surface that the equipment-3r contract does not define — gap manifest (interim: at minimum move the form behind a header primary-action CTA to match the surface layout)"
+   },
+   "backend_surface": {
+    "id": "APPR-COMPOSE",
+    "what_is_missing": "Console 기안/전자결재 composer surface with prefill, and the draft→approve lifecycle in front of direct writes (§3.9.0)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": true,
+   "wave4_disposition": "pattern_proven_by_wave4_crm",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "equipment.findings[5]",
+   "module": "equipment",
+   "capability_id": "CAP-EQUIPMENT-3R-PILOT",
+   "severity": "major",
+   "finding": {
+    "design_says": "§4-27-4/§4-19: customer and site are objects selected via typeahead (거래처/현장 references, links usable for drill and analysis); prototype case rows link 고객/현장 objects (dc.html 8975 links)",
+    "code_does": "Quote form takes customerName and siteReference as free-text strings (EquipmentUnitDetail.tsx:207-226); the created case can never join the ontology graph or drill to a customer/site object",
+    "fix": "Replace with typeahead object selectors bound to customer/site registries; the equipment-3r contract only accepts strings — gap manifest"
+   },
+   "backend_surface": {
+    "id": "ONT-OBJECT-SEARCH",
+    "what_is_missing": "PBAC-filtered cross-object code/typeahead search (§4-27-4). Contract is owned by codex/console-search-object-fabric-20260724."
+   },
+   "additional_surfaces": [
+    {
+     "id": "CUSTOMER-REGISTRY-READ",
+     "what_is_missing": "Read/resolve surface over registry_customers so customer identity renders and drills outside the owning crate."
+    }
+   ],
+   "crm_relevant": true,
+   "wave4_disposition": "gap_manifested_only",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  },
+  {
+   "id": "equipment.findings[7]",
+   "module": "equipment",
+   "capability_id": "CAP-EQUIPMENT-3R-PILOT",
+   "severity": "major",
+   "finding": {
+    "design_says": "§5 통합 원칙 + asset section: assets link to maintenance WO-, purchase PO-, contracts C-, analyses AN- (dc.html 11092-11095); disposition/finance close the loop",
+    "code_does": "The module is an island: REPAIR/REFURBISH dispositions create no maintenance-object link, and DispositionView.financeGlPosting is hard-typed `null` (equipmentApi.ts:129) with no GL/voucher surface",
+    "fix": "Wire disposition REPAIR→WO- object creation/link and finance posting readback; both need backend surfaces that do not exist — gap manifest"
+   },
+   "backend_surface": {
+    "id": "EQ-DISPOSITION-LINK-GL",
+    "what_is_missing": "Disposition REPAIR → WO- object creation/link, and finance GL/voucher posting readback (financeGlPosting is hard-typed null)."
+   },
+   "additional_surfaces": [],
+   "crm_relevant": false,
+   "wave4_disposition": "deferred_no_wave4_lane",
+   "wave4_note": "",
+   "wave4_owning_lane": null,
+   "deferral": "§8 'All 13 non-CRM module FE lanes' — the 13 undeepened modules receive only their share of the Phase-0 shared fixes; their fidelity registers stay open, gap-manifested as a block with anchors."
+  }
+ ]
+}

@@ -4,9 +4,11 @@ import { MemoryRouter, useLocation } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import { MyWorkBody } from "./MyWorkBody";
+import { ko } from "../../../i18n/ko";
 import type { MyWorkApi, TodoSummary } from "./myWorkApi";
 import {
   myWorkStrings,
+  canOpenCalendarOwner,
   type ActionInboxItem,
   type ActionInboxResponse,
 } from "./myWorkModel";
@@ -84,6 +86,17 @@ function stubApi(over?: Partial<MyWorkApi>): MyWorkApi {
     createTodo: vi.fn().mockResolvedValue(undefined),
     setTodoDone: vi.fn().mockResolvedValue(undefined),
     deleteTodo: vi.fn().mockResolvedValue(undefined),
+    loadWorkbench: vi.fn().mockResolvedValue({
+      as_of: "2026-07-08T09:00:00Z",
+      timezone: "Asia/Seoul",
+      range: { from: "2026-07-07T15:00:00Z", to: "2026-07-14T15:00:00Z" },
+      scope: { kind: "all" },
+      partial: false,
+      action_inbox: { status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false },
+      todos: { status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false },
+      calendar: { status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false },
+    }),
+    createPersonalCalendarEvent: vi.fn().mockResolvedValue(undefined),
     ...over,
   };
 }
@@ -91,7 +104,7 @@ function stubApi(over?: Partial<MyWorkApi>): MyWorkApi {
 function LocationProbe() {
   const location = useLocation();
   return (
-    <output data-location>{`${location.pathname}${location.search}`}</output>
+    <output data-location data-testid="location">{`${location.pathname}${location.search}`}</output>
   );
 }
 
@@ -113,6 +126,185 @@ describe("MyWorkBody", () => {
     await screen.findByText("보고서 초안");
     expect(screen.getByText("정비 점검")).toBeInTheDocument();
     expect(screen.getByText("예산 결재")).toBeInTheDocument();
+  });
+
+  it("keeps source urgency, state, and the exact due timestamp visible in the task queue", async () => {
+    renderBody(
+      stubApi({
+        loadInbox: vi.fn().mockResolvedValue({
+          total: 1,
+          items: [
+            item({
+              kind: "approval",
+              id: "approval:urgent",
+              title: "긴급 결재",
+              urg: "now",
+              due: "2026-07-08T21:00:00Z",
+              dueTone: "danger",
+            }),
+          ],
+        }),
+      }),
+    );
+
+    await screen.findByText("긴급 결재");
+    expect(screen.getByText("즉시")).toBeInTheDocument();
+    expect(screen.getByText("처리 대기")).toBeInTheDocument();
+    const dueAt = new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date("2026-07-08T21:00:00Z"));
+    expect(screen.getByText(`마감 ${dueAt}`)).toBeInTheDocument();
+    expect(screen.getByLabelText(`마감 ${dueAt}`)).toHaveAttribute(
+      "dateTime",
+      "2026-07-08T21:00:00Z",
+    );
+  });
+
+  it("selects an assigned item with its exact server metadata and restores focus when closed", async () => {
+    const user = userEvent.setup();
+    renderBody(
+      stubApi({
+        loadInbox: vi.fn().mockResolvedValue({
+          total: 1,
+          items: [
+            item({
+              kind: "work",
+              id: "work:detail",
+              title: "현장 설비 점검",
+              ref: "20260708-004",
+              site: "평택 사업장",
+              who: "김정비",
+              due: "2026-07-08T12:00:00Z",
+              submitted: "2026-07-07T08:30:00Z",
+              links: [
+                { kind: "work_order", id: "wo-4" },
+                { kind: "unregistered", id: "opaque-1" },
+              ],
+            }),
+          ],
+        }),
+      }),
+    );
+
+    const select = await screen.findByRole("button", { name: /현장 설비 점검/ });
+    await user.click(select);
+
+    expect(select).toHaveAttribute("aria-expanded", "true");
+    const detail = screen.getByRole("complementary", { name: "현장 설비 점검" });
+    expect(select).toHaveAttribute("aria-controls", detail.id);
+    expect(within(detail).getByText(ko.equipment.detail.referenceTitle)).toBeVisible();
+    expect(screen.getAllByText("20260708-004")).toHaveLength(2);
+    expect(screen.getByText("평택 사업장")).toBeVisible();
+    expect(screen.getByText("김정비")).toBeVisible();
+    expect(screen.getByText("unregistered")).toBeVisible();
+    expect(screen.getByText("opaque-1")).toBeVisible();
+    expect(
+      screen
+        .getAllByRole("button", { name: S.assigned.open })
+        .find((button) => !button.hasAttribute("disabled")),
+    ).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "닫기" }));
+    expect(select).toHaveFocus();
+    expect(select).toHaveAttribute("aria-expanded", "false");
+    expect(select).not.toHaveAttribute("aria-controls");
+  });
+
+  it("supports queue keyboard navigation, Escape, and clears a filtered-out selection", async () => {
+    const user = userEvent.setup();
+    renderBody(stubApi());
+
+    const first = await screen.findByRole("button", { name: /정비 점검/ });
+    const second = screen.getByRole("button", { name: /예산 결재/ });
+    first.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(second).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(second).toHaveAttribute("aria-expanded", "true");
+
+    await user.keyboard("{Escape}");
+    expect(second).toHaveFocus();
+    expect(second).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(first);
+    expect(first).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: /목 9/ }));
+    await user.click(screen.getByRole("button", { name: S.assigned.allDays }));
+    expect(screen.getByRole("button", { name: /정비 점검/ })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
+
+  it("opens only an allowlisted source link from the selected detail", async () => {
+    const user = userEvent.setup();
+    renderBody(
+      stubApi({
+        loadInbox: vi.fn().mockResolvedValue({
+          total: 2,
+          items: [
+            item({
+              kind: "work",
+              id: "work:canonical",
+              title: "연결된 업무",
+              links: [{ kind: "work_order", id: "wo-allowlisted" }],
+            }),
+            item({
+              kind: "support",
+              id: "support:unregistered",
+              title: "미등록 연결",
+              links: [{ kind: "future_kind", id: "opaque-source" }],
+            }),
+          ],
+        }),
+      }),
+    );
+
+    await user.click(await screen.findByRole("button", { name: /연결된 업무/ }));
+    const canonicalDetail = screen.getByRole("complementary", { name: "연결된 업무" });
+    await user.click(within(canonicalDetail).getByRole("button", { name: S.assigned.open }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/work-orders/wo-allowlisted");
+
+    await user.click(screen.getByRole("button", { name: /미등록 연결/ }));
+    const unregisteredDetail = screen.getByRole("complementary", { name: "미등록 연결" });
+    expect(
+      within(unregisteredDetail).getByRole("button", { name: S.assigned.open }),
+    ).toBeDisabled();
+  });
+
+  it("keeps malformed action-inbox fields neutral and inert instead of crashing or guessing", async () => {
+    const malformed = {
+      ...item({
+        kind: "approval",
+        id: "approval:malformed",
+        title: "검증 필요 업무",
+      }),
+      links: null,
+      urg: null,
+      done: "unknown",
+      due: "not-a-timestamp",
+      dueTone: "unknown-tone",
+    } as unknown as ActionInboxItem;
+    renderBody(
+      stubApi({
+        loadInbox: vi.fn().mockResolvedValue({ total: 1, items: [malformed] }),
+      }),
+    );
+
+    const row = (await screen.findByText("검증 필요 업무")).closest("li");
+    expect(within(row as HTMLElement).getByText("우선순위 확인 필요")).toBeVisible();
+    expect(within(row as HTMLElement).getByText("상태 확인 필요")).toHaveStyle({
+      background: "var(--muted)",
+    });
+    expect(within(row as HTMLElement).getByText("마감 정보 없음")).toBeVisible();
+    expect(
+      within(row as HTMLElement).getByRole("button", { name: S.assigned.open }),
+    ).toBeDisabled();
   });
 
   it("loads additional action-inbox pages only after an explicit user action", async () => {
@@ -777,5 +969,206 @@ describe("MyWorkBody", () => {
     expect(
       screen.queryByText("테넌트 A 오래된 삭제 새로고침"),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("MyWorkBody calendar workbench", () => {
+  const C = S.calendar;
+  const calendarEvent = {
+    id: "00000000-0000-0000-0000-000000000050",
+    title: "Morning operational review",
+    starts_at: "2026-07-08T04:00:00Z",
+    ends_at: "2026-07-08T05:00:00Z",
+    target: { module: "overview", id: "00000000-0000-0000-0000-000000000050" },
+  };
+  const createdCalendarEvent = {
+    id: "00000000-0000-0000-0000-000000000051",
+    scope_type: "PERSONAL" as const,
+    title: "Prepare weekly close",
+    description: "",
+    starts_at: "2026-07-10T00:00:00.000Z",
+    ends_at: "2026-07-10T01:00:00.000Z",
+    all_day: false,
+    status: "ACTIVE" as const,
+    created_at: "2026-07-08T09:00:00Z",
+    updated_at: "2026-07-08T09:00:00Z",
+    policy: { enforcement: "server" as const, scope_type: "PERSONAL" as const, visibility: "creator_only" as const },
+  };
+
+  function workbench(calendar: unknown, partial = false) {
+    return {
+      as_of: "2026-07-08T09:00:00Z",
+      timezone: "Asia/Seoul",
+      range: { from: "2026-07-07T15:00:00Z", to: "2026-07-14T15:00:00Z" },
+      scope: { kind: "all" },
+      partial,
+      action_inbox: { status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false },
+      todos: { status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false },
+      calendar,
+    };
+  }
+
+  it("renders the bounded calendar source and creates a verifiable personal focus block", async () => {
+    const user = userEvent.setup();
+    const loadWorkbench = vi.fn().mockResolvedValue(
+      workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [calendarEvent], total: 1, truncated: false }),
+    );
+    const createPersonalCalendarEvent = vi.fn().mockResolvedValue(createdCalendarEvent);
+    const api = Object.assign(stubApi(), { loadWorkbench, createPersonalCalendarEvent });
+    renderBody(api, { canOpenCalendarOwner: true });
+
+    expect(await screen.findByRole("region", { name: C.title })).toBeVisible();
+    expect(screen.getByText("Morning operational review")).toBeVisible();
+
+    const title = screen.getByLabelText(C.focusTitle);
+    expect(title).toHaveAttribute("maxLength", "160");
+    await user.type(title, "Prepare weekly close");
+    await user.type(screen.getByLabelText(C.startsAt), "2026-07-10T09:00");
+    await user.type(screen.getByLabelText(C.endsAt), "2026-07-10T10:00");
+    await user.click(screen.getByRole("button", { name: C.schedule }));
+
+    await waitFor(() => {
+      expect(createPersonalCalendarEvent).toHaveBeenCalledWith({
+        title: "Prepare weekly close",
+        startsAt: "2026-07-10T00:00:00.000Z",
+        endsAt: "2026-07-10T01:00:00.000Z",
+      });
+    });
+    expect(loadWorkbench).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(`${C.created}: Prepare weekly close`)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: C.openCreated }));
+    expect(document.querySelector("[data-location]")).toHaveTextContent("/collaboration");
+  });
+
+  it("matches the server's 160-character title limit", async () => {
+    const user = userEvent.setup();
+    renderBody(Object.assign(stubApi(), {
+      loadWorkbench: vi.fn().mockResolvedValue(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false })),
+      createPersonalCalendarEvent: vi.fn(),
+    }));
+    const title = await screen.findByLabelText(C.focusTitle);
+    await user.type(title, "a".repeat(161));
+    expect(title).toHaveValue("a".repeat(160));
+  });
+
+  it("fails closed when calendar authority is denied: no event, count, or server code leaks", async () => {
+    const loadWorkbench = vi.fn().mockResolvedValue(workbench({ status: "denied", code: "calendar_access_denied" }));
+    const api = Object.assign(stubApi(), { loadWorkbench, createPersonalCalendarEvent: vi.fn() });
+    renderBody(api);
+
+    const calendar = await screen.findByRole("region", { name: C.title });
+    expect(within(calendar).getByText(C.unavailable)).toBeVisible();
+    expect(within(calendar).queryByText("Morning operational review")).not.toBeInTheDocument();
+    expect(within(calendar).queryByText("calendar_access_denied")).not.toBeInTheDocument();
+    expect(within(calendar).queryByRole("button", { name: C.schedule })).not.toBeInTheDocument();
+  });
+
+  it("surfaces the actual aggregate range and partial/truncated state", async () => {
+    const api = Object.assign(stubApi(), {
+      loadWorkbench: vi.fn().mockResolvedValue(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 100, truncated: true }, true)),
+      createPersonalCalendarEvent: vi.fn(),
+    });
+    renderBody(api);
+    const calendar = await screen.findByRole("region", { name: C.title });
+    expect(within(calendar).getByText(C.partial)).toBeVisible();
+    expect(within(calendar).getByText(C.truncated)).toBeVisible();
+    expect(within(calendar).getByText(C.range(
+      new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date("2026-07-07T15:00:00Z")),
+      new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date("2026-07-14T15:00:00Z")),
+    ))).toBeVisible();
+  });
+
+  it("surfaces aggregate read failure with an in-place retry", async () => {
+    const loadWorkbench = vi.fn().mockRejectedValueOnce(new Error("unavailable")).mockResolvedValueOnce(
+      workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false }),
+    );
+    const api = Object.assign(stubApi(), { loadWorkbench, createPersonalCalendarEvent: vi.fn() });
+    renderBody(api);
+
+    const calendar = await screen.findByRole("region", { name: C.title });
+    expect(within(calendar).getByText(C.loadFailed)).toBeVisible();
+    await userEvent.click(within(calendar).getByRole("button", { name: S.retry }));
+    await waitFor(() => {
+      expect(loadWorkbench).toHaveBeenCalledTimes(2);
+    });
+    expect(await within(calendar).findByText(C.empty)).toBeVisible();
+  });
+
+  it("keeps a failed calendar entry intact so the user can retry the real write", async () => {
+    const user = userEvent.setup();
+    const createPersonalCalendarEvent = vi.fn().mockRejectedValueOnce(new Error("unavailable")).mockResolvedValueOnce(createdCalendarEvent);
+    const api = Object.assign(stubApi(), {
+      loadWorkbench: vi.fn().mockResolvedValue(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false })),
+      createPersonalCalendarEvent,
+    });
+    renderBody(api);
+
+    await screen.findByRole("region", { name: C.title });
+    await user.type(screen.getByLabelText(C.focusTitle), "Retry focus block");
+    await user.type(screen.getByLabelText(C.startsAt), "2026-07-10T09:00");
+    await user.type(screen.getByLabelText(C.endsAt), "2026-07-10T10:00");
+    const submit = screen.getByRole("button", { name: C.schedule });
+    await user.click(submit);
+    expect(await screen.findByText(C.scheduleFailed)).toBeVisible();
+    expect(screen.getByLabelText(C.focusTitle)).toHaveValue("Retry focus block");
+
+    await user.click(submit);
+    await waitFor(() => {
+      expect(createPersonalCalendarEvent).toHaveBeenCalledTimes(2);
+    });
+    expect(await screen.findByText(`${C.created}: Prepare weekly close`)).toBeVisible();
+  });
+
+  it("does not retain an earlier authority's calendar while the replacement aggregate is pending", async () => {
+    const apiA = Object.assign(stubApi(), {
+      loadWorkbench: vi.fn().mockResolvedValue(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [calendarEvent], total: 1, truncated: false })),
+      createPersonalCalendarEvent: vi.fn(),
+    });
+    const pending = deferred<ReturnType<typeof workbench>>();
+    const apiB = Object.assign(stubApi(), {
+      loadWorkbench: vi.fn(() => pending.promise),
+      createPersonalCalendarEvent: vi.fn(),
+    });
+    const view = renderBody(apiA);
+    expect(await screen.findByText("Morning operational review")).toBeVisible();
+
+    view.rerender(<MemoryRouter><MyWorkBody api={apiB} now={NOW} /></MemoryRouter>);
+    const calendar = screen.getByRole("region", { name: C.title });
+    expect(within(calendar).queryByText("Morning operational review")).not.toBeInTheDocument();
+
+    await act(async () => {
+      pending.resolve(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false }));
+      await pending.promise;
+    });
+  });
+
+  it("does not promise a collaboration route to a plain Feature::Login member", async () => {
+    expect(canOpenCalendarOwner(["MEMBER"], [])).toBe(false);
+    expect(canOpenCalendarOwner(["MECHANIC"], [])).toBe(true);
+    expect(canOpenCalendarOwner(["MEMBER"], ["work_order_read_all"])).toBe(true);
+    const user = userEvent.setup();
+    const api = Object.assign(stubApi(), {
+      loadWorkbench: vi.fn().mockResolvedValue(workbench({ status: "ok", as_of: "2026-07-08T09:00:00Z", items: [], total: 0, truncated: false })),
+      createPersonalCalendarEvent: vi.fn().mockResolvedValue(createdCalendarEvent),
+    });
+    renderBody(api, { canOpenCalendarOwner: false });
+
+    await screen.findByRole("region", { name: C.title });
+    await user.type(screen.getByLabelText(C.focusTitle), "Member focus block");
+    await user.type(screen.getByLabelText(C.startsAt), "2026-07-10T09:00");
+    await user.type(screen.getByLabelText(C.endsAt), "2026-07-10T10:00");
+    await user.click(screen.getByRole("button", { name: C.schedule }));
+
+    expect(await screen.findByText(`${C.created}: Prepare weekly close`)).toBeVisible();
+    expect(screen.queryByRole("button", { name: C.openCreated })).not.toBeInTheDocument();
+  });
+
+  it("keeps the receipt affordance aligned to collaboration's operational audience", () => {
+    for (const role of ["SUPER_ADMIN", "ADMIN", "EXECUTIVE", "MECHANIC", "RECEPTIONIST"]) {
+      expect(canOpenCalendarOwner([role], [])).toBe(true);
+    }
+    expect(canOpenCalendarOwner(["MEMBER"], [])).toBe(false);
+    expect(canOpenCalendarOwner(undefined, ["work_order_read_all"])).toBe(true);
+    expect(canOpenCalendarOwner(undefined, ["work_order_create"])).toBe(false);
   });
 });

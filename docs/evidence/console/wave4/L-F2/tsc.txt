@@ -1,0 +1,8 @@
+src/console/directory/DirectoryScreenBody.tsx(7,46): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/console/directory/DirectoryScreenBody.tsx(27,22): error TS7006: Parameter 'current' implicitly has an 'any' type.
+src/console/evaluation/EvaluationScreen.tsx(10,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/console/notif/NotifScreen.tsx(2,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/console/org/OrgConsoleRoute.tsx(2,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/console/payroll/PayrollScreen.tsx(11,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/console/recruiting/RecruitingScreenBody.tsx(2,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+tsc exit=1 — 7 pre-existing react-router-dom errors, identical on the untouched baseline (see report §Gates)

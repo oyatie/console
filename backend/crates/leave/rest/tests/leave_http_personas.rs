@@ -13,6 +13,7 @@ use axum::http::{Request, StatusCode, header};
 use mnt_inbox_adapter_postgres::PgInboxStore;
 use mnt_kernel_core::{BranchId, OrgId, UserId};
 use mnt_leave_adapter_postgres::PgLeaveStore;
+use mnt_leave_domain::{PromotionTrack, first_round_window};
 use mnt_leave_rest::{LeaveRestState, router};
 use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use mnt_platform_test_support::{grant_mnt_rt, runtime_role_pool};
@@ -22,7 +23,7 @@ use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
-use time::{Duration, OffsetDateTime};
+use time::{Duration, OffsetDateTime, UtcOffset};
 use tower::ServiceExt;
 use uuid::Uuid;
 
@@ -313,6 +314,190 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
     assert_eq!(v2_page.status, StatusCode::OK, "{:?}", v2_page.body);
     assert!(v2_page.body.get("next_cursor").is_some());
     assert!(v2_page.body["items"][0].get("request_version").is_some());
+}
+
+/// 근로기준법 제61조 at the transport boundary.
+///
+/// The store enforces the windows (see the adapter's runtime-role proof); this
+/// pins what the HTTP contract now demands of a caller: the statutory inputs
+/// the windows are counted from are required, the unused-day count is no longer
+/// accepted from the client, and a push outside its window is refused with the
+/// canonical envelope instead of delivering a legally void notice.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn statutory_push_requires_its_statutory_inputs_over_http(owner_pool: PgPool) {
+    let org = OrgId::new();
+    let branch = BranchId::new();
+    let target = UserId::new();
+    let employee = Uuid::new_v4();
+    let admin = UserId::new();
+    seed_subject(&owner_pool, org, branch, target, employee).await;
+    seed_branch_admin(&owner_pool, org, branch, admin).await;
+    grant_mnt_rt(
+        &owner_pool,
+        &[
+            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT ON employees TO mnt_rt",
+            "GRANT SELECT ON users TO mnt_rt",
+            "GRANT SELECT ON user_branches TO mnt_rt",
+            "GRANT SELECT ON branches TO mnt_rt",
+            "GRANT SELECT ON organizations TO mnt_rt",
+        ],
+    )
+    .await;
+
+    let auth = test_auth_with_roles(admin, org, vec![branch], vec!["ADMIN"]);
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let service = router(LeaveRestState::new(
+        PgLeaveStore::new(
+            runtime_pool.clone(),
+            Arc::new(PgInboxStore::new(runtime_pool)),
+        ),
+        Some(auth.verifier),
+    ));
+
+    // The handler stamps `occurred_at` from the clock, so the happy path picks a
+    // 연차 사용기간 whose 1차 촉구 window (§61①1) contains today. Derived, never
+    // hard-coded — a literal date would rot into a wall-clock time bomb.
+    let today = OffsetDateTime::now_utc()
+        .to_offset(UtcOffset::from_hms(9, 0, 0).unwrap())
+        .date();
+    let period_end = (150..=200)
+        .map(|days| today + Duration::days(days))
+        .find(|end| {
+            first_round_window(PromotionTrack::Annual, *end)
+                .is_ok_and(|window| window.contains(today))
+        })
+        .expect("some 사용기간 within six months opens its 1차 촉구 window today");
+
+    // The body the console sends today: an unverifiable client float, and none
+    // of the statutory inputs. It must be refused, not silently defaulted.
+    let legacy = request_json(
+        service.clone(),
+        "POST",
+        "/api/v1/leave/promotions",
+        &auth.token,
+        Some(json!({
+            "branch_id": branch.as_uuid(),
+            "target_user_id": target.as_uuid(),
+            "target_employee_id": employee,
+            "target_name": "홍길동",
+            "round": 1,
+            "unused_days": 13.0
+        })),
+    )
+    .await;
+    assert_eq!(
+        legacy.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        legacy.body
+    );
+
+    let unknown_track = request_json(
+        service.clone(),
+        "POST",
+        "/api/v1/leave/promotions",
+        &auth.token,
+        Some(json!({
+            "branch_id": branch.as_uuid(),
+            "target_user_id": target.as_uuid(),
+            "target_employee_id": employee,
+            "target_name": "홍길동",
+            "round": 1,
+            "track": "annual_leave",
+            "leave_period_end": period_end.to_string()
+        })),
+    )
+    .await;
+    assert_eq!(
+        unknown_track.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        unknown_track.body
+    );
+    assert_eq!(unknown_track.body["error"]["code"], "validation");
+
+    // A 사용기간 whose window has not opened yet: refused, with the window in the
+    // message so the operator can act on it.
+    let out_of_window = request_json(
+        service.clone(),
+        "POST",
+        "/api/v1/leave/promotions",
+        &auth.token,
+        Some(json!({
+            "branch_id": branch.as_uuid(),
+            "target_user_id": target.as_uuid(),
+            "target_employee_id": employee,
+            "target_name": "홍길동",
+            "round": 1,
+            "track": "annual",
+            "leave_period_end": (period_end + Duration::days(60)).to_string()
+        })),
+    )
+    .await;
+    assert_eq!(
+        out_of_window.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        out_of_window.body
+    );
+    assert_eq!(out_of_window.body["error"]["code"], "validation");
+    assert!(
+        out_of_window.body["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("1차 촉구는"),
+        "{:?}",
+        out_of_window.body
+    );
+
+    let served = request_json(
+        service,
+        "POST",
+        "/api/v1/leave/promotions",
+        &auth.token,
+        Some(json!({
+            "branch_id": branch.as_uuid(),
+            "target_user_id": target.as_uuid(),
+            "target_employee_id": employee,
+            "target_name": "홍길동",
+            "round": 1,
+            "track": "annual",
+            "leave_period_end": period_end.to_string()
+        })),
+    )
+    .await;
+    assert_eq!(served.status, StatusCode::OK, "{:?}", served.body);
+    assert_eq!(served.body["round"], 1);
+    assert_eq!(served.body["ap_submission"], "pending_engine_definition");
+
+    // The delivered notice is receipt-gated, addressed to the target, and states
+    // the roster's own 미사용 일수 — never the 13.0 the caller tried to supply.
+    let (kind, notice_type, confirmed_at, payload): (
+        String,
+        String,
+        Option<OffsetDateTime>,
+        Value,
+    ) = sqlx::query_as(
+        "SELECT kind, notice_type, confirmed_at, payload FROM inbox_docs \
+             WHERE id = $1 AND recipient_user_id = $2",
+    )
+    .bind(
+        served.body["inbox_doc_id"]
+            .as_str()
+            .unwrap()
+            .parse::<Uuid>()
+            .unwrap(),
+    )
+    .bind(target.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(kind, "legal_notice");
+    assert_eq!(notice_type, "연차촉진");
+    assert!(confirmed_at.is_none(), "receipt is not pre-stamped");
+    assert_eq!(payload["unused_days"], json!("13"));
+    assert_eq!(payload["leave_period_end"], json!(period_end.to_string()));
 }
 
 struct TestAuth {

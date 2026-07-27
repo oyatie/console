@@ -1,0 +1,33 @@
+{
+  "lane": "hf-leave-promotion",
+  "collision_root": "web/** (not an owned root of this lane)",
+  "blocking": true,
+  "reason": "The §61 push endpoints now require the statutory inputs the windows are counted from. The existing caller sends the old body and will receive 422.",
+  "caller": "web/src/console/screens/leave/LeaveBody.tsx — `pushPromotion`, around the `authority.api.POST(\"/api/v1/leave/promotions\")` call",
+  "current_body": {
+    "branch_id": "…",
+    "target_user_id": "…",
+    "target_employee_id": "…",
+    "target_name": "…",
+    "round": "1 | 2",
+    "unused_days": "payload.unusedDays  ← REMOVE: the server reads the roster figure"
+  },
+  "required_body": {
+    "branch_id": "…",
+    "target_user_id": "…",
+    "target_employee_id": "…",
+    "target_name": "…",
+    "round": "1 | 2",
+    "track": "annual | first_year_early | first_year_late",
+    "leave_period_end": "YYYY-MM-DD",
+    "designated_dates": "YYYY-MM-DD[] — required non-empty when round = 2, omit for round 1"
+  },
+  "ui_consequences": [
+    "The 촉진 action needs the 연차 사용기간 종료일 and the §61 track as operator inputs. Both are org policy facts (회계연도 기준 vs 입사일 기준) the HR admin is accountable for; the platform has no authoritative source for either today — `employees.hire_date` is free-form TEXT from the Excel import and there is no org-level 연차 산정 기준 setting.",
+    "Round 2 needs a date-picker for the 지정 사용 시기. Native `<input type=\"date\">`; the server caps the list at 25 (제60조제4항 단서 max entitlement).",
+    "The unused-day figure must be DISPLAYED from the balance roster, not collected — the notice states the server's figure regardless of what the form shows.",
+    "Out-of-window pushes now return 422 with a Korean message naming the exact valid window. Surface it verbatim; do not paraphrase a statutory date range.",
+    "409 cases the UI must distinguish from a generic failure: round 2 without a recorded 1차 촉구, refusal without a recorded 2차 통보, an employee with no established 미사용 연차 figure, and a second 연차 사용기간 (see manifests/migration.json)."
+  ],
+  "no_explanatory_ui": "Per the standing gate: these are error states and operator inputs, not captions. No helper subtext explaining §61 — the field label and the server's own message carry it."
+}

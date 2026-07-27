@@ -210,11 +210,14 @@ public protocol PasskeyStepUpGateway: Sendable {
     ) async throws -> Components.Schemas.MobilePasskeyStepUpStartResponse
 }
 
-public protocol MaintenanceAPIGateway: SyncGateway, MessengerGateway, MobileOperationsGateway, PasskeyStepUpGateway {
+public protocol WorkOrderGateway: SyncGateway {
     func listTodayWorkOrders() async throws -> [TechnicianWorkOrder]
     func getWorkOrderDetail(id: Components.Schemas.Uuid) async throws -> TechnicianWorkOrder
     func startWorkOrder(id: Components.Schemas.Uuid) async throws
     func submitReport(id: Components.Schemas.Uuid, draft: ReportDraft) async throws
+}
+
+public protocol MaintenanceAPIGateway: WorkOrderGateway, MessengerGateway, MobileOperationsGateway, PasskeyStepUpGateway {
     func presignEvidence(_ request: Components.Schemas.EvidencePresignRequest) async throws -> Components.Schemas.EvidencePresignResponse
     func confirmEvidence(evidenceID: Components.Schemas.Uuid) async throws -> Components.Schemas.EvidenceConfirmResponse
     func getLocationConsentStatus() async throws -> Components.Schemas.LocationConsentStatus

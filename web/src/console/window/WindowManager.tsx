@@ -33,6 +33,19 @@ interface SavedLayout {
   panelWidth: number;
 }
 
+/**
+ * ponytail: this storage layer is INERT in the shipped app and must not be
+ * extended. `writeSavedLayout` runs only from `saveLayout()`, which no console
+ * or shell surface calls; `savedStatesRef` is consumed only by `register()`,
+ * which nothing calls either — and could not restore a pin anyway, because
+ * `WindowEntry.render` is a closure only the owning screen can re-supply. So the
+ * key below is read on mount and never written. It is kept (rather than deleted
+ * mid-wave) because the partitioning is the cross-incarnation isolation
+ * guarantee a future writer must inherit. Upgrade path: the server-persisted
+ * `GET/PUT /api/v1/me/workspace` contract — at which point delete this layer,
+ * `saveLayout`, `restoreDefault` and `ko.console.window.{saveLayout,
+ * restoreDefault}` instead of porting them (do-not-ship ban #9).
+ */
 const PARTITIONED_STORAGE_PREFIX = "oyatie.console.window.layout.v2";
 
 function layoutStorageKey(
@@ -98,6 +111,13 @@ interface WindowManagerProviderProps {
   retentionEnabled?: boolean;
   /** Set false when the host mounts TrayDock itself (e.g. the shell bottom dock). */
   renderTray?: boolean;
+  /**
+   * Merged over the host wrapper's own styles so a flex shell can make the
+   * wrapper participate in its layout. The split padding stays manager-owned.
+   */
+  hostStyle?: CSSProperties;
+  /** Merged over the floating tray pill's placement (see `TrayDock`'s `style`). */
+  trayStyle?: CSSProperties;
 }
 
 export function WindowManagerProvider({
@@ -105,6 +125,8 @@ export function WindowManagerProvider({
   children,
   retentionEnabled = true,
   renderTray = true,
+  hostStyle,
+  trayStyle,
 }: WindowManagerProviderProps) {
   const partitionKey = layoutStorageKey(authorityPartition);
   const storageKey = retentionEnabled ? partitionKey : undefined;
@@ -118,6 +140,8 @@ export function WindowManagerProvider({
       interactionEnabled={interactionEnabled}
       storageKey={storageKey}
       renderTray={renderTray}
+      hostStyle={hostStyle}
+      trayStyle={trayStyle}
     >
       {children}
     </WindowManagerPartitionProvider>
@@ -129,11 +153,15 @@ function WindowManagerPartitionProvider({
   interactionEnabled,
   renderTray,
   storageKey,
+  hostStyle: hostStyleOverride,
+  trayStyle,
 }: {
   children: ReactNode;
   interactionEnabled: boolean;
   renderTray: boolean;
   storageKey: string | undefined;
+  hostStyle: CSSProperties | undefined;
+  trayStyle: CSSProperties | undefined;
 }) {
   const persistenceScope = useMemo<object>(() => ({ storageKey }), [storageKey]);
   const activePersistenceScopeRef = useRef<object | null>(null);
@@ -325,6 +353,7 @@ function WindowManagerPartitionProvider({
     minHeight: "100%",
     boxSizing: "border-box",
     transition: "padding 0.18s ease",
+    ...hostStyleOverride,
     paddingRight: pinnedEntry && !narrow ? panelWidth + QUADRANT_GAP : undefined,
     paddingBottom: pinnedEntry && narrow ? `calc(${String(NARROW_PANEL_VH)}vh + ${String(QUADRANT_GAP)}px)` : undefined,
   };
@@ -358,7 +387,12 @@ function WindowManagerPartitionProvider({
 
   return (
     <WindowManagerContext.Provider value={value}>
-      <div style={hostStyle}>{children}</div>
+      {/* `data-window-host` marks the single layout partition this provider
+          owns. A shell mounts exactly one, wrapping every screen body; a second
+          (nested) host means two trays and two forked arrangements. */}
+      <div data-window-host="" style={hostStyle}>
+        {children}
+      </div>
       {pinnedEntry && labelId ? (
         <div className="console" role="region" aria-labelledby={labelId} style={panelWrapStyle}>
           <WindowFrame
@@ -375,7 +409,7 @@ function WindowManagerPartitionProvider({
           </WindowFrame>
         </div>
       ) : null}
-      {renderTray ? <TrayDock items={trayItems} onRestore={restore} /> : null}
+      {renderTray ? <TrayDock items={trayItems} onRestore={restore} style={trayStyle} /> : null}
     </WindowManagerContext.Provider>
   );
 }

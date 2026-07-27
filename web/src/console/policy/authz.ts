@@ -56,6 +56,22 @@ export interface AuthzProjection {
   capabilities: Capability[];
 }
 
+/**
+ * The console's one UI feature-grant projection. The live authz contract
+ * expresses grants as capabilities; only `allow` capabilities can unlock a
+ * module-level affordance. Keep this conversion here so consumers never drift
+ * back to a parallel `feature_grants` parser.
+ */
+export function featureGrantsFromAuthzProjection(
+  projection: AuthzProjection,
+): string[] {
+  return [...new Set(
+    projection.capabilities
+      .filter((capability) => capability.permission === "allow")
+      .map((capability) => capability.feature),
+  )];
+}
+
 export interface PolicyQuery {
   /** `Feature::as_str` snake_case key (matches `/api/v1/policy/features`). */
   feature: string;
@@ -63,6 +79,8 @@ export interface PolicyQuery {
   branch?: string;
   /** Minimum permission the affordance requires. Default `allow`. */
   minPermission?: Permission;
+  /** Require an organization-wide capability instead of any branch-scoped grant. */
+  requireOrgWide?: boolean;
 }
 
 /** Fail-closed empty projection (no provider / pre-boot). Denies everything. */
@@ -112,6 +130,7 @@ export function gateAllows(
   const cap = projection.capabilities.find((c) => c.feature === query.feature);
   if (!cap) return false; // deny-by-omission
   if (PERMISSION_RANK[cap.permission] < min) return false;
+  if (query.requireOrgWide && cap.branchScope.kind !== "all") return false;
   // No target branch: the affordance is offered where the caller's best scope
   // holds; per-row branch intersection is the caller's job. With a target
   // branch, the capability's own scope must allow it (fail closed otherwise).
@@ -148,7 +167,11 @@ function isPermission(value: unknown): value is Permission {
  * permissions are dropped (fail closed). */
 export function parseAuthzResponse(body: unknown): AuthzProjection {
   const record = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
-  const rawCaps = Array.isArray(record.capabilities) ? record.capabilities : [];
+  const rawCaps = Array.isArray(record.capabilities)
+    ? record.capabilities
+    // `feature_grants` predates the capability wire shape. Accept it only for
+    // older servers that do not send capabilities at all.
+    : stringArray(record.feature_grants).map((feature) => ({ feature, permission: "allow" }));
   const capabilities: Capability[] = [];
   for (const raw of rawCaps) {
     if (!raw || typeof raw !== "object") continue;

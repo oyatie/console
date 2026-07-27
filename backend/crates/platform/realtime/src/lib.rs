@@ -1495,6 +1495,10 @@ fn notification_summary_from_row(
         created_at: row.try_get("created_at")?,
         read_at: row.try_get("read_at")?,
         resolved_at: row.try_get("resolved_at")?,
+        // Emit-time routing already skipped the notifier for mute-suppressed
+        // rows, so a notification that reaches realtime fan-out was unmuted at
+        // emit time — false on the wire, like `acked_by_me` above.
+        muted: false,
     })
 }
 

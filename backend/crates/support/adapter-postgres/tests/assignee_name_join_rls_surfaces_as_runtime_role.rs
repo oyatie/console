@@ -211,6 +211,7 @@ async fn assignee_name_join_resolves_in_tenant_and_never_leaks_as_mnt_rt(owner_p
                     assignee_user_id: None,
                     include_untriaged: true,
                     limit: None,
+                    site_id: None,
                     cursor: None,
                 })
                 .await
@@ -251,6 +252,7 @@ async fn assignee_name_join_resolves_in_tenant_and_never_leaks_as_mnt_rt(owner_p
                     assignee_user_id: None,
                     include_untriaged: true,
                     limit: None,
+                    site_id: None,
                     cursor: None,
                 })
                 .await

@@ -1,0 +1,38 @@
+{
+  "lane": "CAP-BOARD-CONSOLE",
+  "route": "/console/board",
+  "screenKey": "board",
+  "body": {
+    "component": "BoardScreenBody",
+    "import": "import { BoardScreenBody } from \"../board\";",
+    "importFromRegistry": "web/src/console/screens/registry.ts imports from web/src/console/board/index.ts",
+    "shape": "no-props ComponentType; useAuth() inside; session-fenced remount (org:user:incarnation:apiFence:capability)"
+  },
+  "integratorEdits": {
+    "web/src/console/shell/nav.ts": {
+      "MOUNTED_SCREEN_KEYS": "append \"board\"",
+      "NAV_GROUPS": "NO edit — the comms-group entry { screen: \"board\", labelKey: \"console.shell.nav.board\", icon: \"megaphone\" } already exists (nav.ts:295), ungated (all personas; deny-by-omission only inside the surface)",
+      "EXPOSED_SCREEN_KEYS": "UNTOUCHED (ADR-0025 — module stays dark until evidence-approved)"
+    },
+    "web/src/console/screens/registry.ts": {
+      "SCREEN_REGISTRY": "board: BoardScreenBody"
+    },
+    "web/src/i18n/ko.ts": "NO edit — console.shell.nav.board (게시판·공지) already present"
+  },
+  "gate": "none at nav level; notice_manage capability gates manager affordances inside the surface",
+  "clientRegen": {
+    "reason": "boardApi.ts types the gap-closure contract locally (BoardNotice extension fields, PATCH /api/v1/notices/{id}, GET /api/v1/notices/{id}/receipts) ahead of the generated @maintenance/api-client-ts schema",
+    "afterBackendLands": "regenerate clients/{ts,kotlin,swift} from openapi.yaml, then in web/src/console/board/boardApi.ts drop the `as unknown as BoardNotice` widenings and the `raw` GET/PATCH casts (marked with the ponytail comment) in favor of the generated types/paths"
+  },
+  "moduleGenericContractGaps": [
+    "stat drill: ModuleScreen's StatBar renders ModuleStat as static values — the design invariant 'every stat = filter drill' needs a shared ModuleScreen extension (onStatClick); board cannot add it without forking the generic component",
+    "detail progress bar: ModuleConfig.detail supports kv/links/actions only — per-notice 수령확인 progress renders as a kv value in the generic detail and as the design-faithful bar inside the board-owned receipts drill; a shared detail `prog` field would let it render in the generic detail panel",
+    "selection URL state: ModuleScreen holds selection in component state; selection does not survive a full page refresh without shell-owned URL params"
+  ],
+  "outOfScope": [
+    "passkey/InboxDoc legal receipts (inbox lane; board links only)",
+    "기록물 등재 archive, mail 병행 발송, AP- chips",
+    "§3.9 archived/disposed states",
+    "site-level audiences (no schema primitive)"
+  ]
+}

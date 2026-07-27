@@ -7,7 +7,7 @@
     "web"
   ],
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.22.0"
   },
   "packageManager": "npm@11.13.0",
   "scripts": {
@@ -17,11 +17,11 @@
     "gen:api:portable": "npm run gen:api:ts && npm run gen:api:kotlin",
     "gen:api": "npm run gen:api:portable && npm run gen:api:swift",
     "check:ts": "tsc -p tsconfig.json",
-    "test:api-client-contract:ts": "tsx --test clients/ts/test/leave-request-view.contract.test.ts",
-    "check:kotlin": "node scripts/run-kotlin-build.mjs",
+    "test:api-client-contract:ts": "tsx --test clients/ts/test/leave-request-view.contract.test.ts clients/ts/test/purchase-request-page.contract.test.ts clients/ts/test/facilities-case-transitions.contract.test.ts clients/ts/test/evidence-verify.contract.test.ts clients/ts/test/compliance-evidence-accept.contract.test.ts",
+    "check:kotlin": "node --test scripts/lib/docker-copy-workspace.test.mjs scripts/lib/kotlin-discriminator-unions.test.mjs && node scripts/run-kotlin-build.mjs",
     "check:swift": "swift build --package-path clients/swift",
     "test:api-client-contract:swift": "swift run --package-path clients/swift MaintenanceAPIClientContractTests",
-    "check:ios-ui-test-fail-closed": "node --test scripts/boot-backend-port-conflict.test.mjs scripts/boot-ios-ui-backend.test.mjs scripts/check-ios-ui-test-fail-closed.test.mjs scripts/verify-xcresult-test-results.test.mjs && node scripts/check-ios-ui-test-fail-closed.mjs",
+    "check:ios-ui-test-fail-closed": "node --test scripts/boot-backend-port-conflict.test.mjs scripts/boot-ios-ui-backend.test.mjs scripts/check-ios-ui-test-fail-closed.test.mjs scripts/ios-ui-shard-config.test.mjs scripts/verify-xcresult-test-results.test.mjs && node scripts/check-ios-ui-test-fail-closed.mjs",
     "check:android-e2e-fail-closed": "node --test scripts/check-android-e2e-fail-closed.test.mjs && node scripts/check-android-e2e-fail-closed.mjs",
     "check:openapi-app": "node scripts/check-openapi-app.mjs",
     "check:k8s:render": "tmpdir=\"${RUNNER_TEMP:-/tmp}/maintenance-rendered-k8s\" && scripts/render-k8s-manifests.sh \"$tmpdir\"",
@@ -31,7 +31,11 @@
     "check:dispatch-map": "node scripts/check-dispatch-map.mjs",
     "check:adrs": "node scripts/check-adrs.mjs",
     "check:foundation-gates": "node scripts/check-foundation-gates.mjs",
-    "test:console-authority-bootstrap": "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs",
+    "check:ci-preflight": "node scripts/check-ci-preflight.mjs",
+    "verify": "node scripts/verify.mjs fast",
+    "verify:db": "node scripts/verify.mjs db",
+    "verify:all": "node scripts/verify.mjs all",
+    "test:verify": "node --test scripts/verify.test.mjs",
     "check:package-lock": "npm install --package-lock-only --ignore-scripts --no-audit --no-fund && git diff --exit-code -- package-lock.json",
     "check:root-workspaces": "node scripts/check-root-workspaces.mjs",
     "test:root-workspaces": "node --test scripts/check-root-workspaces.test.mjs",
@@ -41,16 +45,19 @@
     "check:api-drift:swift": "npm run gen:api:swift && git diff --exit-code -- clients/swift",
     "test:contract": "tsx scripts/contract-roundtrip.ts",
     "test:employee-import-contract": "node --test scripts/check-employee-import-replay-contract.test.mjs",
+    "test:consulting-conflict-contract": "node --test scripts/check-consulting-conflict-contract.test.mjs",
     "test:ontology-write-precondition": "node --test scripts/check-ontology-write-precondition.test.mjs",
+    "test:openapi-toolchain-security": "node --test scripts/check-openapi-toolchain-security.test.mjs",
     "check:pr473-migration-operational": "python3 scripts/check-pr473-migration-operational.py",
     "test:pr473-migration-operational": "python3 scripts/check-pr473-migration-operational.test.py",
-    "test:production-hardening": "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/wait-for-protected-main-ci.test.mjs",
+    "test:production-hardening": "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs",
     "web:dev": "npm --workspace web run dev",
     "dev:doctor": "node scripts/dev-up.mjs doctor",
     "dev:up": "node scripts/dev-up.mjs up",
     "dev:bootstrap": "node scripts/dev-up.mjs bootstrap",
     "dev:down": "node scripts/dev-up.mjs down",
     "web:build": "npm --workspace web run build",
+    "check:web-production-dev-auth-absence": "npm --workspace web run check:production-dev-auth-absence",
     "web:lint": "npm --workspace web run lint",
     "web:test": "npm --workspace web run test",
     "check:payroll": "node scripts/check-payroll-domain.mjs",
@@ -83,6 +90,8 @@
     "kic:scrape-public-docs": "node scripts/korean-connectivity/public-doc-scraper.mjs",
     "kic:generate-nhis-loss-report-fixture": "node scripts/korean-connectivity/nhis-edi-loss-report.mjs",
     "kic:local-cert-login-fixture": "node scripts/korean-connectivity/local-certificate-agent.mjs",
+    "check:console-truth-ledger": "node scripts/console/validate-console-truth-ledger.mjs",
+    "test:console-authority-bootstrap": "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs",
     "check:node-audit-exceptions": "node scripts/check-node-audit-exceptions.mjs",
     "test:node-audit-exceptions": "node --test scripts/check-node-audit-exceptions.test.mjs",
     "check:trivy-dev-codegen-exceptions": "node scripts/generate-trivy-dev-codegen-exceptions.mjs --check",
@@ -95,6 +104,7 @@
     "@openapitools/openapi-generator-cli": "2.40.1",
     "@types/node": "25.9.3",
     "@types/pg": "8.20.0",
+    "js-yaml": "4.3.0",
     "openapi-typescript": "7.13.0",
     "tsx": "4.22.4",
     "typescript": "5.9.3"
@@ -102,6 +112,10 @@
   "overrides": {
     "js-yaml@4.x": "4.3.0",
     "shell-quote": "1.10.0",
+    "@redocly/openapi-core@1.34.17": {
+      "minimatch": "file:../../../tools/npm/minimatch-callable-compat"
+    },
+    "brace-expansion": "5.0.8",
     "postcss": "8.5.23"
   }
 }

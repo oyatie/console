@@ -18,7 +18,7 @@ if (!Number.isInteger(report.auditReportVersion) || typeof report.vulnerabilitie
   throw new Error("npm audit report is incomplete; refusing to treat an audit execution failure as clean");
 }
 if (registry.schema_version !== "node-audit-exceptions-v1" || !Array.isArray(registry.entries)) {
-  throw new Error("node audit exception registry must be node-audit-exceptions-v1 with entries");
+  throw new Error("node audit exception registry must be node-audit-exceptions-v1 with an entries array");
 }
 const today = new Date().toISOString().slice(0, 10);
 const failures = [];
@@ -38,17 +38,29 @@ for (const [index, entry] of registry.entries.entries()) {
 }
 const vulnerabilities = report.vulnerabilities ?? {};
 const directFindings = [];
+const unmatchableFindings = [];
 for (const [name, vulnerability] of Object.entries(vulnerabilities)) {
   if (!["high", "critical"].includes(vulnerability.severity)) continue;
-  for (const via of vulnerability.via ?? []) {
-    if (typeof via !== "object" || !via.url) continue;
-    const advisory = via.url.match(/GHSA-[a-z0-9-]+/i)?.[0];
-    for (const path of vulnerability.nodes ?? []) directFindings.push({ advisory, package: name, path, severity: vulnerability.severity });
+  const advisories = (Array.isArray(vulnerability.via) ? vulnerability.via : [])
+    .filter((via) => typeof via === "object" && via !== null && typeof via.url === "string")
+    .map((via) => via.url.match(/GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}/i)?.[0])
+    .filter(Boolean);
+  const paths = (Array.isArray(vulnerability.nodes) ? vulnerability.nodes : [])
+    .filter((path) => typeof path === "string" && path.trim());
+  if (!advisories.length || !paths.length) {
+    unmatchableFindings.push({ package: name, severity: vulnerability.severity });
+    continue;
+  }
+  for (const advisory of advisories) {
+    for (const path of paths) directFindings.push({ advisory, package: name, path, severity: vulnerability.severity });
   }
 }
 if (mode === "production") {
   if (directFindings.length || Object.values(vulnerabilities).some((v) => ["high", "critical"].includes(v.severity))) failures.push("production npm audit contains HIGH/CRITICAL findings; exceptions are forbidden");
 } else {
+  for (const finding of unmatchableFindings) {
+    failures.push(`unmatchable ${finding.severity} vulnerability: ${finding.package} lacks an exact structured GHSA and lockfile path`);
+  }
   for (const finding of directFindings) {
     const version = lock.packages[finding.path]?.version;
     const matchIndex = registry.entries.findIndex((entry) => entry.advisory === finding.advisory && entry.package === finding.package && entry.version === version && entry.path === finding.path);

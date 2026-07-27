@@ -122,7 +122,10 @@ export function discoverExpectedSwiftTests(sourceByPath) {
       const classMatch = line.match(/\b(?:final\s+)?class\s+(\w*(?:UITests|Tests))\s*:/);
       if (classMatch) className = classMatch[1];
       const testMatch = line.match(/\bfunc\s+(test\w+)\s*\(/);
-      if (className && testMatch) expected.add(`${className}/${testMatch[1]}`);
+      if (className && testMatch) {
+        const testID = `${className}/${testMatch[1]}`;
+        expected.add(testID);
+      }
     }
   }
   return [...expected].sort();

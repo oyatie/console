@@ -21,6 +21,8 @@
  *   punctuation never match. An unregistered/unauthorized code stays inert.
  */
 
+import { objectCodeBodySource } from "../ontology/codeGrammar";
+
 export type TokenKind = "mention" | "channel" | "codeLink";
 
 export type TokenSpan =
@@ -31,11 +33,23 @@ const MENTION_RE = /(^|[\s([{])(@[\p{L}\p{N}._-]{1,48})/gu;
 // `#` mirrors `@` exactly: the stored raw is `#<thread-id>` (a UUID that may
 // lead with a digit), so no leading-letter rule — round-trips through confirm.
 const CHANNEL_RE = /(^|[\s([{])(#[\p{L}\p{N}._-]{1,48})/gu;
-// Bare code, NO trigger char (§ directive: object refs auto-recognize). Second
-// optional `-NNNNNN` segment covers two-segment codes like workOrderCode()'s
-// "WO-20260612-001" and journal's "JL-20260704-1". kindFromCode is the gate:
-// an unregistered prefix ("COVID-19") parses here but renders inert.
-const BARE_CODE_RE = /(^|[\s([{])([A-Z]{1,8}-[0-9]{1,10}(?:-[0-9]{1,6})?)/gu;
+// Bare code, NO trigger char (§ directive: object refs auto-recognize). The
+// code BODY is NOT spelled here: it comes from `ontology/codeGrammar`, the one
+// dynamic prefix source objDrag/messenger/appr already parse with, so a type
+// registered through the Ontology Manager linkifies in the composer with no
+// edit to this file (L-F3). The boundary rule stays this module's own — `@`,
+// `#` and codes all fire only after start/whitespace/`([{`, which `\b` would
+// not enforce (it would match `.WO-1` and `가WO-1`).
+//
+// This replaced a hand-rolled `[A-Z]{1,8}-[0-9]{1,10}(?:-[0-9]{1,6})?`, which
+// was both too narrow (uppercase-only, digit-only body: `Bid-1204` and
+// `OT-FINANCE` could never match, and `WO-2026-Q1-07` truncated to `WO-2026`)
+// and too wide (any uppercase run, so `COVID-19` parsed and was only gated at
+// render). Rebuilt per call because the prefix set is primed at runtime;
+// codeGrammar caches the compile behind it.
+function bareCodeRe(): RegExp {
+  return new RegExp(`(^|[\\s([{])(${objectCodeBodySource()})`, "gu");
+}
 
 interface RawMatch {
   start: number;
@@ -66,7 +80,7 @@ export function parseTokenGrammar(text: string): TokenSpan[] {
   const matches: RawMatch[] = [];
   collect(MENTION_RE, "mention", true, text, matches);
   collect(CHANNEL_RE, "channel", true, text, matches);
-  collect(BARE_CODE_RE, "codeLink", false, text, matches);
+  collect(bareCodeRe(), "codeLink", false, text, matches);
   matches.sort((a, b) => a.start - b.start);
 
   const spans: TokenSpan[] = [];

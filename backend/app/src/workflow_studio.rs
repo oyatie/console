@@ -83,6 +83,7 @@ pub const WORKFLOW_RUNS_PATH: &str = "/api/v1/workflow-runs";
 pub const WORKFLOW_RUNS_MINE_PATH: &str = "/api/v1/workflow-runs/mine";
 pub const WORKFLOW_RUN_PATH_TEMPLATE: &str = "/api/v1/workflow-runs/{run_id}";
 pub const WORKFLOW_TASKS_PATH: &str = "/api/v1/workflow-tasks";
+pub const BULK_APPROVAL_INBOX_PATH: &str = "/api/v1/approval-inbox/bulk-tasks";
 pub const WORKFLOW_TASK_CLAIM_PATH_TEMPLATE: &str = "/api/v1/workflow-tasks/{task_id}/claim";
 pub const WORKFLOW_TASK_DECIDE_PATH_TEMPLATE: &str = "/api/v1/workflow-tasks/{task_id}/decide";
 pub const WORKFLOW_STUDIO_ROUTE_PATHS: &[&str] = &[
@@ -114,6 +115,7 @@ pub const WORKFLOW_STUDIO_ROUTE_PATHS: &[&str] = &[
     WORKFLOW_RUN_PATH_TEMPLATE,
     WORKFLOW_RUN_POST_FINALIZATION_REJECTION_PATH_TEMPLATE,
     WORKFLOW_TASKS_PATH,
+    BULK_APPROVAL_INBOX_PATH,
     WORKFLOW_TASK_CLAIM_PATH_TEMPLATE,
     WORKFLOW_TASK_DECIDE_PATH_TEMPLATE,
     WORKFLOW_TASK_FINALIZE_PATH_TEMPLATE,
@@ -411,6 +413,7 @@ pub fn router(state: WorkflowStudioState) -> Router {
         .route(WORKFLOW_RUNS_MINE_PATH, get(list_my_workflow_runs))
         .route(WORKFLOW_RUN_PATH_TEMPLATE, get(get_workflow_run))
         .route(WORKFLOW_TASKS_PATH, get(list_workflow_tasks))
+        .route(BULK_APPROVAL_INBOX_PATH, get(list_bulk_approval_inbox))
         .route(WORKFLOW_TASK_CLAIM_PATH_TEMPLATE, post(claim_workflow_task))
         .route(
             WORKFLOW_TASK_DECIDE_PATH_TEMPLATE,
@@ -1874,6 +1877,173 @@ async fn start_workflow_run(
     let (run, next_task) = load_run_view(&state.pool, org, resolved_run_id).await?;
     record_workflow_studio_request("run_start", "success");
     Ok(Json(StartWorkflowRunResponse { run, next_task }))
+}
+
+#[derive(Debug, Deserialize)]
+struct BulkApprovalInboxQuery {
+    #[serde(default)]
+    cursor: Option<String>,
+    #[serde(default = "default_bulk_approval_page_limit")]
+    limit: i64,
+}
+
+const fn default_bulk_approval_page_limit() -> i64 {
+    50
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum BulkApprovalIneligibilityReason {
+    ClaimedByAnotherUser,
+}
+
+#[derive(Debug, Serialize)]
+struct BulkApprovalCapability {
+    decidable: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reason: Option<BulkApprovalIneligibilityReason>,
+}
+
+#[derive(Debug, Serialize)]
+struct BulkApprovalTaskResponse {
+    task_id: Uuid,
+    run_id: Uuid,
+    waiting_key: String,
+    title: String,
+    assignee_role_key: Option<String>,
+    status: String,
+    claimed_by: Option<Uuid>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    due_at: Option<OffsetDateTime>,
+    bulk_decision: BulkApprovalCapability,
+}
+
+#[derive(Debug, Serialize)]
+struct BulkApprovalInboxResponse {
+    items: Vec<BulkApprovalTaskResponse>,
+    has_more: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    next_cursor: Option<String>,
+}
+
+fn parse_bulk_approval_cursor(
+    raw: Option<&str>,
+) -> Result<Option<(OffsetDateTime, String)>, WorkflowStudioError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    let Some((created_at, task_id)) = raw.split_once('|') else {
+        return Err(WorkflowStudioError::validation(
+            "invalid bulk approval cursor",
+        ));
+    };
+    let created_at =
+        OffsetDateTime::parse(created_at, &time::format_description::well_known::Rfc3339)
+            .map_err(|_| WorkflowStudioError::validation("invalid bulk approval cursor"))?;
+    let task_id = Uuid::parse_str(task_id)
+        .map_err(|_| WorkflowStudioError::validation("invalid bulk approval cursor"))?;
+    Ok(Some((created_at, format!("approval:{task_id}"))))
+}
+
+fn bulk_approval_cursor(item: &WaitingTaskListItem) -> Option<String> {
+    item.created_at
+        .format(&time::format_description::well_known::Rfc3339)
+        .ok()
+        .map(|created_at| format!("{created_at}|{}", item.task_id))
+}
+
+async fn list_bulk_approval_inbox(
+    State(state): State<WorkflowStudioState>,
+    Extension(principal): Extension<Principal>,
+    axum::extract::Query(query): axum::extract::Query<BulkApprovalInboxQuery>,
+) -> Result<Json<BulkApprovalInboxResponse>, WorkflowStudioError> {
+    let limit = query.limit.clamp(1, 200) as usize;
+    let org = principal.org_id;
+    let branch = guard_branch(&principal);
+    let store = PgWorkflowRuntimeStore::new(state.pool.clone());
+    let filter = WaitingTaskListFilter {
+        role_key: None,
+        assignee_me: true,
+        authority_role_keys: held_authority_role_keys(&principal, org, branch),
+        statuses: vec![WaitingTaskStatus::Open, WaitingTaskStatus::Claimed],
+    };
+    let mut after = parse_bulk_approval_cursor(query.cursor.as_deref())?;
+    let as_of = OffsetDateTime::now_utc();
+    let mut items = Vec::with_capacity(limit);
+    let mut next_cursor = None;
+    // Keyset scan keeps a denied row out of both the page and its cardinality.
+    // It advances until a full authorized page is found or the authoritative
+    // source is exhausted; unlike offset paging, denied rows cannot create holes.
+    loop {
+        let (candidates, source_has_more) = store
+            .list_waiting_tasks_action_page(
+                org,
+                principal.user_id,
+                filter.clone(),
+                as_of,
+                after.clone(),
+                200,
+            )
+            .await?;
+        let last = candidates.last().and_then(bulk_approval_cursor);
+        for item in &candidates {
+            if item.required_policy.as_deref() != Some("approval_decide")
+                || !task_visible(&principal, org, branch, item)
+            {
+                continue;
+            }
+            // Once the requested page is full, keep scanning until finding one
+            // more authorized row. This makes `has_more` truthful without
+            // exposing a page made solely of denied rows.
+            if items.len() == limit {
+                return Ok(Json(BulkApprovalInboxResponse {
+                    items,
+                    has_more: true,
+                    next_cursor,
+                }));
+            }
+            let capability = if item
+                .claimed_by
+                .is_some_and(|claimed_by| claimed_by != *principal.user_id.as_uuid())
+            {
+                BulkApprovalCapability {
+                    decidable: false,
+                    reason: Some(BulkApprovalIneligibilityReason::ClaimedByAnotherUser),
+                }
+            } else {
+                BulkApprovalCapability {
+                    decidable: true,
+                    reason: None,
+                }
+            };
+            let cursor = bulk_approval_cursor(item);
+            items.push(BulkApprovalTaskResponse {
+                task_id: item.task_id,
+                run_id: item.run_id,
+                waiting_key: item.waiting_key.clone(),
+                title: item.title.clone(),
+                assignee_role_key: item.assignee_role_key.clone(),
+                status: item.status.as_db_str().to_owned(),
+                claimed_by: item.claimed_by,
+                due_at: item.due_at,
+                bulk_decision: capability,
+            });
+            next_cursor = cursor;
+        }
+        if !source_has_more {
+            return Ok(Json(BulkApprovalInboxResponse {
+                items,
+                has_more: false,
+                next_cursor: None,
+            }));
+        }
+        let Some(next) = last else {
+            return Err(WorkflowStudioError::from(KernelError::internal(
+                "workflow task cursor did not advance",
+            )));
+        };
+        after = parse_bulk_approval_cursor(Some(&next))?;
+    }
 }
 
 async fn list_workflow_tasks(
@@ -7708,6 +7878,7 @@ fn error_code(kind: ErrorKind) -> &'static str {
 mod tests {
     use super::*;
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn allowlist_rejects_unknown_connector_actions() -> Result<(), String> {
         let err = match validate_action_allowlist(&[json!({
@@ -7728,6 +7899,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn catalog_uses_electronic_approval_system_name_for_internal_approvals_connector() {
         let connector = ALLOWED_CONNECTORS
@@ -7799,6 +7971,7 @@ mod tests {
         })
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn completion_approval_payroll_execution_graph_validates() -> Result<(), String> {
         // The canonical wf.exec.v1 completion→approval→payroll graph is a valid
@@ -7822,6 +7995,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn receipt_required_approval_definition_includes_receipt_waiting_node() -> Result<(), String> {
         let definition = build_approval_execution_definition("leave")
@@ -7856,6 +8030,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn all_approval_template_builder_outputs_validate() -> Result<(), String> {
         for template in APPROVAL_TEMPLATES {
@@ -7882,6 +8057,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn human_task_without_required_policy_fails_authoring() -> Result<(), String> {
         // Security H1(a): a human_task node MUST declare required_policy at authoring
@@ -7907,6 +8083,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn job_node_without_start_policy_fails_authoring() -> Result<(), String> {
         // Engine-Gen follow-up: a graph containing a `job` node MUST declare a
@@ -7957,6 +8134,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn oversize_run_payload_is_rejected() -> Result<(), String> {
         // Security M2: a payload over the 64 KiB serialized ceiling is a 422.
@@ -7972,6 +8150,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn policy_less_task_has_no_authorization_boundary() -> Result<(), String> {
         // Security H1(b): the claim/decide path fails closed (403) on a legacy
@@ -7987,6 +8166,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn execution_graph_job_node_requires_allowlisted_connector() -> Result<(), String> {
         // Swap the payroll node onto an unknown connector: publish-validation of the
@@ -8003,6 +8183,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn execution_graph_accepts_guardrail_control_point_nodes() -> Result<(), String> {
         let definition = json!({
@@ -8069,6 +8250,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn required_lines_block_publish() {
         let row = WorkflowVersionRow {
@@ -8108,6 +8290,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn create_rejects_invalid_canonical_workflow_graphs() -> Result<(), String> {
         let mut missing_schema = canonical_workflow_definition("leave_request");
@@ -8172,6 +8355,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn create_rejects_unsafe_condition_branch_config() -> Result<(), String> {
         let mut invalid_expression_op = canonical_workflow_definition("leave_request");
@@ -8227,6 +8411,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn create_rejects_browser_defined_object_scope_and_update_handles() -> Result<(), String> {
         let mut trigger_object_mismatch = canonical_workflow_definition("leave_request");
@@ -8281,6 +8466,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn accepts_leave_and_catalog_canonical_workflow_templates() -> Result<(), String> {
         let mut object_types = vec!["leave_request"];
@@ -8301,6 +8487,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn publish_validation_blocks_invalid_canonical_workflow_graphs() {
         let mut invalid_definition = canonical_workflow_definition("leave_request");
@@ -8317,6 +8504,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn publish_validation_messages_include_stable_codes() {
         let mut invalid_definition = canonical_workflow_definition("leave_request");
@@ -8330,6 +8518,7 @@ mod tests {
         assert!(!message.contains("missing_port"));
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn publish_validation_messages_hide_action_allowlist_payload_values() {
         let mut row = workflow_row(
@@ -8648,6 +8837,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn policy_decision_blocks_unsupported_templates() -> Result<(), String> {
         let mut definition = policy_decision_definition();
@@ -8665,6 +8855,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn definition_schema_version_is_required() -> Result<(), String> {
         let err = match validate_definition_object(json!({ "trigger": "work_order.completed" })) {
@@ -8677,6 +8868,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn definition_schema_version_must_match_supported_version() -> Result<(), String> {
         let err = match validate_definition_object(json!({
@@ -8692,6 +8884,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn policy_decision_simulation_surfaces_cedar_pbac_tuple() {
         let simulation = simulation_for(&policy_row(policy_decision_definition()));
@@ -8705,6 +8898,7 @@ mod tests {
         }));
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn policy_decision_metadata_requires_valid_schema() {
         let mut definition = policy_decision_definition();
@@ -8724,6 +8918,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn simulation_surfaces_non_blocking_findings() {
         let mut row = policy_row(policy_decision_definition());
@@ -8740,6 +8935,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn policy_decision_missing_scope_blocks_publish() -> Result<(), String> {
         let mut definition = policy_decision_definition();
@@ -8756,6 +8952,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn draft_update_merges_partial_payload_without_mutating_identity() -> Result<(), String> {
         let current = policy_row(policy_decision_definition());
@@ -8802,6 +8999,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn active_definition_is_editable_as_a_staged_revision() -> Result<(), String> {
         // pendingRev: editing a LIVE (ACTIVE) definition is allowed — it stages a
@@ -8814,6 +9012,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn retired_definition_is_not_editable() -> Result<(), String> {
         let mut current = policy_row(policy_decision_definition());
@@ -8825,6 +9024,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn definition_with_pending_revision_is_not_editable() -> Result<(), String> {
         let mut current = policy_row(policy_decision_definition());
@@ -8838,6 +9038,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn draft_update_rejects_empty_payload() -> Result<(), String> {
         let err = match normalize_update_request(UpdateWorkflowDefinitionRequest {
@@ -8859,6 +9060,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn retired_definitions_cannot_take_sensitive_lifecycle_actions() -> Result<(), String> {
         let mut current = policy_row(policy_decision_definition());

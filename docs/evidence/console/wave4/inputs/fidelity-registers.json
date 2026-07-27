@@ -1,0 +1,1805 @@
+{
+ "schema": "wave4-fidelity-registers-v1",
+ "produced": "2026-07-25",
+ "source": "per-module adversarial fidelity audit vs the Claude Design authority (dc.html + DESIGN.md invariants), 15 module subagents",
+ "summary": "Per-module adversarial fidelity audit vs the Claude Design authority (dc.html + DESIGN.md invariants)",
+ "audited": 15,
+ "scores": [
+  {
+   "module": "equipment",
+   "verdict": "major-deviations",
+   "score": 40,
+   "blockers": 2,
+   "majors": 7
+  },
+  {
+   "module": "logistics",
+   "verdict": "major-deviations",
+   "score": 42,
+   "blockers": 1,
+   "majors": 6
+  },
+  {
+   "module": "docs",
+   "verdict": "major-deviations",
+   "score": 48,
+   "blockers": 1,
+   "majors": 7
+  },
+  {
+   "module": "attendance",
+   "verdict": "major-deviations",
+   "score": 50,
+   "blockers": 3,
+   "majors": 4
+  },
+  {
+   "module": "evaluation",
+   "verdict": "major-deviations",
+   "score": 50,
+   "blockers": 2,
+   "majors": 7
+  },
+  {
+   "module": "payroll",
+   "verdict": "major-deviations",
+   "score": 52,
+   "blockers": 1,
+   "majors": 6
+  },
+  {
+   "module": "dispatch",
+   "verdict": "major-deviations",
+   "score": 55,
+   "blockers": 1,
+   "majors": 7
+  },
+  {
+   "module": "field",
+   "verdict": "major-deviations",
+   "score": 55,
+   "blockers": 1,
+   "majors": 7
+  },
+  {
+   "module": "directory",
+   "verdict": "major-deviations",
+   "score": 55,
+   "blockers": 1,
+   "majors": 4
+  },
+  {
+   "module": "board",
+   "verdict": "major-deviations",
+   "score": 56,
+   "blockers": 1,
+   "majors": 6
+  },
+  {
+   "module": "org",
+   "verdict": "major-deviations",
+   "score": 58,
+   "blockers": 2,
+   "majors": 5
+  },
+  {
+   "module": "inventory",
+   "verdict": "major-deviations",
+   "score": 58,
+   "blockers": 3,
+   "majors": 5
+  },
+  {
+   "module": "maintenance",
+   "verdict": "deviations",
+   "score": 62,
+   "blockers": 1,
+   "majors": 4
+  },
+  {
+   "module": "notif",
+   "verdict": "deviations",
+   "score": 76,
+   "blockers": 0,
+   "majors": 3
+  },
+  {
+   "module": "recruiting",
+   "verdict": "deviations",
+   "score": 78,
+   "blockers": 1,
+   "majors": 6
+  }
+ ],
+ "registers": [
+  {
+   "module": "payroll",
+   "verdict": "major-deviations",
+   "fidelity_score": 52,
+   "design_anchors_read": [
+    "DESIGN.md full read: §1-§3.10 + §4 invariants 1-20, §4.6 anti-patterns, §4.7 grammar catalog 1-10, §4-19..§4-29, §5, §6 (lines 1-257)",
+    "CLAUDE.md anti-patterns + core principles (lines 1-35)",
+    "dc.html 2112-2399 — pay screen template: header/회차 시리즈/배치 프리셋/CTA, 5-step stepper, 급여 명부·예외 검토·지급 총액·지급 일정 window-model cards",
+    "dc.html 8602-8659 — PAY_EX 5종, PAY_ROWS 10행(기본급/수당/공제/실지급/전월대비), PAY_ENT_COST, CARD_META.pay, CARD_PRESETS 4종, localStorage oyatie-cards-v1",
+    "dc.html 9700-9756 — payRunCalc/payExAct/paySubmit(AP-3124 생성)/payResubmit/payListSorted(단일 조회 지점 §4-19)",
+    "dc.html 15085-15102 — pay J/K/Enter=openPerson keyboard grammar",
+    "dc.html 15287-15332 — payStageN state machine, stStates/stSubs(AP-3124 코드 표기), payCta/payChip 단일 CTA",
+    "dc.html 19187-19467 — paySteps/payExRows(칩 drill: openHrIssue/openThread/openPerson)/payGridCols 열폭 드래그 36-220 clamp/payRows(rowBg+ring 선택)/payCostTag/payEnts/payAcct/paySched + payLay* 창 모델 배선",
+    "dc.html 20105-20136 — onPaySheet(시트 열람=감사·DLP), onPaySeries=lcOpen('SR-205'), person timeline 급여 행(금액 마스크 유지)",
+    "AGENTS.md §5 change log: head 35-80, payroll grep across 80-440, tail 160-193 — entries 191/191a/192/192a/193 are CRM-only; NO payroll authority after change-log 190 (급여 L2 판정=187)",
+    "Built code full read: PayrollScreen.tsx 1-1321, payrollApi.ts 1-346, payroll.css 1-346, PayrollConsoleRoute.tsx, usePayrollConsoleAuthz.ts, payrollCapabilities.ts(+test), routeContract.ts, index.ts, PayrollScreen.test.tsx 1-397, payrollApi.test.ts, PayrollConsoleRoute.test.tsx, web/src/i18n/payroll.ts 1-191"
+   ],
+   "invariant_violations": [
+    "§4.7-2 / §4-23 window model: pay cards (명부·예외·총액·일정) support no pin/popout/tray/preset state at all — '지원 불가가 기본값이면 위반'",
+    "§4-20 / §4-23 drag sources: no object surface (run row, roster row, exception ref code, AT- chip) is draggable as a [코드 제목] reference token — '끌 수 없는 개체 표기는 위반'",
+    "§4.7-9 / §5 drill invariant: exception linked refs, person links, laborcost/inbox links navigate to bare module roots, losing the target object — aggregate rows are not buttons to the source object",
+    "§3.10-① deny-by-omission: 승인/반려 decision UI is rendered for the submitter (canDecide=canManage); SoD is server-only, so an unauthorized action is exposed and fails post-hoc instead of being omitted",
+    "§4-1 / §4-6-2 non-functional data: calc.kernel_rate_table rendered as a dead mono chip (PayrollScreen.tsx:1217) — not clickable, not filtering, not a drill",
+    "§4-10 empty state: '표시할 급여 회차가 없습니다.' names no reason + next action",
+    "COMPLIANT: no §4-12 explanatory-caption violations found (all copy is prototype-identical gate/action text); no §4-11 big-number KPI cards (the 25px total lives inside the 지급 총액 card exactly as the prototype does); all colors via tokens"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Every pay card is a full window-model participant: header-drag=popout, double-click=pin/split (split-bar ratio drag), bottom/corner resize, minimize-to-tray chips, hover tool buttons, 배치 preset menu (기본 2단 63:37/포커스 74/비교 50:50/단일 스택), per-user saved layout — dc.html 2122-2146 (preset menu), 2175-2207/2275-2277/2343-2345/2379-2381 (grab/resize/tool wiring), 8635 CARD_META.pay, 8650-8657 CARD_PRESETS + oyatie-cards-v1, 19397-19467 payLay*/payTool*/paySplit*; DESIGN §4.7-2 '모든 카드/패널 공통', §4-23 '모든 모듈·카드·컴포넌트는 창 모델 후보 — 지원 불가가 기본값이면 위반'",
+     "code_does": "Four static CSS-grid sections with no popout, no pin/split, no tray, no presets, no card drag/resize; only column widths + mask + selected run persist (PayrollScreen.tsx:189-243 prefs, 909-1251 static .payroll__zones; payroll.css:145-151 fixed grid)",
+     "fix": "Port the console's shared window grammar (cardVal/cardGrab/pin/tray/preset equivalents) onto the four pay cards: header-band pointer-drag popout, dblclick pin-right with real width reflow, tray minimize chips, 4-preset layout menu, per-user layout persistence alongside the existing colW prefs",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "급여 명부 rows carry the pay itself: 기본급·수당·공제·실지급 mono right-aligned + 전월 대비 delta (toned) + 직책 subline under the name — dc.html 2247-2259 template, 8610-8620 PAY_ROWS, 19265-19301 payHeads/payRows; footer '단위 ₩ · 공제 = 4대보험 + 소득세' (2268)",
+     "code_does": "Roster columns are 근무일/연장/원천 chips/계산 상태 only — zero pay amounts and no MoM delta anywhere in the table (PayrollScreen.tsx:971-1068); amounts surface only on exceptions and the single total. Generated PayrollLineSummary carries no amount fields (payrollApi.ts:20)",
+     "fix": "Extend the line DTO/openapi with base/allowance/deduction/net (+ prior-run delta) and render them as masked-by-default mono amount columns with delta tone, restoring the roster as a pay table",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Every chip/row drills to the concrete object: exception chips open the actual AT- issue modal / messenger thread / person card (dc.html 19255 c.hr→openHrIssue, c.thread→openThread, c.person→openPerson), roster row click + Enter = that employee's 인사 카드 (19300, 15101), person timeline lands with payQ prefilled (20110); §4.7-9 '집계 화면의 모든 수치·바·행은 원본 개체로 이동하는 버튼', §5 통합 원칙",
+     "code_does": "All drills navigate to bare module roots and drop the object: refRoute maps kind→'/attendance'|'/people'|'/appr' with no code/id (PayrollScreen.tsx:246-256, 1156), person links → navigate('/people') (1060, 1120), laborcost/inbox links generic (1220, 837)",
+     "fix": "Pass the object identity through navigation (route param or ?code=AT-1042 / ?person=<id> that the target module consumes) or open the shared object-card panel; at minimum prefill the target module's search with the code/name as the prototype does",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§3.10-① least-privilege gate: 무권한 액션은 미노출(deny-by-omission); §3.9.1 maker-checker 기안자≠승인자(SoD). The submitter must not see an approve/reject affordance on their own run",
+     "code_does": "canDecide is hard-wired to canManage with the comment 'SoD rule is server-enforced' (payrollCapabilities.ts:17,33), so the same manager who submitted sees 승인/반려 inputs (PayrollScreen.tsx:767-778) and only learns via a 409 sod_violation after clicking",
+     "fix": "Hide (not disable) the decision block when run.submitted_by === actorId — the field already exists on PayrollRunSummary (payrollApi.ts:37); keep the server check as backstop",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Header carries the 회차 시리즈 button opening the SR-205 series card (이력·추세·다음 회차) — dc.html 2118, onPaySeries=lcOpen('SR-205') at 20132, series def 13403; §4-15 '월 급여 회차는 부모 시리즈 개체(SR-)로 캡처' with instance-card mini timeline",
+     "code_does": "No series affordance anywhere; the left run list (PayrollScreen.tsx:910-928) shows sibling runs but no series object, rule, trend, or next-scheduled instance",
+     "fix": "Add a header 회차 시리즈 entry once a series surface exists; until then at least link the run list header to the series/laborcost trend. Needs an SR-/series read surface the backend does not expose",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "지급 총액 card = big total + 전월 % + per-법인 breakdown bars with amounts (PAY_ENT_COST 8623-8628, template 2352-2364) + 사업자 부담 · 4대보험+퇴직 row (2366-2370) + 지급 계좌 상태 row",
+     "code_does": "Total (masked), calc-lines/payable chips, account-status chip, rate-table chip, laborcost link only (PayrollScreen.tsx:1191-1224) — no entity breakdown, no MoM delta, no employer-burden figure; RunCalcSummary has none of these fields (payrollApi.ts:62-72)",
+     "fix": "Add per-entity totals, prior-run delta, and employer-burden to the run calc summary contract and render the prototype's bar rows (bars must drill to the filtered roster per §4.7-9)",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-20 '모든 개체 표면 = 드래그 소스' — every code chip/row draggable with [코드 제목] payload via the single objDrag helper; tray chips set dataTransfer '[label]' (dc.html 19437)",
+     "code_does": "Nothing in the module is draggable; AT-1042 and other ref codes render as plain buttons (PayrollScreen.tsx:1151-1161), run/roster rows have no draggable attribute",
+     "fix": "Register run rows, roster rows, and ref chips as drag sources emitting the standard [코드 제목] text/plain payload (shared helper if the console exposes one, else local draggable+onDragStart)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "급여 명부 header has 시트로 열기 — sheet view whose open is itself an audited 열람 event (민감 · DLP 활성) — dc.html 2213-2215, onPaySheet 20127-20131 logEvent + shOpen",
+     "code_does": "No sheet affordance on the roster header (PayrollScreen.tsx:940-954)",
+     "fix": "Add the sheet-open button rendering the roster as a grid/sheet view and emit the audited view event server-side on that read",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Stepper: connecting line segments between steps (2170, lineBg done=ink), SUBMITTED approval step = 'wait' warn tone (15308 stepMeta.wait), approval sub carries the AP- code ('AP-3124 결재 중' 15314) which opens the approval document (19207)",
+     "code_does": "No connector lines (payroll.css:109-143), SUBMITTED maps to 'active' (PayrollScreen.tsx:723-726), sub is generic '결재 중' — approval_ref exists on the type (payrollApi.ts:41) but is never rendered",
+     "fix": "Add the flex connector span with done/locked coloring, a distinct wait state for SUBMITTED, and render approval_ref as the step sub + drill target",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Header chip is deadline-driven with clock icon: '승인 기한 7/8 (수) 16:00' warn → '결재 대기 · 기한 7/8 16:00' info → '이체 예약 7/10 04:00' ok (15302, 2147-2150)",
+     "code_does": "Status-only chips with correct tones but no due/deadline content (PayrollScreen.tsx:653-661); the contract carries no approval-deadline field",
+     "fix": "Add a decision-due timestamp to the run contract and fold it into the header chip text",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-1/§4-6-2: every noun is clickable/draggable or absent — no functionless data labels",
+     "code_does": "calc.kernel_rate_table ('RT-2026-07') is a dead neutral chip (PayrollScreen.tsx:1217) with no drill, filter, or drag",
+     "fix": "Link the rate-table chip to its regulation/parameter object (RG- surface or laborcost) or remove it from the card",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-10 empty state = 이유 + 다음 행동 한 줄 (prototype gate texts always name the unlock path, e.g. '근태 마감 후 계산 가능 → 근태로 이동')",
+     "code_does": "emptyRuns '표시할 급여 회차가 없습니다.' and exEmpty give no cause or next action (i18n/payroll.ts:9,128); run creation path (예약 작업 sc2 '월 급여 회차 생성') is unnamed",
+     "fix": "State why (no run staged for the period) and the next action (예약 작업/생성 경로 or contact surface) in one line",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "J/K moves a visible selection ring (inset signal bar, 19298-19299) and Enter opens the person card (15101); row click = 인사 카드 (19300)",
+     "code_does": "J/K moves DOM focus (focus outline only), Enter/click toggle an inline hours expansion, and the ring class marks the expanded row instead of the cursor (PayrollScreen.tsx:582-591, 1005-1018)",
+     "fix": "Track a cursor row with the inset-ring style, keep Space=expand but make Enter open the employee object (once finding 3's deep-link lands)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Payroll objects carry human codes used as reference tokens everywhere: 회차/명세 PS-2606, 결재 AP-3124 (9220, 9733, OT-06 '회차▸명세 PS-' 8714); §4.7-3 코드 발급 + 참조 토큰",
+     "code_does": "The run is identified only by source_label + uuid; no PS- style code is displayed or copyable anywhere in the module",
+     "fix": "Issue a display code (PS-YYMM style) on the run contract and render it as the standard mono code chip (drag source per finding 7)",
+     "backend_blocked": true
+    }
+   ],
+   "cap": "CAP-PAYROLL-CONSOLE"
+  },
+  {
+   "module": "recruiting",
+   "verdict": "deviations",
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Pool postings (일용직/인력풀) terminate the pipeline by registering the candidate into the workforce pool, not by creating an employee: nextLabel/ctaLabel = rp.pool ? '인력풀 등재(— 비상근)' : '입사 확정' (dc.html 19708, 19754) and rcAdvance registers wpJoined with '재직 명부 비합산 · 대근 편성 대상' (dc.html 12752-12758). The composer even promises it: '확정 = 인력풀 등재 · 비상근' chip (dc.html 680).",
+     "code_does": "nextActionLabel excludes POOL_DAILY (RecruitingScreen.tsx:80) and CandidateCard's hireable requires !isPool (CandidateCard.tsx:109-114), so an OFFER-stage applicant on a POOL_DAILY posting has NO primary CTA anywhere — the pipeline dead-ends while the composer still shows the '확정 = 인력풀 등재 · 비상근' promise chip (PostingComposer.tsx:144-146).",
+     "fix": "Add a pool-registration terminal action for OFFER-stage applicants on POOL_DAILY postings (POST …/applicants/{id}/register-pool → workforce-pool entry with src=JP-, avail=본인 동의/즉시), wired as the card CTA and subrow next-action. Until the endpoint exists, list in the gap manifest — do not fake it client-side.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Rejected-candidate banner carries TWO actions: '인력풀 등재 제안' (talent-pool → workforce-pool conversion, Greenhouse→WFM chain, rcPoolPropose dc.html 1540 + 10524-10530) and '탈락 철회 · 재검토'.",
+     "code_does": "CandidateCard rejected banner has only reinstate (CandidateCard.tsx:205-212); the pool-propose path does not exist in the module or the API contract (recruitingApi.ts has no workforce-pool mutation).",
+     "fix": "Add '인력풀 등재 제안' button on the rejected banner calling a workforce-pool proposal endpoint (avail=본인 동의 대기, src=posting code); needs a backend surface.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "J/K/Enter is a screen-level grammar: keydown on the recruit screen moves rcSel across rows with a persistent selection ring 'inset 2.5px 0 0 var(--signal)' + muted rowBg distinct from the open state, Enter toggles the selected posting (dc.html 15062-15072, 19686-19687); §4.7-1 list grammar.",
+     "code_does": "rove() only fires when a row-toggle button already has DOM focus (RecruitingScreen.tsx:468-483) — pressing J/K on the screen does nothing until the user Tabs into the list — and the signal ring is applied only to the OPEN row (recruiting.css:23 .recruiting__row--open); there is no separate selection state.",
+     "fix": "Add a screen-scoped keydown handler (ignoring inputs/dialogs) that maintains a selectedId with the rowBg+ring treatment independent of open, and make Enter toggle the selected row.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "입사 확정 is one click: employee object auto-created with 사원 title, team=posting site, job=role, '포지션 정책 프리셋 상속 · 타임테이블 자동 연결 · 근로계약 개인 수신함(passkey) 발송' (dc.html 12760-12766); DESIGN §2 backlog 5 '입사 확정 시 직원 개체 자동 생성'.",
+     "code_does": "Hire opens a 7-field manual form where employee_number, phone, org_unit, and home_branch_id must be hand-typed before the CTA enables (CandidateCard.tsx:85-105, 147-155, 340-391); only position/site/base_pay are prefilled.",
+     "fix": "Derive org_unit from posting.worksite, default home_branch from the posting's site mapping, and have the backend issue the employee number; leave phone as the only manual field. Keep the form as a confirm sheet, not data entry.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-27-1 input normalization: phone numbers accept digits only and auto-format while typing — 'a badly formatted value cannot exist'; the charter's named reference case is 직원 등록 휴대폰 (DESIGN.md §4-27, AGENTS 170).",
+     "code_does": "Hire-form phone is a free-text input with no mask (CandidateCard.tsx:357-358 — plain onChange), and employee_number likewise; only base_pay/offer amounts strip non-digits.",
+     "fix": "Apply the digit+auto-hyphen mask to phone (reuse the employee-registration mask helper) and a pattern mask to 사번.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-20: business parameters are never hardcoded constants — enums derive from the engine/settings objects; §4-27-3: every enum chip row is N+1 extensible via 「+ 직접 입력」.",
+     "code_does": "The 법인 chip set is a hardcoded array in frontend i18n (recruiting.ts:174 companies: ['코스','BESTEC','KNL','그룹','스태핑']) baked into every tenant's bundle, and neither 법인 nor 고용 형태 chip rows offer a direct-input N+1 extension (PostingComposer.tsx:106-148).",
+     "fix": "Load the corporation list from the server (org-entity read, same pattern as listBranches) and add the dotted 「+ 직접 입력」 affordance to the enum chip rows.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-1 connectivity / §4-22 (every element serves ≥2 stories): talent pool exists to feed re-engagement — reconsider and 인력풀 전환 제안 both operate on the pooled candidate (dc.html 10524-10530, 12525); nouns must click or drag.",
+     "code_does": "The 인재풀 section renders inert rows — name, APL- code chip, reason, timestamp with no click, no drag, no action (RecruitingScreen.tsx:712-733); RecruitTalentPoolItem carries no applicant id (recruitingApi.ts:124-130), so no drill is even possible.",
+     "fix": "Add applicant_id (and posting_id) to the talent-pool payload; row click opens the candidate card (which then carries reinstate/pool-propose); make the APL- chip a drag source.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Subrow ⋯ menu '탈락 처리' opens the candidate card WITH the reject-reason menu already open (dc.html 19725: rcCandOpen + rcRejMenu: true) so the enum reason is one click away.",
+     "code_does": "Menu reject only opens the card (RecruitingScreen.tsx:652); the user must find and click 불합격 again to reach the reason enum.",
+     "fix": "Pass an initialRejectMenuOpen flag into CandidateCard when entered via the menu path.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-29 + change-log 183a: the gate CTA stays visible but fail-closed (dimmed, no-op) and a warn banner names exactly what remains ('남은 항목: …' — including the un-checked attest).",
+     "code_does": "PreflightModal hides the 게시 button entirely until publishable && attest (PreflightModal.tsx:79-81); when checks pass but attest is unchecked there is no banner and no CTA — the remaining step is undiscoverable.",
+     "fix": "Always render the CTA disabled and show the remaining-items warn banner covering both failed checks and the pending attest.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§3: 'the next-action CTA is always exactly one' — the prototype's OFFER-stage card always exposes a single primary CTA (입사 확정 / 인력풀 등재, dc.html 19754).",
+     "code_does": "With an EXTENDED offer the card footer has no primary CTA at all — the next actions (수락 기록/거절 기록) are two ghost buttons inside the offer section (CandidateCard.tsx:279-282, 116-142 returns undefined).",
+     "fix": "Promote the reply-recording step to the footer primary (e.g. single '오퍼 회신 기록' CTA opening the accept/decline choice) so exactly one next action is always visible.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4.7-3: object links travel to the object in one click (링크 칩으로 상·하류 이동); hire creates a specific employee object.",
+     "code_does": "onOpenEmployee and onOpenPosition discard the id and navigate to module roots '/console/people' and '/console/objectExplorer' (RecruitingScreen.tsx:788-789), losing the drill target.",
+     "fix": "Deep-link with the object id (e.g. /console/people?employee={id}, explorer focus param) once those routes accept parameters.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "The provenance chip '원본 · {file}' is a button: clicking logs an audited view and surfaces the provenance path (dc.html 1548, 19740) — §4-13 file demoted to a secondary but live link.",
+     "code_does": "Rendered as a static span with a title tooltip (CandidateCard.tsx:217-221) — not clickable, no audited view.",
+     "fix": "Make it a button that fetches/audits the original document; needs an original-file (provenance) endpoint.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-10 empty state = reason + next action in one line.",
+     "code_does": "'등록된 공고가 없습니다' with no next action (RecruitingScreen.tsx:538, recruiting.ts:27); the manager's obvious next step (공고 등록) is only in the header.",
+     "fix": "For canManage, render the empty state with an inline 공고 등록 action.",
+     "backend_blocked": false
+    }
+   ],
+   "design_anchors_read": [
+    "DESIGN.md full (lines 1-257): §1-3, §3.9/3.9.0-3, §3.10, §4 invariants 1-20, §4-19..§4-29, §5-6",
+    "CLAUDE.md (design mirror) full — 안티패턴 1-5, 핵심 원칙",
+    "dc.html 650-727 — 공고 등록 composer template (rcPost)",
+    "dc.html 1430-1602 — recruit screen template: header/rcHead, posting grid tracks minmax(140px,1.3fr) 96px minmax(150px,1fr) 52px 24px, stage chips, candidate subrows + ⋯ menu, candidate card (stepper/profile/평가/오퍼/불합격 enum/CTA)",
+    "dc.html 8918-8935 — rcData seed shape",
+    "dc.html 10523-10565 — rcPoolPropose, rcPostField/ReqAdd/Save(publish), rcPublishDraft §4-29 preflight (3 auto checks + attest)",
+    "dc.html 12482-12547 — rcCandOpen(열람 감사)/rcAssess/rcOffer(send·adjust·retract)/rcRejectWithReason(talentPool)/rcReconsider/rcPrimary(fail-closed assess gate)",
+    "dc.html 12742-12795 — rcAdvance (hire → EMPLOYEES push / pool → wpJoined), rcCandAct (doc/hold/reject)",
+    "dc.html 15062-15075 — screen-level J/K/Enter handler on rcSel/rcOpen",
+    "dc.html 19676-19834 — render view-model: rcPosts (ring/fill/stages/nextLabel incl. rp.pool branch), rcC card mapping (ctaLabel, rejReasons enum 5종, pool propose), rcHead/rcMeta, rcPost pickers",
+    "AGENTS.md §5 change log grep 채용/공고/지원자/오퍼/인재풀 + tail 178-193: post-190 entries (191-193) are CRM-only — no new recruiting authority after the build baseline; 185 (공고 게시 §4-29 게이트) and 190 (수동 e2e 공고 게시 잔여) predate 190 and are honored by the build"
+   ],
+   "invariant_violations": [
+    "§4-27-1 (입력 정규화): hire-form 휴대폰 is free text with no digit mask/auto-format — the charter's named reference case (직원 등록 휴대폰) — CandidateCard.tsx:357-358",
+    "§4-27-3 (N+1 enum): 법인·고용 형태 chip rows have no 「+ 직접 입력」 extension — PostingComposer.tsx:106-148",
+    "§4-20 (하드코딩 금지 / single engine): tenant corporation enum hardcoded in frontend i18n (recruiting.ts:174) instead of derived from the org/ontology engine",
+    "§4-20/§4-23 (모든 개체 표면 = 드래그 소스 / 창 모델 후보): zero drag sources in the module — posting rows, applicant names, APL-/JP- code chips, talent-pool rows are not draggable and the candidate card supports only the modal state (note: the prototype recruit section is equally thin here, so this is a charter gap, not a mirror-fidelity gap)",
+    "§4-1/§4-22 (연결성·2-스토리): 인재풀 rows are display-only — no click, no drag, no action (RecruitingScreen.tsx:712-733)",
+    "§4.7-1 list grammar: no multi-attribute search and no column-resize on the postings list (also absent in the prototype section — charter-level)",
+    "PASS: §4-11 (compact one-line stat, no big-number KPI cards), §4-12 (no explanatory captions/subtexts — the head stat line mirrors the prototype's rcHead), §4.5 deny-by-omission (denied screen, talent-pool section omitted on 403, manage affordances hidden), §4-29 preflight gate present, TONE-token colors only in recruiting.css"
+   ],
+   "fidelity_score": 78,
+   "cap": "CAP-RECRUITING"
+  },
+  {
+   "module": "attendance",
+   "verdict": "major-deviations",
+   "fidelity_score": 50,
+   "design_anchors_read": [
+    "dc.html 1711-2110 — att screen template (header + cover planner popover + 배치 presets + stat bar + attZone 4 window-model cards + day/month boards + legends + close CTA states)",
+    "dc.html 19102-19358 — att view-model (attKpis, attCoverRows state machine, att52, attCloseRows, fix-link, preflight wiring, day/month seg + entity filter + month nav clamp)",
+    "dc.html 15695-15823 — month drill chain (root→법인→사업장→팀→인원), attCrumbs, summary row, CAP 60 note, J/K selection ring; 15913-15933 — attTLGroups fold/entity filter/onDay",
+    "dc.html 14094-14154 buildAttDayTL (plan/real dual-track segs, sub fill-in merge, check-in live reflection); 14155-14231 buildAttMonth (full-roster aggregation); 14047-14092 subOpen/coverPlan (D+7 forward queue); 10485-10545 attCheckIn/attSwapReq; 9690-9707 attConfirmClose §4-29 preflight; 15074-15090 month J/K/Enter handler",
+    "DESIGN.md 1-257 (full §1-§6 incl. §3.9 lifecycle, §3.10 guardrails, §4-11/12/13/14/18/19/20/22/23/25/26/27/28/29, §4.7 grammar catalog)",
+    "CLAUDE.md 1-35 (anti-patterns, benchmarks, priority queue)",
+    "AGENTS.md §5 change log — 근태 anchors 165/166/186/188 (golden path, fix-link, §4-29 close preflight, L2 verdict); entries 191-193 (>190) are CRM-only — no new attendance authority after 190"
+   ],
+   "invariant_violations": [
+    "§4.7-2 / §4-23 창 모델: all four attendance cards are static <section>s — no pin(split)/popout(float)/minimize(tray) states, no header-drag, no resize, no 배치 presets, no per-user layout persistence (§4-1-7 워크스페이스 소유권), while the prototype att screen is literally built as a free-layout attZone",
+    "§4-20 / §4-23 드래그 참조: no object surface in the module is a drag source — exception rows, AT- codes, person chips, close rows carry no draggable reference-token payload",
+    "§4-12 truthfulness: day-board legend renders 지각(warn-solid)·결근(danger-solid) swatches that can never appear on the track (segments are only work/away; exceptions are chips) — functionless labels; header claims 실시간 현황 but data is fetch-once with no refresh path",
+    "§4-14-③ 역학 노출: no automation/policy chips on any surface (e.g. prototype's wf3 연장 승인→급여 자동 반영 chain is invisible here); resolved-overtime → payroll linkage is not surfaced"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "dc.html 1746-1820 + 1818/1993/2034/2064: attZone hosts 4 cards (근무 현황·주52·예외·마감) each with onGrab(popout)/onDbl(pin split)/onResize/onCorner, hover tool buttons (pin/minimize/split), drop indicator, split bar, 배치 프리셋 menu + 기본 배치 reset, per-user saved layout — DESIGN §4.7-2 single window grammar, §4-23 every card is a window candidate",
+     "code_does": "AttendanceScreen.tsx:473-744 renders a fixed CSS grid (attendance.css:170 attendance__zones, 1fr + 280-360px side column) of static sections; no drag, pin, tray, presets, reset, or persistence anywhere in the module",
+     "fix": "Mount the four cards in the shared window-model card zone (header-drag=float, dblclick=pin split with real padding-right, tray minimize, 배치 presets + 기본 배치, per-user persistence); if the shell's card engine is not yet extracted, that extraction is the prerequisite FE work — not backend",
+     "backend_blocked": false
+    },
+    {
+     "severity": "blocker",
+     "design_says": "dc.html 1963-1990 + buildAttDayTL 14094-14154: every day row has a dashed 계획(plan) track (incl. 연장 예정 dashed-accent, 승인 휴가 purple) above the 실적(real) track (work/휴게/지각/결근/연장 kinds), legend 계획·실적·휴게·지각·미출·연장·결근·승인 휴가 — 계획 vs 실적 is the module's core concept (grep anchors 계획/실적)",
+     "code_does": "attendanceModel.ts:62-100 derives only work/away spans from clock events; DayRowView (AttendanceScreen.tsx:1030-1080) renders a single lane; attendanceModel.ts:1-4 states 'no schedule registry exists yet, nothing synthesized' — the board is actual-only",
+     "fix": "Add the schedule/timetable read surface, then render the dashed plan lane plus late/absent/OT/leave segment kinds and the full 7-entry legend; keep the truthful actual-only board until then",
+     "backend_blocked": true
+    },
+    {
+     "severity": "blocker",
+     "design_says": "DESIGN §4-20: every chip/row/code label representing an object is draggable with the standard token payload `[코드 제목]` via a single objDrag helper; '끌 수 없는 개체 표기'는 위반",
+     "code_does": "No element in AttendanceScreen.tsx sets draggable/dragstart — exception rows (649-681), AT- code chip (1467), person links, sub rows all undraggable",
+     "fix": "Add a tiny shared drag helper (dragstart → dataTransfer text '[AT-#### title]') and register exception rows, AT- codes, person chips and close rows; drop-target interpretation lands with the console token grammar",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 1845-1928 + 15736-15817: month view drills 그룹 전체→법인→사업장→팀→인원 with breadcrumbs, sticky summary row, 출근율 bar column, per-row drill chevron, info button → 개체 카드, full-roster aggregation (buildAttMonth walks the entire org), CAP 60 + '전체 목록은 검색' note",
+     "code_does": "monthSheetRows (attendanceModel.ts:202-267) emits flat rows only for employees that have exceptions that month — clean-attendance employees are invisible in a card titled 월 근무표; no drill levels, breadcrumbs, rate column, info buttons, or cap note (AttendanceScreen.tsx:1082-1243)",
+     "fix": "Seed rows from listAttendanceSummary (already fetched for the sub pool) so every employee appears; group/drill by team (exception.team exists) with a breadcrumb chain and summary-per-level; 출근율 column stays deferred behind the schedule registry (name it in the gap manifest)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 1719-1744 + coverPlan() 14049-14092: cover planner is a D+7 forward queue = approved/pending absences (연차·근무 승인) × cover-required roles, with a 4-state chip machine (편성됨/미편성/승인 대기/장기 — 충원), per-state CTA routing (대근 편성 / 결재 큐→연차 / 충원→채용), partial-cover windows, empty copy '연차·근무 승인 시 자동 합류'",
+     "code_does": "coverPlanRows (attendanceModel.ts:281-312) = today's open NO_SHOW exceptions + already-assigned subs only; two states, one CTA (AttendanceScreen.tsx:334-378) — reactive, not preventive",
+     "fix": "Feed approved+pending leave for the next 7 days (cover-required roles) into the queue, add the 승인 대기/장기 states with routing to the leave and recruiting surfaces",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/BESTEC) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
+     "code_does": "DayBoard (AttendanceScreen.tsx:882-1028) renders one flat name-sorted list; HR records carry no site/team so no grouping, filter, or group notes exist",
+     "fix": "Group rows by site/team (needs site attribution on attendance records or a roster join) with fold + entity segment filter; site header links to org drill",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 1963 (row onDay → openEmpDay 14413): clicking a worker's day track opens the 직원-일자 개체 — 계획·실적·감사·커뮤니케이션·급여 영향, 민감 분류 + 열람 기록 게이트",
+     "code_does": "Day rows have no day-detail target; the name is a plain href to the people screen (AttendanceScreen.tsx:1034-1036) — the per-day object drill does not exist",
+     "fix": "Add an employee-day detail (pin panel per §4.7-3) composing that day's segments, exceptions and resolutions now; audit/pay-impact sections attach as those surfaces land",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "DESIGN §4-12/§4.6: legend = what renders; no functionless labels",
+     "code_does": "Day legend (AttendanceScreen.tsx:1012-1019) shows 지각·결근 track swatches although tracks only ever render work/away — those colors never appear on the board",
+     "fix": "Remove the two dead legend entries (or render late/absent as segments once plan data exists)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 19163-19169: 주52 근무 조정 creates a follow-up to-do ('주 52시간 근무 조정 협의' @who) + result toast, then flips to 요청됨",
+     "code_does": "onAck (AttendanceScreen.tsx:582-603) posts the week52 ack and flips the chip; no follow-up artifact or confirmation toast",
+     "fix": "On ack, create/link the follow-up work item and confirm with a result toast when the work-item surface exists",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 11328-11334 + subPool: substitute pool = workforce registry (유형 일용직/파견·단가·자격·평점·거리·건별 근로계약 발행)",
+     "code_does": "SubModal pool (AttendanceScreen.tsx:1719-1764) = HR attendance-summary names + last event time; worker_type hard-coded 'EMPLOYEE' (1757)",
+     "fix": "Consume a workforce-pool registry surface (rates/skills/availability, per-assignment contract issuance) when it exists; the employee-only pool is a truthful interim",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 1875/1906: month day-cell title = 날짜 + 상태 (+ 대근 대체자), footer promises '칸에 마우스를 올리면 날짜·상태'",
+     "code_does": "Cell title (AttendanceScreen.tsx:1184) is the date string only — hover reveals no status",
+     "fix": "Append the cell kind label (and cover worker on covered cells) to the title",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 2069-2104: close chip carries the deadline ('기한 7/4 (토)'); done banner routes 급여로 이동 (pay pipeline step 1)",
+     "code_does": "Deadline chip is static '진행 중' with no date (i18n/attendance.ts:110); done banner links to 인건비 laborcost (AttendanceScreen.tsx:1364-1369) because no payroll screen exists",
+     "fix": "Add a deadline field to the close board and render it in the chip; retarget the banner to the payroll surface when it lands",
+     "backend_blocked": true
+    }
+   ],
+   "cap": "CAP-ATTENDANCE-CONSOLE"
+  },
+  {
+   "module": "org",
+   "verdict": "major-deviations",
+   "fidelity_score": 58,
+   "design_anchors_read": [
+    "DESIGN.md full (1-257): §3.9/§3.9.0-3 lifecycle+governance, §3.10 guardrails, §4-1..29 invariant catalog, §4.5-4.8, §5",
+    "CLAUDE.md full (anti-patterns 1-5, 핵심 원칙)",
+    "dc.html 1315-1427 ORG CHART template (header/dirty banner/edit toggle/columns/sites/teams/add buttons)",
+    "dc.html 7122-7291 TEAM CARD + ENTITY CARD + 조직 변경 (Draft→Archive) modal templates",
+    "dc.html 8890-8909 org state seed (orgData/orgOpen/siteOpen/entCard/teamCard/orgChange)",
+    "dc.html 9649-9661 orgMoveTeam (team drag between sites)",
+    "dc.html 12595-12712 orgChange lifecycle methods + orgTouched/orgAddSite/orgAddEntity 신설 위저드 + renames",
+    "dc.html 15440-15478 orgChange viewmodel + CTA state machine (사전점검 실행→상신→결재 대기 n/N→발효→정산→보관)",
+    "dc.html 19469-19545, 19674-19677 orgCols viewmodel (expand/collapse, dragOn, onDropTeam, 삭제 가드 fail-closed, entCard 재무 PBAC·관할, onEntDetail hrQ prefill)",
+    "AGENTS.md §5 change log: entries 12,13,18,19,128,129,140,143,156,160,168,170 (org authority) + post-190 sweep: 191-193 are CRM-only — no new org authority after change-log 190",
+    "Built: web/src/console/org/* all 15 files + web/src/i18n/org.ts + console/window/objDrag.ts + console/objectcard exports + shell/nav.ts head"
+   ],
+   "invariant_violations": [
+    "§4-18/§4-23/§4.7-2 (창 모델·재사용): org cards are bespoke centered modals (OrgCards.tsx CardShell) while the console's shared window engine (console/window: useWindowEngine, pinnedFloat, tray) and ObjectCard window entry (objectcard/objectCardWindowEntry, ObjectCardModal) exist and are consumed by evidence/ontology/explore — '같은 모양을 두 번 손으로 그리는 것' is DESIGN's stated violation signal; prototype team/entity cards have snap-drag headers ('끌어서 화면에 분할 고정') + pin buttons (dc.html 7126/7134/7161/7167, AGENTS 129)",
+    "§4-20/§4-23 (모든 개체 표면 = 드래그 소스): zero draggable surfaces in the module — entity cards, team rows, OC- code chips are not drag sources even though the single shared helper console/window/objDrag.ts exists",
+    "§4-12/§4-10 (설명용 UI 금지·빈 상태): changesUnavailable copy '조직 변경 API가 아직 배포되지 않았습니다' (i18n/org.ts:45) is an infrastructure/meta caption with no next action — tech-stack captions are explicitly banned",
+    "§4-19/§4-27-2 (typed fields): org-change 사유 added as a free-text textarea gated only on non-empty (OrgChangeModal.tsx:191-193,358-368) — new reason fields must be curated enum + optional detail ('신규 필드는 타입 판정 없이 텍스트로 추가하지 않는다')",
+    "§4.7-9/§5 (분석=drill·통합): object cards navigate to unscoped screens — 소속 명부/팀원 명부/head/employee links all go to bare 'people', 팀 채널 to bare 'messenger' — prototype drills to the specific person card (openPerson) and entity-prefiltered roster (hrQ, dc.html 19677)"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Team/entity cards carry the console window grammar: draggable header = snap to split panel ('끌어서 화면에 분할 고정'), pin button = right split panel (dc.html 7126, 7134-7136, 7161, 7167-7169; AGENTS change-log 129 added pins to both cards; DESIGN §4.7-2/§4-23 declares every card a window-model candidate)",
+     "code_does": "OrgCards.tsx:14-43 CardShell renders a plain centered overlay modal with only a close button; no pin, no snap-drag, no tray. The shared engine exists in-repo (console/window/useWindowEngine.ts, WindowManager.tsx, objectcard/ObjectCard.tsx:863 objectCardWindowEntry) and is used by evidence/ontology/explore modules — org hand-drew its own shell instead (§4-18 violation signal).",
+     "fix": "Replace CardShell with the shared ObjectCard/window-engine entry (objectCardWindowEntry or WindowManager registration) so team/entity/site cards get pin/popout/tray + snap-drag headers for free; delete the bespoke modal.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "blocker",
+     "design_says": "모든 개체 표면 = 드래그 소스 (DESIGN §4-20, §4-23): every object chip/row/code label is draggable with the standard [코드 제목] reference token via the single objDrag helper",
+     "code_does": "No element in the module is draggable: entity cards (OrgChartScreen.tsx:429-444), team rows (616-626), OC- code chips in the changes strip (372-386) and modal header (OrgChangeModal.tsx:277) render codes as static spans. console/window/objDrag.ts (OBJ_REF_MIME + objectRefToken) is the designated shared helper and is unused by org.",
+     "fix": "Spread objDrag(code, title) onto the OC- code chips and (once org objects carry codes) entity/team surfaces; wire the changes-strip chips first since OC- codes already exist.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Sites contain teams: 법인 › 사업장 › 팀 nesting with T-spine connectors, site click = 팀 접기/펼치기, collapsed sites show a '+N' team-count chip and a mono headcount per site (dc.html 1343-1415, 19481-19519)",
+     "code_does": "orgTree.ts:46-105 renders identity branches (sites) and hr org-chart units (teams) as flat sibling lists under the entity column — teams never nest under a site; site click opens a thin OrgSiteCard (region only, OrgCards.tsx:95-124) instead of expanding teams; per-site headcount and +N chips absent; the tree connector system is reduced to one border-left (org.css:373-379).",
+     "fix": "Gap manifest: hr org-chart / identity contract has no branch↔org_unit linkage or per-branch headcount, so true nesting needs a backend surface. Meanwhile restore the prototype interaction shape: per-site disclosure with +N chip and spine styling, and keep the site card as the info affordance (i-button) rather than the row click.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Edit mode lets you drag a team to another site — team rows become draggable (dragOn), site rows are drop targets (onDropTeam), drop = sandbox move + '팀 이동됨 — 실제 반영은 조직 개편 결재로 상신됩니다' toast (dc.html 1361, 1384, 19493-19503, 9649-9661)",
+     "code_does": "No team drag-and-drop exists; the only team edit is a rename input whose blur emits REASSIGN_ORG_UNIT from→to within a company scope (OrgChartScreen.tsx:597-614). The op vocabulary (orgApi.ts:46) scopes REASSIGN_ORG_UNIT to {company} only, so a site-level team move cannot even be expressed.",
+     "fix": "Add HTML5 DnD between team rows and site rows producing a proposal op; requires extending the org-change op vocabulary (digest + backend) with a site-scoped reassignment before the FE can express it.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "법인 신설 = 3-step progressive wizard (AGENTS 128/168/170; dc.html 12674-12704): 기본(법인명·약칭·업종·대표자·사업자번호 auto-mask 000-00-00000·소재지) → 조직(최초 사업장 필수 fail-closed·팀 칩·결재선 프리셋) → 통합(셋업 채널·알림·주52h 감시 시드) — creation joins scope/조직도/graph/messenger and confirms via 개편 결재; §4-27-1 names the 사업자번호 mask as a reference implementation",
+     "code_does": "No entity-creation path exists. The change modal offers kind=NEW (OrgChangeModal.tsx:322-339) but only against an existing entity target; proposal ops (orgApi.ts:37-46) have no CREATE_ENTITY, and /api/v1/org-entities is read-only (orgApi.ts:226-227).",
+     "fix": "Gap manifest: entity creation (with registration-number field) needs a backend surface (org-entity create or a CREATE_ENTITY proposal op). Then build the 3-step wizard with the §4-27 input mask and fail-closed first-site gate.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Entity card is a rich object card: 대표이사(편집)·설립·사업자번호·소재지·조직 grid, 관할(jurisdiction) chips driving 컴플라이언스 drill, PBAC-gated 재무 요약 (deny-by-omission section, 펼침=열람 감사, 대시보드 법인 스코프 drill) (dc.html 7174-7209, 19543-19608)",
+     "code_does": "OrgEntityCard (OrgCards.tsx:45-93) shows only avatar/slug/status chip + 재직 headcount + site/team counts and two buttons — no registration fields, no jurisdiction chips, no gated finance section, no audit-on-expand.",
+     "fix": "Gap manifest: OrgEntitySummary carries only org_id/slug/name/status — registration/jurisdiction/finance need backend surfaces (entity profile + PBAC'd finance summary + view-audit event). FE then renders the gated section deny-by-omission per §4.5.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Drills keep object scope: 소속 명부 → hr screen prefiltered to the entity (setState screen:'hr', hrQ:ent — dc.html 19677), team head/employee → openPerson 인사 카드 (19501), 팀원 명부 → team-scoped roster, 팀 채널 → that team's channel",
+     "code_does": "Every drill discards its object: onNavigate('people') for entity roster (OrgCards.tsx:84-88), team head (156-158), each position employee (186-188), team roster (201); onNavigate('messenger') for 팀 채널 (211) — the user lands on unfiltered screens and must re-find the object.",
+     "fix": "Extend the nav contract to carry a target (query param or shared person/team ObjectCard open) and pass entity/team/person identity through consoleScreenPath; open the shared person card directly for head/employee clicks.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Team removal is fail-closed only for teams with people: hc>0 blocks with forbid audit + toast naming the re-placement path; hc=0 removes the team as a counted sandbox proposal (dc.html 19504-19516, AGENTS 140)",
+     "code_does": "OrgChartScreen.tsx:631-640 unconditionally shows the blocked guard for every team — an empty team can never be proposed for removal, and the proposal vocabulary has no org-unit dissolve op.",
+     "fix": "Allow unit.total === 0 to enqueue a removal proposal once the op vocabulary gains a dissolve-org-unit op (digest extension); keep the guard for total > 0.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Edit mode supports renaming the 법인 inline (input on the entity card, dc.html 1353, orgRenameEnt 12710-12712) and adding sites to any column",
+     "code_does": "Entity name is never editable (OrgChartScreen.tsx:429-444 always renders the button) and site editing is restricted to the viewer's own column (editableSites, line 425); no rename-entity op exists in the vocabulary.",
+     "fix": "Gap manifest: entity rename needs an org-change op / entity PATCH surface; the viewer-column restriction is a legitimate authz narrowing but should be stated in the capability model rather than silently hidden.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Root card carries the group identity: 'Acme 그룹 지주' name + 이사회·경영지원 meta + 재직 headcount (dc.html 1336-1341)",
+     "code_does": "OrgChartScreen.tsx:413-420 renders an anonymous stat strip (재직/법인/사업장/팀) with no group/tenant name — the tree has no root identity.",
+     "fix": "Put the tenant/group display name in the root card alongside the derived stats (available from session/tenant context).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Empty states are reason + next action in user terms; tech-stack/meta captions are banned (§4-10, §4-12)",
+     "code_does": "The changes strip renders '조직 변경 API가 아직 배포되지 않았습니다' on 404 (OrgChartScreen.tsx:170-171,354; i18n/org.ts:45) — infrastructure meta text with no user action.",
+     "fix": "Treat 404 like a denied read (omit the strip entirely, deny-by-omission) or show the neutral changesEmpty line.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "사유/reason fields are curated enums with optional free-text detail (§4-19 typed fields, §4.8 '사유는 자유 텍스트가 아니라 enum')",
+     "code_does": "Org-change reason is a bare textarea whose only gate is non-empty (OrgChangeModal.tsx:191-193, 356-369); reject/cancel memos are likewise free text.",
+     "fix": "Add a reason-kind enum (신설/개편/폐지-specific presets + 직접 입력 N+1 per §4-27-3) with detail text; needs a reason_kind field in the org-change DTO.",
+     "backend_blocked": true
+    }
+   ],
+   "cap": "CAP-ORG-CONSOLE"
+  },
+  {
+   "module": "evaluation",
+   "verdict": "major-deviations",
+   "fidelity_score": 50,
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "dc.html 1604–1707: the review screen IS a workspace card zone — 배치 preset menu (rvLayPresets 1612–1636) + 기본 배치 reset (1631–1636), and both cards (팀별 진행률·내 평가 할 일) carry the full window model: header drag=popout (onGrab), double-click=pin split (onDbl), bottom/corner resize (1669–1670, 1686–1687), hover toolbar rvToolBtns with split menu (1648–1666), split-bar column resize (1642–1644), drop indicator (1639–1641), tray/backdrop restore (1645–1647). DESIGN.md §4.7-2 (single window-model grammar), §4-23 (every card is a window-model candidate), §4-7 (per-user layout persistence + 기본 배치).",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:647-800 renders a static two-column CSS grid (evaluation.css:27-42 .evaluation__grid rail+panel). Zero window behavior: no layout presets, no drag/pin/popout/tray/minimize, no resize, no per-user layout store (sessionStorage at EvaluationScreen.tsx:386-392 only persists cycleId/view).",
+     "fix": "Mount the rail cards and detail panel in the console's shared window-model card grammar (cardVal/cardGrab/pin/tray equivalents used by other lanes), add the 배치 preset menu + 기본 배치 reset, and persist card layout per user.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "blocker",
+     "design_says": "DESIGN.md §4.7-9 분석=drill 불변식: \"집계 화면의 모든 수치·바·행은 원본 개체로 이동하는 버튼이다. 클릭 불가 숫자·장식 차트 금지(§4-12와 동치)\". AGENTS.md entry 159 explicitly e2e-verified 평가 팀 진행률 바 drill.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1083-1104 — the cycle stat row (대상/자기/관리자/조정/확정) is plain <li> numbers; :1106-1125 — team-progress rows are non-interactive spans. Neither filters the subjects list nor navigates anywhere (dead aggregates).",
+     "fix": "Make each stat a button that filters the subjects list by the corresponding state, and each team-progress row a button that filters subjects to that org_unit (client-side filter over data already loaded).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 7649–7676 + 19785–19808 (AGENTS 149, #18 컨텍스트 자동 첨부): the scorecard auto-attaches 3 context chips per subject — 근태 (월 출근/지각)·최근 업무·KPI — each clickable to drill to att/mywork/dashboard; submit toast names 「컨텍스트 3종 첨부」.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1869-1966 ScorecardForm — evidence is entirely evaluator-typed (kind select + free-text 개체 코드 + label). No context is auto-attached; the evaluator must manually discover and transcribe attendance/task/KPI facts.",
+     "fix": "Auto-attach a computed subject context block (attendance summary, recent completed tasks, KPI) as pre-populated drillable evidence chips when the scorecard opens. Requires a per-subject cross-module context endpoint that does not exist in /api/v1/evaluation.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 19791: the 근태 context chip drills to the att screen ([\"근태 (6월)\", …, \"att\"]); DESIGN §4-1 연결성 — every noun clicks or it shouldn't exist.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:169-173 EVIDENCE_SCREEN maps only WORK_ORDER→mywork, APPROVAL→appr, KPI→dashboard. ATTENDANCE (and OTHER) evidence renders as a dead non-clickable span (:1520-1528, :1889-1897) even though an attendance screen exists.",
+     "fix": "Add ATTENDANCE: \"att\" to EVIDENCE_SCREEN so attendance evidence drills like the prototype context chip.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "DESIGN.md §4.7-7 token grammar (!CODE links resolve only to PBAC-authorized objects; candidates come from a search dropdown), §4.7-10 완전 추적성 (언급=링크 — a code that isn't a real link is banned), §4-27-4 (object pickers are typeaheads).",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1926-1943 — evidence 개체 코드 is an unvalidated free-text input: any string becomes an object_ref rendered as a code chip; drill (drillEvidence :597-602) navigates to a module screen, never resolving or verifying the referenced object.",
+     "fix": "Replace the free-text ref with a typeahead over real object codes (PBAC-filtered candidates) and store only validated refs; drill should land on the referenced object. Needs a cross-object code-search API surface that does not exist yet.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "DESIGN.md §4-27-4 규모 선택기 — 열거 금지: person selection is a typeahead (search top-n), never full enumeration; design baseline is 3,000명 even if the demo seed is small.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:252-264 listManagerOptions loads /api/v1/users?limit=100 (ponytail comment admits the cap) into a plain <select> (:1303-1320). Managers beyond the first page are unselectable; the employee picker right next to it already does debounced typeahead (:1238-1250).",
+     "fix": "Reuse the employee typeahead pattern for the manager field against a server-side user search (add a search param to /api/v1/users if absent).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 19797-19798: submit → logEvent(인사평가 제출, OT-24) + toast 「RV-2600 조이슨 평가 「A」 제출 — 컨텍스트 3종 첨부」. DESIGN §4-2: every action must visibly state it was recorded — result + path in a toast.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:582-595 (submitScorecard), :472-490 (stage transitions), :545-568 (calibrate) complete silently — the modal closes / lists reload with no confirmation, no RV- code surfaced, no recorded-action feedback.",
+     "fix": "On mutation success, fire the console's shared toast with the result (RV- code / new stage / calibrated grade) and the drill path.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "DESIGN.md §4.7-1 list grammar propagates to every list: J/K/Enter keyboard nav + selection highlight, multi-attribute search, 「N 표시 / 전체」 count chips (§4-27-4 cap+search for production scale).",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx — cycles list (:691-727), subjects list (:1162-1192), ledger (:904-933): no search input, no J/K/Enter navigation, and totals returned by the API (EvaluationCyclePage.total, evaluationApi.ts:79-84) are never shown; lists render unbounded.",
+     "fix": "Add multi-attribute search, J/K/Enter selection, and 「N 표시 / 전체」 chips from the returned totals using the shared console list primitives.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "DESIGN.md §4-20/§4-23: every object surface (RV- code chip, subject row, cycle row) is a drag-reference source emitting the standard [코드 제목] payload via the single objDrag helper; \"끌 수 없는 개체 표기는 위반\".",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx contains no draggable attribute anywhere — rv_code chips (:917, :1178, :1436), subject rows, and cycle rows cannot be dragged into composers/todos.",
+     "fix": "Register RV- code chips and object rows with the console's shared drag-reference helper (standard [코드 제목] payload).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "DESIGN.md §4.7 \"상세 보기의 기본은 핀 패널이다\" — object detail opens as a right pin panel that persists across screens; the list keeps its context.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:803-935 — subject/person detail replaces the cycle panel via a view-state swap (back button only); nothing persists when navigating to another screen.",
+     "fix": "Open subject/person detail through the console pin-panel mechanism once the window model (finding 1) is adopted.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "DESIGN.md §4.7-6 게이트 = 파이프라인 스텝 시각화 + 단일 CTA; §3.9 상태 = 일관된 스텝퍼. The cycle lifecycle (DRAFT→OPEN→CALIBRATION→FINALIZED→ARCHIVED) is a pipeline.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:1076-1159 shows only a stage chip + the single next-transition CTA with preflight blockers/advisories (good §4-29 compliance), but no 5-stage stepper visualization on the cycle card.",
+     "fix": "Render the 5-stage stepper (current stage highlighted) above the transition CTA, matching the lifecycle-card grammar used by lcOpen.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "DESIGN.md §4-27-3 N+1 enum: every enum/preset list is extendable with 「+ 직접 입력」; new values flow back to the type schema.",
+     "code_does": "web/src/console/evaluation/EvaluationScreen.tsx:981-987 cycle 구분 is a closed 2-value select (REGULAR/PROBATION) fixed by the backend enum; no direct-input extension path.",
+     "fix": "Backend enum is closed — needs an extensible cycle-kind surface (or a documented exemption) before the UI can offer N+1 input.",
+     "backend_blocked": true
+    }
+   ],
+   "invariant_violations": [
+    "§4.7-2/§4-23 window model: no evaluation card supports pin/popout/tray/resize, and the prototype's 배치 presets + 기본 배치 are absent entirely",
+    "§4.7-9 (≡§4-12 dead numbers): cycle stat row and 팀별 진행률 bars are non-clickable aggregates with no drill to source objects",
+    "§4.7-1 list grammar: cycles/subjects/ledger lists lack J/K/Enter, multi-attribute search, and 「N 표시 / 전체」 count chips",
+    "§4-20 drag source: no RV- code chip, subject row, or cycle row is draggable as a [코드 제목] reference token",
+    "§4-27-4 열거 금지: manager picker enumerates the first 100 users in a <select> instead of a typeahead",
+    "§4.7-7/§4.7-10 언급=링크: evidence 개체 코드 accepts arbitrary unvalidated free text — mentions are not real, PBAC-gated links",
+    "§4-2 기록 가시성: submit/calibrate/transition give no recorded-action feedback (no toast with result + path)"
+   ],
+   "design_anchors_read": [
+    "dc.html 1604-1708 (REVIEW 평가 screen template — header, 배치 presets, card zone, 팀별 진행률, 내 평가 할 일)",
+    "dc.html 7649-7676 (평가 스코어카드 modal — OT-24 chip, ctx chips, S-D segment, note, submit gate)",
+    "dc.html 19369-19381 + 19460-19465 (rv renderVals/window-model wiring), 19769-19808 (rvTeams/rvTasks/rvWrite logic, RV- issuance, toast, audit)",
+    "dc.html 20017-20024 + 20091-20101 (인사 카드 평가 이력 PBAC gate + 직원 원장 merge), 8642 (card title registry), 13895 (ONT_TYPES OT-24), 14981 (Esc chain), 13579 (OT-14 field classes)",
+    "DESIGN.md lines 1-257 full: §3.9/§3.9.x lifecycle, §3.10 guardrails, §4 invariants 1-20, §4.5 PBAC, §4.6, §4.7 grammar catalog 1-10, §4-19..§4-29, §5-§6",
+    "CLAUDE.md full (anti-patterns 1-5, §4-12 principle)",
+    "AGENTS.md §5 change log: entries 149/152/157a/159/174 (evaluation-relevant) + full post-190 tail 191/191a/192/192a/193 (all CRM — no new evaluation authority) + authority-boundary preamble"
+   ],
+   "cap": "CAP-EVALUATION-CONSOLE"
+  },
+  {
+   "module": "inventory",
+   "verdict": "major-deviations",
+   "fidelity_score": 58,
+   "design_anchors_read": [
+    "DESIGN.md L1-256 full (§4 invariants L88-238, §3.9 L46-71, §3.10 L73-86, §4-19 L186-188, §4-22 L200-202, §4-25 L211-220, §4-27 L225-232)",
+    "CLAUDE.md L1-34 anti-patterns",
+    "dc.html L4562-4969 module-surface template (header/stat bar/config strip L4601-4646, list grid L4750-4781, detail panel L4783-4966, MRP matrix L4841-4859, stock bar L4918-4931, tl L4932-4943, 작용 자동화 L4960-4966)",
+    "dc.html L11080-11090 MOD_SCREENS.inventory cfg (IV-MRP/IV-031/IV-054/IV-062/IV-018 rows, stats, acts, links)",
+    "dc.html L15090-15116 J/K keyboard grammar",
+    "dc.html L16141-16379 module logic (search/sort/modNarrow/config/stats/rows/det/stock/tl/mrp/dynAutos)",
+    "dc.html grep 재고/실사/IV-/inventory (ONT_TYPES OT-17 L13882, MOD_TYPEOF L13343, nav L16414)",
+    "AGENTS.md §5 change-log grep — entries 56, 58(4), 104(26), 136, 147, 156, 162, 184, 190; entries 191-192+ are CRM-only: no inventory authority newer than 190"
+   ],
+   "invariant_violations": [
+    "§4-19 테이블 수평 스크롤 금지 — main item/count tables wrapped in overflow-x:auto (inventory.css:144) with no modNarrow column demotion; design allows overflow-x only on the MRP matrix (change-log 147)",
+    "§4-22 add-anything / §19 구성 콘솔 — entire 화면 구성 strip absent: no column add, no stat add, no saved filter presets, no dist/kanban widget, no 분할/개체카드 행 거동, no 팀 배포, no 시트로 열기",
+    "§4-27-4 규모 선택기 — consume form demands a raw work-order/dispatch UUID in a free-text input (typeahead mandated); list silently caps at 100 rows with no 「N 표시 / 전체」 framing",
+    "§4-16/§4-1 기능 없는 텍스트 — static non-interactive 'IV' type chip (design: OT-17 button → type card); WO/dispatch/external-ref movement tokens and external-ref link chips are inert mono text (§4.7-10 언급=링크)",
+    "§4-12 설명용 UI — MRP row placeholder chip '조회 시 산출' (meta text) and constant kv 현재고 산출='이동 문서 합계' repeating what the movement timeline already shows",
+    "§4.6 색은 토큰에서만 — literal `color: white` on .inventory__danger (inventory.css:118)",
+    "§4-14 모듈 3계층 — dynamics layer entirely absent: no 개체 카드 button, no 시리즈 chip, no 작용 자동화 chips, no 「+ 감시 규칙」",
+    "§3.9/§4.7-6 상태=칩/스텝퍼·단일 CTA — cycle-count lifecycle shown as a chip only (no DRAFT→SUBMITTED→APPROVED pipeline stepper); draft state exposes two parallel CTAs (제출 + 실사 취소)",
+    "§4-20 모든 개체 표면=드래그 소스 — count rows and detail-header IV-/CC- code chips are not draggable (only item list rows are)"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "§4-19 (DESIGN.md L188): 테이블 수평 스크롤 금지 — minmax tracks, ellipsis absorbs compression; dc.html L16159-16186 demotes to code+title+status (modNarrow) when the list pane is narrow; overflow-x:auto is reserved for the MRP matrix only (AGENTS change-log 147)",
+     "code_does": "inventory.css:144 `.inventory__scroll { overflow-x: auto; }` wraps the main item table (InventoryScreen.tsx:952) and count table (1078); th are white-space:nowrap (css:159) so narrow widths horizontally scroll the whole list; no column demotion exists",
+     "fix": "Remove overflow-x from the list wrapper; give the table minmax-style column behavior with ellipsis, and drop 보관/수량 columns below a width threshold (container query or ResizeObserver) per the modNarrow grammar; keep overflow-x:auto only on .inventory__mrp-table",
+     "backend_blocked": false
+    },
+    {
+     "severity": "blocker",
+     "design_says": "§4-27-4 (DESIGN.md L230): 개체·인물 선택은 전량 열거 칩이 아니라 타입어헤드 — 자유 텍스트로 개체를 지정하게 하지 않는다; §4.7-7 개체 링크는 검색형 드롭다운으로 확정",
+     "code_does": "InventoryScreen.tsx:1495-1498 consume form asks the user to type a raw 작업 지시/배차 ID into a plain text input (`<input name=\"source_id\" required />`) — a UUID paste field with no lookup, no validation beyond non-empty",
+     "fix": "Replace with a typeahead over work orders / P1 dispatches (code + title, PBAC-filtered) inserting a typed reference; requires a WO/dispatch search surface this dark module's contract does not carry",
+     "backend_blocked": true
+    },
+    {
+     "severity": "blocker",
+     "design_says": "§4-22 add-anything + dc.html L4601-4646/L16188-16228 (AGENTS 58·60·136): module header has 시트로 열기 + 화면 구성 gear opening a strip with ontology-property column add (drag reorder), count-stat add (joins stat bar, click=filter drill), saved filter presets, dist/kanban widgets, 행 선택 거동 (분할 패널/개체 카드) segment, 기본값 복원, 팀 배포—결재",
+     "code_does": "InventoryScreen.tsx:881-932 header renders title, static chip, 3 stats, search, one CTA — no config affordance of any kind exists anywhere in the module; columns, stats, and layout are fixed",
+     "fix": "Implement the personal-view config strip: column add from InventoryItemView fields, stat add (status/location counts), saved search presets, dist-bar widget, det-mode segment — all client-persistable like the existing sessionStorage state; gate 팀 배포 behind future appr integration",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-14 module 3-layer audit + dc.html L4789-4790 (시리즈·개체 카드 buttons), L4960-4966 (작용 자동화 chips + 「+ 감시 규칙」): every module detail surfaces the dynamics layer — lifecycle object card, series, acting automations, monitor-rule creation",
+     "code_does": "ItemDetail (InventoryScreen.tsx:1354-1510) and CountDetail (1538-1680) expose only semantic (kv) and kinetic (movements/lifecycle status) layers; no 개체 카드, no 시리즈, no automation chips, no monitor entry",
+     "fix": "Add the dynamics row and object-card entry once automation/ontology surfaces exist in the consolidated console; until then this is a named gap, not fillable truthfully",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4.7-10 완전 추적성 (언급=링크) + dc.html L16363-16369: movement-timeline labels with WO-/PO- codes are live drill buttons (objectLinkGo); dc L11086 links PO-121/WO-2643 as navigable chips",
+     "code_does": "MovementSourceToken (InventoryScreen.tsx:1301-1304) renders work_order/p1_dispatch ids and external_ref strings as inert mono spans; linked-docs section (1440-1442) renders external refs as inert chips — only cycle-count codes are clickable",
+     "fix": "Route WO/PO/dispatch refs through a shared object-link resolver (and make them drag-source tokens meanwhile); blocked on the cross-module route/link registry absent from this dark module",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html L11085-11086: MRP row carries act 「PO 자동 제안 — 부족 1건」 and short items carry 「긴급 구매 기안」 — both prefill a purchase 기안 (appr composer); shortage is actionable, not just displayed",
+     "code_does": "MrpDetail (InventoryScreen.tsx:1264-1270) shows the proposed order quantity as a display-only danger chip; ItemDetail offers no purchase-draft CTA on low-stock items — the closed loop 부족→발주 does not exist",
+     "fix": "Add a 「구매 기안」 CTA on short MRP lines and low-stock item detail prefilled with the deterministic proposal; blocked on an appr/purchase composer surface",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-27-4 (DESIGN.md L230): list surfaces cap + guide with 「N 표시 / 전체」 framing; server pagination is a stated contract (backend already returns total/offset)",
+     "code_does": "InventoryScreen.tsx:61 PAGE_LIMIT=100 with loadList (325) fetching one page; itemsTotal feeds only the 품목 stat (907) — the list silently truncates past 100 with no count chip, no load-more, no search prompt",
+     "fix": "Render a 「N 표시 / 전체 M」 chip above the list when page.total > items.length, with search guidance and/or offset paging (the API already accepts offset)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html L4566-4571/L16283-16286: module header type chip is a button showing the OT- code (OT-17 재고) that opens the ontology type card; §4-16 forbids function-less labels",
+     "code_does": "InventoryScreen.tsx:883 renders `<span className=\"inventory__type\">IV</span>` — a static, non-interactive chip with a non-design code ('IV', not 'OT-17')",
+     "fix": "Remove the inert chip now (frontend-only), reintroduce as the OT-17 type-card button when the ontology surface lands",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-12/§4.6: no meta/explanatory text — status is a chip, meta captions are banned; dc L11086 kv 현재고 산출 carries the actual arithmetic (\"이동 문서 합계 — 6−4−2+4(예정)\")",
+     "code_does": "InventoryScreen.tsx:977-978 renders the placeholder chip '조회 시 산출' (i18n mrpRowMeta) before MRP loads, and 1384-1385 renders the constant kv 현재고 산출='이동 문서 합계' — both pure meta repeating what the surface/timeline shows",
+     "fix": "Replace the placeholder chip with '—'; either compute the real derivation string from movements or drop the kv row",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4.6 안티패턴: 색은 토큰·브랜드에서만",
+     "code_does": "inventory.css:118 `.inventory__danger { background: var(--danger-solid); color: white; }` — literal `white` outside the token system",
+     "fix": "Use var(--surface) (or the danger on-color token) instead of `white`",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html L4597-4599/L16144-16145: search is a live onInput filter over all visible attributes including en values (위치·품목군), no submit button; §4.7-1 다속성 검색",
+     "code_does": "InventoryScreen.tsx:911-921 search is a submit-gated form (button press required) sending only server q (code/name/sku); location/status text is not searchable",
+     "fix": "Debounced onInput submit; server q already covers code·name·sku — add location to the q surface or client-filter the loaded page for visible-attribute parity",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§3.9 불변식 (상태 = 일관된 칩/스텝퍼) + §4.7-6 게이트=파이프라인 스텝 + 단일 컨텍스트 CTA — dc modules render `flow` steppers (L4812-4825)",
+     "code_does": "CountDetail (InventoryScreen.tsx:1540-1543) shows only a status chip for the DRAFT→SUBMITTED→APPROVED/REJECTED chain; draft state shows two peer CTAs 제출 + 실사 취소 (1654-1665)",
+     "fix": "Add the flow stepper (개설→기록→제출→결정→반영) and demote 취소 to a secondary/ghost affordance so one primary CTA remains",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-20: every object chip/row/code label is a drag source with token payload `[코드 제목]`",
+     "code_does": "Only item list rows are draggable (InventoryScreen.tsx:996-999); count rows (1094-1110), detail-header IV-/CC- codes (1357, 1541), and MRP line names are not drag sources",
+     "fix": "Apply the same onDragStart token payload to count rows and code chips",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html L11080: primary action = 「실사 업로드」 → ingest (change-log 190: 재고 실사=인제스트); header stat set is 부족/이동 중/품목",
+     "code_does": "InventoryScreen.tsx:924-931 CTA is a mode toggle to a manual cycle-count list (a stronger governed lifecycle than the prototype's link, consistent with §3.10 four-eyes and change-log 184 WMS research); 이동 중 stat replaced by server-derived 검토 대기 실사 — honest, since no in-transit concept exists in the backend",
+     "fix": "Keep the count lifecycle; add the 실사 업로드 ingest entry alongside it when a data-ingest surface exists; add an in-transit stat only when the backend models it",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-27-6: 생성 폼은 하류 효과 1줄 고지 — where the record joins (ledger, stock, movement)",
+     "code_does": "Receipt (1457-1475), consume (1477-1508), and count-line (1619-1653) forms state nothing about downstream effect (movement-ledger entry, on-hand recompute, approval-applied adjustment)",
+     "fix": "One action-driving line per form footer naming the downstream join (e.g. 저장 시 이동 문서로 기록 · 현재고 재산출)",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-INVENTORY-CONSOLE"
+  },
+  {
+   "module": "dispatch",
+   "verdict": "major-deviations",
+   "fidelity_score": 55,
+   "design_anchors_read": [
+    "DESIGN.md lines 1-257 (full §4 catalog, §3.9/§3.9.0-3, §3.10, §4-19~29, §5)",
+    "CLAUDE.md full (anti-patterns 1-5)",
+    "dc.html 4564-4610 (module-surface header: title/type-chip/stat bar/search/sheet/config/action CTA)",
+    "dc.html 4611-4757 (config row add-col/add-stat/filter presets/widgets/det-seg; lanes; list header sort buttons; draggable rows with reference-token onDrag; empty state; 14px end spacer; overscroll-behavior)",
+    "dc.html 4758-4975 (detail pane: code/개체 카드 btn/status/kv/en filter chips/flow stepper/links/acts/작용 자동화 + 감시 규칙)",
+    "dc.html 11024-11060 (MOD_SCREENS memo + dpRows single definition §4-18: dp1/dp2/dp3 with en/kv/links[지도에서 보기 mapOv·mapSel]/acts[배차·처리 패널 item d1])",
+    "dc.html 11295-11310 (dispatch cfg: action 배차 요청 기안 appr prefill · cols 오더/작업·현장/기사/SLA·기한 · stats 미배정/SLA 임박/가용 기사 derived from dpRows)",
+    "dc.html 16141-16360 (modV: multi-attribute search over code+c1+c2+c3+st+en, tri-state numeric-aware column sort, modNarrow, config machinery, row onDrag payload \"[code c1]\", det pane bindings)",
+    "dc.html 15103-15115 (J/K updates modSel selection directly)",
+    "dc.html 10874-10887 (modLinkGo: code/scr+extra/person/item branches)",
+    "dc.html 405-425 (pn.isDispatch: 가용 기사 선택 radio + eta chip + 배차 확정 CTA)",
+    "dc.html 9503-9517 (panelDecide confirm → setItemDone + toast + logEvent 배차 확정)",
+    "dc.html 14475-14484 (confirmDispatch fail-closed on !mDriver)",
+    "dc.html 8975 (item d1 seed), 17905-17979 (ops-map wo overlay queue ↔ dispatch round-trip), 16405/16505 (nav badge dispatchPending, overview 미배정 배차 stat)",
+    "AGENTS.md §5 grep 배차/dispatch: entries (14)(15)(41)(42) 156, 167 (stats derived), 171 (WO- typed wizard), 190 (L2 verdict); post-190 entries 191-193 = CRM only, no new dispatch authority"
+   ],
+   "invariant_violations": [
+    "§4-20/§4-23: no dispatch surface is a drag source — queue rows and WO- code chips are not draggable and emit no \"[코드 제목]\" reference-token payload (prototype mod rows: draggable + onDrag at dc.html 4735)",
+    "§4-22 add-anything: no in-place creation or extension anywhere — no new-row/new-WO entry, no + 열 추가, no + 스탯, no saved filter presets, no widget derivation (prototype config row dc.html 4611-4646)",
+    "§4-14 module 3-layer audit: 역학 layer absent (no 작용 자동화 chips / + 감시 규칙 on the detail pane, dc.html 4966-4970); 의미 layer thin (object drill = head-only peek, not the 3-layer 개체 카드)",
+    "§4.7-1 list grammar partial: no column sort (prototype tri-state numeric-aware modSort), J/K moves DOM focus only instead of moving the selection ring + detail pane (dc.html 15103-15115)",
+    "§4-18 tone tokens: literal `white` in dispatch.css:87 (.dispatch__primary color), CTA/selection use --teal where the prototype grammar is --ink CTA + --signal selection ring",
+    "§4-11 stat bar: COMPLIANT (compact 1-row inline stat chips, no big-number KPI cards)",
+    "§4-12 no-explanatory-UI: COMPLIANT (no subtitles/captions/meta text; all prose is empty/error state with reason + next action, which §4-10 permits)"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Every object surface is a drag source: module rows carry draggable=true with onDrag setting the standard reference token \"[코드 제목]\" into dataTransfer (dc.html 4735-4737; DESIGN §4-20 모든 개체 표면 = 드래그 소스, §4-23 모든 요소는 드래그 참조 후보 — 'objDrag 단일 헬퍼, 끌 수 없는 개체 표기는 위반')",
+     "code_does": "DispatchScreen.tsx:595-625 renders queue rows as plain <button> without draggable/onDragStart; WO- codes in the panel (654, 708) and peek (901) are also inert — no reference-token payload exists anywhere in the module",
+     "fix": "Add draggable + onDragStart setting dataTransfer text/plain to `[${request_no} ${symptom}]` on .dispatch__row and on WO- code chips (one small helper mirroring objDrag), onDragEnd cleanup",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Module surface is user-configurable in place (§4-22, dc.html 4611-4646 + 16168-16232): + 열 추가 from ontology/kv attributes with coverage counts, custom column drag-reorder/remove, + 스탯 카운트 (click = filter drill), saved filter presets (+ 필터 저장), derived widgets (상태 분포 바 / 칸반), 행 선택 거동 seg (분할 패널/개체 카드), 시트로 열기, 팀 배포 — 결재",
+     "code_does": "DispatchScreen.tsx has a fixed 4-column list with fixed stat chips and no configuration affordance of any kind (no config toggle, no column/stat/preset/widget machinery)",
+     "fix": "Port the shared module-surface config row: derive addable columns from DispatchQueueItem fields, allow count-stat add from status/priority values, persist per-user saved search presets and custom columns (local personal view is whitelisted §3.9.0-①); team-deploy can defer",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Dispatch ↔ ops-map round-trip: every dispatch row has a 「지도에서 보기」 link carrying {scr:'map', extra:{mapOv:'wo', mapSel:…}} and the map's 배차 큐 overlay panel links back to the 배차·처리 패널 (dc.html 11058-11060, 17941, 17974; AGENTS entry (15))",
+     "code_does": "No map integration exists: panel links are only 작업 지시/장비/담당 기사 (DispatchScreen.tsx:699-734); nothing references a map screen or geo context even though candidates carry gps_ranked/distance_meters",
+     "fix": "Blocked on an ops-map console surface (site/unit geo read API + map module) that does not exist in the built console — register in the gap manifest as the dispatch→map link contract; wire the link once the surface lands",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Object drill opens the 3-layer 개체 카드 (lcOpen 단일 모달: 생애주기 스텝퍼·속성·이력·결재선·게이트·역학 칩·관계 그리기 — DESIGN §4-14-②, §4-18-②; det header 개체 카드 button dc.html 4790)",
+     "code_does": "Links resolve via GET /api/objects/{kind}/{id} into a centered peek that renders only code/title/status (DispatchScreen.tsx:899-905, dispatchApi.ts resolveObject) — a head, not an object card; no lifecycle, relations, history, or dynamics",
+     "fix": "Needs a richer canonical object-card read surface (properties/relations/lifecycle/audit per kind) — ObjectHead only carries code/title/status; keep peek as interim, register full-card contract in the gap manifest",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Row c2 = customer/impact context (\"대한제강 상차 중단\", \"렌탈 반납 준비\") under cols 오더/작업·현장/기사/SLA·기한 (dc.html 11058-11060, 11307)",
+     "code_does": "The 작업·현장 column shows symptom + status chips only (DispatchScreen.tsx:607-618); customer_id exists on DispatchQueueItem but registry_customers has no read surface, so customer names cannot render (dispatchApi.ts:9-14 records this)",
+     "fix": "Blocked on a customer name-resolution read surface (objects resolver customer kind or a console customer head endpoint); once present, render customer context as the second line of 작업·현장 and include it in the search haystack",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Primary action = 「배차 요청 기안」 → approval compose prefill (appr:'general', atitle:'배차 요청 — ') — creation flows through the 기안→결재 lifecycle (dc.html 11307, 16288 modApprPrefill; §3.9, §4-22 목록=새 행 생성 진입; AGENTS 171: WO- typed-wizard creation completes the 미배정 배차 재구성 경로)",
+     "code_does": "Primary button 「배차 요청」 directly POSTs a P1 broadcast on the already-selected work order (DispatchScreen.tsx:414-421, 534-543); there is no path to create a new work order / dispatch request from this module at all",
+     "fix": "Keep the broadcast trigger (it is the real FSM), but the creation entry (배차 요청 기안 → approval compose / typed WO wizard) needs the console approval-compose surface that this build lacks — register as cross-surface contract",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Column headers are tri-state sort buttons (click = asc/desc/clear, numeric/currency-aware) shared by every module surface (dc.html 4734, 16147-16152, 16295; §4-18 열 정렬 재사용)",
+     "code_does": "dispatch__cols is a static aria-hidden label row (DispatchScreen.tsx:576-581); no sorting exists — queue order is server keyset order only",
+     "fix": "Make each column label a button cycling {asc, desc, none} over the loaded rows with numeric-aware comparison (due timestamps, request_no)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Detail pane surfaces the dynamics layer: 작용 자동화 rule chips (1-click to the rule) and 「+ 감시 규칙」 (dc.html 4964-4970; §4.7-8 역학 노출, §4-14-③)",
+     "code_does": "The panel renders broadcast/candidates/responses/history but nothing about automations or monitors acting on the WO/dispatch (DispatchScreen.tsx:648-873)",
+     "fix": "Blocked on an automation-rules read surface (rules touching a given object type/instance); register in gap manifest and add the chips when it exists",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "J/K moves the selection itself — modSel updates and the detail pane follows each keypress (dc.html 15103-15115; §4.7-1 J/K/Enter 탐색+선택 하이라이트)",
+     "code_does": "onListKeyDown (DispatchScreen.tsx:437-450) moves DOM focus between rows only; selection and the panel change only on Enter/click",
+     "fix": "Call setSelectedId on the row that receives focus during J/K (or select-on-focus), keeping Enter as activation for parity",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Search matches every visible attribute: code + c1 + c2 + c3 + st + en values (dc.html 16145; §4.7-1 다속성 검색)",
+     "code_does": "Filter haystack is request_no + symptom + crew name only (DispatchScreen.tsx:458-459) — status, priority, dispatch-status, and due labels visible as chips are not searchable",
+     "fix": "Extend the haystack with statusLabel(item.status), priorityLabel(item.priority), dispatchStatusLabel, and dueChip label",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "List scrolls inside its pane with overscroll containment and a 14px end spacer; default layout fits one viewport (dc.html 4726, 4750; §4-6)",
+     "code_does": "dispatch.css gives the queue no height constraint or overflow handling — a long queue scrolls the whole page body; no overscroll-behavior, no end margin",
+     "fix": "Constrain .dispatch to viewport height, give .dispatch__queue overflow-y:auto + overscroll-behavior:contain + bottom spacer",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Colors come from tokens only (§4.6 안티패턴 3, §4-18 TONE); prototype CTA = var(--ink) bg, selection ring = var(--signal)",
+     "code_does": "dispatch.css:87 uses literal `color: white` on .dispatch__primary; CTA/focus/selection use --teal, diverging from the ink-CTA/signal-ring grammar",
+     "fix": "Replace `white` with the surface/on-accent token; align CTA and selection-ring tokens with the console's canonical ink/signal mapping (or document teal as the built console's brand token)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "List surfaces frame capped lists as 「N 표시 / 전체」 with search guidance (§4-27-4; AGENTS 156 명부 참조 구현)",
+     "code_does": "Keyset pagination renders only a 「더 불러오기」 button (DispatchScreen.tsx:635-644) with no loaded/total count framing",
+     "fix": "Show a count chip `${visible.length} 표시` (and `/ 전체 N` once the queue endpoint returns a total; until then loaded-count only)",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-DISPATCH-CONSOLE"
+  },
+  {
+   "module": "maintenance",
+   "verdict": "deviations",
+   "fidelity_score": 62,
+   "design_anchors_read": [
+    "DESIGN.md lines 1-257 full (§2 WO- object, §3.9/3.9.0 lifecycle+direct-save audit, §3.10 guardrails, §4-11/12/13/14/15/18/19/20/22/23/25/27/28/29, §4.7 grammar catalog, §5 integration)",
+    "CLAUDE.md full (anti-pattern list 1-5)",
+    "dc.html 11041-11102 — MOD_SCREENS_RAW maintenance cfg (title/action '정비 요청 기안'/cols 오더·작업·현장·담당/stats 긴급·이번 주·예방정비 준수/lanes 3종/rows mo1-mo3 with flow·en·kv·links·acts)",
+    "dc.html 4562-4970 — module surface template (stat bar, search, sheet button, config strip 4611-4646, widgets 4648-4674, lanes 4731-4749, sticky sortable cols 4752-4756, draggable rows 4757-4768, empty state 4770-4778, detail panel 4783-4966 incl. series/object-card chips, flow stepper, links, acts, 작용 자동화 footer)",
+    "dc.html 16141-16380 — modV logic (multi-attr search 16145, sort ↑↓ 16295, modNarrow 16159, custom cols/stats/fpres/widgets 16184-16228, drag payload '[code c1]' 16299, en→modQ 16315, flow code drill 16317-16326, dynAutos/onMonitor 16376-16377)",
+    "dc.html 15103-15112 J/K handler; 16406 nav; 8719 OT-13 정비 type; 13400 SR- 정비 이력 series; 18297 dashboard SLA drill of maintenance rows",
+    "AGENTS.md §5 change log — entries 56, 58, 64(정비=오더 사이클 flow), 116(33-③ SLA lanes), 136(시트로 열기 전 모듈), 156(진실성 audit), 171(WO- typed wizard), 176-180(63/64), 218-220(77/78 전 행 flow), 428(190 L2 판정); post-190 entries 191-193 checked = CRM only, no new maintenance authority",
+    "Built code: all 12 files under web/src/console/maintenance/ + web/src/i18n/maintenance.ts + shared console/window/objDrag.ts, console/module + console/modules + console/objectcard listings"
+   ],
+   "invariant_violations": [
+    "§4-23/§4-20 drag reference token: rows write a bare 'WO-... title' text/plain payload instead of the standard '[CODE title]' token via the repo's own shared objDrag helper (typed OBJ_REF_MIME + data-obj-code PBAC hook lost)",
+    "§4-27-4 selector invariant: 담당 정비사 배정 = raw '담당 정비사 ID' free-text UUID input, and composer equipment reference = free-text 장비 관리번호 — both must be typeahead object selectors, not ID entry",
+    "§4-22 add-anything: no column-add, no stat-add, no saved filter presets, no widget (dist/kanban), no det-mode segment — the module surface config zone is absent entirely",
+    "§4.7-9 analysis=drill: MTTR stat rendered as a non-clickable span (maintenance__stat--plain); every aggregate must be a drill button",
+    "§4-1 connectivity: evidence timeline entries are non-interactive nouns (no view/original link, §4-13 '원본' auxiliary link missing)",
+    "§4-18 reuse: module hand-rolls list/statbar/lanes/drag while shared console/module ModuleScreen + modules/GenericModuleScreen (J/K/Enter, cells config) and window/objDrag exist in the same tree",
+    "Token color: .maintenance__action uses literal 'color: white' instead of a token (minor)",
+    "§4-12 no-explanatory-UI: CLEAN — no subtitles/captions/meta text found; §4-11: CLEAN — compact one-row stat bar, no KPI cards"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "§4-23/§4-20 (DESIGN.md) + dc.html 16299: every object row is a drag source emitting the single standard reference token '[코드 제목]' — one shared helper (objDrag), so drop targets (composer/todo/relation zones) parse it uniformly; the built repo already ships this exact contract in console/window/objDrag.ts (objectRefToken '[WO-2643 …]' + OBJ_REF_MIME + data-obj-code).",
+     "code_does": "MaintenanceScreen.tsx:669-672 hand-rolls onDragStart with event.dataTransfer.setData('text/plain', `${row.request_no} ${equipmentLabel(row)}`) — no brackets, no typed MIME, no data-obj-code; drops into console inputs lose the title (bare-code regex fallback only) and bypass the typed-payload/PBAC path.",
+     "fix": "Replace the inline handler with {...objDrag(row.request_no, equipmentLabel(row))} from ../window/objDrag on the row button (and lane cards, which are currently not drag sources at all).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-27-4 (DESIGN.md 230): 개체·인물 선택은 열거 금지·타입어헤드(검색 상위 n + 제안 + 선택값 유지), production-scale assumption; prototype detail kv shows named candidate mechanics ('후보 기사 김성호 (안산 35분)…', dc.html 11058). §4.6: non-developers must operate without docs.",
+     "code_does": "ActionsSection (MaintenanceScreen.tsx:1167-1177) assigns via a raw '담당 정비사 ID' text input — the operator must know and paste a mechanic UUID; composer likewise takes equipment as free-text 장비 관리번호 (782-785).",
+     "fix": "Mechanic and equipment pickers as typeahead selectors over a directory/equipment search; until a mechanic-search endpoint exists, land the HANDOFF contract — the raw-ID input cannot ship as the assignment UX.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 4601-4646 + 16184-16228 (§4-22, §19): module surface header carries a config gear (personal view: '+ 열 추가 — 속성', '+ 스탯 — 카운트' with click=filter drill, '+ 필터 저장' presets, 위젯 dist-bar/칸반, 행 선택 거동 분할 패널/개체 카드, 기본값 복원, 팀 배포 — 결재) and a '시트로 열기' button (change-log 136: all module lists).",
+     "code_does": "Header (MaintenanceScreen.tsx:516-586) has only title, stat bar, search, and create; no configuration zone, no saved filters, no widget derivation, no sheet export — the add-anything grammar is absent from the module.",
+     "fix": "Adopt the shared module-surface config strip (console/module/ModuleScreen · modules/GenericModuleScreen patterns): client-state custom columns from detail fields, count-stat add, saved search presets; sheet button when the collab-sheet surface mounts.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 4789-4790 + 4960-4965 + §4-14/§4.7-8: detail header carries a '시리즈' chip (WO orders belong to SR- 정비 이력 — dc.html 13400) and an '개체 카드' chip (lifecycle 3-layer card, e2e-proven on WO-2643 in change-log 117), and the detail footer surfaces 작용 자동화 workflow chips plus '+ 감시 규칙' (Object Monitor). Header also carries the OT-13 ontology type chip (4566-4571, 8719).",
+     "code_does": "DetailPanel (MaintenanceScreen.tsx:842-1061) renders kv/flow/links/acts/settlement/evidence/approval/history only — no object-card entry (console/objectcard/kinds.ts has no WO kind), no series chip, no automation/dynamics zone, no type chip; the 역학 layer of the 3-layer audit is entirely dark.",
+     "fix": "Register a work-order kind in console/objectcard and render the 개체 카드 chip now (FE-only); series chip and automation/monitor chips when SR-series and workflow-engine surfaces exist — record those in the gap manifest.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "dc.html 11099-11101 + 16317-16326 + §4.7-3/§5: row links jump cross-module ('자산 FL-2643'→asset, '부품 재고'→inventory, 'JL-0702' code, '담당 김성호' person) and flow-stepper steps with codes drill to the step object (PO-121, VC-2604) via objectLinkGo — one-click up/downstream chain.",
+     "code_does": "Links section (MaintenanceScreen.tsx:967-1005) only re-filters the maintenance list itself (equipment_id/customer_id/site_id/assigned_to/around); FlowStepper (1064-1083) steps are non-clickable even when a voucher_ref exists in the settlement; no route to the asset module that exists in the same tree (console/modules/AssetModuleScreen).",
+     "fix": "Wire 자산 이력 to the asset module route with the equipment preselected; make the 전표 flow step and settlement voucher_ref chips drill to the finance voucher; part-reservation (PO-) step drills stay gap-manifest items (no procurement objects in backend).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4.7-9 (dc.html 16289-16293): every stat is a button that drills into the list (stats set modQ/filters); '클릭 불가 숫자 금지'.",
+     "code_does": "MTTR stat (MaintenanceScreen.tsx:560-565) is a non-interactive span with cursor:default (maintenance__stat--plain, maintenance.css:46).",
+     "fix": "Make MTTR drill to its population (status=FINAL_COMPLETED window) or omit the stat until it can drill.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-1/§4-13: evidence entries are objects — structured view primary, original file as an auxiliary '원본' link; every noun clicks or drags.",
+     "code_does": "EvidenceSection (MaintenanceScreen.tsx:1494-1507) lists stage/WORM/content-type/time as inert text+chips; no way to open or verify-inspect an evidence record (api has presign-upload/confirm only).",
+     "fix": "Add an evidence read/presigned-GET endpoint and make each entry open the evidence object (viewer + hash/WORM detail).",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 4770-4778 (§4-10): empty list state = '검색 결과 없음' + '필터 해제 — 전체 목록' button + primary action button — reason plus next action.",
+     "code_does": "Empty state is a bare status li (MaintenanceScreen.tsx:688) with no CTA; the 필터 해제 chip lives only in the facet row and only when lens filters (not header search) are active.",
+     "fix": "Render clear-search/clear-filter and the create CTA inside the empty state.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 16295: sorted column headers append a visible ' ↑'/' ↓' direction arrow; 16145: search matches code+c1+c2+c3+status+enum values.",
+     "code_does": "Column sort buttons expose only aria-pressed with no direction indicator (MaintenanceScreen.tsx:640-655); header search (438-446) skips status labels and type/cause enum labels, so typing '지연' or '예방' finds nothing.",
+     "fix": "Append the arrow to the active sort header; include statusLabel(row.status), typeLabel, causeLabel in the search needle.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "dc.html 4739-4744: lane cards show code, title, and assignee (lc.who = c3); dc.html 15103-15112: J/K moves the selection itself from screen scope.",
+     "code_does": "Lane cards (MaintenanceScreen.tsx:748-764) omit the assignee line (배정 · 진행 lane cannot show who) and are not drag sources; J/K only moves DOM focus and only after the user tabs into the list (onKeyDown on the UL, 425-435).",
+     "fix": "Add the mechanic name row + objDrag to lane cards; optionally lift the j/k handler to the screen container so it works without prior focus.",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-MAINTENANCE-CONSOLE"
+  },
+  {
+   "module": "field",
+   "verdict": "major-deviations",
+   "fidelity_score": 55,
+   "design_anchors_read": [
+    "DESIGN.md 1-257 (full — §4-1..20 invariants, §4-19..§4-29, §3.9/§3.9.0/§3.10, §5/§6)",
+    "CLAUDE.md 1-35 (anti-patterns full)",
+    "dc.html:11155-11160 MOD_SCREENS.field (고객·현장 — cols 현장·고객·계약·SLA, stats SLA위반/진행이슈/상주현장, rows ST-01/04/07/09 kv·links·acts)",
+    "dc.html:11024-11041 MOD_SCREENS wrapper (userNodes merge)",
+    "dc.html:16141-16400 module-surface view logic (search·sort·modNarrow·cfg custom cols/stats/presets/widget·det kv/en/flow/links/acts/dynAutos/onMonitor)",
+    "dc.html:4564-4975 module-surface template (header stat bar·type chip·cfg strip·시트로 열기·dist/kanban·shared-track list·draggable rows·empty state·det panel·작용 자동화)",
+    "dc.html:15103-15115 (J/K keyboard grammar for MOD_SCREENS)",
+    "dc.html:13343 MOD_TYPEOF field=현장 · 13885 ONT_TYPES 현장 OT-02 (actions field/map, analytics sla)",
+    "dc.html grep JL-: 9077, 10635, 11060 (WO-2638 kv 일지 JL-0702), 12455-12456 (DOCS 업무일지), 13377 (CL-03 chain WO↔JL)",
+    "AGENTS.md §5 grep: (56) 모듈 서피스 10종 field=현장×계약×SLA, (58) 모듈 J/K + 현장=이슈 접수 primary, (100) 거래처 CL- 링크 4건, (136) en 칩=modQ 필터, (147) 지도에서 보기 4행, (151) JL- 생애주기 카드, (190)-(193) post-190 = L2 판정+CRM only — field 설계 변경 없음"
+   ],
+   "invariant_violations": [
+    "§4-20/§4-23 (모든 개체 표면 = 드래그 소스): 현장 행·이슈·WO 칩 어디에도 draggable/objDrag가 없고, 목록에 개체 코드 열 자체가 없음 — §4.7-3 (코드 발급·드래그 참조 토큰) 동반 위반",
+    "§4-22 add-anything: 열 추가·카운트 스탯 추가·필터 프리셋 저장·위젯(분포/칸반)·행 선택 거동 세그·시트로 열기 — 화면 구성 스트립 전면 부재",
+    "§4.7-1 목록 문법: 열 헤더 클릭 정렬(오름/내림/해제·숫자 인식) 부재",
+    "§4.7-9 분석=drill + §4-27-4: 스탯이 limit:100으로 잘린·이미 필터된 클라이언트 페이지에서 파생되고 page.total/next_cursor 미사용, 「N 표시 / 전체」 프레이밍 부재 — 100현장 초과 조직에서 스탯 바가 허위 수치",
+    "§4.6 색은 토큰에서만: field.css:90 하드코딩 #141a21 (주석으로 정당화했으나 토큰 외 리터럴)",
+    "§4-14 모듈 3계층: 역학 계층(작용 자동화 칩·+ 감시 규칙) 미노출 — backend/console-shell blocked",
+    "§4.7 상세 보기 기본=핀 패널·창 모델: 상세가 화면 내 고정 aside — 핀/팝아웃/트레이/화면 간 유지 미지원 (console shell 부재로 blocked)",
+    "참고: §4-12(설명용 UI 금지)·§4-11(KPI 카드 금지)은 위반 없음 — 캡션/서브텍스트 0, 스탯 바는 컴팩트 1행 drill 필터, 0은 — 처리"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "모듈 서피스 행 = 첫 열 mono 개체 코드(ST-01…) + draggable=\"true\", onDragStart는 '[코드 제목]' 참조 토큰 payload (dc.html:4750-4758, DESIGN §4-20 '모든 개체 표면 = 드래그 소스', §4.7-3 코드 발급)",
+     "code_does": "FieldScreen.tsx:767-799 — 행 그리드가 현장명·고객·이슈·작업·SLA만 렌더: 개체 코드 열이 없고 어떤 행·칩도 draggable이 아님. WO(workOrderCode:99-105)·티켓(ticketCode)은 코드를 파생하면서 현장(사이트)만 코드 무발급",
+     "fix": "사이트 코드(백엔드 canonical 코드 전까지 ticketCode식 파생)를 mono 첫 열로 복원하고, 행·이슈 항목·WO 칩에 draggable + dataTransfer('text/plain','[CODE 이름]') 등록 — objDrag 단일 헬퍼로",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "열 헤더 = 정렬 버튼(클릭 오름/내림/해제 토글, 숫자·통화 인식 — dc.html:4738, 16147-16152, 16295 · §4-18 재사용 문법)",
+     "code_does": "FieldScreen.tsx:751-756 — columnheader가 정적 span, 정렬 경로 없음",
+     "fix": "visibleRows에 클라이언트 3단 정렬 토글(문자 localeCompare ko / 숫자 추출) 추가 — 헤더 span을 버튼으로",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "화면 구성 스트립: kv/en 소스에서 열 추가·카운트 스탯 추가(클릭=필터 drill)·필터 프리셋 저장·위젯(분포 바/칸반)·행 선택 거동(분할/카드)·기본값 복원·시트로 열기·팀 배포—결재 (dc.html:4601-4646, 16169-16243 · §4-22 add-anything · §19 구성 콘솔)",
+     "code_does": "FieldScreen.tsx — 고정 4열·고정 3스탯·구성 UI 전무. per-user 저장 기반(localStorage storeKey:167)은 이미 있으나 selectedSiteId·draft만 저장",
+     "fix": "기존 storeKey 저장소에 사용자 구성(커스텀 열=detail 필드 매핑, 스탯=SLA/고객별 카운트, 검색 프리셋, dist 위젯)을 확장 — 팀 배포·시트만 후속(결재·협업 시트 부재)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "field 정체성 = 현장×계약×SLA: cols [현장, 고객, 계약, SLA] + 스탯 「상주 현장 12」, 행 c3=C-207 경비 등 계약 코드 drill (dc.html:11155, AGENTS (56))",
+     "code_does": "fieldApi.ts:47-62 FieldSiteRow에 계약·상주 인원 필드가 없어 i18n/field.ts 헤더 주석대로 이슈·작업 열 + 현장 총수 스탯으로 치환 — 계약 차원이 화면에서 소실",
+     "fix": "갭 매니페스트: site→계약(C- 코드·서비스 유형)·상주 headcount를 FieldSiteRow/FieldSiteDetail 계약에 추가 후 계약 열·상주 스탯·계약 링크 칩 복원",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "det 링크 칩: 거래처 CL-, 그래프—현장 체인(node), 계약 C-, 근태 현황(scr), 지도에서 보기(mapOv/mapSel 프리셋 — AGENTS (147) §4-14-④), 메일 스레드, 담당 person 개체 (dc.html:11156-11159, 4944-4951)",
+     "code_does": "FieldScreen.tsx:871-1044 SitePane — 고객→목록 필터, 담당→검색어 주입, WO→/dispatch 링크뿐. lat/lon(fieldApi.ts:54-55)을 받고도 지도 경로 없음, 거래처·계약·그래프·메일 링크 없음",
+     "fix": "존재하는 콘솔 표면(dispatch)은 즉시 링크, 지도·객체 그래프·거래처 카드·메일은 갭 매니페스트로 등재 후 화면 생기는 대로 링크 칩 추가",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "행 acts = 단일 CTA 「연장 계약 기안」(appr contract 프리필 — ST-04, dc.html:11157, 4954-4960) — 현장에서 기안 체인으로 상류 이동",
+     "code_does": "FieldScreen.tsx — 기안(전자결재) 경로 없음: 티켓 전이/배정/연결/인수확인만 존재",
+     "fix": "갭 매니페스트: 전자결재(appr) 모듈·계약 컴포저가 콘솔에 없음 — 생기면 현장 det에 계약 기안 CTA 프리필 연결",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "det 하단 역학 노출: 「작용 자동화」 워크플로 칩 + 「+ 감시 규칙」(타입 트리거 프리필 — dc.html:4962-4968, 16376-16377 · §4.7-8 · §4-14 3계층 audit)",
+     "code_does": "모듈 전체에 자동화·정책 표면 없음 — 의미(속성·관계)·동작(전이·인수확인)만 노출, 역학 0",
+     "fix": "갭 매니페스트: 워크플로 스튜디오/규칙 조회 API가 콘솔에 없음 — 도입 시 현장 타입에 작용하는 규칙 칩 + 감시 규칙 진입 추가",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "목록 표면은 캡+검색 유도 「N 표시 / 전체」(DESIGN §4-27-4), 스탯·수치는 항상 정직한 스코프 (§4.7-9, AGENTS (156) 진실성 audit)",
+     "code_does": "FieldScreen.tsx:225-234 limit:100 고정·page.total/next_cursor 폐기, 360-367 스탯이 이미 필터된 rows에서 파생 — 필터 활성 시 「현장」 스탯이 필터된 개수를 전체처럼 표시, 100행 초과 시 전 스탯 과소집계",
+     "fix": "page.total로 「N 표시 / 전체 M」 프레이밍, 총계 스탯은 서버 total 사용·위반/이슈 카운트는 필터 무관 집계(서버 집계 필드는 계약 추가 후보)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "det 헤더 = 「개체 카드」(lcOpen 생애주기·관계·역학)·「시리즈」 버튼 (dc.html:4791-4793)",
+     "code_does": "SitePane:885-892 — 현장명 h2 + SLA 칩만; 개체 카드/시리즈 진입 없음",
+     "fix": "개체 카드 렌더러(생애주기 모달)가 콘솔에 생기면 det 헤더에 진입 버튼 추가",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "빈 상태 = 「필터 해제」 + primary 액션 버튼 병렬 (dc.html:4770-4777, §4-10 이유+다음 행동)",
+     "code_does": "FieldScreen.tsx:757-765 — 필터 원인일 때 필터 해제만, 이슈 접수 CTA 미노출",
+     "fix": "canIntake일 때 빈 상태에 이슈 접수 버튼 병기",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "modNarrow는 실효 폭(vw − 사이드바 − rail − 핀 패널) 기준 컬럼 강등 (dc.html:16159-16166, §4-19)",
+     "code_does": "field.css:443-453 — 뷰포트 media query(960/700px)만: 셸 안에서 사이드바·rail 폭을 반영 못 함",
+     "fix": ".field__content에 container query(또는 effW 클래스)로 전환",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "J/K/Enter는 화면 전역 keydown (input 가드) — 포커스 위치 무관 (dc.html:15103-15115)",
+     "code_does": "FieldScreen.tsx:744-749 — tabIndex=0 grid 래퍼에만 바인딩: 테이블에 포커스가 없으면 J/K 무반응 (input 가드는 379-383에 기구현)",
+     "fix": "onKeyNav를 main 레벨 keydown으로 승격 (기존 태그 가드 재사용)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "primary CTA = background var(--ink) / color var(--surface) (dc.html:4606) · 색은 토큰에서만 (§4.6)",
+     "code_does": "field.css:81-96 — primary가 --signal 배경 + 하드코딩 #141a21 잉크",
+     "fix": "ink/surface 토큰 쌍으로 교체(대비 문제 자체 해소, 리터럴 제거)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "행 en enum 칩(서비스 · 경비/미화/지게차 임대) — det 칩 클릭=modQ 필터 (dc.html:11156 en, 16315, AGENTS (136) · §4-19 typed fields)",
+     "code_does": "계약에 서비스 유형 enum 필드가 없어 en 칩 계층 부재 — SLA 칩 필터가 부분 대체",
+     "fix": "갭 매니페스트: site 서비스 유형 enum을 계약에 추가 → 행·det enum 칩 + 클릭 필터",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "현장 체인에 업무일지 JL- 링크(WO-2638 kv 「일지 JL-0702 연동」, CL-03 chain WO↔JL — dc.html:11060, 13377; CAP 앵커 일지/JL-)",
+     "code_does": "SitePane work_orders(974-1001) — report_submitted_at 칩(「보고 제출」)이 유일한 일지 흔적, JL- 개체·문서 연결 없음",
+     "fix": "갭 매니페스트: 업무일지(JL-) API 부재 — 도입 시 WO 항목에 JL- 링크 칩",
+     "backend_blocked": true
+    }
+   ],
+   "cap": "CAP-FIELD-CONSOLE"
+  },
+  {
+   "module": "docs",
+   "verdict": "major-deviations",
+   "fidelity_score": 48,
+   "design_anchors_read": [
+    "DESIGN.md lines 1-257 (full §1-§6 incl. §3.9/§3.10, §4-11/12/13/14/18/19/20/22/23/25/27/28/29, §4.7 grammar catalog)",
+    "CLAUDE.md full (anti-patterns 1-5, 핵심 원칙)",
+    "dc.html 2999-3073 — 문서·기록물 screen template (header/내보내기/기록물 등재, docKpis, dzLayArchive card zone, docFilters+search, 6-col sticky table, row chips 등재 대기/처분 대기/폐기됨)",
+    "dc.html 8328-8375 — 기록물 등재 modal template (file drop, 제목, 유형 5칩, 보존기한 4칩, 사유, err, 하류 고지 line, 등재 요청)",
+    "dc.html 12130-12142 — docRegOpen/docRegDrop/docRegSubmit (IN- code, pending=등재 대기, audit+toast)",
+    "dc.html 12144-12270 — lcKnown/lcSeed EV- branch (SHA/TSA/WORM/연계보관/증거 적격 attrs, gates 3종, evMedia, evEntries, mlinks WO-/FL-/AP-), lcOpen 열람 감사",
+    "dc.html 12374-12432 — EVIDENCE() EV-101~103 data, evPreview (orig=forbid 감사 fail-closed, deriv=열람 감사→viewer), DOCS() 15 mixed-type rows",
+    "dc.html 7330-7424 — lifecycle card EV media pane (원본 WORM 봉인 cursor:not-allowed), ZIP 구성 파일 색인 (path/sz/sha, 읽기 전용)",
+    "dc.html 7810-7879 — 증거 인콘솔 뷰어 (워터마크 타일, video seek/audio STT/ZIP entry, SHA·TSA·custody strip, 범위 다운로드 egress)",
+    "dc.html 17599-17670 — docKpis(총 기록물/이번 달 종결/보존 만료 임박), docFilters 7종, docRows type tones+lcReg disposed opacity, docReg vals",
+    "dc.html 17758 — onDocExport egress-gate audit+toast; 16418 nav badge=pending 파생",
+    "AGENTS.md §5 change log: docs entries (93 카드 존 소급, 100 WORM 뷰어, 115, 145 인콘솔 뷰어, 156 진실성 audit, 160); entries after 190 checked — 191/192/193 are CRM only, NO new docs authority post-190"
+   ],
+   "invariant_violations": [
+    "§4-18/§4.7-1 reuse: EvidenceRecords hand-draws a new card-row list shape instead of the module-surface shared-track table grammar (design 6-col sticky grid 76px/2fr/64px/1fr/60px/50px) — '같은 모양을 두 번 손으로 그리면 위반'",
+    "§4.7-2/§4-23 window model: the archive surface is a static section — no card-zone participation (hover pin/minimize/close tools, header-drag popout, double-click pin split, resize, tray) that AGENTS 93 explicitly retrofitted onto docs",
+    "§4-27-④ scale selector: list fetches limit 200 with no 「N 표시 / 전체」 cap framing — rows silently truncate beyond the cap (page.total is fetched but unused in the list)",
+    "§4-10 empty state: '표시할 기록물이 없습니다' chip gives reason only, no next-action ('기록물 등재로 시작' 류) in one line",
+    "§4-27-⑥ downstream-effect notice: the register modal omits the design's one-line 하류 고지 (등재 요청은 기록관리자 승인 후 아카이브에 확정 — design-sanctioned action copy, not banned caption)",
+    "§3.10-⑥ detection control: original-copy access attempt is denied client-side but never audited as a forbid event (design logs 원본 접근 차단 forbid on every attempt)",
+    "§4-12/§4-11 checked: COMPLIANT — no subtitles/captions/meta prose found; stat bar is compact 1-row label+count buttons, no big-number KPI cards"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "backend_blocked": true,
+     "design_says": "docs is the archive of ALL finalized records: DOCS()+docRegistered mixes 계약 C-, 결재 AP-, 업무일지 JL-, 공지 NT-, 접수 IN-, 증거 EV- rows behind 7 type-filter chips (전체/결재/공지/업무일지/계약/접수/증거) and search over code+title+who+type; row click = lcOpen lifecycle card for any code (dc.html 3039-3067, 12447-12465, 17604-17621; DESIGN §2 종결 규칙 — 종결된 문서만 문서함으로 이동)",
+     "code_does": "DocsScreen.tsx:1-7 declares 'Scope: the EV- evidence archive only — non-EV record types are a separate future records lane'; only GET /api/v1/evidence/objects is listed (EvidenceRecords.tsx:262), no type-filter chip row exists, and the already-landed i18n for it (ko.ts:3181-3189 documents.types 전체/결재/공지/업무일지/계약/접수/증거) is unused",
+     "fix": "Add the 7-chip type filter row and merge non-EV finalized records (AP-/JL-/NT-/IN-/C-) into the archive list once a records-registry list REST exists; until then render the type chips with EV live and other types as fail-closed disabled-with-count-0 is NOT allowed (deny-by-omission) — so this goes to the gap manifest: records-registry list/read endpoints for non-EV finalized objects"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": false,
+     "design_says": "Archive list = shared-track 6-column sticky-header table: 코드/제목/유형/작성·담당/종결일/보존 on grid 76px minmax(120px,2fr) 64px minmax(64px,1fr) 60px 50px, per-type toned 유형 chip (결재=accent 공지=warn 계약=purple 업무일지=ok 증거=danger 접수=info), whole row is the open button titled 기록물 열기 — 열람 감사 기록, end spacer + overscroll-contain (dc.html 3048-3068)",
+     "code_does": "EvidenceRecords.tsx:118-128,481-539 renders card-style rows on 'auto minmax(0,1fr) auto' with chips wrapped inline under the title; no shared column tracks, no sticky header, no 유형/종결일 columns, row body is not clickable — only the small code button and a trailing 상세 button open the detail; ko.ts:3190-3197 documents.columns exists unused",
+     "fix": "Replace the card-row list with the design's shared-track table (sticky header, 6 columns, whole-row button, per-type toned chip, end spacer, overscroll-behavior:contain), keeping objDrag on the row"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": false,
+     "design_says": "The docs archive is a single window-model card zone (dzLayArchive): hover tool buttons, header-drag = popout float, double-click = pin split, bottom+corner resize, tray minimize, modal mode with backdrop, restore-default — AGENTS 93 '레인 2 완결 — 문서·기록물 단일 카드 존 소급 (§4.7-2)' (dc.html 3022-3037, 15340-15348)",
+     "code_does": "DocsScreen.tsx:188-237 renders header + stat bar + EvidenceRecords as a static section; the window manager is used only for opening the EV detail entry (EvidenceRecords.tsx:377-383) — the archive card itself supports none of the four window states",
+     "fix": "Register the archive card with the console window/card-zone grammar (pin/popout/minimize/restore, resize) so the 기록물 card behaves like every other §4.7-2 card"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": true,
+     "design_says": "Header carries 내보내기 (export) beside 기록물 등재; clicking it passes the §3.10-⑤ egress gate and logs '내보내기 (egress)' audit (dc.html 3004-3007, 17758)",
+     "code_does": "DocsScreen.tsx:190-205 header has only the 기록물 등재 primary; no export affordance anywhere in the module (ko.ts:3209 documents.actions.export exists unused)",
+     "fix": "Add the egress-gated export action once an evidence/records export REST exists (contract only defines the evidence_export.create audit action, no endpoint) — gap manifest item; the button must be deny-by-omission until then"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": true,
+     "design_says": "기록물 등재 modal picks 유형 (계약/결재/공지/업무일지/접수) + 보존기한; submit issues a code with pending=true → row shows warn 등재 대기 chip, closed=등재 대기, and the archive is confirmed only after 기록관리자 승인 (dc.html 8350-8352, 12133-12142, 3059)",
+     "code_does": "DocsRegisterModal.tsx:19-27,284-301 replaces the 유형 axis with classification chips (GENERAL…SECRET) and POST /api/v1/evidence/objects (evidenceApi.ts:413-420) creates the EV object immediately — no records-manager approval stage, no 등재 대기 pending chip in the list",
+     "fix": "Registration should land in a review/pending stage (§3.9 생성=등재 → 검토) with the 등재 대기 chip until a records-manager approves; needs a pending/approve surface on the register contract (currently register is immediate) — gap manifest; the 유형 field returns with the non-EV records lane (finding 1), classification can stay as an additional axis"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": true,
+     "design_says": "Derivative preview opens the in-console watermarked viewer/player: viewer-name watermark tiles, video play/seek, audio + STT 파생 label, ZIP entry preview, SHA-256·TSA strip, custody timeline, 범위 다운로드 — 승인 필요 egress button; every open logs 열람 감사 with watermark identity (dc.html 7810-7879, 12416-12427; AGENTS 145)",
+     "code_does": "EvidenceCard.tsx:230-240 evPreview returns a static message pane ('previewPending' text) — no viewer modal, no watermark, no player chrome, no ranged-download egress affordance; ZipEntryTree (EvidenceCard.tsx:847-869) renders one 'pending' placeholder row instead of the 12-entry path/size/sha index",
+     "fix": "Wire-pending on GET copies/{id}/derived-preview and the ZIP entry-index REST (t_15b1a1ec follow-up) — gap manifest; when they land, build the watermark viewer modal per dc.html 7810-7879 rather than a text pane, and render the real entry index (path/sz/sha grid, 읽기 전용 chip)"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": true,
+     "design_says": "EV- detail carries link chips to connected objects — EV-101 links WO-2643·FL-2643, EV-102 links AP-3125 — one-click up/downstream moves (dc.html 12384,12392,12207; DESIGN §5 통합 원칙, §4.7-3 링크 칩)",
+     "code_does": "types.ts:143 + evidenceModel.ts:239-250 expose only the single `source` ref as an ObjectCard relation (its title is the source-TYPE label from mapSource, evidenceApi.ts:67-73, not the source object's title); the wire EvidenceObjectDetail carries no linked-objects array, so WO-/AP-/FL- chains cannot render",
+     "fix": "Extend the EV wire contract with linked-object refs (or a generic object-links read) so the card can render drag-able link chips; meanwhile surface source_code as a real drag/link chip with the source object's title once the wire carries it — gap manifest"
+    },
+    {
+     "severity": "major",
+     "backend_blocked": true,
+     "design_says": "Attempting to open the WORM-sealed original is itself audited: evPreview('orig') logs a forbid event '원본 접근 차단 … fail-closed' before the toast (dc.html 12417-12422; DESIGN §3.10-⑥ 무권한 시도 = 감사)",
+     "code_does": "EvidenceCard.tsx:230-236 denies the original client-side with a message pane and explicitly notes 'no network surface to deny, so the UI itself is the fail-closed boundary' — the attempt leaves no audit trace",
+     "fix": "When the original-copy stream endpoint lands, route the attempt through it so the server records the forbid; until then this is a gap-manifest item (audited-forbid REST for original access attempts)"
+    },
+    {
+     "severity": "minor",
+     "backend_blocked": false,
+     "design_says": "One compact KPI row (총 기록물/이번 달 종결/보존 만료 임박) above the card, and inside the card one row of type filters + search (dc.html 3013-3021, 3038-3047)",
+     "code_does": "Two stacked stat bars render: DocsScreen.tsx:207-217 (3 filter-buttons) then EvidenceRecords.tsx:446-462 (전체 + 4 admissibility + hold + search) — the total count appears twice (총 기록물 stat and 전체 chip), spending extra vertical space (§4-11 화면 효율)",
+     "fix": "Merge into the design layout: one KPI row on the screen, one filter+search row inside the archive card; drop the duplicated 전체 count (admissibility chips may stay as the card's filter row until type chips land)"
+    },
+    {
+     "severity": "minor",
+     "backend_blocked": true,
+     "design_says": "docKpis[1] = 이번 달 종결 · 문서함 편입 — counts records finalized into the 문서함 this month (dc.html 17601; DESIGN §2 종결 규칙)",
+     "code_does": "DocsScreen.tsx:210 substitutes 이번달 등록 (registered_after=month start) because the wire has no finalization/종결 concept — a truthful but different metric",
+     "fix": "Keep the truthful 등록 count until a finalization state exists on the records wire; log the 종결 metric as a gap-manifest item tied to the non-EV records lane"
+    },
+    {
+     "severity": "minor",
+     "backend_blocked": false,
+     "design_says": "List surfaces cap with 「N 표시 / 전체 M」 framing + search steer at production scale (DESIGN §4-27-④; AGENTS 156/169 명부 「12 표시 / 1,284」)",
+     "code_does": "evidenceApi.ts:220-226 requests limit 200 and EvidenceRecords renders whatever returns with no cap indicator; page.total is consumed only by countEvidenceObjects for the stat chips",
+     "fix": "Show 「{visible.length} 표시 / 전체 {total}」 next to the search input and steer to search when total > limit (total is already on the wire)"
+    },
+    {
+     "severity": "minor",
+     "backend_blocked": false,
+     "design_says": "Korean copy throughout (기록물 등재 modal labels, 보존 3년/5년/10년/영구, 폐기 게이트 chips — dc.html 8347-8371, 17664)",
+     "code_does": "docsStrings.ts:57-81 and strings.ts:70-101 ship English fallbacks ('3y', 'Retention expired', 'Choose a file') pending the serial i18n manifest wire-up (lane Hangul gate) — the surface renders English until docs/evidence/console/CAP-DOCS-EVIDENCE-CONSOLE/frontend/manifests/i18n.json is applied",
+     "fix": "Integrator applies the koManifest blocks already written in both strings files into ko.console.documents/evidence during the serial i18n step (no new translation work needed)"
+    }
+   ],
+   "cap": "CAP-DOCS-EVIDENCE-CONSOLE"
+  },
+  {
+   "module": "notif",
+   "verdict": "deviations",
+   "fidelity_score": 76,
+   "design_anchors_read": [
+    "dc.html 4535-4561 — 알림 풀뷰 (NOTIF) template: header (h1+warn unread chip+전체/미확인 pills+모두 읽음), row anatomy (dot/cat chip/segs/time), card+scroll+overscroll+14px tail",
+    "dc.html 6455-6475 — rail 알림 section (toned cat chips, onMarkAll, dot right) for rail↔main contrast",
+    "dc.html 14891-14908 — notifClick (mark read + navigate item/thread/screen/code-regex drill) + markAllNotifs",
+    "dc.html 15198-15233 — msgParts tokenizer (@→openPerson, CODE→objectLinkGo), MODULES/MD- codes, objectLinkGo resolution chain",
+    "dc.html 17981-17991 — notif VM: notifScr/notifRows (dotOp 1|0.12, fw 800|600, segs, swipe→readToggle)/notifFs (ink-active pills)/notifUnreadN/onNotifAllRead",
+    "dc.html grep sweep 'notif|알림' (full file) — producers, VIEWERS scr lists, MOBILE_SCR, OT-28 알림 type, nav badge alertUnread",
+    "DESIGN.md lines 1-257 FULL — §2 '알림은 개체를 가리키는 포인터', §3.9/§3.9.0-3, §3.10, §4-1..20 (esp. 4-11 stat bars, 4-12 no explanatory UI, 4-18 reuse, 4-19 chokepoint, 4-20 drag/engine), §4.5 PBAC deny-by-omission, §4.7 grammar catalog (J/K/Enter lists, 토큰 문법 @#!, 핀 패널 기본), §4.8 rail↔main 승격, §4-22/23/25/27/28/29, §5 통합 원칙",
+    "CLAUDE.md (design mirror) FULL — 안티패턴 1-5, 핵심 원칙",
+    "AGENTS.md §5 change log: entries 159-193 grepped for 알림/notif — post-190 entries (191/192/193) are CRM-only, no new notif authority; ≤190 notif-relevant: 162 watch [구독] push, 163 일괄 승인 알림 소거, 177 인수 패키지 알림"
+   ],
+   "findings": [
+    {
+     "severity": "major",
+     "design_says": "Notification = pointer to an object; activating it follows the pointer to the source object (DESIGN §2 '알림은 개체를 가리키는 포인터'; §4.7-3 클릭 시 상세는 핀 패널; dc.html 14891-14903 notifClick → openDetail/openThread/objectLinkGo, 15215-15233 objectLinkGo drill chain)",
+     "code_does": "activateRow for a link.type==='object' row sets an in-module timeline filter (setLinkFilter + setView('time')) and never opens the source object; token-chip clicks do the same (NotifScreen.tsx:264-271, 330-336; notifModel.ts:23-24 computes the object target but the screen discards it as navigation)",
+     "fix": "When an exposed object-card/pin-panel surface exists, route rowTarget {type:'object'} and openToken to it (single chokepoint in notifModel.rowTarget); keep the object-filter as the fallback for unresolvable heads. Today no exposed object surface exists anywhere in the production console (ADR-0025 manifest = ['sales']; objectExplorer is mounted-dark), so this goes to the gap manifest, not an FE patch.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Screen-linked notifications navigate to the linked screen (dc.html 14898-14899 notifClick → setState({screen: n.link.screen}); e.g. seed na1 links pay)",
+     "code_does": "rowTarget returns undefined for every screen key outside EXPOSED_SCREEN_KEYS=['sales'], so mywork/pay/appr/... screen links are ack-only rows with no navigation (notifModel.ts:23-28; shell/nav.ts:121; tested in NotifScreen.test.tsx:233-250)",
+     "fix": "No code change — behavior is authority-sanctioned fail-closed (ADR-0025) and self-heals as the exposure manifest grows; register in the gap manifest that N notification screen-link targets are dark so exposure reviews see the dead-end count.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "notif is a first-class nav module in the 커뮤니케이션 group and reachable full view (dc.html 16438 navItem 알림, 15207 MODULES notif, 17981 notifScr screen wrapper)",
+     "code_does": "NotifScreenBody adapter and routeContract (/console/notif) exist, but 'notif' is absent from MOUNTED_SCREEN_KEYS (shell/nav.ts:85-109) and from screens/registry.ts, so visibleConsoleNav filters the comms nav item out and nothing mounts the screen in this worktree",
+     "fix": "Integrator consolidation: add 'notif' to MOUNTED_SCREEN_KEYS and register NotifScreenBody under SCREEN_REGISTRY['notif'] (exposure stays governed by EXPOSED_SCREEN_KEYS); lane left this deliberately for wave23-integrator — verify it lands in the integration worktree.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-1 연결성/§4.6-2: no number/badge without a click/filter path — every count is a button into its rows",
+     "code_does": "The muted-unread chip '숨김 N' is a non-interactive span (NotifScreen.tsx:368-370); there is no UI path to see which notifications/policies are muted even though listPolicies data is already loaded",
+     "fix": "Make the chip a button that filters the by-object view to muted groups (data already in `policies`/`groups[].muted`), mirroring the unread pill pattern.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Prototype full-view rows make @사람 tokens live links → openPerson (dc.html 15200, applied to notif rows via msgParts at 17985)",
+     "code_does": "TokenText renders mentions as inert styled spans with no onClick (composer/TokenText.tsx:88-93), and NotifScreen's resolveToken only resolves object codes from resolved heads, so @mentions in notification text are plain text (NotifScreen.tsx:322-329)",
+     "fix": "Give TokenText mentions an optional onOpenPerson and feed it from the directory-scoped person provider once a person-card surface is exposed; until then the inert span is the deny-by-omission-correct fallback.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4.7-1 list grammar: J/K/Enter keyboard navigation + multi-attribute search on every list; §4-20/§4-23: every object-representing chip/row is a drag source (objDrag payload '[코드 제목]')",
+     "code_does": "Rows are tab-navigable buttons (Enter works, tested NotifScreen.test.tsx:199-212) but no J/K roving focus, no search input, and neither rows nor resolved token chips set draggable/objDrag payloads (NotifScreen.tsx:410-427; TokenText.tsx:100-111). The prototype's own notif section also lacks J/K/search/drag, so this is catalog-level, not section-level, drift",
+     "fix": "Add J/K roving focus on .notif__rowopen and draggable='[CODE title]' dataTransfer on resolved token chips when the shared list-grammar helper lands; search can wait for the catalog sweep since the prototype section defines none.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4.6-3/CLAUDE.md 안티패턴 3: colors only from tokens",
+     "code_does": "notif.css .notif__alert button uses literal `color: white` next to background var(--teal) (notif.css:272)",
+     "fix": "Replace `white` with the token used for on-accent text (e.g. var(--surface) or the shared on-teal token).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Prototype rows show relative seed times ('방금') in the mono trailing slot (dc.html 4555, seeds 9697+)",
+     "code_does": "timeLabel renders absolute ko-KR M/D HH:MM (notifModel.ts:30-41) — truthful for backend ISO timestamps but visually diverges from the prototype's relative recency emphasis",
+     "fix": "Optional polish: relative label under ~24h ('방금'/'n분 전') falling back to M/D HH:MM, matching comms-rail's formatKoreanTime once shared.",
+     "backend_blocked": false
+    }
+   ],
+   "invariant_violations": [
+    "§4-1/§4.6-2 (기능 없는 숫자): '숨김 N' muted chip is a dead numeric badge — no click/filter path (NotifScreen.tsx:368)",
+    "§4.6-3 (토큰 색만): literal `color: white` in notif.css:272",
+    "§4.7-1 catalog (목록 = J/K/Enter·다속성 검색) and §4-20/§4-23 (모든 개체 표면 = 드래그 소스): built list has neither J/K nor drag-source registration — same as the prototype notif section itself, so catalog-level retrofit debt rather than section infidelity",
+    "§4-12 검증 통과: no subtitles/captions/meta prose anywhere in the module — all copy is action-driving or state text; §4-11 검증 통과: header uses inline stat chips, zero big-number KPI cards; §4-25-6 검증 통과: zero seed/mock data, every datum is backend state"
+   ],
+   "cap": "CAP-NOTIF-CONSOLE"
+  },
+  {
+   "module": "board",
+   "verdict": "major-deviations",
+   "fidelity_score": 56,
+   "design_anchors_read": [
+    "dc.html 4562-4970 (모듈 서피스 template: header/stats/cfg strip/list/detail/prog/links/acts/dynAutos)",
+    "dc.html 10874-10929 (modLinkGo incl. mailTo, modCol/Stat/FPre/CfgDeploy methods)",
+    "dc.html 11024-11055 (MOD_SCREENS wrapper + userNodes merge)",
+    "dc.html 11229-11233 (board cfg: title/action mailTo/cols/stats/rows NT-0708~0628 with en·prog·kv·links)",
+    "dc.html 13343, 13887, 13915 (MOD_TYPEOF board→공지, OT-19 schema: props/linkTypes/actions/analytics 수령률)",
+    "dc.html 15103-15116 (global J/K keyboard for MOD screens)",
+    "dc.html 16141-16379 (modV build: sort/narrow/custom cols/stats drill/rows drag payload/det selRow/prog/en/links/dynAutos)",
+    "dc.html 16439, 17120, 17823, 10397 (nav noticeUnread badge, rail 공지 더보기→board, mobile tabs incl. board)",
+    "grep anchors: 게시판/공지/NT-/수령확인/board across dc.html",
+    "DESIGN.md §1-§3.10 + §4 full invariant catalog (4-11, 4-12, 4-18, 4-19, 4-20, 4-22, 4-23, 4-24, 4-25, 4-26, 4-27, 4-28, 4-29, §4.7 grammar catalog, §5)",
+    "CLAUDE.md (mirror) anti-patterns 1-5",
+    "AGENTS.md §5 change log: board entries 30, 41, 43, 45, 58, 60, 83, 106, 112, 134-135, 151, 156, 160, 190; post-190 entries 191/191a/192/192a/193 = CRM only (no new board authority)"
+   ],
+   "invariant_violations": [
+    "§4-20/§4-23 (모든 개체 표면 = 드래그 소스): list rows and the NT- code are not draggable — no [코드 제목] reference-token payload anywhere in the module",
+    "§4.7-9/§4-16 분석=drill (기능 없는 숫자 금지): statbar values (게시 중/수령확인 진행/초안) are dead spans — prototype renders stats as buttons and custom stats drill via list filter",
+    "§4-22 add-anything: no 화면 구성 strip — cannot add columns (kv/en attrs), stats, filter presets, or widgets from the surface; no 시트로 열기",
+    "§4.7-1 list grammar: column-header sort (click asc/desc/clear with ↑/↓) absent",
+    "§4-10 empty state: search-miss empty state is bare text — no 「필터 해제 — 전체 목록」 or primary-action CTA (dc.html 4770-4778)",
+    "§4.7-10/§4.7-3 완전 추적성: the notice's own NT- code never renders in the detail panel (no mono code chip, no link/drag affordance for the object identity)",
+    "§4-27-4 규모 선택기: 200-row list cap has no 「N 표시 / 전체」 framing (silent truncation)"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Every module row is a drag source emitting the standard reference token: onDragStart sets \"[\" + code + \" \" + c1 + \"]\" via dataTransfer (dc.html 4758, 16299-16300; DESIGN §4-20/§4-23 'able to drag every object surface; un-draggable object representation = violation')",
+     "code_does": "ModuleScreen.tsx:347-366 renders rows as plain div role=row with no draggable/onDragStart; boardModuleConfig.ts has no drag hooks; the NT- code cell (boardModuleConfig.ts:92) is inert text",
+     "fix": "In the shared ListTable row (single definition per §4-18): draggable + onDragStart setting text/plain \"[<code> <rowTitle>]\" (config.rowId/rowTitle already exist); also make the detail-panel code chip a drag source once added",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Column headers are sort buttons — click toggles asc → desc → clear with ↑/↓ arrow, numeric-aware compare (dc.html 4753, 16146-16152, 16295 '열 정렬 (재사용 §4-18)')",
+     "code_does": "ModuleScreen.tsx:314-325 headers are static spans with only a resize handle; no sort state anywhere",
+     "fix": "Add tri-state sort to the shared ListTable header (col index + dir in component state, numeric-aware keyOf like the prototype), arrow suffix on the active column",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "The detail split panel always shows the SELECTED row — selection defaults to the first filtered row and J/K immediately drives the panel (dc.html 16153-16155 selId fallback, 4783 detOn=!!selRow)",
+     "code_does": "ModuleScreen.tsx:599 renders the panel only from openId (set by click or Enter); J/K moves the highlight but the panel stays on the previously opened row; on load no detail shows at all",
+     "fix": "Make openRow follow selectedId (single selection state), defaulting to the first filtered row; keep × close as an explicit dismiss",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Detail header = mono object code + status tone chip (+ 개체 카드/시리즈 chips) above the title (dc.html 4785-4793)",
+     "code_does": "ModuleScreen.tsx:477-484 DetailPanel header renders only rowTitle + × — no NT- code, no status chip, no object affordance",
+     "fix": "Extend the shared detail header with config-provided code (mono, draggable) and status ModuleCell; board supplies row.code + noticeStatusChip(row)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Board's signature per-notice 수령확인 progress bar renders in the detail for the selected row — done/total with % label, warn <100% / ok at 100% (dc.html 4910-4917 det.progOn, rows bd1/bd2 11230-11231 prog field; AGENTS change-log 30 '게시판 수령확인 진행 바 → 모듈 상세 제네릭 진행 바')",
+     "code_does": "The bar exists only inside the manager-only BoardReceiptsPanel dialog (BoardReceiptsPanel.tsx:134-147); in the detail panel progress is a text kv line (boardModuleConfig.ts:141-147); shared ProgBar (ModuleScreen.tsx:200-220) is a screen-level aggregate field, not per-row, and board doesn't use it",
+     "fix": "Add a per-row prog slot to detail config (done/total → the existing ProgBar visuals) and feed row.progress for manager callers; keep the kv line for non-managers who get no progress embed",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "화면 구성 personal-view strip + header tools: custom columns from kv/en attrs (add/remove/drag-reorder), custom count stats (click=filter drill), saved filter presets, dist/kanban widgets, 분할 패널↔개체 카드 det segment, 기본값 복원, 팀 배포—결재, and 시트로 열기 (dc.html 4601-4658, 16188-16228; §4-22 add-anything, §3.9.0-① personal view)",
+     "code_does": "None of it exists — ModuleScreen has no config strip, no custom columns/stats, no presets, no widget toggle, no sheet export; ModuleConfig (config.ts) has no extension points for them",
+     "fix": "Port the config strip to the shared ModuleScreen as personal-view state (columns from a config-declared attribute map, stat counts drill via the search filter, presets stored per module key); sheet/deploy can be follow-on slices but column/stat/preset add is the §4-22 floor",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Detail links are the cross-module object chain: 발송 메일→mail, 연차 촉진→leave, 개인 수신함→inbox, 컴플라이언스→compliance, 기록물 NT-0701 (code link), 현장 node (dc.html 11230-11233, 16374 modLinkGo); OT-19 linkTypes 수령 대상→직원 1:N, 기록물 등재 1:1 (13887); plus 작용 자동화 chips + 「+ 감시 규칙」 (4960-4966)",
+     "code_does": "detail.links returns only audience-branch chips whose click merely filters the SAME list (boardModuleConfig.ts:161, BoardScreenBody.tsx:135-143); no mail/inbox/compliance/records linkage, no automation surface",
+     "fix": "When the notices contract grows linked-object references (mail send, inbox delivery batch, records registration), emit them as LinkChips routed to real module navigation; automation chips wait on an automation module",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Module header carries the bound ontology type chip — OT-19 공지, click = type card / explore (dc.html 4566-4571, 16283-16286, 13887; change-log 60)",
+     "code_does": "No type chip; the built console has no ontology type registry or explore surface to target",
+     "fix": "Add the OT- chip to the shared module header once a type-registry surface exists; until then omit (dead chip would violate §4-16)",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Detail en enum chips (유형 · 안내/법정 통지/…) — click filters the list to the same value (dc.html 4802-4811, 16315; change-log 41 board 유형 en)",
+     "code_does": "Category renders as a plain kv text row (boardModuleConfig.ts:137); not clickable, not a chip",
+     "fix": "Render category as a chip wired to the search/filter (setQuery(categoryLabel)) via a detail en slot in the shared panel",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Stat entries are buttons (hover bg) and every custom stat drills the list (dc.html 4572-4577, 16289-16294)",
+     "code_does": "StatBar entries are inert divs (ModuleScreen.tsx:175-193) — 게시 중/수령확인 진행/초안 counts cannot filter the list",
+     "fix": "Make stats buttons; board maps them to status filters (published / ackInProgress / draft) through the existing search/filter path",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Selected row shows muted bg PLUS inset 2.5px signal ring (dc.html 16296 ring)",
+     "code_does": "Selection is muted background only (ModuleScreen.tsx:356); no signal ring, weaker J/K affordance",
+     "fix": "Add boxShadow inset 2.5px 0 0 var(--signal) on the selected row",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Layout preset: when the list pane gets narrow the table demotes to code·제목·상태 (modNarrow, dc.html 16159-16165, 16185; §4-19 'no horizontal table scroll, minmax not fixed px')",
+     "code_does": "Five fixed-px columns always (boardModuleConfig.ts:91-105, template ModuleScreen.tsx:284); no compact preset, and user-widened px columns can force horizontal scroll in the overflow:auto region",
+     "fix": "Add a container-width demotion (drop published/audience below a threshold) and clamp total column width to the pane",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Search-miss empty state = 「검색 결과 없음」 + 필터 해제 button + primary action (dc.html 4770-4778); primary board action in the prototype also mail-composes to 전 직원 <all@kos.co.kr> (11229, 10882) and published rows carry 발송 메일 병행 linkage (bd1 kv)",
+     "code_does": "Empty state is one shared string for both no-data and filtered-out (ModuleScreen.tsx:338-341); composer is a board-owned draft flow (charter-aligned §3.9 draft→publish — an improvement over the mock's mail shortcut) but the 메일 병행 발송 companion path is absent",
+     "fix": "Differentiate the filtered empty state with a clear-filter CTA + primary action; mail-parallel send stays a later slice once notice→mail linkage exists server-side",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-BOARD-CONSOLE"
+  },
+  {
+   "design_anchors_read": [
+    "DESIGN.md §4 invariants 1-20 (lines 88-113), §4.6 anti-patterns (114-118), §4.5 PBAC/열람기록 배지 (120-131), §4.7 grammar catalog 1-10 (139-166), §4.8 (168-184), §4-19/20/22/23 (186-207), §4-24~29 (208-238), §3.9 (46-71), §3.10 (73-86)",
+    "CLAUDE.md anti-patterns 1-5 + 핵심 원칙 (full file)",
+    "dc.html 4562-4970 module-surface template (header stat bar 4564-4609, cfg strip 4611-4646, list 4750-4781, empty 4770-4778, detail panel 4783-4966: kv/en/links/acts/작용 자동화)",
+    "dc.html 11055 dirRows (연락처=내선/현장, kv 직책·소속·이메일·입사, links=인사 카드, acts=메시지·메일)",
+    "dc.html 11310 MOD_SCREENS.directory (title/action 새 대화 palette/cols/stats 임직원·법인)",
+    "dc.html 15103-15116 global J/K for MOD_SCREENS",
+    "dc.html 16141-16379 module-surface logic (search 16145, sort 16146-16152, narrow 16158-16165, cfg 16188-16228, stats 16289-16294, rows+drag 16296-16300, det 16310-16377)",
+    "dc.html grep anchors: 10384-10397 viewer scr lists + MOBILE_SCR, 16440 navItem 주소록, 17017-17033 NAV_SCR, 17822 mobile tab",
+    "AGENTS.md §5 change-log entries 190-193 (grep 주소록/directory; lines 16, 56, 106, 110, 428+ — nothing directory-specific after 190)",
+    "Built: DirectoryScreen.tsx (all 723 lines), directoryApi.ts, directoryCapabilities.ts, DirectoryScreenBody.tsx, directory.css, index.ts, DirectoryScreen.test.tsx, i18n/directory.ts"
+   ],
+   "fidelity_score": 55,
+   "module": "directory",
+   "verdict": "major-deviations",
+   "invariant_violations": [
+    "§4-22 add-anything: the list surface offers no in-place extension — no add-column from ontology/kv attributes, no add-stat, no saved filter presets, no widget; the prototype's 화면 구성 strip (dc.html 4611-4646) is entirely absent",
+    "§4-14-③ module 3-layer audit: the dynamics layer is missing from both cards — no 작용 자동화 chips, no + 감시 규칙, no 개체 카드 entry (dc.html 4960-4966); rows expose 의미(속성) and partial 동작(employee lifecycle ledger) only",
+    "§4.7-1 list grammar: the employees register headers are static spans (DirectoryScreen.tsx:516-523) — click-to-sort (asc/desc/clear with arrows) exists only on the members segment",
+    "§4-20 single drag definition: member rows emit '@김성호' mention payload (DirectoryScreen.tsx:498) instead of the standard '[코드 제목]' reference-token payload used by every other object surface (employees rows are correct)",
+    "§4-1 연결성 (partial): the member card has no 인사 카드 link and no contact nouns (이메일/내선) at all — the prototype's links/acts rows are cut down to a lone 메시지 CTA"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "First list column is 연락처 (내선 NNN / 현장 mono code) and the person card carries kv 이메일 plus a 메일 action — dc.html 11055 dirRows: code=\"내선 \"+ext, kv=[직책,소속,이메일,입사], acts=[메시지,메일]; cols=[연락처,이름,직책,소속] (11310)",
+     "code_does": "Neither segment renders any contact channel: members grid is name+team only (DirectoryScreen.tsx:460-511, dir-grid-members 2 cols), employees code column is 사번 (560), employee kv has no email/phone (664-674), and there is no 메일 action anywhere — an address book with zero contact data",
+     "fix": "Add ext/phone/email to MessengerMemberSummary and Employee (or a directory-profile endpoint), render 연락처 as the lead mono column and 이메일 kv, and add a 메일 act once a mail surface exists",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "One unified people list: every person row shows 연락처·이름·직책·소속 + 법인 status chip regardless of which store backs it (dc.html 11055/11310; single MOD_SCREENS list 4750-4781)",
+     "code_does": "Two disjoint permission segments (DirectoryScreen.tsx:16,109-113,458-577): the messenger-tier 구성원 list shows only 이름·소속 (no 직책, no 법인, no code), and the rich columns exist only behind the ADMIN/EXECUTIVE-gated 임직원 register — a MEMBER-tier employee sees a 2-column name list, far below the prototype's baseline all-employee surface (§4.8: 주소록 is an all-employee module)",
+     "fix": "Enrich the non-privileged roster endpoint with title/company/ext (PBAC-safe fields) so the baseline segment matches the prototype's column set, or merge both tiers into one list with per-field deny-by-omission",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "화면 구성 strip (can console:configure): add columns from kv/en attributes with coverage counts, add clickable count-stats, save filter presets, dist/kanban widget, 행 선택 거동 seg (분할 패널/개체 카드), 기본값 복원, 팀 배포—결재 — dc.html 4601-4646, logic 16188-16228 (§4-22, §4-19 layout presets, §3.9.0-① personal view)",
+     "code_does": "No configuration surface of any kind — no cfg button, no column add/remove, no custom stats, no filter presets, no widget, no det-mode toggle (DirectoryScreen.tsx header 409-454 renders title/stats/search/CTA only)",
+     "fix": "Implement the cfg strip for the personal view (columns from Employee fields, stCount stats, saved query presets — client/session persistence per §4-7 workspace ownership); 팀 배포 approval path can remain a charter",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Detail panel surfaces the object layer: 개체 카드 button in the header (4790), 작용 자동화 chips + 「+ 감시 규칙」 footer (4960-4966), and det-mode 'card' opens lcOpen object card (16298); links=[인사 카드] navigates to the HR person card (11055, 16374)",
+     "code_does": "Both cards end at kv + filter chips + (member-only) 메시지 CTA — no object card, no automation/policy chips, no monitor-rule entry, no 인사 카드 link, and no cross-link between the member and employee representations of the same person (DirectoryScreen.tsx:580-718)",
+     "fix": "Add the dynamics footer and object-card entry once the console ontology/automation runtime exists; near-term, cross-link member card → employee register row (and back) where the caller holds both tiers",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Every module-list column header is click-to-sort with ↑/↓/clear cycling, numeric-aware (dc.html 4753, 16146-16152, 16295 — §4.7-1 grammar)",
+     "code_does": "Only the members segment sorts (name/team, DirectoryScreen.tsx:358-364,461-466); the employees register headers are inert spans (516-523), so the module's primary large list cannot be reordered",
+     "fix": "Add a sort param to GET /api/v1/employees (server-side, paging-consistent) and wire header cycling on all five columns; client-side sort of a partial page would be untruthful",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "CTA 새 대화 opens the command palette (action:{palette:true} — 11310, 16288), and a 시트로 열기 button exports the current filtered list to a collaborative sheet (4602, 16191)",
+     "code_does": "새 대화 focuses the search input (DirectoryScreen.tsx:450); no sheet-open button exists",
+     "fix": "Point 새 대화 at the console command palette when one lands; add 시트로 열기 when the sheet surface exists — current focus-search fallback is a reasonable interim",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "Global J/K moves the selection in the filtered list regardless of focus (dc.html 15103-15116 window-level keydown)",
+     "code_does": "j/k/Arrow/Home/End are bound per-row via onKeyDown (DirectoryScreen.tsx:366-378,500-503,555-558), so keyboard navigation only works after a row already holds focus — from the search field or page body J/K does nothing",
+     "fix": "Add a screen-level key handler (ignoring input/textarea targets) that moves selection and focuses the target row",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Header stat bar includes 법인 count (11310 stats: 임직원·법인), and capped list surfaces show 「N 표시 / 전체」 (§4-27-4)",
+     "code_does": "Stats are 구성원/임직원 segment toggles (a functional improvement over the prototype's inert stats) but the 법인 stat is gone and the paged register shows only a 더 보기 button — loaded-count vs employeesTotal is never displayed (DirectoryScreen.tsx:411-432,570-574); the members roster silently truncates at limit=100 with no cap indicator (directoryApi.ts:48-59, GAP-DIR-5)",
+     "fix": "Add a distinct-company stat (drill = company filter) and render 「{loaded} 표시 / {total}」 beside 더 보기; surface the roster cap the same way once the endpoint pages",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Selection ring uses the signal token: inset 2.5px 0 0 var(--signal) on muted bg (16296)",
+     "code_does": "dir-row[aria-selected=true] uses inset 2px 0 0 var(--teal) on info-bg (directory.css:27) — token exists but differs from the prototype's signal accent if --teal is not the console's signal alias",
+     "fix": "Align the ring to the console's signal token (or confirm --teal is its mapped alias in the built token set)",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-DIRECTORY-CONSOLE"
+  },
+  {
+   "module": "logistics",
+   "verdict": "major-deviations",
+   "fidelity_score": 42,
+   "design_anchors_read": [
+    "DESIGN.md lines 1-257 full (§4 invariants 1-20, §4-18 reuse, §4-20 drag, §4-22/23 add-anything/window, §4-25 8-question loop, §4-27 input invariants, §4-29 preflight, §3.9 lifecycle, §3.10 guardrails, §5 integration)",
+    "CLAUDE.md full (anti-patterns 1-5)",
+    "dc.html grep '물류' — 40+ hits, ALL entity/site seed data (KNL 물류, 인천/평택항 물류센터); NO dedicated logistics screen exists in the prototype",
+    "dc.html 11024-11090 MOD_SCREENS()/MOD_SCREENS_RAW module-surface cfg grammar (rows code/c1-c3/st/tone/en/kv/links/acts/flow, stats, action)",
+    "dc.html 16141-16320 generic module-surface renderer (modQ multi-attr search, modSort header sort, selection ring inset signal, row onDrag '[code c1]' token, stats onGo drill, modNarrow compact preset, det kv/en-chip-filter/flow stepper, auto-select first row 16154, column config/stat-add/filter presets)",
+    "AGENTS.md §5 change log lines 35-150 + 428-440 — post-190 entries 191/191a/192/192a/193 are CRM-only; 193 names '#41-② WMS 로트·시리얼' as FUTURE slice → no logistics design authority newer than 190",
+    "web/src/console/module/config.ts (in-worktree shared ModuleConfig contract — docstring bans forking per §4-18)",
+    "web/src/console/{window/objDrag.ts, components/StatusChip.tsx, objectcard/} directory evidence of shared primitives"
+   ],
+   "invariant_violations": [
+    "§4-18 reuse: bespoke hand-rolled list/detail template + custom logistics__chip CSS despite the in-worktree shared ModuleScreen/ModuleConfig (whose own docstring cites §4-18 'component is never forked'), StatusChip, and objectcard primitives",
+    "§4-20/§4-23: zero drag sources — no row/code/chip registered via the existing window/objDrag.ts helper; '끌 수 없는 개체 표기' is a named violation",
+    "§4.7-1 list grammar: no J/K keyboard navigation, no shared-track columns/headers, no column resize with legibility minimum, no sort, no 'N 표시 / 전체' count framing",
+    "§4.7-9/§4-1: header stat chips (ASN n·적치 n·출하 n·배송 n·정산 n) are inert spans — non-clickable numbers are banned ('클릭 불가 숫자 금지'); status chips also not click-to-filter",
+    "§4-27-6: create forms (ASN 등록·출하 예약) carry no 1-line downstream-effect notice",
+    "§4-10: empty states state the reason but no next action; detail pane shows instructional prose '목록에서 항목을 선택하세요.' where the prototype auto-selects the first row (§4-12-adjacent — only instructional-prose instance found)",
+    "COMPLIANT: §4-11 (compact 1-row stat chips, no KPI cards), §4-12 otherwise clean (no subtitles/captions/protocol meta text), §4.5 deny-by-omission + fail-closed authz floor is exemplary"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "DESIGN §4-18 + dc.html MOD_SCREENS grammar (11024-11090, 16141-16320): every new list screen is a data-only cfg on the ONE generic module surface — '커스텀 템플릿 금지', '같은 모양을 두 번 손으로 그리는 것' = violation. The lane's own worktree ships the equivalent: console/module/config.ts:4-16 ('the component is never forked (DESIGN §4-18)') with columns+resize, statbar, multi-attr search, J/K, detail kv/links/actions, policy-gated primaryAction, lanes/prog.",
+     "code_does": "LogisticsScreen.tsx:653-1103 hand-rolls a bespoke two-panel template with its own list markup, its own chip system (logistics.css:40-55 logistics__chip vs shared components/StatusChip.tsx), its own detail pane (vs console/objectcard/), reusing zero shared module-surface primitives.",
+     "fix": "Express the three queues (ASN/출하/배송) as ModuleConfig specializations of the shared ModuleScreen — session working set as the row source via a load adapter until backend reads exist — and swap logistics__chip for StatusChip. The forms remain module-owned detail actions.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4.7-1 + dc.html 16295-16300: lists have J/K/Enter keyboard traversal, shared-track sortable column headers (↑↓), drag column resize with legibility minimum, multi-attribute search, and capped-list count framing 'N 표시 / 전체' (§4-27-4).",
+     "code_does": "LogisticsScreen.tsx:682-806 renders three <ul> button lists with 2-3 spans each: no column headers, no sort, no resize, no J/K (only native tab/Enter), no count chip. Search exists (614-625, multi-attribute — partial credit).",
+     "fix": "Comes free with the ModuleScreen adoption (blocker fix); if kept bespoke, add J/K handlers, header row with sort, and count framing.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-20/§4-23: every object surface (row, code, chip) is a drag source emitting the '[code title]' reference token via the single objDrag helper; console/window/objDrag.ts exists in this worktree. dc.html 16299: every module row sets dataTransfer '[code c1]'.",
+     "code_does": "No element in LogisticsScreen.tsx is draggable — ASN/fulfillment/shipment rows, detail headers, and link chips cannot be dragged into composer/todo/messenger. Detail pane declares no window-model candidacy (no pin/popout/tray).",
+     "fix": "Register list rows and detail header codes through window/objDrag.ts with '[<id> <sku/carrier>]' payloads; declare the detail pane's window states (pinned-split is the current de-facto state — add popout/minimize chrome via the shared window engine).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4.7-9 분석=drill 불변식 + §4-1 + dc.html 16289-16294: every stat-bar entry has onGo (drill/filter); non-clickable numbers are banned. §4-22: each element must serve ≥2 stories (display + filter).",
+     "code_does": "LogisticsScreen.tsx:658-664 renders five inert <span> count chips (ASN/적치/출하/배송/정산) inside role=status — clicking does nothing; they serve exactly one story (display).",
+     "fix": "Make each chip set the filter/scroll target for its queue (e.g. 적치 chip → filter ASNs to status PUTAWAY; 정산 chip → shipments SETTLED).",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§3.9 + §4.7-6 + dc.html flow grammar (11070, 16316-16320): object detail shows the pipeline as a stepper (done/cur/next steps, step codes) with the single next-action CTA anchored to the current step; the full state chains (EXPECTED→PARTIAL→RECEIVED→PUTAWAY; RELEASED→PICKED/SHORT_PICK→PACKED→DISPATCHED→DELIVERED→SETTLED) are client-known enums.",
+     "code_does": "LogisticsScreen.tsx renders status as a single chip only (816-818, 898-900, 1006-1008); the legal-state CTA machine exists (872-891, 951-999, 1043-1099 — good kinetic layer) but the pipeline is never visualized, so users cannot see position-in-chain or what comes next.",
+     "fix": "Render a flow stepper in each detail from the known enum chain, marking done/current/next, with the existing conditional forms as the single current-step CTA.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4.7-3: every object gets a code rendered as a mono chip and used as reference identity; dc.html module rows always lead with the code column; related-object links are code chips (ModuleLink by code in the shared config.ts:51-55).",
+     "code_does": "Rows show sku/carrier only; detail headers show 'ASN SKU-9' / '배송 한진' — the server aggregate id is never surfaced as an identity chip; related-fulfillment links render as '요청 수량 5' + status (LogisticsScreen.tsx:855-868) with no identity. Backend assigns opaque ids, not human code series.",
+     "fix": "Render the server id (short-form) as a mono code chip on rows/detail headers/link chips now; human-readable code series (ASN-/SH- numbering) needs backend allocation — flag in the gap manifest.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-25-6 목업 독립성 + §5: the module must surface real org data today; every aggregate must be reachable, and count chips represent real scope. The module-surface contract (config.ts:117-119) requires a live read ('load' binds a real endpoint).",
+     "code_does": "LogisticsScreen.tsx:25-30 (honest comment): the backend is a write-only pilot router — no list/read endpoints — so all queues start empty every session and show only session-created aggregates; cross-session/org objects are invisible and the stat chips describe only this session.",
+     "fix": "Backend read surface: GET list endpoints for ASNs/fulfillments/shipments (+ stock projection) scoped by branch, then replace the session working set with server truth. Frontend is honestly built around the gap.",
+     "backend_blocked": true
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-27-6: create forms state in one line where the record joins (queue/stock/graph). §4-27-1/4: structured fields use input normalization and object pickers use typeahead, not free enumeration.",
+     "code_does": "ASN 등록 (707-727) and 출하 예약 (756-776) are bare labeled inputs: no downstream-effect line (e.g. '적치 시 (지점·창고·SKU) 재고로 합류 — 출하 예약이 여기서 차감'), warehouse/SKU are free text with no typeahead over the session's known warehouse/SKU set, amountMinor (1091) is an unmasked raw number.",
+     "fix": "Add the one-line downstream notice to both create forms; datalist/typeahead warehouse+SKU from the working set (org-wide directory needs backend reads); thousand-separator mask on the settle amount.",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "§4-10: empty state = reason + next action in one line. dc.html 16154: the module surface auto-selects the first visible row, so no 'select something' prompt exists.",
+     "code_does": "Empty states (text.asnEmpty etc., i18n/logistics.ts:14-16) give the reason but no next action; the detail pane renders instructional prose '목록에서 항목을 선택하세요.' (LogisticsScreen.tsx:809-811) instead of auto-selecting the first row.",
+     "fix": "Auto-select the first visible row when nothing is selected (drop text.select entirely); append the next action to empty states ('→ ASN 등록으로 시작' / '→ 출하 예약').",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-LOGISTICS-PILOT"
+  },
+  {
+   "module": "equipment",
+   "verdict": "major-deviations",
+   "fidelity_score": 40,
+   "design_anchors_read": [
+    "DESIGN.md lines 1-257 (full: §1-§6 incl. §3.9/3.9.0-3/§3.10, §4-1..29, §4.5-4.8, §5)",
+    "CLAUDE.md full (anti-pattern list 1-5, core principles)",
+    "dc.html 11091-11096 (MOD_SCREENS.asset cfg — FL- rows, tl lifecycle timeline, en/kv/links/acts, 취득 기안 CTA, stats 가동률/정비 중/렌탈 만료 임박)",
+    "dc.html 4562-4830 (module-surface template: header h1+type-chip+inline stat bar+search+sheet/config+primary CTA / config strip / lanes / sticky sortable shared-track grid / draggable rows / empty state with 필터 해제 / split detail: code+시리즈+개체 카드+status chip, kv, en filter chips, flow stepper, stock, tl)",
+    "dc.html 16141-16385 (module-surface vals: modQ multi-attr search, modSort numeric-aware, modNarrow column demotion, modConfig custom cols/stats/filter presets/widget/detSeg/team deploy, row onDrag token \"[code c1]\", det dynAutos+onMonitor, objOn lcOpen, serOn2)",
+    "dc.html 15103-15115 (J/K keyboard nav for MOD_SCREENS surfaces)",
+    "dc.html 8731 (OT-18 자산 type registry), 13883-13884 (ONT_TYPES 자산/정비 schemas), 11217 (UT-01 자산 가동률), 11999 (자산·장비 반납 checklist item)",
+    "AGENTS.md §5 change log: entries 114 (engine-query row join), 117/118 (FL- lifecycle e2e, mut for module objects), 136 (sheet-open on all module lists), 156 (truth audit), 162 (watch/subscribe), 188/190 (L2 판정 — 운영 모듈 생성 action+상태 체인+drill), 191-193 post-190 = CRM only (no new equipment authority)",
+    "Built code: all 16 files under web/src/console/equipment/ + web/src/i18n/equipment.ts (read in full)"
+   ],
+   "invariant_violations": [
+    "§4-20/§4-23 (모든 개체 표면 = 드래그 소스): no surface in the module is draggable — unit/case rows, chips, and code labels carry no reference-token payload; the charter explicitly labels un-draggable object representations a violation",
+    "§4-14 module 3-layer audit: dynamics layer absent everywhere (no acting-automation/policy/series/derived-analytics chips on any detail) and no 개체 카드 entry — semantic+kinetic only, which §4-14 declares a violation when any layer is missing",
+    "§4.7-1 list grammar: no J/K navigation, no multi-attribute search input, no sortable shared-track column grid, no 「N 표시 / 전체」 count framing (§4-27-4)",
+    "§4.7-3 code grammar: raw UUIDs rendered as object link labels and identity fields (activeCaseId, unitId, branchId, createdBy) — no issued human code, no mono code column",
+    "§3.9.0 직행 저장: unit registration is a direct POST outside the direct-save whitelist — the prototype routes asset acquisition through 기안(취득 기안 approval prefill)",
+    "§4-27-1: money inputs (월 임대료, 취득가) are plain type=number with no typing-time normalization mask (thousand separators) — reference implementations mandate the mask",
+    "§4-22 add-anything: list/table/stat surfaces are closed — no column add, no stat add, no saved filter presets, no sheet-open, no config strip",
+    "§4.6 token colors: literal `white` used twice in equipment.css (.equipment__step--current, .equipment button) instead of var(--surface)",
+    "AUDIT NOTE (explicitly checked, NOT violations): §4-11 compliant — counts are a compact one-row chip strip, every number is a clickable filter, no big-number KPI cards; §4-12 compliant — no subtitles/captions/protocol text/meta notices; status is chips; only action-driving copy present"
+   ],
+   "findings": [
+    {
+     "severity": "blocker",
+     "design_says": "Every object surface is a drag source emitting the standard reference token `[코드 제목]` — module rows are `draggable` with onDrag setting the payload (dc.html 4759 row: draggable + title \"클릭: 상세 · 드래그: 입력창에 참조 첨부\"; 16299 onDrag builds \"[code c1]\"); DESIGN §4-20/§4-23 (\"끌 수 없는 개체 표기는 위반\")",
+     "code_does": "No element in the module is draggable — unit rows (EquipmentScreen.tsx:283-299), case rows (330-346), chips, and detail code headers are plain buttons with no dataTransfer payload",
+     "fix": "Add draggable + onDragStart setting text/plain \"[<serialNo> <modelName>]\" / \"[<caseId-label> <customer>]\" on both row lists and the detail headers, matching the console's shared objDrag payload convention",
+     "backend_blocked": false
+    },
+    {
+     "severity": "blocker",
+     "design_says": "Module detail must expose all 3 ontology layers: semantic (kv), kinetic (lifecycle/history), dynamic (acting automations/policies/series) — module detail renders dynAutos chips + onMonitor and 개체 카드/시리즈 buttons (dc.html 16374-16379, 4790-4792); §4-14 says any missing layer is a violation",
+     "code_does": "Unit detail (EquipmentUnitDetail.tsx:153-286) and case detail (EquipmentCaseDetail.tsx:269-577) show kv + history/stepper only — no object card, no acting automations/policies, no series, no derived analytics anywhere",
+     "fix": "Add an object-card affordance and a dynamics strip on both details; real content (automation registry, series SR-, Cedar policy chips) needs backend surfaces that do not exist for this module — record in the gap manifest",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Module-surface list grammar: J/K row navigation (dc.html 15103-15115), multi-attribute search over code·c1·c2·c3·st·en (4599, 16144-16145), sticky sortable shared-track column header with numeric-aware asc/desc/clear (4754-4757, 16147-16152), and 「N 표시 / 전체」 scale framing (§4-27-4)",
+     "code_does": "EquipmentScreen.tsx:256-350 renders two stacked flex-row lists with chip-count filters only — no search input, no J/K handler, no column grid, no sort, no count framing",
+     "fix": "Add a search input filtering all visible attributes, a J/K keydown handler over the filtered list, convert lists to a shared-track grid (serial · model/capacity · availability) with sortable headers, and frame counts as \"N 표시 / 전체\"",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "Objects carry issued codes rendered as mono chips and live links with human labels (FL-2643, WO-2643 rows in dc.html 11092-11095; §4.7-3, §4-8 텍스트 규율)",
+     "code_does": "Raw UUIDs are shown as user-facing text: activeCaseId as a link label (EquipmentUnitDetail.tsx:178-186), unitId as a link label (EquipmentCaseDetail.tsx:288-292), branchId (169, 299-300) and createdBy/actorId (301-302, 279) as plain values",
+     "fix": "Resolve links to human labels the client already has (serialNo for units, customer·site for cases); true code issuance (e.g. EQ-/RC- display codes) needs a backend contract field — gap manifest",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "Asset acquisition is an approval draft: MOD_SCREENS.asset primary action = 「취득 기안」 prefilled purchase 기안 (dc.html 11091); §3.9.0 declares un-whitelisted direct saves a design violation",
+     "code_does": "registerUnit (EquipmentScreen.tsx:182-205) POSTs /units directly from an inline always-open form; the unit is live immediately with no draft/attestation/approval stage",
+     "fix": "Route registration through a draft→approve lifecycle; requires a backend draft/approval surface that the equipment-3r contract does not define — gap manifest (interim: at minimum move the form behind a header primary-action CTA to match the surface layout)",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-27-4/§4-19: customer and site are objects selected via typeahead (거래처/현장 references, links usable for drill and analysis); prototype case rows link 고객/현장 objects (dc.html 8975 links)",
+     "code_does": "Quote form takes customerName and siteReference as free-text strings (EquipmentUnitDetail.tsx:207-226); the created case can never join the ontology graph or drill to a customer/site object",
+     "fix": "Replace with typeahead object selectors bound to customer/site registries; the equipment-3r contract only accepts strings — gap manifest",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-22 add-anything + §19 config strip: every module list supports column add (ontology props), stat add (count drill), saved filter presets, widget derivation, sheet-open, det-mode seg (dc.html 4605-4655, change-log 136)",
+     "code_does": "No configuration affordance of any kind exists in the module (EquipmentScreen.tsx — absent)",
+     "fix": "Adopt the shared module-config strip (custom columns from detail kv fields, stat add, filter presets); personal-view state is client-side so this is FE-feasible",
+     "backend_blocked": false
+    },
+    {
+     "severity": "major",
+     "design_says": "§5 통합 원칙 + asset section: assets link to maintenance WO-, purchase PO-, contracts C-, analyses AN- (dc.html 11092-11095); disposition/finance close the loop",
+     "code_does": "The module is an island: REPAIR/REFURBISH dispositions create no maintenance-object link, and DispositionView.financeGlPosting is hard-typed `null` (equipmentApi.ts:129) with no GL/voucher surface",
+     "fix": "Wire disposition REPAIR→WO- object creation/link and finance posting readback; both need backend surfaces that do not exist — gap manifest",
+     "backend_blocked": true
+    },
+    {
+     "severity": "major",
+     "design_says": "§4-27-1: money fields auto-format with thousand separators while typing (\"잘못된 형식의 값이 존재할 수 없다\"; reference impl 기본급 — AGENTS 170)",
+     "code_does": "월 임대료 (EquipmentUnitDetail.tsx:227-238), 취득가 (EquipmentScreen.tsx:372-375), 처분 비용/매각 금액 (EquipmentCaseDetail.tsx:535-548) are bare type=number inputs with no formatting mask",
+     "fix": "Apply the console's KRW input mask (digits-only + live thousand separators, ₩ affordance) to all four money fields",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Asset header stat bar carries derived operational metrics — 가동률 96%, 정비 중, 렌탈 만료 임박 (dc.html 11091)",
+     "code_does": "Stat strip shows raw availability/status counts only (EquipmentScreen.tsx:260-276, 307-323); utilization and imminent-return are absent though derivable client-side (ON_RENT/total; handedOverAt+durationMonths)",
+     "fix": "Add derived inline stats (가동률, 반납 임박 D-n) computed from loaded units/cases, each clicking into the filtered list",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "게이트 = 파이프라인 스텝 + 다음 행동 CTA는 항상 하나 (DESIGN §3, §4.7-6)",
+     "code_does": "At HANDED_OVER with inspect+assess capabilities, two action forms render simultaneously — inspection (EquipmentCaseDetail.tsx:460-491) and return (493-501)",
+     "fix": "Present return as the single primary CTA and inspection as a secondary/inline affordance (it is a repeatable side-record, not the transition)",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Empty filtered state offers 필터 해제 + primary action buttons inline (dc.html 4770-4778); §4-10 reason + next action in one line",
+     "code_does": "Filtered-empty renders text only — \"필터와 일치하는 장비가 없습니다\" (EquipmentScreen.tsx:277-278, 324-325); clearing requires finding the still-pressed chip",
+     "fix": "Add a 필터 해제 button (and register/quote CTA where capable) inside both filtered-empty states",
+     "backend_blocked": false
+    },
+    {
+     "severity": "minor",
+     "design_says": "Colors only from tokens (§4.6/CLAUDE anti-pattern 3); prototype current-step uses var(--ink)/var(--surface)",
+     "code_does": "equipment.css:99 and :116 use literal `white` for step--current text and button text",
+     "fix": "Replace `white` with the appropriate surface/on-solid token",
+     "backend_blocked": false
+    }
+   ],
+   "cap": "CAP-EQUIPMENT-3R-PILOT"
+  }
+ ]
+}

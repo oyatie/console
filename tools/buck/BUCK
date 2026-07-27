@@ -1,0 +1,218 @@
+export_file(
+    name = "rust_source_layout.bzl",
+    src = "rust_source_layout.bzl",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-registry",
+    src = "generated_face_registry.json",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-first-party",
+    src = "generated-face-first-party.sh",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-reindeer",
+    src = "generated-face-reindeer.sh",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-openapi-ts",
+    src = "generated-face-openapi-ts.sh",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-openapi-kotlin",
+    src = "generated-face-openapi-kotlin.sh",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "generated-face-openapi-swift",
+    src = "generated-face-openapi-swift.sh",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+# Non-generated wrappers keep disposable PostgreSQL credential values out of
+# Buck's test-executor argv.  The harness passes only a mode-0600 file path;
+# this wrapper loads it inside the test process before executing the exact
+# generated Rust integration-test binary.
+sh_test(
+    name = "pr473-ontology-key-revision-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-key_revision_migration_upgrade)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-key_revision_migration_upgrade"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "pr473-leave-expand-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/leave/adapter-postgres:mnt-leave-adapter-postgres-itest-leave_migration_expand_contract)"],
+    deps = ["//backend/crates/leave/adapter-postgres:mnt-leave-adapter-postgres-itest-leave_migration_expand_contract"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "pr473-apalis-adapter-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/jobs:mnt-platform-jobs-itest-apalis_adapter)"],
+    deps = ["//backend/crates/platform/jobs:mnt-platform-jobs-itest-apalis_adapter"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "pr473-apalis-schema-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/jobs:mnt-platform-jobs-itest-apalis_schema_contract)"],
+    deps = ["//backend/crates/platform/jobs:mnt-platform-jobs-itest-apalis_schema_contract"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# These non-generated adapters ensure the app PostgreSQL suites receive the
+# disposable harness environment only inside their test processes. Never call
+# the generated app test targets directly from CI: that would bypass the
+# credential-file loader and expose the runner to raw PostgreSQL target labels.
+sh_test(
+    name = "app-inline-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-inline-postgres)"],
+    deps = ["//backend/app:mnt-app-itest-inline-postgres"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-dev-auth-persona-guard-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-dev_auth_persona_guard_feature)"],
+    deps = ["//backend/app:mnt-app-itest-dev_auth_persona_guard_feature"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# These adapters intentionally cover the exact four PostgreSQL binaries that
+# Cargo's former dev-auth/provisioning commands selected. Keeping the credential
+# handoff in the common wrapper preserves the reconciled seven-role topology
+# for every database connection made by those tests.
+sh_test(
+    name = "auth-rest-dev-auth-inline-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev-auth-postgres)"],
+    deps = ["//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev-auth-postgres"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "auth-rest-dev-auth-session-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev_auth_session)"],
+    deps = ["//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev_auth_session"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "auth-rest-dev-auth-group-admin-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-group_admin_tenant_context)"],
+    deps = ["//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-group_admin_tenant_context"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "provisioning-dev-principal-upsert-race-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:mnt-platform-provisioning-itest-dev_principal_upsert_race)"],
+    deps = ["//backend/crates/platform/provisioning:mnt-platform-provisioning-itest-dev_principal_upsert_race"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-evaluation-cycle-api-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-evaluation_cycle_api)"],
+    deps = ["//backend/app:mnt-app-itest-evaluation_cycle_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-builtin-catalog-additive-upgrade-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-org-change-api-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-org_change_api)"],
+    deps = ["//backend/app:mnt-app-itest-org_change_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-purchase-request-collection-api-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-purchase_request_collection_api)"],
+    deps = ["//backend/app:mnt-app-itest-purchase_request_collection_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-object-context-api-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-workflow_object_context_api)"],
+    deps = ["//backend/app:mnt-app-itest-workflow_object_context_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "equipment-3r-http-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/equipment/rest:mnt-equipment-rest-itest-equipment_3r_http)"],
+    deps = ["//backend/crates/equipment/rest:mnt-equipment-rest-itest-equipment_3r_http"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-equipment-3r-api-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:mnt-app-itest-equipment_3r_api)"],
+    deps = ["//backend/app:mnt-app-itest-equipment_3r_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "dispatch-p1-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/dispatch/adapter-postgres:mnt-dispatch-adapter-postgres-itest-p1_dispatch)"],
+    deps = ["//backend/crates/dispatch/adapter-postgres:mnt-dispatch-adapter-postgres-itest-p1_dispatch"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "attendance-cancel-substitution-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-cancel_substitution)"],
+    deps = ["//backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-cancel_substitution"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "attendance-concurrency-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-concurrency)"],
+    deps = ["//backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-concurrency"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

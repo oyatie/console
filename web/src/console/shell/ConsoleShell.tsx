@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from "react-router";
 
 import { ko } from "../../i18n/ko";
 import { useAuth } from "../../context/auth";
+import { isLocalDevBuild } from "../../features/auth/localDev";
 import { useConsoleAuthz, useConsoleScopes, UNION_SCOPE_ID } from "./authz";
 import { CommsRailPanel, CommsRailFallback } from "./CommsRailPanel";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
@@ -20,11 +21,39 @@ import { useNavBadges } from "./navBadges";
 import { Sidebar } from "./Sidebar";
 import { useSelfProfile } from "./useSelfProfile";
 import { Topbar } from "./Topbar";
+import { isCommunicationScreen, resolveShellLayout } from "./shellLayout";
 import { markConsoleRoute } from "../rum/rum";
 import { SCREEN_REGISTRY } from "../screens/registry";
+// The window authority key is the same non-secret session/incarnation identity
+// the ontology workspace already partitioned its nested provider by, reused
+// verbatim so lifting that provider to the shell keeps one saved layout per
+// exact incarnation instead of minting a second partitioning scheme.
+import { ontologyWorkspaceAuthorityKey as sessionWindowAuthorityKey } from "../ontology/useOntologyRevisionCommitQueue";
+import { WindowManagerProvider } from "../window";
 import type { ThemeMode } from "./theme";
 
 const S = ko.console.shell;
+
+/**
+ * The window host wraps the whole console, so it has to carry the flex
+ * participation `[data-cshell-root]` would otherwise get straight from
+ * `ConsoleApp`'s column. Without this the shell collapses to content height and
+ * every inner scroll region grows the page instead.
+ */
+const WINDOW_HOST_STYLE = {
+  display: "flex",
+  flexDirection: "column",
+  flex: "1 1 auto",
+  minHeight: 0,
+  minWidth: 0,
+} as const;
+
+const loadLocalDevRoleSwitchLabel = import.meta.env.DEV
+  ? () =>
+      import("../../i18n/koDevAuth").then(
+        ({ koDevAuth }) => koDevAuth.localRoleSwitch,
+      )
+  : undefined;
 
 const ROLE_PRIORITY = [
   "SUPER_ADMIN",
@@ -55,41 +84,146 @@ export function ConsoleShell({
   onCycleTheme: () => void;
   screenKeys?: readonly MountedScreenKey[];
 }) {
-  const { session } = useAuth();
+  const { session, logout, viewAs } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { grants, source: authzSource } = useConsoleAuthz();
+  const { grants, source: authzSource, ready: authzReady } = useConsoleAuthz();
   const groups = useMemo(() => visibleConsoleNav(grants, screenKeys), [grants, screenKeys]);
+  const canPromoteRailTo = useCallback((screen: MountedScreenKey): boolean => (
+    screenKeys.includes(screen) && groups.some((group) => group.items.some((item) => item.screen === screen))
+  ), [groups, screenKeys]);
   const { options: scopeOptions } = useConsoleScopes(S.scope.all);
+
+  const [drawer, setDrawer] = useState<"left" | "right" | null>(null);
+  const [localRoleSwitchLabel, setLocalRoleSwitchLabel] = useState<string>();
+  useEffect(() => {
+    if (!loadLocalDevRoleSwitchLabel || !isLocalDevBuild()) return;
+    let active = true;
+    void loadLocalDevRoleSwitchLabel().then((label) => {
+      if (active) setLocalRoleSwitchLabel(label);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === "undefined" ? 1280 : window.innerWidth,
+  );
 
   // Responsive auto-collapse under 1280px, overridable by the user.
   const [sbUser, setSbUser] = useState<boolean | null>(null);
   const [narrow, setNarrow] = useState(false);
+  const [mobile, setMobile] = useState(false);
   useEffect(() => {
     // `matchMedia` is absent in some test environments; cast to a nullable type
     // so the runtime guard is honest (and not linted away as an always-true check).
     const matchMediaFn = window.matchMedia as
       | ((query: string) => MediaQueryList)
       | undefined;
-    if (!matchMediaFn) return undefined;
+    const onResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", onResize);
+    if (!matchMediaFn) {
+      return () => {
+        window.removeEventListener("resize", onResize);
+      };
+    }
     const mq = matchMediaFn.call(window, "(max-width: 1279px)");
+    const mobileMq = matchMediaFn.call(window, "(max-width: 767px)");
     const apply = () => {
       setNarrow(mq.matches);
+      setMobile(mobileMq.matches);
+      setViewportWidth(window.innerWidth);
+    };
+    const onChange = () => {
+      if (!mobileMq.matches) setDrawer(null);
+      apply();
     };
     apply();
-    mq.addEventListener("change", apply);
+    mq.addEventListener("change", onChange);
+    mobileMq.addEventListener("change", onChange);
     return () => {
-      mq.removeEventListener("change", apply);
+      mq.removeEventListener("change", onChange);
+      mobileMq.removeEventListener("change", onChange);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
-  const collapsed = sbUser ?? narrow;
+  // The media query is authoritative in embedded/test environments where
+  // `innerWidth` is not kept in sync with the visual viewport.
+  const shellLayout = resolveShellLayout(mobile ? 0 : viewportWidth);
+  const collapsed = mobile ? false : sbUser ?? narrow;
 
-  // Comms rail: default-expanded on every screen (round-5 fix — was a
-  // presentational 54px icon strip everywhere; the P2 comment claiming "no
-  // interactive rail yet" is stale now that CommsRailPanel is wired). The user
-  // may still collapse it back to the icon strip; that choice does not persist
-  // across a reload (no product ask for that yet).
-  const [railOpen, setRailOpen] = useState(true);
+  // The comms rail is expanded on desktop, compact by default on tablet, and
+  // becomes an explicit drawer on mobile. The user's desktop/tablet toggle is
+  // intentionally session-local until there is a product preference contract.
+  const [railUser, setRailUser] = useState<boolean | null>(null);
+  const railOpen = railUser ?? !narrow;
+  const expandedRailWidth = narrow ? 300 : shellLayout.rail;
+  const activeDrawer = mobile ? drawer : null;
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const drawerReturnRef = useRef<HTMLElement | null>(null);
+  const focusMainAfterDrawerCloseRef = useRef(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteInputRef = useRef<HTMLInputElement>(null);
+
+  const closePalette = useCallback(() => {
+    setPaletteOpen(false);
+  }, []);
+
+  const openDrawer = useCallback((next: "left" | "right") => {
+    drawerReturnRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setPaletteOpen(false);
+    setDrawer(next);
+  }, []);
+  const closeDrawer = useCallback((restoreFocus = true) => {
+    if (!restoreFocus) drawerReturnRef.current = null;
+    setDrawer(null);
+  }, []);
+
+  useEffect(() => {
+    if (!activeDrawer) return undefined;
+    const container = activeDrawer === "left" ? sidebarRef.current : railRef.current;
+    const focusable = () =>
+      Array.from(container?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? []);
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeDrawer();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!container?.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+        return;
+      }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = priorOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+      drawerReturnRef.current?.focus();
+    };
+  }, [activeDrawer, closeDrawer]);
 
   const routeScreen = screenFromConsolePath(location.pathname);
   const activeScreen =
@@ -100,6 +234,16 @@ export function ConsoleShell({
       ? routeScreen
       : defaultScreen(grants, screenKeys);
   const ScreenBody = activeScreen ? SCREEN_REGISTRY[activeScreen] : undefined;
+  const communicationScreen = activeScreen ? isCommunicationScreen(activeScreen) : false;
+  // The object explorer owns its contextual governed-object rail. Keeping the
+  // shell comms rail there creates two competing right rails.
+  const suppressCommsRail = communicationScreen || activeScreen === "objectExplorer";
+
+  useEffect(() => {
+    if (!focusMainAfterDrawerCloseRef.current || activeDrawer) return;
+    focusMainAfterDrawerCloseRef.current = false;
+    mainRef.current?.focus();
+  }, [activeDrawer, activeScreen]);
 
   // Canonicalize bare, invalid, unshipped, and unauthorized destinations. A
   // replacement avoids trapping Back on a location the user cannot render.
@@ -137,23 +281,18 @@ export function ConsoleShell({
     setScopeOpen(false);
   }, []);
   const [selectedScopeId, setSelectedScopeId] = useState(UNION_SCOPE_ID);
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const paletteInputRef = useRef<HTMLInputElement>(null);
-
-  const closePalette = useCallback(() => {
-    setPaletteOpen(false);
-  }, []);
-
   // Global keys: ⌘/Ctrl+K toggles the palette (works everywhere); Escape peels
   // back the topmost transient surface (palette, then scope dropdown).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        if (activeDrawer) return;
         setPaletteOpen((v) => !v);
         return;
       }
       if (e.key === "Escape") {
+        if (activeDrawer) return;
         if (paletteOpen) {
           setPaletteOpen(false);
           return;
@@ -167,7 +306,7 @@ export function ConsoleShell({
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, [paletteOpen, scopeOpen]);
+  }, [activeDrawer, paletteOpen, scopeOpen]);
 
   useEffect(() => {
     if (paletteOpen) {
@@ -193,13 +332,48 @@ export function ConsoleShell({
   // (navBadges.ts). Fails soft to an empty map, so the shell never depends on it.
   const badges = useNavBadges(session?.access_token);
 
+  // §4.7 window model. One host for the whole console, above every screen body,
+  // so a pinned object card and the 작업 트레이 survive screen navigation. That
+  // — the in-memory arrangement across navigation — is what this mount delivers.
+  //
+  // `authorityPartition` scopes the layout STORAGE KEY to the exact incarnation,
+  // and that is all it does today: nothing in the console calls the manager's
+  // `saveLayout()`, so the key is never written, and nothing calls `register()`,
+  // so a saved arrangement could not be re-applied either (`WindowEntry.render`
+  // is a closure only the owning screen can re-supply). Passing the partition is
+  // the cross-incarnation isolation guarantee for the day a writer exists — not
+  // a claim that layouts persist. See the L-F1 verification note.
+  // ponytail: browser-local retention is a phantom; the real upgrade path is the
+  // server-persisted `GET/PUT /api/v1/me/workspace` contract, and the client
+  // storage layer should be deleted rather than extended when it lands.
+  const windowAuthority = useMemo(
+    () => sessionWindowAuthorityKey(session, viewAs),
+    [session, viewAs],
+  );
+  const sidebarWidth = mobile ? 0 : collapsed ? 62 : 236;
+
+  // A live capability-only grant may be the sole reason this console is
+  // visible. Do not redirect before its authoritative projection settles.
+  if (!authzReady) return null;
   if (!activeScreen || !ScreenBody) return <Navigate to="/overview" replace />;
 
-  return (
+  const shell = (
     <div
       data-cshell-root
-      style={{ flex: "1 1 auto", display: "flex", minHeight: 0, minWidth: 0 }}
+      data-cshell-mobile={mobile || undefined}
+      data-cshell-layout={mobile ? "mobile" : narrow ? "compact" : "desktop"}
+      style={{ flex: "1 1 auto", display: "flex", minHeight: 0, minWidth: 0, overflowX: "hidden" }}
     >
+      {mobile && activeDrawer && (
+        <button
+          type="button"
+          aria-label={S.drawer.close}
+          data-cshell-drawer-backdrop
+          onClick={() => {
+            closeDrawer();
+          }}
+        />
+      )}
       <Sidebar
         collapsed={collapsed}
         groups={groups}
@@ -207,9 +381,15 @@ export function ConsoleShell({
         badges={badges}
         theme={theme}
         onSelect={(nextScreen) => {
+          if (mobile) closeDrawer();
+          const search = new URLSearchParams(location.search);
+          if (nextScreen === "workflow" || nextScreen === "scheduled") {
+            search.delete("tab");
+          }
+          const query = search.toString();
           void navigate({
             pathname: consoleScreenPath(nextScreen),
-            search: location.search,
+            search: query ? `?${query}` : "",
             hash: location.hash,
           });
         }}
@@ -217,9 +397,18 @@ export function ConsoleShell({
           setSbUser(!collapsed);
         }}
         onCycleTheme={onCycleTheme}
+        mobile={mobile}
+        width={collapsed ? 62 : 236}
+        drawerOpen={activeDrawer === "left"}
+        drawerRef={sidebarRef}
+        drawerModal={activeDrawer === "left"}
       />
 
       <main
+        ref={mainRef}
+        tabIndex={-1}
+        inert={activeDrawer ? true : undefined}
+        aria-hidden={activeDrawer ? "true" : undefined}
         style={{
           flex: "1 1 auto",
           minWidth: 0,
@@ -250,6 +439,38 @@ export function ConsoleShell({
           userInitial={userInitial}
           userRoleLabel={userRoleLabelText}
           userTeamLabel={userTeamLabel}
+          onLogout={() => {
+            void logout().finally(() => {
+              void navigate("/login", { replace: true });
+            });
+          }}
+          localRoleSwitchLabel={localRoleSwitchLabel}
+          onLocalRoleSwitch={
+            localRoleSwitchLabel
+              ? () => {
+                  const next = `${location.pathname}${location.search}${location.hash}`;
+                  void logout().finally(() => {
+                    void navigate(`/login?next=${encodeURIComponent(next)}`, { replace: true });
+                  });
+                }
+              : undefined
+          }
+          onOpenNavigation={
+            mobile
+              ? () => {
+                  openDrawer("left");
+                }
+              : undefined
+          }
+          navigationDrawerOpen={activeDrawer === "left"}
+          onOpenComms={
+            mobile && !suppressCommsRail
+              ? () => {
+                  openDrawer("right");
+                }
+              : undefined
+          }
+          commsDrawerOpen={activeDrawer === "right"}
         />
 
         {/* URL-driven body, constrained to evidence-exposed + authorized nav. */}
@@ -265,22 +486,42 @@ export function ConsoleShell({
       {/* Comms rail — shell-level, default-expanded on every screen (round 5).
           The single "커뮤니케이션" complementary landmark stays exactly as
           deduped in #459: this is still the only element carrying that name. */}
-      <aside
+      {!suppressCommsRail && <aside
         aria-label={S.rail.label}
         data-cshell-rail
-        data-cshell-rail-open={railOpen || undefined}
+        id={mobile ? "console-comms-drawer" : undefined}
+        data-cshell-rail-open={(mobile || railOpen) || undefined}
+        data-cshell-drawer={mobile ? "right" : undefined}
+        data-cshell-drawer-open={mobile && activeDrawer === "right" ? "true" : undefined}
+        ref={railRef}
+        role={activeDrawer === "right" ? "dialog" : undefined}
+        aria-modal={activeDrawer === "right" ? "true" : undefined}
+        aria-hidden={mobile && activeDrawer !== "right" ? "true" : undefined}
+        inert={mobile && activeDrawer !== "right" ? true : undefined}
         style={{
           flex: "none",
-          width: railOpen ? 320 : 54,
+          // `width` + `maxWidth` is equivalent to the prototype's
+          // min(320px, 86vw) and remains measurable in jsdom/browser tests.
+          width: mobile ? "86vw" : railOpen ? expandedRailWidth : 54,
+          maxWidth: mobile ? 320 : undefined,
           borderLeft: "1px solid var(--border)",
           background: "var(--surface)",
           display: "flex",
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
+          ...(mobile
+            ? {
+                position: "fixed" as const,
+                inset: "0 0 0 auto",
+                zIndex: 82,
+                transform: activeDrawer === "right" ? "translateX(0)" : "translateX(101%)",
+                boxShadow: activeDrawer === "right" ? "var(--shadow-pop)" : "none",
+              }
+            : {}),
         }}
       >
-        {railOpen ? (
+        {(mobile || railOpen) ? (
           <>
             <div
               style={{
@@ -297,7 +538,8 @@ export function ConsoleShell({
               <button
                 type="button"
                 onClick={() => {
-                  setRailOpen(false);
+                  if (mobile) closeDrawer();
+                  else setRailUser(false);
                 }}
                 title={S.rail.collapse}
                 aria-label={S.rail.collapse}
@@ -307,8 +549,8 @@ export function ConsoleShell({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 28,
-                  height: 28,
+                  width: mobile ? 44 : 28,
+                  height: mobile ? 44 : 28,
                   border: "none",
                   borderRadius: 7,
                   background: "transparent",
@@ -320,7 +562,47 @@ export function ConsoleShell({
               </button>
             </div>
             <ErrorBoundary fallback={<CommsRailFallback />}>
-              <CommsRailPanel accessToken={session?.access_token} />
+              <CommsRailPanel
+                accessToken={session?.access_token}
+                onOpenMessengerThread={(threadId) => {
+                  if (activeDrawer) {
+                    focusMainAfterDrawerCloseRef.current = true;
+                    closeDrawer(false);
+                  }
+                  void navigate({
+                    pathname: consoleScreenPath("messenger"),
+                    search: `?thread=${encodeURIComponent(threadId)}`,
+                  });
+                }}
+                onOpenMailThread={(threadId) => {
+                  if (activeDrawer) {
+                    focusMainAfterDrawerCloseRef.current = true;
+                    closeDrawer(false);
+                  }
+                  void navigate({
+                    pathname: consoleScreenPath("mail"),
+                    search: `?mail_thread=${encodeURIComponent(threadId)}&mail_view=detail`,
+                  });
+                }}
+                {...(canPromoteRailTo("notif") ? {
+                  onOpenNotificationCenter: () => {
+                    if (activeDrawer) {
+                      focusMainAfterDrawerCloseRef.current = true;
+                      closeDrawer(false);
+                    }
+                    void navigate({ pathname: consoleScreenPath("notif") });
+                  },
+                } : {})}
+                {...(canPromoteRailTo("board") ? {
+                  onOpenNoticeBoard: () => {
+                    if (activeDrawer) {
+                      focusMainAfterDrawerCloseRef.current = true;
+                      closeDrawer(false);
+                    }
+                    void navigate({ pathname: consoleScreenPath("board") });
+                  },
+                } : {})}
+              />
             </ErrorBoundary>
           </>
         ) : (
@@ -336,7 +618,7 @@ export function ConsoleShell({
             <button
               type="button"
               onClick={() => {
-                setRailOpen(true);
+                setRailUser(true);
               }}
               title={S.rail.expand}
               aria-label={S.rail.expand}
@@ -366,7 +648,7 @@ export function ConsoleShell({
             <RailGlyph name="bell" label={S.rail.notif} />
           </div>
         )}
-      </aside>
+      </aside>}
 
       {paletteOpen && (
         <div
@@ -453,6 +735,18 @@ export function ConsoleShell({
         </div>
       )}
     </div>
+  );
+
+  return (
+    <WindowManagerProvider
+      key={windowAuthority ?? "unowned-incarnation"}
+      authorityPartition={windowAuthority}
+      retentionEnabled={windowAuthority !== undefined}
+      hostStyle={WINDOW_HOST_STYLE}
+      trayStyle={{ left: `calc(${String(sidebarWidth)}px + var(--sp-5))` }}
+    >
+      {shell}
+    </WindowManagerProvider>
   );
 }
 

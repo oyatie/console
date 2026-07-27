@@ -23,22 +23,29 @@ const ROLES: [Role; 6] = [
     Role::SuperAdmin,
 ];
 
-fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 62] {
+fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 96] {
     use Feature::{
         AiAssist, ApprovalFinalize, AssigneeManage, AuditLogRead, AuditStreamAccessLogRead,
         AuditStreamRead, BenefitCatalogManage, BenefitCatalogRead, BranchManage, CompletionReview,
-        DailyPlanRequest, DailyPlanReview, ElevatedRoleGrant, EmployeeDirectoryManage,
-        EmployeeDirectoryRead, EquipmentCostLedgerRead, EquipmentCostLedgerWrite, EquipmentManage,
-        EvidenceAttach, ExcelDownload, ExitCaseHqConfirm, ExitCaseHrConfirm, ExitCaseReport,
-        ExitSettlementManage, InspectionRoundComplete, InspectionScheduleManage,
+        ComplianceDomainManage, ComplianceDomainRead, ComplianceEvidenceLink, ConsultingManage,
+        ConsultingRead, DailyPlanRequest, DailyPlanReview, ElevatedRoleGrant,
+        EmployeeDirectoryManage, EmployeeDirectoryRead, Equipment3rApprove, Equipment3rAssess,
+        Equipment3rDispatch, Equipment3rDisposition, Equipment3rInspect, Equipment3rObserve,
+        Equipment3rQuote, Equipment3rRegistry, EquipmentCostLedgerRead, EquipmentCostLedgerWrite,
+        EquipmentManage, EvaluationManage, EvaluationRead, EvaluationSubmit, EvidenceAttach,
+        ExcelDownload, ExitCaseHqConfirm, ExitCaseHrConfirm, ExitCaseReport, ExitSettlementManage,
+        FacilitiesAccept, FacilitiesDispatch, FacilitiesExecute, FacilitiesManage,
+        FacilitiesObserve, InspectionRoundComplete, InspectionScheduleManage,
         IntegrityFindingTriage, IntegrityFindingsRead, InventoryConsume, InventoryManage,
         InventoryRead, InventoryReorder, KpiExclusionManage, KpiRead, LifecycleManage, Login,
-        MailAccountManage, MailUse, MasterListImport, NoticeManage, OpsDashboardRead,
-        OrgWideQueueTriage, PayrollRunRead, PeriodLockManage, PriorityManage, PurchaseExecute,
+        LogisticsDispatch, LogisticsPickPack, LogisticsPod, LogisticsPutaway, LogisticsReceive,
+        LogisticsRelease, LogisticsSettle, MailAccountManage, MailUse, MasterListImport,
+        NoticeManage, OpsDashboardRead, OrgWideQueueTriage, PayrollRunManage, PayrollRunRead,
+        PeriodLockManage, PriorityManage, ProductionSourceIngest, PurchaseExecute,
         PurchaseFinalApprove, PurchaseRequestApprove, PurchaseRequestCreate, PurchaseRequestRead,
-        RegionManage, RentalQuoteManage, RoleManage, SalesManage, SubordinateUserCreate,
-        TargetManage, UserManage, WorkOrderCreate, WorkOrderEditIntake, WorkOrderReadAll,
-        WorkOrderStart, WorkReportSubmit,
+        RecruitingManage, RecruitingRead, RegionManage, RentalQuoteManage, RoleManage, SalesManage,
+        SubordinateUserCreate, TargetManage, UserManage, WorkOrderCreate, WorkOrderEditIntake,
+        WorkOrderReadAll, WorkOrderStart, WorkReportSubmit,
     };
     use PermissionLevel::{Allow as A, Deny as D, Limited as L, RequestOnly as R};
 
@@ -87,6 +94,14 @@ fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 62] {
         (ExcelDownload, [D, A, A, A, A, A]),
         (OpsDashboardRead, [D, D, D, A, D, A]),
         (SalesManage, [D, D, D, A, A, A]),
+        // Logistics is explicit-grant only: no built-in role fallback.
+        (LogisticsReceive, [D, D, D, D, D, D]),
+        (LogisticsPutaway, [D, D, D, D, D, D]),
+        (LogisticsRelease, [D, D, D, D, D, D]),
+        (LogisticsPickPack, [D, D, D, D, D, D]),
+        (LogisticsDispatch, [D, D, D, D, D, D]),
+        (LogisticsPod, [D, D, D, D, D, D]),
+        (LogisticsSettle, [D, D, D, D, D, D]),
         // IV inventory is branch-operational: front-office/mechanics may read,
         // mechanics/admins may consume, and management/reorder is admin-tier.
         (InventoryRead, [D, A, A, A, A, A]),
@@ -100,6 +115,15 @@ fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 62] {
         // `permission_matrix` in lib.rs.
         (BenefitCatalogRead, [D, D, D, A, A, A]),
         (BenefitCatalogManage, [D, D, D, A, D, A]),
+        // Compliance domain is branch-operational for scoped obligations but
+        // the REST boundary independently requires org-wide scope for tenant
+        // catalog objects. Evidence linking is a distinct audited capability.
+        (ComplianceDomainRead, [D, D, D, A, A, A]),
+        (ComplianceDomainManage, [D, D, D, A, D, A]),
+        (ComplianceEvidenceLink, [D, D, D, A, D, A]),
+        // Consulting is capability-driven from its first slice.
+        (ConsultingRead, [D, D, D, D, D, D]),
+        (ConsultingManage, [D, D, D, D, D, D]),
         // The inherited PERMISSIONS.md has 21 explicit table rows; its branch
         // strategy also names AI 조회 as a branch-filtered server API surface.
         // T0.6's brief requires 22 features, so the AI assistant seam is
@@ -123,6 +147,8 @@ fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 62] {
         (ExitCaseHrConfirm, [D, D, D, A, D, A]),
         (ExitCaseHqConfirm, [D, D, D, D, A, A]),
         (ExitSettlementManage, [D, D, D, A, D, A]),
+        (Feature::AttendanceExceptionManage, [D, D, D, A, D, A]),
+        (Feature::AttendanceSubstitutionManage, [D, D, D, A, D, A]),
         // Covert audit stream actions are Cedar clearance-only: the legacy
         // role matrix intentionally denies every built-in role.
         (AuditStreamRead, [D, D, D, D, D, D]),
@@ -133,9 +159,32 @@ fn expected_matrix() -> [(Feature, [PermissionLevel; 6]); 62] {
         (LifecycleManage, [D, D, D, A, D, A]),
         // Payroll draft-run/line staging read: same tier as
         // EmployeeDirectoryRead (financial/HR-sensitive).
+        (PayrollRunManage, [D, D, D, A, A, A]),
         (PayrollRunRead, [D, D, D, A, A, A]),
         // Notice-board publish tier: ADMIN + EXECUTIVE + SUPER_ADMIN.
         (NoticeManage, [D, D, D, A, A, A]),
+        (FacilitiesManage, [D, D, D, A, D, A]),
+        (FacilitiesDispatch, [D, D, D, A, D, A]),
+        (FacilitiesExecute, [D, D, A, A, D, A]),
+        (FacilitiesAccept, [D, D, D, A, D, A]),
+        (FacilitiesObserve, [D, A, A, A, A, A]),
+        (ProductionSourceIngest, [D, D, D, D, D, D]),
+        // Equipment 3R: capability-driven, custom-grant only.
+        (Equipment3rRegistry, [D, D, D, D, D, D]),
+        (Equipment3rQuote, [D, D, D, D, D, D]),
+        (Equipment3rApprove, [D, D, D, D, D, D]),
+        (Equipment3rDispatch, [D, D, D, D, D, D]),
+        (Equipment3rInspect, [D, D, D, D, D, D]),
+        (Equipment3rAssess, [D, D, D, D, D, D]),
+        (Equipment3rDisposition, [D, D, D, D, D, D]),
+        (Equipment3rObserve, [D, D, D, D, D, D]),
+        // Recruiting mirrors the HR directory pair (HR-owned data, EXECUTIVE
+        // read-only) and is gated org-wide like EmployeeDirectory*.
+        (RecruitingRead, [D, D, D, A, A, A]),
+        (RecruitingManage, [D, D, D, A, D, A]),
+        (EvaluationRead, [D, D, D, A, A, A]),
+        (EvaluationManage, [D, D, D, A, D, A]),
+        (EvaluationSubmit, [D, D, D, A, A, A]),
     ]
 }
 
@@ -797,7 +846,7 @@ fn cedar_compiled_bundle_cache_key_requires_versioned_identity() {
 #[test]
 fn permission_matrix_is_exhaustive_and_matches_inherited_table() {
     let matrix = expected_matrix();
-    assert_eq!(Feature::ALL.len(), 62);
+    assert_eq!(Feature::ALL.len(), 96);
     assert_eq!(matrix.len(), Feature::ALL.len());
 
     for feature in Feature::ALL {

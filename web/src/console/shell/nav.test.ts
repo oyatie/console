@@ -31,11 +31,30 @@ function screens(
 }
 
 describe("console nav deny-by-omission", () => {
-  it("keeps every mounted screen DARK until its ADR-0025 evidence is approved", () => {
+  it("keeps all mounted bodies DARK without independent production-exposure evidence", () => {
     const s = screens(grants([ROLES.MEMBER]));
-    expect(MOUNTED_SCREEN_KEYS).toEqual(expect.arrayContaining(["overview", "mywork", "mail"]));
+    expect(MOUNTED_SCREEN_KEYS).toEqual(
+      expect.arrayContaining(["overview", "attendance", "mywork", "people", "sales", "inventory", "mail"]),
+    );
     expect(EXPOSED_SCREEN_KEYS).toEqual([]);
     expect(s).toEqual(new Set());
+  });
+
+  it("shows personal Attendance to a no-grant member only in mounted inventory", () => {
+    const mounted = screens(grants([ROLES.MEMBER]), MOUNTED_SCREEN_KEYS);
+    const production = screens(grants([ROLES.MEMBER]));
+
+    expect(mounted.has("attendance")).toBe(true);
+    expect(mounted.has("people")).toBe(false);
+    expect(mounted.has("payroll")).toBe(false);
+    expect(mounted.has("policy")).toBe(false);
+    expect(mounted.has("workflow")).toBe(false);
+    expect(mounted.has("sales")).toBe(false);
+
+    // Product exposure remains unchanged: Attendance is mounted but DARK.
+    expect(production.has("attendance")).toBe(false);
+    expect(isExposedScreenKey("attendance")).toBe(false);
+    expect(EXPOSED_SCREEN_KEYS).toEqual([]);
   });
 
   it("hides governance/identity surfaces from a non-privileged persona", () => {
@@ -47,7 +66,7 @@ describe("console nav deny-by-omission", () => {
     expect(s.has("policy")).toBe(false);
     expect(s.has("audit")).toBe(false);
     expect(s.has("compliance")).toBe(false);
-    expect(s.has("hr")).toBe(false);
+    expect(s.has("people")).toBe(false);
     expect(s.has("payroll")).toBe(false);
     expect(s.has("workflow")).toBe(false);
     // planned operational surfaces stay DARK even with an otherwise sufficient grant
@@ -56,15 +75,44 @@ describe("console nav deny-by-omission", () => {
 
   it("shows management analytics + HR to ADMIN, but never RoleManage surfaces", () => {
     const s = screens(grants([ROLES.ADMIN]), MOUNTED_SCREEN_KEYS);
-    expect(s.has("hr")).toBe(false);
+    expect(s.has("people")).toBe(true);
+    expect(s.has("attendance")).toBe(true);
     expect(s.has("payroll")).toBe(false);
     expect(s.has("audit")).toBe(true);
     expect(s.has("dashboard")).toBe(true);
+    expect(s.has("attendance")).toBe(true);
+    expect(s.has("sales")).toBe(true);
     // RoleManage-tier is SUPER_ADMIN-only, never unlocked for ADMIN
     expect(s.has("policy")).toBe(false);
     expect(s.has("workflow")).toBe(false);
     // integrity/compliance excludes ADMIN by design
     expect(s.has("compliance")).toBe(false);
+  });
+
+  it("mirrors payroll's org-wide backend boundary in mounted inventory", () => {
+    const payrollRead = "payroll_run_read";
+
+    // ADMIN is a branch-management role. The payroll API's org-wide gate
+    // rejects it even when its ordinary matrix row is Allow.
+    expect(screens(grants([ROLES.ADMIN]), MOUNTED_SCREEN_KEYS).has("payroll")).toBe(false);
+    expect(
+      screens(
+        grants([ROLES.ADMIN], [FEATURES.EMPLOYEE_DIRECTORY_READ]),
+        MOUNTED_SCREEN_KEYS,
+      ).has("payroll"),
+    ).toBe(false);
+
+    // ConsoleGrants intentionally contains no capability scope. A flattened
+    // feature hint therefore cannot prove the all-branch grant payroll needs.
+    expect(
+      screens(grants([ROLES.MEMBER], [payrollRead]), MOUNTED_SCREEN_KEYS).has("payroll"),
+    ).toBe(false);
+
+    expect(screens(grants([ROLES.EXECUTIVE]), MOUNTED_SCREEN_KEYS).has("payroll")).toBe(true);
+    expect(screens(grants([ROLES.SUPER_ADMIN]), MOUNTED_SCREEN_KEYS).has("payroll")).toBe(true);
+
+    // Mounted authorization does not change production exposure.
+    expect(screens(grants([ROLES.SUPER_ADMIN])).has("payroll")).toBe(false);
   });
 
   it("unlocks RoleManage surfaces for SUPER_ADMIN", () => {
@@ -81,9 +129,26 @@ describe("console nav deny-by-omission", () => {
       MOUNTED_SCREEN_KEYS,
     );
     expect(s.has("dashboard")).toBe(true);
-    expect(s.has("hr")).toBe(false);
+    expect(s.has("attendance")).toBe(true);
+    expect(s.has("people")).toBe(true);
+    expect(s.has("attendance")).toBe(true);
     expect(s.has("payroll")).toBe(false);
     expect(s.has("audit")).toBe(false); // different feature — still hidden
+  });
+
+  it("mounts sales for its backend-aligned management role or explicit grant only", () => {
+    expect(
+      screens(grants([ROLES.EXECUTIVE]), MOUNTED_SCREEN_KEYS).has("sales"),
+    ).toBe(true);
+    expect(
+      screens(
+        grants([ROLES.MEMBER], [FEATURES.SALES_MANAGE]),
+        MOUNTED_SCREEN_KEYS,
+      ).has("sales"),
+    ).toBe(true);
+    expect(
+      screens(grants([ROLES.MEMBER]), MOUNTED_SCREEN_KEYS).has("sales"),
+    ).toBe(false);
   });
 
   it("drops groups that end up empty after filtering", () => {
@@ -103,7 +168,7 @@ describe("console nav deny-by-omission", () => {
     ).toBe(true);
   });
 
-  it("does not invent a default screen when no evidence-approved screen is exposed", () => {
+  it("has no production default while every mounted body remains DARK", () => {
     expect(defaultScreen(grants([ROLES.ADMIN]))).toBeUndefined();
     expect(defaultScreen(grants([ROLES.MEMBER]))).toBeUndefined();
   });
@@ -114,8 +179,11 @@ describe("console nav deny-by-omission", () => {
     const declared = NAV_GROUPS.flatMap((group) => group.items.map((item) => item.screen));
 
     expect(MOUNTED_SCREEN_KEYS.every((key) => registered.has(key))).toBe(true);
+    expect(MOUNTED_SCREEN_KEYS).toContain("inventory");
+    expect(EXPOSED_SCREEN_KEYS).not.toContain("inventory");
+    expect(isExposedScreenKey("inventory")).toBe(false);
     expect(declared.filter((key) => !exposed.has(key))).toEqual(
-      expect.arrayContaining(["hr", "recruit", "dispatch", "docs", "notif", "directory"]),
+      expect.arrayContaining(["people", "recruit", "dispatch", "docs", "notif", "directory"]),
     );
 
     for (const role of Object.values(ROLES)) {
@@ -133,7 +201,8 @@ describe("console nav deny-by-omission", () => {
     expect(consoleScreenPath("a b")).toBe("/console/a%20b");
   });
 
-  it("narrows only production-visible screen keys", () => {
+  it("narrows every mounted screen out of production until evidence is admitted", () => {
+    expect(isExposedScreenKey("sales")).toBe(false);
     expect(isExposedScreenKey("audit")).toBe(false);
     expect(isExposedScreenKey("docs")).toBe(false);
     expect(isExposedScreenKey("unknown")).toBe(false);

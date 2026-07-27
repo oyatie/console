@@ -27,10 +27,20 @@ import java.io.IOException
 import okhttp3.Call
 import okhttp3.HttpUrl
 
+import com.maintenance.api.client.model.AttestPayrollDisbursementRequest
+import com.maintenance.api.client.model.ClosePayrollAttendanceRequest
+import com.maintenance.api.client.model.DecidePayrollRunRequest
 import com.maintenance.api.client.model.ErrorBody
 import com.maintenance.api.client.model.MyPayrollLinePage
+import com.maintenance.api.client.model.PayrollClosePreflight
+import com.maintenance.api.client.model.PayrollDisbursement
+import com.maintenance.api.client.model.PayrollException
+import com.maintenance.api.client.model.PayrollExceptionPage
+import com.maintenance.api.client.model.PayrollPayslipDeliverySummary
 import com.maintenance.api.client.model.PayrollRunDetail
 import com.maintenance.api.client.model.PayrollRunPage
+import com.maintenance.api.client.model.ResolvePayrollExceptionRequest
+import com.maintenance.api.client.model.SchedulePayrollDisbursementRequest
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -58,6 +68,397 @@ open class PayrollApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
         val defaultBasePath: String by lazy {
             System.getProperties().getProperty(ApiClient.BASE_URL_KEY, "http://localhost")
         }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/disbursement/attest
+     * Operator attestation FSM SCHEDULED to SUBMITTED_TO_BANK to PAID or FAILED (reason required) and FAILED back to SCHEDULED; no bank API exists, these are operator records
+     *
+     * @param id
+     * @param attestPayrollDisbursementRequest
+     * @return PayrollDisbursement
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun attestPayrollDisbursement(id: java.util.UUID, attestPayrollDisbursementRequest: AttestPayrollDisbursementRequest) : PayrollDisbursement = withContext(Dispatchers.IO) {
+        val localVarResponse = attestPayrollDisbursementWithHttpInfo(id = id, attestPayrollDisbursementRequest = attestPayrollDisbursementRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollDisbursement
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/disbursement/attest
+     * Operator attestation FSM SCHEDULED to SUBMITTED_TO_BANK to PAID or FAILED (reason required) and FAILED back to SCHEDULED; no bank API exists, these are operator records
+     *
+     * @param id
+     * @param attestPayrollDisbursementRequest
+     * @return ApiResponse<PayrollDisbursement?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun attestPayrollDisbursementWithHttpInfo(id: java.util.UUID, attestPayrollDisbursementRequest: AttestPayrollDisbursementRequest) : ApiResponse<PayrollDisbursement?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = attestPayrollDisbursementRequestConfig(id = id, attestPayrollDisbursementRequest = attestPayrollDisbursementRequest)
+
+        return@withContext request<AttestPayrollDisbursementRequest, PayrollDisbursement>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation attestPayrollDisbursement
+     *
+     * @param id
+     * @param attestPayrollDisbursementRequest
+     * @return RequestConfig
+     */
+    fun attestPayrollDisbursementRequestConfig(id: java.util.UUID, attestPayrollDisbursementRequest: AttestPayrollDisbursementRequest) : RequestConfig<AttestPayrollDisbursementRequest> {
+        val localVariableBody = attestPayrollDisbursementRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/disbursement/attest".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/calculate
+     * Per-line draft calculation (ATTENDANCE_CLOSED only); a line without a verified gross + NTS source row stays blocked with truthful blockers, income tax is never estimated
+     *
+     * @param id
+     * @return PayrollRunDetail
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun calculatePayrollRun(id: java.util.UUID) : PayrollRunDetail = withContext(Dispatchers.IO) {
+        val localVarResponse = calculatePayrollRunWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollRunDetail
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/calculate
+     * Per-line draft calculation (ATTENDANCE_CLOSED only); a line without a verified gross + NTS source row stays blocked with truthful blockers, income tax is never estimated
+     *
+     * @param id
+     * @return ApiResponse<PayrollRunDetail?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun calculatePayrollRunWithHttpInfo(id: java.util.UUID) : ApiResponse<PayrollRunDetail?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = calculatePayrollRunRequestConfig(id = id)
+
+        return@withContext request<Unit, PayrollRunDetail>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation calculatePayrollRun
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun calculatePayrollRunRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/calculate".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/close-attendance
+     * Attested attendance close (STAGED/BLOCKED_LEGAL_GATE/READY_FOR_REVIEW to ATTENDANCE_CLOSED); a blocked preflight is a 409 carrying the failing checks in error.details
+     *
+     * @param id
+     * @param closePayrollAttendanceRequest
+     * @return PayrollRunDetail
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun closePayrollRunAttendance(id: java.util.UUID, closePayrollAttendanceRequest: ClosePayrollAttendanceRequest) : PayrollRunDetail = withContext(Dispatchers.IO) {
+        val localVarResponse = closePayrollRunAttendanceWithHttpInfo(id = id, closePayrollAttendanceRequest = closePayrollAttendanceRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollRunDetail
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/close-attendance
+     * Attested attendance close (STAGED/BLOCKED_LEGAL_GATE/READY_FOR_REVIEW to ATTENDANCE_CLOSED); a blocked preflight is a 409 carrying the failing checks in error.details
+     *
+     * @param id
+     * @param closePayrollAttendanceRequest
+     * @return ApiResponse<PayrollRunDetail?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun closePayrollRunAttendanceWithHttpInfo(id: java.util.UUID, closePayrollAttendanceRequest: ClosePayrollAttendanceRequest) : ApiResponse<PayrollRunDetail?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = closePayrollRunAttendanceRequestConfig(id = id, closePayrollAttendanceRequest = closePayrollAttendanceRequest)
+
+        return@withContext request<ClosePayrollAttendanceRequest, PayrollRunDetail>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation closePayrollRunAttendance
+     *
+     * @param id
+     * @param closePayrollAttendanceRequest
+     * @return RequestConfig
+     */
+    fun closePayrollRunAttendanceRequestConfig(id: java.util.UUID, closePayrollAttendanceRequest: ClosePayrollAttendanceRequest) : RequestConfig<ClosePayrollAttendanceRequest> {
+        val localVariableBody = closePayrollAttendanceRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/close-attendance".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/decision
+     * APPROVE or REJECT a SUBMITTED run under maker-checker separation of duties (the decider must not be the submitter)
+     *
+     * @param id
+     * @param decidePayrollRunRequest
+     * @return PayrollRunDetail
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun decidePayrollRun(id: java.util.UUID, decidePayrollRunRequest: DecidePayrollRunRequest) : PayrollRunDetail = withContext(Dispatchers.IO) {
+        val localVarResponse = decidePayrollRunWithHttpInfo(id = id, decidePayrollRunRequest = decidePayrollRunRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollRunDetail
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/decision
+     * APPROVE or REJECT a SUBMITTED run under maker-checker separation of duties (the decider must not be the submitter)
+     *
+     * @param id
+     * @param decidePayrollRunRequest
+     * @return ApiResponse<PayrollRunDetail?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun decidePayrollRunWithHttpInfo(id: java.util.UUID, decidePayrollRunRequest: DecidePayrollRunRequest) : ApiResponse<PayrollRunDetail?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = decidePayrollRunRequestConfig(id = id, decidePayrollRunRequest = decidePayrollRunRequest)
+
+        return@withContext request<DecidePayrollRunRequest, PayrollRunDetail>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation decidePayrollRun
+     *
+     * @param id
+     * @param decidePayrollRunRequest
+     * @return RequestConfig
+     */
+    fun decidePayrollRunRequestConfig(id: java.util.UUID, decidePayrollRunRequest: DecidePayrollRunRequest) : RequestConfig<DecidePayrollRunRequest> {
+        val localVariableBody = decidePayrollRunRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/decision".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * GET /api/v1/payroll/runs/{id}/payslip-delivery
+     * Payslip delivery and acknowledgement readback for a run (audited read)
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return PayrollPayslipDeliverySummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun getPayrollPayslipDelivery(id: java.util.UUID, limit: kotlin.Long? = null, offset: kotlin.Long? = null) : PayrollPayslipDeliverySummary = withContext(Dispatchers.IO) {
+        val localVarResponse = getPayrollPayslipDeliveryWithHttpInfo(id = id, limit = limit, offset = offset)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollPayslipDeliverySummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/payroll/runs/{id}/payslip-delivery
+     * Payslip delivery and acknowledgement readback for a run (audited read)
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return ApiResponse<PayrollPayslipDeliverySummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun getPayrollPayslipDeliveryWithHttpInfo(id: java.util.UUID, limit: kotlin.Long?, offset: kotlin.Long?) : ApiResponse<PayrollPayslipDeliverySummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = getPayrollPayslipDeliveryRequestConfig(id = id, limit = limit, offset = offset)
+
+        return@withContext request<Unit, PayrollPayslipDeliverySummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getPayrollPayslipDelivery
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return RequestConfig
+     */
+    fun getPayrollPayslipDeliveryRequestConfig(id: java.util.UUID, limit: kotlin.Long?, offset: kotlin.Long?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (limit != null) {
+                    put("limit", listOf(limit.toString()))
+                }
+                if (offset != null) {
+                    put("offset", listOf(offset.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/payroll/runs/{id}/payslip-delivery".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
     }
 
     /**
@@ -140,6 +541,152 @@ open class PayrollApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/v1/payroll/runs/{id}".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * GET /api/v1/payroll/runs/{id}/close-preflight
+     * Attendance-close preflight for a payroll run (audited read; EXECUTIVE/SUPER_ADMIN org-wide)
+     *
+     * @param id
+     * @return PayrollClosePreflight
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun getPayrollRunClosePreflight(id: java.util.UUID) : PayrollClosePreflight = withContext(Dispatchers.IO) {
+        val localVarResponse = getPayrollRunClosePreflightWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollClosePreflight
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/payroll/runs/{id}/close-preflight
+     * Attendance-close preflight for a payroll run (audited read; EXECUTIVE/SUPER_ADMIN org-wide)
+     *
+     * @param id
+     * @return ApiResponse<PayrollClosePreflight?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun getPayrollRunClosePreflightWithHttpInfo(id: java.util.UUID) : ApiResponse<PayrollClosePreflight?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = getPayrollRunClosePreflightRequestConfig(id = id)
+
+        return@withContext request<Unit, PayrollClosePreflight>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getPayrollRunClosePreflight
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun getPayrollRunClosePreflightRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/payroll/runs/{id}/close-preflight".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/issue-payslips
+     * Issue payslips for a PAID run into each recipient&#39;s inbox vault; hard-gated by the registered 노무사/세무사 release-gate record (409 legal_gate otherwise)
+     *
+     * @param id
+     * @return PayrollPayslipDeliverySummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun issuePayrollPayslips(id: java.util.UUID) : PayrollPayslipDeliverySummary = withContext(Dispatchers.IO) {
+        val localVarResponse = issuePayrollPayslipsWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollPayslipDeliverySummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/issue-payslips
+     * Issue payslips for a PAID run into each recipient&#39;s inbox vault; hard-gated by the registered 노무사/세무사 release-gate record (409 legal_gate otherwise)
+     *
+     * @param id
+     * @return ApiResponse<PayrollPayslipDeliverySummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun issuePayrollPayslipsWithHttpInfo(id: java.util.UUID) : ApiResponse<PayrollPayslipDeliverySummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = issuePayrollPayslipsRequestConfig(id = id)
+
+        return@withContext request<Unit, PayrollPayslipDeliverySummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation issuePayrollPayslips
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun issuePayrollPayslipsRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/issue-payslips".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -232,6 +779,93 @@ open class PayrollApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
     }
 
     /**
+     * GET /api/v1/payroll/runs/{id}/exceptions
+     * Exception review queue for a run (audited read; OPEN rows first, then danger/warn/info, then age)
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return PayrollExceptionPage
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun listPayrollRunExceptions(id: java.util.UUID, limit: kotlin.Long? = null, offset: kotlin.Long? = null) : PayrollExceptionPage = withContext(Dispatchers.IO) {
+        val localVarResponse = listPayrollRunExceptionsWithHttpInfo(id = id, limit = limit, offset = offset)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollExceptionPage
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/payroll/runs/{id}/exceptions
+     * Exception review queue for a run (audited read; OPEN rows first, then danger/warn/info, then age)
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return ApiResponse<PayrollExceptionPage?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun listPayrollRunExceptionsWithHttpInfo(id: java.util.UUID, limit: kotlin.Long?, offset: kotlin.Long?) : ApiResponse<PayrollExceptionPage?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listPayrollRunExceptionsRequestConfig(id = id, limit = limit, offset = offset)
+
+        return@withContext request<Unit, PayrollExceptionPage>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation listPayrollRunExceptions
+     *
+     * @param id
+     * @param limit  (optional)
+     * @param offset  (optional)
+     * @return RequestConfig
+     */
+    fun listPayrollRunExceptionsRequestConfig(id: java.util.UUID, limit: kotlin.Long?, offset: kotlin.Long?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (limit != null) {
+                    put("limit", listOf(limit.toString()))
+                }
+                if (offset != null) {
+                    put("offset", listOf(offset.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/payroll/runs/{id}/exceptions".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * GET /api/v1/payroll/runs
      * List payroll draft runs (admin; EXECUTIVE/SUPER_ADMIN only, audited read)
      *
@@ -308,6 +942,309 @@ open class PayrollApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/v1/payroll/runs",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve
+     * Resolve one exception with CONFIRM or HOLD (HOLD requires a reason and carries the row to the next run of the series); the run must be CALCULATED
+     *
+     * @param id
+     * @param exceptionId
+     * @param resolvePayrollExceptionRequest
+     * @return PayrollException
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun resolvePayrollRunException(id: java.util.UUID, exceptionId: java.util.UUID, resolvePayrollExceptionRequest: ResolvePayrollExceptionRequest) : PayrollException = withContext(Dispatchers.IO) {
+        val localVarResponse = resolvePayrollRunExceptionWithHttpInfo(id = id, exceptionId = exceptionId, resolvePayrollExceptionRequest = resolvePayrollExceptionRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollException
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve
+     * Resolve one exception with CONFIRM or HOLD (HOLD requires a reason and carries the row to the next run of the series); the run must be CALCULATED
+     *
+     * @param id
+     * @param exceptionId
+     * @param resolvePayrollExceptionRequest
+     * @return ApiResponse<PayrollException?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun resolvePayrollRunExceptionWithHttpInfo(id: java.util.UUID, exceptionId: java.util.UUID, resolvePayrollExceptionRequest: ResolvePayrollExceptionRequest) : ApiResponse<PayrollException?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = resolvePayrollRunExceptionRequestConfig(id = id, exceptionId = exceptionId, resolvePayrollExceptionRequest = resolvePayrollExceptionRequest)
+
+        return@withContext request<ResolvePayrollExceptionRequest, PayrollException>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation resolvePayrollRunException
+     *
+     * @param id
+     * @param exceptionId
+     * @param resolvePayrollExceptionRequest
+     * @return RequestConfig
+     */
+    fun resolvePayrollRunExceptionRequestConfig(id: java.util.UUID, exceptionId: java.util.UUID, resolvePayrollExceptionRequest: ResolvePayrollExceptionRequest) : RequestConfig<ResolvePayrollExceptionRequest> {
+        val localVariableBody = resolvePayrollExceptionRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve".replace("{"+"id"+"}", encodeURIComponent(id.toString())).replace("{"+"exceptionId"+"}", encodeURIComponent(exceptionId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/schedule-disbursement
+     * Schedule the transfer for an APPROVED run (one disbursement per run)
+     *
+     * @param id
+     * @param schedulePayrollDisbursementRequest
+     * @return PayrollDisbursement
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun schedulePayrollDisbursement(id: java.util.UUID, schedulePayrollDisbursementRequest: SchedulePayrollDisbursementRequest) : PayrollDisbursement = withContext(Dispatchers.IO) {
+        val localVarResponse = schedulePayrollDisbursementWithHttpInfo(id = id, schedulePayrollDisbursementRequest = schedulePayrollDisbursementRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollDisbursement
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/schedule-disbursement
+     * Schedule the transfer for an APPROVED run (one disbursement per run)
+     *
+     * @param id
+     * @param schedulePayrollDisbursementRequest
+     * @return ApiResponse<PayrollDisbursement?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun schedulePayrollDisbursementWithHttpInfo(id: java.util.UUID, schedulePayrollDisbursementRequest: SchedulePayrollDisbursementRequest) : ApiResponse<PayrollDisbursement?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = schedulePayrollDisbursementRequestConfig(id = id, schedulePayrollDisbursementRequest = schedulePayrollDisbursementRequest)
+
+        return@withContext request<SchedulePayrollDisbursementRequest, PayrollDisbursement>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation schedulePayrollDisbursement
+     *
+     * @param id
+     * @param schedulePayrollDisbursementRequest
+     * @return RequestConfig
+     */
+    fun schedulePayrollDisbursementRequestConfig(id: java.util.UUID, schedulePayrollDisbursementRequest: SchedulePayrollDisbursementRequest) : RequestConfig<SchedulePayrollDisbursementRequest> {
+        val localVariableBody = schedulePayrollDisbursementRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/schedule-disbursement".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/submit
+     * Submit a CALCULATED run for approval; fail-closed while any exception is still OPEN (409 carries the open count in error.details.open)
+     *
+     * @param id
+     * @return PayrollRunDetail
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun submitPayrollRun(id: java.util.UUID) : PayrollRunDetail = withContext(Dispatchers.IO) {
+        val localVarResponse = submitPayrollRunWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollRunDetail
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/submit
+     * Submit a CALCULATED run for approval; fail-closed while any exception is still OPEN (409 carries the open count in error.details.open)
+     *
+     * @param id
+     * @return ApiResponse<PayrollRunDetail?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun submitPayrollRunWithHttpInfo(id: java.util.UUID) : ApiResponse<PayrollRunDetail?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = submitPayrollRunRequestConfig(id = id)
+
+        return@withContext request<Unit, PayrollRunDetail>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation submitPayrollRun
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun submitPayrollRunRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/submit".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/withdraw
+     * Withdraw a REJECTED run back to CALCULATED, clearing the submit/decide columns so a fresh maker-checker pair is admissible
+     *
+     * @param id
+     * @return PayrollRunDetail
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun withdrawPayrollRun(id: java.util.UUID) : PayrollRunDetail = withContext(Dispatchers.IO) {
+        val localVarResponse = withdrawPayrollRunWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as PayrollRunDetail
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/payroll/runs/{id}/withdraw
+     * Withdraw a REJECTED run back to CALCULATED, clearing the submit/decide columns so a fresh maker-checker pair is admissible
+     *
+     * @param id
+     * @return ApiResponse<PayrollRunDetail?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun withdrawPayrollRunWithHttpInfo(id: java.util.UUID) : ApiResponse<PayrollRunDetail?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = withdrawPayrollRunRequestConfig(id = id)
+
+        return@withContext request<Unit, PayrollRunDetail>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation withdrawPayrollRun
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun withdrawPayrollRunRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/payroll/runs/{id}/withdraw".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

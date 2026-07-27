@@ -53,8 +53,15 @@ describe("parseTokenGrammar — bare-code object auto-linking (NO trigger — na
   it("auto-links a two-segment date-sequence code (WO)", () => {
     expect(tokens("정비 WO-20260612-001 참고")).toEqual([{ kind: "codeLink", raw: "WO-20260612-001" }]);
   });
-  it("recognizes an unregistered-prefix shape (COVID-19) — kindFromCode gates it inert at render", () => {
-    expect(tokens("COVID-19 대응")).toEqual([{ kind: "codeLink", raw: "COVID-19" }]);
+  // Was: "recognizes an unregistered-prefix shape (COVID-19) — kindFromCode
+  // gates it inert at render". Since L-F3 the parser takes its prefix set from
+  // ontology/codeGrammar, so an unregistered prefix is refused one step earlier,
+  // at parse. The rendered output is unchanged — TokenText already renders a
+  // codeLink of unknown kind as its raw text — this only stops the console
+  // carrying a span it was always going to throw away.
+  it("does NOT recognize an unregistered prefix (COVID-19) — refused at parse, not at render", () => {
+    expect(tokens("COVID-19 대응")).toEqual([]);
+    expect(serializeTokenSpans(parseTokenGrammar("COVID-19 대응"))).toBe("COVID-19 대응");
   });
   it("carries the whole code (no trigger char) as the span value", () => {
     const span = parseTokenGrammar("WO-2643 확인").find((s) => s.kind === "codeLink");

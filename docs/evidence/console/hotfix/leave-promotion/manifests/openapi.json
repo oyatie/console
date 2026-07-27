@@ -1,0 +1,77 @@
+{
+  "lane": "hf-leave-promotion",
+  "collision_root": "backend/openapi/openapi.yaml + clients/**",
+  "reason": "근로기준법 제61조 windows are now enforced server-side. The push endpoints need the statutory inputs the windows are counted from, and must stop accepting an unverifiable unused-day count that ends up printed on a legal notice.",
+  "blocking": true,
+  "note_for_integrator": "Without this the endpoints reject every current caller with 422 (missing track / leave_period_end). That is fail-closed and correct, but it means the console 촉진 button errors until the web caller is updated too — see manifests/web.json.",
+  "changes": [
+    {
+      "target": "components.schemas.LeavePromotionRequest",
+      "remove_properties": ["unused_days"],
+      "add_properties": {
+        "track": {
+          "type": "string",
+          "enum": ["annual", "first_year_early", "first_year_late"],
+          "description": "Which §61 window set applies. annual = 제61조제1항 (제60조제1항·제2항·제4항 연차). first_year_early = 제61조제2항제1호 본문 (계속근로 1년 미만, 1차 촉구 이전 발생분). first_year_late = 제61조제2항제1호 단서 (1차 촉구 이후 발생분). The paragraphs have different periods, so this cannot be defaulted."
+        },
+        "leave_period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "제60조제7항 본문에 따른 기간의 마지막 날 (§61② tracks: 최초 1년의 근로기간 종료일). Every statutory window is counted back from this date."
+        },
+        "designated_dates": {
+          "type": "array",
+          "items": { "type": "string", "format": "date" },
+          "maxItems": 25,
+          "description": "The 사용 시기 a round-2 notice designates (§61제1항제2호 requires the 통보 to designate them). Required and non-empty when round = 2; must be absent or empty for round 1."
+        }
+      },
+      "required_after": [
+        "branch_id",
+        "target_user_id",
+        "target_employee_id",
+        "target_name",
+        "round",
+        "track",
+        "leave_period_end"
+      ]
+    },
+    {
+      "target": "components.schemas.LeaveRefusalRequest",
+      "remove_properties": ["unused_days"],
+      "add_properties": {
+        "track": { "$comment": "same shape as LeavePromotionRequest.track" },
+        "leave_period_end": { "$comment": "same shape as LeavePromotionRequest.leave_period_end" }
+      },
+      "required_after": [
+        "branch_id",
+        "target_user_id",
+        "target_employee_id",
+        "target_name",
+        "track",
+        "leave_period_end"
+      ],
+      "note": "The refusal does NOT take designated_dates: it quotes the dates recorded on the 2차 통보 it follows, read back from that notice."
+    },
+    {
+      "target": "paths./api/v1/leave/promotions.post",
+      "description_replace": "Requires `employee_directory_manage` in the target `branch_id` (validated against the actor's scope). The push is checked against 근로기준법 제61조 before anything is delivered: round 1 must fall inside its statutory window (§61①1: 사용기간 종료 6개월 전 기준 10일 이내 — for a 1/1–12/31 회계연도, 7/1~7/10), and round 2 must follow a recorded round 1 by more than the worker's 10-day reply period and land on or before the 2차 통보 기한 (§61①2: 종료 2개월 전 — 10/31). §61② tracks use 3개월/1개월 and 1개월/10일 respectively. A push outside its window is refused, never delivered. The unused-day count is read from the authoritative roster, not from the request. Idempotent per (target, kind, round) within one 연차 사용기간.",
+      "responses_add": {
+        "409": "Ordering or evidence conflict — round 2 without a recorded 1차 촉구, a refusal without a recorded 2차 통보, an employee whose 미사용 연차 일수 the roster has not established, or a push for a different 연차 사용기간 than the one already recorded."
+      },
+      "responses_replace": {
+        "422": "Outside the §61 statutory window, or the notice's required content is missing (round 2 with no designated 사용 시기, round 1 with designated dates, unparsable track / leave_period_end)."
+      }
+    },
+    {
+      "target": "paths./api/v1/leave/refusal-notices.post",
+      "description_replace": "Requires `employee_directory_manage` in the target `branch_id`. Must follow a recorded 2차 통보 for the same 연차 사용기간; refuses labour on exactly the dates that 통보 designated. The notice records the employer's refusal — it does NOT assert that the 미사용수당 obligation is extinguished, because §61 relief additionally depends on facts this system cannot observe (대법원 2019다279283).",
+      "responses_add": {
+        "409": "No recorded 2차 통보 for this employee and 연차 사용기간, or that 통보 designated no dates.",
+        "422": "Served before the 2차 통보, after the 연차 사용기간 ended, or with unparsable track / leave_period_end."
+      }
+    }
+  ],
+  "clients": ["clients/ts", "clients/kotlin", "clients/swift"],
+  "regenerate": true
+}

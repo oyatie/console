@@ -1,0 +1,798 @@
+# CAP-ORG-CONSOLE — OpenAPI fragment for backend/openapi/openapi.yaml
+# (integrator-owned shared root; this lane never edits it directly).
+#
+# Splice notes:
+# - Every operation carries `tags: [org]` (client-gen requirement: per-domain
+#   tag so the Kotlin generator emits a bounded OrgApi, never DefaultApi).
+# - `$ref` responses reuse the spec's existing shared components
+#   (Unauthorized/Forbidden/NotFound/Conflict/ValidationError/ServiceUnavailable).
+# - The SAME integrator commit must also add the `orgchange` entry to
+#   `CONFIGURED_ROUTE_SURFACES` in backend/app/src/lib.rs (paths already
+#   exported as `mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS`) and a
+#   RouteSource for crates/orgchange/rest to backend/app/tests/openapi_drift.rs
+#   — the census⊆openapi gate fails on any partial splice — then regenerate
+#   clients/{ts,kotlin,swift} (three CI drift gates).
+# - Source of truth for behavior: backend/crates/orgchange/rest/src/lib.rs.
+
+paths:
+  /api/v1/org-changes:
+    post:
+      operationId: createOrgChange
+      summary: Draft an org change
+      description: Creates an org-change draft (조직 개편 기안). Requires an Idempotency-Key; a byte-identical replay returns the existing request with 200, a changed body under the same key conflicts.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrgChangeRequest'
+      responses:
+        '201':
+          description: Draft created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '200':
+          description: Idempotent replay of an existing draft.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    get:
+      operationId: listOrgChanges
+      summary: List org changes
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/OrgChangeStatus'
+      - name: kind
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/OrgChangeKind'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 200
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          minimum: 0
+      responses:
+        '200':
+          description: RLS-filtered page of the tenant's org changes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangePage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}:
+    get:
+      operationId: getOrgChange
+      summary: Read one org change
+      description: Out-of-scope rows are concealed as 404 (deny by omission).
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: The request with proposal, receipt, chain, and history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    patch:
+      operationId: updateOrgChangeDraft
+      summary: Edit an org-change draft
+      description: DRAFT/PRECHECKED only; any edit returns the request to DRAFT and marks the stored preflight receipt stale.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrgChangeDraftRequest'
+      responses:
+        '200':
+          description: Draft updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/preflight:
+    post:
+      operationId: preflightOrgChange
+      summary: Run the impact preflight
+      description: Computes the blocker/warning receipt in-transaction; a clean run promotes DRAFT to PRECHECKED, blockers hold DRAFT.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Receipt stored and returned inside the request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/submit:
+    post:
+      operationId: submitOrgChange
+      summary: Submit for SoD approval
+      description: Requires PRECHECKED; re-verifies the receipt in the submit transaction (stale or blocked conflicts) and seeds the ordered HR→finance→legal→executive chain.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Now IN_APPROVAL with four pending steps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/approval-steps/{stepId}/decision:
+    post:
+      operationId: decideOrgChangeApprovalStep
+      summary: Decide one approval step
+      description: Steps decide strictly in step order; the drafter can never decide (double SoD net via gov_approvals); a rejection ends the request as REJECTED.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: stepId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgChangeDecisionRequest'
+      responses:
+        '200':
+          description: Decision recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/effectuate:
+    post:
+      operationId: effectuateOrgChange
+      summary: Apply the approved change
+      description: Refused before the effective date (발효일). NEW/REORG replays the proposal atomically to APPLIED; DISSOLVE seeds the six settlement items and opens SETTLING.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Applied (or settling for a dissolve).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/settlement-items/{itemId}/complete:
+    post:
+      operationId: completeOrgChangeSettlementItem
+      summary: Complete one settlement item
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteOrgChangeSettlementItemRequest'
+      responses:
+        '200':
+          description: Item completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/archive:
+    post:
+      operationId: archiveOrgChange
+      summary: Archive a settled dissolve
+      description: Refused while any settlement item is open; replays the deferred dissolve ops inside the archive transaction, so uncleared dependents still roll the whole action back (참조 무결성).
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Archived.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-changes/{id}/cancel:
+    post:
+      operationId: cancelOrgChange
+      summary: Cancel a draft
+      description: DRAFT/PRECHECKED only; anything past submit resolves through the approval chain, never a cancel.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelOrgChangeRequest'
+      responses:
+        '200':
+          description: Cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-entities:
+    get:
+      operationId: listOrgEntities
+      summary: List group member entities (법인)
+      description: Active member orgs of every group the caller holds a live grant for; fails closed to an empty list without grants.
+      tags: [org]
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Entity list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrgEntitySummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+components:
+  schemas:
+    OrgChangeKind:
+      type: string
+      enum: [NEW, REORG, DISSOLVE]
+    OrgChangeStatus:
+      type: string
+      enum: [DRAFT, PRECHECKED, IN_APPROVAL, APPROVED, APPLIED, SETTLING, ARCHIVED, REJECTED, CANCELLED]
+    OrgChangeTargetKind:
+      type: string
+      enum: [ENTITY, REGION, BRANCH, SITE, ORG_UNIT]
+    OrgChangeApprovalRoleKey:
+      type: string
+      enum: [hr, finance, legal, executive]
+    OrgChangeStepDecision:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED]
+    OrgChangeSettlementKey:
+      type: string
+      enum: [TRANSFER_EMPLOYEES, POSITIONS, COST_CENTERS, CLOSE_OPEN_DOCS, ASSETS, PAYROLL_SOCIAL_FINAL]
+    OrgChangeTarget:
+      type: object
+      required: [kind, ref, label]
+      properties:
+        kind:
+          $ref: '#/components/schemas/OrgChangeTargetKind'
+        ref:
+          type: string
+          maxLength: 200
+        label:
+          type: string
+          maxLength: 200
+    OrgProposalOp:
+      type: object
+      description: One typed sandbox-diff operation, replayed in order at apply time. Discriminated by `op`.
+      required: [op]
+      discriminator:
+        propertyName: op
+      properties:
+        op:
+          type: string
+          enum: [CREATE_REGION, RENAME_REGION, DEACTIVATE_REGION, CREATE_BRANCH, RENAME_BRANCH, DEACTIVATE_BRANCH, CREATE_SITE, UPDATE_SITE, REASSIGN_ORG_UNIT]
+        name:
+          type: string
+          maxLength: 120
+        regionId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        siteId:
+          type: string
+          format: uuid
+        fromOrgUnit:
+          type: string
+          maxLength: 120
+        toOrgUnit:
+          type: string
+          maxLength: 120
+        scope:
+          type: object
+          required: [company]
+          properties:
+            company:
+              type: string
+              maxLength: 120
+    CreateOrgChangeRequest:
+      type: object
+      required: [kind, target, effectiveDate, reason, proposal]
+      properties:
+        kind:
+          $ref: '#/components/schemas/OrgChangeKind'
+        target:
+          $ref: '#/components/schemas/OrgChangeTarget'
+        effectiveDate:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        proposal:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/OrgProposalOp'
+        supersedesId:
+          type: string
+          format: uuid
+          description: A REJECTED request this revision supersedes.
+    UpdateOrgChangeDraftRequest:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/OrgChangeKind'
+        effectiveDate:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        proposal:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/OrgProposalOp'
+    OrgChangeDecisionRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVED, REJECTED]
+        memo:
+          type: string
+          maxLength: 2000
+    CompleteOrgChangeSettlementItemRequest:
+      type: object
+      properties:
+        memo:
+          type: string
+          maxLength: 2000
+    CancelOrgChangeRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4000
+    OrgChangePreflightBlocker:
+      type: object
+      required: [code, label, dependentKind, count]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        dependentKind:
+          type: string
+        count:
+          type: integer
+          format: int64
+    OrgChangePreflightWarning:
+      type: object
+      required: [code, label]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        dependentKind:
+          type: string
+        count:
+          type: integer
+          format: int64
+    OrgChangePreflightReport:
+      type: object
+      required: [computedAt, stale, blockers, warnings, headcount, dependentsTotal]
+      properties:
+        computedAt:
+          type: string
+          format: date-time
+        stale:
+          type: boolean
+          description: True when the draft changed after this receipt was computed; submit recomputes and never trusts a stale receipt.
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgChangePreflightBlocker'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgChangePreflightWarning'
+        headcount:
+          type: integer
+          format: int64
+        dependentsTotal:
+          type: integer
+          format: int64
+    OrgChangeApprovalStep:
+      type: object
+      required: [id, stepOrder, roleKey, decision]
+      properties:
+        id:
+          type: string
+          format: uuid
+        stepOrder:
+          type: integer
+          format: int32
+        roleKey:
+          $ref: '#/components/schemas/OrgChangeApprovalRoleKey'
+        decision:
+          $ref: '#/components/schemas/OrgChangeStepDecision'
+        decidedBy:
+          type: string
+          format: uuid
+        decidedAt:
+          type: string
+          format: date-time
+        memo:
+          type: string
+    OrgChangeSettlementItem:
+      type: object
+      required: [id, itemKey, label, done]
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemKey:
+          $ref: '#/components/schemas/OrgChangeSettlementKey'
+        label:
+          type: string
+          description: Server-issued display label (design §3.9.3).
+        done:
+          type: boolean
+        doneBy:
+          type: string
+          format: uuid
+        doneAt:
+          type: string
+          format: date-time
+        memo:
+          type: string
+    OrgChangeEvent:
+      type: object
+      required: [at, actor, action]
+      properties:
+        at:
+          type: string
+          format: date-time
+        actor:
+          type: string
+          format: uuid
+        action:
+          type: string
+        fromStatus:
+          type: string
+        toStatus:
+          type: string
+        reason:
+          type: string
+    OrgChangeSummary:
+      type: object
+      required: [id, code, kind, status, target, effectiveDate, reason, headcount, siteCount, teamCount, draftedBy, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          description: Server-issued display code `OC-YYYY-NNNN`.
+        kind:
+          $ref: '#/components/schemas/OrgChangeKind'
+        status:
+          $ref: '#/components/schemas/OrgChangeStatus'
+        target:
+          $ref: '#/components/schemas/OrgChangeTarget'
+        effectiveDate:
+          type: string
+          format: date
+        reason:
+          type: string
+        headcount:
+          type: integer
+          format: int64
+        siteCount:
+          type: integer
+          format: int64
+        teamCount:
+          type: integer
+          format: int64
+        draftedBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        supersedesId:
+          type: string
+          format: uuid
+    OrgChangeDetail:
+      allOf:
+      - $ref: '#/components/schemas/OrgChangeSummary'
+      - type: object
+        required: [proposal, approvalSteps, settlementItems, events]
+        properties:
+          proposal:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrgProposalOp'
+          preflight:
+            $ref: '#/components/schemas/OrgChangePreflightReport'
+          approvalSteps:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrgChangeApprovalStep'
+          settlementItems:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrgChangeSettlementItem'
+          events:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrgChangeEvent'
+    OrgChangePage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgChangeSummary'
+        total:
+          type: integer
+          format: int64
+    OrgEntitySummary:
+      type: object
+      required: [orgId, slug, name, status]
+      properties:
+        orgId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        status:
+          type: string

@@ -24,16 +24,16 @@ The feature components under `src/features/` are clean and well-tested — they 
 ## 1. Dependencies to Install
 
 ### Router
-Install `react-router` v8 (file-based or component routing, component mode is fine for this scale):
+Install `react-router` v8 (component routing is appropriate for this console):
 
 ```bash
-npm install react-router@^8
+npm install react-router@^8.3.0
 ```
 
 No other new runtime dependencies are required. `lucide-react` is already installed at `0.555.0`. `@fontsource/pretendard` is already installed. All shadcn-style primitives (`button`, `card`, `input`, `textarea`, `badge`) already exist in `src/components/ui/`.
 
 ### Router version note
-React Router v7 ships a `<BrowserRouter>` + `<Routes>` API identical to v6. Use `createBrowserRouter` + `RouterProvider` (the "data router" API) for cleaner loader patterns if preferred, but the simpler `<BrowserRouter>` approach is specified here to minimise scope.
+React Router v8 retains the declarative `<BrowserRouter>` + `<Routes>` API from `react-router`. This console intentionally stays in declarative mode; the DOM-specific `RouterProvider` data-router surface from `react-router/dom` is outside this migration's scope.
 
 ---
 
@@ -1125,7 +1125,7 @@ The following review fixes must survive the decomposition:
 
 ## 11. Implementation Order (Recommended)
 
-1. **Install react-router** — `npm install react-router@^8`
+1. **Install React Router** — `npm install react-router@^8.3.0`
 2. **Create `AuthContext`** (`src/context/auth.tsx`) with `useState` only; no storage yet. Wire up `main.tsx`.
 3. **Create `AppShell`** with stub sidebar (no active states yet) and topbar skeleton. Confirm layout renders.
 4. **Create `AppRouter`** with all routes. Confirm navigation works between stub pages.

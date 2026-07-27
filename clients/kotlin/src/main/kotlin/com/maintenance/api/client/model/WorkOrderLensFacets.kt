@@ -34,6 +34,8 @@ import kotlinx.serialization.Contextual
  *
  * @param status
  * @param priority
+ * @param maintenanceType
+ * @param maintenanceCause
  */
 @Serializable
 
@@ -43,7 +45,13 @@ data class WorkOrderLensFacets (
     val status: kotlin.collections.List<WorkOrderFacetBucket>,
 
     @SerialName(value = "priority")
-    val priority: kotlin.collections.List<WorkOrderFacetBucket>
+    val priority: kotlin.collections.List<WorkOrderFacetBucket>,
+
+    @SerialName(value = "maintenance_type")
+    val maintenanceType: kotlin.collections.List<WorkOrderFacetBucket>,
+
+    @SerialName(value = "maintenance_cause")
+    val maintenanceCause: kotlin.collections.List<WorkOrderFacetBucket>
 
 ) {
 

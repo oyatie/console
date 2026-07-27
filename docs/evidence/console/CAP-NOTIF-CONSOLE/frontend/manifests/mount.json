@@ -1,0 +1,38 @@
+{
+  "story": "STORY-NOTIF-001",
+  "module": "web/src/console/notif/",
+  "route": "/console/notif",
+  "screen_key": "notif",
+  "integrator_actions": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "add \"notif\" to MOUNTED_SCREEN_KEYS",
+      "note": "nav entry { screen: \"notif\", labelKey: \"console.shell.nav.notif\", icon: \"bell\" } ALREADY exists in the comms group (ungated); ko.console.shell.nav.notif already present"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "import { NotifScreenBody } from \"../notif\"; add SCREEN_REGISTRY entry `notif: NotifScreenBody`"
+    },
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "EXPOSED_SCREEN_KEYS UNCHANGED — stays [\"sales\"] (module lands DARK per ADR-0025)"
+    },
+    {
+      "file": "clients/ts (+kotlin/swift) regeneration",
+      "change": "after the backend lane's openapi.yaml merge, regenerate clients; then web/src/console/notif/notifApi.ts's RawClient escape hatch (markUnread, listByObject, listPolicies, upsertPolicy, deletePolicy) should be switched to typed client paths and the local wire types re-anchored to components[\"schemas\"]",
+      "note": "hand-written wire types remain structurally compatible in the interim; boundary-validated at decode time"
+    }
+  ],
+  "gate": "authenticated session only (all-employee /me/* surface; backend principal scoping is the authority; cross-user = 404)",
+  "exports": {
+    "registry_body": "NotifScreenBody (zero-prop, useAuth-bound)",
+    "screen": "NotifScreen (session-fenced props form)",
+    "route_contract": "NOTIF_ROUTE_CONTRACT_FIXTURE"
+  },
+  "deep_link_chain": {
+    "object_link": "GET /api/objects/{kind}/{id} head resolve -> in-module by-object drill (linkFilter) + TokenText code chips; unresolved/denied head -> plain text (deny-by-omission, no dead control)",
+    "screen_link": "consoleScreenPath(screen) navigation gated by isExposedScreenKey; unexposed screen -> ack-able non-link row",
+    "chokepoint": "web/src/console/notif/notifModel.ts rowTarget() + composer TokenText (§4-19)"
+  },
+  "comms_rail_note": "comms-rail badge should adopt the mute-aware summary/unread-count (NotificationCountsSummary now excludes muted); comms-rail-owned change — flagged, not edited (rail is a LIVE codex lane)"
+}

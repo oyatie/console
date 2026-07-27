@@ -2,10 +2,13 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import { useEffect, type ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, useLocation, useNavigate } from "react-router";
+import type { ConsoleAuthz, ScopeOption } from "./authz";
 
 import { AuthTestProvider } from "../../test/AuthTestProvider";
+import { useAuth } from "../../context/auth";
 import type { AuthSession } from "../../context/auth";
 import type { ConsoleApiClient } from "../../api/client";
 import { ConsoleApp } from "../ConsoleApp";
@@ -14,9 +17,14 @@ import { Sidebar } from "./Sidebar";
 import type { ThemeMode } from "./theme";
 
 const markConsoleRoute = vi.fn<(screen: string) => void>();
+const routerLocations: string[] = [];
 const server = setupServer(
   http.get("*/api/v1/ontology/object-types", () => HttpResponse.json([])),
   http.get("*/api/v1/workflow-studio/definitions", () => HttpResponse.json({ items: [] })),
+  http.get("*/api/messenger/threads", () => HttpResponse.json({ items: [] })),
+  http.get("*/api/v1/mail/threads", () => HttpResponse.json([])),
+  http.get("*/api/v1/me/notifications", () => HttpResponse.json({ items: [] })),
+  http.get("*/api/v1/notices", () => HttpResponse.json([])),
 );
 
 beforeAll(() => {
@@ -36,12 +44,41 @@ vi.mock("../rum/rum", () => ({
   },
 }));
 
+// Shell chrome is synchronous presentation over the session's deny-by-omission
+// grants. Keep it independent from the async authz transport, which is covered
+// by authz.ts tests and otherwise leaves a one-render empty shell in jsdom.
+vi.mock("./authz", () => {
+  return {
+    UNION_SCOPE_ID: "__union__",
+    useConsoleScopes: (unionLabel: string) => ({
+      options: [{ id: "__union__", label: unionLabel, memberIds: [], isUnion: true }] satisfies ScopeOption[],
+      loading: false,
+    }),
+    ConsoleAuthzProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+    useConsoleAuthz: () => {
+      const { session } = useAuth();
+      return {
+        grants: {
+          roles: session?.roles ?? [],
+          featureGrants: session?.feature_grants ?? [],
+        },
+        source: "jwt" as const,
+        ready: true,
+      } satisfies ConsoleAuthz;
+    },
+  };
+});
+
 function RouterProbe() {
   const location = useLocation();
   const navigate = useNavigate();
+  const renderedLocation = `${location.pathname}${location.search}${location.hash}`;
+  useEffect(() => {
+    routerLocations.push(renderedLocation);
+  }, [renderedLocation]);
   return (
     <>
-      <output data-router-location>{`${location.pathname}${location.search}${location.hash}`}</output>
+      <output data-router-location>{renderedLocation}</output>
       <button type="button" onClick={() => void navigate(-1)}>
         history back
       </button>
@@ -67,7 +104,8 @@ const ADMIN: AuthSession = {
   access_token: "t",
   display_name: "전성진",
   roles: ["ADMIN"],
-  org_id: "org-1",
+  org_id: "22222222-2222-4222-8222-222222222222",
+  user_id: "11111111-1111-4111-8111-111111111111",
 };
 
 const SUPER_ADMIN: AuthSession = {
@@ -75,9 +113,29 @@ const SUPER_ADMIN: AuthSession = {
   roles: ["SUPER_ADMIN"],
 };
 
+function stubViewport(width: number) {
+  vi.stubGlobal("matchMedia", (query: string): MediaQueryList => ({
+    matches:
+      (query === "(max-width: 767px)" && width <= 767) ||
+      (query === "(max-width: 1279px)" && width <= 1279),
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }) as MediaQueryList);
+}
+
 describe("ConsoleShell chrome", () => {
   beforeEach(() => {
     markConsoleRoute.mockClear();
+    routerLocations.length = 0;
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("renders the grouped nav, topbar and comms rail", () => {
@@ -94,6 +152,22 @@ describe("ConsoleShell chrome", () => {
     expect(screen.getByRole("complementary", { name: "커뮤니케이션" })).toBeInTheDocument();
     // screen body slot
     expect(screen.getByLabelText("화면 본문")).toBeInTheDocument();
+  });
+
+  it("logs out through the account menu and preserves the exact console destination for local role switching", async () => {
+    const user = userEvent.setup();
+    renderConsole(ADMIN, ["/console/attendance?tab=team#today"]);
+
+    await user.click(screen.getByRole("button", { name: "사용자 메뉴" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "다른 계정으로 전환" }),
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent(
+        "/login?next=%2Fconsole%2Fattendance%3Ftab%3Dteam%23today",
+      );
+    });
   });
 
   it("identity chip renders person + team · role from the self-profile (never a raw dev label)", async () => {
@@ -145,6 +219,197 @@ describe("ConsoleShell chrome", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "감사 로그" }));
     expect(rail).toHaveAttribute("data-cshell-rail-open", "true");
+  });
+
+  it("updates the desktop rail width from 336px to 300px after a resize without remounting", async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1600 });
+    stubViewport(1600);
+    renderConsole(ADMIN);
+    const rail = screen.getByRole("complementary", { name: "커뮤니케이션" });
+    expect(rail).toHaveStyle({ width: "336px" });
+
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1400 });
+    fireEvent(window, new Event("resize"));
+    await waitFor(() => {
+      expect(rail).toHaveStyle({ width: "300px" });
+    });
+
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: originalWidth });
+  });
+
+  it("promotes communication routes into the main panel and restores the rail state", async () => {
+    renderConsole(ADMIN, ["/console/messenger"]);
+
+    expect(screen.queryByRole("complementary", { name: "커뮤니케이션" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "커뮤니케이션 열기" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "통합 개요" }));
+    const rail = screen.getByRole("complementary", { name: "커뮤니케이션" });
+    expect(rail).toHaveAttribute("data-cshell-rail-open", "true");
+  });
+
+  it("suppresses the shell comms rail on the object explorer so its governed card is the only right rail", async () => {
+    renderConsole(ADMIN, ["/console/objectExplorer"]);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("화면 본문")).toHaveAttribute(
+        "data-cshell-screen",
+        "objectExplorer",
+      );
+    });
+    expect(
+      screen.queryByRole("complementary", { name: "커뮤니케이션" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens a server-linked messenger mention in the canonical registered screen URL", async () => {
+    server.use(
+      http.get("*/api/v1/me/notifications", () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: "33333333-3333-4333-8333-333333333333",
+              recipient_user_id: "11111111-1111-4111-8111-111111111111",
+              category: "메신저",
+              kind: "mention",
+              text: "배차 관제에서 회원님을 멘션했습니다",
+              link: { type: "object", kind: "messenger_thread", id: "44444444-4444-4444-8444-444444444444" },
+              unread: true,
+              created_at: "2026-07-03T08:50:00Z",
+              read_at: null,
+              resolved_at: null,
+              muted: false,
+            },
+          ],
+        }),
+      ),
+      http.get("*/api/v1/mail/threads", () => HttpResponse.json([])),
+    );
+    renderConsole(ADMIN, ["/console/audit"]);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: /배차 관제에서 회원님을 멘션했습니다/ }),
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent(
+        "/console/messenger?thread=44444444-4444-4444-8444-444444444444",
+      );
+    });
+  });
+
+  it("opens a server-linked mail row in MailScreen's canonical URL-backed detail route", async () => {
+    server.use(
+      http.get("*/api/v1/mail/threads", () =>
+        HttpResponse.json([
+          {
+            id: "77777777-7777-4777-8777-777777777777",
+            subject: "메일 연속성 확인",
+            last_message_at: "2026-07-03T08:50:00Z",
+            message_count: 1,
+            unread_count: 1,
+            has_attachments: false,
+            is_flagged: false,
+          },
+        ]),
+      ),
+    );
+    renderConsole(ADMIN, ["/console/audit"]);
+
+    await userEvent.click(await screen.findByText("메일 연속성 확인"));
+
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent(
+        "/console/mail?mail_thread=77777777-7777-4777-8777-777777777777&mail_view=detail",
+      );
+    });
+  });
+
+  it("promotes only the canonical notification-center and notice-list routes from the right rail", async () => {
+    server.use(
+      http.get("*/api/v1/me/notifications", () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: "78787878-7878-4787-8787-787878787878",
+              recipient_user_id: "11111111-1111-4111-8111-111111111111",
+              category: "알림",
+              kind: "feed",
+              text: "알림 센터에서 확인할 항목",
+              link: { type: "screen", screen: "notif" },
+              unread: true,
+              created_at: "2026-07-03T08:50:00Z",
+              read_at: null,
+              resolved_at: null,
+              muted: false,
+            },
+          ],
+        }),
+      ),
+    );
+    const notificationView = renderConsole(ADMIN, ["/console/audit"]);
+
+    await userEvent.click(await screen.findByRole("button", { name: /알림 센터에서 확인할 항목/ }));
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent("/console/notif");
+    });
+
+    notificationView.unmount();
+    renderConsole(ADMIN, ["/console/audit"]);
+    await userEvent.click(await screen.findByRole("button", { name: "공지 전체 보기" }));
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent("/console/board");
+    });
+  });
+
+  it("closes the mobile comms drawer before promoting a rail row into the main route", async () => {
+    stubViewport(390);
+    server.use(
+      http.get("*/api/v1/me/notifications", () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: "55555555-5555-4555-8555-555555555555",
+              recipient_user_id: "11111111-1111-4111-8111-111111111111",
+              category: "메신저",
+              kind: "mention",
+              text: "모바일 배차 관제 멘션",
+              link: { type: "object", kind: "messenger_thread", id: "66666666-6666-4666-8666-666666666666" },
+              unread: true,
+              created_at: "2026-07-03T08:50:00Z",
+              read_at: null,
+              resolved_at: null,
+              muted: false,
+            },
+          ],
+        }),
+      ),
+      http.get("*/api/v1/mail/threads", () => HttpResponse.json([])),
+    );
+    renderConsole(ADMIN, ["/console/audit"]);
+
+    await userEvent.click(screen.getByRole("button", { name: "커뮤니케이션 열기" }));
+    const drawer = screen.getByRole("dialog", { name: "커뮤니케이션" });
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(document.querySelector("main")).toHaveAttribute("inert");
+
+    await userEvent.click(
+      await within(drawer).findByRole("button", { name: /모바일 배차 관제 멘션/ }),
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent(
+        "/console/messenger?thread=66666666-6666-4666-8666-666666666666",
+      );
+    });
+    expect(screen.queryByRole("dialog", { name: "커뮤니케이션" })).not.toBeInTheDocument();
+    expect(document.querySelector("[data-cshell-drawer-backdrop]")).not.toBeInTheDocument();
+    expect(document.querySelector("main")).not.toHaveAttribute("inert");
+    expect(document.querySelector("main")).not.toHaveAttribute("aria-hidden");
+    expect(document.body.style.overflow).toBe("");
+    expect(screen.getByLabelText("화면 본문")).not.toHaveAttribute("aria-hidden");
+    expect(document.querySelector("main")).toHaveFocus();
   });
 
   it("nav clicks switch the active screen (aria-current)", () => {
@@ -214,11 +479,11 @@ describe("ConsoleShell chrome", () => {
       expect(document.querySelector("[data-router-location]")?.textContent).toBe(
         "/console/scheduled?keep=1#anchor",
       );
-      expect(screen.getByRole("tab", { name: "예약" })).toHaveAttribute(
-        "aria-selected",
-        "true",
-      );
+      expect(screen.getByRole("heading", { name: "예약 작업" })).toBeVisible();
     });
+    expect(routerLocations).not.toContain(
+      "/console/scheduled?keep=1&tab=monitors#anchor",
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "워크플로 스튜디오" }));
     await waitFor(() => {
@@ -249,18 +514,165 @@ describe("ConsoleShell chrome", () => {
   });
 
   it("collapses and expands the sidebar", () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1400 });
+    stubViewport(1400);
     renderConsole(ADMIN);
     const sidebar = document.querySelector("[data-cshell-sidebar]");
+    const main = document.querySelector("main");
     expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    expect(sidebar).toHaveStyle({ width: "236px" });
 
     fireEvent.click(screen.getByRole("button", { name: "메뉴 접기" }));
     expect(sidebar).toHaveAttribute("data-collapsed", "true");
+    expect(sidebar).toHaveStyle({ width: "62px" });
+    // The central band remains the flexible sibling, so the released 174px is
+    // immediately available to content rather than being held by a spacer.
+    expect(main).toHaveStyle({ flex: "1 1 auto" });
     // collapsed hides group headers + labels, but still keeps the theme switch reachable.
     expect(screen.queryByText("개요")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "밝은 테마" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "메뉴 펼치기" }));
     expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    expect(sidebar).toHaveStyle({ width: "236px" });
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: originalWidth });
+  });
+
+  it("uses a compact, non-dominant comms rail at tablet widths", () => {
+    stubViewport(1024);
+    renderConsole(ADMIN);
+
+    const rail = document.querySelector("[data-cshell-rail]");
+    expect(rail).not.toHaveAttribute("data-cshell-rail-open");
+    expect(screen.getByRole("button", { name: "커뮤니케이션 펼치기" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "커뮤니케이션 펼치기" }));
+    expect(rail).toHaveAttribute("data-cshell-rail-open", "true");
+    expect(rail).toHaveStyle({ width: "300px" });
+    expect(screen.getByRole("heading", { name: "커뮤니케이션" })).toBeVisible();
+  });
+
+  it("lets a compact sidebar expand to the full 236px navigation width", () => {
+    stubViewport(1024);
+    renderConsole(ADMIN);
+
+    const sidebar = document.querySelector("[data-cshell-sidebar]");
+    expect(sidebar).toHaveAttribute("data-collapsed", "true");
+    expect(sidebar).toHaveStyle({ width: "62px" });
+    expect(screen.queryByText("개요")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "메뉴 펼치기" }));
+    expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    expect(sidebar).toHaveStyle({ width: "236px" });
+    expect(screen.getByText("개요")).toBeInTheDocument();
+  });
+
+  it("keeps the 768px tablet composition and switches to modal drawers at 767px", async () => {
+    stubViewport(768);
+    const tablet = renderConsole(ADMIN);
+    expect(screen.queryByRole("button", { name: "메뉴 열기" })).not.toBeInTheDocument();
+    expect(document.querySelector("[data-cshell-rail]")).not.toHaveAttribute(
+      "data-cshell-rail-open",
+    );
+    tablet.unmount();
+
+    stubViewport(767);
+    renderConsole(ADMIN);
+    const sidebar = document.querySelector("[data-cshell-sidebar]");
+    expect(sidebar).toHaveAttribute("inert");
+    expect(sidebar).toHaveAttribute("aria-hidden", "true");
+    expect(document.querySelector("[data-cshell-rail]")).toHaveAttribute("inert");
+
+    const opener = screen.getByRole("button", { name: "메뉴 열기" });
+    const outside = screen.getByLabelText("검색 팔레트", { selector: "button" });
+    await userEvent.click(opener);
+    const dialog = screen.getByRole("dialog", { name: "주 메뉴" });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(document.querySelector("main")).toHaveAttribute("inert");
+    const themeButton = within(dialog).getByRole("button", { name: "밝은 테마" });
+    expect(themeButton).toHaveFocus();
+    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    expect(screen.queryByRole("dialog", { name: "검색 팔레트" })).not.toBeInTheDocument();
+    expect(themeButton).toHaveFocus();
+    expect(themeButton).toHaveStyle({ width: "44px", height: "44px" });
+    expect(within(dialog).getByRole("button", { name: "통합 개요" })).toHaveStyle({
+      minHeight: "44px",
+    });
+    expect(within(dialog).getByRole("button", { name: "메뉴 접기" })).toHaveStyle({
+      minHeight: "44px",
+    });
+
+    outside.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(themeButton).toHaveFocus();
+
+    await userEvent.click(screen.getByLabelText("패널 닫기"));
+    expect(opener).toHaveFocus();
+    expect(sidebar).toHaveAttribute("inert");
+  });
+
+  it.each([390, 320])("keeps mobile shell controls inside a %ipx viewport", async (width) => {
+    stubViewport(width);
+    renderConsole(ADMIN);
+    const root = document.querySelector("[data-cshell-root]");
+    expect(root).toHaveStyle({ overflowX: "hidden" });
+
+    await userEvent.click(screen.getByRole("button", { name: "커뮤니케이션 열기" }));
+    const rail = screen.getByRole("dialog", { name: "커뮤니케이션" });
+    const close = within(rail).getByRole("button", { name: "커뮤니케이션 접기" });
+    expect(close).toHaveFocus();
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    expect(screen.queryByRole("dialog", { name: "검색 팔레트" })).not.toBeInTheDocument();
+    expect(close).toHaveFocus();
+    expect(rail).toHaveStyle({ width: "86vw", maxWidth: "320px" });
+    expect(close).toHaveStyle({
+      width: "44px",
+      height: "44px",
+    });
+  });
+
+  it("opens exclusive mobile drawers, locks scrolling, returns focus, and preserves route state", async () => {
+    stubViewport(390);
+    renderConsole(ADMIN, ["/console/audit?keep=1#anchor"]);
+
+    const menu = screen.getByRole("button", { name: "메뉴 열기" });
+    const comms = screen.getByRole("button", { name: "커뮤니케이션 열기" });
+    await userEvent.click(menu);
+    const sidebar = document.querySelector("[data-cshell-sidebar]");
+    expect(sidebar).toHaveAttribute("data-cshell-drawer-open", "true");
+    expect(document.body.style.overflow).toBe("hidden");
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() => {
+      expect(sidebar).not.toHaveAttribute("data-cshell-drawer-open");
+    });
+    expect(menu).toHaveFocus();
+
+    await userEvent.click(menu);
+    await userEvent.click(screen.getByLabelText("패널 닫기"));
+    expect(menu).toHaveFocus();
+
+    await userEvent.click(comms);
+    expect(sidebar).not.toHaveAttribute("data-cshell-drawer-open");
+    expect(sidebar).toHaveAttribute("inert");
+    expect(document.querySelector("[data-cshell-rail]")).toHaveAttribute(
+      "data-cshell-drawer-open",
+      "true",
+    );
+
+    await userEvent.click(screen.getByLabelText("패널 닫기"));
+    expect(document.body.style.overflow).toBe("");
+    expect(comms).toHaveFocus();
+
+    await userEvent.click(menu);
+    await userEvent.click(screen.getByRole("button", { name: "통합 개요" }));
+    await waitFor(() => {
+      expect(document.querySelector("[data-router-location]")).toHaveTextContent(
+        "/console/overview?keep=1#anchor",
+      );
+    });
+    expect(sidebar).not.toHaveAttribute("data-cshell-drawer-open");
   });
 
   it("opens the scope switcher listing only the union of authorized entities", async () => {
@@ -338,5 +750,33 @@ describe("Sidebar badges", () => {
       <Sidebar {...base} collapsed badges={{ overview: { count: 150, tone: "neutral" } }} />,
     );
     expect(screen.queryByText("99+")).not.toBeInTheDocument();
+  });
+
+  it("uses the people screen alias without a missing-i18n warning", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    render(
+      <Sidebar
+        {...base}
+        groups={[
+          {
+            labelKey: "console.shell.nav.groups.hr",
+            labelId: "hr",
+            items: [
+              {
+                screen: "people",
+                labelKey: "console.shell.nav.hr",
+                icon: "users",
+              },
+            ],
+          },
+        ]}
+        activeScreen="people"
+        collapsed={false}
+        badges={{}}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "인사 관리" })).toBeInTheDocument();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

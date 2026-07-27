@@ -507,7 +507,7 @@ export interface paths {
         };
         /**
          * List branch-scoped work orders
-         * @description Returns branch-scoped work orders sorted by priority and target due date. The server accepts repeated `status`, `status[]`, `priority`, and `priority[]` query keys, plus comma-separated values. `around_work_order_id` searches around a seed work order by returning the seed plus branch/RLS-visible work orders sharing customer, site, or equipment. The response includes a branch/RLS-scoped object-set lens with aggregates, facets, due-date histogram buckets, and customer/site listograms for drill-to-act dashboards.
+         * @description Returns branch-scoped work orders sorted by priority and target due date. The server accepts repeated `status`, `status[]`, `priority`, and `priority[]` query keys, plus comma-separated values. `branch_id` narrows results within the caller's existing branch/RLS scope. `around_work_order_id` searches around a seed work order by returning the seed plus branch/RLS-visible work orders sharing customer, site, or equipment. The response includes a branch/RLS-scoped object-set lens with aggregates, facets, due-date histogram buckets, and customer/site listograms for drill-to-act dashboards.
          */
         get: operations["listWorkOrders"];
         put?: never;
@@ -581,6 +581,23 @@ export interface paths {
         put?: never;
         /** Complete a scheduled regular inspection round */
         post: operations["completeInspectionRound"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inspections/my-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the authenticated mechanic's assigned regular inspection schedules */
+        get: operations["listMyInspectionSchedules"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -784,6 +801,30 @@ export interface paths {
          */
         get: operations["listEmployees"];
         put?: never;
+        /**
+         * Create an employee and governed employment profile
+         * @description HR directory managers only. Creates the stable employee identity, employment profile, ONBOARD lifecycle event, and audit record atomically. Reusing an idempotency key replays the same payload; a different payload conflicts.
+         */
+        post: operations["createEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read privileged employee employment detail
+         * @description HR directory managers only. Includes compensation and normalized phone; the ordinary directory never includes these fields.
+         */
+        get: operations["getEmployeeDetail"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -904,7 +945,7 @@ export interface paths {
         };
         /**
          * Read HR data readiness counters
-         * @description Returns import, payroll, annual-leave, and attendance readiness counters for org-wide HR operators without exposing raw workbook rows.
+         * @description Returns import, payroll, annual-leave, and attendance readiness counters for org-wide HR operators without exposing raw workbook rows. `payroll.active_close_runs` counts only STAGED, BLOCKED_LEGAL_GATE, READY_FOR_REVIEW, and APPROVED payroll runs; terminal ISSUED and VOID history is excluded.
          */
         get: operations["getHrReadinessSummary"];
         put?: never;
@@ -1431,6 +1472,156 @@ export interface paths {
         put?: never;
         /** Register or refresh a mobile device binding */
         post: operations["registerMobileDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/regulations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List RLS-scoped regulation impacts */
+        get: operations["listComplianceRegulations"];
+        put?: never;
+        /** Create an audited regulation impact */
+        post: operations["createComplianceRegulation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/obligations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List RLS-scoped compliance obligations */
+        get: operations["listComplianceObligations"];
+        put?: never;
+        /** Create an audited obligation and optional regulation links */
+        post: operations["createComplianceObligation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/obligation-regulation-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an audited obligation-to-regulation link
+         * @description Relation links are write-only in this catalog API; no relation-list route is implemented.
+         */
+        post: operations["linkComplianceObligationRegulation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/frameworks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List compliance frameworks */
+        get: operations["listComplianceFrameworks"];
+        put?: never;
+        /** Create an audited compliance framework */
+        post: operations["createComplianceFramework"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/framework-controls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List controls for one framework */
+        get: operations["listComplianceFrameworkControls"];
+        put?: never;
+        /** Create an audited framework control */
+        post: operations["createComplianceFrameworkControl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/control-obligation-coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an audited control-to-obligation coverage link
+         * @description Relation links are write-only in this catalog API; no coverage-list route is implemented.
+         */
+        post: operations["linkComplianceControlObligation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/evidence-bindings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List compliance evidence bindings */
+        get: operations["listComplianceEvidenceBindings"];
+        put?: never;
+        /** Create an audited evidence binding */
+        post: operations["createComplianceEvidenceBinding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compliance/evidence-bindings/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept a proposed compliance evidence binding
+         * @description Applies the immutable PROPOSED-to-ACCEPTED lifecycle action. The server preserves evidence identity and provenance and records an audit snapshot.
+         */
+        post: operations["acceptComplianceEvidenceBinding"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2916,7 +3107,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List a branch-scoped purchase-request queue
+         * @description Returns only purchase requests visible to the caller in the required branch. Repeat the plain `status` query key to filter lifecycle states; `status[]`, comma-delimited values, unknown keys, and malformed values are rejected. The response is an offset page with required metadata.
+         */
+        get: operations["listPurchaseRequests"];
         put?: never;
         /** Attach a 거래명세표 evidence record and open a purchase request */
         post: operations["createPurchaseRequest"];
@@ -3096,6 +3291,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/console/dispatch/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the bounded operational dispatch queue */
+        get: operations["listConsoleDispatchQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/p1-dispatches/{dispatchId}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List manager-authorized ranked dispatch candidates */
+        get: operations["listP1DispatchCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/p1-dispatches/{dispatchId}/responses": {
         parameters: {
             query?: never;
@@ -3103,7 +3332,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List authorized P1 dispatch responses */
+        get: operations["listP1DispatchResponses"];
         put?: never;
         /** Accept or decline a P1 dispatch broadcast */
         post: operations["respondP1Dispatch"];
@@ -3417,6 +3647,26 @@ export interface paths {
          * @description Computes requested-vs-current planned custom-role assignment deltas and feature grants for a visible user. This is an impact-preview surface only: it does not write assignments and does not publish runtime authorization.
          */
         post: operations["previewPolicyAssignments"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/directory/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List people visible through the caller's effective directory scope
+         * @description Returns the tenant people directory after intersecting live branch membership with EmployeeDirectoryRead grants. A requested branch_id narrows that effective scope; it never widens it. Results are ordered by display_name then id, and branch_ids are redacted to the resulting scope.
+         */
+        get: operations["listDirectoryPeople"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3954,6 +4204,26 @@ export interface paths {
          * @description Super-admin endpoint that overrides all individual new-console opt-ins and records an audit event.
          */
         post: operations["updateConsoleLegacyKillSwitch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/workbench": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the authenticated principal's bounded operations workbench
+         * @description Composes the native action-inbox, owner-scoped todo, and collaboration calendar reads under one captured request instant. Each source remains independently authorized and may return a redacted denied or unavailable envelope; the aggregate never owns mutations or duplicates source data.
+         */
+        get: operations["getMyWorkbench"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5341,6 +5611,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflow-runs/for-object": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List visible workflow runs for one authorized object
+         * @description Read-only exact-pair bridge for work_order and support_ticket subjects. The server authorizes the native subject first, then returns only workflow runs visible to the same principal. Unknown or invisible cursors fail with the same validation code and do not disclose foreign rows.
+         */
+        get: operations["listWorkflowRunsForObject"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflow-runs/{run_id}/post-finalization-rejection": {
         parameters: {
             query?: never;
@@ -5437,6 +5727,26 @@ export interface paths {
          * @description Group inbox via role_key, personal inbox via assignee=me. Policy-bearing rows are gated legacy-enforce with an inert Cedar shadow and denied rows are OMITTED (deny-by-omission), never returned as a 403. Requires role_key or assignee=me.
          */
         get: operations["listWorkflowTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approval-inbox/bulk-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List canonical bulk-approval tasks
+         * @description A keyset-paginated, authorization-filtered personal inbox. Only explicit approval_decide workflow tasks are exposed; omitted rows do not affect page cardinality.
+         */
+        get: operations["listBulkApprovalInbox"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6696,7 +7006,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Edit a DRAFT notice (NoticeManage only); every field optional, audience replaced whole, 409 once published */
+        patch: operations["updateNoticeDraft"];
         trace?: never;
     };
     "/api/v1/notices/{id}/publish": {
@@ -6941,10 +7252,3333 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/benefit-catalog/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant-scoped legal or optional benefit catalog items */
+        get: operations["listBenefitCatalogItems"];
+        put?: never;
+        /** Create an audited benefit catalog item */
+        post: operations["createBenefitCatalogItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/benefit-catalog/items/{benefit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one tenant-visible benefit catalog item */
+        get: operations["getBenefitCatalogItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an audited benefit catalog item */
+        patch: operations["updateBenefitCatalogItem"];
+        trace?: never;
+    };
+    "/api/v1/benefit-catalog/items/{benefit_id}/tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace audited tier rows without physical delete */
+        put: operations["replaceBenefitCatalogTiers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/benefit-catalog/items/{benefit_id}/conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace audited eligibility condition rows without physical delete */
+        put: operations["replaceBenefitCatalogConditions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the facilities cases the caller may observe */
+        get: operations["listFacilitiesCases"];
+        put?: never;
+        /** Create or replay an idempotent due facilities case */
+        post: operations["createDueFacilitiesCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one facilities case with its derived service readback */
+        get: operations["getFacilitiesCase"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Schedule a due facilities case for service */
+        post: operations["triageFacilitiesCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign a scheduled facilities case to a technician */
+        post: operations["assignFacilitiesCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start assigned facilities execution after safety acknowledgement */
+        post: operations["startFacilitiesCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit execution evidence and await customer acceptance */
+        post: operations["submitFacilitiesExecution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/acceptance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record customer acceptance or rejection of completed facilities work */
+        post: operations["decideFacilitiesAcceptance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facilities/cases/{case_id}/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record facilities energy or cost observations and return the case readback */
+        post: operations["recordFacilitiesObservation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/asns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a pilot ASN for one branch warehouse */
+        post: operations["createLogisticsAsn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/asns/{asn_id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record an idempotent full or partial receipt; over-receipt is rejected */
+        post: operations["receiveLogisticsAsn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/asns/{asn_id}/putaway": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Put received stock away into the pilot warehouse */
+        post: operations["putawayLogisticsAsn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/fulfillments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Atomically reserve available pilot stock; never oversells */
+        post: operations["releaseLogisticsFulfillment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/fulfillments/{fulfillment_id}/pick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pick reserved stock, recording explicit short-pick when applicable */
+        post: operations["pickLogisticsFulfillment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/fulfillments/{fulfillment_id}/pack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pack a picked or short-picked fulfillment */
+        post: operations["packLogisticsFulfillment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/fulfillments/{fulfillment_id}/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dispatch one packed carrier and vehicle leg */
+        post: operations["dispatchLogisticsShipment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/shipments/{shipment_id}/pod": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify recipient-confirmed immutable evidence and derive calendar-time SLA */
+        post: operations["verifyLogisticsPod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logistics/shipments/{shipment_id}/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Settle one KRW operational transport cost; no finance or GL posting */
+        post: operations["settleLogisticsOperationalCost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List 3R units, newest first (org-wide observe) */
+        get: operations["listEquipment3rUnits"];
+        put?: never;
+        /** Register a serialized rental unit (org-unique serial) */
+        post: operations["registerEquipment3rUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/units/{unit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Unit detail with active case and open disposition links */
+        get: operations["getEquipment3rUnit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/units/{unit_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transition history for the unit, its cases, and dispositions, newest first */
+        get: operations["getEquipment3rUnitHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List rental cases, newest first (org-wide observe) */
+        get: operations["listEquipment3rRentalCases"];
+        put?: never;
+        /** Idempotently open a rental-case quote against an unsold unit */
+        post: operations["quoteEquipment3rRentalCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rental-case detail with approval, legs, inspections, and assessment */
+        get: operations["getEquipment3rRentalCase"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Four-eyes approval; APPROVED reserves the unit (single winner) */
+        post: operations["decideEquipment3rApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the physical delivery leg of an approved case */
+        post: operations["dispatchEquipment3rCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/handover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Customer handover with immutable evidence; unit goes ON_RENT */
+        post: operations["handoverEquipment3rCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Append an on-rent inspection or maintenance record */
+        post: operations["inspectEquipment3rCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the unit return; unit enters assessment */
+        post: operations["returnEquipment3rCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/rental-cases/{case_id}/assessment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post the return assessment; closes the case and opens the disposition */
+        post: operations["assessEquipment3rReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/equipment-3r/dispositions/{disposition_id}/completion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete a repair/refurbish/resale disposition; no GL posting occurs */
+        post: operations["completeEquipment3rDisposition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProductionPlans"];
+        put?: never;
+        post: operations["createProductionPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/capacity-slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProductionCapacitySlots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/source-ingress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ingest one idempotent machine-owned production source fact
+         * @description Machine-only Basic ingress. The client id is a service-principal UUID and the password is a one-time 32-byte secret. Tenant, branch, principal, and source system identity are derived server-side; the source id/version tuple is immutable and idempotent.
+         */
+        post: operations["ingestProductionSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/source-systems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a production source system and disclose its first credential once
+         * @description RoleManage-only registration of a tenant-scoped non-human source principal. Registration, rotation, and disable actions are audited server-side.
+         */
+        post: operations["registerProductionSourceSystem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/source-systems/{source_system_id}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate a production source system credential at the expected generation */
+        post: operations["rotateProductionSourceSystem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/source-systems/{source_system_id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable a production source system at the expected generation */
+        post: operations["disableProductionSourceSystem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProductionPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/plans/{plan_id}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["releaseProductionPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/production/plans/{plan_id}/operations/{operation_id}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordProductionOperation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listConsultingEngagements"];
+        put?: never;
+        post: operations["createConsultingEngagement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getConsultingEngagement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createConsultingDiagnostic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/findings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createConsultingFinding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/initiatives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createConsultingInitiative"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["transitionConsultingEngagement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createConsultingBenefitObservation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consulting/engagements/{engagement_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listConsultingEngagementHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List branch-scoped attendance exceptions */
+        get: operations["listAttendanceExceptions"];
+        put?: never;
+        /** Raise an idempotent attendance exception */
+        post: operations["raiseAttendanceException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/me/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List only the signed principal's linked employee exceptions */
+        get: operations["listMyAttendanceExceptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/me/week52": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the signed principal's linked employee Week-52 projection */
+        get: operations["getMyAttendanceWeek52"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/exceptions/{exception_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one branch-authorized attendance exception */
+        get: operations["getAttendanceException"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/exceptions/{exception_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve an exception with an auditable reason */
+        post: operations["resolveAttendanceException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/substitutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List branch-scoped substitute assignments */
+        get: operations["listAttendanceSubstitutions"];
+        put?: never;
+        /** Create an idempotent substitute assignment */
+        post: operations["assignAttendanceSubstitute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/substitution-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List eligible substitute candidates for one covered shift */
+        get: operations["listAttendanceSubstitutionCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/substitutions/{substitution_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a substitute assignment */
+        post: operations["cancelAttendanceSubstitution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/closes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List branch-scoped close records */
+        get: operations["listAttendanceCloses"];
+        put?: never;
+        /** Commit a server-validated monthly close */
+        post: operations["closeAttendanceMonth"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/closes/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate close gates without writing a close */
+        post: operations["preflightAttendanceClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/closes/{close_id}/amendments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Append an idempotent post-close amendment */
+        post: operations["amendAttendanceClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/week52": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List weekly working-hour projections */
+        get: operations["listAttendanceWeek52"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/week52/acks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Idempotently acknowledge a week-52 adjustment */
+        post: operations["acknowledgeAttendanceWeek52"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant-scoped inventory items */
+        get: operations["listInventoryItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one tenant-authorized inventory item */
+        get: operations["getInventoryItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items/{item_id}/consumptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List immutable item-consumption events */
+        get: operations["listInventoryConsumptions"];
+        put?: never;
+        /** Record an idempotent, non-negative inventory consumption */
+        post: operations["consumeInventoryItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items/{item_id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the tenant- and branch-scoped unified ISSUE, RECEIPT, and ADJUSTMENT ledger */
+        get: operations["listInventoryMovements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items/{item_id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Idempotently record a positive receipt and its before delta after ledger row */
+        post: operations["receiveInventoryItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/mrp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Deterministic movement-derived MRP with explicit zero inbound and reservation values until those modules exist */
+        get: operations["getInventoryMrp"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant- and branch-scoped cycle counts */
+        get: operations["listInventoryCycleCounts"];
+        put?: never;
+        /** Open a cycle count in an authorized branch and stock location */
+        post: operations["openInventoryCycleCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts/{count_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one authorized cycle count with count lines and applied adjustment movement ids */
+        get: operations["getInventoryCycleCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts/{count_id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upsert a DRAFT count line; a nonzero variance requires a typed reason */
+        post: operations["upsertInventoryCycleCountLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts/{count_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a nonempty DRAFT cycle count using optimistic version control */
+        post: operations["submitInventoryCycleCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts/{count_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Distinct checker approves idempotent adjustments or rejects with a memo */
+        post: operations["decideInventoryCycleCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/cycle-counts/{count_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a DRAFT or SUBMITTED count without mutating ledger history */
+        post: operations["cancelInventoryCycleCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/tickets/{id}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bind a support ticket to the field object chain (customer site and/or dispatched work order)
+         * @description Requires assignee_manage on the ticket branch (untriaged tickets require cross-branch authority). Linking a site to an untriaged CUSTOMER ticket also sets its branch, and customer_id is denormalized from the site. A linked work order must be dispatched to the ticket's linked site. Each body field distinguishes an absent field (leave the link untouched) from an explicit null (clear the link).
+         */
+        post: operations["linkSupportTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/tickets/{id}/acceptance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record the customer's acceptance verdict for a RESOLVED ticket (audited closure evidence)
+         * @description Requires assignee_manage on the ticket branch and an Idempotency-Key header. CUSTOMER_ACCEPTED drives RESOLVED to CLOSED; CUSTOMER_DECLINED requires a note, drives RESOLVED to IN_PROGRESS, and the note becomes a customer-visible comment. A replay with the same key and the same request returns the stored acceptance; the same key with a different request is a conflict. accepted_by is a business fact and is never logged.
+         */
+        post: operations["recordSupportTicketAcceptance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/field/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List branch-scoped customer sites with their issue, visit, and SLA rollups
+         * @description The field read gate is work_order_read_all, checked server-side because the overview carries customer contact and geo data. Every count derives from the same aggregation as the rows.
+         */
+        get: operations["listFieldSites"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/field/sites/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a field site with its SLA rollup and traversable ticket, work-order, attendance, and acceptance history
+         * @description Scope resolution runs before the feature check, so an out-of-scope site is a 404 and never a 403. Each history list is capped at 50, most relevant first.
+         */
+        get: operations["getFieldSite"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/work-orders/{workOrderId}/settlement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch the live (non-VOID) cost settlement of a work order */
+        get: operations["getWorkOrderSettlement"];
+        put?: never;
+        /** Open a DRAFT cost settlement on a report-submitted, admin-review, or final-completed order */
+        post: operations["createWorkOrderSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settlements/{settlementId}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a DRAFT settlement for review (creator or completion reviewer) */
+        post: operations["submitSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settlements/{settlementId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Four-eyes review of a SUBMITTED settlement; the reviewer must differ from the submitter */
+        post: operations["reviewSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settlements/{settlementId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void a DRAFT or SUBMITTED settlement (completion reviewer holding an admin-tier role; reason required) */
+        post: operations["voidSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notices/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 수령확인 receipts drill for one notice (NoticeManage only); acknowledged=false is the outstanding chase list */
+        get: operations["listNoticeReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/close-preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Attendance-close preflight for a payroll run (audited read; EXECUTIVE/SUPER_ADMIN org-wide) */
+        get: operations["getPayrollRunClosePreflight"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/close-attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Attested attendance close (STAGED/BLOCKED_LEGAL_GATE/READY_FOR_REVIEW to ATTENDANCE_CLOSED); a blocked preflight is a 409 carrying the failing checks in error.details */
+        post: operations["closePayrollRunAttendance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Per-line draft calculation (ATTENDANCE_CLOSED only); a line without a verified gross + NTS source row stays blocked with truthful blockers, income tax is never estimated */
+        post: operations["calculatePayrollRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exception review queue for a run (audited read; OPEN rows first, then danger/warn/info, then age) */
+        get: operations["listPayrollRunExceptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve one exception with CONFIRM or HOLD (HOLD requires a reason and carries the row to the next run of the series); the run must be CALCULATED */
+        post: operations["resolvePayrollRunException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a CALCULATED run for approval; fail-closed while any exception is still OPEN (409 carries the open count in error.details.open) */
+        post: operations["submitPayrollRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** APPROVE or REJECT a SUBMITTED run under maker-checker separation of duties (the decider must not be the submitter) */
+        post: operations["decidePayrollRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw a REJECTED run back to CALCULATED, clearing the submit/decide columns so a fresh maker-checker pair is admissible */
+        post: operations["withdrawPayrollRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/schedule-disbursement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Schedule the transfer for an APPROVED run (one disbursement per run) */
+        post: operations["schedulePayrollDisbursement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/disbursement/attest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Operator attestation FSM SCHEDULED to SUBMITTED_TO_BANK to PAID or FAILED (reason required) and FAILED back to SCHEDULED; no bank API exists, these are operator records */
+        post: operations["attestPayrollDisbursement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/issue-payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue payslips for a PAID run into each recipient's inbox vault; hard-gated by the registered 노무사/세무사 release-gate record (409 legal_gate otherwise) */
+        post: operations["issuePayrollPayslips"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payroll/runs/{id}/payslip-delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Payslip delivery and acknowledgement readback for a run (audited read) */
+        get: operations["getPayrollPayslipDelivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/by-object": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aggregate the authenticated user's notifications by source object, newest activity first */
+        get: operations["listMyNotificationObjectGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/{id}/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one of the authenticated user's notifications unread again (read toggle) */
+        post: operations["markMyNotificationUnread"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notification-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the authenticated user's notification routing policies, newest first */
+        get: operations["listMyNotificationPolicies"];
+        /** Upsert a mute policy for the authenticated user (idempotent per target) */
+        put: operations["upsertMyNotificationPolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notification-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete (= unmute) one of the authenticated user's notification policies */
+        delete: operations["deleteMyNotificationPolicy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List org changes
+         * @description RLS-filtered page of the tenant's org-change requests, newest first.
+         */
+        get: operations["listOrgChanges"];
+        put?: never;
+        /**
+         * Draft an org change (조직 개편 기안)
+         * @description Creates a DRAFT org-change request. Requires an Idempotency-Key; a replay of the same body under the same key returns the existing request with 200, a different body under the same key conflicts. A revision may supersede an existing request only when that request is REJECTED.
+         */
+        post: operations["createOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read one org change
+         * @description Out-of-scope rows are concealed as 404 (deny by omission).
+         */
+        get: operations["getOrgChange"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit an org-change draft
+         * @description DRAFT or PRECHECKED only; every edit returns the request to DRAFT, so a stored preflight receipt must be re-run before submit. Omitted fields are left unchanged.
+         */
+        patch: operations["updateOrgChangeDraft"];
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run the impact preflight
+         * @description DRAFT or PRECHECKED only. Computes the blocker/warning receipt in-transaction; a clean run promotes the request to PRECHECKED, blockers hold it at DRAFT.
+         */
+        post: operations["preflightOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit for SoD approval
+         * @description Requires PRECHECKED; recomputes the receipt inside the submit transaction (a stale or blocked receipt conflicts) and seeds the ordered hr → finance → legal → executive approval chain.
+         */
+        post: operations["submitOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/approval-steps/{stepId}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decide one approval step
+         * @description IN_APPROVAL only. Steps decide strictly in step order, the drafter can never decide (a second SoD net is enforced by the gov_approvals CHECK), and a rejection ends the request as REJECTED.
+         */
+        post: operations["decideOrgChangeApprovalStep"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/effectuate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply the approved change
+         * @description APPROVED only, and never before the effective date (발효일). NEW and REORG replay the proposal atomically to APPLIED; DISSOLVE seeds the six settlement items and opens SETTLING.
+         */
+        post: operations["effectuateOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/settlement-items/{itemId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete one settlement item
+         * @description SETTLING only; an already-completed item conflicts.
+         */
+        post: operations["completeOrgChangeSettlementItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive a settled dissolve
+         * @description SETTLING only, and refused while any settlement item is open. The deferred dissolve ops replay inside the archive transaction, so uncleared dependents roll the whole action back (참조 무결성).
+         */
+        post: operations["archiveOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-changes/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a draft
+         * @description DRAFT or PRECHECKED only; anything past submit resolves through the approval chain, never a cancel.
+         */
+        post: operations["cancelOrgChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/org-entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List group member entities (법인)
+         * @description Active member orgs of every group the caller holds a live grant for; fails closed to an empty list when the caller holds no grant.
+         */
+        get: operations["listOrgEntities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List job postings with per-stage applicant counts (recruiting_read or recruiting_manage) */
+        get: operations["listRecruitPostings"];
+        put?: never;
+        /** Create a draft job posting (JP- code); recruiting_manage only */
+        post: operations["createRecruitPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings/{postingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Posting detail with its non-PII applicant pipeline rows */
+        get: operations["getRecruitPosting"];
+        /** Edit a DRAFT posting in place (409 for any other status); CAS on expected_updated_at */
+        put: operations["updateRecruitPosting"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings/{postingId}/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read-only publish checklist evaluation for a DRAFT posting (recruiting_manage) */
+        post: operations["preflightRecruitPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings/{postingId}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a draft (atomic preflight re-evaluation plus exposure attest; fail-closed) */
+        post: operations["publishRecruitPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings/{postingId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close a PUBLISHED posting (archive-not-delete); CAS on expected_updated_at */
+        post: operations["closeRecruitPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/postings/{postingId}/applicants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recruiter intake — register an applicant (APL- code) on a PUBLISHED posting */
+        post: operations["createRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Applicant detail (audited PII read) with offer versions and the stage timeline */
+        get: operations["getRecruitApplicant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Advance one stage (INTERVIEW→OFFER is offer-only and OFFER→HIRED hire-only — both 422) */
+        post: operations["advanceRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/assess": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the interview assessment at the INTERVIEW stage (offer prerequisite) */
+        post: operations["assessRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/hold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set or clear the hold flag */
+        post: operations["holdRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/request-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Flag supplementary documents as requested (no request body) */
+        post: operations["requestRecruitApplicantDocuments"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject with an enum reason — archives the applicant into the talent pool */
+        post: operations["rejectRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/reinstate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reinstate a rejected applicant to their prior stage (no request body) */
+        post: operations["reinstateRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extend an offer (assessment-gated; one live offer per applicant) */
+        post: operations["extendRecruitOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/applicants/{applicantId}/hire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hire — one transaction through the HR-owned employee core
+         * @description Requires recruiting_manage AND employee_directory_manage. Creates the employee through the same idempotent core as People & Workforce (idempotency key recruit-hire-{applicantId}), links the applicant (HIRED), and increments the posting fill count. The latest offer must be ACCEPTED. POOL_DAILY postings return 422 POOL_REGISTRATION_UNAVAILABLE.
+         */
+        post: operations["hireRecruitApplicant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/offers/{offerId}/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust a live offer — writes an immutable v+1 row and SUPERSEDEs the prior one */
+        post: operations["adjustRecruitOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/offers/{offerId}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw a live offer; the applicant returns to INTERVIEW */
+        post: operations["withdrawRecruitOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/offers/{offerId}/record-reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the candidate's reply on a live offer (ACCEPTED or DECLINED) */
+        post: operations["recordRecruitOfferReply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List evaluation cycles */
+        get: operations["listEvaluationCycles"];
+        put?: never;
+        /** Create a draft evaluation cycle */
+        post: operations["createEvaluationCycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an evaluation cycle with enrolled subjects */
+        get: operations["getEvaluationCycle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the next transition's blocking and advisory conditions */
+        get: operations["getEvaluationCyclePreflight"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open a draft cycle after its server-side preflight passes */
+        post: operations["openEvaluationCycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}/start-calibration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move an open cycle into calibration after preflight */
+        post: operations["startEvaluationCalibration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finalize a calibrated cycle after preflight */
+        post: operations["finalizeEvaluationCycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/cycles/{cycle_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive a finalized cycle after preflight */
+        post: operations["archiveEvaluationCycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enroll an employee in a draft evaluation cycle */
+        post: operations["addEvaluationSubject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects/{subject_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an evaluation subject
+         * @description Submit-only callers receive 404 for subjects not assigned to them; read-capable callers can read visible subjects.
+         */
+        get: operations["getEvaluationSubject"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects/{subject_id}/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace all typed goals for an assigned or managed subject */
+        put: operations["replaceEvaluationGoals"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects/{subject_id}/reviews/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save a draft self or manager review
+         * @description Review kind is lowercase `self` or `manager`; unassigned submitters receive 404.
+         */
+        put: operations["saveEvaluationReview"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects/{subject_id}/reviews/{kind}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a saved self or manager review
+         * @description Submission is terminal; the backend enforces grade/evidence gates and returns conflicts for unmet gates or replays.
+         */
+        post: operations["submitEvaluationReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/subjects/{subject_id}/calibrate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a calibrated grade for an evaluation subject */
+        post: operations["calibrateEvaluationSubject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/my-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the authenticated submitter's evaluation tasks */
+        get: operations["listMyEvaluationTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluation/employees/{employee_id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a managed employee's finalized evaluation ledger */
+        get: operations["listEmployeeEvaluationReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recruiting/talent-pool": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rejected-applicant archive (talent pool) */
+        get: operations["listRecruitTalentPool"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @enum {string} */
+        EvaluationCycleKind: "REGULAR" | "PROBATION";
+        /** @enum {string} */
+        EvaluationCycleStage: "DRAFT" | "OPEN" | "CALIBRATION" | "FINALIZED" | "ARCHIVED";
+        /** @enum {string} */
+        EvaluationCycleTransition: "open" | "start_calibration" | "finalize" | "archive";
+        /** @enum {string} */
+        EvaluationGrade: "S" | "A" | "B" | "C" | "D";
+        /** @enum {string} */
+        EvaluationReviewKind: "SELF" | "MANAGER";
+        /** @enum {string} */
+        EvaluationReviewStatus: "DRAFT" | "SUBMITTED";
+        /** @enum {string} */
+        EvaluationMetricKind: "KPI" | "ATTENDANCE" | "TASK" | "CUSTOM";
+        /** @enum {string} */
+        EvaluationEvidenceKind: "ATTENDANCE" | "WORK_ORDER" | "APPROVAL" | "KPI" | "OTHER";
+        /** @enum {string} */
+        EvaluationSubjectState: "ENROLLED" | "IN_REVIEW" | "REVIEWED" | "CALIBRATED" | "FINALIZED";
+        CreateEvaluationCycleRequest: {
+            name: string;
+            kind: components["schemas"]["EvaluationCycleKind"];
+            period_label: string;
+            due_date: components["schemas"]["Date"];
+        };
+        AddEvaluationSubjectRequest: {
+            cycle_id: components["schemas"]["Uuid"];
+            employee_id: components["schemas"]["Uuid"];
+            manager_user_id: components["schemas"]["Uuid"];
+        };
+        EvaluationGoalInput: {
+            title: string;
+            metric_kind: components["schemas"]["EvaluationMetricKind"];
+            target_label: string;
+            /** Format: int16 */
+            weight_pct: number;
+        };
+        ReplaceEvaluationGoalsRequest: {
+            goals: components["schemas"]["EvaluationGoalInput"][];
+        };
+        EvaluationEvidenceLinkInput: {
+            object_kind: components["schemas"]["EvaluationEvidenceKind"];
+            object_ref: string;
+            label: string;
+        };
+        SaveEvaluationReviewRequest: {
+            grade?: components["schemas"]["EvaluationGrade"] | null;
+            note?: string | null;
+            /** @default [] */
+            evidence_links: components["schemas"]["EvaluationEvidenceLinkInput"][];
+        };
+        CalibrateEvaluationSubjectRequest: {
+            final_grade: components["schemas"]["EvaluationGrade"];
+            reason?: string | null;
+        };
+        EvaluationCycleSummary: {
+            id: components["schemas"]["Uuid"];
+            name: string;
+            kind: components["schemas"]["EvaluationCycleKind"];
+            period_label: string;
+            due_date: components["schemas"]["Date"];
+            stage: components["schemas"]["EvaluationCycleStage"];
+            /** Format: int64 */
+            subjects_total: number;
+            /** Format: int64 */
+            manager_submitted: number;
+            /** Format: int64 */
+            self_submitted: number;
+            /** Format: int64 */
+            calibrated: number;
+            /** Format: int64 */
+            finalized: number;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        EvaluationCyclePage: {
+            items: components["schemas"]["EvaluationCycleSummary"][];
+            /** Format: int64 */
+            total: number;
+        };
+        EvaluationUnitProgress: {
+            org_unit: string | null;
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            manager_submitted: number;
+        };
+        EvaluationSubjectSummary: {
+            id: components["schemas"]["Uuid"];
+            cycle_id: components["schemas"]["Uuid"];
+            employee_id: components["schemas"]["Uuid"];
+            employee_name: string;
+            org_unit: string | null;
+            manager_user_id: components["schemas"]["Uuid"];
+            state: components["schemas"]["EvaluationSubjectState"];
+            final_grade: components["schemas"]["EvaluationGrade"] | null;
+            rv_code: string | null;
+        };
+        EvaluationCycleDetail: {
+            id: components["schemas"]["Uuid"];
+            name: string;
+            kind: components["schemas"]["EvaluationCycleKind"];
+            period_label: string;
+            due_date: components["schemas"]["Date"];
+            stage: components["schemas"]["EvaluationCycleStage"];
+            /** Format: int64 */
+            subjects_total: number;
+            /** Format: int64 */
+            manager_submitted: number;
+            /** Format: int64 */
+            self_submitted: number;
+            /** Format: int64 */
+            calibrated: number;
+            /** Format: int64 */
+            finalized: number;
+            created_at: components["schemas"]["Timestamp"];
+            opened_at: components["schemas"]["Timestamp"] | null;
+            calibration_started_at: components["schemas"]["Timestamp"] | null;
+            finalized_at: components["schemas"]["Timestamp"] | null;
+            archived_at: components["schemas"]["Timestamp"] | null;
+            created_by: components["schemas"]["Uuid"];
+            progress_by_unit: components["schemas"]["EvaluationUnitProgress"][];
+            subjects: components["schemas"]["EvaluationSubjectSummary"][];
+        };
+        EvaluationGoal: {
+            id: components["schemas"]["Uuid"];
+            title: string;
+            metric_kind: components["schemas"]["EvaluationMetricKind"];
+            target_label: string;
+            /** Format: int16 */
+            weight_pct: number;
+            /** Format: int32 */
+            sort_order: number;
+        };
+        EvaluationEvidenceLink: {
+            id: components["schemas"]["Uuid"];
+            object_kind: components["schemas"]["EvaluationEvidenceKind"];
+            object_ref: string;
+            label: string;
+            /** Format: int32 */
+            sort_order: number;
+        };
+        EvaluationReview: {
+            id: components["schemas"]["Uuid"];
+            subject_id: components["schemas"]["Uuid"];
+            kind: components["schemas"]["EvaluationReviewKind"];
+            status: components["schemas"]["EvaluationReviewStatus"];
+            evaluator_user_id: components["schemas"]["Uuid"];
+            grade: components["schemas"]["EvaluationGrade"] | null;
+            note: string | null;
+            evidence_links: components["schemas"]["EvaluationEvidenceLink"][];
+            submitted_at: components["schemas"]["Timestamp"] | null;
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        EvaluationSubjectDetail: {
+            id: components["schemas"]["Uuid"];
+            cycle_id: components["schemas"]["Uuid"];
+            employee_id: components["schemas"]["Uuid"];
+            employee_name: string;
+            org_unit: string | null;
+            manager_user_id: components["schemas"]["Uuid"];
+            state: components["schemas"]["EvaluationSubjectState"];
+            final_grade: components["schemas"]["EvaluationGrade"] | null;
+            rv_code: string | null;
+            goals: components["schemas"]["EvaluationGoal"][];
+            reviews: components["schemas"]["EvaluationReview"][];
+            calibrated_grade: components["schemas"]["EvaluationGrade"] | null;
+            calibration_reason: string | null;
+            calibrated_by: components["schemas"]["Uuid"] | null;
+            calibrated_at: components["schemas"]["Timestamp"] | null;
+            finalized_at: components["schemas"]["Timestamp"] | null;
+        };
+        EvaluationPreflightItem: {
+            code: string;
+            message: string;
+            subject_id: components["schemas"]["Uuid"] | null;
+        };
+        EvaluationPreflightReport: {
+            next_transition: components["schemas"]["EvaluationCycleTransition"] | null;
+            blockers: components["schemas"]["EvaluationPreflightItem"][];
+            advisories: components["schemas"]["EvaluationPreflightItem"][];
+        };
+        EvaluationTaskItem: {
+            subject_id: components["schemas"]["Uuid"];
+            cycle_id: components["schemas"]["Uuid"];
+            cycle_name: string;
+            due_date: components["schemas"]["Date"];
+            employee_id: components["schemas"]["Uuid"];
+            employee_name: string;
+            kind: components["schemas"]["EvaluationReviewKind"];
+            review_status: components["schemas"]["EvaluationReviewStatus"] | null;
+        };
+        EvaluationTaskPage: {
+            items: components["schemas"]["EvaluationTaskItem"][];
+        };
+        EvaluationLedgerEntry: {
+            rv_code: string;
+            cycle_id: components["schemas"]["Uuid"];
+            cycle_name: string;
+            period_label: string;
+            final_grade: components["schemas"]["EvaluationGrade"];
+            finalized_at: components["schemas"]["Timestamp"];
+            subject_id: components["schemas"]["Uuid"];
+        };
+        EvaluationLedgerPage: {
+            items: components["schemas"]["EvaluationLedgerEntry"][];
+        };
+        BenefitCatalogScope: {
+            /** @enum {string} */
+            scope_type: "ORG" | "BRANCH" | "SITE" | "TEAM" | "ROLE" | "EMPLOYEE_SEGMENT";
+            scope_ref?: components["schemas"]["Uuid"];
+            branch_id?: components["schemas"]["Uuid"];
+            site_id?: components["schemas"]["Uuid"];
+        };
+        BenefitCatalogTier: {
+            id?: components["schemas"]["Uuid"];
+            benefit_id?: components["schemas"]["Uuid"];
+            tier_basis: string;
+            tier_key: string;
+            value_label: string;
+            /** Format: int64 */
+            amount_won?: number | null;
+            limit_period?: string | null;
+            criteria: {
+                [key: string]: unknown;
+            };
+            display_order: number;
+        };
+        BenefitCatalogCondition: {
+            id?: components["schemas"]["Uuid"];
+            benefit_id?: components["schemas"]["Uuid"];
+            condition_kind: string;
+            operator: string;
+            condition_key: string;
+            condition_value: {
+                [key: string]: unknown;
+            };
+            display_label: string;
+            cedar_policy_ref?: string | null;
+            display_order: number;
+        };
+        /** @description Tenant and actor are derived from the verified bearer token; neither can be supplied by callers. */
+        BenefitCatalogCreateRequest: {
+            scope: components["schemas"]["BenefitCatalogScope"];
+            /** @enum {string} */
+            category: "legal" | "extra";
+            name: string;
+            coverageLabel: string;
+            coveredCount?: number | null;
+            costLabel: string;
+            /** Format: int64 */
+            estimatedAnnualCostWon?: number | null;
+            employerRateBps?: number | null;
+            note?: string | null;
+            legalBasis?: string | null;
+            relatedDomain?: string | null;
+            relatedObjectId?: components["schemas"]["Uuid"];
+            /** Format: date */
+            effectiveOn?: string | null;
+            /** Format: date */
+            retiresOn?: string | null;
+            /** @default 0 */
+            displayOrder: number;
+            metadata?: {
+                [key: string]: unknown;
+            };
+            tiers?: components["schemas"]["BenefitCatalogTier"][];
+            conditions?: components["schemas"]["BenefitCatalogCondition"][];
+        };
+        /** @description Mutable catalog fields only; tenant, actor, identifiers, and lifecycle state are server-owned. */
+        BenefitCatalogUpdateRequest: {
+            /** @enum {string} */
+            category?: "legal" | "extra";
+            name?: string;
+            scope?: components["schemas"]["BenefitCatalogScope"];
+            coverageLabel?: string;
+            coveredCount?: number | null;
+            costLabel?: string;
+            /** Format: int64 */
+            estimatedAnnualCostWon?: number | null;
+            employerRateBps?: number | null;
+            note?: string | null;
+            legalBasis?: string | null;
+            relatedDomain?: string | null;
+            relatedObjectId?: components["schemas"]["Uuid"];
+            /** Format: date */
+            effectiveOn?: string | null;
+            /** Format: date */
+            retiresOn?: string | null;
+            displayOrder?: number;
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        BenefitCatalogReplaceTiersRequest: {
+            tiers: components["schemas"]["BenefitCatalogTier"][];
+        };
+        BenefitCatalogReplaceConditionsRequest: {
+            conditions: components["schemas"]["BenefitCatalogCondition"][];
+        };
+        BenefitCatalogLifecycleBinding: {
+            /** @enum {string} */
+            object_type: "benefit_catalog_item";
+            object_id: components["schemas"]["Uuid"];
+            current_state?: string | null;
+            legal_hold?: boolean | null;
+            /** Format: date-time */
+            retention_until?: string | null;
+        };
+        BenefitCatalogItemPage: {
+            items: components["schemas"]["BenefitCatalogItem"][];
+            limit: number;
+            offset: number;
+            total: number;
+        };
+        BenefitCatalogItem: {
+            id: components["schemas"]["Uuid"];
+            benefit_code: string;
+            /** @enum {string} */
+            category: "legal" | "extra";
+            name: string;
+            scope: components["schemas"]["BenefitCatalogScope"];
+            coverage_label: string;
+            covered_count?: number | null;
+            cost_label: string;
+            /** Format: int64 */
+            estimated_annual_cost_won?: number | null;
+            employer_rate_bps?: number | null;
+            note?: string | null;
+            legal_basis?: string | null;
+            related_domain?: string | null;
+            related_object_id?: components["schemas"]["Uuid"];
+            /** Format: date */
+            effective_on?: string | null;
+            /** Format: date */
+            retires_on?: string | null;
+            tiers: components["schemas"]["BenefitCatalogTier"][];
+            conditions: components["schemas"]["BenefitCatalogCondition"][];
+            lifecycle: components["schemas"]["BenefitCatalogLifecycleBinding"];
+        };
+        ConsultingEngagement: {
+            id: components["schemas"]["Uuid"];
+            customer_id: components["schemas"]["Uuid"];
+            customer_document_id?: components["schemas"]["Uuid"];
+            ontology_instance_id?: components["schemas"]["Uuid"];
+            title: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PROPOSED" | "APPROVED" | "IMPLEMENTED" | "MEASURED" | "SUSTAINED" | "CORRECTIVE";
+            approval_id?: components["schemas"]["Uuid"];
+            workflow_execution_id?: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            version: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ConsultingEngagementPage: {
+            items: components["schemas"]["ConsultingEngagement"][];
+            limit: number;
+            offset: number;
+            total: number;
+        };
+        ConsultingEngagementDetail: components["schemas"]["ConsultingEngagement"] & {
+            diagnostics: components["schemas"]["ConsultingDiagnostic"][];
+            findings: components["schemas"]["ConsultingFinding"][];
+            initiatives: components["schemas"]["ConsultingInitiative"][];
+            observations: components["schemas"]["ConsultingBenefitObservation"][];
+        };
+        ConsultingEngagementCreateRequest: {
+            customerId: components["schemas"]["Uuid"];
+            customerDocumentId?: components["schemas"]["Uuid"];
+            ontologyInstanceId?: components["schemas"]["Uuid"];
+            title: string;
+            idempotencyKey: string;
+        };
+        ConsultingDiagnostic: {
+            id: components["schemas"]["Uuid"];
+            summary: string;
+            document_id?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ConsultingDiagnosticCreateRequest: {
+            summary: string;
+            documentId?: components["schemas"]["Uuid"];
+        };
+        ConsultingFinding: {
+            id: components["schemas"]["Uuid"];
+            diagnostic_id: components["schemas"]["Uuid"];
+            statement: string;
+            evidence_id: components["schemas"]["Uuid"];
+            document_id?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ConsultingFindingCreateRequest: {
+            diagnosticId: components["schemas"]["Uuid"];
+            statement: string;
+            evidenceId: components["schemas"]["Uuid"];
+            documentId?: components["schemas"]["Uuid"];
+        };
+        ConsultingInitiative: {
+            id: components["schemas"]["Uuid"];
+            finding_id: components["schemas"]["Uuid"];
+            title: string;
+            hypothesis: string;
+            kpi_definition_id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            target_direction: "INCREASE" | "DECREASE";
+            /** Format: date-time */
+            created_at: string;
+        };
+        ConsultingInitiativeCreateRequest: {
+            findingId: components["schemas"]["Uuid"];
+            title: string;
+            hypothesis: string;
+            kpiDefinitionId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            targetDirection: "INCREASE" | "DECREASE";
+        };
+        ConsultingBenefitObservation: {
+            id: components["schemas"]["Uuid"];
+            initiative_id: components["schemas"]["Uuid"];
+            kpi_definition_id: components["schemas"]["Uuid"];
+            evidence_id: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            observed_at: string;
+            note: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        ConsultingObservationCreateRequest: {
+            initiativeId: components["schemas"]["Uuid"];
+            kpiDefinitionId: components["schemas"]["Uuid"];
+            evidenceId: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            observedAt: string;
+            note: string;
+        };
+        ConsultingTransitionRequest: {
+            /** @enum {string} */
+            toStatus: "PROPOSED" | "APPROVED" | "IMPLEMENTED" | "MEASURED" | "SUSTAINED" | "CORRECTIVE";
+            /** Format: int64 */
+            expectedVersion: number;
+            approvalId?: components["schemas"]["Uuid"];
+            reason: string;
+        };
+        ConsultingHistoryEntry: {
+            id: components["schemas"]["Uuid"];
+            event_type: string;
+            from_status?: string | null;
+            to_status?: string | null;
+            /** Format: int64 */
+            version: number;
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            occurred_at: string;
+        };
+        /** @enum {string} */
+        ComplianceRiskLevel: "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+        /** @enum {string} */
+        RegulationImpactStatus: "DRAFT" | "ACTIVE" | "SUPERSEDED" | "ARCHIVED";
+        /** @enum {string} */
+        ObligationType: "LEGAL" | "REGULATORY" | "CONTRACTUAL" | "INTERNAL_POLICY" | "CONTROL_REQUIREMENT";
+        /** @enum {string} */
+        ComplianceScopeKind: "ORG" | "BRANCH" | "SITE" | "TEAM" | "ROLE";
+        /** @enum {string} */
+        ObligationStatus: "DRAFT" | "ACTIVE" | "WAIVED" | "SUPERSEDED" | "ARCHIVED";
+        /** @enum {string} */
+        ReviewCadence: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "EVENT_DRIVEN";
+        /** @enum {string} */
+        FrameworkKind: "LEGAL_BASELINE" | "INTERNAL_CONTROL" | "CUSTOMER_CONTROL" | "SECURITY_STANDARD" | "SAFETY_STANDARD" | "AUDIT_PROGRAM";
+        /** @enum {string} */
+        FrameworkStatus: "DRAFT" | "ACTIVE" | "RETIRED" | "ARCHIVED";
+        /** @enum {string} */
+        ControlType: "PREVENTIVE" | "DETECTIVE" | "CORRECTIVE" | "DIRECTIVE" | "COMPENSATING";
+        /** @enum {string} */
+        ControlCadence: "CONTINUOUS" | "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY" | "ANNUAL" | "EVENT_DRIVEN";
+        /** @enum {string} */
+        ControlStatus: "DRAFT" | "ACTIVE" | "RETIRED" | "ARCHIVED";
+        /** @enum {string} */
+        ObligationRegulationRelationship: "DERIVED_FROM" | "AMENDED_BY" | "SUPERSEDED_BY" | "INTERPRETS" | "EVIDENCES";
+        /** @enum {string} */
+        CoverageLevel: "PRIMARY" | "PARTIAL" | "SUPPORTING" | "COMPENSATING";
+        /** @enum {string} */
+        CoverageStatus: "ACTIVE" | "RETIRED";
+        /** @enum {string} */
+        EvidenceTargetType: "audit_event" | "evidence_media" | "workflow_run" | "workflow_task" | "object_link" | "governance_finding" | "external_document" | "future_ev_object";
+        /** @enum {string} */
+        EvidenceBindingStatus: "PROPOSED" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "RETRACTED";
+        /** @enum {string} */
+        EvidenceConfidence: "LOW" | "MEDIUM" | "HIGH" | "SYSTEM";
+        /** @description ORG carries no IDs; BRANCH requires matching branch_id and scope_ref; SITE requires branch_id and matching site_id/scope_ref. TEAM and ROLE are not accepted for writes yet. */
+        ComplianceScope: {
+            kind: components["schemas"]["ComplianceScopeKind"];
+            /** Format: uuid */
+            scope_ref?: string | null;
+            /** Format: uuid */
+            branch_id?: string | null;
+            /** Format: uuid */
+            site_id?: string | null;
+        };
+        RegulationImpact: {
+            id: components["schemas"]["Uuid"];
+            code: string;
+            title: string;
+            jurisdiction: string;
+            regulator?: string | null;
+            citation: string;
+            /** Format: uri */
+            source_url?: string | null;
+            impact_area: string;
+            impact_summary: string;
+            risk_level: components["schemas"]["ComplianceRiskLevel"];
+            status: components["schemas"]["RegulationImpactStatus"];
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            /** Format: date */
+            review_due_on?: string | null;
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        ComplianceObligation: {
+            id: components["schemas"]["Uuid"];
+            code: string;
+            title: string;
+            description: string;
+            obligation_type: components["schemas"]["ObligationType"];
+            scope: components["schemas"]["ComplianceScope"];
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            severity: components["schemas"]["ComplianceRiskLevel"];
+            status: components["schemas"]["ObligationStatus"];
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            /** @enum {string|null} */
+            review_cadence?: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "EVENT_DRIVEN" | null;
+            /** Format: date */
+            next_review_on?: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        ObligationRegulationLink: {
+            id: components["schemas"]["Uuid"];
+            obligation_id: components["schemas"]["Uuid"];
+            regulation_impact_id: components["schemas"]["Uuid"];
+            relationship: components["schemas"]["ObligationRegulationRelationship"];
+            rationale?: string | null;
+            created_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+        };
+        ComplianceFramework: {
+            id: components["schemas"]["Uuid"];
+            code: string;
+            name: string;
+            version_label: string;
+            framework_kind: components["schemas"]["FrameworkKind"];
+            status: components["schemas"]["FrameworkStatus"];
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        ComplianceControl: {
+            id: components["schemas"]["Uuid"];
+            framework_id: components["schemas"]["Uuid"];
+            control_key: string;
+            title: string;
+            objective: string;
+            control_type: components["schemas"]["ControlType"];
+            /** @enum {string|null} */
+            cadence?: "CONTINUOUS" | "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY" | "ANNUAL" | "EVENT_DRIVEN" | null;
+            status: components["schemas"]["ControlStatus"];
+            evidence_requirements: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        ControlObligationCoverage: {
+            id: components["schemas"]["Uuid"];
+            control_id: components["schemas"]["Uuid"];
+            obligation_id: components["schemas"]["Uuid"];
+            coverage_level: components["schemas"]["CoverageLevel"];
+            coverage_rationale?: string | null;
+            status: components["schemas"]["CoverageStatus"];
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        EvidenceBinding: {
+            id: components["schemas"]["Uuid"];
+            control_id: components["schemas"]["Uuid"];
+            /** Format: uuid */
+            obligation_id?: string | null;
+            evidence_target_type: components["schemas"]["EvidenceTargetType"];
+            evidence_target_id: string;
+            /** Format: uuid */
+            source_audit_event_id?: string | null;
+            status: components["schemas"]["EvidenceBindingStatus"];
+            confidence: components["schemas"]["EvidenceConfidence"];
+            /** Format: date-time */
+            collected_at?: string | null;
+            /** Format: uuid */
+            collected_by?: string | null;
+            /** Format: date */
+            valid_from?: string | null;
+            /** Format: date */
+            valid_to?: string | null;
+            hash_sha256?: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            created_by: components["schemas"]["Uuid"];
+            updated_by: components["schemas"]["Uuid"];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        RegulationImpactPage: {
+            items: components["schemas"]["RegulationImpact"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        ComplianceObligationPage: {
+            items: components["schemas"]["ComplianceObligation"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        ComplianceFrameworkPage: {
+            items: components["schemas"]["ComplianceFramework"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        ComplianceControlPage: {
+            items: components["schemas"]["ComplianceControl"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        EvidenceBindingPage: {
+            items: components["schemas"]["EvidenceBinding"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        CreateRegulationImpactRequest: {
+            title: string;
+            jurisdiction: string;
+            regulator?: string | null;
+            citation: string;
+            /** Format: uri */
+            source_url?: string | null;
+            impact_area: string;
+            impact_summary: string;
+            risk_level: components["schemas"]["ComplianceRiskLevel"];
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            /** Format: date */
+            review_due_on?: string | null;
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        RegulationLinkRequest: {
+            regulation_impact_id: components["schemas"]["Uuid"];
+            relationship: components["schemas"]["ObligationRegulationRelationship"];
+            rationale?: string | null;
+        };
+        CreateComplianceObligationRequest: {
+            title: string;
+            description: string;
+            obligation_type: components["schemas"]["ObligationType"];
+            scope: components["schemas"]["ComplianceScope"];
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            severity: components["schemas"]["ComplianceRiskLevel"];
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            /** @enum {string|null} */
+            review_cadence?: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "EVENT_DRIVEN" | null;
+            /** Format: date */
+            next_review_on?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /** @description Omit to create no regulation links; the server treats omission as an empty list. */
+            regulation_links?: components["schemas"]["RegulationLinkRequest"][];
+        };
+        LinkObligationRegulationRequest: {
+            obligation_id: components["schemas"]["Uuid"];
+            regulation_impact_id: components["schemas"]["Uuid"];
+            relationship: components["schemas"]["ObligationRegulationRelationship"];
+            rationale?: string | null;
+        };
+        CreateComplianceFrameworkRequest: {
+            name: string;
+            version_label: string;
+            framework_kind: components["schemas"]["FrameworkKind"];
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            /** Format: date */
+            effective_from?: string | null;
+            /** Format: date */
+            effective_to?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        CreateComplianceControlRequest: {
+            framework_id: components["schemas"]["Uuid"];
+            control_key: string;
+            title: string;
+            objective: string;
+            control_type: components["schemas"]["ControlType"];
+            /** @enum {string|null} */
+            cadence?: "CONTINUOUS" | "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY" | "ANNUAL" | "EVENT_DRIVEN" | null;
+            evidence_requirements?: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            owner_user_id?: string | null;
+        };
+        LinkControlObligationRequest: {
+            control_id: components["schemas"]["Uuid"];
+            obligation_id: components["schemas"]["Uuid"];
+            coverage_level: components["schemas"]["CoverageLevel"];
+            coverage_rationale?: string | null;
+        };
+        CreateEvidenceBindingRequest: {
+            control_id: components["schemas"]["Uuid"];
+            /** Format: uuid */
+            obligation_id?: string | null;
+            evidence_target_type: components["schemas"]["EvidenceTargetType"];
+            evidence_target_id: string;
+            /** Format: uuid */
+            source_audit_event_id?: string | null;
+            confidence: components["schemas"]["EvidenceConfidence"];
+            /** Format: date-time */
+            collected_at?: string | null;
+            /** Format: uuid */
+            collected_by?: string | null;
+            /** Format: date */
+            valid_from?: string | null;
+            /** Format: date */
+            valid_to?: string | null;
+            hash_sha256?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
         /** @description A self-service leave-request filing. The subject employee and branch are NOT accepted here — they are resolved from the authenticated caller. */
         LeaveCreateRequest: {
             /**
@@ -7614,10 +11248,14 @@ export interface components {
             symptom: string;
             customer_request?: string;
             target_due_at?: components["schemas"]["Timestamp"];
+            maintenance_type?: components["schemas"]["MaintenanceType"];
+            maintenance_cause?: components["schemas"]["MaintenanceCause"];
         };
         UpdateWorkOrderIntakeRequest: {
             symptom?: string;
             customer_request?: string;
+            maintenance_type?: components["schemas"]["MaintenanceType"];
+            maintenance_cause?: components["schemas"]["MaintenanceCause"];
         };
         AssignWorkOrderRequest: {
             assignments: {
@@ -7818,6 +11456,23 @@ export interface components {
             resolved_at: string | null;
             /** Format: date-time */
             closed_at: string | null;
+            /**
+             * Format: uuid
+             * @description Linked customer site (the field object chain); null until the ticket is linked.
+             */
+            site_id: string | null;
+            site_name: string | null;
+            /**
+             * Format: uuid
+             * @description Denormalized from the linked site on link; null until the ticket is linked.
+             */
+            customer_id: string | null;
+            customer_name: string | null;
+            /**
+             * Format: uuid
+             * @description Work order dispatched for the visit; null until the ticket is linked.
+             */
+            work_order_id: string | null;
         };
         SupportTicketComment: {
             id: components["schemas"]["Uuid"];
@@ -8169,6 +11824,27 @@ export interface components {
             form_payload: {
                 [key: string]: unknown;
             };
+        };
+        BulkApprovalCapability: {
+            decidable: boolean;
+            /** @enum {string} */
+            reason?: "CLAIMED_BY_ANOTHER_USER";
+        };
+        BulkApprovalTask: {
+            task_id: components["schemas"]["Uuid"];
+            run_id: components["schemas"]["Uuid"];
+            waiting_key: string;
+            title: string;
+            assignee_role_key?: string;
+            status: string;
+            claimed_by?: components["schemas"]["Uuid"];
+            due_at?: components["schemas"]["Timestamp"];
+            bulk_decision: components["schemas"]["BulkApprovalCapability"];
+        };
+        BulkApprovalInboxResponse: {
+            items: components["schemas"]["BulkApprovalTask"][];
+            has_more: boolean;
+            next_cursor?: string;
         };
         StartWorkflowRunResponse: {
             run: components["schemas"]["WorkflowRunSummary"];
@@ -8550,6 +12226,34 @@ export interface components {
             /** Format: int64 */
             offset: number;
         };
+        CreateEmployeeRequest: {
+            employee_number: string;
+            name: string;
+            company: string;
+            /** @enum {string} */
+            employment_type: "REGULAR" | "CONTRACT" | "PART_TIME" | "INTERN";
+            /** @description Phone number normalized by the server to E.164. */
+            phone: string;
+            org_unit: string;
+            position: string;
+            site: string;
+            home_branch_id: components["schemas"]["Uuid"];
+            /** @description Canonical non-negative KRW NUMERIC(14,2) decimal; only returned by privileged detail. */
+            base_pay: string;
+            idempotency_key: string;
+        };
+        EmployeeEmploymentDetail: {
+            /** @enum {string} */
+            employment_type: "REGULAR" | "CONTRACT" | "PART_TIME" | "INTERN";
+            phone_e164: string;
+            base_pay: string;
+            /** @enum {string} */
+            currency: "KRW";
+        };
+        EmployeeDetail: {
+            employee: components["schemas"]["Employee"];
+            employment: components["schemas"]["EmployeeEmploymentDetail"];
+        };
         EmployeeLifecycleSignoffs: {
             /** @description Confirms the employee was notified of personal-data processing for this HR action. */
             privacy_notice_ack: boolean;
@@ -8912,6 +12616,8 @@ export interface components {
             status: components["schemas"]["WorkOrderStatus"];
             priority: components["schemas"]["PriorityLevel"];
             result_type: components["schemas"]["WorkResultType"];
+            maintenance_type: null | components["schemas"]["MaintenanceType"];
+            maintenance_cause: null | components["schemas"]["MaintenanceCause"];
             /** Format: date-time */
             target_due_at: string | null;
             created_at: components["schemas"]["Timestamp"];
@@ -8950,10 +12656,22 @@ export interface components {
             overdue_open_count: number;
             /** Format: int64 */
             unassigned_count: number;
+            /**
+             * Format: double
+             * @description Share (0..1) of closed preventive orders that reached FINAL_COMPLETED no later than their target due date; null when the filtered set has no basis.
+             */
+            preventive_on_time_rate: number | null;
+            /**
+             * Format: double
+             * @description Mean minutes from the first IN_PROGRESS transition to the first REPORT_SUBMITTED transition (OT-13 MTTR); null when no order has completed that span.
+             */
+            mttr_minutes: number | null;
         };
         WorkOrderLensFacets: {
             status: components["schemas"]["WorkOrderFacetBucket"][];
             priority: components["schemas"]["WorkOrderFacetBucket"][];
+            maintenance_type: components["schemas"]["WorkOrderFacetBucket"][];
+            maintenance_cause: components["schemas"]["WorkOrderFacetBucket"][];
         };
         WorkOrderFacetBucket: {
             value: string;
@@ -9084,6 +12802,8 @@ export interface components {
             approval_line: components["schemas"]["ApprovalStepSummary"][];
             status_history: components["schemas"]["StatusHistorySummary"][];
             evidence: components["schemas"]["EvidenceSummary"][];
+            /** @description The live (non-VOID) cost settlement of this order, if one exists. */
+            settlement: null | components["schemas"]["SettlementSummary"];
         };
         SyncBatchRequest: {
             sync_id: string;
@@ -9547,6 +13267,8 @@ export interface components {
             status: components["schemas"]["WorkOrderStatus"];
             priority: components["schemas"]["PriorityLevel"];
             result_type: components["schemas"]["WorkResultType"];
+            maintenance_type: null | components["schemas"]["MaintenanceType"];
+            maintenance_cause: null | components["schemas"]["MaintenanceCause"];
             evidence_verified: boolean;
         };
         TargetChangeRequestSummary: {
@@ -9775,6 +13497,8 @@ export interface components {
              * @description When a producer's resolve-by-link sweep closed this notification; null while open.
              */
             resolved_at: string | null;
+            /** @description Whether the caller's mute policies suppress this row's attention (badge counts, realtime). Computed per caller at read time, never stored, and never filters the list. */
+            muted: boolean;
         };
         NotificationCategoryCount: {
             category: string;
@@ -9782,9 +13506,18 @@ export interface components {
             unread: number;
         };
         NotificationCountsSummary: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Unread rows that want attention; rows suppressed by the caller's mute policies are excluded.
+             */
             total_unread: number;
+            /** @description Per-category unread breakdown, mute-suppressed rows excluded; a category whose unread is entirely muted is omitted rather than shown as zero. */
             by_category: components["schemas"]["NotificationCategoryCount"][];
+            /**
+             * Format: int64
+             * @description Unread rows suppressed by the caller's mute policies, across all categories.
+             */
+            muted_unread: number;
         };
         NotificationPage: {
             items: components["schemas"]["NotificationSummary"][];
@@ -10204,6 +13937,157 @@ export interface components {
             total_is_exact: boolean;
             /** @description Opaque cursor for the next immutable-keyset page, or null when exhausted. */
             next_cursor: string | null;
+        };
+        /** @enum {string} */
+        WorkbenchUrgency: "now" | "today" | "wait";
+        WorkbenchSourceRef: {
+            kind: string;
+            id: components["schemas"]["Uuid"];
+        };
+        /** @description Server-issued bounded module target; never an arbitrary URL. */
+        WorkbenchTarget: {
+            module: string;
+            id: string;
+        };
+        WorkbenchActionInboxItem: {
+            id: string;
+            urgency: components["schemas"]["WorkbenchUrgency"];
+            title: string;
+            due_at?: components["schemas"]["Timestamp"];
+            source: components["schemas"]["WorkbenchSourceRef"];
+            target: components["schemas"]["WorkbenchTarget"];
+        };
+        WorkbenchTodoItem: {
+            id: components["schemas"]["Uuid"];
+            text: string;
+            done: boolean;
+            /** Format: int64 */
+            source_order: number;
+            target: components["schemas"]["WorkbenchTarget"];
+        };
+        WorkbenchCalendarItem: {
+            id: components["schemas"]["Uuid"];
+            title: string;
+            starts_at: components["schemas"]["Timestamp"];
+            ends_at: components["schemas"]["Timestamp"];
+            target: components["schemas"]["WorkbenchTarget"];
+        };
+        WorkbenchScopeAll: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "all";
+            selected_branch_id?: components["schemas"]["Uuid"];
+        };
+        WorkbenchScopeBranches: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "branches";
+            branch_ids: components["schemas"]["Uuid"][];
+            selected_branch_id?: components["schemas"]["Uuid"];
+        };
+        WorkbenchEffectiveScope: components["schemas"]["WorkbenchScopeAll"] | components["schemas"]["WorkbenchScopeBranches"];
+        WorkbenchRange: {
+            from: components["schemas"]["Timestamp"];
+            to: components["schemas"]["Timestamp"];
+        };
+        WorkbenchDeniedSourceEnvelope: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "denied";
+            code: string;
+        };
+        WorkbenchUnavailableSourceEnvelope: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "unavailable";
+            code: string;
+        };
+        /** @description Exact, complete action-inbox snapshot admitted at the request ceiling. The server follows the public immutable cursor contract in pages of at most 200 items and fails this source closed rather than returning a priority-ranked prefix when the exact set exceeds its 1000-item budget, drifts, repeats a cursor, or repeats an item id. */
+        WorkbenchActionSourceOk: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "ok";
+            as_of: components["schemas"]["Timestamp"];
+            items: components["schemas"]["WorkbenchActionInboxItem"][];
+            total: number;
+            truncated: boolean;
+        };
+        WorkbenchTodoSourceOk: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "ok";
+            as_of: components["schemas"]["Timestamp"];
+            items: components["schemas"]["WorkbenchTodoItem"][];
+            total: number;
+            truncated: boolean;
+        };
+        WorkbenchCalendarSourceOk: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "ok";
+            as_of: components["schemas"]["Timestamp"];
+            items: components["schemas"]["WorkbenchCalendarItem"][];
+            total: number;
+            truncated: boolean;
+        };
+        WorkbenchActionSourceEnvelope: components["schemas"]["WorkbenchActionSourceOk"] | components["schemas"]["WorkbenchDeniedSourceEnvelope"] | components["schemas"]["WorkbenchUnavailableSourceEnvelope"];
+        WorkbenchTodoSourceEnvelope: components["schemas"]["WorkbenchTodoSourceOk"] | components["schemas"]["WorkbenchDeniedSourceEnvelope"] | components["schemas"]["WorkbenchUnavailableSourceEnvelope"];
+        WorkbenchCalendarSourceEnvelope: components["schemas"]["WorkbenchCalendarSourceOk"] | components["schemas"]["WorkbenchDeniedSourceEnvelope"] | components["schemas"]["WorkbenchUnavailableSourceEnvelope"];
+        MyWorkbenchResponse: {
+            as_of: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            timezone: "Asia/Seoul";
+            range: components["schemas"]["WorkbenchRange"];
+            scope: components["schemas"]["WorkbenchEffectiveScope"];
+            partial: boolean;
+            action_inbox: components["schemas"]["WorkbenchActionSourceEnvelope"];
+            todos: components["schemas"]["WorkbenchTodoSourceEnvelope"];
+            calendar: components["schemas"]["WorkbenchCalendarSourceEnvelope"];
+        };
+        /** @enum {string} */
+        WorkflowObjectKind: "work_order" | "support_ticket";
+        WorkflowObjectSubject: {
+            object_type: components["schemas"]["WorkflowObjectKind"];
+            object_id: components["schemas"]["Uuid"];
+        };
+        WorkflowRunDetailTarget: {
+            /** @enum {string} */
+            kind: "workflow_run_detail";
+            run_id: components["schemas"]["Uuid"];
+        };
+        WorkflowRunForObjectSummary: {
+            run_id: components["schemas"]["Uuid"];
+            definition_id: components["schemas"]["Uuid"];
+            /** Format: int32 */
+            definition_version: number;
+            status: string;
+            trigger_type: string;
+            object_type: components["schemas"]["WorkflowObjectKind"];
+            object_id: components["schemas"]["Uuid"];
+            started_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+            completed_at?: components["schemas"]["Timestamp"];
+            detail_target: components["schemas"]["WorkflowRunDetailTarget"];
+        };
+        WorkflowRunsForObjectResponse: {
+            subject: components["schemas"]["WorkflowObjectSubject"];
+            as_of: components["schemas"]["Timestamp"];
+            items: components["schemas"]["WorkflowRunForObjectSummary"][];
+            next_before?: components["schemas"]["Uuid"];
         };
         /** @enum {string} */
         EquipmentStatus: "rented" | "spare" | "disposed" | "replacement" | "sold";
@@ -10744,6 +14628,16 @@ export interface components {
             created_at: components["schemas"]["Timestamp"];
             updated_at: components["schemas"]["Timestamp"];
         };
+        /** @description Stable offset page for the branch-scoped purchase-request queue. */
+        PurchaseRequestPage: {
+            items: components["schemas"]["PurchaseRequestSummary"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
         /** @description Fresh passkey step-up evidence required before sensitive financial state transitions. */
         FinancialStepUpRequest: {
             step_up: components["schemas"]["PasskeyStepUpAssertion"];
@@ -10785,6 +14679,79 @@ export interface components {
         };
         ForceAssignP1DispatchRequest: {
             mechanic_id: components["schemas"]["Uuid"];
+        };
+        /** @enum {string} */
+        DispatchQueueStatus: "RECEIVED" | "UNASSIGNED" | "ASSIGNED" | "IN_PROGRESS" | "PART_WAITING" | "DELAYED";
+        DispatchQueueDispatch: {
+            id: components["schemas"]["Uuid"];
+            status: components["schemas"]["DispatchStatus"];
+            accept_window_ends_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            target_count: number;
+            /** Format: int64 */
+            accepted_count: number;
+            /** Format: int64 */
+            declined_count: number;
+            manual_call_required: boolean;
+        };
+        DispatchQueueItem: {
+            work_order_id: components["schemas"]["Uuid"];
+            request_no: string;
+            branch_id: components["schemas"]["Uuid"];
+            status: components["schemas"]["WorkOrderStatus"];
+            priority: components["schemas"]["PriorityLevel"];
+            symptom: string;
+            equipment_id: components["schemas"]["Uuid"];
+            customer_id: components["schemas"]["Uuid"];
+            site_id: components["schemas"]["Uuid"];
+            target_due_at?: components["schemas"]["Timestamp"];
+            assigned_mechanic_id?: components["schemas"]["Uuid"];
+            dispatch?: components["schemas"]["DispatchQueueDispatch"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        DispatchQueueStats: {
+            /** Format: int64 */
+            unassigned_count: number;
+            /** Format: int64 */
+            sla_due_count: number;
+        };
+        DispatchQueuePage: {
+            items: components["schemas"]["DispatchQueueItem"][];
+            next_after?: string;
+            stats: components["schemas"]["DispatchQueueStats"];
+        };
+        DispatchCandidateSummary: {
+            mechanic_id: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            score_milli: number;
+            gps_ranked: boolean;
+            /** Format: int64 */
+            distance_meters?: number;
+            location_recorded_at?: components["schemas"]["Timestamp"];
+            workload: {
+                [key: string]: unknown;
+            };
+            score_reason: string;
+            response?: components["schemas"]["DispatchResponseKind"];
+            responded_at?: components["schemas"]["Timestamp"];
+        };
+        DispatchCandidatePage: {
+            items: components["schemas"]["DispatchCandidateSummary"][];
+        };
+        P1DispatchResponseSummary: {
+            dispatch_id: components["schemas"]["Uuid"];
+            user_id: components["schemas"]["Uuid"];
+            response: components["schemas"]["DispatchResponseKind"];
+            responded_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            score_milli?: number;
+            gps_ranked: boolean;
+            /** Format: int64 */
+            distance_meters?: number;
+            score_reason?: string;
+        };
+        P1DispatchResponsePage: {
+            items: components["schemas"]["P1DispatchResponseSummary"][];
         };
         P1DispatchSummary: {
             id: components["schemas"]["Uuid"];
@@ -11704,6 +15671,34 @@ export interface components {
             valid_from?: components["schemas"]["Timestamp"];
             checklist_all_acknowledged?: boolean;
             four_eyes_request_ref?: components["schemas"]["Uuid"];
+            command_id?: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            expected_revision?: number;
+        };
+        /** @description Immutable replay receipt for an accepted instance_revision action command. */
+        OntologyActionCommandReceipt: {
+            command_id: components["schemas"]["Uuid"];
+            payload_digest: string;
+            instance: {
+                [key: string]: unknown;
+            };
+            gates: {
+                [key: string]: unknown;
+            };
+        };
+        OntologyActionExecuteOutcome: {
+            /** @enum {string} */
+            dispatch: "instance_revision" | "projected_usecase";
+            gates: {
+                [key: string]: unknown;
+            };
+            instance?: {
+                [key: string]: unknown;
+            };
+            projected?: {
+                [key: string]: unknown;
+            };
+            receipt?: components["schemas"]["OntologyActionCommandReceipt"];
         };
         GovernanceOpenOverrideRequest: {
             target_type: string;
@@ -11880,13 +15875,26 @@ export interface components {
             offset: number;
             /** Format: int64 */
             total: number;
+            /**
+             * Format: int64
+             * @description Immutable evidence-register sequence that fences every row in this response.
+             */
+            as_of: number;
+            /** @description Opaque unpadded-base64url continuation token, or null at the end of the snapshot. */
+            next_cursor: string | null;
         };
+        /**
+         * @description Server-derived classification; verified replicas of derivative copies never become evidence-equivalent originals.
+         * @enum {string}
+         */
+        EvidenceCopyEvidentiaryStatus: "VERIFIED_ORIGINAL" | "ORIGINAL_UNVERIFIED" | "NON_EVIDENTIARY_DERIVATIVE";
         EvidenceCopyView: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             evidence_object_id: string;
             copy_kind: components["schemas"]["EvidenceCopyKind"];
+            evidentiary_status: components["schemas"]["EvidenceCopyEvidentiaryStatus"];
             /** @enum {string|null} */
             derivative_kind?: "REDACTED" | "THUMBNAIL" | "TRANSCODED" | "EXCERPT" | "EXPORT_MANIFEST" | "NORMALIZED_TEXT" | "OTHER" | null;
             /** Format: uuid */
@@ -12385,19 +16393,30 @@ export interface components {
         NoticeSummary: {
             id: components["schemas"]["Uuid"];
             /** @description NT- code, set only once published. */
-            code?: string | null;
+            code: string | null;
             author_user_id: components["schemas"]["Uuid"];
             title: string;
             body: string;
             /** @enum {string} */
             status: "draft" | "published";
             /** Format: date-time */
-            published_at?: string | null;
+            published_at: string | null;
             created_at: components["schemas"]["Timestamp"];
+            category: components["schemas"]["NoticeCategory"];
+            /** @enum {string} */
+            audience_scope: "org" | "branches";
+            /** @description Audience branches with display names; empty for org-wide notices. */
+            audience_branches: components["schemas"]["NamedEntity"][];
+            /** @description The caller's own 수령확인 state; null when the caller is not a snapshotted recipient. */
+            my_receipt: components["schemas"]["NoticeMyReceipt"] | null;
+            /** @description Hydrated only for NoticeManage callers; null otherwise. */
+            progress: components["schemas"]["NoticeProgress"] | null;
         };
         CreateNoticeDraftRequest: {
             title: string;
             body: string;
+            category?: components["schemas"]["NoticeCategory"];
+            audience?: components["schemas"]["NoticeAudienceInput"];
         };
         NoticeProgress: {
             /** Format: int64 */
@@ -12483,7 +16502,7 @@ export interface components {
             period_end: string;
             source_label: string;
             /** @enum {string} */
-            status: "STAGED" | "BLOCKED_LEGAL_GATE" | "READY_FOR_REVIEW" | "APPROVED" | "ISSUED" | "VOID";
+            status: "STAGED" | "BLOCKED_LEGAL_GATE" | "READY_FOR_REVIEW" | "ATTENDANCE_CLOSED" | "CALCULATING" | "CALCULATED" | "SUBMITTED" | "REJECTED" | "APPROVED" | "DISBURSEMENT_SCHEDULED" | "PAID" | "ISSUED" | "VOID";
             calculation_enabled: boolean;
             /** Format: uuid */
             created_by?: string | null;
@@ -12491,6 +16510,25 @@ export interface components {
             approved_by?: string | null;
             /** Format: date-time */
             approved_at?: string | null;
+            /** @description Attestation receipt written by the attendance close — the preflight checks, the attesting user, and the attestation time. */
+            close_receipt?: Record<string, never> | null;
+            /** Format: uuid */
+            submitted_by?: string | null;
+            /** Format: date-time */
+            submitted_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Maker-checker counterparty; a DB CHECK forbids it from equalling submitted_by.
+             */
+            decided_by?: string | null;
+            /** Format: date-time */
+            decided_at?: string | null;
+            decision_reason?: string | null;
+            /**
+             * Format: uuid
+             * @description Reserved for the future AP- workflow-engine object; never written today.
+             */
+            approval_ref?: string | null;
             created_at: components["schemas"]["Timestamp"];
             updated_at: components["schemas"]["Timestamp"];
         };
@@ -12535,6 +16573,15 @@ export interface components {
             lines_limit: number;
             /** Format: int64 */
             lines_offset: number;
+            /** Format: int64 */
+            exceptions_open: number;
+            /** Format: int64 */
+            exceptions_total: number;
+            /** @description Latest stored calculation version; null until the run has been calculated. */
+            calculation: components["schemas"]["PayrollRunCalcSummary"] | null;
+            disbursement: components["schemas"]["PayrollDisbursement"] | null;
+            /** @description Unpaginated delivery summary; null until at least one payslip has been issued. */
+            payslip_delivery: components["schemas"]["PayrollPayslipDeliverySummary"] | null;
         };
         MyPayrollLine: {
             run_id: components["schemas"]["Uuid"];
@@ -12543,7 +16590,7 @@ export interface components {
             /** Format: date */
             period_end: string;
             /** @enum {string} */
-            run_status: "STAGED" | "BLOCKED_LEGAL_GATE" | "READY_FOR_REVIEW" | "APPROVED" | "ISSUED" | "VOID";
+            run_status: "STAGED" | "BLOCKED_LEGAL_GATE" | "READY_FOR_REVIEW" | "ATTENDANCE_CLOSED" | "CALCULATING" | "CALCULATED" | "SUBMITTED" | "REJECTED" | "APPROVED" | "DISBURSEMENT_SCHEDULED" | "PAID" | "ISSUED" | "VOID";
             /** @enum {string} */
             calculation_status: "BLOCKED_LEGAL_GATE" | "READY_FOR_REVIEW" | "APPROVED" | "ISSUED" | "VOID";
             work_days?: number | null;
@@ -12564,6 +16611,1858 @@ export interface components {
             limit: number;
             /** Format: int64 */
             offset: number;
+        };
+        FacilitiesDueCaseRequest: {
+            obligationId: components["schemas"]["Uuid"];
+            idempotencyKey: string;
+        };
+        FacilitiesTriageRequest: {
+            /** Format: date-time */
+            scheduledFor: string;
+        };
+        FacilitiesAssignRequest: {
+            assigneeId: components["schemas"]["Uuid"];
+        };
+        FacilitiesSubmitRequest: {
+            safetyChecklistEvidenceId: components["schemas"]["Uuid"];
+            serviceReportEvidenceId: components["schemas"]["Uuid"];
+            photoEvidenceId?: components["schemas"]["Uuid"];
+        };
+        FacilitiesAcceptanceRequest: {
+            /** @enum {string} */
+            decision: "ACCEPTED" | "REJECTED";
+            reason?: string;
+        };
+        FacilitiesObservationRequest: {
+            preKwh?: string;
+            postKwh?: string;
+            /** Format: date-time */
+            observedAt: string;
+            /** Format: int64 */
+            costKrw?: number;
+        };
+        FacilitiesCase: {
+            id: components["schemas"]["Uuid"];
+            /** @description Persisted case branch used for capability scoping. */
+            branchId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "DUE" | "TRIAGED" | "SCHEDULED" | "ASSIGNED" | "IN_PROGRESS" | "SUBMITTED" | "REWORK_REQUIRED" | "AWAITING_ACCEPTANCE" | "CLOSED";
+            /** Format: uuid */
+            assigneeId?: string | null;
+            /** Format: date-time */
+            responseDueAt: string;
+            /** Format: date-time */
+            completionDueAt: string;
+            /** Format: date-time */
+            acceptanceDueAt: string;
+            energyDeltaKwh?: string | null;
+            /** Format: int64 */
+            totalCostKrw: number;
+        };
+        ProductionPlan: {
+            id: components["schemas"]["Uuid"];
+            branch_id: components["schemas"]["Uuid"];
+            customer_demand_id: components["schemas"]["Uuid"];
+            product_code: string;
+            /** Format: int64 */
+            quantity: number;
+            /** @enum {string} */
+            status: "DRAFT" | "RELEASED";
+            version: number;
+            first_operation_id: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            due_at: string;
+            /** @description Immutable server-computed digest required in the matching release approval kind. */
+            plan_digest: string;
+        };
+        ProductionCapacitySlot: {
+            id: components["schemas"]["Uuid"];
+            branch_id: components["schemas"]["Uuid"];
+            site_id: components["schemas"]["Uuid"];
+            /** Format: date */
+            capacity_date: string;
+            /** Format: int64 */
+            available_quantity: number;
+            /** Format: int64 */
+            reserved_quantity: number;
+            version: number;
+            source_ref: string;
+            /** Format: date-time */
+            evaluated_at: string;
+        };
+        ProductionOperation: {
+            id: components["schemas"]["Uuid"];
+            sequence: number;
+            /** @enum {string} */
+            status: "PENDING" | "RELEASED" | "RECORDED";
+            /** Format: int64 */
+            output_quantity: number;
+            /** Format: int64 */
+            scrap_quantity: number;
+            downtime_minutes: number;
+            quality_evidence_ref?: string | null;
+            quality_passed?: boolean | null;
+            version: number;
+        };
+        ProductionPlanDetail: components["schemas"]["ProductionPlan"] & {
+            checks: {
+                [key: string]: unknown;
+            };
+            events: {
+                id: components["schemas"]["Uuid"];
+                event_type: string;
+                actor_id: components["schemas"]["Uuid"];
+                payload: {
+                    [key: string]: unknown;
+                };
+                /** Format: date-time */
+                occurred_at: string;
+            }[];
+            operation: components["schemas"]["ProductionOperation"];
+        };
+        CreateProductionPlan: {
+            branch_id: components["schemas"]["Uuid"];
+            customer_demand_id: components["schemas"]["Uuid"];
+            capacity_slot_id: components["schemas"]["Uuid"];
+            material_item_id: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            quantity: number;
+            /** Format: date-time */
+            due_at: string;
+            ontology_type_id: components["schemas"]["Uuid"];
+            idempotency_key: string;
+        };
+        ReleaseProductionPlan: {
+            expected_version: number;
+            /** @description Approved production_plan_release:v{expected_version} decision bound to this persisted plan. It is consumed exactly once by the current approver. */
+            approval_ref: components["schemas"]["Uuid"];
+            idempotency_key: string;
+        };
+        ProductionSourceIngress: components["schemas"]["ProductionDemandIngress"] | components["schemas"]["ProductionCapacityIngress"] | components["schemas"]["ProductionMaterialIngress"];
+        RegisterProductionSourceSystem: {
+            branch_id: components["schemas"]["Uuid"];
+            source_system: string;
+        };
+        ProductionSourceSystemGenerationRequest: {
+            /** Format: int32 */
+            expected_generation: number;
+        };
+        ProductionSourceSystemCredential: {
+            id: components["schemas"]["Uuid"];
+            source_system: string;
+            /** @description Always true for a newly registered or rotated source system. */
+            enabled: boolean;
+            /** Format: int32 */
+            credential_generation: number;
+            /** @description One-time standard-base64 disclosure of exactly 32 server-generated bytes. */
+            readonly secret: string;
+        };
+        ProductionSourceSystemReceipt: {
+            id: components["schemas"]["Uuid"];
+            /** @description Always false after a source system is disabled. */
+            enabled: boolean;
+            /** Format: int32 */
+            credential_generation: number;
+        };
+        ProductionSourceIngressReceipt: {
+            /** @enum {string} */
+            kind: "demand" | "capacity" | "material";
+            id: components["schemas"]["Uuid"];
+            source_version: string;
+        };
+        ProductionDemandIngress: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "demand";
+            id: components["schemas"]["Uuid"];
+            inquiry_id: components["schemas"]["Uuid"];
+            product_code: string;
+            /** Format: int64 */
+            quantity: number;
+            /** Format: date-time */
+            due_at: string;
+            source_id: string;
+            source_version: string;
+        };
+        ProductionCapacityIngress: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "capacity";
+            id: components["schemas"]["Uuid"];
+            site_id: components["schemas"]["Uuid"];
+            /** Format: date */
+            capacity_date: string;
+            /** Format: int64 */
+            available_quantity: number;
+            source_id: string;
+            source_version: string;
+        };
+        ProductionMaterialIngress: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "material";
+            material_item_id: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            quantity_on_hand_milli: number;
+            /** Format: int64 */
+            safety_stock_milli: number;
+            source_id: string;
+            source_version: string;
+        };
+        RecordProductionOperation: {
+            expected_version: number;
+            idempotency_key: string;
+            /** Format: int64 */
+            output_quantity: number;
+            /** Format: int64 */
+            scrap_quantity: number;
+            downtime_minutes: number;
+            quality_evidence_ref: string;
+            quality_passed: boolean;
+            note: string;
+        };
+        Equipment3rUnitView: {
+            id: components["schemas"]["Uuid"];
+            serialNo: string;
+            modelName: string;
+            capacityClass: string;
+            /** @enum {string} */
+            availability: "AVAILABLE" | "RESERVED" | "ON_RENT" | "IN_ASSESSMENT" | "IN_REPAIR" | "IN_REFURBISHMENT" | "FOR_SALE" | "SOLD";
+            /** Format: int64 */
+            acquisitionCostMinor: number;
+            branchId: components["schemas"]["Uuid"];
+        };
+        Equipment3rUnitDetailView: components["schemas"]["Equipment3rUnitView"] & {
+            activeCaseId?: components["schemas"]["Uuid"];
+            openDispositionId?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Equipment3rCaseView: {
+            id: components["schemas"]["Uuid"];
+            unitId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "QUOTED" | "APPROVED" | "DECLINED" | "DISPATCHED" | "HANDED_OVER" | "RETURNED" | "CLOSED";
+            customerName: string;
+            siteReference: string;
+            /** Format: int64 */
+            monthlyRateMinor: number;
+            durationMonths: number;
+            /** @enum {string} */
+            currencyCode: "KRW";
+            branchId: components["schemas"]["Uuid"];
+            /** @description Present and true only on an idempotent replay */
+            replayed?: boolean;
+        };
+        Equipment3rCaseDetailView: components["schemas"]["Equipment3rCaseView"] & {
+            approval?: {
+                /** @enum {string} */
+                decision?: "APPROVED" | "DECLINED";
+                reason?: string | null;
+                decidedBy?: components["schemas"]["Uuid"];
+                /** Format: date-time */
+                decidedAt?: string;
+            } | null;
+            dispatch?: {
+                carrierName?: string;
+                vehicleReference?: string;
+                /** Format: date-time */
+                dispatchedAt?: string;
+            } | null;
+            handover?: {
+                recipientName?: string;
+                evidenceObjectId?: components["schemas"]["Uuid"];
+                /** Format: date-time */
+                handedOverAt?: string;
+            } | null;
+            /** Format: date-time */
+            returnedAt?: string | null;
+            assessment?: {
+                /** @enum {string} */
+                conditionGrade?: "A" | "B" | "C" | "D";
+                findings?: string;
+                /** @enum {string} */
+                disposition?: "REPAIR" | "REFURBISH" | "RESALE" | "REDEPLOY";
+                assessedBy?: components["schemas"]["Uuid"];
+                /** Format: date-time */
+                assessedAt?: string;
+            } | null;
+            dispositionId?: components["schemas"]["Uuid"];
+            inspections: components["schemas"]["Equipment3rInspectionView"][];
+            createdBy: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Equipment3rInspectionView: {
+            id: components["schemas"]["Uuid"];
+            caseId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            outcome: "PASS" | "MAINTENANCE_PERFORMED";
+            findings: string;
+            maintenanceNote?: string | null;
+            inspectedBy: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            inspectedAt: string;
+        };
+        Equipment3rDispositionView: {
+            id: components["schemas"]["Uuid"];
+            unitId: components["schemas"]["Uuid"];
+            caseId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            kind: "REPAIR" | "REFURBISH" | "RESALE" | "REDEPLOY";
+            /** @enum {string} */
+            status: "OPEN" | "COMPLETED";
+            /** Format: int64 */
+            costMinor?: number | null;
+            /** Format: int64 */
+            saleAmountMinor?: number | null;
+            buyerName?: string | null;
+            completedBy: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            completedAt: string;
+            /** @description Always null — the pilot records no GL posting */
+            financeGlPosting: unknown;
+        };
+        Equipment3rHistoryEntry: {
+            /** @enum {string} */
+            aggregateKind: "unit" | "case" | "disposition";
+            aggregateId: components["schemas"]["Uuid"];
+            transition: string;
+            actorId: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        /** @description Wire form of the logistics pilot datetime fields (dueAt, confirmedAt, settledAt): the time-crate default serde tuple [year, ordinal-day, hour, minute, second, nanosecond, offsetHours, offsetMinutes, offsetSeconds]. The deployed rest crate deserializes these as plain OffsetDateTime without rfc3339 serde, so an RFC3339 string is rejected with 422. Encode in UTC (offsets 0). Divergence recorded in docs/evidence/console/CAP-LOGISTICS-PILOT/manifests/openapi-applied-notes.md. */
+        LogisticsTimeTuple: number[];
+        LogisticsAsnCreated: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "EXPECTED";
+            branchId: components["schemas"]["Uuid"];
+        };
+        LogisticsAsnReceipt: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "PARTIAL_RECEIVED" | "RECEIVED";
+            /**
+             * Format: int64
+             * @description cumulative received total; absent on an idempotent replay
+             */
+            receivedQuantity?: number;
+            /** @description present and true only on an idempotent replay */
+            replayed?: boolean;
+        };
+        LogisticsAsnPutaway: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "PUTAWAY";
+        };
+        LogisticsFulfillmentReleased: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "RELEASED";
+            /** Format: int64 */
+            reservedQuantity: number;
+        };
+        LogisticsFulfillmentPicked: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "PICKED" | "SHORT_PICK";
+            /** Format: int64 */
+            pickedQuantity: number;
+        };
+        LogisticsFulfillmentPacked: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "PACKED";
+            /** Format: int64 */
+            pickedQuantity: number;
+        };
+        LogisticsShipmentDispatched: {
+            /** @description created shipment id */
+            id: components["schemas"]["Uuid"];
+            fulfillmentId: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "DISPATCHED";
+        };
+        LogisticsPodVerified: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "DELIVERED";
+            recipientConfirmedEvidenceReference: string;
+            /** @enum {string} */
+            slaAssessment: "MET" | "BREACHED";
+        };
+        LogisticsShipmentSettlement: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            status: "SETTLED";
+            operationalCost: {
+                /** @enum {string} */
+                currency: "KRW";
+                /** Format: int64 */
+                amountMinor: number;
+            };
+            /** @description Always null by design — no GL/finance edge in the pilot */
+            financeGlPosting: unknown;
+        };
+        AttendanceExceptionEvidence: {
+            name: string;
+            size?: string | null;
+        };
+        AttendanceExceptionLink: {
+            kind: string;
+            label: string;
+            ref?: string | null;
+        };
+        AttendanceExceptionResolution: {
+            action: string;
+            reason: string;
+            linked_work_ref?: string | null;
+            ot_hours?: number | null;
+            actor: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            resolved_at: string;
+        };
+        AttendanceException: {
+            id: components["schemas"]["Uuid"];
+            code: string;
+            /** @enum {string} */
+            kind: "LATE" | "NO_SHOW" | "UNAPPROVED_OVERTIME" | "EARLY_LEAVE";
+            /** @enum {string} */
+            status: "OPEN" | "RESOLVED";
+            employee_id: components["schemas"]["Uuid"];
+            employee_name: string;
+            team?: string | null;
+            branch_id?: components["schemas"]["Uuid"];
+            /** Format: date */
+            work_date: string;
+            /** Format: date-time */
+            occurred_at: string;
+            detail: string;
+            evidence: components["schemas"]["AttendanceExceptionEvidence"][];
+            links: components["schemas"]["AttendanceExceptionLink"][];
+            resolution?: components["schemas"]["AttendanceExceptionResolution"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        AttendanceExceptionPage: {
+            items: components["schemas"]["AttendanceException"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        OwnAttendanceExceptionResolution: {
+            action: string;
+            reason: string;
+            ot_hours?: string | null;
+            /** Format: date-time */
+            resolved_at: string;
+        };
+        OwnAttendanceException: {
+            id: components["schemas"]["Uuid"];
+            code: string;
+            /** @enum {string} */
+            kind: "LATE" | "NO_SHOW" | "UNAPPROVED_OVERTIME" | "EARLY_LEAVE";
+            /** @enum {string} */
+            status: "OPEN" | "RESOLVED";
+            /** Format: date */
+            work_date: string;
+            /** Format: date-time */
+            occurred_at: string;
+            detail: string;
+            evidence: components["schemas"]["AttendanceExceptionEvidence"][];
+            resolution?: components["schemas"]["OwnAttendanceExceptionResolution"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        OwnAttendanceExceptionPage: {
+            items: components["schemas"]["OwnAttendanceException"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        OwnAttendanceWeek52: {
+            /** Format: date */
+            week_start: string;
+            current_hours: number;
+            projected_hours: number;
+            /** @enum {string} */
+            tone: "OK" | "WARN" | "DANGER";
+            /** Format: date-time */
+            acknowledged_at?: string | null;
+        };
+        OwnAttendanceWeek52Response: {
+            /** @enum {string} */
+            status: "available" | "not_available";
+            projection?: components["schemas"]["OwnAttendanceWeek52"];
+        };
+        RaiseAttendanceExceptionRequest: {
+            /** @enum {string} */
+            kind: "LATE" | "NO_SHOW" | "UNAPPROVED_OVERTIME" | "EARLY_LEAVE";
+            employee_id: components["schemas"]["Uuid"];
+            branch_id?: components["schemas"]["Uuid"];
+            /** Format: date */
+            work_date: string;
+            detail: string;
+            evidence?: {
+                name: string;
+                size?: string | null;
+            }[];
+        };
+        ResolveAttendanceExceptionRequest: {
+            action: string;
+            reason: string;
+            linked_work_ref?: string | null;
+            ot_hours?: number | null;
+        };
+        AttendanceSubstitution: {
+            id: components["schemas"]["Uuid"];
+            site: string;
+            branch_id?: components["schemas"]["Uuid"];
+            role: string;
+            /** Format: date */
+            cover_date: string;
+            from_minutes: number;
+            to_minutes: number;
+            covered_employee_id: components["schemas"]["Uuid"];
+            covered_name: string;
+            reason_kind: string;
+            reason_detail?: string | null;
+            worker_employee_id?: components["schemas"]["Uuid"];
+            worker_name: string;
+            worker_type: string;
+            worker_rate?: string | null;
+            /** @enum {string} */
+            status: "ASSIGNED" | "CANCELLED";
+            exception_id?: components["schemas"]["Uuid"];
+            created_by: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        AttendanceSubstitutionPage: {
+            items: components["schemas"]["AttendanceSubstitution"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        AttendanceSubstitutionCandidate: {
+            employee_id: components["schemas"]["Uuid"];
+            employee_name: string;
+            branch_id: components["schemas"]["Uuid"];
+        };
+        AttendanceSubstitutionCandidatePage: {
+            items: components["schemas"]["AttendanceSubstitutionCandidate"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        AssignAttendanceSubstituteRequest: {
+            site: string;
+            branch_id?: components["schemas"]["Uuid"] | null;
+            role: string;
+            /** Format: date */
+            cover_date: string;
+            from_minutes: number;
+            to_minutes: number;
+            covered_employee_id: components["schemas"]["Uuid"];
+            reason_kind: string;
+            reason_detail?: string | null;
+            worker_employee_id: components["schemas"]["Uuid"];
+            exception_id?: components["schemas"]["Uuid"] | null;
+        };
+        CancelAttendanceSubstitutionRequest: {
+            reason: string;
+        };
+        AttendanceCloseCheck: {
+            key: string;
+            ok: boolean;
+            warn?: boolean;
+            note?: string | null;
+        };
+        AttendanceCloseAmendment: {
+            id: components["schemas"]["Uuid"];
+            reason: string;
+            actor: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        AttendanceMonthClose: {
+            id: components["schemas"]["Uuid"];
+            month: string;
+            branch_scope: string;
+            checks: components["schemas"]["AttendanceCloseCheck"][];
+            attested_by: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            attested_at: string;
+            period_lock_id?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            closed_at: string;
+            amendments: components["schemas"]["AttendanceCloseAmendment"][];
+        };
+        AttendanceCloseBoard: {
+            month: string;
+            items: components["schemas"]["AttendanceMonthCloseItem"][];
+        };
+        AttendanceMonthCloseItem: {
+            branch_scope: string;
+            closed: boolean;
+            close?: components["schemas"]["AttendanceMonthClose"];
+            /** Format: int64 */
+            open_exceptions: number;
+            /** Format: int64 */
+            pending_leave: number;
+        };
+        AttendanceCloseRequest: {
+            month: string;
+            branch_scope?: components["schemas"]["Uuid"];
+            attest?: boolean | null;
+        };
+        AttendanceClosePreflight: {
+            month: string;
+            branch_scope: string;
+            checks: components["schemas"]["AttendanceCloseCheck"][];
+            can_close: boolean;
+        };
+        AttendanceCloseAmendmentRequest: {
+            reason: string;
+            detail: string;
+            ref?: string | null;
+        };
+        AttendanceWeek52Row: {
+            employee_id: components["schemas"]["Uuid"];
+            name: string;
+            team?: string | null;
+            /** Format: date */
+            week_start: string;
+            current_hours: number;
+            projected_hours: number;
+            /** @enum {string} */
+            tone: "OK" | "WARN" | "DANGER";
+            acked: boolean;
+            /** Format: date-time */
+            acked_at?: string | null;
+        };
+        AttendanceWeek52Board: {
+            /** Format: date */
+            week_start: string;
+            items: components["schemas"]["AttendanceWeek52Row"][];
+        };
+        AttendanceWeek52AckRequest: {
+            employee_id: components["schemas"]["Uuid"];
+            /** Format: date */
+            week_start: string;
+        };
+        InventoryStockLocationSummary: {
+            id: components["schemas"]["Uuid"];
+            label: string;
+        };
+        InventoryItem: {
+            id: components["schemas"]["Uuid"];
+            branch_id: components["schemas"]["Uuid"];
+            site_id?: components["schemas"]["Uuid"];
+            stock_location: components["schemas"]["InventoryStockLocationSummary"];
+            iv_code: string;
+            sku?: string | null;
+            display_name: string;
+            description?: string | null;
+            unit_code: string;
+            /** Format: int64 */
+            quantity_on_hand_milli: number;
+            /** Format: int64 */
+            safety_stock_milli: number;
+            /** Format: int64 */
+            unit_cost_won?: number | null;
+            low_stock: boolean;
+            status: string;
+            href: string;
+            created_by: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        InventoryItemPage: {
+            items: components["schemas"]["InventoryItem"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        InventoryConsumptionSource: {
+            /** @enum {string} */
+            kind: "work_order";
+            work_order_id: components["schemas"]["Uuid"];
+        } | {
+            /** @enum {string} */
+            kind: "p1_dispatch";
+            dispatch_id: components["schemas"]["Uuid"];
+        };
+        InventoryConsumptionEvent: {
+            id: components["schemas"]["Uuid"];
+            item_id: components["schemas"]["Uuid"];
+            iv_code: string;
+            branch_id: components["schemas"]["Uuid"];
+            stock_location_id: components["schemas"]["Uuid"];
+            source: components["schemas"]["InventoryConsumptionSource"];
+            /** Format: int64 */
+            quantity_before_milli: number;
+            /** Format: int64 */
+            quantity_consumed_milli: number;
+            /** Format: int64 */
+            quantity_after_milli: number;
+            /** Format: int64 */
+            unit_cost_won?: number | null;
+            /** Format: int64 */
+            cost_won?: number | null;
+            consumed_by: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            occurred_at: string;
+            memo?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        InventoryConsumptionResult: {
+            event: components["schemas"]["InventoryConsumptionEvent"];
+            item: components["schemas"]["InventoryItem"];
+        };
+        ConsumeInventoryItemRequest: {
+            source: components["schemas"]["InventoryConsumptionSource"];
+            /** Format: int64 */
+            quantity_consumed_milli: number;
+            /** Format: date-time */
+            occurred_at?: string | null;
+            memo?: string | null;
+            idempotency_key: string;
+        };
+        RecordInventoryReceiptRequest: {
+            /** Format: int64 */
+            quantityReceivedMilli: number;
+            sourceRef?: string | null;
+            memo?: string | null;
+            idempotencyKey: string;
+        };
+        InventoryMovementSourceWorkOrder: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "work_order";
+            workOrderId: components["schemas"]["Uuid"];
+        };
+        InventoryMovementSourceP1Dispatch: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "p1_dispatch";
+            dispatchId: components["schemas"]["Uuid"];
+            workOrderId: components["schemas"]["Uuid"];
+        };
+        InventoryMovementSourceCycleCount: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "cycle_count";
+            cycleCountId: components["schemas"]["Uuid"];
+            ccCode: string;
+        };
+        InventoryMovementSourceExternalRef: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "external_ref";
+            sourceRef: string | null;
+        };
+        InventoryMovementSource: components["schemas"]["InventoryMovementSourceWorkOrder"] | components["schemas"]["InventoryMovementSourceP1Dispatch"] | components["schemas"]["InventoryMovementSourceCycleCount"] | components["schemas"]["InventoryMovementSourceExternalRef"];
+        InventoryMovement: {
+            id: components["schemas"]["Uuid"];
+            itemId: components["schemas"]["Uuid"];
+            ivCode: string;
+            /** @enum {string} */
+            kind: "ISSUE" | "RECEIPT" | "ADJUSTMENT";
+            /** Format: int64 */
+            quantityDeltaMilli: number;
+            /** Format: int64 */
+            quantityBeforeMilli: number;
+            /** Format: int64 */
+            quantityAfterMilli: number;
+            source: components["schemas"]["InventoryMovementSource"];
+            actor: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            occurredAt: string;
+            memo?: string | null;
+        };
+        InventoryReceiptResult: {
+            movement: components["schemas"]["InventoryMovement"];
+            item: components["schemas"]["InventoryItem"];
+        };
+        InventoryMrpLine: {
+            itemId: components["schemas"]["Uuid"];
+            ivCode: string;
+            displayName: string;
+            unitCode: string;
+            /** Format: int64 */
+            quantityOnHandMilli: number;
+            /** Format: int64 */
+            safetyStockMilli: number;
+            /** Format: int64 */
+            inboundExpectedMilli: number;
+            /** Format: int64 */
+            reservedOutboundMilli: number;
+            /** Format: int64 */
+            monthlyUsageMilli: number;
+            /** Format: int64 */
+            coverMonthsCenti?: number | null;
+            short: boolean;
+            /** Format: int64 */
+            proposedOrderMilli: number;
+        };
+        CycleCount: {
+            id: components["schemas"]["Uuid"];
+            ccCode: string;
+            branchId: components["schemas"]["Uuid"];
+            stockLocation: components["schemas"]["InventoryStockLocationSummary"];
+            /** @enum {string} */
+            status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+            version: number;
+            openedBy: components["schemas"]["Uuid"];
+            submittedBy?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            submittedAt?: string | null;
+            decidedBy?: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionMemo?: string | null;
+            /** Format: int64 */
+            lineCount: number;
+            /** Format: int64 */
+            varianceLineCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CycleCountLine: {
+            id: components["schemas"]["Uuid"];
+            itemId: components["schemas"]["Uuid"];
+            ivCode: string;
+            displayName: string;
+            unitCode: string;
+            /** Format: int64 */
+            systemQuantityMilli: number;
+            /** Format: int64 */
+            countedQuantityMilli: number;
+            /** Format: int64 */
+            varianceMilli: number;
+            /** @enum {string|null} */
+            reason?: "DAMAGE" | "LOSS" | "MISCOUNT" | "FOUND" | "OTHER" | null;
+            note?: string | null;
+            recordedBy: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            recordedAt: string;
+        };
+        CycleCountDetail: {
+            count: components["schemas"]["CycleCount"];
+            lines: components["schemas"]["CycleCountLine"][];
+            appliedMovementIds: components["schemas"]["Uuid"][];
+        };
+        CycleCountPage: {
+            items: components["schemas"]["CycleCount"][];
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+            /** Format: int64 */
+            total: number;
+        };
+        OpenCycleCountRequest: {
+            branchId: components["schemas"]["Uuid"];
+            stockLocationId: components["schemas"]["Uuid"];
+        };
+        UpsertCycleCountLineRequest: {
+            expectedVersion: number;
+            itemId: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            countedQuantityMilli: number;
+            /** @enum {string|null} */
+            reason?: "DAMAGE" | "LOSS" | "MISCOUNT" | "FOUND" | "OTHER" | null;
+            note?: string | null;
+        };
+        CycleCountVersionRequest: {
+            expectedVersion: number;
+        };
+        DecideCycleCountRequest: {
+            expectedVersion: number;
+            /** @enum {string} */
+            decision: "APPROVE" | "REJECT";
+            memo?: string | null;
+            idempotencyKey?: string | null;
+        };
+        /**
+         * @description Deterministic per-site SLA state over OPEN/IN_PROGRESS/ON_HOLD tickets — BREACHED when any due_at is past, else AT_RISK when any due_at falls within 24 hours, else OK.
+         * @enum {string}
+         */
+        FieldSlaState: "OK" | "AT_RISK" | "BREACHED";
+        FieldSiteRow: {
+            site_id: components["schemas"]["Uuid"];
+            site_name: string;
+            branch_id: components["schemas"]["Uuid"];
+            customer_id: components["schemas"]["Uuid"];
+            customer_name: string;
+            address: string | null;
+            /** Format: double */
+            latitude: number | null;
+            /** Format: double */
+            longitude: number | null;
+            /**
+             * Format: int64
+             * @description Tickets in OPEN/IN_PROGRESS/ON_HOLD linked to the site.
+             */
+            open_ticket_count: number;
+            /**
+             * Format: int64
+             * @description Open tickets whose SLA due_at has already passed.
+             */
+            breached_ticket_count: number;
+            /** Format: date-time */
+            next_due_at: string | null;
+            /**
+             * Format: int64
+             * @description Work orders for the site in a non-terminal status.
+             */
+            active_work_order_count: number;
+            /** Format: date-time */
+            last_arrival_at: string | null;
+            sla: components["schemas"]["FieldSlaState"];
+        };
+        FieldSitePage: {
+            items: components["schemas"]["FieldSiteRow"][];
+            /**
+             * Format: uuid
+             * @description Id to pass as `cursor` for the next page, or null on the last page.
+             */
+            next_cursor: string | null;
+            /** Format: int64 */
+            total: number;
+        };
+        FieldSiteSummary: {
+            id: components["schemas"]["Uuid"];
+            name: string;
+            branch_id: components["schemas"]["Uuid"];
+            customer_id: components["schemas"]["Uuid"];
+            customer_name: string;
+            address: string | null;
+            province: string | null;
+            city: string | null;
+            postal_code: string | null;
+            /** Format: double */
+            latitude: number | null;
+            /** Format: double */
+            longitude: number | null;
+            /** Format: double */
+            geofence_radius_m: number | null;
+            contact_name: string | null;
+            contact_phone: string | null;
+        };
+        FieldSlaSummary: {
+            state: components["schemas"]["FieldSlaState"];
+            /** Format: int64 */
+            open: number;
+            /** Format: int64 */
+            breached: number;
+            /** Format: date-time */
+            next_due_at: string | null;
+            /** Format: int64 */
+            resolved_within_sla_90d: number;
+            /** Format: int64 */
+            resolved_breached_90d: number;
+        };
+        FieldWorkOrderRef: {
+            id: components["schemas"]["Uuid"];
+            request_no: string;
+            /** @description Workorder-crate status vocabulary, read-only here. */
+            status: string;
+            priority: string;
+            /** Format: date-time */
+            target_due_at: string | null;
+            /** Format: date-time */
+            report_submitted_at: string | null;
+            result_type: string;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        FieldAttendanceEvent: {
+            user_id: components["schemas"]["Uuid"];
+            /** @description Same-org display-name lookup; null when the account no longer exists. */
+            user_name: string | null;
+            work_order_id: components["schemas"]["Uuid"];
+            /** @description Compliance attendance vocabulary, read-only here — ARRIVAL or DEPARTURE. */
+            kind: string;
+            occurred_at: components["schemas"]["Timestamp"];
+        };
+        FieldSiteDetail: {
+            site: components["schemas"]["FieldSiteSummary"];
+            sla: components["schemas"]["FieldSlaSummary"];
+            tickets: components["schemas"]["SupportTicketSummary"][];
+            work_orders: components["schemas"]["FieldWorkOrderRef"][];
+            attendance: components["schemas"]["FieldAttendanceEvent"][];
+            acceptances: components["schemas"]["SupportTicketAcceptance"][];
+        };
+        /** @description At least one of site_id / work_order_id must be present. An absent field leaves that link untouched; an explicit null clears it. */
+        LinkSupportTicketRequest: {
+            /** Format: uuid */
+            site_id?: string | null;
+            /** Format: uuid */
+            work_order_id?: string | null;
+        };
+        /** @enum {string} */
+        SupportTicketAcceptanceKind: "CUSTOMER_ACCEPTED" | "CUSTOMER_DECLINED";
+        /** @enum {string} */
+        SupportTicketAcceptanceChannel: "IN_PERSON" | "PHONE" | "EMAIL" | "MESSENGER";
+        RecordSupportTicketAcceptanceRequest: {
+            kind: components["schemas"]["SupportTicketAcceptanceKind"];
+            channel: components["schemas"]["SupportTicketAcceptanceChannel"];
+            /** @description Customer-side acknowledger name (business fact, never logged). */
+            accepted_by: string;
+            /** @description Required when kind is CUSTOMER_DECLINED; it becomes the customer-visible comment on the reopen. */
+            note?: string | null;
+        };
+        SupportTicketAcceptance: {
+            id: components["schemas"]["Uuid"];
+            ticket_id: components["schemas"]["Uuid"];
+            kind: components["schemas"]["SupportTicketAcceptanceKind"];
+            channel: components["schemas"]["SupportTicketAcceptanceChannel"];
+            accepted_by: string;
+            note: string | null;
+            recorded_by_user_id: components["schemas"]["Uuid"];
+            /** @description Recorder display name via a same-org lookup; null when the account no longer exists. */
+            recorded_by_name: string | null;
+            occurred_at: components["schemas"]["Timestamp"];
+        };
+        /**
+         * @description Typed maintenance classification (유형).
+         * @enum {string}
+         */
+        MaintenanceType: "EMERGENCY" | "CORRECTIVE" | "PREVENTIVE" | "INSPECTION";
+        /**
+         * @description Typed maintenance cause (원인).
+         * @enum {string}
+         */
+        MaintenanceCause: "BREAKDOWN" | "RETURN_PREP" | "SCHEDULED" | "INSPECTION_FINDING" | "OTHER";
+        /**
+         * @description Cost-settlement lifecycle (정산 → 전표). VOID is terminal and frees the one-live-settlement slot.
+         * @enum {string}
+         */
+        SettlementStatus: "DRAFT" | "SUBMITTED" | "APPROVED" | "VOID";
+        /** @enum {string} */
+        SettlementLineKind: "LABOR" | "PART" | "OUTSOURCE" | "OTHER";
+        SettlementLineRequest: {
+            kind: components["schemas"]["SettlementLineKind"];
+            label: string;
+            /** Format: int64 */
+            amount_krw: number;
+            /** @description PO/IV/outsource code when known. */
+            source_ref?: string;
+            /**
+             * Format: int32
+             * @description Defaults to the line's position in the array.
+             */
+            sort_order?: number;
+        };
+        CreateSettlementRequest: {
+            lines: components["schemas"]["SettlementLineRequest"][];
+            note?: string;
+        };
+        ReviewSettlementRequest: {
+            /** @enum {string} */
+            decision: "APPROVED" | "RETURNED";
+            /** @description Required (non-empty after trim) when decision is RETURNED. */
+            comment?: string;
+        };
+        VoidSettlementRequest: {
+            reason: string;
+        };
+        SettlementLineSummary: {
+            id: components["schemas"]["Uuid"];
+            kind: components["schemas"]["SettlementLineKind"];
+            label: string;
+            /** Format: int64 */
+            amount_krw: number;
+            source_ref: string | null;
+            /** Format: int32 */
+            sort_order: number;
+        };
+        SettlementSummary: {
+            id: components["schemas"]["Uuid"];
+            work_order_id: components["schemas"]["Uuid"];
+            branch_id: components["schemas"]["Uuid"];
+            status: components["schemas"]["SettlementStatus"];
+            /** Format: int64 */
+            total_amount_krw: number;
+            /** @description Finance journal/voucher code once posted (finance-gl lane). */
+            voucher_ref: string | null;
+            note: string | null;
+            lines: components["schemas"]["SettlementLineSummary"][];
+            created_by: components["schemas"]["Uuid"];
+            /** Format: uuid */
+            submitted_by: string | null;
+            /** Format: date-time */
+            submitted_at: string | null;
+            /** Format: uuid */
+            approved_by: string | null;
+            /** Format: date-time */
+            approved_at: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        /** @enum {string} */
+        NoticeCategory: "general" | "legal" | "hr_order" | "training";
+        NoticeAudienceInput: {
+            /** @enum {string} */
+            scope: "org" | "branches";
+            /** @description Non-empty iff scope is branches; must be empty or omitted for org (422 otherwise). */
+            branch_ids?: components["schemas"]["Uuid"][];
+        };
+        NoticeMyReceipt: {
+            /**
+             * Format: date-time
+             * @description 수령확인 timestamp; null until the caller acknowledges.
+             */
+            acknowledged_at: string | null;
+        };
+        UpdateNoticeDraftRequest: {
+            title?: string;
+            body?: string;
+            category?: components["schemas"]["NoticeCategory"];
+            audience?: components["schemas"]["NoticeAudienceInput"];
+        };
+        NoticeReceipt: {
+            recipient_user_id: components["schemas"]["Uuid"];
+            display_name: string;
+            /**
+             * Format: date-time
+             * @description 수령확인 timestamp; null while the recipient is outstanding.
+             */
+            acknowledged_at: string | null;
+        };
+        NoticeReceiptPage: {
+            items: components["schemas"]["NoticeReceipt"][];
+            /**
+             * Format: int64
+             * @description Total matching rows before limit/offset.
+             */
+            total: number;
+        };
+        PayrollPreflightCheck: {
+            /** @enum {string} */
+            key: "attendance_material" | "period_lock" | "pending_leave";
+            label_ko: string;
+            ok: boolean;
+            /** @description Soft signal only; can_close is the AND of the hard checks (attendance_material, period_lock). */
+            warn: boolean;
+            note: string | null;
+            /** @description Up to 50 fix-link ids (draft lines missing attendance material, or pending leave requests); the note carries the full count. */
+            blocking_refs: components["schemas"]["Uuid"][];
+        };
+        PayrollClosePreflight: {
+            checks: components["schemas"]["PayrollPreflightCheck"][];
+            can_close: boolean;
+        };
+        PayrollRunCalcSummary: {
+            /** Format: int32 */
+            version: number;
+            calculated_at: components["schemas"]["Timestamp"];
+            /** Format: int64 */
+            calculated_lines: number;
+            /** Format: int64 */
+            blocked_lines: number;
+            /** @description Always false until the 노무사/세무사 release gate flips the stored rows. */
+            payable: boolean;
+            kernel_rate_table: string;
+            /**
+             * Format: int64
+             * @description Whole KRW won. null unless EVERY line of the run calculated — never a partial sum presented as a total.
+             */
+            total_net_won: number | null;
+        };
+        PayrollException: {
+            id: components["schemas"]["Uuid"];
+            run_id: components["schemas"]["Uuid"];
+            /** Format: uuid */
+            line_id: string | null;
+            /** Format: uuid */
+            employee_id: string | null;
+            employee_display_name: string;
+            /** @enum {string} */
+            kind: "OVERTIME_ALLOWANCE" | "RETRO_ADJUSTMENT" | "ABSENCE_DEDUCTION" | "PRORATION" | "ACCOUNT_VERIFICATION";
+            /** @enum {string} */
+            severity: "info" | "warn" | "danger";
+            /**
+             * Format: int64
+             * @description Whole KRW won. null when the delta is not derivable from a verified source.
+             */
+            amount_delta_won: number | null;
+            summary_ko: string;
+            detail: Record<string, never>;
+            /** @description Traversal handles to the objects this exception is about. The column is untyped JSON server-side; the only writer emits payroll_line and employee refs in this shape. */
+            linked_refs: components["schemas"]["PayrollLinkedRef"][];
+            /** @enum {string} */
+            status: "OPEN" | "CONFIRMED" | "HELD";
+            /** Format: uuid */
+            resolved_by: string | null;
+            /** Format: date-time */
+            resolved_at: string | null;
+            resolved_reason: string | null;
+            /**
+             * Format: uuid
+             * @description The run this HELD exception was carried forward from.
+             */
+            carried_from_run_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        PayrollExceptionPage: {
+            items: components["schemas"]["PayrollException"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            open: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        PayrollDisbursement: {
+            id: components["schemas"]["Uuid"];
+            run_id: components["schemas"]["Uuid"];
+            scheduled_at: components["schemas"]["Timestamp"];
+            /**
+             * @description Operator attestation, never a bank result — no bank API exists.
+             * @enum {string}
+             */
+            status: "SCHEDULED" | "SUBMITTED_TO_BANK" | "PAID" | "FAILED";
+            /** Format: uuid */
+            attested_by: string | null;
+            /** Format: date-time */
+            attested_at: string | null;
+            /** @description Retained only while the status is FAILED; cleared on any other attestation. */
+            reason: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        PayrollPayslipDeliveryItem: {
+            line_id: components["schemas"]["Uuid"];
+            employee_id: components["schemas"]["Uuid"];
+            inbox_doc_id: components["schemas"]["Uuid"];
+            issued_at: components["schemas"]["Timestamp"];
+            /**
+             * Format: date-time
+             * @description Read back from the inbox doc's confirmed_at; the vault does not yet confirm payslip receipts, so this stays null today.
+             */
+            acknowledged_at: string | null;
+        };
+        PayrollPayslipDeliverySummary: {
+            run_id: components["schemas"]["Uuid"];
+            /** Format: int64 */
+            issued: number;
+            /** Format: int64 */
+            acknowledged: number;
+            items: components["schemas"]["PayrollPayslipDeliveryItem"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            offset: number;
+        };
+        ClosePayrollAttendanceRequest: {
+            /** @description Must be true; the close is an attestation, and false is rejected with 422. */
+            attest: boolean;
+        };
+        ResolvePayrollExceptionRequest: {
+            /** @enum {string} */
+            action: "CONFIRM" | "HOLD";
+            /** @description Required for HOLD (a blank reason is rejected with 422). */
+            reason?: string;
+        };
+        DecidePayrollRunRequest: {
+            /** @enum {string} */
+            decision: "APPROVE" | "REJECT";
+            /** @description Required for REJECT (a blank reason is rejected with 422). */
+            reason?: string;
+        };
+        SchedulePayrollDisbursementRequest: {
+            /**
+             * Format: date-time
+             * @description RFC 3339; must be in the future.
+             */
+            scheduled_at: string;
+        };
+        AttestPayrollDisbursementRequest: {
+            /** @enum {string} */
+            status: "SCHEDULED" | "SUBMITTED_TO_BANK" | "PAID" | "FAILED";
+            /** @description Required for FAILED (a blank reason is rejected with 422). */
+            reason?: string;
+        };
+        NotificationObjectGroup: {
+            link: components["schemas"]["NotificationLink"];
+            /** Format: int64 */
+            total: number;
+            /**
+             * Format: int64
+             * @description Unread rows in the group; annotated, never mute-filtered.
+             */
+            unread: number;
+            /** @description Per-category unread breakdown within the group; zero-unread categories are omitted. */
+            categories: components["schemas"]["NotificationCategoryCount"][];
+            latest: components["schemas"]["NotificationSummary"];
+            /** @description True when an all-scope or matching object-scope mute policy covers this object for the caller; category-scope policies never flip the group bell. */
+            muted: boolean;
+        };
+        NotificationObjectGroupPage: {
+            items: components["schemas"]["NotificationObjectGroup"][];
+            /** @description Opaque keyset cursor for the next page; null at the end. */
+            next_cursor: string | null;
+        };
+        NotificationPolicySummary: {
+            id: components["schemas"]["Uuid"];
+            /** @enum {string} */
+            scope: "all" | "category" | "object";
+            /** @description Present only when scope is category. */
+            category?: string;
+            link?: components["schemas"]["NotificationLink"];
+            /** @description Extensible routing action ("mute" today; e.g. "watch" later). */
+            action: string;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        NotificationPolicyList: {
+            items: components["schemas"]["NotificationPolicySummary"][];
+        };
+        UpsertNotificationPolicyRequest: {
+            /** @enum {string} */
+            scope: "all" | "category" | "object";
+            /** @description Required when scope is category; must be absent otherwise. */
+            category?: string;
+            link?: components["schemas"]["NotificationLink"];
+        };
+        /** @enum {string} */
+        OrgChangeKind: "NEW" | "REORG" | "DISSOLVE";
+        /** @enum {string} */
+        OrgChangeStatus: "DRAFT" | "PRECHECKED" | "IN_APPROVAL" | "APPROVED" | "APPLIED" | "SETTLING" | "ARCHIVED" | "REJECTED" | "CANCELLED";
+        /** @enum {string} */
+        OrgChangeTargetKind: "ENTITY" | "REGION" | "BRANCH" | "SITE" | "ORG_UNIT";
+        /** @enum {string} */
+        OrgChangeApprovalRoleKey: "hr" | "finance" | "legal" | "executive";
+        /** @enum {string} */
+        OrgChangeStepDecision: "PENDING" | "APPROVED" | "REJECTED";
+        /** @enum {string} */
+        OrgChangeSettlementKey: "TRANSFER_EMPLOYEES" | "POSITIONS" | "COST_CENTERS" | "CLOSE_OPEN_DOCS" | "ASSETS" | "PAYROLL_SOCIAL_FINAL";
+        OrgChangeTarget: {
+            kind: components["schemas"]["OrgChangeTargetKind"];
+            /** @description Must parse as a UUID for REGION, BRANCH, and SITE targets; a free-form key for ENTITY and ORG_UNIT. */
+            ref: string;
+            label: string;
+        };
+        OrgProposalReassignScope: {
+            company: string;
+        };
+        /** @description One typed sandbox-diff operation, replayed in order at apply time. Internally tagged by `op`; unknown properties are rejected. */
+        OrgProposalOp: components["schemas"]["OrgProposalOpCreateRegion"] | components["schemas"]["OrgProposalOpRenameRegion"] | components["schemas"]["OrgProposalOpDeactivateRegion"] | components["schemas"]["OrgProposalOpCreateBranch"] | components["schemas"]["OrgProposalOpRenameBranch"] | components["schemas"]["OrgProposalOpDeactivateBranch"] | components["schemas"]["OrgProposalOpCreateSite"] | components["schemas"]["OrgProposalOpUpdateSite"] | components["schemas"]["OrgProposalOpReassignOrgUnit"];
+        OrgProposalOpCreateRegion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "CREATE_REGION";
+            name: string;
+        };
+        OrgProposalOpRenameRegion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "RENAME_REGION";
+            regionId: components["schemas"]["Uuid"];
+            name: string;
+        };
+        OrgProposalOpDeactivateRegion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "DEACTIVATE_REGION";
+            regionId: components["schemas"]["Uuid"];
+        };
+        OrgProposalOpCreateBranch: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "CREATE_BRANCH";
+            regionId: components["schemas"]["Uuid"];
+            name: string;
+        };
+        /** @description Rename and/or move a branch across regions; at least one of `name` and `regionId` must be present. */
+        OrgProposalOpRenameBranch: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "RENAME_BRANCH";
+            branchId: components["schemas"]["Uuid"];
+            name?: string;
+            regionId?: components["schemas"]["Uuid"];
+        };
+        OrgProposalOpDeactivateBranch: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "DEACTIVATE_BRANCH";
+            branchId: components["schemas"]["Uuid"];
+        };
+        OrgProposalOpCreateSite: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "CREATE_SITE";
+            customerId: components["schemas"]["Uuid"];
+            name: string;
+        };
+        OrgProposalOpUpdateSite: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "UPDATE_SITE";
+            siteId: components["schemas"]["Uuid"];
+            name: string;
+        };
+        /** @description Bounded `employees.org_unit` rewrite; the source and target org units must differ. */
+        OrgProposalOpReassignOrgUnit: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "REASSIGN_ORG_UNIT";
+            fromOrgUnit: string;
+            toOrgUnit: string;
+            scope: components["schemas"]["OrgProposalReassignScope"];
+        };
+        CreateOrgChangeRequest: {
+            kind: components["schemas"]["OrgChangeKind"];
+            target: components["schemas"]["OrgChangeTarget"];
+            effectiveDate: components["schemas"]["Date"];
+            reason: string;
+            proposal: components["schemas"]["OrgProposalOp"][];
+            supersedesId?: components["schemas"]["Uuid"];
+        };
+        /** @description Every field is optional; an omitted field is left unchanged. */
+        UpdateOrgChangeDraftRequest: {
+            kind?: components["schemas"]["OrgChangeKind"];
+            effectiveDate?: components["schemas"]["Date"];
+            reason?: string;
+            proposal?: components["schemas"]["OrgProposalOp"][];
+        };
+        OrgChangeDecisionRequest: {
+            /** @enum {string} */
+            decision: "APPROVED" | "REJECTED";
+            memo?: string;
+        };
+        CompleteOrgChangeSettlementItemRequest: {
+            memo?: string;
+        };
+        CancelOrgChangeRequest: {
+            reason: string;
+        };
+        OrgChangePreflightBlocker: {
+            code: string;
+            label: string;
+            dependentKind: string;
+            /** Format: int64 */
+            count: number;
+        };
+        OrgChangePreflightWarning: {
+            code: string;
+            label: string;
+            dependentKind?: string;
+            /** Format: int64 */
+            count?: number;
+        };
+        OrgChangePreflightReport: {
+            computedAt: components["schemas"]["Timestamp"];
+            /** @description True when the draft changed after this receipt was computed; submit recomputes and never trusts a stale receipt. */
+            stale: boolean;
+            blockers: components["schemas"]["OrgChangePreflightBlocker"][];
+            warnings: components["schemas"]["OrgChangePreflightWarning"][];
+            /** Format: int64 */
+            headcount: number;
+            /** Format: int64 */
+            dependentsTotal: number;
+        };
+        OrgChangeApprovalStep: {
+            id: components["schemas"]["Uuid"];
+            /** Format: int32 */
+            stepOrder: number;
+            roleKey: components["schemas"]["OrgChangeApprovalRoleKey"];
+            decision: components["schemas"]["OrgChangeStepDecision"];
+            decidedBy?: components["schemas"]["Uuid"];
+            decidedAt?: components["schemas"]["Timestamp"];
+            memo?: string;
+        };
+        OrgChangeSettlementItem: {
+            id: components["schemas"]["Uuid"];
+            itemKey: components["schemas"]["OrgChangeSettlementKey"];
+            /** @description Server-issued display label. */
+            label: string;
+            done: boolean;
+            doneBy?: components["schemas"]["Uuid"];
+            doneAt?: components["schemas"]["Timestamp"];
+            memo?: string;
+        };
+        OrgChangeEvent: {
+            at: components["schemas"]["Timestamp"];
+            actor: components["schemas"]["Uuid"];
+            action: string;
+            /** @description An OrgChangeStatus wire value. */
+            fromStatus?: string;
+            /** @description An OrgChangeStatus wire value. */
+            toStatus?: string;
+            reason?: string;
+        };
+        OrgChangeSummary: {
+            id: components["schemas"]["Uuid"];
+            /** @description Server-issued display code `OC-YYYY-NNNN`. */
+            code: string;
+            kind: components["schemas"]["OrgChangeKind"];
+            status: components["schemas"]["OrgChangeStatus"];
+            target: components["schemas"]["OrgChangeTarget"];
+            effectiveDate: components["schemas"]["Date"];
+            reason: string;
+            /** Format: int64 */
+            headcount: number;
+            /** Format: int64 */
+            siteCount: number;
+            /** Format: int64 */
+            teamCount: number;
+            draftedBy: components["schemas"]["Uuid"];
+            createdAt: components["schemas"]["Timestamp"];
+            updatedAt: components["schemas"]["Timestamp"];
+            supersedesId?: components["schemas"]["Uuid"];
+        };
+        OrgChangeDetail: components["schemas"]["OrgChangeSummary"] & {
+            proposal: components["schemas"]["OrgProposalOp"][];
+            preflight?: components["schemas"]["OrgChangePreflightReport"];
+            approvalSteps: components["schemas"]["OrgChangeApprovalStep"][];
+            settlementItems: components["schemas"]["OrgChangeSettlementItem"][];
+            events: components["schemas"]["OrgChangeEvent"][];
+        };
+        OrgChangePage: {
+            items: components["schemas"]["OrgChangeSummary"][];
+            /** Format: int64 */
+            total: number;
+        };
+        OrgEntitySummary: {
+            orgId: components["schemas"]["Uuid"];
+            slug: string;
+            name: string;
+            /** @description Tenant status; ACTIVE, SUSPENDED, or ARCHIVED. */
+            status: string;
+        };
+        /** @enum {string} */
+        RecruitPostingStatus: "DRAFT" | "PUBLISHED" | "CLOSED";
+        /** @enum {string} */
+        RecruitPostingScope: "INTERNAL" | "EXTERNAL";
+        /** @enum {string} */
+        RecruitEmploymentType: "REGULAR" | "RESIDENT_SHIFT" | "PART_TIME" | "POOL_DAILY";
+        /** @enum {string} */
+        RecruitApplicantStage: "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED";
+        /** @enum {string} */
+        RecruitRejectReason: "CAREER_SHORTFALL" | "ROLE_MISMATCH" | "COMP_MISMATCH" | "ACCEPTED_ELSEWHERE" | "OTHER";
+        /** @enum {string} */
+        RecruitAssessmentScore: "SUITABLE" | "NEUTRAL" | "UNSUITABLE";
+        /** @enum {string} */
+        RecruitOfferStatus: "EXTENDED" | "SUPERSEDED" | "WITHDRAWN" | "ACCEPTED" | "DECLINED";
+        /** @enum {string} */
+        RecruitAmountPeriod: "MONTHLY" | "DAILY";
+        /** @enum {string} */
+        RecruitStageEventAction: "APPLY" | "ADVANCE" | "ASSESS" | "HOLD" | "UNHOLD" | "REQUEST_DOCUMENTS" | "OFFER_EXTEND" | "OFFER_ADJUST" | "OFFER_WITHDRAW" | "OFFER_REPLY" | "REJECT" | "REINSTATE" | "HIRE";
+        RecruitPreflightCheck: {
+            /** @enum {string} */
+            key: "role_defined" | "quota_defined" | "no_duplicate_open" | "exposure_attested";
+            ok: boolean;
+            note: string;
+        };
+        RecruitPostingPreflightResponse: {
+            checks: components["schemas"]["RecruitPreflightCheck"][];
+            /** @description Verdict over the automatic checks only; the exposure attest is collected at publish. */
+            publishable: boolean;
+        };
+        /** @description Non-rejected applicant counts per pipeline stage; HIRED is not counted. */
+        RecruitStageCounts: {
+            /** Format: int64 */
+            applied: number;
+            /** Format: int64 */
+            screening: number;
+            /** Format: int64 */
+            interview: number;
+            /** Format: int64 */
+            offer: number;
+        };
+        RecruitPosting: {
+            id: components["schemas"]["Uuid"];
+            /** @description Per-organization display code, JP-0001. */
+            posting_no: string;
+            role_title: string;
+            company: string;
+            worksite: string;
+            employment_type: components["schemas"]["RecruitEmploymentType"];
+            scope: components["schemas"]["RecruitPostingScope"];
+            /** Format: int32 */
+            headcount: number;
+            /** Format: int32 */
+            hired_count: number;
+            /**
+             * Format: date
+             * @description Null = open-ended (상시).
+             */
+            deadline: string | null;
+            requirements: string[];
+            /** @description Optional ontology position instance reference. */
+            position_ref: string | null;
+            status: components["schemas"]["RecruitPostingStatus"];
+            /** Format: date-time */
+            published_at: string | null;
+            /** Format: date-time */
+            closed_at: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        RecruitPostingSummary: components["schemas"]["RecruitPosting"] & {
+            stage_counts: components["schemas"]["RecruitStageCounts"];
+        };
+        RecruitPostingListResponse: {
+            items: components["schemas"]["RecruitPostingSummary"][];
+        };
+        RecruitPostingDetailResponse: {
+            posting: components["schemas"]["RecruitPosting"];
+            applicants: components["schemas"]["RecruitApplicantSummary"][];
+        };
+        /** @description Non-PII pipeline projection for posting detail. Profile lines, source document, reject note, and the assessment signature are served only by the audited applicant detail read. */
+        RecruitApplicantSummary: {
+            id: components["schemas"]["Uuid"];
+            posting_id: components["schemas"]["Uuid"];
+            /** @description Per-organization display code, APL-0001. */
+            applicant_no: string;
+            name: string;
+            stage: components["schemas"]["RecruitApplicantStage"];
+            hold: boolean;
+            doc_requested: boolean;
+            /** Format: date-time */
+            rejected_at: string | null;
+            reject_reason: components["schemas"]["RecruitRejectReason"] | null;
+            /** @description Existence flag only; the score stays behind the audited applicant detail read. */
+            assessed: boolean;
+            hired_employee_id: components["schemas"]["Uuid"] | null;
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        RecruitAssessment: {
+            score: components["schemas"]["RecruitAssessmentScore"];
+            by: components["schemas"]["Uuid"] | null;
+            /** Format: date-time */
+            at: string | null;
+        };
+        RecruitApplicant: {
+            id: components["schemas"]["Uuid"];
+            posting_id: components["schemas"]["Uuid"];
+            applicant_no: string;
+            name: string;
+            profile_lines: string[];
+            /** @description Provenance filename only. */
+            source_document: string | null;
+            stage: components["schemas"]["RecruitApplicantStage"];
+            hold: boolean;
+            doc_requested: boolean;
+            /** Format: date-time */
+            rejected_at: string | null;
+            reject_reason: components["schemas"]["RecruitRejectReason"] | null;
+            reject_note: string | null;
+            assessment: components["schemas"]["RecruitAssessment"] | null;
+            hired_employee_id: components["schemas"]["Uuid"] | null;
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+        };
+        RecruitOffer: {
+            id: components["schemas"]["Uuid"];
+            applicant_id: components["schemas"]["Uuid"];
+            /** Format: int32 */
+            version: number;
+            /** @description Canonical NUMERIC(14,2) decimal string. */
+            amount: string;
+            amount_period: components["schemas"]["RecruitAmountPeriod"];
+            /** @enum {string} */
+            currency: "KRW";
+            reply_deadline: components["schemas"]["Date"];
+            status: components["schemas"]["RecruitOfferStatus"];
+            withdraw_reason: string | null;
+            extended_by: components["schemas"]["Uuid"];
+            extended_at: components["schemas"]["Timestamp"];
+            /** Format: date-time */
+            resolved_at: string | null;
+        };
+        RecruitStageEvent: {
+            id: components["schemas"]["Uuid"];
+            action: components["schemas"]["RecruitStageEventAction"];
+            from_stage: components["schemas"]["RecruitApplicantStage"] | null;
+            to_stage: components["schemas"]["RecruitApplicantStage"] | null;
+            /** @description Free-text or enum payload for the action — reject reason, assessment score, offer decision, or withdraw reason. */
+            reason: string | null;
+            actor: components["schemas"]["Uuid"];
+            occurred_at: components["schemas"]["Timestamp"];
+        };
+        RecruitApplicantDetailResponse: {
+            applicant: components["schemas"]["RecruitApplicant"];
+            offers: components["schemas"]["RecruitOffer"][];
+            events: components["schemas"]["RecruitStageEvent"][];
+        };
+        RecruitTalentPoolEntry: {
+            applicant_id: components["schemas"]["Uuid"];
+            applicant_no: string;
+            name: string;
+            /** @description Role title of the posting the applicant was rejected from. */
+            role_title: string;
+            reason: components["schemas"]["RecruitRejectReason"] | null;
+            rejected_at: components["schemas"]["Timestamp"];
+        };
+        RecruitTalentPoolListResponse: {
+            items: components["schemas"]["RecruitTalentPoolEntry"][];
+        };
+        RecruitPublishFailedResponse: components["schemas"]["ErrorBody"] & {
+            checks?: components["schemas"]["RecruitPreflightCheck"][];
+            publishable?: boolean;
+        };
+        RecruitHireConflictResponse: components["schemas"]["ErrorBody"] & {
+            employee_id?: components["schemas"]["Uuid"];
+        };
+        CreateRecruitPostingRequest: {
+            role_title: string;
+            company: string;
+            worksite: string;
+            employment_type: components["schemas"]["RecruitEmploymentType"];
+            scope: components["schemas"]["RecruitPostingScope"];
+            /** Format: int32 */
+            headcount: number;
+            /**
+             * Format: date
+             * @description Omit or null for an open-ended posting (상시).
+             */
+            deadline?: string | null;
+            requirements?: string[];
+            position_ref?: string | null;
+        };
+        UpdateRecruitPostingRequest: components["schemas"]["CreateRecruitPostingRequest"] & {
+            expected_updated_at: components["schemas"]["Timestamp"];
+        };
+        PublishRecruitPostingRequest: {
+            /** @description The publisher's exposure-scope attestation; false fails the preflight gate. */
+            attest_exposure_scope: boolean;
+            expected_updated_at: components["schemas"]["Timestamp"];
+        };
+        CloseRecruitPostingRequest: {
+            expected_updated_at: components["schemas"]["Timestamp"];
+        };
+        CreateRecruitApplicantRequest: {
+            name: string;
+            profile_lines?: string[];
+            source_document?: string | null;
+        };
+        AdvanceRecruitApplicantRequest: {
+            expected_updated_at: components["schemas"]["Timestamp"];
+        };
+        AssessRecruitApplicantRequest: {
+            score: components["schemas"]["RecruitAssessmentScore"];
+        };
+        HoldRecruitApplicantRequest: {
+            hold: boolean;
+        };
+        RejectRecruitApplicantRequest: {
+            reason: components["schemas"]["RecruitRejectReason"];
+            note?: string | null;
+        };
+        ExtendRecruitOfferRequest: {
+            /** @description Canonical NUMERIC(14,2) decimal string; at most 12 whole digits and 2 fraction digits, no exponent or leading zeros. */
+            amount: string;
+            amount_period: components["schemas"]["RecruitAmountPeriod"];
+            reply_deadline: components["schemas"]["Date"];
+        };
+        /** @description The amount_period is inherited from the offer being adjusted and cannot be changed. */
+        AdjustRecruitOfferRequest: {
+            /** @description Canonical NUMERIC(14,2) decimal string. */
+            amount: string;
+            /**
+             * Format: date
+             * @description Omit or null to keep the prior offer's reply deadline.
+             */
+            reply_deadline?: string | null;
+        };
+        WithdrawRecruitOfferRequest: {
+            reason: string;
+        };
+        RecordRecruitOfferReplyRequest: {
+            /** @enum {string} */
+            decision: "ACCEPTED" | "DECLINED";
+        };
+        HireRecruitApplicantRequest: {
+            employee_number: string;
+            phone: string;
+            org_unit: string;
+            position: string;
+            site: string;
+            home_branch_id: components["schemas"]["Uuid"];
+            /** @description Defaults to the accepted offer amount for MONTHLY offers; required explicitly for DAILY offers. */
+            base_pay?: string | null;
+        };
+        HireRecruitApplicantResponse: {
+            employee_id: components["schemas"]["Uuid"];
+            applicant: components["schemas"]["RecruitApplicant"];
+            posting: components["schemas"]["RecruitPosting"];
+        };
+        PayrollLinkedRef: {
+            /** @description Object family the ref points at — payroll_line or employee today; extensible. */
+            kind: string;
+            /** @description Human-facing display code for the referenced object. */
+            code: string;
+            /** Format: uuid */
+            id?: string | null;
         };
     };
     responses: {
@@ -12669,6 +18568,15 @@ export interface components {
                 "application/json": components["schemas"]["ErrorBody"];
             };
         };
+        /** @description Unexpected server-side failure. */
+        InternalServerError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorBody"];
+            };
+        };
         /** @description Webmail is not configured on this server (the master key MNT_MAIL_MASTER_KEY is absent), or JWT verification is not configured. The app is otherwise healthy. */
         MailUnavailable: {
             headers: {
@@ -12680,6 +18588,11 @@ export interface components {
         };
     };
     parameters: {
+        EvaluationCycleId: components["schemas"]["Uuid"];
+        EvaluationSubjectId: components["schemas"]["Uuid"];
+        EvaluationEmployeeId: components["schemas"]["Uuid"];
+        /** @description Lowercase path representation of a review kind. */
+        EvaluationReviewKindPath: "self" | "manager";
         LifecycleObjectType: string;
         LifecycleObjectId: string;
         WorkOrderId: string;
@@ -13481,10 +19394,16 @@ export interface operations {
             query?: {
                 status?: components["schemas"]["WorkOrderStatus"][];
                 priority?: components["schemas"]["PriorityLevel"][];
+                maintenance_type?: components["schemas"]["MaintenanceType"][];
+                maintenance_cause?: components["schemas"]["MaintenanceCause"][];
                 /** @description Use `me` for the authenticated user or a user UUID. */
                 assigned_to?: string;
                 customer_id?: components["schemas"]["Uuid"];
                 site_id?: components["schemas"]["Uuid"];
+                /** @description Restricts to one asset's orders (asset → work-order history). */
+                equipment_id?: components["schemas"]["Uuid"];
+                /** @description Narrows results to one branch already visible to the caller; it never expands branch/RLS visibility. */
+                branch_id?: components["schemas"]["Uuid"];
                 /** @description Search around this seed work order; returns branch/RLS-visible orders sharing the seed's customer, site, or equipment, including the seed. */
                 around_work_order_id?: components["schemas"]["Uuid"];
                 target_due_from?: components["schemas"]["Timestamp"];
@@ -13686,6 +19605,44 @@ export interface operations {
             };
         };
     };
+    listMyInspectionSchedules: {
+        parameters: {
+            query: {
+                due_start: components["schemas"]["Date"];
+                due_end: components["schemas"]["Date"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A branch-scoped page of schedules assigned to the authenticated mechanic. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionSchedulePage"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     listSupportTickets: {
         parameters: {
             query?: {
@@ -13694,6 +19651,8 @@ export interface operations {
                 category?: components["schemas"]["SupportTicketCategory"];
                 origin?: components["schemas"]["SupportTicketOrigin"];
                 assignee_user_id?: components["schemas"]["Uuid"];
+                /** @description Restrict to tickets linked to one customer site (the field-console queue). */
+                site_id?: components["schemas"]["Uuid"];
                 include_untriaged?: boolean;
                 limit?: number;
                 cursor?: components["schemas"]["Uuid"];
@@ -14114,6 +20073,8 @@ export interface operations {
             query?: {
                 /** @description Filter by workbook sheet/company name. */
                 company?: string;
+                /** @description Case-insensitive name or employee-number typeahead query. */
+                search?: string;
                 /** @description Filter to employees whose active authoritative home branch is missing/inactive (true) or usable (false). */
                 home_branch_review_required?: boolean;
                 limit?: number;
@@ -14136,6 +20097,69 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+        };
+    };
+    createEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeeRequest"];
+            };
+        };
+        responses: {
+            /** @description Idempotent replay of the original employee create. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            /** @description Employee created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getEmployeeDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Privileged employee detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     setEmployeeHomeBranch: {
@@ -14292,6 +20316,7 @@ export interface operations {
     listHrAttendanceSummary: {
         parameters: {
             query?: {
+                branch_id?: components["schemas"]["Uuid"];
                 limit?: number;
                 offset?: number;
             };
@@ -14330,6 +20355,16 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        payroll: {
+                            /**
+                             * Format: int64
+                             * @description Number of inspectable non-terminal payroll close runs.
+                             */
+                            active_close_runs: number;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    } & {
                         [key: string]: unknown;
                     };
                 };
@@ -14657,6 +20692,7 @@ export interface operations {
         parameters: {
             query?: {
                 employee_id?: components["schemas"]["Uuid"];
+                branch_id?: components["schemas"]["Uuid"];
                 limit?: number;
                 offset?: number;
             };
@@ -15306,6 +21342,397 @@ export interface operations {
             };
             400: components["responses"]["ValidationError"];
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listComplianceRegulations: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: components["schemas"]["RegulationImpactStatus"];
+                risk_level?: components["schemas"]["ComplianceRiskLevel"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paged regulation impacts visible to the principal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulationImpactPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createComplianceRegulation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegulationImpactRequest"];
+            };
+        };
+        responses: {
+            /** @description Created regulation impact. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulationImpact"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listComplianceObligations: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: components["schemas"]["ObligationStatus"];
+                severity?: components["schemas"]["ComplianceRiskLevel"];
+                scope_type?: components["schemas"]["ComplianceScopeKind"];
+                branch_id?: components["schemas"]["Uuid"];
+                site_id?: components["schemas"]["Uuid"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paged obligations within the principal branch scope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceObligationPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createComplianceObligation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateComplianceObligationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created obligation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceObligation"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    linkComplianceObligationRegulation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkObligationRegulationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created obligation-regulation link. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObligationRegulationLink"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listComplianceFrameworks: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: components["schemas"]["FrameworkStatus"];
+                kind?: components["schemas"]["FrameworkKind"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paged frameworks. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceFrameworkPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createComplianceFramework: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateComplianceFrameworkRequest"];
+            };
+        };
+        responses: {
+            /** @description Created framework. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceFramework"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listComplianceFrameworkControls: {
+        parameters: {
+            query: {
+                framework_id: components["schemas"]["Uuid"];
+                q?: string;
+                status?: components["schemas"]["ControlStatus"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paged controls for the framework. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceControlPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createComplianceFrameworkControl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateComplianceControlRequest"];
+            };
+        };
+        responses: {
+            /** @description Created framework control. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceControl"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    linkComplianceControlObligation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkControlObligationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created control-obligation coverage link. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ControlObligationCoverage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listComplianceEvidenceBindings: {
+        parameters: {
+            query?: {
+                control_id?: components["schemas"]["Uuid"];
+                obligation_id?: components["schemas"]["Uuid"];
+                target_type?: components["schemas"]["EvidenceTargetType"];
+                status?: components["schemas"]["EvidenceBindingStatus"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paged evidence bindings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceBindingPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createComplianceEvidenceBinding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEvidenceBindingRequest"];
+            };
+        };
+        responses: {
+            /** @description Created evidence binding. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceBinding"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    acceptComplianceEvidenceBinding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accepted evidence binding. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceBinding"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     getLocationConsentStatus: {
@@ -16716,6 +23143,47 @@ export interface operations {
             422: components["responses"]["ValidationError"];
         };
     };
+    listPurchaseRequests: {
+        parameters: {
+            query: {
+                /** @description Branch whose purchase-request queue is requested. */
+                branch_id: components["schemas"]["Uuid"];
+                /** @description Repeat this plain key to filter one or more lifecycle states. */
+                status?: components["schemas"]["PurchaseStatus"][];
+                /** @description Page size; defaults to 25 and must be between 1 and 100. */
+                limit?: number;
+                /** @description Zero-based offset; defaults to 0. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Branch-scoped purchase-request page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseRequestPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            /** @description An unexpected persistence or infrastructure error occurred. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     createPurchaseRequest: {
         parameters: {
             query?: never;
@@ -17029,6 +23497,88 @@ export interface operations {
                     "application/json": components["schemas"]["P1DispatchSummary"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listConsoleDispatchQueue: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated DispatchQueueStatus values serialized as one CSV query value. */
+                status?: components["schemas"]["DispatchQueueStatus"][];
+                limit?: number;
+                /** @description Opaque cursor returned by a previous page. */
+                after?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dispatch queue page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DispatchQueuePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listP1DispatchCandidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispatchId: components["parameters"]["DispatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dispatch candidate page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DispatchCandidatePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listP1DispatchResponses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispatchId: components["parameters"]["DispatchId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dispatch response page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["P1DispatchResponsePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -17719,6 +24269,55 @@ export interface operations {
             };
         };
     };
+    listDirectoryPeople: {
+        parameters: {
+            query?: {
+                /** @description Case-insensitive display-name search after trimming and lowercase normalization. */
+                search?: string;
+                team?: components["schemas"]["Team"];
+                /** @description Exact branch filter, intersected with the caller's effective directory scope. */
+                branch_id?: components["schemas"]["Uuid"];
+                /** @description Include archived users; defaults to false. */
+                include_inactive?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Filtered page of people and the exact total within the effective directory scope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPage"];
+                };
+            };
+            /** @description Malformed query string (for example an unparsable boolean or repeated scalar parameter); no directory query ran. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     listUsers: {
         parameters: {
             query?: {
@@ -17836,7 +24435,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The number of the caller's unread notifications. */
+            /** @description The number of the caller's unread notifications that want attention; rows suppressed by the caller's mute policies are excluded. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -17929,7 +24528,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Unread counts grouped by category, for the caller only. */
+            /** @description Unread counts grouped by category, for the caller only. Mute-suppressed rows are excluded from total_unread and by_category and tallied separately as muted_unread. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -18935,6 +25534,37 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+        };
+    };
+    getMyWorkbench: {
+        parameters: {
+            query?: {
+                from?: components["schemas"]["Timestamp"];
+                to?: components["schemas"]["Timestamp"];
+                branch_id?: components["schemas"]["Uuid"];
+                action_limit?: number;
+                todo_limit?: number;
+                calendar_limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Workbench source snapshots at one request ceiling. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkbenchResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     getCurrentUserWorkspace: {
@@ -21494,6 +28124,36 @@ export interface operations {
             422: components["responses"]["ValidationError"];
         };
     };
+    listWorkflowRunsForObject: {
+        parameters: {
+            query: {
+                object_type: components["schemas"]["WorkflowObjectKind"];
+                object_id: components["schemas"]["Uuid"];
+                limit?: number;
+                before?: components["schemas"]["Uuid"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visible workflow runs bound to the exact subject pair. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRunsForObjectResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
     createWorkflowPostFinalizationRejection: {
         parameters: {
             query?: never;
@@ -21665,6 +28325,31 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listBulkApprovalInbox: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of authorization-filtered canonical approval tasks. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkApprovalInboxResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
             422: components["responses"]["ValidationError"];
         };
     };
@@ -22700,15 +29385,22 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["OntologyActionExecuteOutcome"];
                 };
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            /** @description The supplied expected_revision is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             422: components["responses"]["ValidationError"];
             /** @description A projected-use-case dispatch is not wired yet. */
             501: {
@@ -23151,7 +29843,12 @@ export interface operations {
                 custody_stage?: components["schemas"]["CustodyStage"];
                 classification?: components["schemas"]["EvidenceClassification"];
                 limit?: number;
+                /** @description Backward-compatible offset accepted by the runtime. When cursor is supplied, offset must be omitted or zero. */
                 offset?: number;
+                /** @description Immutable evidence-register sequence returned by the first page; omit to establish the current snapshot. When cursor is supplied, as_of must match that cursor's snapshot. */
+                as_of?: number;
+                /** @description Opaque unpadded-base64url continuation token returned as next_cursor by the preceding page. */
+                cursor?: string;
             };
             header?: never;
             path?: never;
@@ -23168,6 +29865,7 @@ export interface operations {
                     "application/json": components["schemas"]["EvidenceObjectPage"];
                 };
             };
+            422: components["responses"]["ValidationError"];
         };
     };
     getEvidenceObject: {
@@ -23219,19 +29917,17 @@ export interface operations {
                     "application/json": components["schemas"]["EvidenceVerifyReport"];
                 };
             };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Object storage not configured — fixity cannot be checked. */
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Fixity storage is unavailable only when ErrorBody.error.code is evidence_store_unavailable (for example, storage is not configured). Generic auth or platform service failures also use HTTP 503 but retain the generic unavailable code and must remain retryable rather than being presented as an evidence-storage condition. */
             503: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
             };
         };
     };
@@ -23938,6 +30634,37 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    updateNoticeDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNoticeDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated draft. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoticeSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
     publishNotice: {
         parameters: {
             query?: never;
@@ -23962,6 +30689,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
         };
     };
     acknowledgeNotice: {
@@ -24332,6 +31060,5057 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+        };
+    };
+    listBenefitCatalogItems: {
+        parameters: {
+            query?: {
+                category?: "legal" | "extra";
+                branchId?: components["schemas"]["Uuid"];
+                siteId?: components["schemas"]["Uuid"];
+                q?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tenant-visible benefit rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItemPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createBenefitCatalogItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BenefitCatalogCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created audited row */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getBenefitCatalogItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                benefit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Benefit row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateBenefitCatalogItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                benefit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BenefitCatalogUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Updated row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    replaceBenefitCatalogTiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                benefit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BenefitCatalogReplaceTiersRequest"];
+            };
+        };
+        responses: {
+            /** @description Updated row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    replaceBenefitCatalogConditions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                benefit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BenefitCatalogReplaceConditionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Updated row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitCatalogItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listFacilitiesCases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Facilities cases ordered by creation time */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createDueFacilitiesCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesDueCaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Newly created case or the prior idempotent result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getFacilitiesCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Case including derived SLA and energy delta */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    triageFacilitiesCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesTriageRequest"];
+            };
+        };
+        responses: {
+            /** @description Scheduled case */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    assignFacilitiesCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesAssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Assigned case */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    startFacilitiesCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Safety-acknowledged case in progress */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    submitFacilitiesExecution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Case awaiting customer acceptance */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Required execution evidence is not confirmed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    decideFacilitiesAcceptance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesAcceptanceRequest"];
+            };
+        };
+        responses: {
+            /** @description Closed or rework-required case */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    recordFacilitiesObservation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacilitiesObservationRequest"];
+            };
+        };
+        responses: {
+            /** @description Case with derived energy and cost readback */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilitiesCase"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createLogisticsAsn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    warehouseCode: string;
+                    externalReference: string;
+                    sku: string;
+                    expectedQuantity: number;
+                };
+            };
+        };
+        responses: {
+            /** @description ASN created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsAsnCreated"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    receiveLogisticsAsn: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                asn_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    receivedQuantity: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Receipt recorded or replayed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsAsnReceipt"];
+                };
+            };
+            /** @description Conflicting replay, over-receipt, or illegal state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    putawayLogisticsAsn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asn_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                };
+            };
+        };
+        responses: {
+            /** @description Stock available for fulfillment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsAsnPutaway"];
+                };
+            };
+            /** @description Illegal state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    releaseLogisticsFulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    warehouseCode: string;
+                    sku: string;
+                    requestedQuantity: number;
+                    dueAt: components["schemas"]["LogisticsTimeTuple"];
+                };
+            };
+        };
+        responses: {
+            /** @description Fulfillment released */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsFulfillmentReleased"];
+                };
+            };
+            /** @description Insufficient available stock */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    pickLogisticsFulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fulfillment_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    /** Format: int64 */
+                    pickedQuantity: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Pick outcome */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsFulfillmentPicked"];
+                };
+            };
+            /** @description Illegal state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    packLogisticsFulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fulfillment_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                };
+            };
+        };
+        responses: {
+            /** @description Fulfillment packed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsFulfillmentPacked"];
+                };
+            };
+            /** @description Illegal state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    dispatchLogisticsShipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fulfillment_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    carrierName: string;
+                    vehicleReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Shipment dispatched */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsShipmentDispatched"];
+                };
+            };
+            /** @description Illegal transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    verifyLogisticsPod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shipment_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    recipientName: string;
+                    evidenceReference: string;
+                    confirmedAt: components["schemas"]["LogisticsTimeTuple"];
+                };
+            };
+        };
+        responses: {
+            /** @description POD verified with MET or BREACHED SLA */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsPodVerified"];
+                };
+            };
+            /** @description Illegal transition or reused evidence */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    settleLogisticsOperationalCost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shipment_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    /** @enum {string} */
+                    currencyCode: "KRW";
+                    /** Format: int64 */
+                    amountMinor: number;
+                    settledAt: components["schemas"]["LogisticsTimeTuple"];
+                };
+            };
+        };
+        responses: {
+            /** @description Operational cost settled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogisticsShipmentSettlement"];
+                };
+            };
+            /** @description Verified POD required */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEquipment3rUnits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Units */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rUnitView"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    registerEquipment3rUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    serialNo: string;
+                    modelName: string;
+                    capacityClass: string;
+                    /** Format: int64 */
+                    acquisitionCostMinor: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Unit registered */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rUnitView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Duplicate serial in organization */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getEquipment3rUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unit detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rUnitDetailView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org unit */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEquipment3rUnitHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unit_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description History entries */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rHistoryEntry"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org unit */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEquipment3rRentalCases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rental cases */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    quoteEquipment3rRentalCase: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    branchId: components["schemas"]["Uuid"];
+                    unitId: components["schemas"]["Uuid"];
+                    customerName: string;
+                    siteReference: string;
+                    /** Format: int64 */
+                    monthlyRateMinor: number;
+                    durationMonths: number;
+                    /** @enum {string} */
+                    currencyCode: "KRW";
+                };
+            };
+        };
+        responses: {
+            /** @description Idempotent replay of the stored quote (replayed=true) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            /** @description Quote created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unit not found in branch */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Key reused with different fingerprint, or unit is SOLD */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getEquipment3rRentalCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Case detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseDetailView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    decideEquipment3rApproval: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "APPROVED" | "DECLINED";
+                    reason?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Decision recorded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Missing grant, branch outside scope, or four-eyes violation */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not QUOTED or unit not AVAILABLE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    dispatchEquipment3rCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    carrierName: string;
+                    vehicleReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Case dispatched */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not APPROVED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    handoverEquipment3rCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    recipientName: string;
+                    evidenceObjectId: components["schemas"]["Uuid"];
+                    /** Format: date-time */
+                    handedOverAt: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Case handed over */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not DISPATCHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    inspectEquipment3rCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    outcome: "PASS" | "MAINTENANCE_PERFORMED";
+                    findings: string;
+                    maintenanceNote?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Inspection recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rInspectionView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not HANDED_OVER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    returnEquipment3rCase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    returnedAt: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Case returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not HANDED_OVER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    assessEquipment3rReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    conditionGrade: "A" | "B" | "C" | "D";
+                    findings: string;
+                    /** @enum {string} */
+                    disposition: "REPAIR" | "REFURBISH" | "RESALE" | "REDEPLOY";
+                };
+            };
+        };
+        responses: {
+            /** @description Case closed with disposition opened */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rCaseDetailView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org case */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Case not RETURNED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    completeEquipment3rDisposition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                disposition_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: int64 */
+                    costMinor?: number;
+                    /** Format: int64 */
+                    saleAmountMinor?: number;
+                    buyerName?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Disposition completed (financeGlPosting is always null) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Equipment3rDispositionView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unknown or cross-org disposition */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Disposition not OPEN */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listProductionPlans: {
+        parameters: {
+            query: {
+                branch_id: components["schemas"]["Uuid"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tenant- and branch-authorized production plans */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionPlan"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createProductionPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductionPlan"];
+            };
+        };
+        responses: {
+            /** @description Idempotent replay returns the existing plan */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionPlan"];
+                };
+            };
+            /** @description Draft plan and first operation created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionPlan"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listProductionCapacitySlots: {
+        parameters: {
+            query: {
+                branch_id: components["schemas"]["Uuid"];
+                capacity_date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tenant and branch scoped capacity slots */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionCapacitySlot"][];
+                };
+            };
+        };
+    };
+    ingestProductionSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionSourceIngress"];
+            };
+        };
+        responses: {
+            /** @description Existing source-version replay or accepted source fact receipt */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionSourceIngressReceipt"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    registerProductionSourceSystem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterProductionSourceSystem"];
+            };
+        };
+        responses: {
+            /** @description Registered source system with one-time credential disclosure */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionSourceSystemCredential"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    rotateProductionSourceSystem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_system_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionSourceSystemGenerationRequest"];
+            };
+        };
+        responses: {
+            /** @description Rotated source system with one-time replacement credential disclosure */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionSourceSystemCredential"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    disableProductionSourceSystem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_system_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionSourceSystemGenerationRequest"];
+            };
+        };
+        responses: {
+            /** @description Disabled source system receipt */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionSourceSystemReceipt"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getProductionPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plan, first operation, checks, and durable lifecycle lineage */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionPlanDetail"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    releaseProductionPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReleaseProductionPlan"];
+            };
+        };
+        responses: {
+            /** @description Plan and first operation released exactly once */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionPlan"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    recordProductionOperation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: components["schemas"]["Uuid"];
+                operation_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordProductionOperation"];
+            };
+        };
+        responses: {
+            /** @description Output, scrap, downtime, and quality evidence recorded idempotently */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionOperation"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listConsultingEngagements: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tenant-visible engagements */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingEngagementPage"];
+                };
+            };
+        };
+    };
+    createConsultingEngagement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingEngagementCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created or idempotently replayed original response for this exact idempotency key and request payload */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingEngagement"];
+                };
+            };
+            /** @description Idempotency key was previously used with a different request payload */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getConsultingEngagement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evidence and KPI-lineage detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingEngagementDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createConsultingDiagnostic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingDiagnosticCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created diagnostic */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingDiagnostic"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createConsultingFinding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingFindingCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created evidence-linked finding */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingFinding"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createConsultingInitiative: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingInitiativeCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created KPI-referenced initiative */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingInitiative"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    transitionConsultingEngagement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingTransitionRequest"];
+            };
+        };
+        responses: {
+            /** @description Transitioned engagement */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingEngagement"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createConsultingBenefitObservation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultingObservationCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description KPI/evidence lineage reference */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingBenefitObservation"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listConsultingEngagementHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Append-only engagement history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultingHistoryEntry"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAttendanceExceptions: {
+        parameters: {
+            query?: {
+                month?: string;
+                work_date?: string;
+                from_date?: string;
+                to_date?: string;
+                status?: "OPEN" | "RESOLVED";
+                employee_id?: components["schemas"]["Uuid"];
+                branch_id?: components["schemas"]["Uuid"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Typed exception page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceExceptionPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    raiseAttendanceException: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RaiseAttendanceExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created exception */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceException"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listMyAttendanceExceptions: {
+        parameters: {
+            query?: {
+                month?: string;
+                work_date?: string;
+                from_date?: string;
+                to_date?: string;
+                status?: "OPEN" | "RESOLVED";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Linked employee exception page, or an empty page when the principal is unlinked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnAttendanceExceptionPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMyAttendanceWeek52: {
+        parameters: {
+            query: {
+                /** @description ISO week Monday. */
+                week_start: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Linked employee Week-52 availability and projection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnAttendanceWeek52Response"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getAttendanceException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exception_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Typed exception detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceException"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    resolveAttendanceException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exception_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveAttendanceExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description Resolved exception */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceException"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listAttendanceSubstitutions: {
+        parameters: {
+            query?: {
+                month?: string;
+                work_date?: string;
+                from_date?: string;
+                to_date?: string;
+                branch_id?: components["schemas"]["Uuid"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Typed substitution page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceSubstitutionPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    assignAttendanceSubstitute: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignAttendanceSubstituteRequest"];
+            };
+        };
+        responses: {
+            /** @description Created assignment */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceSubstitution"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listAttendanceSubstitutionCandidates: {
+        parameters: {
+            query: {
+                /** @description Required even for organization-wide principals. */
+                branch_id: components["schemas"]["Uuid"];
+                covered_employee_id: components["schemas"]["Uuid"];
+                cover_date: string;
+                from_minutes: number;
+                to_minutes: number;
+                search?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eligible substitute candidate page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceSubstitutionCandidatePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    cancelAttendanceSubstitution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                substitution_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelAttendanceSubstitutionRequest"];
+            };
+        };
+        responses: {
+            /** @description Cancelled assignment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceSubstitution"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listAttendanceCloses: {
+        parameters: {
+            query: {
+                month: string;
+                branch_id?: components["schemas"]["Uuid"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Typed close board */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceCloseBoard"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    closeAttendanceMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceCloseRequest"];
+            };
+        };
+        responses: {
+            /** @description Committed close */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceMonthClose"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    preflightAttendanceClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceCloseRequest"];
+            };
+        };
+        responses: {
+            /** @description Server-derived close readiness */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceClosePreflight"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    amendAttendanceClose: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                close_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceCloseAmendmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Recorded amendment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceCloseAmendment"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listAttendanceWeek52: {
+        parameters: {
+            query: {
+                week_start: string;
+                branch_id?: components["schemas"]["Uuid"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Week-52 projection board */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceWeek52Board"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    acknowledgeAttendanceWeek52: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceWeek52AckRequest"];
+            };
+        };
+        responses: {
+            /** @description Acknowledged complete Week-52 row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceWeek52Row"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listInventoryItems: {
+        parameters: {
+            query?: {
+                branch_id?: components["schemas"]["Uuid"];
+                site_id?: components["schemas"]["Uuid"];
+                stock_location_id?: components["schemas"]["Uuid"];
+                status?: string;
+                low_stock?: boolean;
+                q?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inventory page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItemPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getInventoryItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inventory item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItem"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listInventoryConsumptions: {
+        parameters: {
+            query?: {
+                source_kind?: string;
+                work_order_id?: components["schemas"]["Uuid"];
+                dispatch_id?: components["schemas"]["Uuid"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                item_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consumption event page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryConsumptionEvent"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    consumeInventoryItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsumeInventoryItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Consumption result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryConsumptionResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listInventoryMovements: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                item_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unified movement ledger */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryMovement"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    receiveInventoryItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordInventoryReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description Receipt result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryReceiptResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getInventoryMrp: {
+        parameters: {
+            query: {
+                branchId: components["schemas"]["Uuid"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description MRP lines */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryMrpLine"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listInventoryCycleCounts: {
+        parameters: {
+            query: {
+                branchId: components["schemas"]["Uuid"];
+                status?: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cycle count page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    openInventoryCycleCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenCycleCountRequest"];
+            };
+        };
+        responses: {
+            /** @description Cycle count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getInventoryCycleCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cycle count detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    upsertInventoryCycleCountLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertCycleCountLineRequest"];
+            };
+        };
+        responses: {
+            /** @description Updated cycle count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    submitInventoryCycleCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CycleCountVersionRequest"];
+            };
+        };
+        responses: {
+            /** @description Submitted cycle count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    decideInventoryCycleCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideCycleCountRequest"];
+            };
+        };
+        responses: {
+            /** @description Decided cycle count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    cancelInventoryCycleCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CycleCountVersionRequest"];
+            };
+        };
+        responses: {
+            /** @description Cancelled cycle count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleCountDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    linkSupportTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkSupportTicketRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated ticket summary carrying the new links. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportTicketSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    recordSupportTicketAcceptance: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordSupportTicketAcceptanceRequest"];
+            };
+        };
+        responses: {
+            /** @description The recorded acceptance, or the stored acceptance on an idempotent replay. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportTicketAcceptance"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    listFieldSites: {
+        parameters: {
+            query?: {
+                /** @description Substring match on site name or customer name. */
+                q?: string;
+                customer_id?: components["schemas"]["Uuid"];
+                sla?: components["schemas"]["FieldSlaState"];
+                /** @description Page size; clamped server-side to 1..=100. */
+                limit?: number;
+                /** @description Keyset cursor — the site id of the previous page's last row. */
+                cursor?: components["schemas"]["Uuid"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A keyset page of field sites visible in the principal's branch scope, plus the unpaged total for the same filters. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldSitePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getFieldSite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Field site detail with its object chain. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldSiteDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getWorkOrderSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workOrderId: components["parameters"]["WorkOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The live cost settlement. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createWorkOrderSettlement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Replaying the same key with an identical body returns the existing settlement without a second audit event; the same key with a different body is a 409. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                workOrderId: components["parameters"]["WorkOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSettlementRequest"];
+            };
+        };
+        responses: {
+            /** @description The draft settlement, also returned on an idempotent replay. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    submitSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                settlementId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The submitted settlement. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    reviewSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                settlementId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewSettlementRequest"];
+            };
+        };
+        responses: {
+            /** @description The reviewed settlement, APPROVED or RETURNED back to DRAFT. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    voidSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                settlementId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidSettlementRequest"];
+            };
+        };
+        responses: {
+            /** @description The voided settlement; VOID frees the one-live-settlement slot. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listNoticeReceipts: {
+        parameters: {
+            query?: {
+                acknowledged?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recipient receipts, newest acknowledgment first, then display name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoticeReceiptPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getPayrollRunClosePreflight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The attendance-material / period-lock / pending-leave checks and whether the run may be closed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollClosePreflight"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    closePayrollRunAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClosePayrollAttendanceRequest"];
+            };
+        };
+        responses: {
+            /** @description The run detail after the close. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    calculatePayrollRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run detail after the calculation, including the latest calculation summary. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listPayrollRunExceptions: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page of run exceptions with the open count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollExceptionPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    resolvePayrollRunException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+                exceptionId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolvePayrollExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description The resolved exception row. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollException"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    submitPayrollRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run detail after submission. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    decidePayrollRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecidePayrollRunRequest"];
+            };
+        };
+        responses: {
+            /** @description The run detail after the decision. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    withdrawPayrollRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run detail after the withdrawal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    schedulePayrollDisbursement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchedulePayrollDisbursementRequest"];
+            };
+        };
+        responses: {
+            /** @description The created disbursement record; the run moves to DISBURSEMENT_SCHEDULED. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollDisbursement"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    attestPayrollDisbursement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttestPayrollDisbursementRequest"];
+            };
+        };
+        responses: {
+            /** @description The attested disbursement record; PAID also moves the run to PAID. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollDisbursement"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    issuePayrollPayslips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The delivery summary after issuance; the run moves to ISSUED. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollPayslipDeliverySummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getPayrollPayslipDelivery: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delivery counts and a page of delivered payslip links. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollPayslipDeliverySummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listMyNotificationObjectGroups: {
+        parameters: {
+            query?: {
+                /** @description When true, return only groups that still hold at least one unread notification. */
+                unread?: boolean;
+                /** @description Opaque keyset cursor from a previous page's next_cursor; an undecodable or foreign cursor yields an empty page. */
+                before?: string;
+                /** @description Page size (clamped server-side to 1..=200; default 50). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of the caller's notifications grouped by source object. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationObjectGroupPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    markMyNotificationUnread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The notification, unread again. read_at keeps the first-read timestamp. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    listMyNotificationPolicies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's routing policies. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPolicyList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    upsertMyNotificationPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertNotificationPolicyRequest"];
+            };
+        };
+        responses: {
+            /** @description The stored policy; a repeat upsert of the same target returns the same row. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPolicySummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["ValidationError"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    deleteMyNotificationPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The policy is removed and its rows regain attention. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description JWT verification is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    listOrgChanges: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["OrgChangeStatus"];
+                kind?: components["schemas"]["OrgChangeKind"];
+                /** @description Defaults to 50; the server clamps the value into 1..200 rather than rejecting it. */
+                limit?: number;
+                /** @description Defaults to 0; the server clamps the value into 0..100000 rather than rejecting it. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page of org-change summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createOrgChange: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrgChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Idempotent replay of the existing request. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            /** @description Draft created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request with proposal, preflight receipt, approval chain, settlement items, and history. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    updateOrgChangeDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrgChangeDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Draft updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    preflightOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Receipt stored and returned inside the request detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    submitOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Now IN_APPROVAL with the pending approval chain. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    decideOrgChangeApprovalStep: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+                stepId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgChangeDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Decision recorded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    effectuateOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Applied, or settling for a dissolve. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    completeOrgChangeSettlementItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+                itemId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteOrgChangeSettlementItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Item completed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    archiveOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archived. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    cancelOrgChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelOrgChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Cancelled. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgChangeDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listOrgEntities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Entity list, ordered by org id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgEntitySummary"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listRecruitPostings: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["RecruitPostingStatus"];
+                scope?: components["schemas"]["RecruitPostingScope"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Postings in the caller's organization, newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPostingListResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRecruitPostingRequest"];
+            };
+        };
+        responses: {
+            /** @description The draft posting. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPosting"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Posting and applicant summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPostingDetailResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRecruitPostingRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated draft. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPosting"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    preflightRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Check vector and the automatic-check verdict. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPostingPreflightResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    publishRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRecruitPostingRequest"];
+            };
+        };
+        responses: {
+            /** @description The published posting. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPosting"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Request validation failed, or the preflight gate is unmet (code PREFLIGHT_FAILED, which adds the full check vector). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPublishFailedResponse"];
+                };
+            };
+        };
+    };
+    closeRecruitPosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseRecruitPostingRequest"];
+            };
+        };
+        responses: {
+            /** @description The closed posting. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitPosting"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    createRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postingId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description The applicant at APPLIED. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Applicant, offer versions (newest first), and stage-event history (oldest first). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicantDetailResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    advanceRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdvanceRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description The advanced applicant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    assessRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description The assessed applicant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    holdRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HoldRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description The applicant with the new hold state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    requestRecruitApplicantDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The applicant with doc_requested set. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    rejectRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description The rejected applicant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    reinstateRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The reinstated applicant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitApplicant"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    extendRecruitOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtendRecruitOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description The extended offer; the applicant moves to OFFER. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitOffer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    hireRecruitApplicant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicantId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HireRecruitApplicantRequest"];
+            };
+        };
+        responses: {
+            /** @description Employee created and linked (also returned on an idempotent employee-core replay). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HireRecruitApplicantResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description State conflict; an already-hired replay additionally carries the linked employee_id. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitHireConflictResponse"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    adjustRecruitOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offerId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustRecruitOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description The new offer version. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitOffer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    withdrawRecruitOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offerId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WithdrawRecruitOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description The withdrawn offer. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitOffer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    recordRecruitOfferReply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offerId: components["schemas"]["Uuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordRecruitOfferReplyRequest"];
+            };
+        };
+        responses: {
+            /** @description The resolved offer. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitOffer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listEvaluationCycles: {
+        parameters: {
+            query?: {
+                stage?: components["schemas"]["EvaluationCycleStage"];
+                /** @description Normalized to the inclusive range 1 through 100; defaults to 50. */
+                limit?: number;
+                /** @description Negative values normalize to zero. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evaluation cycle page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCyclePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    createEvaluationCycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEvaluationCycleRequest"];
+            };
+        };
+        responses: {
+            /** @description Draft cycle created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getEvaluationCycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evaluation cycle. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getEvaluationCyclePreflight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Preflight report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationPreflightReport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    openEvaluationCycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Transitioned cycle. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    startEvaluationCalibration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Transitioned cycle. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    finalizeEvaluationCycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Transitioned cycle. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    archiveEvaluationCycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cycle_id: components["parameters"]["EvaluationCycleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Transitioned cycle. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCycleDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    addEvaluationSubject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddEvaluationSubjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Enrolled evaluation subject. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationSubjectDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getEvaluationSubject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_id: components["parameters"]["EvaluationSubjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evaluation subject. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationSubjectDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    replaceEvaluationGoals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_id: components["parameters"]["EvaluationSubjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceEvaluationGoalsRequest"];
+            };
+        };
+        responses: {
+            /** @description Subject with replacement goals. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationSubjectDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    saveEvaluationReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_id: components["parameters"]["EvaluationSubjectId"];
+                /** @description Lowercase path representation of a review kind. */
+                kind: components["parameters"]["EvaluationReviewKindPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveEvaluationReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Saved review draft. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationReview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    submitEvaluationReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_id: components["parameters"]["EvaluationSubjectId"];
+                /** @description Lowercase path representation of a review kind. */
+                kind: components["parameters"]["EvaluationReviewKindPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Submitted review. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationReview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    calibrateEvaluationSubject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_id: components["parameters"]["EvaluationSubjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalibrateEvaluationSubjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Calibrated subject. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationSubjectDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listMyEvaluationTasks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Submitter task page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationTaskPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listEmployeeEvaluationReviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: components["parameters"]["EvaluationEmployeeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Finalized review ledger. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationLedgerPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listRecruitTalentPool: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Talent-pool rows, newest rejection first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecruitTalentPoolListResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
 }

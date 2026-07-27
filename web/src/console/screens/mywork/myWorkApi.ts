@@ -8,6 +8,17 @@ import type { ConsoleApiClient } from "../../../api/client";
 import type { ActionInboxResponse } from "../overview/overviewModel";
 
 export type TodoSummary = components["schemas"]["TodoSummary"];
+export type MyWorkbenchResponse = components["schemas"]["MyWorkbenchResponse"];
+export type WorkbenchCalendarItem = components["schemas"]["WorkbenchCalendarItem"];
+export type CalendarEventResponse = components["schemas"]["CalendarEventResponse"];
+
+/** Calendar writes remain owned by collaboration.  My Work only supplies the
+ * personal scheduling intent and then re-reads its bounded aggregate. */
+export interface PersonalCalendarEventInput {
+  title: string;
+  startsAt: string;
+  endsAt: string;
+}
 
 export type ActionInboxPage = ActionInboxResponse;
 
@@ -17,6 +28,8 @@ export interface MyWorkApi {
   createTodo(text: string): Promise<void>;
   setTodoDone(id: string, done: boolean): Promise<void>;
   deleteTodo(id: string): Promise<void>;
+  loadWorkbench(): Promise<MyWorkbenchResponse>;
+  createPersonalCalendarEvent(input: PersonalCalendarEventInput): Promise<CalendarEventResponse>;
 }
 
 export function createMyWorkApi(client: ConsoleApiClient): MyWorkApi {
@@ -56,6 +69,26 @@ export function createMyWorkApi(client: ConsoleApiClient): MyWorkApi {
         params: { path: { todoId: id } },
       });
       if (error) throw new Error("delete todo failed");
+    },
+    loadWorkbench: async () => {
+      const { data } = await client.GET("/api/v1/me/workbench", {
+        params: { query: {} },
+      });
+      if (!data) throw new Error("workbench failed");
+      return data;
+    },
+    createPersonalCalendarEvent: async ({ title, startsAt, endsAt }) => {
+      const { data } = await client.POST("/api/v1/collaboration/calendar/events", {
+        body: {
+          scope_type: "PERSONAL",
+          title,
+          starts_at: startsAt,
+          ends_at: endsAt,
+          all_day: false,
+        },
+      });
+      if (!data) throw new Error("calendar event failed");
+      return data;
     },
   };
 }

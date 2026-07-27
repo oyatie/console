@@ -217,6 +217,20 @@ public struct TechnicianWorkOrder: Identifiable, Codable, Hashable, Sendable {
         self.actionTaken = actionTaken
         self.evidenceVerified = evidenceVerified
     }
+
+    /// Applies a locally known report outcome without claiming that a queued
+    /// report has reached the server.
+    public func applyingSubmittedReport(_ draft: ReportDraft, syncState: SyncState) -> TechnicianWorkOrder {
+        var submitted = self
+        submitted.resultType = draft.resultType
+        submitted.diagnosis = draft.diagnosis
+        submitted.actionTaken = draft.actionTaken
+        submitted.syncState = syncState
+        if syncState == .synced {
+            submitted.status = .reportSubmitted
+        }
+        return submitted
+    }
 }
 
 public extension TechnicianWorkOrder {

@@ -32,7 +32,6 @@ export function MailComposer({
   onRemoveAttachment,
   onSubmit,
   onCancelThread,
-  onAttachObjectUnavailable,
 }: {
   compose: MailComposerState;
   attachments: File[];
@@ -44,7 +43,6 @@ export function MailComposer({
   onRemoveAttachment: (file: File) => void;
   onSubmit: () => void;
   onCancelThread: () => void;
-  onAttachObjectUnavailable: () => void;
 }) {
   const T = ko.console.mail.composer;
   const title = compose.mode === "reply"
@@ -86,11 +84,9 @@ export function MailComposer({
     >
       <div style={rowStyle}>
         <h2 style={sectionTitleStyle}>{title}</h2>
-        {compose.mode !== "new" ? (
-          <button type="button" style={ghostButtonStyle} onClick={onCancelThread}>
-            {T.cancelThread}
-          </button>
-        ) : null}
+        <button type="button" style={ghostButtonStyle} onClick={onCancelThread}>
+          {T.close}
+        </button>
       </div>
       <div style={chipRowStyle}>
         {CLASSIFICATION_OPTIONS.map((option) => {
@@ -125,7 +121,7 @@ export function MailComposer({
           onChange={(event) => { onComposeChange("to", event.currentTarget.value); }}
         />
       </label>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "var(--sp-3)" }}>
+      <div className="mail-screen__recipient-columns" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "var(--sp-3)" }}>
         <label style={labelStyle}>
           {T.cc}
           <input
@@ -187,11 +183,6 @@ export function MailComposer({
                 }}
               />
             </label>
-          </PolicyGated>
-          <PolicyGated action={MAIL_ACTIONS.send} resource={{ kind: "mail_object_attachment" }}>
-            <button type="button" style={ghostButtonStyle} onClick={onAttachObjectUnavailable}>
-              {T.attachObject}
-            </button>
           </PolicyGated>
           <StatusChip tone="neutral">{T.attachmentLimit}</StatusChip>
         </div>

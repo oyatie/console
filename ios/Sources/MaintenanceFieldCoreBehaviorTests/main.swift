@@ -59,7 +59,7 @@ struct MaintenanceFieldCoreBehaviorTests {
         try await offlineStartRetriesSameRequestIDAndAcceptsCachedSyncResult()
         try await failedOperationSurfacesQueueResultWithoutDroppingMutation()
         try await workOrderRepositoryQueuesOnlyTransportFailuresForStartAndReport()
-        try await workOrderRepositoryDoesNotQueueWhenPostSuccessDetailRefreshFails()
+        try await reportCompletionSurvivesPostSuccessDetailRefreshFailure()
         try messengerMappersAndReducerMirrorAndroidModels()
         try await offlineComposedMessagesQueueAndReplayDirectly()
         try messengerRealtimeRequestUsesBearerHeaderAndResumeCursor()
@@ -1828,7 +1828,7 @@ struct MaintenanceFieldCoreBehaviorTests {
         try expectEqual(queuedReport.actionTaken, "케이블 교체")
     }
 
-    private static func workOrderRepositoryDoesNotQueueWhenPostSuccessDetailRefreshFails() async throws {
+    private static func reportCompletionSurvivesPostSuccessDetailRefreshFailure() async throws {
         let startGateway = RecordingEvidenceMaintenanceGateway()
         startGateway.detailError = URLError(.notConnectedToInternet)
         let (startRepository, startStore) = workOrderRepositoryFixture(
@@ -1853,15 +1853,26 @@ struct MaintenanceFieldCoreBehaviorTests {
             requestIDs: ["report-detail-refresh"]
         )
 
-        _ = try await expectAsyncThrows {
-            try await reportRepository.submitReport(id: workOrderID, draft: reportDraft())
-        }
+        try expectEqual(
+            try await reportRepository.submitReport(id: workOrderID, draft: reportDraft()),
+            .synced
+        )
         try expectEqual(reportGateway.submittedReportIDs, [workOrderID])
         let queuedReportsAfterDetailFailure = await reportStore.pending()
         try expect(
             queuedReportsAfterDetailFailure.isEmpty,
-            "detail refresh failure after a successful report must not create an offline mutation"
+            "detail refresh failure after a confirmed report must not create an offline mutation"
         )
+
+        let inProgress = generatedWorkOrder(priority: .p2, status: .inProgress)
+            .toTechnicianWorkOrder(syncState: .synced)
+        let confirmed = inProgress.applyingSubmittedReport(reportDraft(), syncState: .synced)
+        try expectEqual(confirmed.status, .reportSubmitted)
+        try expectEqual(confirmed.syncState, .synced)
+
+        let queued = inProgress.applyingSubmittedReport(reportDraft(), syncState: .pending)
+        try expectEqual(queued.status, .inProgress)
+        try expectEqual(queued.syncState, .pending)
     }
 
     private static func messengerMappersAndReducerMirrorAndroidModels() throws {

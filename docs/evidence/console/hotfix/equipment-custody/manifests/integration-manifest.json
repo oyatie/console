@@ -1,0 +1,66 @@
+{
+  "lane": "hf-equipment-custody",
+  "branch": "claude/hf-equipment-custody-20260725",
+  "kind": "hotfix",
+  "summary": "Equipment 3R handover was 500-ing at HEAD: migration 0184 landed on the spine and dropped equipment_3r_rental_cases.handover_evidence_reference, but the crate code that reads/writes it did not. This lane completes the half-applied integration.",
+  "owned_roots_touched": [
+    "backend/crates/equipment/application/src/lib.rs",
+    "backend/crates/equipment/rest/src/lib.rs",
+    "backend/crates/equipment/adapter-postgres/src/lib.rs",
+    "backend/app/tests/equipment_3r_api.rs",
+    "docs/evidence/console/hotfix/equipment-custody/**"
+  ],
+  "shared_collision_roots_requested": [
+    {
+      "root": "backend/openapi/openapi.yaml",
+      "owner": "openapi-integrator",
+      "manifest": "docs/evidence/console/hotfix/equipment-custody/manifests/openapi-fragment.yaml",
+      "blocking": true,
+      "why": "handoverEquipment3rCase still advertises evidenceReference (a retired evidence:// string) and Equipment3rCaseDetailView still returns it. The server now takes/returns evidenceObjectId and rejects unknown fields.",
+      "tag": "equipment-3r (existing; no new tag, no new operation)"
+    },
+    {
+      "root": "clients/{ts,kotlin,swift}/**",
+      "owner": "openapi-integrator",
+      "action": "regenerate after the openapi edit",
+      "blocking": true,
+      "gates": [
+        "cargo test -p mnt-app --test openapi_drift",
+        "npm run check:api-drift:portable",
+        "npm run check:api-drift:swift"
+      ]
+    }
+  ],
+  "shared_collision_roots_NOT_touched": {
+    "backend/crates/platform/db/migrations/**": "no migration is added or edited; 0184 is already on the spine and is used as-is",
+    "backend/app/src/lib.rs": "unchanged — no new register line",
+    "backend/app/src/objects.rs": "unchanged",
+    "**/BUCK, tools/buck/generated_face_registry.json": "unchanged — no Cargo.toml dependency edge is added, so gen_first_party.py does NOT need to run (this is the one place this lane deliberately diverges from codex/equipment-evidence-custody-20260724, which added mnt-docs-* edges to mnt-equipment-adapter-postgres)",
+    "web/src/i18n/ko.ts, nav.ts, screens/registry.ts": "unchanged"
+  },
+  "out_of_root_defect_reported_not_fixed": {
+    "root": "web/src/console/equipment/**",
+    "files": [
+      "web/src/console/equipment/equipmentApi.ts:83,170",
+      "web/src/console/equipment/EquipmentCaseDetail.tsx:171,334,446",
+      "web/src/console/equipment/equipmentApi.test.ts:154"
+    ],
+    "state": "already broken at HEAD — the console handover form posts evidenceReference against a column migration 0184 deleted, so it 500s today and will 422 after this lane. Not this lane's root; needs an owner.",
+    "exposure": "none live — EXPOSED_SCREEN_KEYS is [], the equipment screen is DARK",
+    "required_change": "post evidenceObjectId (a Docs/Evidence object UUID chosen from an admissible original with a verified WORM copy) and render detail.handover.evidenceObjectId; the field is no longer a free-text reference the user can type."
+  },
+  "codex_branch_disposition": {
+    "ref": "codex/equipment-evidence-custody-20260724",
+    "commit": "8cd1092f feat(equipment): bind handover to verified evidence custody",
+    "action": "plain merge (its parent 2b8f54b5 is an ancestor of this branch, so the merge applied exactly its delta), then two deliberate departures — see report.md",
+    "adopted": [
+      "the typed evidenceObjectId contract in application + rest",
+      "the UPDATE/read switch to handover_evidence_object_id",
+      "the concealment-shaped custody story test and its four rejection classes"
+    ],
+    "departed": [
+      "its mnt-equipment-adapter-postgres -> mnt-docs-adapter-postgres dependency: mnt-gate-layer-boundary FAILS on adapter->adapter",
+      "its evidence fixture: bound created_by to the disposed_by parameter (NULL unless disposed) and forged worm_status='VERIFIED', which migration 0195's storage-attestation trigger overwrites"
+    ]
+  }
+}

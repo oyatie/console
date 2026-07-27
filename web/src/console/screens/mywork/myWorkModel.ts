@@ -4,8 +4,10 @@
 // unit-testable without a DOM.
 
 import { ko } from "../../../i18n/ko";
+import { canPresentCollaborationRoute } from "../../../lib/collaborationRoutePolicy";
 import { resolveActionInboxLinkRoute } from "../../../lib/objectRegistry";
 import type { ActionInboxItem } from "../overview/overviewModel";
+import type { CalendarEventResponse, MyWorkbenchResponse, WorkbenchCalendarItem } from "./myWorkApi";
 
 export type {
   ActionInboxItem,
@@ -13,11 +15,21 @@ export type {
   InboxKind,
 } from "../overview/overviewModel";
 
+function isActionInboxLink(link: unknown): link is { kind: string; id: string } {
+  if (typeof link !== "object" || link === null) return false;
+  const candidate = link as { kind?: unknown; id?: unknown };
+  return typeof candidate.kind === "string" && typeof candidate.id === "string";
+}
+
 /** Adapt the My Work item shape to the shell-neutral registry resolver. */
 export function actionInboxLinkRoute(
   item: ActionInboxItem,
 ): string | undefined {
-  return resolveActionInboxLinkRoute(item.links);
+  const rawLinks: unknown = item.links;
+  const links = Array.isArray(rawLinks)
+    ? rawLinks.filter(isActionInboxLink)
+    : [];
+  return resolveActionInboxLinkRoute(links);
 }
 
 // ── copy (defensive-pick off ko.console.mywork with a Korean fallback; this
@@ -43,8 +55,31 @@ export interface MyWorkStrings {
     today: string;
     open: string;
     loadMore: string;
+    urgency: { now: string; today: string; wait: string; unknown: string };
+    status: { pending: string; done: string; unknown: string };
+    dueAt: (timestamp: string) => string;
+    dueUnavailable: string;
   };
-  kind: { approval: string; dispatch: string; work: string; support: string };
+  kind: { approval: string; dispatch: string; work: string; support: string; unknown: string };
+  calendar: {
+    title: string;
+    empty: string;
+    unavailable: string;
+    loadFailed: string;
+    focusTitle: string;
+    startsAt: string;
+    endsAt: string;
+    schedule: string;
+    scheduleFailed: string;
+    scheduled: string;
+    invalidRange: string;
+    open: string;
+    created: string;
+    openCreated: string;
+    range: (from: string, to: string) => string;
+    partial: string;
+    truncated: string;
+  };
   error: string;
   retry: string;
   loading: string;
@@ -73,13 +108,20 @@ const FALLBACK: MyWorkStrings = {
     today: "Today",
     open: "Open",
     loadMore: "Load more",
+    urgency: { now: "Now", today: "Today", wait: "Queued", unknown: "Priority unavailable" },
+    status: { pending: "Pending", done: "Done", unknown: "Status unavailable" },
+    dueAt: (timestamp) => `Due ${timestamp}`,
+    dueUnavailable: "Due date unavailable",
   },
   kind: {
     approval: "Approval",
     dispatch: "Dispatch",
     work: "Maintenance",
     support: "Reply",
+    unknown: "Work item unavailable",
   },
+  // Calendar copy is always product Korean, including the defensive fallback.
+  calendar: ko.console.mywork.calendar,
   error: "Could not load",
   retry: "Retry",
   loading: "Loading",
@@ -92,10 +134,115 @@ export function myWorkStrings(): MyWorkStrings {
 }
 
 export function kindLabel(
-  kind: ActionInboxItem["kind"],
+  kind: unknown,
   S: MyWorkStrings,
 ): string {
-  return S.kind[kind];
+  return typeof kind === "string" && kind in S.kind
+    ? S.kind[kind as keyof typeof S.kind]
+    : S.kind.unknown;
+}
+
+/** The API's server-owned urgency enum is the queue priority; never infer it
+ * from title, due date, or source kind in the client. */
+export function urgencyLabel(
+  urgency: unknown,
+  S: MyWorkStrings,
+): string {
+  return typeof urgency === "string" && urgency in S.assigned.urgency
+    ? S.assigned.urgency[urgency as keyof typeof S.assigned.urgency]
+    : S.assigned.urgency.unknown;
+}
+
+/** `done` is the only action-inbox completion state available to this reader. */
+export function actionStatusLabel(
+  done: unknown,
+  S: MyWorkStrings,
+): string {
+  if (done === true) return S.assigned.status.done;
+  if (done === false) return S.assigned.status.pending;
+  return S.assigned.status.unknown;
+}
+
+/** Completion color follows the same strict server-boolean boundary as status. */
+export function actionInboxDoneTone(done: unknown): "ok" | "neutral" {
+  return done === true ? "ok" : "neutral";
+}
+
+export type ActionInboxTone = "danger" | "warn" | "neutral";
+
+/** Do not let an unexpected server enum crash the presentation component. */
+export function actionInboxTone(value: unknown): ActionInboxTone {
+  return value === "danger" || value === "warn" || value === "neutral"
+    ? value
+    : "neutral";
+}
+
+/** A transport failure or malformed value must remain visible as unavailable,
+ * not become a fabricated local date. */
+export function actionInboxDue(value: unknown): Date | undefined {
+  if (typeof value !== "string" || value.trim().length === 0) return undefined;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+export type CalendarWorkbenchState =
+  | { kind: "loading" }
+  | {
+      kind: "ready";
+      items: readonly WorkbenchCalendarItem[];
+      total: number;
+      truncated: boolean;
+      partial: boolean;
+      range: MyWorkbenchResponse["range"];
+    }
+  | { kind: "denied" | "unavailable" };
+
+/**
+ * Treat non-ok aggregate envelopes as opaque.  Their codes and counts are
+ * authority-bearing server details and must never become user-visible hints.
+ */
+export function calendarWorkbenchState(
+  workbench: MyWorkbenchResponse | undefined,
+): CalendarWorkbenchState {
+  if (!workbench) return { kind: "loading" };
+  const source = workbench.calendar;
+  if (source.status !== "ok") return { kind: source.status };
+  return {
+    kind: "ready",
+    items: source.items,
+    total: source.total,
+    truncated: source.truncated,
+    partial: workbench.partial,
+    range: workbench.range,
+  };
+}
+
+/** Bounded module targets are still resolved by a browser allowlist. */
+export function calendarTargetRoute(item: WorkbenchCalendarItem): string | undefined {
+  if (item.target.module !== "overview" || item.target.id !== item.id) return undefined;
+  return "/overview";
+}
+
+/** The collaboration calendar is the authoritative owner for a freshly
+ * created event.  The returned receipt is not injected into the aggregate. */
+export function createdCalendarRoute(event: CalendarEventResponse): string | undefined {
+  return event.status === "ACTIVE" ? "/collaboration" : undefined;
+}
+
+/** A My Work receipt may advertise only a route the current UI can present. */
+export function canOpenCalendarOwner(
+  roles: readonly string[] | undefined,
+  featureGrants: readonly string[] | undefined,
+): boolean {
+  return canPresentCollaborationRoute(roles, featureGrants);
+}
+
+/** Converts a datetime-local KST entry to a real RFC3339 instant without using
+ * browser-local timezone state. */
+export function kstLocalDateTimeToIso(value: string): string | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return undefined;
+  const instant = new Date(`${value}:00+09:00`);
+  return Number.isNaN(instant.getTime()) ? undefined : instant.toISOString();
 }
 
 // ── week ribbon (real per-day due counts) ────────────────────────────────────
@@ -126,7 +273,10 @@ export function dueCountOn(
   day: Date,
 ): number {
   return items.reduce(
-    (n, item) => (item.due && sameDay(new Date(item.due), day) ? n + 1 : n),
+    (n, item) => {
+      const due = actionInboxDue(item.due);
+      return due && sameDay(due, day) ? n + 1 : n;
+    },
     0,
   );
 }
@@ -139,6 +289,9 @@ export function filterAssigned(
 ): ActionInboxItem[] {
   if (filter === "all") return [...items];
   return items.filter(
-    (item) => item.due != null && sameDay(new Date(item.due), filter.day),
+    (item) => {
+      const due = actionInboxDue(item.due);
+      return due != null && sameDay(due, filter.day);
+    },
   );
 }

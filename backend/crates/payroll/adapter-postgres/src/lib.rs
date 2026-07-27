@@ -9,6 +9,8 @@
 //! Callers must not present anything read here as an issued payslip.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod lifecycle;
+
 use mnt_kernel_core::{ErrorKind, KernelError, UserId};
 use mnt_platform_db::{DbError, with_org_conn};
 use mnt_platform_request_context::current_org;
@@ -66,6 +68,13 @@ pub struct PayrollRunSummary {
     pub created_by: Option<Uuid>,
     pub approved_by: Option<Uuid>,
     pub approved_at: Option<OffsetDateTime>,
+    pub close_receipt: Option<serde_json::Value>,
+    pub submitted_by: Option<Uuid>,
+    pub submitted_at: Option<OffsetDateTime>,
+    pub decided_by: Option<Uuid>,
+    pub decided_at: Option<OffsetDateTime>,
+    pub decision_reason: Option<String>,
+    pub approval_ref: Option<Uuid>,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
 }
@@ -87,6 +96,11 @@ pub struct PayrollRunDetail {
     pub lines_total: i64,
     pub lines_limit: i64,
     pub lines_offset: i64,
+    pub exceptions_open: i64,
+    pub exceptions_total: i64,
+    pub calculation: Option<lifecycle::RunCalcSummary>,
+    pub disbursement: Option<lifecycle::Disbursement>,
+    pub payslip_delivery: Option<lifecycle::PayslipDeliverySummary>,
 }
 
 /// One employee's readiness/staging row for a run. Deliberately has no pay
@@ -282,6 +296,35 @@ impl PgPayrollStore {
             offset,
         })
     }
+
+    /// Verify that an approver identity is visible in the current tenant.
+    ///
+    /// This is a read-only prerequisite for the future audited approval command.
+    /// It intentionally performs no status update until the shared step-up,
+    /// audit, immutable release-evidence, and issuance-artifact seams exist.
+    pub async fn assert_approver_belongs_to_current_org(
+        &self,
+        approver: UserId,
+    ) -> Result<(), PgPayrollError> {
+        let org = current_org().map_err(KernelError::from)?;
+        with_org_conn::<_, _, PgPayrollError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let exists: bool =
+                    sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)")
+                        .bind(*approver.as_uuid())
+                        .fetch_one(tx.as_mut())
+                        .await?;
+                if !exists {
+                    return Err(KernelError::forbidden(
+                        "payroll approver must belong to the current organization",
+                    )
+                    .into());
+                }
+                Ok(())
+            })
+        })
+        .await
+    }
 }
 
 /// Query logic behind [`PgPayrollStore::list_runs`], factored out so a
@@ -303,6 +346,8 @@ pub async fn list_runs_in_tx(
         r#"
         SELECT id, period_start, period_end, source_label, status,
                calculation_enabled, created_by, approved_by, approved_at,
+               close_receipt, submitted_by, submitted_at, decided_by, decided_at,
+               decision_reason, approval_ref,
                created_at, updated_at
         FROM payroll_draft_runs
         ORDER BY period_start DESC, period_end DESC, id DESC
@@ -379,6 +424,13 @@ pub async fn get_run_in_tx(
         .map(line_summary_from_row)
         .collect::<Result<Vec<_>, PgPayrollError>>()?;
 
+    let (exceptions_open, exceptions_total) = lifecycle::exception_counts_in_tx(tx, run_id).await?;
+    let calculation = lifecycle::latest_calc_summary_in_tx(tx, run_id, lines_total).await?;
+    let disbursement = lifecycle::get_disbursement_in_tx(tx, run_id).await?;
+    let payslip_delivery = lifecycle::payslip_delivery_in_tx(tx, run_id, None, None)
+        .await?
+        .filter(|summary| summary.issued > 0);
+
     Ok(Some(PayrollRunDetail {
         run,
         legal_basis,
@@ -387,6 +439,11 @@ pub async fn get_run_in_tx(
         lines_total,
         lines_limit,
         lines_offset,
+        exceptions_open,
+        exceptions_total,
+        calculation,
+        disbursement,
+        payslip_delivery,
     }))
 }
 
@@ -398,6 +455,8 @@ async fn fetch_run_row(
         r#"
         SELECT id, period_start, period_end, source_label, status,
                calculation_enabled, created_by, approved_by, approved_at,
+               close_receipt, submitted_by, submitted_at, decided_by, decided_at,
+               decision_reason, approval_ref,
                created_at, updated_at, legal_basis, source_summary
         FROM payroll_draft_runs
         WHERE id = $1
@@ -419,6 +478,13 @@ fn run_summary_from_row(row: &sqlx::postgres::PgRow) -> Result<PayrollRunSummary
         created_by: row.try_get("created_by")?,
         approved_by: row.try_get("approved_by")?,
         approved_at: row.try_get("approved_at")?,
+        close_receipt: row.try_get("close_receipt")?,
+        submitted_by: row.try_get("submitted_by")?,
+        submitted_at: row.try_get("submitted_at")?,
+        decided_by: row.try_get("decided_by")?,
+        decided_at: row.try_get("decided_at")?,
+        decision_reason: row.try_get("decision_reason")?,
+        approval_ref: row.try_get("approval_ref")?,
         created_at: row.try_get("created_at")?,
         updated_at: row.try_get("updated_at")?,
     })

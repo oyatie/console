@@ -7,7 +7,7 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
 use mnt_notices_adapter_postgres::PgNoticeStore;
 use mnt_notices_rest::{NoticeRestState, router};
 use mnt_notifications_adapter_postgres::PgNotificationStore;
@@ -190,6 +190,286 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
     .await;
 }
 
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool) {
+    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        let signing_key = SigningKey::random(&mut OsRng);
+        let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+        let public_key_pem = signing_key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+
+        let manager = UserId::new();
+        let member_in = UserId::new();
+        let member_out = UserId::new();
+        seed_user(&pool, manager, "Manager").await;
+        seed_user(&pool, member_in, "Member In").await;
+        seed_user(&pool, member_out, "Member Out").await;
+        let branch_a = seed_branch(&pool, "창원지사").await;
+        let branch_b = seed_branch(&pool, "부산지사").await;
+        let branch_empty = seed_branch(&pool, "신설지사").await;
+        join_branch(&pool, member_in, branch_a).await;
+        join_branch(&pool, member_out, branch_b).await;
+
+        let verifier = JwtVerifier::from_es256_public_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: Duration::minutes(15),
+            },
+            public_key_pem.as_bytes(),
+        )
+        .unwrap();
+
+        grant_mnt_rt(
+            &pool,
+            &[
+                "GRANT SELECT, INSERT, UPDATE ON notices TO mnt_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO mnt_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
+                "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO mnt_rt",
+                "GRANT SELECT ON object_types TO mnt_rt",
+            ],
+        )
+        .await;
+        let rt_pool = runtime_role_pool(&pool).await;
+        let notifications = PgNotificationStore::new(rt_pool.clone());
+        let store =
+            PgNoticeStore::new(rt_pool.clone()).with_notification_sink(Arc::new(notifications));
+        let service = router(NoticeRestState::new(store, Some(verifier)));
+
+        let manager_token = issue_token(
+            private_pem.as_bytes(),
+            public_key_pem.as_bytes(),
+            manager,
+            &["SUPER_ADMIN"],
+        );
+        let in_token = issue_token(
+            private_pem.as_bytes(),
+            public_key_pem.as_bytes(),
+            member_in,
+            &["ADMIN"],
+        );
+        let out_token = issue_token(
+            private_pem.as_bytes(),
+            public_key_pem.as_bytes(),
+            member_out,
+            &["ADMIN"],
+        );
+
+        // A typed, branch-scoped draft.
+        let created = post_json(
+            service.clone(),
+            "/api/v1/notices",
+            &manager_token,
+            serde_json::json!({
+                "title": "지사 안전교육 안내",
+                "body": "대상 지사는 일정을 확인해 주세요.",
+                "category": "legal",
+                "audience": {"scope": "branches", "branch_ids": [branch_b]}
+            }),
+        )
+        .await;
+        assert_eq!(created.status, StatusCode::CREATED, "{:?}", created.json);
+        let notice_id = created.json["id"].as_str().unwrap().to_owned();
+        assert_eq!(created.json["category"].as_str(), Some("legal"));
+        assert_eq!(created.json["audience_scope"].as_str(), Some("branches"));
+        assert_eq!(
+            created.json["audience_branches"][0]["name"].as_str(),
+            Some("부산지사")
+        );
+        assert!(created.json["progress"].is_object(), "{:?}", created.json);
+
+        // Validation is fail-closed: unknown category, incoherent audience,
+        // foreign branch id — all 422.
+        for bad_body in [
+            serde_json::json!({"title": "t", "body": "b", "category": "urgent"}),
+            serde_json::json!({"title": "t", "body": "b",
+                "audience": {"scope": "branches", "branch_ids": []}}),
+            serde_json::json!({"title": "t", "body": "b",
+                "audience": {"scope": "branches", "branch_ids": [uuid::Uuid::new_v4()]}}),
+        ] {
+            let rejected =
+                post_json(service.clone(), "/api/v1/notices", &manager_token, bad_body).await;
+            assert_eq!(
+                rejected.status,
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "{:?}",
+                rejected.json
+            );
+            assert_eq!(rejected.json["error"]["code"].as_str(), Some("validation"));
+        }
+
+        // Draft edit is manager-only (403 for a plain admin) and replaces the
+        // audience whole.
+        let denied_patch = patch_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}"),
+            &in_token,
+            serde_json::json!({"title": "탈취"}),
+        )
+        .await;
+        assert_eq!(denied_patch.status, StatusCode::FORBIDDEN);
+
+        let retargeted = patch_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}"),
+            &manager_token,
+            serde_json::json!({
+                "category": "training",
+                "audience": {"scope": "branches", "branch_ids": [branch_a]}
+            }),
+        )
+        .await;
+        assert_eq!(retargeted.status, StatusCode::OK, "{:?}", retargeted.json);
+        assert_eq!(retargeted.json["category"].as_str(), Some("training"));
+        assert_eq!(
+            retargeted.json["audience_branches"][0]["name"].as_str(),
+            Some("창원지사")
+        );
+
+        // Publishing to an audience with no members is a 422, not a silent
+        // empty snapshot.
+        let empty_draft = post_json(
+            service.clone(),
+            "/api/v1/notices",
+            &manager_token,
+            serde_json::json!({
+                "title": "빈 대상", "body": "게시 불가",
+                "audience": {"scope": "branches", "branch_ids": [branch_empty]}
+            }),
+        )
+        .await;
+        assert_eq!(empty_draft.status, StatusCode::CREATED);
+        let empty_id = empty_draft.json["id"].as_str().unwrap();
+        let empty_publish = post_json_empty(
+            service.clone(),
+            &format!("/api/v1/notices/{empty_id}/publish"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(
+            empty_publish.status,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "{:?}",
+            empty_publish.json
+        );
+
+        // Publish; the audience is frozen afterwards (PATCH -> 409).
+        let published = post_json_empty(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}/publish"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(published.status, StatusCode::OK, "{:?}", published.json);
+        assert_eq!(published.json["progress"]["total"].as_i64(), Some(1));
+
+        let frozen = patch_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}"),
+            &manager_token,
+            serde_json::json!({"title": "사후 수정"}),
+        )
+        .await;
+        assert_eq!(frozen.status, StatusCode::CONFLICT, "{:?}", frozen.json);
+        assert_eq!(frozen.json["error"]["code"].as_str(), Some("conflict"));
+
+        // The audience member sees their own receipt state; a non-manager row
+        // never carries progress. The out-of-audience member still reads the
+        // published notice but has no receipt.
+        let in_list = get_json(service.clone(), "/api/v1/notices", &in_token).await;
+        let row = &in_list.json.as_array().unwrap()[0];
+        assert!(row["my_receipt"].is_object(), "{row:?}");
+        assert!(row["my_receipt"]["acknowledged_at"].is_null());
+        assert!(row["progress"].is_null(), "{row:?}");
+
+        let out_view = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}"),
+            &out_token,
+        )
+        .await;
+        assert_eq!(out_view.status, StatusCode::OK);
+        assert!(out_view.json["my_receipt"].is_null());
+
+        // 수령확인 is audience-bound: outsider 404 (never 403), member 204,
+        // idempotent on repeat.
+        let out_ack = post_json_empty(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}/ack"),
+            &out_token,
+        )
+        .await;
+        assert_eq!(out_ack.status, StatusCode::NOT_FOUND, "{:?}", out_ack.json);
+
+        for _ in 0..2 {
+            let in_ack = post_json_empty(
+                service.clone(),
+                &format!("/api/v1/notices/{notice_id}/ack"),
+                &in_token,
+            )
+            .await;
+            assert_eq!(in_ack.status, StatusCode::NO_CONTENT, "{:?}", in_ack.json);
+        }
+
+        // Receipts drill is manager-only; the outstanding filter is the chase
+        // list.
+        let denied_receipts = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}/receipts"),
+            &in_token,
+        )
+        .await;
+        assert_eq!(denied_receipts.status, StatusCode::FORBIDDEN);
+
+        let receipts = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}/receipts"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(receipts.status, StatusCode::OK, "{:?}", receipts.json);
+        assert_eq!(receipts.json["total"].as_i64(), Some(1));
+        assert!(
+            receipts.json["items"][0]["display_name"]
+                .as_str()
+                .unwrap()
+                .starts_with("Member In")
+        );
+        assert!(receipts.json["items"][0]["acknowledged_at"].is_string());
+
+        let outstanding = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{notice_id}/receipts?acknowledged=false"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(outstanding.status, StatusCode::OK);
+        assert_eq!(outstanding.json["total"].as_i64(), Some(0));
+
+        // Receipts and progress for a notice that does not exist are 404 even
+        // for managers — never a fabricated empty page or 0/0.
+        let ghost = uuid::Uuid::new_v4();
+        let missing = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{ghost}/receipts"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(missing.status, StatusCode::NOT_FOUND);
+        let missing_progress = get_json(
+            service.clone(),
+            &format!("/api/v1/notices/{ghost}/progress"),
+            &manager_token,
+        )
+        .await;
+        assert_eq!(missing_progress.status, StatusCode::NOT_FOUND);
+    })
+    .await;
+}
+
 struct JsonResponse {
     status: StatusCode,
     json: Value,
@@ -205,6 +485,10 @@ async fn post_json_empty(service: axum::Router, uri: &str, token: &str) -> JsonR
 
 async fn post_json(service: axum::Router, uri: &str, token: &str, body: Value) -> JsonResponse {
     request(service, "POST", uri, Some(token), Some(body)).await
+}
+
+async fn patch_json(service: axum::Router, uri: &str, token: &str, body: Value) -> JsonResponse {
+    request(service, "PATCH", uri, Some(token), Some(body)).await
 }
 
 async fn request(
@@ -272,6 +556,38 @@ fn issue_token(
             issued_at: OffsetDateTime::now_utc(),
         })
         .unwrap()
+}
+
+async fn seed_branch(pool: &PgPool, name: &str) -> BranchId {
+    let org_uuid = *OrgId::knl().as_uuid();
+    let region: uuid::Uuid =
+        sqlx::query_scalar("INSERT INTO regions (name, org_id) VALUES ($1, $2) RETURNING id")
+            .bind(format!("region-{name}"))
+            .bind(org_uuid)
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    BranchId::from_uuid(
+        sqlx::query_scalar(
+            "INSERT INTO branches (region_id, name, org_id) VALUES ($1, $2, $3) RETURNING id",
+        )
+        .bind(region)
+        .bind(name)
+        .bind(org_uuid)
+        .fetch_one(pool)
+        .await
+        .unwrap(),
+    )
+}
+
+async fn join_branch(pool: &PgPool, user: UserId, branch: BranchId) {
+    sqlx::query("INSERT INTO user_branches (user_id, branch_id, org_id) VALUES ($1, $2, $3)")
+        .bind(user.as_uuid())
+        .bind(branch.as_uuid())
+        .bind(*OrgId::knl().as_uuid())
+        .execute(pool)
+        .await
+        .unwrap();
 }
 
 async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {

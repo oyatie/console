@@ -248,6 +248,14 @@ ON CONFLICT (thread_id, user_id) DO NOTHING;
 \if :accessibility_audit_one_row
 -- The audit profile deliberately has only the exact message selected by
 -- AccessibilityAuditUITests. Functional classes retain the full handoff sequence.
+--
+-- `now()` rather than a backdated timestamp, because threads display ordered by
+-- last activity descending. Backdating put this thread BEHIND the browser-persona
+-- threads seeded by db.sh at `now()`, so the fixture rendered third — exactly the
+-- coupling to "another scenario's ordering" this fixture was written to avoid.
+-- At accessibility text sizes a third row sits below the fold, and the AX5
+-- contract then measured scroll position instead of the row rendering it exists
+-- to check. The audited row must be the row on screen.
 INSERT INTO messenger_messages (
   id, thread_id, branch_id, sender_id, body, sent_at, org_id
 ) VALUES
@@ -257,7 +265,7 @@ INSERT INTO messenger_messages (
     '00000000-0000-0000-0000-0000000000c1',
     '00000000-0000-0000-0000-0000000d0003',
     'iOS CI 초기 메시지',
-    now() - interval '8 minutes',
+    now(),
     '00000000-0000-0000-0000-0000000000a1'
   )
 ON CONFLICT (id) DO NOTHING;
@@ -334,7 +342,16 @@ INSERT INTO messenger_messages (
     '00000000-0000-0000-0000-0000000000c1',
     '00000000-0000-0000-0000-0000000d0002',
     '다음 교대조에도 동일한 작업 맥락을 전달하겠습니다.',
-    now() - interval '1 minute',
+    -- The handoff sequence above stays backdated so it reads in order, but the
+    -- LAST message lands at `now()` for the same reason the audit profile's
+    -- single message does: threads display by last activity descending, and the
+    -- browser-persona thread seeded by db.sh has no messages at all, so its key
+    -- is pinned to the instant db.sh ran. Backdating the newest message here
+    -- made this thread's position depend on how much wall clock separated
+    -- seeding from the session mint — a minute's margin instead of the audit
+    -- profile's eight, but the same race, and one that only stays hidden while
+    -- setup is slow.
+    now(),
     '00000000-0000-0000-0000-0000000000a1'
   )
 ON CONFLICT (id) DO NOTHING;

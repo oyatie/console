@@ -132,16 +132,43 @@ final class FieldCriticalPathUITests: FieldUITestCase {
         }
         submit.tap()
 
-        XCTAssertNotNil(
-            scrollToDetailElement(app.staticTexts[KO.reportSuccessMessage], timeout: 15),
-            "Submitting the isolated report fixture must prove the live API success response."
+        let detail = app.descendants(matching: .any)[AID.detailView]
+        let detailMessage = detail.descendants(matching: .any)[AID.detailMessage]
+        guard let resolvedMessage = scrollToElement(
+            detailMessage,
+            in: detail,
+            // The response is inserted immediately after the report controls.
+            // Preserve that local scroll position instead of resetting the
+            // full Form to its first section before searching forward.
+            topSentinel: detail.buttons[AID.detailSubmitReportButton],
+            timeout: 15
+        ) else {
+            XCTFail("Submitting the isolated report fixture must expose detail-owned live API feedback.")
+            return
+        }
+        XCTAssertEqual(
+            resolvedMessage.label,
+            KO.reportSuccessMessage,
+            "Submitting the isolated report fixture must prove the rendered live API success response."
         )
-        XCTAssertNotNil(
-            scrollToDetailElement(app.staticTexts[KO.reportSubmitted], timeout: 15),
+
+        let detailStatus = detail.descendants(matching: .any)[AID.detailStatus]
+        guard let resolvedStatus = scrollToElement(
+            detailStatus,
+            in: detail,
+            topSentinel: detail.staticTexts[KO.locationConsentTitle],
+            timeout: 15
+        ) else {
+            XCTFail("Submitting the isolated report fixture must expose the detail-owned terminal status.")
+            return
+        }
+        XCTAssertEqual(
+            resolvedStatus.label,
+            KO.reportSubmitted,
             "Submitting the isolated report fixture must visibly persist the 보고 완료 terminal outcome."
         )
         XCTAssertFalse(
-            app.staticTexts[KO.operationFailed].exists,
+            detail.staticTexts[KO.operationFailed].exists,
             "A successfully persisted report must not settle in the generic operation failure state."
         )
     }
@@ -153,27 +180,21 @@ final class FieldCriticalPathUITests: FieldUITestCase {
         let detail = app.collectionViews[AID.detailView]
         XCTAssertTrue(detail.staticTexts[KO.locationConsentTitle].waitForExistence(timeout: 15), "GPS 위치 동의 section should render for the authenticated mechanic.")
 
-        let grant = detail.buttons[AID.locationConsentGrantButton]
-        let suspend = detail.buttons[AID.locationConsentSuspendButton]
-        let resume = detail.buttons[AID.locationConsentResumeButton]
-        let withdraw = detail.buttons[AID.locationConsentWithdrawButton]
-        let stateValue = detail.descendants(matching: .any)[AID.locationConsentStateValue]
-        let collectionValue = detail.descendants(matching: .any)[AID.locationConsentCollectionValue]
-        XCTAssertTrue(grant.waitForExistence(timeout: 5), "Location-consent controls must render.")
-        XCTAssertTrue(waitForLabel(stateValue, containing: KO.locationConsentNoRecord), "The isolated backend must begin without a consent record.")
-        XCTAssertTrue(waitForLabel(collectionValue, containing: KO.no), "No-record consent must prohibit GPS collection.")
-        XCTAssertTrue(grant.isEnabled)
-        XCTAssertFalse(suspend.exists)
-        XCTAssertFalse(resume.exists)
-        XCTAssertFalse(withdraw.exists)
+        XCTAssertTrue(detailButton(AID.locationConsentGrantButton).waitForExistence(timeout: 5), "Location-consent controls must render.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentNoRecord), "The isolated backend must begin without a consent record.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.no), "No-record consent must prohibit GPS collection.")
+        XCTAssertTrue(detailButton(AID.locationConsentGrantButton).isEnabled)
+        XCTAssertFalse(detailButton(AID.locationConsentSuspendButton).exists)
+        XCTAssertFalse(detailButton(AID.locationConsentResumeButton).exists)
+        XCTAssertFalse(detailButton(AID.locationConsentWithdrawButton).exists)
 
-        grant.tap()
-        XCTAssertTrue(waitForLabel(stateValue, containing: KO.locationConsentGranted), "Grant must persist the consented state through the real API.")
-        XCTAssertTrue(waitForLabel(collectionValue, containing: KO.yes), "Granted consent must permit GPS collection.")
-        XCTAssertFalse(grant.exists)
-        XCTAssertTrue(suspend.isEnabled)
-        XCTAssertFalse(resume.exists)
-        XCTAssertTrue(withdraw.isEnabled)
+        detailButton(AID.locationConsentGrantButton).tap()
+        XCTAssertTrue(waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentGranted), "Grant must persist the consented state through the real API.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.yes), "Granted consent must permit GPS collection.")
+        XCTAssertFalse(detailButton(AID.locationConsentGrantButton).exists)
+        XCTAssertTrue(detailButton(AID.locationConsentSuspendButton).isEnabled)
+        XCTAssertFalse(detailButton(AID.locationConsentResumeButton).exists)
+        XCTAssertTrue(detailButton(AID.locationConsentWithdrawButton).isEnabled)
 
         // Discard all in-memory reducer state and prove GET status readback from
         // a newly launched app before continuing the state machine.
@@ -181,51 +202,42 @@ final class FieldCriticalPathUITests: FieldUITestCase {
         _ = try await launchApp()
         waitForAuthenticatedShell()
         try openSeededWorkOrder(fixtureKey: UITestFixture.detailWorkOrderID)
-        let reloadedDetail = app.collectionViews[AID.detailView]
-        let reloadedStateValue = reloadedDetail.descendants(matching: .any)[AID.locationConsentStateValue]
-        let reloadedCollectionValue = reloadedDetail.descendants(matching: .any)[AID.locationConsentCollectionValue]
         XCTAssertTrue(
-            waitForLabel(reloadedStateValue, containing: KO.locationConsentGranted),
+            waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentGranted),
             "A fresh app launch must read the granted state back from the backend."
         )
-        XCTAssertTrue(waitForLabel(reloadedCollectionValue, containing: KO.yes), "Persisted granted consent must permit GPS collection after relaunch.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.yes), "Persisted granted consent must permit GPS collection after relaunch.")
 
-        let reloadedSuspend = reloadedDetail.buttons[AID.locationConsentSuspendButton]
-        let reloadedResume = reloadedDetail.buttons[AID.locationConsentResumeButton]
-        let reloadedWithdraw = reloadedDetail.buttons[AID.locationConsentWithdrawButton]
-        reloadedSuspend.tap()
-        XCTAssertTrue(waitForLabel(reloadedStateValue, containing: KO.locationConsentSuspended), "Suspend must persist the GPS-off state through the real API.")
-        XCTAssertTrue(waitForLabel(reloadedCollectionValue, containing: KO.no), "Suspended consent must prohibit GPS collection.")
-        XCTAssertFalse(reloadedDetail.buttons[AID.locationConsentGrantButton].exists)
-        XCTAssertFalse(reloadedSuspend.exists)
-        XCTAssertTrue(reloadedResume.isEnabled)
-        XCTAssertTrue(reloadedWithdraw.isEnabled)
+        detailButton(AID.locationConsentSuspendButton).tap()
+        XCTAssertTrue(waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentSuspended), "Suspend must persist the GPS-off state through the real API.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.no), "Suspended consent must prohibit GPS collection.")
+        XCTAssertFalse(detailButton(AID.locationConsentGrantButton).exists)
+        XCTAssertFalse(detailButton(AID.locationConsentSuspendButton).exists)
+        XCTAssertTrue(detailButton(AID.locationConsentResumeButton).isEnabled)
+        XCTAssertTrue(detailButton(AID.locationConsentWithdrawButton).isEnabled)
 
-        reloadedResume.tap()
-        XCTAssertTrue(waitForLabel(reloadedStateValue, containing: KO.locationConsentGranted), "Resume must restore the consented state through the real API.")
-        XCTAssertTrue(waitForLabel(reloadedCollectionValue, containing: KO.yes), "Resumed consent must permit GPS collection.")
+        detailButton(AID.locationConsentResumeButton).tap()
+        XCTAssertTrue(waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentGranted), "Resume must restore the consented state through the real API.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.yes), "Resumed consent must permit GPS collection.")
 
-        reloadedWithdraw.tap()
-        XCTAssertTrue(waitForLabel(reloadedStateValue, containing: KO.locationConsentWithdrawn), "Withdraw must persist the terminal revoked state through the real API.")
-        XCTAssertTrue(waitForLabel(reloadedCollectionValue, containing: KO.no), "Withdrawn consent must prohibit GPS collection.")
-        XCTAssertTrue(reloadedDetail.buttons[AID.locationConsentGrantButton].isEnabled)
-        XCTAssertFalse(reloadedSuspend.exists)
-        XCTAssertFalse(reloadedResume.exists)
-        XCTAssertFalse(reloadedWithdraw.exists)
+        detailButton(AID.locationConsentWithdrawButton).tap()
+        XCTAssertTrue(waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentWithdrawn), "Withdraw must persist the terminal revoked state through the real API.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.no), "Withdrawn consent must prohibit GPS collection.")
+        XCTAssertTrue(detailButton(AID.locationConsentGrantButton).isEnabled)
+        XCTAssertFalse(detailButton(AID.locationConsentSuspendButton).exists)
+        XCTAssertFalse(detailButton(AID.locationConsentResumeButton).exists)
+        XCTAssertFalse(detailButton(AID.locationConsentWithdrawButton).exists)
         XCTAssertFalse(app.staticTexts[KO.operationFailed].exists, "Every consent transition must complete without a visible failure state.")
 
         app.terminate()
         _ = try await launchApp()
         waitForAuthenticatedShell()
         try openSeededWorkOrder(fixtureKey: UITestFixture.detailWorkOrderID)
-        let terminalDetail = app.collectionViews[AID.detailView]
-        let terminalStateValue = terminalDetail.descendants(matching: .any)[AID.locationConsentStateValue]
-        let terminalCollectionValue = terminalDetail.descendants(matching: .any)[AID.locationConsentCollectionValue]
         XCTAssertTrue(
-            waitForLabel(terminalStateValue, containing: KO.locationConsentWithdrawn),
+            waitForLabel(AID.locationConsentStateValue, containing: KO.locationConsentWithdrawn),
             "A fresh app launch must read the withdrawn terminal state back from the backend."
         )
-        XCTAssertTrue(waitForLabel(terminalCollectionValue, containing: KO.no), "Persisted withdrawn consent must prohibit GPS collection after relaunch.")
+        XCTAssertTrue(waitForLabel(AID.locationConsentCollectionValue, containing: KO.no), "Persisted withdrawn consent must prohibit GPS collection after relaunch.")
         XCTAssertFalse(app.staticTexts[KO.operationFailed].exists)
     }
 }

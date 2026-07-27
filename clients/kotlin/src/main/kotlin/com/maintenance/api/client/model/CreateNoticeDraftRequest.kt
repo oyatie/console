@@ -23,6 +23,8 @@
 
 package com.maintenance.api.client.model
 
+import com.maintenance.api.client.model.NoticeAudienceInput
+import com.maintenance.api.client.model.NoticeCategory
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -33,6 +35,8 @@ import kotlinx.serialization.Contextual
  *
  * @param title
  * @param body
+ * @param category
+ * @param audience
  */
 @Serializable
 
@@ -42,7 +46,13 @@ data class CreateNoticeDraftRequest (
     val title: kotlin.String,
 
     @SerialName(value = "body")
-    val body: kotlin.String
+    val body: kotlin.String,
+
+    @Contextual @SerialName(value = "category")
+    val category: NoticeCategory? = null,
+
+    @SerialName(value = "audience")
+    val audience: NoticeAudienceInput? = null
 
 ) {
 

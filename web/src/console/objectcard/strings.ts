@@ -18,6 +18,10 @@
 //   relations: codeNotFound "해당 코드의 개체를 찾을 수 없습니다", resolveFailed "코드 확인 실패",
 //              resolving "확인 중"
 //   acting:    navigateAria (label, kind) => `${kind} ${label} 열기`
+//
+// koManifest (ko.console.objectcardA11y — L-F2 drag-host a11y):
+//   copyRefAria (code, title) => `${code} ${title} 참조 복사`
+//   copied "참조 복사됨", copyFailed "참조 복사 실패"
 import { ko } from "../../i18n/ko";
 import type { GateKind, GateStatusKind } from "../../api/ontologyActions";
 
@@ -131,5 +135,33 @@ export function objectCardDynStrings(): ObjectCardDynStrings {
   return (
     (ko.console as unknown as { objectcardDyn?: ObjectCardDynStrings })
       .objectcardDyn ?? DYN_FALLBACK
+  );
+}
+
+/**
+ * §4-20 object-reference drag host (L-F2). A separate namespace rather than a
+ * field on ObjectCardDynStrings: `ko.console.objectcardDyn` carries a
+ * `satisfies ObjectCardDynStrings` clause, so widening that interface would
+ * force an edit to ko.ts — a serialized collision root this lane must not
+ * touch. The Korean wire-up is requested in the lane's i18n manifest.
+ */
+export interface ObjectCardA11yStrings {
+  /** Accessible name of the drag host; its keyboard action is the copy. */
+  copyRefAria: (code: string, title: string) => string;
+  copied: string;
+  copyFailed: string;
+}
+
+const A11Y_FALLBACK: ObjectCardA11yStrings = {
+  copyRefAria: (code, title) => `Copy reference ${code} ${title}`,
+  copied: "Reference copied",
+  copyFailed: "Copy failed",
+};
+
+/** ko.console.objectcardA11y accessor (koManifest above) with the English fallback. */
+export function objectCardA11yStrings(): ObjectCardA11yStrings {
+  return (
+    (ko.console as unknown as { objectcardA11y?: ObjectCardA11yStrings })
+      .objectcardA11y ?? A11Y_FALLBACK
   );
 }

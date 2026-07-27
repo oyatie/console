@@ -25,6 +25,8 @@ package com.maintenance.api.client.model
 
 import com.maintenance.api.client.model.AssignmentSummary
 import com.maintenance.api.client.model.EquipmentSummary
+import com.maintenance.api.client.model.MaintenanceCause
+import com.maintenance.api.client.model.MaintenanceType
 import com.maintenance.api.client.model.NamedEntity
 import com.maintenance.api.client.model.PriorityLevel
 import com.maintenance.api.client.model.SiteContact
@@ -44,6 +46,8 @@ import kotlinx.serialization.Contextual
  * @param status
  * @param priority
  * @param resultType
+ * @param maintenanceType
+ * @param maintenanceCause
  * @param targetDueAt
  * @param createdAt
  * @param updatedAt
@@ -74,6 +78,12 @@ data class WorkOrderListItem (
 
     @Contextual @SerialName(value = "result_type")
     val resultType: WorkResultType,
+
+    @Contextual @SerialName(value = "maintenance_type")
+    val maintenanceType: MaintenanceType?,
+
+    @Contextual @SerialName(value = "maintenance_cause")
+    val maintenanceCause: MaintenanceCause?,
 
     @Contextual @SerialName(value = "target_due_at")
     val targetDueAt: java.time.OffsetDateTime?,

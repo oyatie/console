@@ -6,11 +6,104 @@
 //! recipients and issues its canonical NT- code (outer layers own both).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use mnt_kernel_core::{BranchId, KernelError};
 use serde::{Deserialize, Serialize};
 
 const TITLE_MAX: usize = 300;
 const BODY_MAX: usize = 20_000;
+
+/// A notice's 유형 (typed category, matches the DB `category` CHECK).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NoticeCategory {
+    #[default]
+    General,
+    Legal,
+    HrOrder,
+    Training,
+}
+
+impl NoticeCategory {
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::General => "general",
+            Self::Legal => "legal",
+            Self::HrOrder => "hr_order",
+            Self::Training => "training",
+        }
+    }
+
+    pub fn parse(value: &str) -> Result<Self, KernelError> {
+        match value {
+            "general" => Ok(Self::General),
+            "legal" => Ok(Self::Legal),
+            "hr_order" => Ok(Self::HrOrder),
+            "training" => Ok(Self::Training),
+            other => Err(KernelError::validation(format!(
+                "unknown notice category: {other}"
+            ))),
+        }
+    }
+}
+
+/// Who a notice publishes to. Branch is the schema's maximum truthful
+/// audience granularity (`user_branches` is the only org-membership
+/// primitive); the audience is frozen once the notice is published.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub enum NoticeAudience {
+    #[default]
+    Org,
+    Branches(Vec<BranchId>),
+}
+
+impl NoticeAudience {
+    /// Parse a raw scope + branch id list. `branch_ids` must be non-empty
+    /// iff `scope` is `branches` — anything else is fail-closed validation.
+    pub fn new(scope: &str, branch_ids: Vec<BranchId>) -> Result<Self, KernelError> {
+        match scope {
+            "org" => {
+                if branch_ids.is_empty() {
+                    Ok(Self::Org)
+                } else {
+                    Err(KernelError::validation(
+                        "branch_ids must be empty when audience scope is org",
+                    ))
+                }
+            }
+            "branches" => {
+                if branch_ids.is_empty() {
+                    return Err(KernelError::validation(
+                        "branch_ids must be non-empty when audience scope is branches",
+                    ));
+                }
+                let mut ids = branch_ids;
+                ids.sort_unstable();
+                ids.dedup();
+                Ok(Self::Branches(ids))
+            }
+            other => Err(KernelError::validation(format!(
+                "unknown audience scope: {other}"
+            ))),
+        }
+    }
+
+    #[must_use]
+    pub fn scope_str(&self) -> &'static str {
+        match self {
+            Self::Org => "org",
+            Self::Branches(_) => "branches",
+        }
+    }
+
+    #[must_use]
+    pub fn branch_ids(&self) -> &[BranchId] {
+        match self {
+            Self::Org => &[],
+            Self::Branches(ids) => ids,
+        }
+    }
+}
 
 /// A notice's title (matches the DB `title` CHECK).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -107,13 +200,22 @@ impl NoticeStatus {
 pub struct NewNotice {
     pub title: NoticeTitle,
     pub body: NoticeBody,
+    pub category: NoticeCategory,
+    pub audience: NoticeAudience,
 }
 
 impl NewNotice {
-    pub fn new(title: &str, body: &str) -> Result<Self, KernelError> {
+    pub fn new(
+        title: &str,
+        body: &str,
+        category: NoticeCategory,
+        audience: NoticeAudience,
+    ) -> Result<Self, KernelError> {
         Ok(Self {
             title: NoticeTitle::new(title)?,
             body: NoticeBody::new(body)?,
+            category,
+            audience,
         })
     }
 }
@@ -150,8 +252,40 @@ mod tests {
 
     #[test]
     fn new_notice_validates_both_fields() {
-        assert!(NewNotice::new("공지", "내용").is_ok());
-        assert!(NewNotice::new("", "내용").is_err());
-        assert!(NewNotice::new("공지", "").is_err());
+        let cat = NoticeCategory::General;
+        assert!(NewNotice::new("공지", "내용", cat, NoticeAudience::Org).is_ok());
+        assert!(NewNotice::new("", "내용", cat, NoticeAudience::Org).is_err());
+        assert!(NewNotice::new("공지", "", cat, NoticeAudience::Org).is_err());
+    }
+
+    #[test]
+    fn category_roundtrips_and_rejects_unknown() {
+        for (raw, parsed) in [
+            ("general", NoticeCategory::General),
+            ("legal", NoticeCategory::Legal),
+            ("hr_order", NoticeCategory::HrOrder),
+            ("training", NoticeCategory::Training),
+        ] {
+            assert_eq!(NoticeCategory::parse(raw).unwrap(), parsed);
+            assert_eq!(parsed.as_str(), raw);
+        }
+        assert!(NoticeCategory::parse("urgent").is_err());
+    }
+
+    #[test]
+    fn audience_enforces_branch_ids_iff_branches_scope() {
+        use mnt_kernel_core::BranchId;
+        assert_eq!(
+            NoticeAudience::new("org", vec![]).unwrap(),
+            NoticeAudience::Org
+        );
+        assert!(NoticeAudience::new("org", vec![BranchId::new()]).is_err());
+        assert!(NoticeAudience::new("branches", vec![]).is_err());
+        assert!(NoticeAudience::new("sites", vec![]).is_err());
+
+        let branch = BranchId::new();
+        let audience = NoticeAudience::new("branches", vec![branch, branch]).unwrap();
+        assert_eq!(audience.branch_ids(), &[branch], "duplicates collapse");
+        assert_eq!(audience.scope_str(), "branches");
     }
 }

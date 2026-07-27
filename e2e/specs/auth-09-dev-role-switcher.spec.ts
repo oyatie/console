@@ -20,14 +20,13 @@ test("role switcher mints a real session and pages render real (non-fixture) dat
 }) => {
   await page.goto("/login");
 
-  // The switcher is a DEV-only affordance, collapsed behind a reveal button —
-  // same predicate the deleted dev-preview.ts used (DEV build + localhost).
-  await page.getByRole("button", { name: /역할 전환 로그인/ }).click();
-
-  // Default role (SUPER_ADMIN) + the prefilled KNL org id are enough:
-  // SUPER_ADMIN gets org-wide BranchScope::All server-side, so no branch_id
-  // is required to see something real.
-  await page.getByRole("button", { name: "역할로 로그인" }).click();
+  // The DEV-only local preset is intentionally visible and immediately usable:
+  // the default ADMIN + Changwon branch exercises a real scoped session without
+  // exposing raw organization or branch identifiers in the primary flow.
+  await page
+    .getByRole("region", { name: "로컬 역할 전환" })
+    .getByRole("button", { name: /관리자 로그인$/ })
+    .click();
 
   // A real signed session was accepted -> navigated off /login into the app.
   await expect(page).not.toHaveURL(/\/login/, { timeout: 15_000 });
@@ -38,12 +37,10 @@ test("role switcher mints a real session and pages render real (non-fixture) dat
   // (here: empty) API response must render instead — never the old fixture
   // names, and never the load-failed error state.
   //
-  // In-app (SPA) navigation, not `page.goto` — a hard reload re-triggers the
-  // boot-time silent refresh, which correctly recomputes
-  // `requires_passkey_setup` from the DB for this dev-auth persona (it has no
-  // real passkey, exactly like a real never-enrolled employee) and forces
-  // onboarding. That is real backend behavior working as intended, not
-  // something this switcher should route around.
+  // Use the same in-app navigation a developer exercises manually. Silent
+  // refresh now preserves this authenticated synthetic persona's dev-only
+  // passkey bypass, so a hard reload is also safe; ordinary zero-passkey users
+  // in the same binary still enter production-shaped onboarding.
   await page.getByRole("link", { name: "연차관리" }).click();
   await expect(page.getByRole("heading", { name: "연차관리" })).toBeVisible({
     timeout: 15_000,

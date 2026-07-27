@@ -23,6 +23,8 @@
 
 package com.maintenance.api.client.model
 
+import com.maintenance.api.client.model.MaintenanceCause
+import com.maintenance.api.client.model.MaintenanceType
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -36,6 +38,8 @@ import kotlinx.serialization.Contextual
  * @param symptom
  * @param customerRequest
  * @param targetDueAt
+ * @param maintenanceType
+ * @param maintenanceCause
  */
 @Serializable
 
@@ -54,7 +58,13 @@ data class CreateWorkOrderRequest (
     val customerRequest: kotlin.String? = null,
 
     @Contextual @SerialName(value = "target_due_at")
-    val targetDueAt: java.time.OffsetDateTime? = null
+    val targetDueAt: java.time.OffsetDateTime? = null,
+
+    @Contextual @SerialName(value = "maintenance_type")
+    val maintenanceType: MaintenanceType? = null,
+
+    @Contextual @SerialName(value = "maintenance_cause")
+    val maintenanceCause: MaintenanceCause? = null
 
 ) {
 

@@ -3,9 +3,22 @@
 Scope of our module (evidence, grepped from this repository):
 - Backend crate `backend/crates/support/{domain,application,adapter-postgres,rest}` — status FSM + priority→SLA in `domain/src/lib.rs`; REST in `rest/src/lib.rs`; schema in `platform/db/migrations/0022_create_support.sql`.
 - Frontend `web/src/features/support/*` — `SupportTicketList.tsx`, `SupportTicketDetail.tsx`, `SupportTicketPin.tsx`, `CustomerIntakeForm.tsx`, `CreateTicketForm.tsx`, `SloSettingsCard.tsx`, `slo-settings.ts`, `support-format.ts`.
-- Ledger: `docs/program/console-program-ledger.md` (§4-26 SLO≠SLA; support row "58 / revise / §4-11 KPI tiles + chip filters + right-pin detail"; BE2 `support_slo_setting` config-object seeded through the engine).
+- Ledger: `docs/program/console-program-ledger.md` (§4-26 SLO≠SLA; support row "58 / revise / §4-11 KPI tiles + chip filters + right-pin detail"; the later Phase 0 Support SLO truth-down supersedes the historical `support_slo_setting` parity claims).
 
 **Rigor:** every vendor cell is `[V]` (verified, source URL) or `[I]` (inferred from known product patterns). Our-console cells are code-cited. Vendors that don't play in this space get **N/A + one line**.
+
+> **Phase 0 Support SLO truth-down (2026-07-25; Support-only source overlay
+> `55d00f8aacaf8d1ba4db87b2f5345605af856a27`): PARTIAL.** The six-category
+> local defaults currently drive ticket timers, breach counts, and alerts. The
+> separately seeded three-bucket `support_slo_setting` ontology type is legacy,
+> does not serve those computations, and is taxonomy-incompatible with the six
+> Support ticket categories. Its settings-card approval is client-only and
+> commits multiple writes without backend aggregate atomicity. Ticket `due_at`
+> remains an SLA deadline and is not SLO policy authority. The approved next
+> architecture is one Support-owned, immutable six-category elapsed-only policy
+> aggregate with backend atomic approval. That architecture is not implemented
+> here; no migration, backend route, parity, deployment, or completion is
+> claimed.
 
 Columns: **Our Console** · Palantir Foundry · Slack · Microsoft Teams · Asana · n8n · Rippling · SAP (Service Cloud / SuccessFactors).
 
@@ -58,7 +71,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | Priority→SLA `due_at` derived on create (URGENT 4h / HIGH 1d / MED 3d / LOW 7d, `SlaPolicy::due_at`). **Deliberate §4-26 distinction: support = SLO (internal target, breach = alert) not SLA (contractual, breach = penalty).** SLO is a **configurable setting object per ticket type** (thresholdHours / windowDays / escalationTarget `TEAM_LEAD`/`DEDICATED`/`ADMIN`), edited no-code with revision staging; source-computed timer chip is re-stamped in source each minute; escalation posts an **audited internal note**. (`slo-settings.ts`, `SloSettingsCard.tsx`, `support-format.ts` `sloTimerChip`.) |
+| **Our Console** | **PARTIAL.** Priority→SLA `due_at` is derived on create (URGENT 4h / HIGH 1d / MED 3d / LOW 7d, `SlaPolicy::due_at`) and remains an SLA deadline, not SLO policy authority. The internal SLO timer chips, breach counts, and alert targets instead use `defaultSloSettings()` — six local category rules over elapsed time. The timer helper currently lets `due_at` override that local deadline, which is a semantic incompatibility rather than evidence of a served SLO policy. The separately persisted three-bucket ontology settings are not consumed by these timers or alerts. (`slo-settings.ts`, `SupportPage.tsx`, `SupportBody.tsx`.) |
 | Palantir Foundry | [I] No SLA primitive; a due-date property + scheduled automation that fires when breached — you build it. https://www.palantir.com/docs/foundry/use-case-patterns/alerting-workflow |
 | Slack | [I] No native SLA; urgency captured in the swarm form, breach handling lives in the connected Service Cloud. https://slack.com/blog/collaboration/salesforces-support-resolves-cases-faster |
 | MS Teams | [I] SLA enforced in ServiceNow; Teams only relays breach notifications. https://aelumconsulting.com/blogs/servicenow-microsoft-teams-integration/ |
@@ -110,7 +123,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | Deny-by-default feature-map: `AssigneeManage` (admin-only) gates triage/assign/transition; `WorkOrderStart` gates commenting (MECHANIC/ADMIN/SUPER_ADMIN); receptionist (Limited) reads but composer is hidden, not 403-on-click. RLS FORCE + branch scoping on every read; `approveSloRevision` blocks self-approval client-side, while backend route enforcement remains pending. |
+| **Our Console** | Deny-by-default feature-map: `AssigneeManage` (admin-only) gates triage/assign/transition; `WorkOrderStart` gates commenting (MECHANIC/ADMIN/SUPER_ADMIN); receptionist (Limited) reads but composer is hidden, not 403-on-click. RLS FORCE + branch scoping applies to the cited ticket reads. SLO settings approval is only a client-side actor inequality check; the three ontology writes are issued together from the browser but are not one backend-atomic approval. |
 | Palantir Foundry | [V] Granular ontology security incl. dynamic/row-level security on objects and Actions. https://www.palantir.com/docs/foundry/ontology/overview |
 | Slack | [I] Channel membership = visibility; private channels for sensitive cases; no field-level ticket ACL. https://slack.com/blog/collaboration/salesforces-support-resolves-cases-faster |
 | MS Teams | [I] Team/channel roles + ServiceNow ACLs behind; approvals via adaptive cards. https://aelumconsulting.com/blogs/servicenow-microsoft-teams-integration/ |
@@ -162,7 +175,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | SLO policy is a **governed config object** (per-type thresholds edited no-code with revision staging + four-eyes); but ticket categories/priorities/fields are code enums, not user-extensible yet. (`slo-settings.ts`; ledger BE2 `support_slo_setting` seeded through the engine.) |
+| **Our Console** | **PARTIAL.** A legacy three-bucket ontology object can be listed and revised from the settings card, but it is not the serving SLO policy: six local category defaults drive timers and alerts. The taxonomies are incompatible, staging exists only in client state, and approval fans out non-atomically. Ticket categories/priorities/fields remain code enums. The approved Support-owned immutable six-category aggregate is next architecture, not current implementation. |
 | Palantir Foundry | [V] **Source-cited** — define object types/props/links/Actions with no code; app built in Workshop. https://www.palantir.com/docs/foundry/action-types/overview |
 | Slack | [I] Workflow Builder (no-code) + apps; ticket schema comes from the connected system. https://slack.com/ |
 | MS Teams | [I] Power Platform low-code; schema from ServiceNow/Dataverse. https://aelumconsulting.com/blogs/servicenow-microsoft-teams-integration/ |
@@ -188,7 +201,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | **Native.** Four-eyes 적용 승인/철회 revision staging = 전자결재 culture; escalation targets 팀장/전담자/관리자; branch/group (법인→branch→worksite) scoping is the RLS backbone; Korean strings throughout (`ko.support.*`, `supportslo-strings.ts`). |
+| **Our Console** | **PARTIAL.** Korean labels and escalation-target vocabulary (팀장/전담자/관리자) are present, and ticket reads retain branch/group scoping. 적용 승인/철회 is currently client-local UI behavior, not backend-atomic 전자결재 enforcement; it must not be treated as a completed four-eyes control. (`ko.support.*`, `supportslo-strings.ts`, `SloSettingsCard.tsx`.) |
 | Palantir Foundry | [I] Localizable but no built-in Korean approval/labor semantics; you model 전자결재 yourself. |
 | Slack | [I] Korean UI available; 전자결재/근로기준법 workflows are custom-built. |
 | MS Teams | [I] Korean UI; approvals via Power Automate, no 근로기준법 primitives. |
@@ -219,8 +232,8 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 ## What we'd steal (ranked)
 
-1. **SLA timer that starts on acknowledgement and auto-pauses on "on hold"/"awaiting info"** → **Asana** is the cited reference for this capability. Our `due_at` is a static create-time stamp; a pause/resume clock is truer to real SLO. Fits our SLO setting object cleanly (add `pausedStates` + accrued-time fields). **Cost: M.**
-2. **SLA by customer tier, not just priority** → **SAP**. Our SLO keys only on category/priority; a tier dimension (VIP account, contract level) is a natural second axis on the setting object. **Cost: S–M.**
+1. **SLA timer that starts on acknowledgement and auto-pauses on "on hold"/"awaiting info"** → **Asana** is the cited reference for this capability. Our SLA `due_at` is a static create-time stamp; it must remain separate from the approved elapsed-only SLO-policy aggregate. Any pause/resume design is a later decision, not part of the approved Phase 0 architecture. **Cost: M.**
+2. **SLA by customer tier, not just priority** → **SAP**. Customer-tier SLA policy is a separate contractual axis; it must not be folded into or used to claim completion of the internal Support SLO aggregate. **Cost: S–M.**
 3. **Skills-based + load-balanced auto-routing** → **SAP**. We only self-assign/manual-assign. A routing Action over branch + skill tags + open-ticket count would cut triage latency. Fits our authz/branch model. **Cost: M.**
 4. **Swarm thread with a designated swarm lead** → **Slack**. Our comment thread is flat agent/customer; a "pull in an expert / escalate to a swarm" affordance on high-priority tickets (reusing messenger) mirrors the 26%-faster-close pattern. **Cost: M.**
 5. **Multi-form typed intake (one form per request type, pre-mapped fields)** → **Asana**. We have exactly two intake forms; per-category forms that pre-set category/priority reduce triage. Fits our typed-enum grammar. **Cost: S.**
@@ -236,8 +249,8 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 - **Task-flow:** money task = *resolve a ticket* — **~3 steps, one ticket at a time, no canned reply/macro**. Zendesk's **one-click macro** bundles a canned reply + N field changes and applies via toolbar or `/`-inline. **Steal:** saved macros (a bundled field-set + reply exposed as a reusable ontology Action) + `/`-inline apply — our ontology Action types *are* bundled writebacks. Cost **M**.
 - **IA / layout:** generic ModuleScreen — list + single 22rem panel + resolve action. **GAP:** no multi-record **tabs/subtabs**, no **split-view** persistence, no **utility bar** — an agent juggling 5 tickets can't tab between them. **Steal:** Salesforce **workspace tabs + subtabs** (the biggest agent-productivity gap) [L]; utility bar (notes/recent) as a docked footer [M]; ServiceNow progressive-disclosure tabbed record [M].
-- **Data-model:** Zendesk's custom-objects + typed lookups are a mature no-code extension model (more mature than our currently populated state). **Source-bounded difference:** the **SLO setting is a governed ontology instance with draft→approve staging + as-of** — the sampled support-vendor citations do not show their config that way — and our ticket FSM is hash-fixity-audited; our uncapped typed 4-tuple links differs from Zendesk's documented 5–10 lookup cap. **Steal:** Zendesk custom-objects + typed lookup UX [M]; junction-object / relationship-field authoring UI [S].
-- **Governance:** scoped design difference — SLO-as-governed-config-object means a config change is itself four-eyes-able (ServiceNow SLA definitions are plain admin-config). **Steal:** SLO-threshold four-eyes is **already enforced client-side** (`approveSloRevision` blocks self-approval); the remaining work is **backend enforcement** (route through `gov_approvals`) [S]; high-risk ticket → step-up SoD before a privileged support action (impersonation/data-export) → ServiceNow [M].
-- **Automation / extensibility:** **Steal:** on-ticket-event → workflow as a first-class lifecycle-transition trigger (not just a periodic monitor) → Zendesk [S–M]; reusable action groups (subflows/spokes) → ServiceNow [M]; SLA-breach timer trigger wired to the SLO setting object [M].
+- **Data-model:** Zendesk's custom-objects + typed lookups are a mature no-code extension model (more mature than our currently populated state). The existing `support_slo_setting` is a legacy three-bucket ontology schema, not the serving policy and not compatible with the six Support categories. The approved replacement shape is one immutable six-category elapsed-only Support aggregate; implementation and migration remain unclaimed. **Steal:** Zendesk custom-objects + typed lookup UX [M]; junction-object / relationship-field authoring UI [S].
+- **Governance:** scoped design target — a Support-owned policy revision should be four-eyes-able as one aggregate. Current source only hides approval from the staging actor in the client and then issues three independent writes; it supplies neither a backend approval decision nor aggregate atomicity. High-risk ticket → step-up SoD before a privileged support action (impersonation/data-export) remains a ServiceNow-derived option [M].
+- **Automation / extensibility:** **Steal:** on-ticket-event → workflow as a first-class lifecycle-transition trigger (not just a periodic monitor) → Zendesk [S–M]; reusable action groups (subflows/spokes) → ServiceNow [M]. An SLO-breach trigger must consume the future Support-owned policy aggregate rather than SLA `due_at` or the legacy ontology schema [M].
 
-**Adjudication:** `approveSloRevision` (`web/src/features/support/slo-settings.ts:118-122`) blocks self-approval on the client. This is not a backend four-eyes guarantee; route enforcement through `gov_approvals` remains pending.
+**Adjudication:** current self-approval prevention is client-only and current multi-rule commit is non-atomic. The approved backend-atomic six-category aggregate remains architecture only; this dossier names no migration or backend route and makes no implementation, parity, deployment, or completion claim.

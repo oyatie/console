@@ -1,12 +1,14 @@
 # Review/fix and merge governance gates
 
-Source directive: Kanban `t_1816c4f3`, refining the lifecycle spec in
-`docs/specs/autonomous-pr-lifecycle-operating-spec.md`.
+Source basis: `docs/specs/autonomous-pr-lifecycle-operating-spec.md`.
 Last authored: 2026-07-09T17:00:50Z.
 
 This procedure is the concrete operating checklist for independent review/fix
 loops, CI evidence, conflict checks, approval handling, merge eligibility, and
-post-merge closeout on the `maintenance` board. It is intentionally stricter
+post-merge closeout in this repository. Repository authority is an issue or PR
+when one exists, an isolated worktree/branch at its immutable commit SHA, a
+review artifact tied to that diff/head, and check evidence tied to that SHA;
+external task-system claims and receipts are not authority. It is intentionally stricter
 than GitHub branch protection: if GitHub allows an action but this document has
 not been satisfied, the worker must not claim the lane is merge-ready or done.
 
@@ -17,23 +19,23 @@ production rollout status, release status, or live user-story evidence.
 
 A lane moves through these terminally auditable stages:
 
-1. **Implementation ready for review** — the implementation card has RED or a
-   documented test-after exception, GREEN evidence, simplification/test-fill
-   notes, security-hardening notes, changed paths, current head SHA, PR number or
-   branch, and required review lenses.
-2. **Independent Review/fix active** — a dedicated Review/fix child card owns the
-   review-required state. Review is never hidden as a passive block on the
-   implementation card.
+1. **Implementation ready for review** — the implementation issue, PR, or
+   worktree record has RED or a documented test-after exception, GREEN evidence,
+   simplification/test-fill notes, security-hardening notes, changed paths,
+   current head SHA, PR number or branch, and required review lenses.
+2. **Independent Review/fix active** — a dedicated independent review record,
+   tied to the current diff/head, owns the review-required state. Review is never
+   hidden as a passive block on the implementation record.
 3. **REQUEST_CHANGES fix active** — every blocking review finding has a fix owner
-   and rerun plan. Fix work may be the same Review/fix card when small, or a
-   child of it when the fix is substantial or touches different paths.
+   and rerun plan. Small fixes may remain in the same review record; substantial
+   or disjoint-root fixes require a separate repository issue or PR record.
 4. **Approval recorded** — approval is backed by an actual PR review state,
    reviewer report, or human/operator statement tied to the current diff/head.
 5. **Merge readiness active** — CI/checks, unresolved threads, conflict state,
    branch protection, release gates, dirty-root safety, and human blockers are
    rechecked against the exact head to be merged.
-6. **Merged** — the merge commit/SHA and method are recorded, or the merge card
-   blocks with the exact unavailable capability.
+6. **Merged** — the merge commit/SHA and method are recorded, or the merge
+   record blocks with the exact unavailable capability.
 7. **Post-merge closeout** — target branch containment, post-merge CI/release
    signals, rollout/E2E or N/A, release-governance note, rollback/observability,
    and learning/observation-harvest disposition are recorded.
@@ -41,31 +43,32 @@ A lane moves through these terminally auditable stages:
 Roles:
 
 - **Implementer**: owns RED/GREEN/simplify/security evidence and must create or
-  link the Review/fix child before completing implementation when review remains.
+  link the independent review artifact before completing implementation when review remains.
 - **Independent reviewer**: inspects a current diff/head with fresh context and
   records APPROVE, COMMENT, or REQUEST_CHANGES with concrete evidence.
 - **Fix owner**: changes only the requested surface, reruns required evidence, and
-  returns the card to independent review.
+  returns the repository record to independent review.
 - **Merge operator**: checks GitHub/branch-protection state and merges only after
   review, CI, conflict, release, and human-blocker gates are satisfied.
 - **Human/operator**: supplies credentials, protected-branch/admin action, legal
   sign-off, production access, live-account proof, or product decisions that no
   agent may infer.
 
-If only the `default` Hermes profile is available, independence still requires a
-separate Review/fix card/session and a review prompt that cites the current diff,
-head SHA, evidence, and review lenses. It is weaker than a separate human/profile
-review, so high-risk or protected-branch changes should block for human review if
-repo policy or risk demands it.
+When only one automated reviewer capability is available, independence still requires a
+separate review record or session and a review prompt that cites the current diff,
+head SHA, evidence, and review lenses. It is weaker than a separate human or
+independently provisioned reviewer, so high-risk or protected-branch changes should
+block for human review if repo policy or risk demands it.
 
-## 2. Review/fix child card contract
+## 2. Independent review record contract
 
-Every implementation card that has functional work but still needs review must
-create or reuse a child card titled `Review/fix: <source title or PR>`. The child
-body must include these parser-visible sections before dispatch:
+Every implementation issue, PR, or worktree record that has functional work but
+still needs review must create or reuse a repository review record titled
+`Review/fix: <source title or PR>`. The review artifact must include these
+parser-visible sections before dispatch:
 
 ```markdown
-Source implementation card: t_xxx
+Source implementation: issue/PR/worktree `<reference>` at `<sha>`
 PR/head: #NNN or branch `name` at `<sha>`
 Base/target: `origin/main` at `<sha>` checked at `<timestamp>`
 Changed files: `path/a`, `path/b`
@@ -74,8 +77,8 @@ architecture, migration/generated-client/release as applicable
 Required evidence to inspect: RED proof, GREEN checks, simplification notes,
 security notes, CI/checks, user-story/E2E, release gates
 Allowed fix scope: exact path prefixes and non-goals
-REQUEST_CHANGES routing: fix on this card if small; create child fix card if
-scope expands, shared roots move, or a different specialist is needed
+REQUEST_CHANGES routing: fix in this review record if small; create a separate
+issue/PR record if scope expands, shared roots move, or a different specialist is needed
 Rerun matrix after fixes: focused proof, affected CI/local checks, security lens,
 and full release-gate subset listed below
 Approval source accepted: PR review id/url, reviewer report artifact, or explicit
@@ -84,9 +87,9 @@ Human-blocked criteria: credentials, protected branch permission, live account,
 legal/product decision, production secret, signing key, or unobservable approval
 ```
 
-The implementation card completion metadata must record the Review/fix child id.
-If card creation/linking fails, block the implementation card with the concrete
-capability failure; do not complete it as if review happened.
+The implementation record must link the review artifact and current head SHA.
+If review-record creation or linking fails, block the implementation record with
+the concrete capability failure; do not complete it as if review happened.
 
 ## 3. REQUEST_CHANGES handling
 
@@ -100,13 +103,12 @@ security/logic finding is blocking until resolved. The worker must:
    - `already_fixed`: cite the commit/check proving it.
    - `false_positive`: needs reviewer or human acceptance before it can be
      treated as non-blocking.
-   - `deferred`: requires an explicit follow-up card and reviewer/human agreement
+   - `deferred`: requires an explicit follow-up issue or PR and reviewer/human agreement
      that deferral is safe for this merge.
 3. Create or reuse fix work:
-   - Small fixes stay on the Review/fix card.
+   - Small fixes stay in the review record.
    - Larger fixes, shared-root fixes, security fixes, migration/client-generation
-     fixes, or specialist work become child cards linked behind the Review/fix
-     card.
+     fixes, or specialist work become separate linked issue or PR records.
    - Fix work must not broaden scope beyond the finding without returning to
      plan/spec review.
 4. Patch root causes, not just the named line. Check sibling call paths when the
@@ -126,7 +128,7 @@ security/logic finding is blocking until resolved. The worker must:
 7. Record closure: finding id, disposition, fix commit/SHA or patch artifact,
    rerun commands/results, reviewer response, and remaining blockers.
 
-A fix card is not done merely because the code compiles. It is done when the
+A fix record is not done merely because the code compiles. It is done when the
 reviewer-blocking finding is fixed, the affected evidence is green, and the lane
 has been returned to review or approved.
 
@@ -139,7 +141,8 @@ Accepted approval sources:
 - A durable independent reviewer report/comment that states `APPROVE` or
   equivalent, names the inspected PR/head/diff, lists lenses applied, and includes
   no blocking security or logic findings.
-- A human/operator statement granting approval, recorded in Kanban/PR with the
+- A human/operator statement granting approval, recorded in the repository PR,
+  issue, or review artifact with the
   approver identity, scope, and any constraints.
 
 Not accepted as approval:
@@ -157,7 +160,7 @@ Not accepted as approval:
 Approval records must include: approver/reviewer identity or profile, source URL
 or artifact, timestamp checked, PR/head SHA, conclusion, unresolved caveats, and
 who recorded it. If approval cannot be observed because of missing credentials or
-permissions, block the merge/review card instead of fabricating it.
+permissions, block the merge/review record instead of fabricating it.
 
 ## 5. CI and local evidence gates
 
@@ -199,7 +202,7 @@ Before merge readiness is claimed, run or record equivalent evidence for:
 1. `git fetch origin` succeeded.
 2. Local branch/head matches the PR head or the PR's remote head SHA is explicitly
    used for the check.
-3. The target base (`origin/main` unless the card says otherwise) is current.
+3. The target base (`origin/main` unless the repository record says otherwise) is current.
 4. Merge conflict status is clean via GitHub mergeability, `git merge-tree`, a
    throwaway merge, or another recorded conflict check.
 5. No unresolved conflict markers remain in tracked files.
@@ -208,8 +211,8 @@ Before merge readiness is claimed, run or record equivalent evidence for:
    product-code mutation.
 7. Shared roots are serialized: migrations, OpenAPI/generated clients, workflow
    files, release files, deployment manifests, dependency manifests, and generated
-   artifacts require an explicit owner/integrator card.
-8. If a conflict exists, create or reuse a conflict-fix card and rerun review/CI
+   artifacts require an explicit owner/integrator issue or PR record.
+8. If a conflict exists, create or reuse a conflict-fix repository record and rerun review/CI
    after the conflict resolution. A conflict resolution is a code change and can
    invalidate prior approval.
 
@@ -221,7 +224,7 @@ reviewer to challenge.
 
 - **Secrets and credentials**: no tokens, signing keys, passwords, OTPs, private
   URLs, or customer secrets committed, logged, printed in CI, or copied into
-  Kanban metadata. Production secrets remain operator-injected.
+  issue, PR, review, or check metadata. Production secrets remain operator-injected.
 - **Input validation and output encoding**: hostile/malformed payloads, size
   limits, null/missing fields, and user-provided display text fail closed or are
   safely encoded.
@@ -254,10 +257,10 @@ risk-acceptance/human decision. Agents cannot self-accept security risk.
 ## 8. Merge eligibility checklist
 
 A PR or branch is merge-eligible only when every applicable item below is true and
-recorded on the merge/review card:
+recorded on the merge/review record:
 
-- [ ] Implementation card is functionally complete and links its Review/fix child.
-- [ ] Review/fix card is approved, or human-only approval blocker is recorded.
+- [ ] Implementation issue/PR/worktree evidence is functionally complete and links its review artifact.
+- [ ] Independent review record is approved, or a human-only approval blocker is recorded.
 - [ ] Every REQUEST_CHANGES finding has a disposition and rerun evidence.
 - [ ] Current PR head SHA matches the reviewed/approved head or approval remains
       valid after the last head change.
@@ -275,7 +278,7 @@ recorded on the merge/review card:
 - [ ] Rollback/observability plan is recorded.
 - [ ] User-facing changes have browser/device/user-story evidence or an explicit
       non-UI N/A rationale.
-- [ ] Human-only blockers are absent or the card is blocked with exact owner and
+- [ ] Human-only blockers are absent or the repository record is blocked with exact owner and
       missing action.
 
 Do not merge when:
@@ -306,7 +309,7 @@ Block instead of guessing when the next action needs:
 - A product/UX decision that changes scope, retention, policy, or customer-visible
   workflow.
 
-Blocked cards must state: blocker kind, exact missing action/evidence, owner,
+Blocked repository records must state: blocker kind, exact missing action/evidence, owner,
 why agentic fallback is unsafe, safe work still possible, and what event unblocks
 the lane.
 
@@ -318,7 +321,7 @@ When merge is authorized:
    scope immediately before merging.
 2. Merge via the authorized GitHub path (`gh pr merge` or UI/API equivalent) using
    the repo's selected method. Do not direct-push to `main` or force-push unless a
-   human has explicitly authorized an emergency and the card records why.
+   human has explicitly authorized an emergency and the merge record records why.
 3. Record merge result:
    - PR number and URL;
    - head SHA reviewed;
@@ -351,12 +354,12 @@ Closeout records must include:
 - [ ] Rollback/observability note: revert command/path, migration rollback or
       forward-only posture, logs/metrics/audit/SLO/smoke signal, and operator
       follow-up if production access is needed.
-- [ ] Kanban state settled: implementation, review/fix, merge, rollout/E2E,
-      release, and learning cards are done, linked, or blocked with typed
-      blockers; no stale ready/running card claims the same lane.
-- [ ] Learning/observation-harvest disposition: create a card when the lane
-      exposed a reusable process, skill, test, CI, product, or board-governance
-      gap; otherwise record why N/A.
+- [ ] Repository evidence settled: implementation worktree/commit, review,
+      merge, rollout/E2E, release, and learning records are linked or blocked
+      with typed blockers; no stale issue, PR, or branch claims the same lane.
+- [ ] Learning/observation-harvest disposition: create an issue, PR, or durable
+      evidence record when the lane exposed a reusable process, skill, test, CI,
+      or product-governance gap; otherwise record why N/A.
 
 For docs/process-only changes, acceptable closeout may be: target branch
 containment N/A until PR merge, product rollout N/A, release impact none, and
@@ -368,7 +371,7 @@ must still be recorded.
 ### Review/fix verdict
 
 ```markdown
-Review/fix verdict for <card/PR> at <head_sha>:
+Review/fix verdict for <issue/PR/worktree> at <head_sha>:
 - Inspected: <diff/PR/reports/evidence>
 - Lenses: <correctness/tests/security/privacy/product/architecture/...>
 - Findings:
@@ -413,8 +416,8 @@ Post-merge closeout for PR #<n>:
 - Rollout/E2E: <browser/device/API/user-story proof or N/A>
 - Release-governance: <Release Please/changelog/tag/image/mobile/no-impact>
 - Rollback/observability: <revert/forward-fix and telemetry/audit/smoke>
-- Kanban settled: <cards done/blocked/created>
-- Learning/observation harvest: <card id or N/A>
+- Repository evidence settled: <issues/PRs/worktrees/reviews/checks linked or blocked>
+- Learning/observation harvest: <issue/PR/evidence reference or N/A>
 ```
 
 ## 13. Completion metadata keys
@@ -437,7 +440,7 @@ edits:
   "release_governance": "Release Please/changelog/image/mobile/no-impact",
   "rollback_observability": "revert/forward-fix + logs/metrics/audit note",
   "human_blockers": [],
-  "learning_cards": []
+  "learning_records": []
 }
 ```
 
@@ -455,6 +458,6 @@ claims in completion metadata.
 | Conflict with `origin/main` | Create/reuse conflict-fix work; rerun review/CI after resolution. |
 | Missing merge permission/protected branch | Block with capability/needs_input; do not bypass with direct push. |
 | Missing production/live credential | Block with owner/action; use local/E2E only if it is an honest N/A substitute. |
-| User-facing UI change has API-only proof | Keep rollout/E2E incomplete; create browser/device evidence card or block. |
+| User-facing UI change has API-only proof | Keep rollout/E2E incomplete; create browser/device evidence issue/PR record or block. |
 | Docs/process-only change | Product CI, rollout, and release may be N/A only with explicit rationale and governance review. |
 | Security finding accepted as risk | Requires human/operator or reviewer acceptance; agent self-acceptance is invalid. |

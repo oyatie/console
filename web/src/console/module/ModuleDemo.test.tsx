@@ -26,4 +26,12 @@ describe("ModuleDemo (fidelity states)", () => {
     expect(container.querySelector('[data-fidelity="module-lanes"]')).toBeInTheDocument();
     expect(container.querySelector('[data-fidelity="module-list"]')).not.toBeInTheDocument();
   });
+
+  it.each<ModuleDemoState>(["list", "detail-open", "lanes"])(
+    "omits non-executable primary actions from the %s fidelity state",
+    (state) => {
+      const { queryByTestId } = renderState(state);
+      expect(queryByTestId("module-primary-action")).not.toBeInTheDocument();
+    },
+  );
 });

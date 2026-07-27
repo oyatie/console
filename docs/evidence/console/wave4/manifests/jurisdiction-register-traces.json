@@ -1,0 +1,123 @@
+{
+ "schema": "wave4-integrator-manifest-v1",
+ "lane": "L-P0-EPOCH",
+ "produced": "2026-07-25",
+ "target_file": "docs/program/console-jurisdiction-register.json",
+ "why_a_manifest": "This file is integrator-owned authority, outside L-P0-EPOCH's declared roots. It is nonetheless mechanically coupled to the two capability rows this lane seeds: validate-console-truth-ledger.mjs requires an exact bijection between every capability's jurisdiction_bindings and every control's capability_traceability ('Korea control trace is not an exact capability binding bijection'). Without this append the two new rows are bound one-way.",
+ "operation": "append",
+ "instruction": "For each of the six controls in controls[], append the two trace objects below to control.capability_traceability. Order does not matter; duplicates are rejected by the validator. Change nothing else.",
+ "appends": [
+  {
+   "control_id": "CTRL-KR-PRIVACY-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  },
+  {
+   "control_id": "CTRL-KR-WORKFORCE-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  },
+  {
+   "control_id": "CTRL-KR-SAFETY-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  },
+  {
+   "control_id": "CTRL-KR-FINANCE-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  },
+  {
+   "control_id": "CTRL-KR-LOCATION-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  },
+  {
+   "control_id": "CTRL-KR-RECORDS-001",
+   "traces": [
+    {
+     "capability_id": "CAP-SALES-CRM",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    },
+    {
+     "capability_id": "CAP-ONTOLOGY-ENGINE",
+     "candidate_sha": "88c57a1d519b43bc4c0e7b721c62bc248b938b38",
+     "status": "HOLD",
+     "test_or_evidence": "No exact candidate-bound control test/evidence receipt admitted."
+    }
+   ]
+  }
+ ],
+ "expected_after": {
+  "traces_per_control_before": 25,
+  "traces_per_control_after": 27,
+  "total_appended": 12
+ },
+ "verification": {
+  "harness": "docs/evidence/console/wave4/manifests/verify-new-rows.mjs",
+  "result_2026_07_25": "PASS — validateConsoleTruthLedger returns STRUCTURALLY_VALID_HOLD_PRESERVED over a 4-row subset (the two new rows plus their dependency targets) with exactly these traces applied."
+ },
+ "known_preexisting_failure": "The full ledger does NOT validate today, before and after this lane's change, and for reasons this lane did not introduce and must not silently repair: (1) `npm run check:console-truth-ledger` fails at candidate resolution with 'integration tip changes product path after candidate: backend/Cargo.lock' — the pinned candidate 88c57a1d is far behind the tip and only authority-control paths may differ; (2) with that bypassed, the first per-row failure is 'CAP-LOGISTICS-PILOT truth must be an object' — twelve pre-existing rows carry neither `truth` nor `route_presentation`. Both are integrator work (candidate rebind + row completion). Verified identical on the unmodified registry."
+}

@@ -24,7 +24,8 @@ use mnt_kernel_core::{
 use mnt_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveDecision, LeaveStatus,
-    LeaveType, LeaveUnits, NewLeaveRequest, PartialDayPeriod, PromotionKind, SourceRevisionRef,
+    LeaveType, LeaveUnits, NewLeaveRequest, PartialDayPeriod, PromotionKind, PromotionTrack,
+    SourceRevisionRef,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -182,6 +183,12 @@ pub struct ResolveLeaveChargeCommand {
 /// (when a submittable definition exists) starts the engine AP- run. `round`
 /// applies to a promotion (1|2); a refusal follows round 2. `target_user_id` is
 /// the inbox recipient (the target employee's linked account).
+///
+/// The unused-day count is deliberately **absent**: §61①1 requires the notice
+/// to state the employee's own 미사용 휴가 일수, so the adapter reads it from
+/// the authoritative roster and refuses the push when the roster has not
+/// established it. A caller-supplied figure would be unverifiable data on a
+/// legal notice.
 #[derive(Debug, Clone)]
 pub struct StatutoryPushCommand {
     pub actor: UserId,
@@ -191,8 +198,16 @@ pub struct StatutoryPushCommand {
     pub target_name: String,
     pub kind: PromotionKind,
     pub round: i16,
-    /// Unused annual-leave days that motivate the push, surfaced in the notice.
-    pub unused_days: f64,
+    /// Which §61 window set applies — the paragraphs have different periods.
+    pub track: PromotionTrack,
+    /// 제60조제7항 본문에 따른 기간의 마지막 날 (§61② tracks: 최초 1년의 근로기간
+    /// 종료일). The statutory windows are all counted back from this date, so
+    /// it is required evidence, never inferred.
+    pub leave_period_end: Date,
+    /// The 사용 시기 a round-2 notice designates (§61①2 / §61②2). Required and
+    /// non-empty for round 2; must be empty for round 1 and for a refusal,
+    /// which reads the recorded round-2 designation instead of restating it.
+    pub designated_dates: Vec<Date>,
     pub trace: TraceContext,
     pub occurred_at: Timestamp,
 }

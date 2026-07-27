@@ -2,8 +2,9 @@
 // policy (Cedar P→R→A→Effect), workflow (Trigger→Condition→Branch→Action),
 // Automate, and config rules. Generalizes workflows/CanvasBlock.tsx.
 //
-// Backend contract (be-ontology-engine-arch.md §2/§5) drives every shape so the
-// Phase-C wiring is a swap, not a rewrite. See `stub.ts` for wire-pending data.
+// Backend contract (be-ontology-engine-arch.md §2/§5) drives every shape.
+// Production consumers bind governed registries and persisted documents through
+// their own adapters.
 
 /** Node kinds, tokened via the existing `--canvas-block-{kind}-*` tokens. */
 export type CanvasNodeKind = "trigger" | "condition" | "branch" | "action";

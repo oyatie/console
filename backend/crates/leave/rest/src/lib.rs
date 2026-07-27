@@ -30,7 +30,8 @@ use mnt_leave_application::{
 };
 use mnt_leave_domain::{
     LeaveDateCharge, LeaveDecision, LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest,
-    NonWorkBasis, PartialDayPeriod, PromotionKind, SourceRevisionRef, WorkObligation,
+    NonWorkBasis, PartialDayPeriod, PromotionKind, PromotionTrack, SourceRevisionRef,
+    WorkObligation,
 };
 use mnt_platform_auth::JwtVerifier;
 use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
@@ -607,6 +608,13 @@ async fn list_balances(
     Ok(Json(page).into_response())
 }
 
+/// A §61 push request.
+///
+/// `leave_period_end` and `track` are required: the statutory windows are all
+/// counted back from the end of the 연차 사용기간, and §61① and §61② have
+/// different periods, so neither can be defaulted. The unused-day count is
+/// *not* accepted from the caller — §61①1 requires the employee's own figure,
+/// which the store reads from the authoritative roster.
 #[derive(Debug, Deserialize)]
 struct PromotionRequest {
     /// The branch the push is served under — validated against the actor's
@@ -616,8 +624,14 @@ struct PromotionRequest {
     target_employee_id: Uuid,
     target_name: String,
     round: i16,
+    /// annual | first_year_early | first_year_late.
+    track: String,
+    /// 제60조제7항 본문에 따른 기간의 마지막 날 (ISO 8601).
+    leave_period_end: String,
+    /// The 사용 시기 a round-2 notice designates (ISO 8601). Round 1 and the
+    /// refusal must not carry any.
     #[serde(default)]
-    unused_days: f64,
+    designated_dates: Vec<String>,
 }
 
 async fn push_promotion(
@@ -634,8 +648,8 @@ struct RefusalRequest {
     target_user_id: Uuid,
     target_employee_id: Uuid,
     target_name: String,
-    #[serde(default)]
-    unused_days: f64,
+    track: String,
+    leave_period_end: String,
 }
 
 async fn push_refusal(
@@ -650,7 +664,11 @@ async fn push_refusal(
         target_name: body.target_name,
         // A refusal follows a completed round 2; the domain normalizes this.
         round: 2,
-        unused_days: body.unused_days,
+        track: body.track,
+        leave_period_end: body.leave_period_end,
+        // The refused days are read back from the recorded 2차 통보, never
+        // restated by the caller.
+        designated_dates: Vec::new(),
     };
     statutory_push(&state, &headers, PromotionKind::Refusal, promotion).await
 }
@@ -661,6 +679,13 @@ async fn statutory_push(
     kind: PromotionKind,
     body: PromotionRequest,
 ) -> Result<Response, RestError> {
+    let track = PromotionTrack::parse(&body.track).map_err(RestError::from_kernel)?;
+    let leave_period_end = parse_iso_date(&body.leave_period_end, "leave_period_end")?;
+    let designated_dates = body
+        .designated_dates
+        .iter()
+        .map(|value| parse_iso_date(value, "designated_dates"))
+        .collect::<Result<Vec<_>, _>>()?;
     let principal = principal_from_headers(state, headers).await?;
     // Authorize the manage feature AGAINST the target branch: this both role-
     // gates the actor and confirms `branch_id` is within their scope, so a
@@ -690,7 +715,9 @@ async fn statutory_push(
             target_name: body.target_name,
             kind,
             round: body.round,
-            unused_days: body.unused_days,
+            track,
+            leave_period_end,
+            designated_dates,
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
         })

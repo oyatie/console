@@ -2,8 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import {
   createObjectType,
-  getInstance,
-  getInstanceHistory,
   getObjectType,
   getObjectTypeActing,
   listInstances,
@@ -20,12 +18,12 @@ import {
   OBJECT_EXPLORER_ACTIONS,
   ontologyExplorerModel,
   type ObjectExplorerModel,
-  type ObjectExplorerNode,
 } from "../../explore";
 import type { ObjectCardDescriptor } from "../../objectcard";
+import { ontologyEntityRef } from "../../runtime/entityRef";
+import { createOntologyObjectRuntime, type ObjectRuntimePort } from "../../runtime/objectRuntime";
 import {
   ONTOLOGY_MANAGER_ACTIONS,
-  objectCardDescriptorFrom,
   objectTypeDefFromDetail,
   stagedRevisionDraft,
   type OntInstanceRow,
@@ -110,7 +108,7 @@ export interface OntologyWorkspace {
   onCommitRevision: (staged: OntObjectTypeDef) => Promise<void>;
   onGraphFocusChange: (focusId: string) => void;
   resolveInstanceCard: (row: OntInstanceRow) => Promise<ObjectCardDescriptor | undefined>;
-  resolveNodeDescriptor: (node: ObjectExplorerNode) => Promise<ObjectCardDescriptor | undefined>;
+  objectRuntime: ObjectRuntimePort | undefined;
 }
 
 const EMPTY_MODEL: ObjectExplorerModel = { nodes: [], object_links: [] };
@@ -174,7 +172,7 @@ export function useOntologyWorkspace(
       lifetimeEpochRef.current += 1;
       readRequestRef.current += 1;
     };
-  }, [authorityScope]);
+  }, [api, authorityScope]);
 
   const isAuthorityCurrent = useCallback(
     (scope: object, epoch: number) =>
@@ -432,45 +430,59 @@ export function useOntologyWorkspace(
     [entries, explorerModel],
   );
 
+  const objectRuntime = useMemo(
+    () =>
+      authorityKey
+        ? createOntologyObjectRuntime({
+            api,
+            authorityKey,
+            tenantScopeKey: authorityKey,
+            detailForObjectType: (objectTypeId) =>
+              entries.find((entry) => entry.detail.object_type.id === objectTypeId)?.detail,
+            linkTitleById,
+          })
+        : undefined,
+    [api, authorityKey, entries, linkTitleById],
+  );
+
   const resolveInstanceDescriptor = useCallback(
-    async (instanceId: string): Promise<ObjectCardDescriptor | undefined> => {
+    async (instanceId: string, objectTypeId: string): Promise<ObjectCardDescriptor | undefined> => {
       const lifetimeEpoch = lifetimeEpochRef.current;
-      if (!isAuthorityCurrent(authorityScope, lifetimeEpoch)) return undefined;
+      if (!isAuthorityCurrent(authorityScope, lifetimeEpoch) || !objectRuntime || !authorityKey) {
+        return undefined;
+      }
+      const reference = ontologyEntityRef({
+        tenantScopeKey: authorityKey,
+        authorityKey,
+        objectTypeId,
+        id: instanceId,
+      });
+      if (!reference) return undefined;
       try {
-        const [state, history, neighbors] = await Promise.all([
-          getInstance(api, instanceId),
-          getInstanceHistory(api, instanceId),
-          traverseInstance(api, instanceId, { depth: 1 }),
-        ]);
-        if (!isAuthorityCurrent(authorityScope, lifetimeEpoch)) return undefined;
-        const entry = entries.find(
-          (candidate) => candidate.detail.object_type.id === state.instance.object_type_id,
-        );
-        return objectCardDescriptorFrom({
-          state,
-          history,
-          neighbors,
-          detail: entry?.detail,
-          linkTitleById,
+        const descriptor = await objectRuntime.resolve(reference, {
+          signal: new AbortController().signal,
         });
+        return isAuthorityCurrent(authorityScope, lifetimeEpoch)
+          ? descriptor
+          : undefined;
       } catch (error) {
-        // Retirement is cancellation, not read failure: consumers must not run
-        // an A-derived degraded fallback after B is current.
         if (!isAuthorityCurrent(authorityScope, lifetimeEpoch)) return undefined;
         throw error;
       }
     },
-    [api, authorityScope, entries, isAuthorityCurrent, linkTitleById],
+    [authorityKey, authorityScope, isAuthorityCurrent, objectRuntime],
   );
 
   const resolveInstanceCard = useCallback(
-    (row: OntInstanceRow) => resolveInstanceDescriptor(row.id),
-    [resolveInstanceDescriptor],
-  );
-
-  const resolveNodeDescriptor = useCallback(
-    (node: ObjectExplorerNode) => resolveInstanceDescriptor(node.id),
-    [resolveInstanceDescriptor],
+    (row: OntInstanceRow) => {
+      const objectTypeId = entries.find((entry) =>
+        entry.instances.some((instance) => instance.instance.id === row.id),
+      )?.detail.object_type.id;
+      return objectTypeId
+        ? resolveInstanceDescriptor(row.id, objectTypeId)
+        : Promise.resolve(undefined);
+    },
+    [entries, resolveInstanceDescriptor],
   );
 
   const onCreateType = useCallback(
@@ -628,6 +640,6 @@ export function useOntologyWorkspace(
     onCommitRevision,
     onGraphFocusChange,
     resolveInstanceCard,
-    resolveNodeDescriptor,
+    objectRuntime,
   };
 }

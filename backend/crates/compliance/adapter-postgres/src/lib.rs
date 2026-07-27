@@ -8,18 +8,18 @@
 mod tx_helpers;
 
 use mnt_compliance_application::{
-    ArrivalEvent, ArrivalEventPage, ArrivalEventQuery, AuditStreamAuthorizationFacts,
-    AuditStreamPage, AuditStreamQuery, AuditStreamReadKind, AuditStreamRecord,
-    CEO_COVERT_AUDIT_SENSITIVITY, CEO_COVERT_AUDIT_STREAM_KEY, ComplianceControlPage,
-    ComplianceControlQuery, ComplianceFrameworkPage, ComplianceFrameworkQuery,
-    ComplianceObligationPage, ComplianceObligationQuery, ConsentTransitionCommand,
-    ConsentTransitionKind, CreateComplianceControlCommand, CreateComplianceFrameworkCommand,
-    CreateComplianceObligationCommand, CreateEvidenceBindingCommand, CreateRegulationImpactCommand,
-    EvidenceBindingPage, EvidenceBindingQuery, LinkControlObligationCommand,
-    LinkObligationRegulationCommand, LocationConsentLedgerEntry, LocationConsentLedgerPage,
-    LocationConsentLedgerQuery, RegulationImpactPage, RegulationImpactQuery,
-    audit_stream_access_event, compliance_audit_event, consent_audit_event,
-    relation_audit_snapshot,
+    AcceptEvidenceBindingCommand, ArrivalEvent, ArrivalEventPage, ArrivalEventQuery,
+    AuditStreamAuthorizationFacts, AuditStreamPage, AuditStreamQuery, AuditStreamReadKind,
+    AuditStreamRecord, CEO_COVERT_AUDIT_SENSITIVITY, CEO_COVERT_AUDIT_STREAM_KEY,
+    ComplianceControlPage, ComplianceControlQuery, ComplianceFrameworkPage,
+    ComplianceFrameworkQuery, ComplianceObligationPage, ComplianceObligationQuery,
+    ConsentTransitionCommand, ConsentTransitionKind, CreateComplianceControlCommand,
+    CreateComplianceFrameworkCommand, CreateComplianceObligationCommand,
+    CreateEvidenceBindingCommand, CreateRegulationImpactCommand, EvidenceBindingPage,
+    EvidenceBindingQuery, LinkControlObligationCommand, LinkObligationRegulationCommand,
+    LocationConsentLedgerEntry, LocationConsentLedgerPage, LocationConsentLedgerQuery,
+    RegulationImpactPage, RegulationImpactQuery, audit_stream_access_event, compliance_audit_event,
+    consent_audit_event, relation_audit_snapshot,
 };
 use mnt_compliance_domain::{
     ComplianceControl, ComplianceFramework, ComplianceObligation, ComplianceRiskLevel,
@@ -29,8 +29,8 @@ use mnt_compliance_domain::{
     LocationConsentState, LocationPing, ObligationRegulationLink, ObligationRegulationRelationship,
     ObligationStatus, ObligationType, PersistedLocationConsent, RegulationImpact,
     RegulationImpactStatus, ReviewCadence, evaluate_geofence, validate_control_key,
-    validate_date_range, validate_evidence_requirements, validate_hash_sha256,
-    validate_metadata_object, validate_optional_text, validate_required_text,
+    validate_date_range, validate_evidence_requirements, validate_evidence_status_transition,
+    validate_hash_sha256, validate_metadata_object, validate_optional_text, validate_required_text,
 };
 use mnt_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ConsentId, DEFAULT_GEOFENCE_RADIUS_M,
@@ -1375,6 +1375,83 @@ impl PgComplianceStore {
                 )?
                 .with_org(org);
                 Ok((item, vec![event]))
+            })
+        })
+        .await
+    }
+
+    /// Accept exactly one proposed binding under the current tenant scope.
+    ///
+    /// Evidence identity and provenance are never rewritten. The locked
+    /// PROPOSED → ACCEPTED transition records before/after snapshots in the
+    /// same transaction; a replay or raced decision is a truthful conflict.
+    pub async fn accept_evidence_binding(
+        &self,
+        command: AcceptEvidenceBindingCommand,
+    ) -> Result<EvidenceBinding, PgComplianceError> {
+        let org = current_org().map_err(KernelError::from)?;
+        with_audits::<_, EvidenceBinding, PgComplianceError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let before_row = sqlx::query(
+                    r#"
+                    SELECT id, control_id, obligation_id, evidence_target_type,
+                           evidence_target_id, source_audit_event_id, status,
+                           confidence, collected_at, collected_by, valid_from,
+                           valid_to, hash_sha256, metadata, created_by, updated_by,
+                           created_at, updated_at
+                    FROM compliance_evidence_bindings
+                    WHERE id = $1
+                    FOR UPDATE
+                    "#,
+                )
+                .bind(command.id)
+                .fetch_optional(tx.as_mut())
+                .await?
+                .ok_or_else(|| KernelError::not_found("evidence binding was not found"))?;
+                let before = evidence_binding_from_row(&before_row)?;
+                if before.status != EvidenceBindingStatus::Proposed {
+                    return Err(KernelError::conflict(
+                        "only a proposed evidence binding may be accepted",
+                    )
+                    .into());
+                }
+                validate_evidence_status_transition(
+                    before.status,
+                    EvidenceBindingStatus::Accepted,
+                )?;
+                let after_row = sqlx::query(
+                    r#"
+                    UPDATE compliance_evidence_bindings
+                    SET status = 'ACCEPTED', updated_by = $1, updated_at = $2
+                    WHERE id = $3 AND status = 'PROPOSED'
+                    RETURNING id, control_id, obligation_id, evidence_target_type,
+                              evidence_target_id, source_audit_event_id, status,
+                              confidence, collected_at, collected_by, valid_from,
+                              valid_to, hash_sha256, metadata, created_by, updated_by,
+                              created_at, updated_at
+                    "#,
+                )
+                .bind(*command.actor.as_uuid())
+                .bind(command.occurred_at)
+                .bind(command.id)
+                .fetch_optional(tx.as_mut())
+                .await?
+                .ok_or_else(|| {
+                    KernelError::conflict("evidence binding changed before it could be accepted")
+                })?;
+                let after = evidence_binding_from_row(&after_row)?;
+                let event = compliance_audit_event(
+                    "compliance.evidence_binding.accept",
+                    command.actor,
+                    "compliance_evidence_bindings",
+                    after.id,
+                    command.trace,
+                    command.occurred_at,
+                    Some(relation_audit_snapshot(&before)?),
+                    Some(relation_audit_snapshot(&after)?),
+                )?
+                .with_org(org);
+                Ok((after, vec![event]))
             })
         })
         .await

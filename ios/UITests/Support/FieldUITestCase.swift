@@ -347,13 +347,13 @@ func scrollToElement(
         if element.exists, element.isHittable { return element }
     }
 
-    // Drag through the Form's trailing gutter rather than the centered
-    // multiline editor or the leading-edge navigation gesture region. A
-    // focused TextField consumes center-origin gestures, while a leading-edge
-    // drag can be claimed by NavigationStack before the Form applies its
-    // immediate keyboard-dismiss policy.
+    // Drag through the Form's interior trailing gutter rather than the
+    // centered multiline editor, the leading-edge navigation gesture region,
+    // or the system scroll-indicator strip. A focused TextField consumes
+    // center-origin gestures, while either edge can claim a drag before the
+    // Form applies its immediate keyboard-dismiss policy.
     let origin = container.coordinate(withNormalizedOffset: .zero)
-    let trailingGutterX = max(container.frame.width - 8, 8)
+    let trailingGutterX = max(container.frame.width * 0.9, 8)
     let dragStart = origin.withOffset(
         CGVector(dx: trailingGutterX, dy: container.frame.height * 0.50)
     )
@@ -545,30 +545,41 @@ class FieldUITestCase: XCTestCase {
         scrollToElement(
             element,
             in: app.descendants(matching: .any)[AID.detailView],
-            // The full-screen detail's persistent toolbar button stays mounted
-            // while its lazy Form materializes and anchors normalization.
-            topSentinel: app.buttons[AID.detailBackButton],
+            // A persistent toolbar control cannot prove that the Form reached
+            // its top. Normalize against the first detail section instead.
+            topSentinel: app.staticTexts[KO.locationConsentTitle],
             timeout: timeout,
             maxSwipes: maxSwipes
         )
     }
 
-    /// Waits for one stable accessibility element to expose a rendered value.
-    /// This avoids brittle exact static-text lookups when SwiftUI combines a
-    /// row label and value into one accessibility label.
+    /// Resolves a button inside the currently presented work-order detail.
+    /// The detail root is rebuilt for every action so duplicate consent IDs in
+    /// the Today surface cannot satisfy a detail lifecycle assertion.
+    func detailButton(_ identifier: String) -> XCUIElement {
+        return app.descendants(matching: .any)[AID.detailView].buttons[identifier]
+    }
+
+    /// Waits for one stable accessibility identifier to expose a rendered value.
+    /// SwiftUI replaces accessibility nodes when consent state changes, so every
+    /// poll reacquires both the detail root and element instead of retaining a
+    /// stale or globally scoped XCUIElement query.
     @discardableResult
     func waitForLabel(
-        _ element: XCUIElement,
+        _ identifier: String,
         containing expected: String,
         timeout: TimeInterval = 15
     ) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
-        guard element.waitForExistence(timeout: min(timeout, 2)) else { return false }
         while Date() < deadline {
-            if element.label.contains(expected) { return true }
+            let detail = app.descendants(matching: .any)[AID.detailView]
+            let element = detail.descendants(matching: .any)[identifier]
+            if element.exists, element.label.contains(expected) { return true }
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         }
-        return element.label.contains(expected)
+        let detail = app.descendants(matching: .any)[AID.detailView]
+        let element = detail.descendants(matching: .any)[identifier]
+        return element.exists && element.label.contains(expected)
     }
 
     @discardableResult
@@ -681,7 +692,8 @@ class FieldUITestCase: XCTestCase {
 
     /// Audit the complement of `.dynamicType` after a clean screen reacquisition.
     /// Together with `assertDynamicTypeAccessibilitySupport`, this is exactly
-    /// `.all`; neither phase installs an issue handler or suppresses a finding.
+    /// `.all`. Its diagnostic handler is sanitized and always returns `false`,
+    /// so it never suppresses a finding.
     func assertNoNonDynamicTypeAccessibilityIssues(
         file: StaticString = #filePath,
         line: UInt = #line
@@ -691,9 +703,31 @@ class FieldUITestCase: XCTestCase {
         defer { continueAfterFailure = priorContinueAfterFailure }
 
         do {
-            try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType))
+            try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType)) { issue in
+                let element = issue.element
+                let identifier = self.sanitizedAccessibilityIdentifier(element?.identifier)
+                let elementType = element.map { String(describing: $0.elementType) } ?? "none"
+                let frame = element.map { NSCoder.string(for: $0.frame) } ?? "none"
+                print(
+                    "MNT_IOS_ACCESSIBILITY_AUDIT_ISSUE "
+                        + "audit=\(String(describing: issue.auditType)) "
+                        + "summary=\(issue.compactDescription.debugDescription) "
+                        + "elementType=\(elementType) "
+                        + "identifier=\(identifier.debugDescription) "
+                        + "frame=\(frame)"
+                )
+                return false
+            }
         } catch {
             XCTFail("Accessibility audit reported issues: \(error)", file: file, line: line)
         }
+    }
+
+    /// Accessibility identifiers can be data-bearing even when they only contain
+    /// identifier-safe characters (for example a resource UUID). Diagnostics
+    /// must never emit them; audit output preserves only the fact that an
+    /// element was present through its separately logged semantic type.
+    private func sanitizedAccessibilityIdentifier(_: String?) -> String {
+        "<redacted>"
     }
 }

@@ -1,6 +1,6 @@
 import type { components } from "@maintenance/api-client-ts";
 import { ShieldAlert } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type {
   FindingStatus,
@@ -20,7 +20,7 @@ import { SkeletonTable } from "../components/states/Skeleton";
 import { PageHeader } from "../components/shell/PageHeader";
 import { RefreshButton } from "../components/shell/RefreshButton";
 import { EVIDENCE_ACTIONS, EvidenceRecords } from "../console/evidence";
-import { PolicyGateProvider, type PolicyGate } from "../console/policy";
+import { BulkPolicyGateProvider } from "../console/policy";
 import { useAuth } from "../context/auth";
 import { ko } from "../i18n/ko";
 import { formatKoreanDateTime } from "../lib/datetime";
@@ -196,23 +196,6 @@ export function IntegrityPage() {
     };
   }, [tab, pollDecisions]);
 
-  // Evidence PBAC gate (deny-by-omission). Role-derived stand-in: SUPER_ADMIN
-  // acts as the 컴플라이언스 전담 persona (custody/hold/disposal controls);
-  // EXECUTIVE is read-only — controls are absent, not disabled.
-  // wire-pending: Phase C → Cedar decision feed per
-  // .omc/research/be-ontology-engine-arch.md §5 (render=policy).
-  const evidenceGate = useMemo<PolicyGate>(() => {
-    const compliance = session?.roles?.includes("SUPER_ADMIN") ?? false;
-    return {
-      can: (action) =>
-        action === EVIDENCE_ACTIONS.read ||
-        (compliance &&
-          (action === EVIDENCE_ACTIONS.custodyManage ||
-            action === EVIDENCE_ACTIONS.holdManage ||
-            action === EVIDENCE_ACTIONS.dispose)),
-    };
-  }, [session]);
-
   async function submitTriage(
     finding: GovernanceFinding,
     status: "REVIEWED" | "DISMISSED" | "ESCALATED",
@@ -299,9 +282,13 @@ export function IntegrityPage() {
 
       {tab === "evidence" ? (
         <Card className="grid gap-4">
-          <PolicyGateProvider gate={evidenceGate}>
-            <EvidenceRecords api={api} currentUserId={session?.user_id} />
-          </PolicyGateProvider>
+          <BulkPolicyGateProvider actions={Object.values(EVIDENCE_ACTIONS)}>
+            <EvidenceRecords
+              api={api}
+              currentUserId={session?.user_id}
+              sessionIncarnation={session?.client_session_incarnation}
+            />
+          </BulkPolicyGateProvider>
         </Card>
       ) : tab === "decisions" ? (
         <Card className="grid gap-4">

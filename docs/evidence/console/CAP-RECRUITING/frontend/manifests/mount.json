@@ -1,0 +1,32 @@
+{
+  "module": "CAP-RECRUITING",
+  "story": "STORY-RECRUITING-001",
+  "route": "/console/recruiting",
+  "screen_key": "recruit",
+  "integrator_actions": {
+    "web/src/console/shell/nav.ts": {
+      "MOUNTED_SCREEN_KEYS": "add \"recruit\" (nav item already exists at the hr group, screen: \"recruit\", labelKey: \"console.shell.nav.recruit\", icon: \"userPlus\")",
+      "gate": "existing gate g(DIRECTORY_ROLES, [FEATURES.EMPLOYEE_DIRECTORY_READ]) stays; optionally add \"recruiting_read\" to the feature list once the backend Feature lands so recruiting-only grants surface the nav item",
+      "EXPOSED_SCREEN_KEYS": "UNCHANGED — stays [\"sales\"]; recruit remains DARK per ADR-0025 until evidence-approved"
+    },
+    "web/src/console/screens/registry.ts": {
+      "entry": "recruit: RecruitingScreenBody",
+      "import": "import { RecruitingScreenBody } from \"../recruiting\";"
+    },
+    "web/src/i18n/ko.ts": "no change — console.shell.nav.recruit: \"채용\" already exists (~line 970)"
+  },
+  "body_component": "web/src/console/recruiting/RecruitingScreenBody.tsx (prop-less, registry-ready; session-fenced RecruitingScreen inside)",
+  "authz": {
+    "read": "recruiting_read OR recruiting_manage (feature grants via GET /api/v1/me/authz, JWT floor fail-closed)",
+    "manage": "recruiting_manage",
+    "hire": "recruiting_manage AND employee_directory_manage"
+  },
+  "cross_screen_links": {
+    "hire_to_employee": "/console/people (renders only for HIRED applicants with hired_employee_id; requires people exposure)",
+    "position_ref_to_explorer": "/console/objectExplorer (renders only when posting.position_ref is present; requires explorer exposure)"
+  },
+  "notes": [
+    "The module imports nothing from shared collision roots; mounting is entirely the integrator's two-line change (nav key + registry entry).",
+    "Talent-pool section renders deny-by-omission: hidden entirely when GET /talent-pool is denied."
+  ]
+}

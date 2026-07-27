@@ -12,8 +12,10 @@ mnt-support-application = { workspace = true }
 mnt-support-domain = { workspace = true }
 mnt-kernel-core = { workspace = true }
 mnt-platform-db = { workspace = true }
+hex = { workspace = true }
 mnt-platform-request-context = { workspace = true }
 serde_json = { workspace = true }
+sha2 = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 time = { workspace = true }

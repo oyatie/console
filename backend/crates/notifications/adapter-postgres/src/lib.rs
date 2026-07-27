@@ -9,21 +9,45 @@
 
 use std::sync::Arc;
 
-use mnt_kernel_core::{ErrorKind, KernelError, NotificationId, UserId};
+use base64::Engine as _;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use mnt_kernel_core::{
+    AuditAction, AuditEvent, ErrorKind, KernelError, NotificationId, Timestamp, UserId,
+};
 use mnt_notifications_application::{
-    EmitNotificationCommand, EmitNotificationFuture, ListNotificationsQuery,
-    MarkAllNotificationsReadCommand, MarkNotificationReadCommand, NotificationCategoryCount,
-    NotificationCountsSummary, NotificationCountsSummaryQuery, NotificationCreatedNotification,
-    NotificationNotifier, NotificationPage, NotificationResolver, NotificationSink,
-    NotificationSummary, ResolveNotificationsByLinkCommand, ResolveNotificationsFuture,
-    UnreadNotificationCountQuery, notification_audit_event,
+    DeleteNotificationPolicyCommand, EmitNotificationCommand, EmitNotificationFuture,
+    ListNotificationObjectGroupsQuery, ListNotificationPoliciesQuery, ListNotificationsQuery,
+    MarkAllNotificationsReadCommand, MarkNotificationReadCommand, MarkNotificationUnreadCommand,
+    NotificationCategoryCount, NotificationCountsSummary, NotificationCountsSummaryQuery,
+    NotificationCreatedNotification, NotificationNotifier, NotificationObjectGroup,
+    NotificationObjectGroupPage, NotificationPage, NotificationPolicySummary, NotificationResolver,
+    NotificationSink, NotificationSummary, ResolveNotificationsByLinkCommand,
+    ResolveNotificationsFuture, UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
+    notification_audit_event,
 };
 use mnt_notifications_domain::{
     NotificationBody, NotificationCategory, NotificationKind, NotificationLink,
+    NotificationPolicyId,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
+use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use mnt_platform_request_context::current_org;
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
+
+/// §4-19 single chokepoint: THE one SQL predicate deciding whether a
+/// `notifications` row is muted for its recipient. Reused verbatim by every
+/// path that annotates or excludes on mute (list, by-object latest, counts,
+/// summary, emit's realtime skip) so the routing semantics can never fork.
+/// Binds against the unqualified `notifications` relation of the enclosing
+/// statement (SELECT row, UPDATE/INSERT RETURNING row).
+const MUTED_PREDICATE_SQL: &str = "EXISTS (\
+    SELECT 1 FROM notification_policies p \
+    WHERE p.org_id = notifications.org_id \
+      AND p.user_id = notifications.recipient_user_id \
+      AND p.action = 'mute' \
+      AND (p.scope = 'all' \
+        OR (p.scope = 'category' AND p.category = notifications.category) \
+        OR (p.scope = 'object' AND p.link = notifications.link)))";
 
 #[derive(Debug, thiserror::Error)]
 pub enum PgNotificationError {
@@ -153,7 +177,7 @@ impl PgNotificationStore {
                 event,
                 move |tx| {
                     Box::pin(async move {
-                        let row = sqlx::query(
+                        let row = sqlx::query(sqlx::AssertSqlSafe(format!(
                             r#"
                             INSERT INTO notifications (
                                 id, org_id, recipient_user_id, category, kind, body, link, dedup_key
@@ -162,9 +186,10 @@ impl PgNotificationStore {
                             ON CONFLICT (org_id, recipient_user_id, dedup_key)
                                 WHERE dedup_key IS NOT NULL DO NOTHING
                             RETURNING id, recipient_user_id, category, kind, body, link,
-                                      unread, created_at, read_at, resolved_at
+                                      unread, created_at, read_at, resolved_at,
+                                      {MUTED_PREDICATE_SQL} AS muted
                             "#,
-                        )
+                        )))
                         .bind(notification_id.as_uuid())
                         .bind(org_uuid)
                         .bind(recipient_uuid)
@@ -208,7 +233,12 @@ impl PgNotificationStore {
             Err(other) => return Err(other),
         };
 
-        if let Some(notifier) = &self.notifier {
+        // Routing per user policy: a muted row is persisted and audited like
+        // any other (mute suppresses ATTENTION, never data) but the realtime
+        // notifier stays silent — no toast, no badge push.
+        if !summary.muted
+            && let Some(notifier) = &self.notifier
+        {
             notifier
                 .notification_created(NotificationCreatedNotification {
                     notification_id: summary.id,
@@ -229,14 +259,15 @@ impl PgNotificationStore {
         let dedup_key = dedup_key.to_owned();
         let row = with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                Ok(sqlx::query(
+                Ok(sqlx::query(sqlx::AssertSqlSafe(format!(
                     r#"
                     SELECT id, recipient_user_id, category, kind, body, link,
-                           unread, created_at, read_at, resolved_at
+                           unread, created_at, read_at, resolved_at,
+                           {MUTED_PREDICATE_SQL} AS muted
                     FROM notifications
                     WHERE recipient_user_id = $1 AND dedup_key = $2
                     "#,
-                )
+                )))
                 .bind(recipient_uuid)
                 .bind(dedup_key)
                 .fetch_optional(tx.as_mut())
@@ -258,14 +289,15 @@ impl PgNotificationStore {
 
         let rows = with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                let mut builder = QueryBuilder::<Postgres>::new(
+                let mut builder = QueryBuilder::<Postgres>::new(format!(
                     r#"
                     SELECT id, recipient_user_id, category, kind, body, link,
-                           unread, created_at, read_at, resolved_at
+                           unread, created_at, read_at, resolved_at,
+                           {MUTED_PREDICATE_SQL} AS muted
                     FROM notifications
                     WHERE recipient_user_id =
                     "#,
-                );
+                ));
                 builder.push_bind(recipient_uuid);
                 if query.unread_only {
                     builder.push(" AND unread = true");
@@ -297,10 +329,14 @@ impl PgNotificationStore {
         Ok(NotificationPage { items, next_cursor })
     }
 
-    /// Count the caller's unread notifications. The comms-rail badge needs an
-    /// exact figure; paging the list and counting breaks past the page clamp.
-    /// Recipient-scoped in code exactly like [`list`](Self::list); RLS narrows
-    /// to the tenant on top, so another user's (or tenant's) rows never count.
+    /// Count the caller's unread notifications that WANT attention: rows
+    /// suppressed by the caller's mute policies are excluded (badge truth =
+    /// attention truth; the mute-suppressed tally travels on
+    /// [`summary`](Self::summary) as `muted_unread`). The comms-rail badge
+    /// needs an exact figure; paging the list and counting breaks past the
+    /// page clamp. Recipient-scoped in code exactly like [`list`](Self::list);
+    /// RLS narrows to the tenant on top, so another user's (or tenant's) rows
+    /// never count.
     pub async fn unread_count(
         &self,
         query: UnreadNotificationCountQuery,
@@ -310,13 +346,14 @@ impl PgNotificationStore {
 
         with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                let count: i64 = sqlx::query_scalar(
+                let count: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
                     r#"
                     SELECT COUNT(*)
                     FROM notifications
                     WHERE recipient_user_id = $1 AND unread = true
+                      AND NOT {MUTED_PREDICATE_SQL}
                     "#,
-                )
+                )))
                 .bind(recipient_uuid)
                 .fetch_one(tx.as_mut())
                 .await?;
@@ -348,18 +385,65 @@ impl PgNotificationStore {
 
         with_audit::<_, NotificationSummary, PgNotificationError>(&self.pool, event, move |tx| {
             Box::pin(async move {
-                let row = sqlx::query(
+                let row = sqlx::query(sqlx::AssertSqlSafe(format!(
                     r#"
                     UPDATE notifications
                     SET unread = false, read_at = COALESCE(read_at, $3)
                     WHERE id = $1 AND recipient_user_id = $2
                     RETURNING id, recipient_user_id, category, kind, body, link,
-                              unread, created_at, read_at, resolved_at
+                              unread, created_at, read_at, resolved_at,
+                              {MUTED_PREDICATE_SQL} AS muted
                     "#,
-                )
+                )))
                 .bind(notification_uuid)
                 .bind(recipient_uuid)
                 .bind(occurred_at)
+                .fetch_optional(tx.as_mut())
+                .await?;
+                match row {
+                    Some(row) => summary_from_row(&row),
+                    None => Err(KernelError::not_found("notification not found").into()),
+                }
+            })
+        })
+        .await
+    }
+
+    /// Flip one of the caller's notifications back to unread — the reverse arc
+    /// of [`mark_read`](Self::mark_read) (swipe/secondary action is a TOGGLE).
+    /// `read_at` is deliberately left untouched: it stays the forensic
+    /// first-read timestamp. Cross-user ids are NotFound, indistinguishable
+    /// from absent.
+    pub async fn mark_unread(
+        &self,
+        command: MarkNotificationUnreadCommand,
+    ) -> Result<NotificationSummary, PgNotificationError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let recipient_uuid = *command.recipient.as_uuid();
+        let notification_uuid = *command.notification_id.as_uuid();
+        let event = notification_audit_event(
+            "notification.unread",
+            Some(command.recipient),
+            command.notification_id,
+            command.trace,
+            command.occurred_at,
+        )?
+        .with_org(org);
+
+        with_audit::<_, NotificationSummary, PgNotificationError>(&self.pool, event, move |tx| {
+            Box::pin(async move {
+                let row = sqlx::query(sqlx::AssertSqlSafe(format!(
+                    r#"
+                    UPDATE notifications
+                    SET unread = true
+                    WHERE id = $1 AND recipient_user_id = $2
+                    RETURNING id, recipient_user_id, category, kind, body, link,
+                              unread, created_at, read_at, resolved_at,
+                              {MUTED_PREDICATE_SQL} AS muted
+                    "#,
+                )))
+                .bind(notification_uuid)
+                .bind(recipient_uuid)
                 .fetch_optional(tx.as_mut())
                 .await?;
                 match row {
@@ -410,7 +494,8 @@ impl PgNotificationStore {
     /// Per-category unread breakdown for the comms-rail badge, plus the total.
     /// `category` doubles as the "surface" grouping (결재/멘션/문서/공지/근태/급여,
     /// extensible) — a new producer category needs no schema change to appear
-    /// here.
+    /// here. Mute-suppressed rows are excluded from `total_unread` and
+    /// `by_category` and tallied honestly as `muted_unread` instead.
     pub async fn summary(
         &self,
         query: NotificationCountsSummaryQuery,
@@ -420,15 +505,17 @@ impl PgNotificationStore {
 
         let rows = with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                Ok(sqlx::query(
+                Ok(sqlx::query(sqlx::AssertSqlSafe(format!(
                     r#"
-                    SELECT category, COUNT(*) AS unread
+                    SELECT category,
+                           COUNT(*) FILTER (WHERE NOT {MUTED_PREDICATE_SQL}) AS unread,
+                           COUNT(*) FILTER (WHERE {MUTED_PREDICATE_SQL}) AS muted_unread
                     FROM notifications
                     WHERE recipient_user_id = $1 AND unread = true
                     GROUP BY category
                     ORDER BY category
                     "#,
-                )
+                )))
                 .bind(recipient_uuid)
                 .fetch_all(tx.as_mut())
                 .await?)
@@ -436,19 +523,25 @@ impl PgNotificationStore {
         })
         .await?;
 
-        let by_category = rows
-            .iter()
-            .map(|row| {
-                Ok(NotificationCategoryCount {
+        let mut by_category = Vec::with_capacity(rows.len());
+        let mut muted_unread = 0i64;
+        for row in &rows {
+            let unread: i64 = row.try_get("unread")?;
+            muted_unread += row.try_get::<i64, _>("muted_unread")?;
+            // A category whose every unread row is muted has no attention to
+            // ask for — it is absent from the breakdown, not shown as zero.
+            if unread > 0 {
+                by_category.push(NotificationCategoryCount {
                     category: row.try_get("category")?,
-                    unread: row.try_get("unread")?,
-                })
-            })
-            .collect::<Result<Vec<_>, PgNotificationError>>()?;
+                    unread,
+                });
+            }
+        }
         let total_unread = by_category.iter().map(|c| c.unread).sum();
         Ok(NotificationCountsSummary {
             total_unread,
             by_category,
+            muted_unread,
         })
     }
 
@@ -500,6 +593,303 @@ impl PgNotificationStore {
         })
         .await
     }
+
+    /// Aggregate the caller's notifications by source object (개체별 view):
+    /// one row per distinct `link`, newest activity first, with total/unread
+    /// tallies, a per-category unread breakdown, the latest row for preview,
+    /// and the caller's object-level mute state. Keyset-paginated on
+    /// `(latest activity, link)` behind an opaque cursor; an undecodable or
+    /// foreign cursor yields an empty page (fail-closed) and recipient scoping
+    /// means a replayed cursor can only ever page the caller's own rows.
+    pub async fn list_object_groups(
+        &self,
+        query: ListNotificationObjectGroupsQuery,
+    ) -> Result<NotificationObjectGroupPage, PgNotificationError> {
+        let limit = query.limit.clamp(1, 200);
+        let recipient_uuid = *query.recipient.as_uuid();
+        let org = current_org().map_err(KernelError::from)?;
+
+        let cursor = match query.before.as_deref().map(GroupCursor::decode) {
+            None => None,
+            Some(Ok(cursor)) => Some(cursor),
+            // Fail closed on a cursor this server never issued: an empty page,
+            // never an error channel that would let cursor text probe state.
+            Some(Err(())) => {
+                return Ok(NotificationObjectGroupPage {
+                    items: Vec::new(),
+                    next_cursor: None,
+                });
+            }
+        };
+        let (cursor_at, cursor_link) = match cursor {
+            Some(GroupCursor { at, link }) => (Some(at), Some(link)),
+            None => (None, None),
+        };
+        let unread_only = query.unread_only;
+
+        let rows = with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                Ok(sqlx::query(sqlx::AssertSqlSafe(format!(
+                    r#"
+                    SELECT
+                        g.link AS group_link,
+                        g.total,
+                        g.unread_count,
+                        g.latest_at,
+                        latest.id, latest.recipient_user_id, latest.category, latest.kind,
+                        latest.body, latest.link, latest.unread, latest.created_at,
+                        latest.read_at, latest.resolved_at, latest.muted,
+                        cats.categories,
+                        EXISTS (
+                            SELECT 1 FROM notification_policies p
+                            WHERE p.user_id = $1
+                              AND p.action = 'mute'
+                              AND (p.scope = 'all'
+                                OR (p.scope = 'object' AND p.link = g.link))
+                        ) AS group_muted
+                    FROM (
+                        SELECT link, COUNT(*) AS total,
+                               COUNT(*) FILTER (WHERE unread) AS unread_count,
+                               MAX(created_at) AS latest_at
+                        FROM notifications
+                        WHERE recipient_user_id = $1
+                        GROUP BY link
+                        HAVING ($2::timestamptz IS NULL
+                                OR (MAX(created_at), link::text)
+                                   < ($2::timestamptz, ($3::jsonb)::text))
+                           AND (NOT $4 OR COUNT(*) FILTER (WHERE unread) > 0)
+                        ORDER BY latest_at DESC, link::text DESC
+                        LIMIT $5
+                    ) g
+                    JOIN LATERAL (
+                        SELECT id, recipient_user_id, category, kind, body, link,
+                               unread, created_at, read_at, resolved_at,
+                               {MUTED_PREDICATE_SQL} AS muted
+                        FROM notifications
+                        WHERE recipient_user_id = $1 AND link = g.link
+                        ORDER BY created_at DESC, id DESC
+                        LIMIT 1
+                    ) latest ON true
+                    JOIN LATERAL (
+                        SELECT COALESCE(
+                                   jsonb_agg(jsonb_build_object(
+                                       'category', c.category, 'unread', c.unread)
+                                       ORDER BY c.category),
+                                   '[]'::jsonb) AS categories
+                        FROM (
+                            SELECT category, COUNT(*) AS unread
+                            FROM notifications
+                            WHERE recipient_user_id = $1 AND link = g.link
+                              AND unread = true
+                            GROUP BY category
+                        ) c
+                    ) cats ON true
+                    ORDER BY g.latest_at DESC, g.link::text DESC
+                    "#,
+                )))
+                .bind(recipient_uuid)
+                .bind(cursor_at)
+                .bind(cursor_link)
+                .bind(unread_only)
+                .bind(limit)
+                .fetch_all(tx.as_mut())
+                .await?)
+            })
+        })
+        .await?;
+
+        let mut items = Vec::with_capacity(rows.len());
+        let mut last_key: Option<GroupCursor> = None;
+        for row in &rows {
+            let link_json: serde_json::Value = row.try_get("group_link")?;
+            let link: NotificationLink =
+                serde_json::from_value(link_json.clone()).map_err(|err| {
+                    KernelError::internal(format!("stored notification link is invalid: {err}"))
+                })?;
+            let categories_json: serde_json::Value = row.try_get("categories")?;
+            let categories: Vec<NotificationCategoryCount> =
+                serde_json::from_value(categories_json).map_err(|err| {
+                    KernelError::internal(format!("group category breakdown is invalid: {err}"))
+                })?;
+            last_key = Some(GroupCursor {
+                at: row.try_get("latest_at")?,
+                link: link_json,
+            });
+            items.push(NotificationObjectGroup {
+                link,
+                total: row.try_get("total")?,
+                unread: row.try_get("unread_count")?,
+                categories,
+                latest: summary_from_row(row)?,
+                muted: row.try_get("group_muted")?,
+            });
+        }
+        let next_cursor = if items.len() as i64 == limit {
+            last_key.map(|key| key.encode()).transpose()?
+        } else {
+            None
+        };
+        Ok(NotificationObjectGroupPage { items, next_cursor })
+    }
+
+    /// Upsert one of the caller's mute policies (PUT semantics: setting the
+    /// same target twice returns the same row). Direct-apply personal setting,
+    /// audited as `notification.policy_set` with the REAL policy id — the
+    /// audit event is computed inside the transaction, after the upsert.
+    pub async fn upsert_policy(
+        &self,
+        command: UpsertNotificationPolicyCommand,
+    ) -> Result<NotificationPolicySummary, PgNotificationError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let org_uuid = *org.as_uuid();
+        let recipient = command.recipient;
+        let recipient_uuid = *recipient.as_uuid();
+        let policy_id = NotificationPolicyId::new();
+        let scope_str = command.scope.as_scope_str();
+        let category = command.scope.category().map(str::to_owned);
+        let link_json = command
+            .scope
+            .link()
+            .map(serde_json::to_value)
+            .transpose()
+            .map_err(|err| {
+                KernelError::internal(format!("notification policy link is not JSON: {err}"))
+            })?;
+        let trace = command.trace;
+        let occurred_at = command.occurred_at;
+
+        with_audits::<_, NotificationPolicySummary, PgNotificationError>(
+            &self.pool,
+            org,
+            move |tx| {
+                Box::pin(async move {
+                    let row = sqlx::query(
+                        r#"
+                        INSERT INTO notification_policies (id, org_id, user_id, scope, category, link)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                        ON CONFLICT (org_id, user_id, action, scope,
+                                     COALESCE(category, ''), COALESCE(link::text, ''))
+                        DO UPDATE SET updated_at = now()
+                        RETURNING id, scope, category, link, action, created_at
+                        "#,
+                    )
+                    .bind(policy_id.as_uuid())
+                    .bind(org_uuid)
+                    .bind(recipient_uuid)
+                    .bind(scope_str)
+                    .bind(category)
+                    .bind(link_json)
+                    .fetch_one(tx.as_mut())
+                    .await?;
+                    let summary = policy_summary_from_row(&row)?;
+                    let event = AuditEvent::new(
+                        Some(recipient),
+                        AuditAction::new("notification.policy_set")
+                            .map_err(PgNotificationError::Domain)?,
+                        "notification_policy",
+                        summary.id.to_string(),
+                        trace,
+                        occurred_at,
+                    )
+                    .with_org(org);
+                    Ok((summary, vec![event]))
+                })
+            },
+        )
+        .await
+    }
+
+    /// Delete (= unmute) one of the caller's policies. Cross-user ids are
+    /// NotFound, indistinguishable from absent; the audit row only lands when
+    /// a row was actually removed (error path rolls the transaction back).
+    pub async fn delete_policy(
+        &self,
+        command: DeleteNotificationPolicyCommand,
+    ) -> Result<(), PgNotificationError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let recipient_uuid = *command.recipient.as_uuid();
+        let policy_uuid = *command.policy_id.as_uuid();
+        let event = AuditEvent::new(
+            Some(command.recipient),
+            AuditAction::new("notification.policy_clear")?,
+            "notification_policy",
+            command.policy_id.to_string(),
+            command.trace,
+            command.occurred_at,
+        )
+        .with_org(org);
+
+        with_audit::<_, (), PgNotificationError>(&self.pool, event, move |tx| {
+            Box::pin(async move {
+                let result =
+                    sqlx::query("DELETE FROM notification_policies WHERE id = $1 AND user_id = $2")
+                        .bind(policy_uuid)
+                        .bind(recipient_uuid)
+                        .execute(tx.as_mut())
+                        .await?;
+                if result.rows_affected() == 0 {
+                    return Err(KernelError::not_found("notification policy not found").into());
+                }
+                Ok(())
+            })
+        })
+        .await
+    }
+
+    /// List the caller's routing policies, newest first.
+    pub async fn list_policies(
+        &self,
+        query: ListNotificationPoliciesQuery,
+    ) -> Result<Vec<NotificationPolicySummary>, PgNotificationError> {
+        let recipient_uuid = *query.recipient.as_uuid();
+        let org = current_org().map_err(KernelError::from)?;
+
+        let rows = with_org_conn::<_, _, PgNotificationError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                Ok(sqlx::query(
+                    r#"
+                    SELECT id, scope, category, link, action, created_at
+                    FROM notification_policies
+                    WHERE user_id = $1
+                    ORDER BY created_at DESC, id DESC
+                    "#,
+                )
+                .bind(recipient_uuid)
+                .fetch_all(tx.as_mut())
+                .await?)
+            })
+        })
+        .await?;
+        rows.iter().map(policy_summary_from_row).collect()
+    }
+}
+
+/// Opaque keyset cursor for [`PgNotificationStore::list_object_groups`]:
+/// base64url(JSON `{at, link}`) of the last group on the page. The link is
+/// carried as raw JSON and compared via Postgres' own `::text` rendering on
+/// BOTH sides — never against a Rust-serialized string, whose key order and
+/// spacing differ from jsonb's canonical form.
+#[derive(Debug, Serialize, Deserialize)]
+struct GroupCursor {
+    #[serde(with = "time::serde::rfc3339")]
+    at: Timestamp,
+    link: serde_json::Value,
+}
+
+impl GroupCursor {
+    fn encode(&self) -> Result<String, PgNotificationError> {
+        let json = serde_json::to_vec(self).map_err(|err| {
+            KernelError::internal(format!("group cursor is not JSON-serializable: {err}"))
+        })?;
+        Ok(URL_SAFE_NO_PAD.encode(json))
+    }
+
+    /// A cursor this server never issued decodes to `Err(())` — the caller
+    /// maps it to an empty page, deliberately without detail.
+    fn decode(value: &str) -> Result<Self, ()> {
+        let bytes = URL_SAFE_NO_PAD.decode(value).map_err(|_| ())?;
+        serde_json::from_slice(&bytes).map_err(|_| ())
+    }
 }
 
 impl NotificationSink for PgNotificationStore {
@@ -543,5 +933,26 @@ fn summary_from_row(
         created_at: row.try_get("created_at")?,
         read_at: row.try_get("read_at")?,
         resolved_at: row.try_get("resolved_at")?,
+        muted: row.try_get("muted")?,
+    })
+}
+
+fn policy_summary_from_row(
+    row: &sqlx::postgres::PgRow,
+) -> Result<NotificationPolicySummary, PgNotificationError> {
+    let link_json: Option<serde_json::Value> = row.try_get("link")?;
+    let link = link_json
+        .map(serde_json::from_value::<NotificationLink>)
+        .transpose()
+        .map_err(|err| {
+            KernelError::internal(format!("stored notification policy link is invalid: {err}"))
+        })?;
+    Ok(NotificationPolicySummary {
+        id: NotificationPolicyId::from_uuid(row.try_get("id")?),
+        scope: row.try_get("scope")?,
+        category: row.try_get("category")?,
+        link,
+        action: row.try_get("action")?,
+        created_at: row.try_get("created_at")?,
     })
 }

@@ -11,7 +11,10 @@ use mnt_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, CustomerId, DailyPlanId, EquipmentId,
     KernelError, OrgId, SiteId, Timestamp, TraceContext, UserId, VendorId, WorkOrderId,
 };
-use mnt_workorder_domain::{AssignmentRole, PriorityLevel, WorkOrderStatus, WorkResultType};
+use mnt_workorder_domain::{
+    AssignmentRole, MaintenanceCause, MaintenanceType, PriorityLevel, SettlementLineKind,
+    SettlementStatus, WorkOrderStatus, WorkResultType,
+};
 use serde::{Deserialize, Serialize};
 use time::Date;
 
@@ -115,6 +118,11 @@ pub struct CreateWorkOrderCommand {
     pub symptom: String,
     pub customer_request: Option<String>,
     pub target_due_at: Option<Timestamp>,
+    /// Typed maintenance classification (유형). Optional on the wire; the
+    /// console intake requires it client-side.
+    pub maintenance_type: Option<MaintenanceType>,
+    /// Typed maintenance cause (원인). Optional on the wire.
+    pub maintenance_cause: Option<MaintenanceCause>,
     pub trace: TraceContext,
     pub occurred_at: Timestamp,
 }
@@ -127,6 +135,10 @@ pub struct UpdateWorkOrderIntakeCommand {
     /// `None` means leave unchanged. `Some("")` clears the optional customer
     /// request after trimming.
     pub customer_request: Option<String>,
+    /// `None` means leave unchanged (classification cannot be cleared once set).
+    pub maintenance_type: Option<MaintenanceType>,
+    /// `None` means leave unchanged.
+    pub maintenance_cause: Option<MaintenanceCause>,
     pub trace: TraceContext,
     pub occurred_at: Timestamp,
 }
@@ -507,7 +519,106 @@ pub struct WorkOrderSummary {
     pub status: WorkOrderStatus,
     pub priority: PriorityLevel,
     pub result_type: WorkResultType,
+    pub maintenance_type: Option<MaintenanceType>,
+    pub maintenance_cause: Option<MaintenanceCause>,
     pub evidence_verified: bool,
+}
+
+application_enum! {
+    /// Reviewer decision on a SUBMITTED settlement.
+    pub enum SettlementReviewDecision {
+        Approved => "APPROVED",
+        Returned => "RETURNED",
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SettlementLineInput {
+    pub kind: SettlementLineKind,
+    pub label: String,
+    pub amount_krw: i64,
+    pub source_ref: Option<String>,
+    pub sort_order: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CreateSettlementCommand {
+    pub actor: UserId,
+    pub work_order_id: WorkOrderId,
+    pub lines: Vec<SettlementLineInput>,
+    pub note: Option<String>,
+    /// Client-supplied idempotency key (`Idempotency-Key` header, ≥ 16 chars).
+    pub idempotency_key: String,
+    /// SHA-256 hex of the canonical request body; a replay with the same key
+    /// and hash returns the existing settlement, a different hash conflicts.
+    pub request_hash: String,
+    /// When true (caller lacks the review capability) the actor must hold an
+    /// assignment on the work order — a mechanic may only draft the settlement
+    /// of an order they worked.
+    pub require_actor_assignment: bool,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SubmitSettlementCommand {
+    pub actor: UserId,
+    pub settlement_id: uuid::Uuid,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReviewSettlementCommand {
+    pub actor: UserId,
+    pub settlement_id: uuid::Uuid,
+    pub decision: SettlementReviewDecision,
+    /// Required (non-empty) when the decision is RETURNED.
+    pub comment: Option<String>,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VoidSettlementCommand {
+    pub actor: UserId,
+    pub settlement_id: uuid::Uuid,
+    pub reason: String,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SettlementLineSummary {
+    pub id: uuid::Uuid,
+    pub kind: SettlementLineKind,
+    pub label: String,
+    pub amount_krw: i64,
+    pub source_ref: Option<String>,
+    pub sort_order: i32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SettlementSummary {
+    pub id: uuid::Uuid,
+    pub work_order_id: WorkOrderId,
+    pub branch_id: BranchId,
+    pub status: SettlementStatus,
+    pub total_amount_krw: i64,
+    pub voucher_ref: Option<String>,
+    pub note: Option<String>,
+    pub lines: Vec<SettlementLineSummary>,
+    pub created_by: UserId,
+    pub submitted_by: Option<UserId>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub submitted_at: Option<Timestamp>,
+    pub approved_by: Option<UserId>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub approved_at: Option<Timestamp>,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created_at: Timestamp,
+    #[serde(with = "time::serde::rfc3339")]
+    pub updated_at: Timestamp,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -583,6 +694,26 @@ pub fn work_order_audit_event(
         AuditAction::new(action)?,
         "work_order",
         work_order_id.to_string(),
+        trace,
+        occurred_at,
+    )
+    .with_branch(branch_id)
+    .with_org(OrgId::knl()))
+}
+
+pub fn settlement_audit_event(
+    action: &str,
+    actor: UserId,
+    branch_id: BranchId,
+    settlement_id: uuid::Uuid,
+    trace: TraceContext,
+    occurred_at: Timestamp,
+) -> Result<AuditEvent, KernelError> {
+    Ok(AuditEvent::new(
+        Some(actor),
+        AuditAction::new(action)?,
+        "work_order_settlement",
+        settlement_id.to_string(),
         trace,
         occurred_at,
     )

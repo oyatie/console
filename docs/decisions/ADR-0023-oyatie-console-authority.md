@@ -24,7 +24,11 @@ grammar, canonical `/overview`/Work Hub/My Work semantics, workflow-engine
 direction, policy/audit requirements, and fully-wired/no-stub delivery rule.
 
 Read the amended clauses through ADR-0025; the unamended clauses below remain
-current authority.
+current authority. The repository-native
+[Console development pipeline](../program/console-development-pipeline.md)
+governs plan-to-deployment execution of those clauses; historical `.omc`
+process references below are retained for traceability and are not current
+dispatch or completion authority.
 
 ## Context
 

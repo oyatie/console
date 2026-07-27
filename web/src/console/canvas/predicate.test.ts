@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { evalGroup, evalPredicate, runSimulation } from "./predicate";
-import { STUB_FIELD_REGISTRY, STUB_SAMPLES } from "./stub";
+import { TEST_FIELD_REGISTRY, TEST_SAMPLES } from "./testFixtures";
 import type { Predicate, PredicateGroup } from "./types";
 
-const reg = STUB_FIELD_REGISTRY;
+const reg = TEST_FIELD_REGISTRY;
 
 function p(partial: Omit<Predicate, "id">): Predicate {
   return { id: "t", ...partial };
@@ -68,6 +68,6 @@ describe("runSimulation", () => {
       predicates: [p({ field: "absence_count", op: "gte", value: { kind: "number", value: 3 } })],
     };
     // absence_count = 3, 1, 4 → two pass.
-    expect(runSimulation(group, STUB_SAMPLES, reg)).toEqual({ pass: 2, total: 3 });
+    expect(runSimulation(group, TEST_SAMPLES, reg)).toEqual({ pass: 2, total: 3 });
   });
 });

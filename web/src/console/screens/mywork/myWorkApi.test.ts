@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ConsoleApiClient } from "../../../api/client";
 import { createMyWorkApi } from "./myWorkApi";
+import { kstLocalDateTimeToIso } from "./myWorkModel";
 
 function clientWithGet(get: ReturnType<typeof vi.fn>): ConsoleApiClient {
   return { GET: get } as unknown as ConsoleApiClient;
@@ -41,5 +42,60 @@ describe("createMyWorkApi action-inbox pagination", () => {
       "action-inbox cursor did not advance",
     );
     expect(get).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("createMyWorkApi bounded calendar workbench", () => {
+  it("reads the aggregate without recreating source reads and creates only a personal calendar event", async () => {
+    const get = vi.fn().mockResolvedValue({ data: { calendar: { status: "ok", items: [] } } });
+    const created = {
+      id: "00000000-0000-0000-0000-000000000051",
+      scope_type: "PERSONAL",
+      title: "Focus time",
+      description: "",
+      starts_at: "2026-07-10T00:00:00.000Z",
+      ends_at: "2026-07-10T01:00:00.000Z",
+      all_day: false,
+      status: "ACTIVE",
+      created_at: "2026-07-08T09:00:00Z",
+      updated_at: "2026-07-08T09:00:00Z",
+      policy: { enforcement: "server", scope_type: "PERSONAL", visibility: "creator_only" },
+    };
+    const post = vi.fn().mockResolvedValue({ data: created, error: undefined });
+    const api = createMyWorkApi({ GET: get, POST: post } as unknown as ConsoleApiClient);
+
+    await api.loadWorkbench();
+    await expect(api.createPersonalCalendarEvent({
+      title: "Focus time",
+      startsAt: "2026-07-10T00:00:00.000Z",
+      endsAt: "2026-07-10T01:00:00.000Z",
+    })).resolves.toEqual(created);
+
+    expect(get).toHaveBeenCalledWith("/api/v1/me/workbench", { params: { query: {} } });
+    expect(post).toHaveBeenCalledWith("/api/v1/collaboration/calendar/events", {
+      body: {
+        scope_type: "PERSONAL",
+        title: "Focus time",
+        starts_at: "2026-07-10T00:00:00.000Z",
+        ends_at: "2026-07-10T01:00:00.000Z",
+        all_day: false,
+      },
+    });
+  });
+
+  it("fails closed when a nominal calendar write lacks its created-event receipt", async () => {
+    const post = vi.fn().mockResolvedValue({ error: undefined });
+    const api = createMyWorkApi({ GET: vi.fn(), POST: post } as unknown as ConsoleApiClient);
+
+    await expect(api.createPersonalCalendarEvent({
+      title: "Focus time",
+      startsAt: "2026-07-10T00:00:00.000Z",
+      endsAt: "2026-07-10T01:00:00.000Z",
+    })).rejects.toThrow("calendar event failed");
+  });
+
+  it("converts only complete KST datetime-local values to instants", () => {
+    expect(kstLocalDateTimeToIso("2026-07-10T09:00")).toBe("2026-07-10T00:00:00.000Z");
+    expect(kstLocalDateTimeToIso("2026-07-10")).toBeUndefined();
   });
 });

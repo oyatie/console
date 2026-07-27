@@ -1,0 +1,12 @@
+{
+  "name": "minimatch",
+  "version": "5.1.9-maintenance.1",
+  "private": true,
+  "main": "index.cjs",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "dependencies": {
+    "minimatch-modern": "npm:minimatch@10.2.5"
+  }
+}

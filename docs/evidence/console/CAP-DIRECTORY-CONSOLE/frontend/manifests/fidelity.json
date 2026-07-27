@@ -1,0 +1,36 @@
+{
+  "story": "STORY-DIRECTORY-001",
+  "design_source": "docs/design/oyatie-console/Oyatie Console.dc.html — 모듈 서피스 (line 4555) + MOD_SCREENS.directory (line 11219) + dirRows (line 11016) + openPerson (line 14168)",
+  "implemented": {
+    "list": "shared module-surface grammar: compact 1-row stat bar (title + clickable mono stats), 검색 input, primary 새 대화 action, sticky grid header, ellipsis cells (no horizontal scroll), status chip slot (법인 on HR rows), chevron, row drag with ref-token payload ('@이름' member / '[사번 이름]' employee), empty = 검색 결과 없음 + 필터 해제, sortable member headers (asc/desc/none)",
+    "detailPane": "right pane default: 인사 카드 — header chips (사번 mono, 법인, 재직 상태), kv rows (직책/직무/소속/근무지/입사/퇴사/기준 지점), enumerated-value drill chips (법인 = server company filter, 소속 = list filter), footer 메시지 CTA (other-person only)",
+    "personAudit": "non-self member card opens ONLY via GET /api/messenger/members/{userId} (server-side person.view audit in the read tx); 열람 기록됨 chip after the audited read; self view = 본인 chip, no audit chip, no CTA; 404/403 render the identical no-leak blocked copy",
+    "actions": "메시지 = POST /api/messenger/threads {kind:dm} (server audit '대화 개설' = message_thread.create) then hand-off to /console/messenger?thread=<id>; 새 대화 = people-typeahead entry (focuses the module search)",
+    "history": "employee card 이력 = GET /api/v1/employees/{id}/lifecycle-events audited ledger (event chip + effective date + from→to transition + comment), gated by employee_directory_read",
+    "traversal": "upstream: 소속(team) drill chip, 법인(company) server-filtered drill; downstream: DM thread hand-off into messenger, lifecycle-event ledger rows",
+    "keyboard": "listbox semantics, roving tabIndex, ArrowUp/Down + j/k + Home/End + Enter/click; focus-visible outlines; aria-busy/status/alert states",
+    "persistence": "selection (m:/e: person key) restored from and replace-synced to the person search param — survives refresh/Back",
+    "statesTruthful": "denied-before-fetch, server-denied (deny-by-omission, no error framing), loading, empty, error+retry, stale-response fencing (request tokens + keyed session remount)"
+  },
+  "deliberate_gaps": [
+    "연락처 column ('내선 NNN'|'현장') and 메일 action: no DTO anywhere carries ext/email (GAP-DIR-2) — omitted rather than fabricated; 메일 lands when the backend gap closes",
+    "single unified people list: general tier is messenger members (user objects, branch scope), HR tier is the employee register (employee objects, org scope); the API exposes no user↔employee join key and Employee.identity_name_only_merge forbids name merging, so the two tiers render as separate stat-switchable segments until GAP-DIR-1/-3 land",
+    "법인 count stat (design '법인 4'): no entity-enumeration endpoint and distinct-of-loaded-page would misstate the org (GAP-DIR-4 half: 임직원 total is live via EmployeePage.total)",
+    "화면 구성(cfg)/시트로 열기 header buttons, 출입카드 toggle, 평가 RV- rows, 최근 업무·KPI, 민감정보 collapsed section, 인사 관리 모드, 휴대폰 inline edit: backend surfaces absent — controls omitted (no dead controls) and left to their owning charters",
+    "employee rows have no 메시지 CTA (no user id on Employee — would require the forbidden name join)",
+    "employee headers are not sortable: server pages the register, and client-sorting a partial page would imply a global order (members, a complete branch set, sort client-side)",
+    "member roster is a single page (limit 100): /api/messenger/members exposes no offset/total, so a branch beyond 100 members truncates silently and the 구성원 stat counts the loaded roster — same documented ceiling as composer/candidates.ts (GAP-DIR-5: roster paging/total is a backend charter)"
+  ],
+  "tests": {
+    "suite": "web/src/console/directory/DirectoryScreen.test.tsx (21 pass) — mocked at the typed ConsoleApiClient transport boundary (exemplar convention)",
+    "topology": ["denied-before-fetch (zero calls)", "audited person open + audit chip", "self view without audit/CTA", "404 no-leak blocked state", "DM via real endpoint + thread hand-off", "DM failure retry", "roster error retry", "roster 403 = denial not error", "empty + clear filter", "keyboard arrows + j/k", "stale person-card fencing", "HR surfaces absent for member tier (zero HR calls)", "HR register + lifecycle history + server company drill", "server-denied HR enhancement dropped", "selection restore + persistence callback", "employee restore through loading into card", "denied register clears employee selection + URL key", "register failure surfaced on the selected card + retry", "drag ref-token payload", "capability derivation", "copy stays in i18n resource"],
+    "responsive": "CSS-level (flex-wrap panels, minmax+ellipsis grid, 720px media query) — not assertable in jsdom; browser pass owed at exposure review"
+  },
+  "verification": {
+    "vitest": "21/21 pass (npx vitest run src/console/directory)",
+    "eslint": "clean (npx eslint src/console/directory src/i18n/directory.ts)",
+    "tsc": "clean (npx tsc --noEmit, exit 0)",
+    "check-console-purity": "clean (402 files)",
+    "check-ui-strings": "directory files clean; gate exits 1 on PRE-EXISTING committed violation web/src/features/facilities/FacilitiesWorkflowPage.tsx (commit fd93fbdd, outside this lane)"
+  }
+}

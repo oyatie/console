@@ -1,0 +1,50 @@
+{
+  "lane": "CAP-MAINTENANCE-CONSOLE",
+  "stage": "backend-complete",
+  "backend_implementation": {
+    "crates": [
+      "backend/crates/workorder/domain (MaintenanceType/MaintenanceCause/SettlementStatus/SettlementLineKind enums, settlement FSM + eligibility table, tests/settlement_fsm.rs)",
+      "backend/crates/workorder/application (create/intake classification fields, settlement commands + summaries + audit-event helper)",
+      "backend/crates/workorder/adapter-postgres (classification persistence, settlement store: idempotent create / submit / four-eyes review / void, all via with_audit)",
+      "backend/crates/workorder/rest (equipment_id + maintenance_type/cause list filters, classification facets, preventive_on_time_rate + mttr_minutes lens aggregates, settlement routes, detail.settlement)"
+    ],
+    "migration": "backend/crates/platform/db/migrations/0193_workorder_maintenance_console.sql (provisional number; FORCE RLS + org policy + immutable-org trigger on both settlement tables; live-settlement partial unique; org-scoped idempotency unique)",
+    "integration_test": "backend/app/tests/maintenance_chain_api.rs (mnt_rt pool: story chain to APPROVED settlement, idempotent replay, eligibility 409, four-eyes 403, RETURNED comment 422, void discipline, MEMBER deny w/o leakage, cross-tenant 404 + empty list, audit readback, lens/facet/filter truthfulness)",
+    "openapi_fragment": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/manifests/openapi-fragment.yaml",
+    "tag_arbitration": "new settlement operations carry tags:[maintenance] per lane charter; scout row below said tags:[work-orders]; existing four modified operations keep work-orders. Integrator picks one surface — both satisfy the per-domain client-tagging gate.",
+    "base_breakage_fixed_locally_not_committed": [
+      "backend/crates/platform/auth/src/jwt.rs — base of this spine does not compile (issue_access_token_inner call sites missing the new actor_home_org argument) + clippy too_many_arguments; fixed in working tree only (outside lane ownership). Spine owner must land the real fix.",
+      "backend/crates/platform/auth/tests/jwt_es256.rs — cargo fmt drift at base; formatted in working tree only.",
+      "backend/crates/logistics/adapter-postgres/src/lib.rs:274 — base does not compile (sha2 digest Array has no LowerHex impl); working-tree fix formats bytes manually. Logistics lane must land the real fix.",
+      "backend/crates/production/rest/{src/lib.rs,src/service_auth.rs} — base does not compile (missing lifetime on source_system_lifecycle_context return, source_version use-after-move, missing hmac::KeyInit import, PlanSummary initializer missing plan_digest); mechanical working-tree fixes only. Production lane must land the real fix.",
+      "backend/crates/facilities/rest/src/lib.rs — base does not compile (router missing .with_state, DueCaseBody missing Serialize, &str borrowed across 'static audit closure, Principal moved into closure then reused); mechanical working-tree fixes only. Facilities lane must land the real fix.",
+      "backend/crates/platform/db/migrations — base has TWO migrations numbered 0170 (financial_purchase_request_queue_index + harden_object_policy_attachment_and_blockers), so every sqlx::test migration run fails with a _sqlx_migrations version-170 duplicate key. Working tree renames the order-insensitive financial index migration to 0181 locally; the integrator must renumber on the spine (collision memory)."
+    ]
+  },
+  "shared_root_requests": {
+    "web/src/console/shell/nav.ts": [
+      { "kind": "mounted_screen_key", "value": "maintenance", "note": "nav item already declares screen 'maintenance' (fieldOps group, icon wrench, gate OPERATIONAL_ROLES + work_order_read_all); only MOUNTED_SCREEN_KEYS entry is missing. Do NOT touch EXPOSED_SCREEN_KEYS (stays [\"sales\"], module dark per ADR-0025)." }
+    ],
+    "web/src/console/screens/registry.ts": [
+      { "kind": "registry_entry", "key": "maintenance", "value": "MaintenanceScreenBody", "import": "../maintenance", "note": "shape mirrors existing entries: `maintenance: MaintenanceScreenBody` in SCREEN_REGISTRY" }
+    ],
+    "web/src/i18n/ko.ts": [
+      { "kind": "i18n_key", "key": "console.shell.nav.maintenance", "value": "정비" }
+    ],
+    "backend/openapi/openapi.yaml": [
+      { "kind": "query_params", "path": "/api/v1/work-orders", "add": ["equipment_id (uuid)", "maintenance_type (repeated enum)", "maintenance_cause (repeated enum)"], "tags": ["work-orders"] },
+      { "kind": "schema_fields", "schemas": ["WorkOrderListItem", "WorkOrderDetail", "CreateWorkOrderRequest", "UpdateWorkOrderIntakeRequest"], "add": ["maintenance_type (nullable enum)", "maintenance_cause (nullable enum)"] },
+      { "kind": "schema_fields", "schemas": ["WorkOrderObjectSetLens"], "add": ["facets.maintenance_type", "aggregates.preventive_on_time_rate (nullable number)", "aggregates.mttr_minutes (nullable number)"] },
+      { "kind": "new_paths", "paths": ["/api/v1/work-orders/{workOrderId}/settlement (GET, POST)", "/api/v1/settlements/{settlementId}/submit (POST)", "/api/v1/settlements/{settlementId}/review (POST)", "/api/v1/settlements/{settlementId}/void (POST)"], "tags": ["maintenance"], "note": "fragment ships tags:[maintenance] per lane charter; integrator MAY retag to work-orders (see tag_arbitration) — per-domain tags mandatory either way (kotlin client OOM memory); regenerate clients/{ts,kotlin,swift}; 3 drift gates" }
+    ],
+    "backend/crates/platform/db/migrations": [
+      { "kind": "migration", "provisional_number": "0193", "file": "0193_workorder_maintenance_console.sql", "note": "worktree tail is 0180; other lanes claim 0181+. Integrator takes next free number immediately before push (collision memory). DDL in design-contract.md §2." }
+    ]
+  },
+  "owned_new_roots": [
+    "web/src/console/maintenance/**",
+    "web/src/i18n/maintenance.ts",
+    "backend/crates/workorder/** (additive only)",
+    "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/**"
+  ]
+}

@@ -207,6 +207,231 @@ pub struct PayrollReleaseGateInput {
     pub professional_validation: Option<ProfessionalValidation>,
 }
 
+/// The persisted lifecycle states already admitted by
+/// `payroll_draft_runs.status` (migration 0074).
+///
+/// This is deliberately separate from tax calculation: a lifecycle decision
+/// records whether a run may advance toward review, approval, and issuance;
+/// it never manufactures a payable amount or an external bank transfer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PayrollRunStatus {
+    Staged,
+    BlockedLegalGate,
+    ReadyForReview,
+    Approved,
+    Issued,
+    Void,
+}
+
+impl PayrollRunStatus {
+    /// Parse only the storage values defined by migration 0074.
+    pub fn parse(value: &str) -> Result<Self, KernelError> {
+        match value {
+            "STAGED" => Ok(Self::Staged),
+            "BLOCKED_LEGAL_GATE" => Ok(Self::BlockedLegalGate),
+            "READY_FOR_REVIEW" => Ok(Self::ReadyForReview),
+            "APPROVED" => Ok(Self::Approved),
+            "ISSUED" => Ok(Self::Issued),
+            "VOID" => Ok(Self::Void),
+            _ => Err(KernelError::validation("unknown payroll run status")),
+        }
+    }
+
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Staged => "STAGED",
+            Self::BlockedLegalGate => "BLOCKED_LEGAL_GATE",
+            Self::ReadyForReview => "READY_FOR_REVIEW",
+            Self::Approved => "APPROVED",
+            Self::Issued => "ISSUED",
+            Self::Void => "VOID",
+        }
+    }
+}
+
+/// A close-to-payslip command.
+///
+/// Approval is a pure transition after close prerequisites have been proven.
+/// Calculation and issuance remain fail-closed until their regulated evidence
+/// contracts are available to the persistence and transport layers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PayrollRunCommand {
+    Calculate,
+    Approve { approver_is_creator: bool },
+    MarkIssued,
+}
+
+/// Facts which must all hold before a payroll run can advance.
+///
+/// `attendance_month_closes` is intentionally an org-level close. A branch
+/// close cannot attest a whole payroll population, and a payroll lock must be
+/// active for the *same* organization and exact calendar month.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PayrollClosePrerequisites {
+    pub period_start: Date,
+    pub period_end: Date,
+    pub org_month_close_present: bool,
+    pub active_exact_payroll_lock_present: bool,
+    pub unresolved_attendance_exception_count: u64,
+}
+
+/// The deterministic outcome of one lifecycle command. `idempotent` means a
+/// retry observed the terminal state that the command itself requests and made
+/// no new transition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PayrollRunTransition {
+    pub status: PayrollRunStatus,
+    pub idempotent: bool,
+}
+
+/// Fail closed unless an existing run has an exact org/month attendance close,
+/// its active payroll period lock, and no unresolved attendance exceptions.
+///
+/// This pure guard is intentionally reusable by every persistence/transport
+/// adapter. It permits only the approval transition. Calculation remains
+/// blocked until immutable, validated release-gate evidence can be persisted;
+/// issuance remains blocked until a step-up-authorized actor, audit evidence,
+/// and immutable issuance artifact can be persisted together.
+pub fn transition_payroll_run(
+    current: PayrollRunStatus,
+    command: PayrollRunCommand,
+    prerequisites: PayrollClosePrerequisites,
+) -> Result<PayrollRunTransition, KernelError> {
+    // A confirmed prior transition is a retry-safe no-op. In particular, a
+    // later attendance correction or lock amendment must not turn a network
+    // retry into a second mutation or a contradictory failure.
+    if let (PayrollRunStatus::Approved, PayrollRunCommand::Approve { .. }) = (current, command) {
+        return Ok(PayrollRunTransition {
+            status: current,
+            idempotent: true,
+        });
+    }
+    validate_close_prerequisites(prerequisites)?;
+
+    let (status, idempotent) = match command {
+        PayrollRunCommand::Calculate => {
+            return Err(KernelError::conflict(
+                "payroll calculation is blocked until immutable validated release-gate evidence is persisted",
+            ));
+        }
+        PayrollRunCommand::Approve {
+            approver_is_creator,
+        } => match current {
+            PayrollRunStatus::ReadyForReview => {
+                if approver_is_creator {
+                    return Err(KernelError::forbidden(
+                        "payroll run creator cannot approve the same run",
+                    ));
+                }
+                (PayrollRunStatus::Approved, false)
+            }
+            PayrollRunStatus::Approved => unreachable!("handled as retry above"),
+            PayrollRunStatus::Staged
+            | PayrollRunStatus::BlockedLegalGate
+            | PayrollRunStatus::Issued
+            | PayrollRunStatus::Void => {
+                return Err(KernelError::invalid_transition(
+                    "payroll approval requires a run ready for review",
+                ));
+            }
+        },
+        PayrollRunCommand::MarkIssued => {
+            return Err(KernelError::conflict(
+                "payroll issuance is blocked until step-up authorization, audit evidence, and an immutable issuance artifact are persisted",
+            ));
+        }
+    };
+    Ok(PayrollRunTransition { status, idempotent })
+}
+
+fn validate_close_prerequisites(
+    prerequisites: PayrollClosePrerequisites,
+) -> Result<(), KernelError> {
+    if !is_exact_calendar_month(prerequisites.period_start, prerequisites.period_end) {
+        return Err(KernelError::validation(
+            "payroll run period must be one exact calendar month",
+        ));
+    }
+    if !prerequisites.org_month_close_present {
+        return Err(KernelError::conflict(
+            "payroll run requires an org-level attendance close for its exact month",
+        ));
+    }
+    if !prerequisites.active_exact_payroll_lock_present {
+        return Err(KernelError::conflict(
+            "payroll run requires an active payroll period lock for its exact month",
+        ));
+    }
+    if prerequisites.unresolved_attendance_exception_count != 0 {
+        return Err(KernelError::conflict(
+            "payroll run is blocked by unresolved attendance exceptions",
+        ));
+    }
+    Ok(())
+}
+
+fn is_exact_calendar_month(period_start: Date, period_end: Date) -> bool {
+    if period_start.day() != 1 {
+        return false;
+    }
+    let Some(day_after_end) = period_end.next_day() else {
+        return false;
+    };
+    if day_after_end.day() != 1 {
+        return false;
+    }
+    match period_start.month() {
+        time::Month::January => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::February
+        }
+        time::Month::February => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::March
+        }
+        time::Month::March => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::April
+        }
+        time::Month::April => {
+            day_after_end.year() == period_start.year() && day_after_end.month() == time::Month::May
+        }
+        time::Month::May => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::June
+        }
+        time::Month::June => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::July
+        }
+        time::Month::July => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::August
+        }
+        time::Month::August => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::September
+        }
+        time::Month::September => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::October
+        }
+        time::Month::October => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::November
+        }
+        time::Month::November => {
+            day_after_end.year() == period_start.year()
+                && day_after_end.month() == time::Month::December
+        }
+        time::Month::December => {
+            day_after_end.year() == period_start.year() + 1
+                && day_after_end.month() == time::Month::January
+        }
+    }
+}
+
 #[must_use]
 pub const fn payroll_sources_verified_on() -> Date {
     date!(2026 - 06 - 27)
@@ -408,30 +633,134 @@ pub fn build_employee_payroll_draft(input: PayrollDraftInput) -> Result<PayrollD
         ));
     }
 
-    let pension_limit = national_pension_limit_on(input.pay_date)?;
-    let pension_basis = input
-        .pension_standard_monthly_income_won
-        .unwrap_or(input.monthly_remuneration_won)
+    let lines = employee_deduction_lines(
+        input.pay_date,
+        input.monthly_remuneration_won,
+        input.pension_standard_monthly_income_won,
+        tax_row.monthly_income_tax_won,
+        tax_row.local_income_tax_won,
+        tax_row.source.url,
+    )?;
+    let (total_employee_deductions_won, net_pay_won) =
+        deduction_totals(&lines, input.monthly_remuneration_won)?;
+
+    Ok(PayrollDraft {
+        pay_date: input.pay_date,
+        gross_wage_won: input.monthly_remuneration_won,
+        taxable_income_tax_table_version: tax_row.table_version,
+        lines,
+        total_employee_deductions_won,
+        net_pay_won,
+    })
+}
+
+/// An NTS 간이세액표 row whose figures were materialized from a verified
+/// imported source ledger row (`data_import_rows.canonical_row`), so its table
+/// version is a runtime string — unlike [`NtsWithholdingTaxRow`], whose
+/// `&'static` fields exist for in-crate verified constants. The amounts are
+/// still verbatim source figures: this type never carries an estimate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VerifiedNtsTaxRow {
+    pub table_version: String,
+    pub monthly_income_tax_won: i64,
+    pub local_income_tax_won: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LineCalculationInput {
+    pub pay_date: Date,
+    pub gross_won: i64,
+    pub pension_standard_monthly_income_won: Option<i64>,
+    pub tax_row: VerifiedNtsTaxRow,
+}
+
+/// One employee's draft deduction breakdown for persistence in
+/// `payroll_line_calculations`. Always a DRAFT: the release gate
+/// ([`validate_release_gate`]) is what makes a stored calculation payable,
+/// never this function.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LineCalculation {
+    pub gross_won: i64,
+    pub lines: Vec<DeductionLine>,
+    pub total_employee_deductions_won: i64,
+    pub net_won: i64,
+    pub tax_table_version: String,
+}
+
+/// [`build_employee_payroll_draft`] for a source-materialized tax row: same
+/// statutory 4-insurance math from the in-crate verified rate tables, income
+/// tax verbatim from the supplied verified NTS row. Refuses (like the draft
+/// builder) to compute anything without that row.
+pub fn build_line_calculation(input: LineCalculationInput) -> Result<LineCalculation, KernelError> {
+    if input.gross_won < 0 {
+        return Err(KernelError::validation(
+            "monthly remuneration must be non-negative",
+        ));
+    }
+    if input.tax_row.monthly_income_tax_won < 0 || input.tax_row.local_income_tax_won < 0 {
+        return Err(KernelError::validation(
+            "NTS tax row amounts must be non-negative",
+        ));
+    }
+    if input.tax_row.table_version.trim().is_empty() {
+        return Err(KernelError::validation(
+            "NTS tax table version must be supplied with the verified source row",
+        ));
+    }
+
+    let lines = employee_deduction_lines(
+        input.pay_date,
+        input.gross_won,
+        input.pension_standard_monthly_income_won,
+        input.tax_row.monthly_income_tax_won,
+        input.tax_row.local_income_tax_won,
+        nts_source().url,
+    )?;
+    let (total_employee_deductions_won, net_won) = deduction_totals(&lines, input.gross_won)?;
+
+    Ok(LineCalculation {
+        gross_won: input.gross_won,
+        lines,
+        total_employee_deductions_won,
+        net_won,
+        tax_table_version: input.tax_row.table_version,
+    })
+}
+
+/// The six employee-side deduction lines: statutory 4-insurance contributions
+/// from the in-crate verified rate tables + the two income-tax lines verbatim
+/// from a verified NTS row (never estimated).
+fn employee_deduction_lines(
+    pay_date: Date,
+    monthly_remuneration_won: i64,
+    pension_standard_monthly_income_won: Option<i64>,
+    monthly_income_tax_won: i64,
+    local_income_tax_won: i64,
+    tax_source_url: &'static str,
+) -> Result<Vec<DeductionLine>, KernelError> {
+    let pension_limit = national_pension_limit_on(pay_date)?;
+    let pension_basis = pension_standard_monthly_income_won
+        .unwrap_or(monthly_remuneration_won)
         .clamp(pension_limit.minimum_won, pension_limit.maximum_won);
 
     let pension = employee_amount(
-        contribution_rate_on(ContributionCode::NationalPension, input.pay_date)?,
+        contribution_rate_on(ContributionCode::NationalPension, pay_date)?,
         pension_basis,
     )?;
     let health = employee_amount(
-        contribution_rate_on(ContributionCode::HealthInsurance, input.pay_date)?,
-        input.monthly_remuneration_won,
+        contribution_rate_on(ContributionCode::HealthInsurance, pay_date)?,
+        monthly_remuneration_won,
     )?;
     let long_term_care = employee_amount(
-        contribution_rate_on(ContributionCode::LongTermCare, input.pay_date)?,
-        input.monthly_remuneration_won,
+        contribution_rate_on(ContributionCode::LongTermCare, pay_date)?,
+        monthly_remuneration_won,
     )?;
     let employment = employee_amount(
-        contribution_rate_on(ContributionCode::EmploymentUnemployment, input.pay_date)?,
-        input.monthly_remuneration_won,
+        contribution_rate_on(ContributionCode::EmploymentUnemployment, pay_date)?,
+        monthly_remuneration_won,
     )?;
 
-    let lines = vec![
+    Ok(vec![
         deduction(
             DeductionCode::NationalPension,
             "국민연금",
@@ -454,45 +783,38 @@ pub fn build_employee_payroll_draft(input: PayrollDraftInput) -> Result<PayrollD
             DeductionCode::EmploymentInsurance,
             "고용보험",
             employment,
-            contribution_rate_on(ContributionCode::EmploymentUnemployment, input.pay_date)?
+            contribution_rate_on(ContributionCode::EmploymentUnemployment, pay_date)?
                 .source
                 .url,
         ),
         deduction(
             DeductionCode::IncomeTax,
             "근로소득세",
-            tax_row.monthly_income_tax_won,
-            tax_row.source.url,
+            monthly_income_tax_won,
+            tax_source_url,
         ),
         deduction(
             DeductionCode::LocalIncomeTax,
             "지방소득세",
-            tax_row.local_income_tax_won,
-            tax_row.source.url,
+            local_income_tax_won,
+            tax_source_url,
         ),
-    ];
-    let total_employee_deductions_won =
-        lines
-            .iter()
-            .map(|line| line.amount_won)
-            .try_fold(0_i64, |total, amount| {
-                total
-                    .checked_add(amount)
-                    .ok_or_else(|| KernelError::validation("deduction total overflow"))
-            })?;
-    let net_pay_won = input
-        .monthly_remuneration_won
-        .checked_sub(total_employee_deductions_won)
-        .ok_or_else(|| KernelError::validation("deductions exceed gross wage"))?;
+    ])
+}
 
-    Ok(PayrollDraft {
-        pay_date: input.pay_date,
-        gross_wage_won: input.monthly_remuneration_won,
-        taxable_income_tax_table_version: tax_row.table_version,
-        lines,
-        total_employee_deductions_won,
-        net_pay_won,
-    })
+fn deduction_totals(lines: &[DeductionLine], gross_won: i64) -> Result<(i64, i64), KernelError> {
+    let total = lines
+        .iter()
+        .map(|line| line.amount_won)
+        .try_fold(0_i64, |total, amount| {
+            total
+                .checked_add(amount)
+                .ok_or_else(|| KernelError::validation("deduction total overflow"))
+        })?;
+    let net = gross_won
+        .checked_sub(total)
+        .ok_or_else(|| KernelError::validation("deductions exceed gross wage"))?;
+    Ok((total, net))
 }
 
 pub fn build_severance_pay_draft(
@@ -712,6 +1034,123 @@ fn deduction(
 mod tests {
     use super::*;
 
+    fn closed_june_prerequisites() -> PayrollClosePrerequisites {
+        PayrollClosePrerequisites {
+            period_start: date!(2026 - 06 - 01),
+            period_end: date!(2026 - 06 - 30),
+            org_month_close_present: true,
+            active_exact_payroll_lock_present: true,
+            unresolved_attendance_exception_count: 0,
+        }
+    }
+
+    #[test]
+    fn calculation_is_blocked_without_persisted_validated_release_evidence() {
+        let error = transition_payroll_run(
+            PayrollRunStatus::Staged,
+            PayrollRunCommand::Calculate,
+            closed_june_prerequisites(),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Conflict);
+        assert!(
+            error
+                .message
+                .contains("immutable validated release-gate evidence")
+        );
+    }
+
+    #[test]
+    fn issuance_is_blocked_without_step_up_audit_and_immutable_artifact() {
+        let error = transition_payroll_run(
+            PayrollRunStatus::Approved,
+            PayrollRunCommand::MarkIssued,
+            closed_june_prerequisites(),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Conflict);
+        assert!(error.message.contains("step-up authorization"));
+        assert!(error.message.contains("audit evidence"));
+        assert!(error.message.contains("immutable issuance artifact"));
+    }
+
+    #[test]
+    fn approval_requires_exact_closed_month_and_is_idempotent_after_persistence() {
+        let prerequisites = closed_june_prerequisites();
+        let approved = transition_payroll_run(
+            PayrollRunStatus::ReadyForReview,
+            PayrollRunCommand::Approve {
+                approver_is_creator: false,
+            },
+            prerequisites,
+        )
+        .unwrap();
+        assert_eq!(approved.status, PayrollRunStatus::Approved);
+        assert!(!approved.idempotent);
+
+        let retry = transition_payroll_run(
+            PayrollRunStatus::Approved,
+            PayrollRunCommand::Approve {
+                approver_is_creator: false,
+            },
+            PayrollClosePrerequisites {
+                org_month_close_present: false,
+                ..prerequisites
+            },
+        )
+        .unwrap();
+        assert!(retry.idempotent);
+    }
+
+    #[test]
+    fn approval_fails_closed_on_missing_close_lock_or_exception() {
+        let prerequisites = closed_june_prerequisites();
+        for missing in [
+            PayrollClosePrerequisites {
+                org_month_close_present: false,
+                ..prerequisites
+            },
+            PayrollClosePrerequisites {
+                active_exact_payroll_lock_present: false,
+                ..prerequisites
+            },
+            PayrollClosePrerequisites {
+                unresolved_attendance_exception_count: 1,
+                ..prerequisites
+            },
+            PayrollClosePrerequisites {
+                period_start: date!(2026 - 06 - 02),
+                ..prerequisites
+            },
+        ] {
+            assert!(
+                transition_payroll_run(
+                    PayrollRunStatus::ReadyForReview,
+                    PayrollRunCommand::Approve {
+                        approver_is_creator: false,
+                    },
+                    missing,
+                )
+                .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn approval_rejects_creator_self_approval() {
+        let error = transition_payroll_run(
+            PayrollRunStatus::ReadyForReview,
+            PayrollRunCommand::Approve {
+                approver_is_creator: true,
+            },
+            closed_june_prerequisites(),
+        )
+        .unwrap_err();
+        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Forbidden);
+    }
+
     fn fixture_tax_row() -> NtsWithholdingTaxRow {
         NtsWithholdingTaxRow {
             table_version: "NTS-간이세액표-fixture-row-v1",
@@ -779,6 +1218,56 @@ mod tests {
             draft.taxable_income_tax_table_version,
             "NTS-간이세액표-fixture-row-v1"
         );
+    }
+
+    #[test]
+    fn line_calculation_matches_draft_builder_amounts_exactly() {
+        let draft = build_employee_payroll_draft(PayrollDraftInput {
+            pay_date: date!(2026 - 06 - 27),
+            monthly_remuneration_won: 3_000_000,
+            pension_standard_monthly_income_won: None,
+            nts_tax_row: Some(fixture_tax_row()),
+        })
+        .unwrap();
+        let calc = build_line_calculation(LineCalculationInput {
+            pay_date: date!(2026 - 06 - 27),
+            gross_won: 3_000_000,
+            pension_standard_monthly_income_won: None,
+            tax_row: VerifiedNtsTaxRow {
+                table_version: "NTS-간이세액표-fixture-row-v1".to_owned(),
+                monthly_income_tax_won: 74_350,
+                local_income_tax_won: 7_430,
+            },
+        })
+        .unwrap();
+
+        assert_eq!(calc.lines, draft.lines);
+        assert_eq!(
+            calc.total_employee_deductions_won,
+            draft.total_employee_deductions_won
+        );
+        assert_eq!(calc.net_won, draft.net_pay_won);
+        assert_eq!(calc.tax_table_version, "NTS-간이세액표-fixture-row-v1");
+    }
+
+    #[test]
+    fn line_calculation_refuses_blank_table_version_and_negative_tax() {
+        let base = LineCalculationInput {
+            pay_date: date!(2026 - 06 - 27),
+            gross_won: 3_000_000,
+            pension_standard_monthly_income_won: None,
+            tax_row: VerifiedNtsTaxRow {
+                table_version: "  ".to_owned(),
+                monthly_income_tax_won: 74_350,
+                local_income_tax_won: 7_430,
+            },
+        };
+        assert!(build_line_calculation(base.clone()).is_err());
+
+        let mut negative = base;
+        negative.tax_row.table_version = "v1".to_owned();
+        negative.tax_row.monthly_income_tax_won = -1;
+        assert!(build_line_calculation(negative).is_err());
     }
 
     #[test]

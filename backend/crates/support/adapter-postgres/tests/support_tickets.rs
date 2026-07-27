@@ -165,6 +165,7 @@ async fn assign_ticket_audits_and_enqueues_assignee_notification(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: false,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -494,6 +495,7 @@ async fn list_tickets_respects_branch_scope_and_filters(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: false,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -513,6 +515,7 @@ async fn list_tickets_respects_branch_scope_and_filters(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: false,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -532,6 +535,7 @@ async fn list_tickets_respects_branch_scope_and_filters(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: false,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -577,6 +581,7 @@ async fn untriaged_intake_is_only_visible_cross_branch(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: true,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -595,6 +600,7 @@ async fn untriaged_intake_is_only_visible_cross_branch(pool: PgPool) {
                 assignee_user_id: None,
                 include_untriaged: true,
                 limit: None,
+                site_id: None,
                 cursor: None,
             })
             .await
@@ -726,6 +732,7 @@ async fn list_tickets_caps_and_pages_by_keyset_cursor(pool: PgPool) {
             include_untriaged: false,
             limit,
             cursor,
+            site_id: None,
         };
 
         // First page of 2: the two newest tickets. The unpaged total is the same

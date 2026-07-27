@@ -51,6 +51,11 @@ import kotlinx.serialization.Contextual
  * @param updatedAt
  * @param resolvedAt
  * @param closedAt
+ * @param siteId Linked customer site (the field object chain); null until the ticket is linked.
+ * @param siteName
+ * @param customerId Denormalized from the linked site on link; null until the ticket is linked.
+ * @param customerName
+ * @param workOrderId Work order dispatched for the visit; null until the ticket is linked.
  */
 @Serializable
 
@@ -103,7 +108,25 @@ data class SupportTicketSummary (
     val resolvedAt: java.time.OffsetDateTime?,
 
     @Contextual @SerialName(value = "closed_at")
-    val closedAt: java.time.OffsetDateTime?
+    val closedAt: java.time.OffsetDateTime?,
+
+    /* Linked customer site (the field object chain); null until the ticket is linked. */
+    @Contextual @SerialName(value = "site_id")
+    val siteId: java.util.UUID?,
+
+    @SerialName(value = "site_name")
+    val siteName: kotlin.String?,
+
+    /* Denormalized from the linked site on link; null until the ticket is linked. */
+    @Contextual @SerialName(value = "customer_id")
+    val customerId: java.util.UUID?,
+
+    @SerialName(value = "customer_name")
+    val customerName: kotlin.String?,
+
+    /* Work order dispatched for the visit; null until the ticket is linked. */
+    @Contextual @SerialName(value = "work_order_id")
+    val workOrderId: java.util.UUID?
 
 ) {
 

@@ -78,12 +78,37 @@ export interface WorkflowDecisionResult {
   nextTask?: unknown;
 }
 
+/** Server-owned fields returned only by the canonical bulk-approval endpoint. */
+export interface WorkflowBulkDecisionCapability {
+  decidable: boolean;
+  reason?: string;
+}
+
+export interface WorkflowWaitingTask {
+  task_id: string;
+  run_id: string;
+  waiting_key: string;
+  title: string;
+  assignee_role_key?: string;
+  status: string;
+  claimed_by?: string;
+  due_at?: string;
+  bulk_decision: WorkflowBulkDecisionCapability;
+}
+
+export interface WorkflowWaitingTaskPage {
+  items: WorkflowWaitingTask[];
+  has_more: boolean;
+  next_cursor?: string;
+}
+
 export interface ApprWorkflowApi {
   listSubmittableDefinitions(): Promise<ApprTemplate[]>;
   searchObjects(query: string): Promise<ObjectLinkRef[]>;
   resolveObject(kind: string, id: string): Promise<ObjectLinkRef | undefined>;
   submitDraft(draft: ApprComposeDraft, options?: { idempotencyKey?: string; correlationId?: string }): Promise<SubmittedComposeRun>;
-  decideTask(taskId: string, decision: WorkflowDecision, options?: { comment?: string; idempotencyKey?: string }): Promise<WorkflowDecisionResult>;
+  listWaitingTasks(options?: { limit?: number; cursor?: string }): Promise<WorkflowWaitingTaskPage>;
+  decideTask(taskId: string, decision: WorkflowDecision, options?: { comment?: string; idempotencyKey?: string; signal?: AbortSignal }): Promise<WorkflowDecisionResult>;
   finalizeTask(taskId: string, mode: "author" | "delegate", options?: { reason?: string; idempotencyKey?: string }): Promise<CompletionResult>;
   postFinalizationReject(runId: string, reason: string, options?: { idempotencyKey?: string }): Promise<CompletionResult>;
 }
@@ -115,11 +140,12 @@ export function createApprWorkflowApi(options: ApprWorkflowApiOptions = {}): App
     });
   }
 
-  async function postJson<TData>(path: string, body: unknown): Promise<TData> {
+  async function postJson<TData>(path: string, body: unknown, signal?: AbortSignal): Promise<TData> {
     return requestJson<TData>(fetchImpl, baseUrl, path, {
       method: "POST",
       headers: headers(options.bearerToken, true),
       body: JSON.stringify(body),
+      signal,
     });
   }
 
@@ -169,6 +195,15 @@ export function createApprWorkflowApi(options: ApprWorkflowApiOptions = {}): App
       };
     },
 
+    async listWaitingTasks(listOptions) {
+      const limit = Math.min(Math.max(listOptions?.limit ?? 50, 1), 200);
+      const cursor = listOptions?.cursor ? `&cursor=${encodeURIComponent(listOptions.cursor)}` : "";
+      const response = await getJson<WorkflowWaitingTaskPage>(
+        `/api/v1/approval-inbox/bulk-tasks?limit=${String(limit)}${cursor}`,
+      );
+      return response;
+    },
+
     async decideTask(taskId, decision, decideOptions) {
       const response = await postJson<DecideWorkflowTaskResponse>(
         `/api/v1/workflow-tasks/${encodeURIComponent(taskId)}/decide`,
@@ -177,6 +212,7 @@ export function createApprWorkflowApi(options: ApprWorkflowApiOptions = {}): App
           comment: decideOptions?.comment,
           idempotency_key: decideOptions?.idempotencyKey ?? newIdempotencyKey(`appr-decide-${taskId}-${decision}`),
         },
+        decideOptions?.signal,
       );
       return {
         taskId: response.task.task_id,

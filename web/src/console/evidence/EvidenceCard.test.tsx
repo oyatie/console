@@ -1,11 +1,12 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { ApiCallError } from "../../api/ontologyActions";
 import { ko } from "../../i18n/ko";
 import { PolicyGateProvider, type PolicyGate } from "../policy";
 import { EvidenceCard, type EvidenceCardProps } from "./EvidenceCard";
 import { evidenceFixtures } from "./evidenceFixtures";
-import type { VerifyEvidence } from "./types";
+import { EvidenceDetailRefreshError, type VerifyEvidence } from "./types";
 
 const T = ko.console.evidence;
 const allowGate: PolicyGate = { can: () => true };
@@ -26,7 +27,7 @@ function noopHoldProps(): Pick<
 
 function renderCard(
   gate?: PolicyGate,
-  verify?: VerifyEvidence,
+  verify: VerifyEvidence = vi.fn().mockResolvedValue({ state: "unavailable", copyVerdicts: new Map() }),
   detail = heldEvidence,
   overrides: Partial<EvidenceCardProps> = {},
 ) {
@@ -47,23 +48,19 @@ describe("EvidenceCard chips", () => {
 });
 
 describe("EvidenceCard WORM split", () => {
-  it("badges the original as WORM-sealed and lists derivatives as linked copies", () => {
+  it("badges the original as WORM-sealed and lists derivatives as immutable linked copies", () => {
     renderCard(allowGate);
     expect(screen.getByText(T.worm.sealed)).toBeTruthy();
     expect(screen.getByText(T.derivativeKinds.TRANSCODED)).toBeTruthy();
     expect(screen.getByText(T.derivativeKinds.THUMBNAIL)).toBeTruthy();
   });
 
-  it("denies access to the original and never streams it", () => {
+  it("does not render original, derivative, or ZIP preview controls without a real read endpoint", () => {
     renderCard(allowGate);
-    fireEvent.click(screen.getByRole("button", { name: T.worm.viewOriginal }));
-    expect(screen.getByRole("alert")).toHaveTextContent(T.worm.accessDenied);
-  });
-
-  it("shows the wire-pending derived-preview state on open", () => {
-    renderCard(allowGate);
-    fireEvent.click(screen.getAllByRole("button", { name: T.worm.viewDerived })[0]);
-    expect(screen.getByText(T.worm.previewPending)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: T.worm.viewOriginal })).toBeNull();
+    expect(screen.queryByRole("button", { name: T.worm.viewDerived })).toBeNull();
+    expect(screen.queryByRole("button", { name: T.worm.zip.title })).toBeNull();
+    expect(screen.queryByText(T.worm.previewPending)).toBeNull();
   });
 });
 
@@ -72,7 +69,7 @@ describe("EvidenceCard custody timeline", () => {
     renderCard(allowGate);
     expect(screen.getByText(T.custody.stages.REGISTERED)).toBeTruthy();
     expect(screen.getByText(T.custody.stages.WORM_REPLICATED)).toBeTruthy();
-    expect(screen.getByText(T.custody.stages.ACCESSED)).toBeTruthy();
+    expect(screen.getByText(T.custody.stages.LEGAL_HOLD_APPLIED)).toBeTruthy();
   });
 });
 
@@ -90,19 +87,11 @@ describe("EvidenceCard verify affordance", () => {
     expect(verify).toHaveBeenCalledTimes(1);
   });
 
-  it("reports 검증 대기 when no real verify path applies", async () => {
-    renderCard(allowGate, undefined);
-    fireEvent.click(screen.getByRole("button", { name: T.actions.verify }));
-    await waitFor(() => {
-      expect(screen.getByText(T.actions.verifyPending)).toBeTruthy();
-    });
-  });
-
   it("clears a prior MATCH verdict chip when a later verify comes back unavailable", async () => {
     const verify = vi
       .fn<VerifyEvidence>()
       .mockResolvedValueOnce({ state: "verified", processedAt: null, copyVerdicts: new Map([["cp-13-orig", "MATCH"]]) })
-      .mockResolvedValueOnce({ state: "unavailable" });
+      .mockResolvedValueOnce({ state: "unavailable", copyVerdicts: new Map() });
     renderCard(allowGate, verify, plainEvidence);
     fireEvent.click(screen.getByRole("button", { name: T.actions.verify }));
     await waitFor(() => {
@@ -114,6 +103,56 @@ describe("EvidenceCard verify affordance", () => {
     });
     // The stale green MATCH chip must be gone, not lingering as fake fixity.
     expect(screen.queryByText(T.copyVerdict.MATCH)).toBeNull();
+  });
+
+  it("keeps indeterminate copy-level storage evidence visible without claiming integrity failure", async () => {
+    const verify = vi.fn<VerifyEvidence>().mockResolvedValue({
+      state: "unavailable",
+      copyVerdicts: new Map([["cp-13-orig", "CHECKSUM_UNAVAILABLE"]]),
+    });
+    renderCard(allowGate, verify, plainEvidence);
+
+    fireEvent.click(screen.getByRole("button", { name: T.actions.verify }));
+    await waitFor(() => {
+      expect(screen.getByText(T.actions.verifyPending)).toBeTruthy();
+    });
+    expect(screen.getByText(T.copyVerdict.CHECKSUM_UNAVAILABLE)).toBeTruthy();
+    expect(screen.queryByText(T.actions.verifyFail)).toBeNull();
+  });
+
+  it("shows an authorization denial without falsely claiming a fixity failure or offering a futile retry", async () => {
+    const verify = vi.fn<VerifyEvidence>().mockRejectedValue(new ApiCallError(403));
+    renderCard(allowGate, verify);
+
+    fireEvent.click(screen.getByRole("button", { name: T.actions.verify }));
+
+    await waitFor(() => {
+      expect(screen.getByText(ko.page.permissionDenied)).toBeTruthy();
+    });
+    expect(screen.queryByText(T.actions.verifyFail)).toBeNull();
+    expect(screen.getByRole("button", { name: T.actions.verify })).toBeDisabled();
+  });
+
+  it("keeps a transient verification failure retryable and replaces it with the next authoritative verdict", async () => {
+    const verify = vi
+      .fn<VerifyEvidence>()
+      .mockRejectedValueOnce(new ApiCallError(500))
+      .mockResolvedValueOnce({ state: "verified", processedAt: null, copyVerdicts: new Map([["cp-13-orig", "MATCH"]]) });
+    renderCard(allowGate, verify, plainEvidence);
+
+    const action = screen.getByRole("button", { name: T.actions.verify });
+    fireEvent.click(action);
+    await waitFor(() => {
+      expect(screen.getByText(T.actions.verifyFail)).toBeTruthy();
+    });
+    expect(action).not.toBeDisabled();
+
+    fireEvent.click(action);
+    await waitFor(() => {
+      expect(screen.getByText(T.actions.verifyOk)).toBeTruthy();
+    });
+    expect(screen.getByText(T.copyVerdict.MATCH)).toBeTruthy();
+    expect(verify).toHaveBeenCalledTimes(2);
   });
 
   it("clears a prior MATCH verdict chip when a later verify throws", async () => {
@@ -135,71 +174,17 @@ describe("EvidenceCard verify affordance", () => {
 });
 
 describe("EvidenceCard PBAC (deny-by-omission)", () => {
-  it("hides custody/hold/disposal controls without a gate (read-only persona)", () => {
+  it("hides mutable legal-hold controls without a gate while retaining the real verify action", () => {
     renderCard(undefined);
-    expect(screen.queryByRole("button", { name: T.actions.transfer })).toBeNull();
     expect(screen.queryByRole("button", { name: T.hold.requestRelease })).toBeNull();
-    expect(screen.queryByRole("button", { name: T.actions.dispose })).toBeNull();
-    // verify remains available to viewers of this already-gated route.
     expect(screen.getByRole("button", { name: T.actions.verify })).toBeTruthy();
   });
 
-  it("shows custody + hold controls for the compliance persona", () => {
+  it("shows only backed legal-hold controls for the compliance persona", () => {
     renderCard(allowGate);
-    expect(screen.getByRole("button", { name: T.actions.transfer })).toBeTruthy();
     expect(screen.getByRole("button", { name: T.hold.requestRelease })).toBeTruthy();
-  });
-});
-
-describe("EvidenceCard legal-hold disposal gate (fail-closed)", () => {
-  it("disables disposal while a hold is active", () => {
-    renderCard(allowGate);
-    expect(
-      screen.getByRole("button", { name: T.actions.disposeBlockedAria }).hasAttribute("disabled"),
-    ).toBe(true);
-  });
-
-  it("keeps disposal disabled with a wire-pending reason even without a hold (no disposal REST)", () => {
-    renderCard(allowGate, undefined, plainEvidence);
-    expect(
-      screen.getByRole("button", { name: T.actions.dispose }).hasAttribute("disabled"),
-    ).toBe(true);
-    expect(screen.getByText(T.actions.disposeWirePending)).toBeTruthy();
-  });
-});
-
-describe("EvidenceCard custody transfer / disposal (wire-pending, never fabricated)", () => {
-  function custodyTimeline() {
-    return screen.getByRole("region", { name: T.custody.title });
-  }
-
-  it("renders the transfer affordance disabled with a reason and stages no custody event", () => {
-    renderCard(allowGate, undefined, plainEvidence);
-    const transfer = screen.getByRole("button", { name: T.actions.transfer });
-    expect(transfer.hasAttribute("disabled")).toBe(true);
-    expect(screen.getByText(T.actions.transferWirePending)).toBeTruthy();
-    // The chain-of-custody timeline shows only the real fetched events — no
-    // synthetic "staged" row is ever prepended (§4-25-⑥).
-    expect(within(custodyTimeline()).getAllByRole("listitem")).toHaveLength(
-      plainEvidence.custody.length,
-    );
-    // A disabled control fires no handler; clicking never mutates state, so the
-    // timeline row count stays exactly the fetched events (no staged prepend).
-    fireEvent.click(transfer);
-    expect(within(custodyTimeline()).getAllByRole("listitem")).toHaveLength(
-      plainEvidence.custody.length,
-    );
-  });
-
-  it("renders the disposal affordance disabled with a reason and stages no custody event", () => {
-    renderCard(allowGate, undefined, plainEvidence);
-    const dispose = screen.getByRole("button", { name: T.actions.dispose });
-    expect(dispose.hasAttribute("disabled")).toBe(true);
-    expect(screen.getByText(T.actions.disposeWirePending)).toBeTruthy();
-    fireEvent.click(dispose);
-    expect(within(custodyTimeline()).getAllByRole("listitem")).toHaveLength(
-      plainEvidence.custody.length,
-    );
+    expect(screen.queryByRole("button", { name: T.actions.transfer })).toBeNull();
+    expect(screen.queryByRole("button", { name: T.actions.dispose })).toBeNull();
   });
 });
 
@@ -210,7 +195,7 @@ describe("EvidenceCard hold-release four-eyes flow (fail-closed)", () => {
       .mockResolvedValue({ requestRef: "req-1", requestedBy: "user-a" });
     const decideHoldRelease = vi.fn().mockResolvedValue(undefined);
     const releaseHold = vi.fn().mockResolvedValue(undefined);
-    renderCard(allowGate, undefined, heldEvidence, {
+    renderCard(allowGate, vi.fn().mockResolvedValue({ state: "unavailable", copyVerdicts: new Map() }), heldEvidence, {
       currentUserId: "user-a",
       requestHoldRelease,
       decideHoldRelease,
@@ -234,7 +219,7 @@ describe("EvidenceCard hold-release four-eyes flow (fail-closed)", () => {
       .mockResolvedValue({ requestRef: "req-1", requestedBy: "user-a" });
     const decideHoldRelease = vi.fn().mockResolvedValue(undefined);
     const releaseHold = vi.fn().mockResolvedValue(undefined);
-    renderCard(allowGate, undefined, heldEvidence, {
+    renderCard(allowGate, vi.fn().mockResolvedValue({ state: "unavailable", copyVerdicts: new Map() }), heldEvidence, {
       currentUserId: "user-b",
       requestHoldRelease,
       decideHoldRelease,
@@ -261,4 +246,63 @@ describe("EvidenceCard hold-release four-eyes flow (fail-closed)", () => {
       );
     });
   });
+
+  it("keeps hold-apply inputs and exposes an authoritative reread retry after a successful mutation refresh fails", async () => {
+    const retry = vi.fn().mockResolvedValue(undefined);
+    const applyHold = vi.fn().mockRejectedValue(new EvidenceDetailRefreshError(retry));
+    renderCard(allowGate, vi.fn().mockResolvedValue({ state: "unavailable", copyVerdicts: new Map() }), plainEvidence, {
+      applyHold,
+    });
+
+    fireEvent.change(screen.getByRole("textbox", { name: T.hold.caseRef }), { target: { value: "CASE-1" } });
+    fireEvent.change(screen.getByRole("textbox", { name: T.hold.basisLabel }), { target: { value: "law" } });
+    fireEvent.change(screen.getByRole("textbox", { name: T.hold.reasonLabel }), { target: { value: "preserve" } });
+    fireEvent.click(screen.getByRole("button", { name: T.hold.apply }));
+
+    await waitFor(() => {
+      expect(screen.getByText(T.hold.applyRefreshFailed)).toBeTruthy();
+    });
+    expect(screen.getByRole<HTMLInputElement>("textbox", { name: T.hold.caseRef }).value).toBe("CASE-1");
+    fireEvent.click(screen.getByRole("button", { name: T.hold.refreshRetry }));
+    await waitFor(() => {
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(screen.getByRole<HTMLInputElement>("textbox", { name: T.hold.caseRef }).value).toBe("");
+    });
+  });
+
+  it("keeps a successful hold release explicit and retryable when its authoritative reread fails", async () => {
+    const retry = vi.fn().mockResolvedValue(undefined);
+    const requestHoldRelease = vi.fn().mockResolvedValue({ requestRef: "req-1", requestedBy: "user-a" });
+    const decideHoldRelease = vi.fn().mockResolvedValue(undefined);
+    const releaseHold = vi.fn().mockRejectedValue(new EvidenceDetailRefreshError(retry));
+    renderCard(allowGate, vi.fn().mockResolvedValue({ state: "unavailable", copyVerdicts: new Map() }), heldEvidence, {
+      currentUserId: "user-b",
+      requestHoldRelease,
+      decideHoldRelease,
+      releaseHold,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: T.hold.requestRelease }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: T.hold.decideApprove })).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole("button", { name: T.hold.decideApprove }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: T.hold.release })).toBeTruthy();
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: T.hold.reasonLabel }), { target: { value: "approved release" } });
+    fireEvent.click(screen.getByRole("button", { name: T.hold.release }));
+
+    await waitFor(() => {
+      expect(screen.getByText(T.hold.releaseRefreshFailed)).toBeTruthy();
+    });
+    expect(screen.queryByText(T.hold.active)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: T.hold.refreshRetry }));
+    await waitFor(() => {
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+  });
+
 });

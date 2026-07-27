@@ -317,6 +317,19 @@ function workflowRunIdempotencyKey(
 }
 
 export function WorkflowStudioPage() {
+  const { session } = useAuth();
+  // An authority replacement must synchronously discard all retained workflow
+  // data and in-flight mutation continuations before the next session renders.
+  const authorityKey = JSON.stringify([
+    session?.client_session_incarnation ?? "",
+    session?.access_token ?? "",
+    session?.org_id ?? "",
+    session?.user_id ?? "",
+  ]);
+  return <WorkflowStudioScope key={authorityKey} />;
+}
+
+function WorkflowStudioScope() {
   const { api, session } = useAuth();
   const [readState, setReadState] = useState<ReadState>("loading");
   const [catalog, setCatalog] =
@@ -1221,14 +1234,6 @@ export function WorkflowStudioPage() {
     }));
   }
 
-  function simulateCanvasDraft() {
-    if (canvasHasBlockers) {
-      showError(ko.workflowStudio.canvas.fixBeforeSimulate);
-      return;
-    }
-    showSuccess(ko.workflowStudio.canvas.simulationPreview);
-  }
-
   function showSuccess(message: string) {
     setFeedbackKind("success");
     setFeedback(message);
@@ -1277,6 +1282,7 @@ export function WorkflowStudioPage() {
               model={workflowAutoModel}
               selectedWorkflowId={selectedDefinition?.id}
               currentUserId={session?.user_id}
+              pendingWorkflowId={busyDefinitionId}
               onWorkflowSelect={(id: string) => {
                 const definition = definitions.find((item) => item.id === id);
                 if (definition) void selectDefinition(definition);
@@ -1384,7 +1390,6 @@ export function WorkflowStudioPage() {
               onConnectionTargetChange={changeConnectionTarget}
               onConnectionTargetPortChange={setConnectionTargetPort}
               onAddConnection={addCanvasConnection}
-              onSimulate={simulateCanvasDraft}
               onSubmit={() => void createDraft()}
               onCancelEdit={cancelEditingDefinition}
             />
@@ -1650,7 +1655,6 @@ function WorkflowCanvasAuthoringCard({
   onConnectionTargetChange,
   onConnectionTargetPortChange,
   onAddConnection,
-  onSimulate,
   onSubmit,
   onCancelEdit,
 }: {
@@ -1680,7 +1684,6 @@ function WorkflowCanvasAuthoringCard({
   onConnectionTargetChange: (nodeId: string) => void;
   onConnectionTargetPortChange: (port: string) => void;
   onAddConnection: () => void;
-  onSimulate: () => void;
   onSubmit: () => void;
   onCancelEdit: () => void;
 }) {
@@ -1730,9 +1733,6 @@ function WorkflowCanvasAuthoringCard({
           <Badge className={blockingCount === 0 ? "border-brand-teal/30 bg-brand-teal/10 text-brand-teal" : "border-amber-200 bg-amber-50 text-amber-700"}>
             {ko.workflowStudio.canvas.blockerSummary(blockingCount)}
           </Badge>
-          <Button type="button" variant="secondary" onClick={onSimulate}>
-            {ko.workflowStudio.simulate}
-          </Button>
           <Button
             type="button"
             onClick={onSubmit}

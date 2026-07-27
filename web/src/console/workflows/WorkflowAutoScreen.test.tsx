@@ -204,6 +204,111 @@ describe("WorkflowAutoScreen", () => {
     expect(screen.getByText("AP-184")).toBeTruthy();
   });
 
+  it("disables every workflow mutation while its authenticated action is pending", () => {
+    const pendingModel = {
+      workflows: [
+        {
+          id: "wf-pending",
+          name: "대기 중인 실행",
+          active: true,
+          version: 4,
+          runs: 0,
+          lastRun: "없음",
+          lastResult: "warn",
+          blocks: [],
+          runLog: [],
+          pendingRevision: {
+            version: 5,
+            stagedBy: "김관리",
+            stagedById: "other-user",
+            status: "pending_review",
+          },
+        },
+      ],
+      schedules: [],
+    } satisfies WorkflowAutoModel;
+
+    render(
+      <PolicyGateProvider gate={allowAll}>
+        <WorkflowAutoScreen
+          model={pendingModel}
+          pendingWorkflowId="wf-pending"
+          onWorkflowToggle={vi.fn()}
+          onWorkflowRun={vi.fn()}
+          onWorkflowSimulate={vi.fn()}
+          onApprovePublish={vi.fn()}
+          onWithdrawPublish={vi.fn()}
+        />
+      </PolicyGateProvider>,
+    );
+
+    expect(screen.getByRole("heading", { name: "대기 중인 실행" }).closest("section")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("button", { name: "비활성화" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "수동 실행" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "시뮬레이션" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "적용 승인" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "철회" })).toBeDisabled();
+  });
+
+  it("disables every schedule mutation while its owning workflow action is pending", async () => {
+    const user = userEvent.setup();
+    const pendingScheduleModel = {
+      workflows: [],
+      schedules: [
+        {
+          id: "sch-pending",
+          workflowId: "wf-pending",
+          name: "대기 중인 예약",
+          active: true,
+          cron: "0 17 * * *",
+          cronLabel: "매일 17:00",
+          nextRun: "2026-07-09 17:00",
+          lastRun: "없음",
+          lastResult: "warn",
+          runLog: [],
+        },
+      ],
+    } satisfies WorkflowAutoModel;
+    const props = {
+      model: pendingScheduleModel,
+      initialTab: "schedule" as const,
+      onScheduleToggle: vi.fn(),
+      onScheduleRun: vi.fn(),
+      onScheduleEdit: vi.fn(),
+      onScheduleSave: vi.fn(),
+      onScheduleDelete: vi.fn(),
+    };
+
+    const view = render(
+      <PolicyGateProvider gate={allowAll}>
+        <WorkflowAutoScreen {...props} pendingWorkflowId="wf-pending" />
+      </PolicyGateProvider>,
+    );
+
+    expect(screen.getByRole("heading", { name: "대기 중인 예약" }).closest("section")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("button", { name: "비활성화" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "수동 실행" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "예약 편집" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "예약 삭제" })).toBeDisabled();
+
+    // A form opened before a request starts must also lock its save control.
+    view.rerender(
+      <PolicyGateProvider gate={allowAll}>
+        <WorkflowAutoScreen {...props} />
+      </PolicyGateProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "예약 편집" }));
+    view.rerender(
+      <PolicyGateProvider gate={allowAll}>
+        <WorkflowAutoScreen {...props} pendingWorkflowId="wf-pending" />
+      </PolicyGateProvider>,
+    );
+    expect(screen.getByRole("button", { name: "예약 저장" })).toBeDisabled();
+    expect(screen.getByLabelText("예약 이름")).toBeDisabled();
+    expect(screen.getByLabelText("cron")).toBeDisabled();
+    expect(screen.getByLabelText("예약 라벨")).toBeDisabled();
+  });
+
   it("invokes workflow, simulation, and schedule manual trigger handlers", async () => {
     const user = userEvent.setup();
     const model = {

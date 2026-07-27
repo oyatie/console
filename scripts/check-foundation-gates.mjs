@@ -11,7 +11,7 @@ const textGate = createTextGate({
   includeFailure: ({ path, needle, label }) => `${label}: ${path} must include ${JSON.stringify(needle)}`,
   notIncludeFailure: ({ path, needle, label }) => `${label}: ${path} must not include ${JSON.stringify(needle)}`,
 });
-const { checks: passes, read, requireIncludes, requireNotIncludes } = textGate;
+const { checks: passes, read, requireIncludes, requireNotIncludes, requireAbsent } = textGate;
 
 // The drift-inventory checks below collect (rather than throw) so every drift is
 // reported at once; they surface through this failures[] gate at the end. The
@@ -199,7 +199,6 @@ requireIncludes("docs/specs/foundation-gates.md", "Domain goals G003-G009 must n
 requireIncludes("docs/specs/foundation-gates.md", "## Gate B — workflow/approval/action lifecycle baseline", "workflow/action lifecycle gate recorded");
 requireIncludes("docs/specs/foundation-gates.md", "## Gate C — ontology/import/export/object-lineage baseline", "ontology/import/export gate recorded");
 requireIncludes("docs/specs/foundation-gates.md", "## Gate E — UI shell/design/i18n/a11y/no-text-wall baseline", "UI no-text-wall gate recorded");
-requireIncludes("docs/specs/foundation-gates.md", "omx team 6:executor", "supported team launch path recorded");
 
 for (const staleGoal of ["G011", "G012", "G013", "G014", "G015", "G016", "G017", "G018", "G019", "G020", "G021", "G022", "G023", "G024", "G025", "G026", "G027", "G028", "G029", "G030", "W1A-W1H"]) {
   requireNotIncludes("docs/specs/foundation-gates.md", staleGoal, `foundation gate has no stale ${staleGoal} plan reference`);
@@ -272,8 +271,8 @@ requireIncludes("package.json", "\"test:node-audit-exceptions\"", "Node audit ex
 requireIncludes("package.json", "\"check:trivy-dev-codegen-exceptions\"", "Trivy exception projection script");
 requireIncludes("package.json", "\"test:trivy-dev-codegen-exceptions\"", "Trivy exception projection regression script");
 for (const releaseNeedle of [
-  "docs/specs/**",
-  "Wait for CI success",
+  "workflow_run:",
+  "Admit exact successful CI candidate",
   "Trivy scan both arches (fail on HIGH/CRITICAL)",
   "target: linux/amd64",
   "target: linux/arm64",
@@ -285,7 +284,7 @@ for (const releaseNeedle of [
   requireIncludes(".github/workflows/image-release.yml", releaseNeedle, `image release gate: ${releaseNeedle}`);
 }
 requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please token fallback documented");
-requireIncludes("backend/rust-toolchain.toml", "channel = \"1.96.0\"", "Rust toolchain pinned to 1.96.0");
+requireIncludes("backend/rust-toolchain.toml", "channel = \"1.97.1\"", "Rust toolchain pinned to 1.97.1");
 
 // UI shell/design/i18n/a11y baseline.
 requireFile("e2e/fixtures/ux.ts", "browser UX fixture");
@@ -304,18 +303,54 @@ requireIncludes("web/src/components/shell/Sidebar.tsx", "ko.shell.mainNav", "aut
 requireIncludes("docs/benchmarks/enterprise-parity-matrix.md", "SAP Fiori", "enterprise UX benchmark matrix");
 requireIncludes("docs/benchmarks/enterprise-parity-matrix.md", "Palantir", "ontology/operations benchmark matrix");
 
-// Team launch path is verified without starting a tmux team during this gate.
-// CI runners do not have the developer-local OMX context or ~/.codex role files,
-// so this gate must rely on repo-owned evidence rather than local home state.
+// Concurrent execution authority is repository-owned: CI must not rely on a
+// developer-local profile, home-state metadata, or external orchestration runtime.
 const foundationGateText = read("docs/specs/foundation-gates.md");
-if (
-  foundationGateText.includes("omx team 6:executor")
-  && foundationGateText.includes("omx team [N:agent-type]")
-  && foundationGateText.includes("~/.codex/agents/executor.toml")
-) {
-  passes.push("omx team 6:executor launch syntax and executor role metadata recorded in repo-owned gate contract");
+for (const [path, needle, label] of [
+  ["docs/specs/foundation-gates.md", "docs/program/console-fanout-epoch-contract.md", "fan-out epoch contract recorded"],
+  ["docs/specs/foundation-gates.md", "docs/program/console-buck2-scale-playbook.md", "Buck2 scale playbook recorded"],
+  ["docs/program/console-fanout-epoch-contract.md", "Buck2 remains the only", "Buck2-only fan-out authority"],
+  ["docs/program/console-fanout-epoch-contract.md", "exact-SHA", "exact-SHA fan-out evidence"],
+  ["docs/program/console-buck2-scale-playbook.md", "bounded", "bounded fan-out evidence"],
+  ["docs/program/console-buck2-scale-playbook.md", "multi-cell", "multi-cell ownership evidence"],
+  ["docs/program/console-buck2-scale-playbook.md", "Candidate CI", "candidate CI evidence"],
+  ["docs/program/console-buck2-scale-playbook.md", "full release matrices", "release matrix evidence"],
+]) {
+  requireIncludes(path, needle, label);
+}
+const liveAuthorityContracts = [
+  "docs/specs/foundation-gates.md",
+  "docs/specs/review-fix-merge-governance.md",
+];
+const retiredAuthorityPatterns = [
+  [/\bnousresearch\s+hermes\b/i, "NousResearch Hermes authority"],
+  [/\bhermes\s+(?:kanban|profile)\b/i, "Hermes Kanban/profile authority"],
+  [/\bomx\b/i, "OMX authority"],
+  [/\bomc\b/i, "OMC authority"],
+  [/\bgjc\b/i, "GJC authority"],
+  [/~\/\.codex(?:\/agents)?\b/i, "developer-home role authority"],
+  [/\b(?:developer[- ]home|home[- ])(?:role|profile|agent)\s+authority\b/i, "developer-home role authority"],
+];
+function requireOnlyReactNativeHermesEngineLines(path) {
+  const allowedLine = /^\s*(?:[-*]\s+)?`?React Native Hermes JS engine`?(?: technical dependency)?[.!]?\s*$/i;
+  for (const [index, line] of read(path).split(/\r?\n/).entries()) {
+    if (/\bhermes\b/i.test(line) && !allowedLine.test(line)) {
+      throw new Error(`${path}:${index + 1} must not use Hermes outside the exact React Native Hermes JS engine technical line`);
+    }
+  }
+  passes.push(`${path} permits only exact React Native Hermes JS engine technical lines`);
+}
+
+for (const path of liveAuthorityContracts) {
+  for (const [pattern, label] of retiredAuthorityPatterns) {
+    requireAbsent(path, pattern, `${path} excludes retired ${label}`);
+  }
+  requireOnlyReactNativeHermesEngineLines(path);
+}
+if (foundationGateText.includes("Concurrent-delivery authority")) {
+  passes.push("repository-owned concurrent execution authority recorded in foundation contract");
 } else {
-  failures.push("omx team launch path evidence missing from docs/specs/foundation-gates.md");
+  failures.push("repository-owned concurrent execution authority missing from docs/specs/foundation-gates.md");
 }
 
 if (failures.length) {

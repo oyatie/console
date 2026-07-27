@@ -1,0 +1,60 @@
+{
+  "lane": "CAP-PAYROLL-CONSOLE",
+  "stage": "backend-build",
+  "shared_root_requests": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "Add \"payroll\" to MOUNTED_SCREEN_KEYS. Nav item already exists (payroll group, labelKey console.shell.nav.payroll, icon calc, gate DIRECTORY_ROLES + EMPLOYEE_DIRECTORY_READ) — no item edit. Do NOT add to EXPOSED_SCREEN_KEYS (ADR-0025 dark).",
+      "status": "pending (frontend stage)"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "Add entry: payroll: PayrollScreenBody (import { PayrollScreenBody } from \"../payroll\").",
+      "status": "pending (frontend stage)"
+    },
+    {
+      "file": "web/src/i18n/ko.ts",
+      "change": "Ensure keys console.shell.nav.groups.payroll and console.shell.nav.payroll exist (nav.ts already references them; verify, add only if missing).",
+      "status": "pending (frontend stage)"
+    },
+    {
+      "file": "backend/crates/platform/authz/src/lib.rs",
+      "change": "Feature::PayrollRunManage (code \"payroll_run_manage\"), matrix row + org-wide gating identical to PayrollRunRead; feature-code parse + ALL updated.",
+      "status": "APPLIED in-lane (commit 3f3fee92) — required for the payroll crates to compile; integrator reconciles if another lane also touched the enum"
+    },
+    {
+      "file": "backend/openapi/openapi.yaml",
+      "change": "Merge manifests/openapi-fragment.yaml (12 operations, all tags:[payroll]; PayrollRunSummary/Detail field extensions listed at its bottom), then regenerate clients/{ts,kotlin,swift} (three drift gates).",
+      "status": "pending (integrator) — fragment authored"
+    },
+    {
+      "file": "backend/crates/platform/db/migrations",
+      "change": "0186_payroll_run_lifecycle.sql (provisional number; renumber to next free on consolidation).",
+      "status": "APPLIED in-lane (commit 93489997)"
+    }
+  ],
+  "in_lane_spine_repairs": [
+    {
+      "file": "backend/crates/platform/auth/src/jwt.rs",
+      "commit": "86dfe855",
+      "reason": "Spine commit b0d31af8 added the actor_home_org parameter to issue_access_token_inner but missed two call sites — the branch did not compile. Mechanical fix (None at both sites) + clippy too_many_arguments allows. Drop if the spine fixed it independently."
+    },
+    {
+      "file": "backend/crates/platform/db/migrations/0181_financial_purchase_request_queue_index.sql",
+      "commit": "8d9cde06",
+      "reason": "Two lanes landed distinct 0170_*.sql files; duplicate sqlx migration version 170 aborted every #[sqlx::test] on the branch. Renumbered the later-merged financial index migration to 0181. Integrator may renumber again."
+    },
+    {
+      "file": "backend/crates/logistics/adapter-postgres/{Cargo.toml,src/lib.rs}",
+      "reason": "fingerprint() used format!(\"{:x}\") on a sha2 digest that no longer implements LowerHex — blocked every mnt-app-dependent build. Repo idiom hex::encode applied (workspace hex dep)."
+    }
+  ],
+  "known_spine_breaks_not_repaired": [
+    "mnt-facilities-rest and mnt-production-rest do not compile at branch HEAD (mid-refactor foreign lanes), so mnt-app and backend/app/tests/* cannot build. The chartered app-level payroll test runs instead at backend/crates/payroll/rest/tests/run_lifecycle_api.rs against the identical crate router + with_request_context middleware; relocate to app/tests once those lanes heal."
+  ],
+  "module_owned": {
+    "backend": "backend/crates/payroll/{domain,adapter-postgres,rest}",
+    "frontend": "web/src/console/payroll/**, web/src/i18n/payroll.ts",
+    "evidence": "docs/evidence/console/CAP-PAYROLL-CONSOLE/**"
+  }
+}

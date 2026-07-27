@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, RefObject } from "react";
 
 import { ko } from "../../i18n/ko";
 import { StatusChip } from "../components";
@@ -30,6 +30,12 @@ export function MailThreadList({
   onUnreadOnlyChange,
   onSelectThread,
   onOpenThread,
+  onOpenFolders,
+  onCompose,
+  folderNavOpen,
+  folderTriggerRef,
+  threadListRef,
+  backgroundInert,
 }: {
   threads: ConsoleMailThread[];
   selectedThreadId?: string;
@@ -41,8 +47,15 @@ export function MailThreadList({
   onUnreadOnlyChange: (value: boolean) => void;
   onSelectThread: (thread: ConsoleMailThread) => void;
   onOpenThread: (thread: ConsoleMailThread) => void;
+  onOpenFolders: () => void;
+  onCompose: () => void;
+  folderNavOpen: boolean;
+  folderTriggerRef: RefObject<HTMLButtonElement | null>;
+  threadListRef: RefObject<HTMLElement | null>;
+  backgroundInert: boolean;
 }) {
   const T = ko.console.mail;
+  const responsive = T.responsive;
   const selectedIndex = Math.max(0, threads.findIndex((thread) => thread.id === selectedThreadId));
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -60,17 +73,33 @@ export function MailThreadList({
   }
 
   return (
-    <section style={separatorPaneStyle}>
+    <section ref={threadListRef} className="mail-screen__threads" aria-hidden={backgroundInert || undefined} inert={backgroundInert || undefined} style={separatorPaneStyle} tabIndex={-1}>
       <div style={rowStyle}>
         <h2 style={sectionTitleStyle}>{T.thread.listLabel}</h2>
-        <label style={{ ...faintTextStyle, display: "inline-flex", alignItems: "center", gap: "var(--sp-2)" }}>
-          <input
-            type="checkbox"
-            checked={unreadOnly}
-            onChange={(event) => { onUnreadOnlyChange(event.currentTarget.checked); }}
-          />
-          {T.filter.unreadOnly}
-        </label>
+        <div style={chipRowStyle}>
+          <button
+            ref={folderTriggerRef}
+            className="mail-screen__folder-trigger"
+            type="button"
+            style={ghostButtonStyle}
+            aria-controls="mail-folder-navigation"
+            aria-expanded={folderNavOpen}
+            onClick={onOpenFolders}
+          >
+            {responsive.openFolders}
+          </button>
+          <button className="mail-screen__compose-trigger" type="button" style={ghostButtonStyle} onClick={onCompose}>
+            {responsive.compose}
+          </button>
+          <label style={{ ...faintTextStyle, display: "inline-flex", alignItems: "center", gap: "var(--sp-2)" }}>
+            <input
+              type="checkbox"
+              checked={unreadOnly}
+              onChange={(event) => { onUnreadOnlyChange(event.currentTarget.checked); }}
+            />
+            {T.filter.unreadOnly}
+          </label>
+        </div>
       </div>
       <form
         style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: "var(--sp-2)" }}
@@ -120,7 +149,7 @@ export function MailThreadList({
                     borderColor: selected ? "var(--ink)" : "var(--border-soft)",
                     background: selected ? "var(--muted)" : "var(--surface)",
                   }}
-                  onClick={() => { onSelectThread(thread); }}
+                  onClick={() => { onOpenThread(thread); }}
                 >
                   <span style={rowStyle}>
                     <span style={{ color: "var(--ink)", fontSize: "var(--text-sm)", fontWeight: thread.unread_count > 0 ? "var(--fw-strong)" : "var(--fw-medium)" }}>

@@ -32,7 +32,10 @@ import com.maintenance.api.client.model.AssignTicketRequest
 import com.maintenance.api.client.model.CreateInternalTicketRequest
 import com.maintenance.api.client.model.CustomerIntakeRequest
 import com.maintenance.api.client.model.ErrorBody
+import com.maintenance.api.client.model.LinkSupportTicketRequest
+import com.maintenance.api.client.model.RecordSupportTicketAcceptanceRequest
 import com.maintenance.api.client.model.SupportIntakeAck
+import com.maintenance.api.client.model.SupportTicketAcceptance
 import com.maintenance.api.client.model.SupportTicketCategory
 import com.maintenance.api.client.model.SupportTicketComment
 import com.maintenance.api.client.model.SupportTicketDetail
@@ -373,6 +376,83 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
     }
 
     /**
+     * POST /api/v1/support/tickets/{id}/link
+     * Bind a support ticket to the field object chain (customer site and/or dispatched work order)
+     * Requires assignee_manage on the ticket branch (untriaged tickets require cross-branch authority). Linking a site to an untriaged CUSTOMER ticket also sets its branch, and customer_id is denormalized from the site. A linked work order must be dispatched to the ticket&#39;s linked site. Each body field distinguishes an absent field (leave the link untouched) from an explicit null (clear the link).
+     * @param id
+     * @param linkSupportTicketRequest
+     * @return SupportTicketSummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun linkSupportTicket(id: java.util.UUID, linkSupportTicketRequest: LinkSupportTicketRequest) : SupportTicketSummary = withContext(Dispatchers.IO) {
+        val localVarResponse = linkSupportTicketWithHttpInfo(id = id, linkSupportTicketRequest = linkSupportTicketRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as SupportTicketSummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/support/tickets/{id}/link
+     * Bind a support ticket to the field object chain (customer site and/or dispatched work order)
+     * Requires assignee_manage on the ticket branch (untriaged tickets require cross-branch authority). Linking a site to an untriaged CUSTOMER ticket also sets its branch, and customer_id is denormalized from the site. A linked work order must be dispatched to the ticket&#39;s linked site. Each body field distinguishes an absent field (leave the link untouched) from an explicit null (clear the link).
+     * @param id
+     * @param linkSupportTicketRequest
+     * @return ApiResponse<SupportTicketSummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun linkSupportTicketWithHttpInfo(id: java.util.UUID, linkSupportTicketRequest: LinkSupportTicketRequest) : ApiResponse<SupportTicketSummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = linkSupportTicketRequestConfig(id = id, linkSupportTicketRequest = linkSupportTicketRequest)
+
+        return@withContext request<LinkSupportTicketRequest, SupportTicketSummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation linkSupportTicket
+     *
+     * @param id
+     * @param linkSupportTicketRequest
+     * @return RequestConfig
+     */
+    fun linkSupportTicketRequestConfig(id: java.util.UUID, linkSupportTicketRequest: LinkSupportTicketRequest) : RequestConfig<LinkSupportTicketRequest> {
+        val localVariableBody = linkSupportTicketRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/support/tickets/{id}/link".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * GET /api/v1/support/tickets
      * List branch-scoped support tickets with optional filters
      *
@@ -381,6 +461,7 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
      * @param category  (optional)
      * @param origin  (optional)
      * @param assigneeUserId  (optional)
+     * @param siteId Restrict to tickets linked to one customer site (the field-console queue). (optional)
      * @param includeUntriaged  (optional)
      * @param limit  (optional, default to 50L)
      * @param cursor  (optional)
@@ -393,8 +474,8 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    suspend fun listSupportTickets(status: SupportTicketStatus? = null, priority: SupportTicketPriority? = null, category: SupportTicketCategory? = null, origin: SupportTicketOrigin? = null, assigneeUserId: java.util.UUID? = null, includeUntriaged: kotlin.Boolean? = null, limit: kotlin.Long? = 50L, cursor: java.util.UUID? = null) : SupportTicketPage = withContext(Dispatchers.IO) {
-        val localVarResponse = listSupportTicketsWithHttpInfo(status = status, priority = priority, category = category, origin = origin, assigneeUserId = assigneeUserId, includeUntriaged = includeUntriaged, limit = limit, cursor = cursor)
+    suspend fun listSupportTickets(status: SupportTicketStatus? = null, priority: SupportTicketPriority? = null, category: SupportTicketCategory? = null, origin: SupportTicketOrigin? = null, assigneeUserId: java.util.UUID? = null, siteId: java.util.UUID? = null, includeUntriaged: kotlin.Boolean? = null, limit: kotlin.Long? = 50L, cursor: java.util.UUID? = null) : SupportTicketPage = withContext(Dispatchers.IO) {
+        val localVarResponse = listSupportTicketsWithHttpInfo(status = status, priority = priority, category = category, origin = origin, assigneeUserId = assigneeUserId, siteId = siteId, includeUntriaged = includeUntriaged, limit = limit, cursor = cursor)
 
         return@withContext when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as SupportTicketPage
@@ -420,6 +501,7 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
      * @param category  (optional)
      * @param origin  (optional)
      * @param assigneeUserId  (optional)
+     * @param siteId Restrict to tickets linked to one customer site (the field-console queue). (optional)
      * @param includeUntriaged  (optional)
      * @param limit  (optional, default to 50L)
      * @param cursor  (optional)
@@ -429,8 +511,8 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    suspend fun listSupportTicketsWithHttpInfo(status: SupportTicketStatus?, priority: SupportTicketPriority?, category: SupportTicketCategory?, origin: SupportTicketOrigin?, assigneeUserId: java.util.UUID?, includeUntriaged: kotlin.Boolean?, limit: kotlin.Long?, cursor: java.util.UUID?) : ApiResponse<SupportTicketPage?> = withContext(Dispatchers.IO) {
-        val localVariableConfig = listSupportTicketsRequestConfig(status = status, priority = priority, category = category, origin = origin, assigneeUserId = assigneeUserId, includeUntriaged = includeUntriaged, limit = limit, cursor = cursor)
+    suspend fun listSupportTicketsWithHttpInfo(status: SupportTicketStatus?, priority: SupportTicketPriority?, category: SupportTicketCategory?, origin: SupportTicketOrigin?, assigneeUserId: java.util.UUID?, siteId: java.util.UUID?, includeUntriaged: kotlin.Boolean?, limit: kotlin.Long?, cursor: java.util.UUID?) : ApiResponse<SupportTicketPage?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listSupportTicketsRequestConfig(status = status, priority = priority, category = category, origin = origin, assigneeUserId = assigneeUserId, siteId = siteId, includeUntriaged = includeUntriaged, limit = limit, cursor = cursor)
 
         return@withContext request<Unit, SupportTicketPage>(
             localVariableConfig
@@ -445,12 +527,13 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
      * @param category  (optional)
      * @param origin  (optional)
      * @param assigneeUserId  (optional)
+     * @param siteId Restrict to tickets linked to one customer site (the field-console queue). (optional)
      * @param includeUntriaged  (optional)
      * @param limit  (optional, default to 50L)
      * @param cursor  (optional)
      * @return RequestConfig
      */
-    fun listSupportTicketsRequestConfig(status: SupportTicketStatus?, priority: SupportTicketPriority?, category: SupportTicketCategory?, origin: SupportTicketOrigin?, assigneeUserId: java.util.UUID?, includeUntriaged: kotlin.Boolean?, limit: kotlin.Long?, cursor: java.util.UUID?) : RequestConfig<Unit> {
+    fun listSupportTicketsRequestConfig(status: SupportTicketStatus?, priority: SupportTicketPriority?, category: SupportTicketCategory?, origin: SupportTicketOrigin?, assigneeUserId: java.util.UUID?, siteId: java.util.UUID?, includeUntriaged: kotlin.Boolean?, limit: kotlin.Long?, cursor: java.util.UUID?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
             .apply {
@@ -469,6 +552,9 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
                 if (assigneeUserId != null) {
                     put("assignee_user_id", listOf(assigneeUserId.toString()))
                 }
+                if (siteId != null) {
+                    put("site_id", listOf(siteId.toString()))
+                }
                 if (includeUntriaged != null) {
                     put("include_untriaged", listOf(includeUntriaged.toString()))
                 }
@@ -485,6 +571,87 @@ open class SupportApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/api/v1/support/tickets",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * POST /api/v1/support/tickets/{id}/acceptance
+     * Record the customer&#39;s acceptance verdict for a RESOLVED ticket (audited closure evidence)
+     * Requires assignee_manage on the ticket branch and an Idempotency-Key header. CUSTOMER_ACCEPTED drives RESOLVED to CLOSED; CUSTOMER_DECLINED requires a note, drives RESOLVED to IN_PROGRESS, and the note becomes a customer-visible comment. A replay with the same key and the same request returns the stored acceptance; the same key with a different request is a conflict. accepted_by is a business fact and is never logged.
+     * @param id
+     * @param idempotencyKey
+     * @param recordSupportTicketAcceptanceRequest
+     * @return SupportTicketAcceptance
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun recordSupportTicketAcceptance(id: java.util.UUID, idempotencyKey: kotlin.String, recordSupportTicketAcceptanceRequest: RecordSupportTicketAcceptanceRequest) : SupportTicketAcceptance = withContext(Dispatchers.IO) {
+        val localVarResponse = recordSupportTicketAcceptanceWithHttpInfo(id = id, idempotencyKey = idempotencyKey, recordSupportTicketAcceptanceRequest = recordSupportTicketAcceptanceRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as SupportTicketAcceptance
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/support/tickets/{id}/acceptance
+     * Record the customer&#39;s acceptance verdict for a RESOLVED ticket (audited closure evidence)
+     * Requires assignee_manage on the ticket branch and an Idempotency-Key header. CUSTOMER_ACCEPTED drives RESOLVED to CLOSED; CUSTOMER_DECLINED requires a note, drives RESOLVED to IN_PROGRESS, and the note becomes a customer-visible comment. A replay with the same key and the same request returns the stored acceptance; the same key with a different request is a conflict. accepted_by is a business fact and is never logged.
+     * @param id
+     * @param idempotencyKey
+     * @param recordSupportTicketAcceptanceRequest
+     * @return ApiResponse<SupportTicketAcceptance?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun recordSupportTicketAcceptanceWithHttpInfo(id: java.util.UUID, idempotencyKey: kotlin.String, recordSupportTicketAcceptanceRequest: RecordSupportTicketAcceptanceRequest) : ApiResponse<SupportTicketAcceptance?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = recordSupportTicketAcceptanceRequestConfig(id = id, idempotencyKey = idempotencyKey, recordSupportTicketAcceptanceRequest = recordSupportTicketAcceptanceRequest)
+
+        return@withContext request<RecordSupportTicketAcceptanceRequest, SupportTicketAcceptance>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation recordSupportTicketAcceptance
+     *
+     * @param id
+     * @param idempotencyKey
+     * @param recordSupportTicketAcceptanceRequest
+     * @return RequestConfig
+     */
+    fun recordSupportTicketAcceptanceRequestConfig(id: java.util.UUID, idempotencyKey: kotlin.String, recordSupportTicketAcceptanceRequest: RecordSupportTicketAcceptanceRequest) : RequestConfig<RecordSupportTicketAcceptanceRequest> {
+        val localVariableBody = recordSupportTicketAcceptanceRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        idempotencyKey.apply { localVariableHeaders["Idempotency-Key"] = this.toString() }
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/support/tickets/{id}/acceptance".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

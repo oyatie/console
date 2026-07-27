@@ -14,6 +14,7 @@ import {
   FilePlus,
   FileSpreadsheet,
   Gauge,
+  Wrench,
   LifeBuoy,
   List,
   Map as MapIcon,
@@ -31,6 +32,11 @@ import {
   Users,
   Workflow,
 } from "lucide-react";
+
+import {
+  COLLABORATION_ROUTE_FEATURE,
+  COLLABORATION_ROUTE_ROLES,
+} from "../../lib/collaborationRoutePolicy";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -81,6 +87,7 @@ export const FEATURES = {
   EQUIPMENT_MANAGE: "equipment_manage",
   PURCHASE_REQUEST_READ: "purchase_request_read",
   INSPECTION_SCHEDULE_MANAGE: "inspection_schedule_manage",
+  INSPECTION_ROUND_COMPLETE: "inspection_round_complete",
   AUDIT_LOG_READ: "audit_log_read",
   EXCEL_DOWNLOAD: "excel_download",
   OPS_DASHBOARD_READ: "ops_dashboard_read",
@@ -90,6 +97,8 @@ export const FEATURES = {
   MAIL_ACCOUNT_MANAGE: "mail_account_manage",
   MAIL_USE: "mail_use",
   EMPLOYEE_DIRECTORY_READ: "employee_directory_read",
+  PAYROLL_RUN_READ: "payroll_run_read",
+  FACILITIES_OBSERVE: "facilities_observe",
 } as const;
 
 export type FeatureGrant = (typeof FEATURES)[keyof typeof FEATURES];
@@ -120,9 +129,9 @@ export function hasAnyFeatureGrant(
 }
 
 /**
- * Legacy name for a session with no visible console destination beyond Profile.
- * Group-admin and mapped runtime feature grants are access grants even when the
- * built-in role claim is still the lowest-privilege MEMBER.
+ * Legacy name for a session with no operational or administrative console
+ * grant. Profile and the principal-bound My Attendance self-service floor do
+ * not change this state; group-admin and mapped runtime feature grants do.
  */
 export function isPendingMember(
   roles: readonly string[] | undefined,
@@ -165,6 +174,17 @@ const DAILY_PLAN_ROLES: readonly Role[] = [
   ROLES.ADMIN,
   ROLES.SUPER_ADMIN,
 ];
+/**
+ * Inspection is one role-aware destination with two real workflows:
+ * mechanics execute their own assigned rounds, while admins manage schedules.
+ * The page itself selects the principal-bound workspace after this coarse
+ * navigation gate; the backend remains authoritative for both operations.
+ */
+const INSPECTION_ROLES: readonly Role[] = [
+  ROLES.MECHANIC,
+  ROLES.ADMIN,
+  ROLES.SUPER_ADMIN,
+];
 /** Roles allowed to read KPI dashboards (backend `KpiRead`: ADMIN/EXECUTIVE/SUPER_ADMIN). */
 const KPI_ROLES: readonly Role[] = [
   ROLES.ADMIN,
@@ -202,11 +222,11 @@ const MAIL_USE_ROLES: readonly Role[] = [
 ];
 
 /**
- * Per-item role gate. Default-deny: only `profile` is intentionally left ungated
- * (visible to any authenticated session, including a no-grant MEMBER). Every
- * other destination carries an explicit gate derived from the backend permission
- * matrix so the nav never shows a page the backend would 403, nor hides one a
- * role is entitled to:
+ * Per-item role gate. Default-deny: only `profile` and principal-bound
+ * `my-attendance` are intentionally left ungated (visible to any authenticated
+ * session, including a no-grant MEMBER). Every other destination carries an
+ * explicit gate derived from the backend permission matrix so the nav never
+ * shows a page the backend would 403, nor hides one a role is entitled to:
  *  - dispatch/dispatch-map/intake/messenger/support/reporting/equipment/financial/
  *    location (WorkOrderReadAll / WorkOrderCreate / ExcelDownload / etc.): the
  *    five operational roles, NOT a bare MEMBER (which the backend default-denies).
@@ -219,11 +239,10 @@ const MAIL_USE_ROLES: readonly Role[] = [
  */
 const ITEM_ROLE_GATES = new Map<string, readonly Role[]>([
   // Personal/department work surfaces live outside the logistics-maintenance
-  // group. They remain feature/role-gated so a no-grant MEMBER is still routed
-  // to /pending, while custom grants can expose only the permitted personal
-  // surface without leaking logistics-maintenance or equipment-sales nav.
+  // group. My Attendance is principal-bound self-service for every
+  // authenticated user; overview remains feature/role-gated so a no-grant
+  // MEMBER stays pending without logistics-maintenance or equipment-sales nav.
   ["overview", OPERATIONAL_ROLES],
-  ["my-attendance", OPERATIONAL_ROLES],
   ["messenger", OPERATIONAL_ROLES],
   ["approvals", ADMIN_ROLES],
   // mail (MailUse): shared corporate mailbox. Mechanics/MEMBER are denied.
@@ -238,7 +257,10 @@ const ITEM_ROLE_GATES = new Map<string, readonly Role[]>([
   ["intake", LOGISTICS_MAINTENANCE_ROLES],
   ["support", LOGISTICS_MAINTENANCE_ROLES],
   ["reporting", LOGISTICS_MAINTENANCE_ROLES],
-  ["collaboration", LOGISTICS_MAINTENANCE_ROLES],
+  ["collaboration", COLLABORATION_ROUTE_ROLES],
+  // Facilities/IFM case visibility mirrors backend FacilitiesObserve: all
+  // operational roles, or an explicit tenant-scoped observation grant.
+  ["facilities", OPERATIONAL_ROLES],
   // Equipment/sales surfaces use the same intended viewer set unless a narrower
   // management guard below applies.
   ["equipment", EQUIPMENT_SALES_ROLES],
@@ -282,9 +304,9 @@ const ITEM_ROLE_GATES = new Map<string, readonly Role[]>([
   // mailbox hosting is platform-operated; admins manage domains/mailboxes, not
   // SMTP/IMAP host/port/password settings.
   ["email", []],
-  // inspection (InspectionScheduleManage): ADMIN/SUPER_ADMIN only, matching the
-  // backend matrix row [D, D, A, D, A] and the list-schedules read gate.
-  ["inspection", ADMIN_ROLES],
+  // inspection combines principal-bound InspectionRoundComplete execution for
+  // MECHANIC with InspectionScheduleManage for ADMIN/SUPER_ADMIN.
+  ["inspection", INSPECTION_ROLES],
   // equipment-manage (EquipmentManage): ADMIN/EXECUTIVE/SUPER_ADMIN only,
   // matching the backend matrix and the RequireEquipmentManageRoute guard.
   ["equipment-manage", EQUIPMENT_MANAGE_ROLES],
@@ -313,14 +335,14 @@ const ITEM_FEATURE_GATES = new Map<string, readonly FeatureGrant[]>([
       FEATURES.INTEGRITY_FINDING_TRIAGE,
     ],
   ],
-  ["my-attendance", [FEATURES.EMPLOYEE_DIRECTORY_READ]],
   ["messenger", [FEATURES.WORK_ORDER_READ_ALL]],
   ["dispatch", [FEATURES.WORK_ORDER_READ_ALL]],
   ["dispatch-map", [FEATURES.WORK_ORDER_READ_ALL]],
   ["intake", [FEATURES.WORK_ORDER_CREATE]],
   ["support", [FEATURES.WORK_ORDER_READ_ALL]],
   ["reporting", [FEATURES.EXCEL_DOWNLOAD]],
-  ["collaboration", [FEATURES.WORK_ORDER_READ_ALL]],
+  ["collaboration", [COLLABORATION_ROUTE_FEATURE]],
+  ["facilities", [FEATURES.FACILITIES_OBSERVE]],
   ["approvals", [FEATURES.COMPLETION_REVIEW]],
   [
     "daily-plan",
@@ -342,7 +364,13 @@ const ITEM_FEATURE_GATES = new Map<string, readonly FeatureGrant[]>([
   ["equipment", [FEATURES.WORK_ORDER_READ_ALL]],
   ["equipment-manage", [FEATURES.EQUIPMENT_MANAGE]],
   ["catalog", [FEATURES.SALES_MANAGE]],
-  ["inspection", [FEATURES.INSPECTION_SCHEDULE_MANAGE]],
+  [
+    "inspection",
+    [
+      FEATURES.INSPECTION_SCHEDULE_MANAGE,
+      FEATURES.INSPECTION_ROUND_COMPLETE,
+    ],
+  ],
   [
     "integrity",
     [FEATURES.INTEGRITY_FINDINGS_READ, FEATURES.INTEGRITY_FINDING_TRIAGE],
@@ -352,9 +380,9 @@ const ITEM_FEATURE_GATES = new Map<string, readonly FeatureGrant[]>([
 /**
  * Whether a nav item is visible to a session carrying `roles`. Every
  * destination-bearing item now carries an explicit role gate (default-deny);
- * only `profile` is intentionally ungated, so a no-grant MEMBER sees Profile
- * alone (+ the /pending landing page). Items without a gate stay visible to any
- * authenticated session.
+ * only `profile` and principal-bound `my-attendance` are intentionally ungated,
+ * so a no-grant MEMBER sees those self-service destinations plus the /pending
+ * landing page. Items without a gate stay visible to any authenticated session.
  */
 export function isNavItemVisible(
   itemKey: string,
@@ -463,6 +491,12 @@ export const NAV_GROUPS = [
         href: "/inspection",
         labelKey: "nav.inspection",
         Icon: CalendarClock,
+      },
+      {
+        key: "facilities",
+        href: "/facilities",
+        labelKey: "nav.facilities",
+        Icon: Wrench,
       },
       {
         key: "support",
@@ -724,6 +758,11 @@ export interface VisibleNavItem {
   Icon: LucideIcon;
 }
 
+/** Self-service destinations do not turn a pending session into a console grant. */
+export function isGrantedConsoleNavItem(item: Pick<VisibleNavItem, "key">): boolean {
+  return item.key !== "profile" && item.key !== "my-attendance";
+}
+
 /**
  * Flatten the role-gated nav registry for shell-level surfaces such as the
  * command palette and route breadcrumbs. The sidebar remains the visual rail;
@@ -755,7 +794,7 @@ export function hasGrantedConsoleAccess(
   featureGrants?: readonly string[],
 ): boolean {
   return visibleNavItemsForRoles(roles, groupRoles, featureGrants).some(
-    (item) => item.key !== "profile",
+    isGrantedConsoleNavItem,
   );
 }
 

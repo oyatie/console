@@ -8,17 +8,23 @@ resolver = "3"
 members = [
   "app",
   "crates/action-inbox/*",
+  "crates/attendance/*",
   "crates/kernel/*",
   "crates/benefit/*",
+  "crates/consulting/*",
   "crates/compliance/*",
   "crates/docs/*",
+  "crates/evaluation/*",
   "crates/financial/*",
   "crates/finance-gl/*",
   "crates/governance/*",
   "crates/identity/*",
   "crates/inspection/*",
   "crates/inventory/*",
+  "crates/logistics/*",
+  "crates/equipment/*",
   "crates/ontology/*",
+  "crates/orgchange/*",
   "crates/registry/*",
   "crates/reporting/*",
   "crates/sales/*",
@@ -33,6 +39,8 @@ members = [
   "crates/todos/*",
   "crates/comms/*",
   "crates/payroll/*",
+  "crates/production/*",
+  "crates/recruiting/*",
   "crates/policy/*",
   "crates/erp/*",
   "crates/platform/*",
@@ -177,15 +185,25 @@ mnt-action-inbox-application = { path = "crates/action-inbox/application" }
 mnt-benefit-domain = { path = "crates/benefit/domain" }
 mnt-benefit-application = { path = "crates/benefit/application" }
 mnt-benefit-adapter-postgres = { path = "crates/benefit/adapter-postgres" }
+mnt-benefit-rest = { path = "crates/benefit/rest" }
+mnt-consulting-rest = { path = "crates/consulting/rest" }
 mnt-compliance-domain = { path = "crates/compliance/domain" }
 mnt-compliance-application = { path = "crates/compliance/application" }
 mnt-compliance-adapter-postgres = { path = "crates/compliance/adapter-postgres" }
 mnt-compliance-rest = { path = "crates/compliance/rest" }
 mnt-integrity = { path = "crates/compliance/integrity" }
+mnt-attendance-domain = { path = "crates/attendance/domain" }
+mnt-attendance-application = { path = "crates/attendance/application" }
+mnt-attendance-adapter-postgres = { path = "crates/attendance/adapter-postgres" }
+mnt-attendance-rest = { path = "crates/attendance/rest" }
 mnt-docs-domain = { path = "crates/docs/domain" }
 mnt-docs-application = { path = "crates/docs/application" }
 mnt-docs-adapter-postgres = { path = "crates/docs/adapter-postgres" }
 mnt-docs-rest = { path = "crates/docs/rest" }
+mnt-evaluation-domain = { path = "crates/evaluation/domain" }
+mnt-evaluation-application = { path = "crates/evaluation/application" }
+mnt-evaluation-adapter-postgres = { path = "crates/evaluation/adapter-postgres" }
+mnt-evaluation-rest = { path = "crates/evaluation/rest" }
 mnt-financial-domain = { path = "crates/financial/domain" }
 mnt-financial-application = { path = "crates/financial/application" }
 mnt-financial-adapter-postgres = { path = "crates/financial/adapter-postgres" }
@@ -205,6 +223,19 @@ mnt-inspection-rest = { path = "crates/inspection/rest" }
 mnt-inventory-domain = { path = "crates/inventory/domain" }
 mnt-inventory-application = { path = "crates/inventory/application" }
 mnt-inventory-adapter-postgres = { path = "crates/inventory/adapter-postgres" }
+mnt-inventory-rest = { path = "crates/inventory/rest" }
+mnt-logistics-domain = { path = "crates/logistics/domain" }
+mnt-logistics-application = { path = "crates/logistics/application" }
+mnt-logistics-adapter-postgres = { path = "crates/logistics/adapter-postgres" }
+mnt-logistics-rest = { path = "crates/logistics/rest" }
+mnt-equipment-domain = { path = "crates/equipment/domain" }
+mnt-equipment-application = { path = "crates/equipment/application" }
+mnt-equipment-adapter-postgres = { path = "crates/equipment/adapter-postgres" }
+mnt-equipment-rest = { path = "crates/equipment/rest" }
+mnt-recruiting-domain = { path = "crates/recruiting/domain" }
+mnt-recruiting-application = { path = "crates/recruiting/application" }
+mnt-recruiting-adapter-postgres = { path = "crates/recruiting/adapter-postgres" }
+mnt-recruiting-rest = { path = "crates/recruiting/rest" }
 mnt-support-domain = { path = "crates/support/domain" }
 mnt-support-application = { path = "crates/support/application" }
 mnt-support-adapter-postgres = { path = "crates/support/adapter-postgres" }
@@ -227,6 +258,7 @@ mnt-workorder-domain = { path = "crates/workorder/domain" }
 mnt-workorder-application = { path = "crates/workorder/application" }
 mnt-workorder-adapter-postgres = { path = "crates/workorder/adapter-postgres" }
 mnt-workorder-rest = { path = "crates/workorder/rest" }
+mnt-production-rest = { path = "crates/production/rest" }
 mnt-workflow-domain = { path = "crates/workflow/domain" }
 mnt-workflow-runtime = { path = "crates/workflow/runtime" }
 mnt-workflow-runtime-adapter-postgres = { path = "crates/workflow/adapter-postgres" }
@@ -288,6 +320,9 @@ mnt-governance-domain = { path = "crates/governance/domain" }
 mnt-governance-application = { path = "crates/governance/application" }
 mnt-governance-adapter-postgres = { path = "crates/governance/adapter-postgres" }
 mnt-governance-rest = { path = "crates/governance/rest" }
+mnt-orgchange-domain = { path = "crates/orgchange/domain" }
+mnt-orgchange-adapter-postgres = { path = "crates/orgchange/adapter-postgres" }
+mnt-orgchange-rest = { path = "crates/orgchange/rest" }
 mnt-platform-request-context = { path = "crates/platform/request-context" }
 mnt-platform-realtime = { path = "crates/platform/realtime" }
 mnt-platform-excel = { path = "crates/platform/excel" }
@@ -308,8 +343,10 @@ panic = "deny"
 [patch.crates-io]
 # Temporary RUSTSEC-2026-0194/RUSTSEC-2026-0195 unblock: upstream calamine
 # 0.35.0 and umya-spreadsheet 3.0.0 still constrain quick-xml below the fixed
-# 0.41 line. Keep these path patches only until crates.io releases can resolve
-# quick-xml >=0.41 without local compatibility shims.
-calamine = { path = "vendor/calamine-0.35.0-quickxml41" }
-quick-xml = { path = "vendor/quick-xml-0.41.0-compat" }
-umya-spreadsheet = { path = "vendor/umya-spreadsheet-3.0.0-quickxml41" }
+# 0.41 line. The audited source lives under the repository's Rust third-party
+# boundary so Cargo, Reindeer, Buck2, and the image build consume one copy.
+# Remove these patches once crates.io can resolve quick-xml >=0.41 without
+# local compatibility shims.
+calamine = { path = "../third-party/rust/vendor/calamine-0.35.0-quickxml41" }
+quick-xml = { path = "../third-party/rust/vendor/quick-xml-0.41.0-compat" }
+umya-spreadsheet = { path = "../third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41" }

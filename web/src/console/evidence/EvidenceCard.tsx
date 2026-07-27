@@ -9,12 +9,11 @@
 // decide, fail-closed pending state) and fixity verify (per-copy verdict
 // chips). Custody/holds render straight from `detail` — the caller (see
 // EvidenceRecords) refetches the full object after every mutation, so the
-// timeline is never client-synthesized (§4-25-⑥ — fabrication is a caught
-// defect class here). Custody transfer + disposal have no REST endpoint yet, so
-// those affordances stay disabled with a wire-pending reason — they never mutate
-// custodian/disposed locally nor stage a synthetic custody event.
+// timeline is never client-synthesized. Operations without a typed backend
+// authority are absent rather than shown as disabled previews.
 import { useState, type CSSProperties } from "react";
 
+import { ApiCallError } from "../../api/ontologyActions";
 import { ko } from "../../i18n/ko";
 import { StatusChip } from "../components";
 import { ObjectCard } from "../objectcard";
@@ -30,7 +29,6 @@ import {
   derivativesOf,
   fixityTone,
   formatSize,
-  holdActive,
   originalOf,
   shortDigest,
   toObjectCardDescriptor,
@@ -41,7 +39,7 @@ import {
   EVIDENCE_ACTIONS,
   type CopyFixityStatus,
   type CopyVerdictMap,
-  type EvidenceCopy,
+  EvidenceDetailRefreshError,
   type EvidenceObjectDetail,
   type ReleaseFlowState,
   type VerifyEvidence,
@@ -51,6 +49,7 @@ import "../tokens.css";
 
 const T = ko.console.evidence;
 const TA = ko.console.audit;
+const TP = ko.page;
 
 const rootStyle: CSSProperties = {
   display: "grid",
@@ -168,23 +167,10 @@ const inlineFormStyle: CSSProperties = {
 
 const stackedFormStyle: CSSProperties = { display: "grid", gap: "var(--sp-2)" };
 
-const sealedPaneStyle: CSSProperties = {
-  display: "grid",
-  gap: "var(--sp-2)",
-  padding: "var(--sp-3)",
-  border: "1px dashed var(--border)",
-  borderRadius: "var(--radius-md)",
-  background: "var(--muted)",
-};
-
-const entryTreeStyle: CSSProperties = {
-  display: "grid",
-  gap: "var(--sp-1)",
-  margin: 0,
-  padding: 0,
-  listStyle: "none",
-  fontSize: "var(--text-xs)",
-};
+function timestampLabel(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : TA.datetime(date);
+}
 
 function verifyChip(outcome: VerifyOutcome | "running" | null) {
   if (outcome === null) return null;
@@ -196,42 +182,13 @@ function verifyChip(outcome: VerifyOutcome | "running" | null) {
       return <StatusChip role="status" tone="info">{T.actions.verifying}</StatusChip>;
     case "failed":
       return <StatusChip role="alert" tone="danger">{T.actions.verifyFail}</StatusChip>;
+    case "denied":
+      return <StatusChip role="alert" tone="danger">{TP.permissionDenied}</StatusChip>;
+    case "error":
+      return <StatusChip role="alert" tone="danger">{T.actions.verifyFail}</StatusChip>;
     case "unavailable":
       return <StatusChip role="status" tone="neutral">{T.actions.verifyPending}</StatusChip>;
   }
-}
-
-function isZip(copy: EvidenceCopy): boolean {
-  return copy.contentType === "application/zip" || copy.contentType === "application/x-zip-compressed";
-}
-
-function timestampLabel(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : TA.datetime(date);
-}
-
-/**
- * §4.7-3/§4-18 single action point for opening any evidence copy view. The
- * original is WORM-sealed and never streamed — this call always denies it and
- * surfaces the fail-closed access-denied state (no derived-preview/entry-index
- * REST exists yet, so a derivative/zip-entry open is a wire-pending stub, not
- * fabricated content).
- */
-type PreviewRequest =
-  | { kind: "original" }
-  | { kind: "derivative"; copyId: string }
-  | { kind: "zip-entry"; copyId: string; entryPath: string };
-
-function evPreview(request: PreviewRequest): { denied: boolean; message: string } {
-  if (request.kind === "original") {
-    // wire-pending: Phase C → an audited forbid REST call belongs here once the
-    // original-copy stream endpoint exists; until then there is no network
-    // surface to deny, so the UI itself is the fail-closed boundary.
-    return { denied: true, message: T.worm.accessDenied };
-  }
-  // wire-pending: Phase C → GET .../copies/{id}/derived-preview and the ZIP
-  // entry-index endpoint (t_15b1a1ec follow-up). No real preview to render yet.
-  return { denied: false, message: T.worm.previewPending };
 }
 
 export interface HoldApplyBody {
@@ -248,8 +205,8 @@ export interface HoldReleaseBody {
 
 export interface EvidenceCardProps {
   detail: EvidenceObjectDetail;
-  /** Real fixity poll (POST /api/v1/evidence/objects/{id}/verify) when wired. */
-  verify?: VerifyEvidence;
+  /** Real fixity check (POST /api/v1/evidence/objects/{id}/verify). */
+  verify: VerifyEvidence;
   /** The signed-in user — blocks a self-decide in the UI (server also enforces it). */
   currentUserId?: string;
   /** POST /api/v1/evidence/objects/{id}/hold {op:"apply"}. */
@@ -281,14 +238,14 @@ export function EvidenceCard({
   const [basis, setBasis] = useState("");
   const [applyReason, setApplyReason] = useState("");
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [applyRefreshRetry, setApplyRefreshRetry] = useState<(() => Promise<void>) | null>(null);
   const [applying, setApplying] = useState(false);
   const [releaseFlow, setReleaseFlow] = useState<ReleaseFlowState>({ stage: "idle" });
   const [releaseReason, setReleaseReason] = useState("");
-  const [preview, setPreview] = useState<{ denied: boolean; message: string } | null>(null);
+  const [releaseRefreshRetry, setReleaseRefreshRetry] = useState<(() => Promise<void>) | null>(null);
 
   const original = originalOf(detail.copies);
   const derivatives = derivativesOf(detail.copies);
-  const locked = holdActive(detail.holds);
   const custody = detail.custody;
 
   async function runVerify(): Promise<void> {
@@ -296,19 +253,22 @@ export function EvidenceCard({
     // as stale green when this run ends unavailable/processing/thrown — only a
     // fresh verified/failed result repopulates them.
     setCopyVerdicts(new Map());
-    if (!verify) {
-      setOutcome({ state: "unavailable" });
-      return;
-    }
     setOutcome("running");
     try {
       const result = await verify(detail);
       setOutcome(result);
-      if (result.state === "verified" || result.state === "failed") {
+      if (result.state === "verified" || result.state === "failed" || result.state === "unavailable") {
         setCopyVerdicts(result.copyVerdicts);
       }
-    } catch {
-      setOutcome({ state: "failed", reason: null, copyVerdicts: new Map() });
+    } catch (error) {
+      // A denied action is not evidence corruption. Preserve the authorization
+      // truth and suppress futile retries; all other transport/server failures
+      // remain retryable through the same action control.
+      if (error instanceof ApiCallError && (error.status === 401 || error.status === 403)) {
+        setOutcome({ state: "denied" });
+      } else {
+        setOutcome({ state: "error" });
+      }
     }
   }
 
@@ -321,20 +281,44 @@ export function EvidenceCard({
       return;
     }
     setApplyError(null);
+    setApplyRefreshRetry(null);
     setApplying(true);
     try {
       await applyHold({ caseRef: ref, basis: basisTrimmed, reason: reasonTrimmed });
       setCaseRef("");
       setBasis("");
       setApplyReason("");
+    } catch (error) {
+      if (error instanceof EvidenceDetailRefreshError) {
+        setApplyError(T.hold.applyRefreshFailed);
+        setApplyRefreshRetry(() => error.retry);
+      } else {
+        setApplyError(T.hold.applyFailed);
+      }
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  async function retryApplyRefresh(): Promise<void> {
+    if (!applyRefreshRetry) return;
+    setApplying(true);
+    try {
+      await applyRefreshRetry();
+      setApplyError(null);
+      setApplyRefreshRetry(null);
+      setCaseRef("");
+      setBasis("");
+      setApplyReason("");
     } catch {
-      setApplyError(T.hold.applyFailed);
+      setApplyError(T.hold.applyRefreshFailed);
     } finally {
       setApplying(false);
     }
   }
 
   async function startReleaseRequest(holdId: string): Promise<void> {
+    setReleaseRefreshRetry(null);
     setReleaseFlow({ stage: "requesting" });
     try {
       const { requestRef, requestedBy } = await requestHoldRelease(holdId);
@@ -364,12 +348,30 @@ export function EvidenceCard({
     if (releaseFlow.stage !== "releasing") return;
     const { holdId, requestRef } = releaseFlow;
     const reason = releaseReason.trim() || T.hold.defaultReleaseReason;
+    setReleaseRefreshRetry(null);
     try {
       await releaseHold({ holdId, reason, fourEyesRequestRef: requestRef });
       setReleaseFlow({ stage: "idle" });
       setReleaseReason("");
+    } catch (error) {
+      if (error instanceof EvidenceDetailRefreshError) {
+        setReleaseRefreshRetry(() => error.retry);
+        setReleaseFlow({ stage: "error", message: T.hold.releaseRefreshFailed });
+      } else {
+        setReleaseFlow({ stage: "error", message: T.hold.releaseFailed });
+      }
+    }
+  }
+
+  async function retryReleaseRefresh(): Promise<void> {
+    if (!releaseRefreshRetry) return;
+    try {
+      await releaseRefreshRetry();
+      setReleaseRefreshRetry(null);
+      setReleaseFlow({ stage: "idle" });
+      setReleaseReason("");
     } catch {
-      setReleaseFlow({ stage: "error", message: T.hold.releaseFailed });
+      setReleaseFlow({ stage: "error", message: T.hold.releaseRefreshFailed });
     }
   }
 
@@ -408,9 +410,8 @@ export function EvidenceCard({
         </div>
       </header>
 
-      {/* WORM split — the original is immutable and WORM-sealed; it is never
-          streamed. Derivatives + a ZIP entry tree open through the single
-          evPreview() action point (§4-18). */}
+      {/* WORM split — immutable copies are inspectable as metadata only until
+          a separately authorized read endpoint exists. */}
       <section aria-label={T.worm.originalSection} style={sectionStyle}>
         <h3 style={sectionHeadingStyle}>{T.worm.original}</h3>
         {original ? (
@@ -429,32 +430,6 @@ export function EvidenceCard({
               <span>{original.contentType}</span>
               <span>{formatSize(original.sizeBytes)}</span>
             </span>
-            <div style={chipRowStyle}>
-              <button
-                type="button"
-                style={buttonStyle}
-                onClick={() => {
-                  setPreview(evPreview({ kind: "original" }));
-                }}
-              >
-                {T.worm.viewOriginal}
-              </button>
-              <button
-                type="button"
-                style={buttonStyle}
-                onClick={() => {
-                  setPreview(evPreview({ kind: "derivative", copyId: original.id }));
-                }}
-              >
-                {T.worm.viewDerived}
-              </button>
-            </div>
-            {preview ? (
-              <div role={preview.denied ? "alert" : "status"} style={sealedPaneStyle}>
-                {preview.message}
-              </div>
-            ) : null}
-            {isZip(original) ? <ZipEntryTree copy={original} /> : null}
           </div>
         ) : (
           <StatusChip tone="danger">{T.worm.originalMissing}</StatusChip>
@@ -481,16 +456,6 @@ export function EvidenceCard({
                   <span>{copy.contentType}</span>
                   <span>{formatSize(copy.sizeBytes)}</span>
                 </span>
-                <button
-                  type="button"
-                  style={buttonStyle}
-                  onClick={() => {
-                    setPreview(evPreview({ kind: "derivative", copyId: copy.id }));
-                  }}
-                >
-                  {T.worm.viewDerived}
-                </button>
-                {isZip(copy) ? <ZipEntryTree copy={copy} /> : null}
               </li>
             ))}
           </ul>
@@ -524,7 +489,7 @@ export function EvidenceCard({
           <button
             type="button"
             style={buttonStyle}
-            disabled={outcome === "running"}
+            disabled={outcome === "running" || (outcome !== null && typeof outcome === "object" && outcome.state === "denied")}
             onClick={() => {
               void runVerify();
             }}
@@ -533,18 +498,6 @@ export function EvidenceCard({
           </button>
           {verifyChip(outcome)}
         </div>
-
-        <PolicyGated action={EVIDENCE_ACTIONS.custodyManage} resource={{ kind: "evidence_object", id: detail.id }}>
-          {/* wire-pending: evidence custody REST — no custody-transfer endpoint
-              exists, so the affordance is disabled with its reason and never
-              mutates the custodian nor stages a synthetic custody event. */}
-          <div style={stackedFormStyle}>
-            <button type="button" style={{ ...buttonStyle, opacity: 0.5 }} disabled>
-              {T.actions.transfer}
-            </button>
-            <StatusChip tone="neutral" role="status">{T.actions.transferWirePending}</StatusChip>
-          </div>
-        </PolicyGated>
 
         <PolicyGated action={EVIDENCE_ACTIONS.holdManage} resource={{ kind: "evidence_object", id: detail.id }}>
           {activeHold ? (
@@ -618,7 +571,14 @@ export function EvidenceCard({
                 </div>
               ) : null}
               {releaseFlow.stage === "error" ? (
-                <StatusChip tone="danger" role="alert">{releaseFlow.message}</StatusChip>
+                <div style={chipRowStyle}>
+                  <StatusChip tone="danger" role="alert">{releaseFlow.message}</StatusChip>
+                  {releaseRefreshRetry ? (
+                    <button type="button" style={buttonStyle} onClick={() => { void retryReleaseRefresh(); }}>
+                      {T.hold.refreshRetry}
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           ) : (
@@ -661,28 +621,19 @@ export function EvidenceCard({
                 {T.hold.apply}
               </button>
               {applyError ? (
-                <StatusChip tone="danger" role="alert">{applyError}</StatusChip>
+                <div style={chipRowStyle}>
+                  <StatusChip tone="danger" role="alert">{applyError}</StatusChip>
+                  {applyRefreshRetry ? (
+                    <button type="button" style={buttonStyle} disabled={applying} onClick={() => { void retryApplyRefresh(); }}>
+                      {T.hold.refreshRetry}
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           )}
         </PolicyGated>
 
-        <PolicyGated action={EVIDENCE_ACTIONS.dispose} resource={{ kind: "evidence_object", id: detail.id }}>
-          {/* wire-pending: evidence custody REST — no disposal endpoint exists;
-              the button stays disabled (also fail-closed under an active hold)
-              and never flips disposed state nor stages a synthetic event. */}
-          <div style={stackedFormStyle}>
-            <button
-              type="button"
-              style={{ ...buttonStyle, opacity: 0.5 }}
-              disabled
-              aria-label={locked ? T.actions.disposeBlockedAria : T.actions.dispose}
-            >
-              {T.actions.dispose}
-            </button>
-            <StatusChip tone="neutral" role="status">{T.actions.disposeWirePending}</StatusChip>
-          </div>
-        </PolicyGated>
       </section>
 
       {/* §4-14 single object-detail substrate. */}
@@ -695,32 +646,6 @@ export function EvidenceCard({
 function CopyVerdictChip({ status }: { status: CopyFixityStatus | undefined }) {
   if (!status) return null;
   return <StatusChip tone={copyVerdictTone(status)}>{copyVerdictLabel(status)}</StatusChip>;
-}
-
-/** Read-only ZIP entry index (path/size/hash) — wire-pending until the entry-
- * index REST exists; a real index never fabricates rows. */
-function ZipEntryTree({ copy }: { copy: EvidenceCopy }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={sectionStyle}>
-      <button
-        type="button"
-        style={buttonStyle}
-        aria-expanded={open}
-        data-copy-id={copy.id}
-        onClick={() => {
-          setOpen((current) => !current);
-        }}
-      >
-        {T.worm.zip.title}
-      </button>
-      {open ? (
-        <ul style={entryTreeStyle} aria-label={T.worm.zip.title}>
-          <li style={custodyRowStyle}>{T.worm.zip.pending}</li>
-        </ul>
-      ) : null}
-    </div>
-  );
 }
 
 /** §4.7-3 default open gesture — the EV detail as a right-pin window entry. */

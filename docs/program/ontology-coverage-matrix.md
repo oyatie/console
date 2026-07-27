@@ -5,6 +5,11 @@ This is a fixed-revision source audit of the accepted target
 `fb94f53a5725357bc58b1f6ae6d4f441d5293516`). It is a living planning aid,
 not a deployment or production-readiness record.
 
+The Phase 0 Support-only overlay below was re-audited at exact source
+`55d00f8aacaf8d1ba4db87b2f5345605af856a27`. It supersedes earlier
+Support-SLO interpretation without changing the fixed-target denominator or
+unrelated rows.
+
 ## Claim levels used here
 
 - **Declared** — a schema, type, route, or UI descriptor is written in source.
@@ -62,11 +67,32 @@ seeded type.
 | `site` | Projected | `registry_sites`; domain-owned writes, ontology current-list read | All-15 registration/backing tested; this row's read not separately asserted |
 | `site_coverage` | Instance | Ontology-owned `ont_instances` revisions | Group publish tested; per-type instance flow not separately asserted |
 | `sla_setting` | Instance | Ontology-owned `ont_instances` revisions | Group publish tested; per-type instance flow not separately asserted |
-| `support_slo_setting` | Instance | Ontology-owned `ont_instances` revisions | Config tests exercise create/revision behavior |
-| `support_ticket` | Projected | `support_tickets`; support/domain writes, ontology current-list read | All-15 registration/backing tested; this row's read not separately asserted |
+| `support_slo_setting` | Instance; **legacy/non-serving for Support timers** | Ontology-owned three-bucket (`incident`/`request`/`change`) revisions; taxonomy-incompatible with the six Support ticket categories and not consumed by ticket timers/alerts | Config tests exercise generic create/revision behavior only; they do not prove serving SLO policy, backend-atomic approval, or Support-category compatibility |
+| `support_ticket` | Projected | `support_tickets`; support/domain writes, ontology current-list read; `due_at` is an SLA deadline, not SLO policy authority | All-15 registration/backing tested; this row's read and the serving SLO-policy relationship are not separately asserted |
 | `work_order` | Projected | `work_orders`; workorder/domain writes, ontology current-list read | All-15 registration/backing tested; this row's read not separately asserted |
 | `workflow_definition` | Projected | `workflow_definitions`; workflow/domain writes, ontology current-list read | Projected real-row and RLS read tested |
 <!-- fixed-target-seeded-types:end -->
+
+## Phase 0 Support SLO authority split
+
+Status is **PARTIAL**. At the Support-only overlay revision, source has two
+incompatible policy shapes:
+
+- ticket timers, breach counts, and alert targets consume six local
+  `SupportTicketCategory` defaults from `web/src/features/support/slo-settings.ts`;
+- the ontology type `support_slo_setting` stores three independent
+  `incident`/`request`/`change` instances and is displayed by the settings card,
+  but does not feed those serving computations;
+- the browser locally stages an edit, hides approval from the staging actor, and
+  commits the three ontology instances as independent writes. This client-only
+  flow is neither a backend approval decision nor aggregate atomicity; and
+- `support_tickets.due_at` is derived by the Support SLA policy and must not be
+  reclassified as internal SLO authority.
+
+The approved next architecture is one Support-owned immutable aggregate with six
+category rules, elapsed-only evaluation, and backend-atomic approval. This is a
+target decision only. No implementation, migration identifier, backend route,
+parity, deployment, or completion is recorded by this matrix.
 
 The projected helper sets `BackingKind::Projected`, a backing table, and no
 ontology actions (`backend/crates/ontology/adapter-postgres/src/seed.rs:166-187`).
@@ -167,14 +193,18 @@ behavior remain unverified here.
 
 ## Current planning implications
 
-1. Preserve the one-writer rule for projected types; add write dispatch only
+1. Keep `support_slo_setting` classified as legacy/non-serving until the approved
+   Support-owned immutable six-category aggregate exists and the six local
+   defaults no longer drive timers/alerts. Preserve SLA `due_at` as a separate
+   contract and require backend-atomic approval evidence before promotion.
+2. Preserve the one-writer rule for projected types; add write dispatch only
    through explicit domain use-case adapters and tests.
-2. Do not promise generic projected as-of/history from registry publication;
+3. Do not promise generic projected as-of/history from registry publication;
    the cited generic temporal queries are instance-store queries.
-3. Close row-specific read/action/UI tests where the all-15 publication proof is
+4. Close row-specific read/action/UI tests where the all-15 publication proof is
    the present ceiling.
-4. Keep finance voucher ontology registration as a separate design decision;
+5. Keep finance voucher ontology registration as a separate design decision;
    the domain implementation already exists and must not be rebuilt as a second
    source of truth.
-5. Require environment evidence before changing any Source-present or Tested
+6. Require environment evidence before changing any Source-present or Tested
    entry to Deployed or Production-proven.

@@ -1,0 +1,57 @@
+{
+  "module": "CAP-RECRUITING",
+  "purpose": "Exact wire shapes the frontend binds to (web/src/console/recruiting/recruitingApi.ts). The backend lane + openapi integrator must match these or flag the deviation — the scout digest is the shared source; fields not named by the digest are marked assumption:true.",
+  "base": "/api/v1/recruiting",
+  "error_envelope": "{ error: { message: string } }; publish 422 additionally carries top-level checks: [{key, ok, note}]; 401/403 rendered as denied (never as error), 409 rendered as conflict + reload",
+  "client_note": "clients/ts predates the recruiting tag, so DTOs are module-local and the ConsoleApiClient is cast once at the transport boundary; integrator swap-to-generated-types is mechanical (names mirror the expected components.schemas).",
+  "dtos": {
+    "RecruitPostingView": {
+      "fields": "id, code(JP-), role_title, company, worksite, employment_type(REGULAR|RESIDENT_SHIFT|PART_TIME|POOL_DAILY), scope(INTERNAL|EXTERNAL), headcount, hired_count, deadline(date|null), requirements[], status(DRAFT|PUBLISHED|CLOSED), position_ref(string|null), updated_at, stage_counts{applied,screening,interview,offer}",
+      "assumption": ["id", "code", "updated_at", "position_ref nullability"]
+    },
+    "RecruitApplicantView": {
+      "fields": "id, applicant_no(APL-), posting_id, name, stage(APPLIED|SCREENING|INTERVIEW|OFFER|HIRED), hold, doc_requested, rejected, reject_reason(enum|null), assessment{score,assessed_by,assessed_at}|null, profile_lines[], source_document(string|null), hired_employee_id(string|null), applied_at, updated_at",
+      "assumption": ["assessment field names", "applied_at", "rejected-as-flag (reinstate returns prior stage)"]
+    },
+    "RecruitOfferView": {
+      "fields": "id, version, amount(string-decimal), amount_period(MONTHLY|DAILY), reply_deadline(date|null), status(EXTENDED|SUPERSEDED|WITHDRAWN|ACCEPTED|DECLINED), created_at",
+      "assumption": ["created_at"]
+    },
+    "RecruitStageEventView": {
+      "fields": "id, action(string; labeled client-side: CREATED/ADVANCED/ASSESSED/HELD/RELEASED/DOCUMENTS_REQUESTED/REJECTED/REINSTATED/OFFER_EXTENDED/OFFER_ADJUSTED/OFFER_WITHDRAWN/OFFER_REPLY/HIRED/VIEWED, unknown actions rendered raw), occurred_at, actor_name?, note?",
+      "assumption": ["entire shape — weakest contract point, rendered tolerantly"]
+    },
+    "RecruitTalentPoolItem": "applicant_no, name, role_title, reason(enum), rejected_at (all from digest)"
+  },
+  "operations_bound": [
+    "GET /postings?status&scope -> {items: RecruitPostingView[]}",
+    "GET /postings/{id} -> {posting, applicants[]}",
+    "POST /postings (CreateRecruitPostingRequest) -> RecruitPostingView",
+    "PUT /postings/{id} (create-fields + expected_updated_at, DRAFT only) -> RecruitPostingView",
+    "POST /postings/{id}/preflight -> {checks:[{key,ok,note}], publishable}; UI check-key labels: position_worksite, headcount_deadline, duplicate_posting (unknown keys rendered raw)",
+    "POST /postings/{id}/publish {attest_exposure_scope, expected_updated_at} -> 200 | 422 checks",
+    "POST /postings/{id}/close {expected_updated_at}",
+    "POST /postings/{id}/applicants {name, profile_lines[], source_document?} -> RecruitApplicantView",
+    "GET /applicants/{id} -> {applicant, offers[], events[]} (server-side audited PII view)",
+    "POST /applicants/{id}/advance {expected_updated_at} (422 INTERVIEW->OFFER is offer-only)",
+    "POST /applicants/{id}/assess {score}",
+    "POST /applicants/{id}/hold {hold}",
+    "POST /applicants/{id}/request-documents",
+    "POST /applicants/{id}/reject {reason, note?}",
+    "POST /applicants/{id}/reinstate",
+    "POST /applicants/{id}/offer {amount, amount_period, reply_deadline} (422 ASSESSMENT_REQUIRED surfaced verbatim)",
+    "POST /offers/{id}/adjust {amount, reply_deadline?}",
+    "POST /offers/{id}/withdraw {reason}",
+    "POST /offers/{id}/record-reply {decision}",
+    "POST /applicants/{id}/hire (HireRecruitApplicantRequest) -> {employee_id, applicant, posting}",
+    "GET /talent-pool -> {items: RecruitTalentPoolItem[]}",
+    "GET /api/v1/branches (existing generated op) — hire-form branch reference data"
+  ],
+  "deliberate_omissions": [
+    "POOL_DAILY hire CTA is not rendered (backend 422 POOL_REGISTRATION_UNAVAILABLE until the workforce registry exists — no dead/fake control)",
+    "Talent-pool -> workforce-pool conversion button omitted (no workforce crate)",
+    "Candidate self-service persona deferred (no external principal)",
+    "OFR- passkey inbox receipt deferred — record-reply buttons substitute"
+  ],
+  "reconciliation": "Every mutation success re-reads list + open posting + open applicant card from the server (no locally-fabricated state); expected_updated_at from the last server read; 409 shows conflict copy and reloads."
+}

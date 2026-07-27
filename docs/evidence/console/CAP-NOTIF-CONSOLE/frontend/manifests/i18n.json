@@ -1,0 +1,51 @@
+{
+  "story": "STORY-NOTIF-001",
+  "mechanism": "module-owned resource web/src/i18n/notif.ts (exemplar mechanism: production.ts/salesCrm.ts); no shared ko.ts edits; components contain no inline Hangul (check-ui-strings clean for this module)",
+  "prefix": "notif.*",
+  "keys": {
+    "notif.title": "알림",
+    "notif.denied": "알림을 보려면 로그인이 필요합니다.",
+    "notif.loading": "알림을 불러오는 중입니다.",
+    "notif.loadError": "알림을 불러오지 못했습니다.",
+    "notif.actionError": "요청을 처리하지 못했습니다. 다시 시도하세요.",
+    "notif.retry": "다시 시도",
+    "notif.empty": "표시할 알림이 없습니다.",
+    "notif.emptyUnread": "미확인 알림이 없습니다.",
+    "notif.emptyGroups": "표시할 개체 알림이 없습니다.",
+    "notif.filterAll": "전체",
+    "notif.filterUnread": "미확인",
+    "notif.viewTimeline": "시간순",
+    "notif.viewByObject": "개체별",
+    "notif.filterLabel": "알림 필터",
+    "notif.viewLabel": "알림 보기 방식",
+    "notif.markAllRead": "모두 읽음",
+    "notif.markRead": "읽음 처리",
+    "notif.markUnread": "미확인으로 되돌리기",
+    "notif.mute": "알림 끄기",
+    "notif.unmute": "알림 켜기",
+    "notif.loadMore": "더 보기",
+    "notif.unreadBadge": "미확인 알림 수",
+    "notif.mutedBadge": "숨긴 미확인 알림 수",
+    "notif.mutedShort": "숨김",
+    "notif.list": "알림 목록",
+    "notif.groups": "개체별 알림 목록",
+    "notif.groupUnread": "미확인",
+    "notif.groupTotal": "전체",
+    "notif.objectFilterClear": "개체 필터 해제"
+  },
+  "data_maps": {
+    "notifCategoryTone": {
+      "note": "category chip tones per design digest (§4-18); keys are backend data values, not UI copy",
+      "결재": "accent",
+      "멘션": "purple",
+      "문서": "info",
+      "급여": "ok",
+      "근태": "warn",
+      "default": "neutral"
+    },
+    "notifScreenLabel": "screen-link group labels read from shared ko.console.shell.nav (import-only, no edit)"
+  },
+  "reused": {
+    "web/src/i18n/notificationCategories.ts": "categoryLabel() passthrough for open producer category strings (comms-rail-established, import-only)"
+  }
+}

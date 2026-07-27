@@ -23,6 +23,8 @@
 
 package com.maintenance.api.client.model
 
+import com.maintenance.api.client.model.MaintenanceCause
+import com.maintenance.api.client.model.MaintenanceType
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -33,6 +35,8 @@ import kotlinx.serialization.Contextual
  *
  * @param symptom
  * @param customerRequest
+ * @param maintenanceType
+ * @param maintenanceCause
  */
 @Serializable
 
@@ -42,7 +46,13 @@ data class UpdateWorkOrderIntakeRequest (
     val symptom: kotlin.String? = null,
 
     @SerialName(value = "customer_request")
-    val customerRequest: kotlin.String? = null
+    val customerRequest: kotlin.String? = null,
+
+    @Contextual @SerialName(value = "maintenance_type")
+    val maintenanceType: MaintenanceType? = null,
+
+    @Contextual @SerialName(value = "maintenance_cause")
+    val maintenanceCause: MaintenanceCause? = null
 
 ) {
 

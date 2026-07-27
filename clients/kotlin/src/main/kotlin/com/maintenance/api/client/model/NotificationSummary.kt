@@ -42,6 +42,7 @@ import kotlinx.serialization.Contextual
  * @param createdAt
  * @param readAt When the notification was first marked read; null while unread.
  * @param resolvedAt When a producer's resolve-by-link sweep closed this notification; null while open.
+ * @param muted Whether the caller's mute policies suppress this row's attention (badge counts, realtime). Computed per caller at read time, never stored, and never filters the list.
  */
 @Serializable
 
@@ -79,7 +80,11 @@ data class NotificationSummary (
 
     /* When a producer's resolve-by-link sweep closed this notification; null while open. */
     @Contextual @SerialName(value = "resolved_at")
-    val resolvedAt: java.time.OffsetDateTime?
+    val resolvedAt: java.time.OffsetDateTime?,
+
+    /* Whether the caller's mute policies suppress this row's attention (badge counts, realtime). Computed per caller at read time, never stored, and never filters the list. */
+    @SerialName(value = "muted")
+    val muted: kotlin.Boolean
 
 ) {
 

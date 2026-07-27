@@ -28,6 +28,8 @@ export interface WorkflowAutoScreenProps {
   selectedWorkflowId?: string;
   selectedScheduleId?: string;
   currentUserId?: string;
+  /** Definition id with an authenticated lifecycle/run request in flight. */
+  pendingWorkflowId?: string;
   readOnly?: boolean;
   onWorkflowSelect?: (id: string) => void;
   onScheduleSelect?: (id: string) => void;
@@ -358,9 +360,14 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
     Boolean(props.onStagePublish || props.onApprovePublish || props.onWithdrawPublish);
   const pendingRevision = workflow.pendingRevision;
   const selfApprovalBlocked = sameActor(props.currentUserId, pendingRevision?.stagedById);
+  const pending = props.pendingWorkflowId === workflow.id;
 
   return (
-    <section aria-labelledby="console-workflow-detail-title" style={cardStyle}>
+    <section
+      aria-labelledby="console-workflow-detail-title"
+      aria-busy={pending || undefined}
+      style={cardStyle}
+    >
       <div style={sectionHeaderStyle}>
         <h2 id="console-workflow-detail-title" style={sectionTitleStyle}>
           {workflow.name}
@@ -393,7 +400,8 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
                 onClick={() => {
                   runAction(() => props.onWorkflowToggle?.(workflow.id, !workflow.active));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {workflow.active ? T.actions.disable : T.actions.enable}
               </button>
@@ -406,7 +414,8 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
                 onClick={() => {
                   runAction(() => props.onWorkflowRun?.(workflow.id));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {T.actions.run}
               </button>
@@ -419,7 +428,8 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
                 onClick={() => {
                   runAction(() => props.onWorkflowSimulate?.(workflow.id));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {T.actions.simulate}
               </button>
@@ -460,7 +470,8 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
                   onClick={() => {
                     runAction(() => props.onStagePublish?.(workflow.id));
                   }}
-                  style={buttonStyle}
+                  disabled={pending}
+                  style={pending ? disabledButtonStyle : buttonStyle}
                 >
                   {T.actions.stagePublish}
                 </button>
@@ -470,13 +481,13 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
               <PolicyGated action={WORKFLOW_AUTO_ACTIONS.approvePublish} resource={{ kind: "workflow", id: workflow.id }}>
                 <button
                   type="button"
-                  disabled={selfApprovalBlocked}
+                  disabled={selfApprovalBlocked || pending}
                   onClick={() => {
                     if (!selfApprovalBlocked) {
                       runAction(() => props.onApprovePublish?.(workflow.id, pendingRevision.version));
                     }
                   }}
-                  style={selfApprovalBlocked ? disabledButtonStyle : buttonStyle}
+                  style={selfApprovalBlocked || pending ? disabledButtonStyle : buttonStyle}
                 >
                   {T.actions.approvePublish}
                 </button>
@@ -489,7 +500,8 @@ function WorkflowDetail({ workflow, props }: { workflow: WorkflowSummary; props:
                   onClick={() => {
                     runAction(() => props.onWithdrawPublish?.(workflow.id, pendingRevision.version));
                   }}
-                  style={buttonStyle}
+                  disabled={pending}
+                  style={pending ? disabledButtonStyle : buttonStyle}
                 >
                   {T.actions.withdrawPublish}
                 </button>
@@ -528,6 +540,9 @@ function ScheduleDetail({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const pending = Boolean(
+    props.pendingWorkflowId && schedule.workflowId === props.pendingWorkflowId,
+  );
   const showScheduleActions =
     !props.readOnly &&
     Boolean(
@@ -539,7 +554,11 @@ function ScheduleDetail({
     );
 
   return (
-    <section aria-labelledby="console-schedule-detail-title" style={cardStyle}>
+    <section
+      aria-labelledby="console-schedule-detail-title"
+      aria-busy={pending || undefined}
+      style={cardStyle}
+    >
       <div style={sectionHeaderStyle}>
         <h2 id="console-schedule-detail-title" style={sectionTitleStyle}>
           {schedule.name}
@@ -566,6 +585,7 @@ function ScheduleDetail({
             <input
               aria-label={T.labels.scheduleName}
               value={draft.name}
+              disabled={pending}
               onChange={(event) => {
                 onDraftChange({ ...draft, name: event.currentTarget.value });
               }}
@@ -577,6 +597,7 @@ function ScheduleDetail({
             <input
               aria-label={T.labels.scheduleCron}
               value={draft.cron}
+              disabled={pending}
               onChange={(event) => {
                 onDraftChange({ ...draft, cron: event.currentTarget.value });
               }}
@@ -588,6 +609,7 @@ function ScheduleDetail({
             <input
               aria-label={T.labels.scheduleCronLabel}
               value={draft.cronLabel}
+              disabled={pending}
               onChange={(event) => {
                 onDraftChange({ ...draft, cronLabel: event.currentTarget.value });
               }}
@@ -606,7 +628,8 @@ function ScheduleDetail({
                 onClick={() => {
                   runAction(() => props.onScheduleToggle?.(schedule.id, !schedule.active));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {schedule.active ? T.actions.disable : T.actions.enable}
               </button>
@@ -619,7 +642,8 @@ function ScheduleDetail({
                 onClick={() => {
                   runAction(() => props.onScheduleRun?.(schedule.id));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {T.actions.run}
               </button>
@@ -628,7 +652,12 @@ function ScheduleDetail({
           {isEditing ? (
             <>
               <PolicyGated action={WORKFLOW_AUTO_ACTIONS.saveSchedule} resource={{ kind: "schedule", id: schedule.id }}>
-                <button type="button" onClick={onSave} style={buttonStyle}>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={onSave}
+                  style={pending ? disabledButtonStyle : buttonStyle}
+                >
                   {T.actions.saveSchedule}
                 </button>
               </PolicyGated>
@@ -638,7 +667,12 @@ function ScheduleDetail({
             </>
           ) : props.onScheduleSave || props.onScheduleEdit ? (
             <PolicyGated action={WORKFLOW_AUTO_ACTIONS.editSchedule} resource={{ kind: "schedule", id: schedule.id }}>
-              <button type="button" onClick={onEdit} style={buttonStyle}>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={onEdit}
+                style={pending ? disabledButtonStyle : buttonStyle}
+              >
                 {T.actions.editSchedule}
               </button>
             </PolicyGated>
@@ -650,7 +684,8 @@ function ScheduleDetail({
                 onClick={() => {
                   runAction(() => props.onScheduleDelete?.(schedule.id));
                 }}
-                style={buttonStyle}
+                disabled={pending}
+                style={pending ? disabledButtonStyle : buttonStyle}
               >
                 {T.actions.deleteSchedule}
               </button>

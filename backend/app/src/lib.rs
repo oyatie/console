@@ -3,6 +3,7 @@
 //! This crate owns the process boundary: 12-factor configuration, health and
 //! readiness endpoints, telemetry, database dependency wiring, and graceful
 //! shutdown. Domain behavior lands in narrower crates and is composed here.
+#![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::collections::{BTreeSet, HashMap};
 use std::env;
@@ -21,19 +22,31 @@ use axum::middleware::Next;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
+use base64::Engine as _;
+use ipnet::IpNet;
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use mnt_analytics_quant_rest::AnalyticsQuantState;
+use mnt_attendance_adapter_postgres::PgAttendanceStore;
+use mnt_attendance_rest::AttendanceRestState;
+use mnt_benefit_adapter_postgres::PgBenefitCatalogStore;
+use mnt_benefit_rest::BenefitRestState;
 use mnt_comms_adapter_postgres::PgMailStore;
 use mnt_comms_credential_cipher::EnvelopeCredentialCipher;
 use mnt_comms_rest::CommsRestState;
 use mnt_compliance_adapter_postgres::PgComplianceStore;
 use mnt_compliance_rest::ComplianceRestState;
+use mnt_consulting_rest::ConsultingRestState;
 use mnt_dispatch_adapter_postgres::PgDispatchStore;
 use mnt_dispatch_domain::DispatchTimerConfig;
 use mnt_dispatch_rest::DispatchRestState;
 use mnt_dispatch_worker::{AlimtalkEscalationPolicy, DispatchWorker};
 use mnt_docs_adapter_postgres::PgDocsStore;
 use mnt_docs_rest::DocsRestState;
+use mnt_equipment_adapter_postgres::PgEquipment3rStore;
+use mnt_equipment_rest::EquipmentRestState;
+use mnt_evaluation_adapter_postgres::PgEvaluationStore;
+use mnt_evaluation_rest::EvaluationRestState;
+use mnt_facilities_rest::FacilitiesRestState;
 use mnt_finance_gl_adapter_postgres::PgVoucherStore;
 use mnt_finance_gl_rest::FinanceGlRestState;
 use mnt_financial_adapter_postgres::PgFinancialStore;
@@ -47,10 +60,14 @@ use mnt_inbox_rest::InboxRestState;
 use mnt_inspection_adapter_postgres::PgInspectionStore;
 use mnt_inspection_rest::InspectionRestState;
 use mnt_integrity::{IntegrityRestState, PgIntegrityStore};
+use mnt_inventory_adapter_postgres::PgInventoryStore;
+use mnt_inventory_rest::InventoryRestState;
 use mnt_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, EquipmentId, ErrorKind, EvidenceId,
     KernelError, OrgId, TraceContext, UserId,
 };
+use mnt_logistics_adapter_postgres::PgLogisticsStore;
+use mnt_logistics_rest::LogisticsRestState;
 use mnt_messenger_adapter_postgres::PgMessengerStore;
 use mnt_messenger_rest::MessengerRestState;
 use mnt_notices_adapter_postgres::PgNoticeStore;
@@ -62,6 +79,8 @@ use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
 use mnt_ontology_rest::{
     ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry, ProjectedHandler,
 };
+use mnt_orgchange_adapter_postgres::PgOrgChangeStore;
+use mnt_orgchange_rest::OrgChangeRestState;
 use mnt_payroll_adapter_postgres::PgPayrollStore;
 use mnt_payroll_rest::PayrollRestState;
 use mnt_platform_audit_chain::{
@@ -98,6 +117,9 @@ use mnt_platform_storage::{
     EvidenceService, FfmpegMediaProcessor, S3ObjectStore, S3StorageConfig, SeaweedS3Storage,
     StorageError,
 };
+use mnt_production_rest::ProductionRestState;
+use mnt_recruiting_adapter_postgres::PgRecruitingStore;
+use mnt_recruiting_rest::RecruitingRestState;
 use mnt_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
 use mnt_registry_application::{UpdateEquipmentCommand, UpdateEquipmentFields};
 use mnt_registry_domain::EquipmentStatus;
@@ -133,12 +155,17 @@ pub mod action_inbox;
 pub mod cedar_parity;
 mod collaboration;
 mod console_telemetry;
+mod facilities_schedule;
 mod hr;
 pub mod lifecycle;
 mod mail_sync;
 pub mod objects;
 pub mod office;
+mod recruiting_hire;
+mod workbench;
+mod workbench_native;
 mod workflow_drain;
+mod workflow_object_context;
 pub mod workflow_schedules;
 mod workflow_studio;
 
@@ -200,12 +227,32 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
         paths: AUDIT_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
+        name: "attendance",
+        paths: mnt_attendance_rest::ATTENDANCE_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "inventory",
+        paths: mnt_inventory_rest::INVENTORY_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
         name: "dispatch",
         paths: mnt_dispatch_rest::DISPATCH_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
+        name: "benefit",
+        paths: mnt_benefit_rest::BENEFIT_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "consulting",
+        paths: mnt_consulting_rest::CONSULTING_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
         name: "financial",
         paths: mnt_financial_rest::FINANCIAL_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "evaluation",
+        paths: mnt_evaluation_rest::EVALUATION_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "inspection",
@@ -260,6 +307,14 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
         paths: mnt_workorder_rest::MOBILE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
+        name: "facilities",
+        paths: mnt_facilities_rest::FACILITIES_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "production",
+        paths: mnt_production_rest::PRODUCTION_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
         name: "messenger",
         paths: mnt_messenger_rest::MESSENGER_ROUTE_PATHS,
     },
@@ -288,6 +343,10 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
         paths: mnt_governance_rest::GOVERNANCE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
+        name: "orgchange",
+        paths: mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
         name: "policy",
         paths: mnt_platform_authz_rest::CEDAR_POLICY_ROUTE_PATHS,
     },
@@ -311,7 +370,61 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
         name: "analytics",
         paths: mnt_analytics_quant_rest::ANALYTICS_QUANT_ROUTE_PATHS,
     },
+    ConfiguredRouteSurface {
+        name: "equipment-3r",
+        paths: mnt_equipment_rest::EQUIPMENT_3R_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "notifications",
+        paths: mnt_notifications_rest::NOTIFICATIONS_ROUTE_PATHS,
+    },
+    ConfiguredRouteSurface {
+        name: "recruiting",
+        paths: mnt_recruiting_rest::RECRUITING_ROUTE_PATHS,
+    },
+    // The hire handshake is the one recruiting route that lives in the app
+    // crate (acceptance → employee creation must go through the HR-owned core
+    // in one transaction), so it is its own surface rather than an entry the
+    // recruiting crate could export.
+    ConfiguredRouteSurface {
+        name: "recruiting-hire",
+        paths: recruiting_hire::RECRUITING_HIRE_ROUTE_PATHS,
+    },
 ];
+
+#[cfg(test)]
+mod production_route_surface_tests {
+    use super::*;
+    use mnt_production_rest::{
+        PRODUCTION_CAPACITY_SLOTS_PATH, PRODUCTION_OPERATION_RECORDS_PATH, PRODUCTION_PLAN_PATH,
+        PRODUCTION_PLAN_RELEASE_PATH, PRODUCTION_PLANS_PATH, PRODUCTION_SOURCE_INGRESS_PATH,
+        PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH, PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH,
+        PRODUCTION_SOURCE_SYSTEMS_PATH,
+    };
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn production_execution_routes_are_assembled_and_contract_stable() {
+        let production = CONFIGURED_ROUTE_SURFACES
+            .iter()
+            .find(|surface| surface.name == "production")
+            .expect("production router must be mounted in the application");
+        assert_eq!(
+            production.paths,
+            [
+                PRODUCTION_PLANS_PATH,
+                PRODUCTION_CAPACITY_SLOTS_PATH,
+                PRODUCTION_PLAN_PATH,
+                PRODUCTION_PLAN_RELEASE_PATH,
+                PRODUCTION_OPERATION_RECORDS_PATH,
+                PRODUCTION_SOURCE_INGRESS_PATH,
+                PRODUCTION_SOURCE_SYSTEMS_PATH,
+                PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH,
+                PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH,
+            ]
+        );
+    }
+}
 
 /// Embedded schema migrations, compiled into the binary at build time from the
 /// canonical `mnt-platform-db` migration directory (the same `0001..NNNN_*.sql`
@@ -377,6 +490,11 @@ pub struct AppConfig {
     /// this is API-only and never falls back to `mnt_rt` in a configured
     /// deployment.
     pub ontology_command_database_url: Option<String>,
+    /// Dedicated least-privilege connection for destructive platform tenant
+    /// removal (`PLATFORM_FORCE_COMMAND_DATABASE_URL`). This API-only pool is
+    /// required whenever the runtime database is configured; it never falls
+    /// back to `mnt_rt`.
+    pub platform_force_command_database_url: Option<String>,
     pub otlp_endpoint: Option<String>,
     pub jwt: Option<JwtVerifierConfig>,
     pub auth_rest: Option<AuthRestConfig>,
@@ -412,10 +530,15 @@ pub struct AppConfig {
     /// Lifetime of a boot-seeded cold-start OTP (`MNT_COLDSTART_OTP_TTL_SECS`,
     /// default 3600s).
     pub coldstart_otp_ttl: time::Duration,
-    /// Number of trusted reverse proxies in front of the service
-    /// (`MNT_TRUSTED_PROXY_COUNT`, default 1). Drives `X-Forwarded-For`
-    /// client-IP derivation in the unauthenticated rate limiters.
+    /// Number of configured reverse-proxy hops in front of the service,
+    /// including the direct transport peer (`MNT_TRUSTED_PROXY_COUNT`, default
+    /// 0). Forwarding headers are ignored unless every configured hop is in
+    /// [`Self::trusted_proxy_cidrs`].
     pub trusted_proxy_count: usize,
+    /// CIDRs allowed to present forwarding headers at process ingress
+    /// (`MNT_TRUSTED_PROXY_CIDRS`, comma-separated). Required when the hop
+    /// count is nonzero.
+    pub trusted_proxy_cidrs: Vec<IpNet>,
     /// Native app-link association metadata served at `/.well-known/*`. Drives
     /// the public, unauthenticated Apple App Site Association + Android asset
     /// links documents that authorize the native apps' passkeys for the RP
@@ -459,6 +582,9 @@ pub struct AppConfig {
     /// `MNT_OFFICE_DOCSERVER_URL` are set; the office routes still mount but
     /// return `503 office_not_configured`.
     pub office: Option<office::OfficeConfig>,
+    /// Base64-encoded, exactly 32-byte HMAC key for machine-only production
+    /// ingress. Its absence leaves only that ingress route unavailable (503).
+    pub production_service_principal_hmac_key: Option<[u8; 32]>,
 }
 
 /// Native app-link association config for the `/.well-known/*` endpoints.
@@ -574,6 +700,8 @@ impl AppConfig {
             ));
         }
         let ontology_command_database_url = non_empty(vars.get("ONTOLOGY_COMMAND_DATABASE_URL"));
+        let platform_force_command_database_url =
+            non_empty(vars.get("PLATFORM_FORCE_COMMAND_DATABASE_URL"));
         if role == AppRole::Api && database_url.is_some() && ontology_command_database_url.is_none()
         {
             return Err(AppError::Config(
@@ -582,29 +710,32 @@ impl AppConfig {
             ));
         }
         if role == AppRole::Api {
-            if database_url.is_some() && leave_command_database_url == database_url {
+            if database_url.is_some() && platform_force_command_database_url.is_none() {
                 return Err(AppError::Config(
-                    "LEAVE_COMMAND_DATABASE_URL must be distinct from DATABASE_URL".to_owned(),
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL is required for api role when DATABASE_URL is configured".to_owned(),
                 ));
             }
-            if database_url.is_some() && ontology_command_database_url == database_url {
-                return Err(AppError::Config(
-                    "ONTOLOGY_COMMAND_DATABASE_URL must be distinct from DATABASE_URL".to_owned(),
-                ));
-            }
-            if ontology_command_database_url == leave_command_database_url
-                && ontology_command_database_url.is_some()
-            {
-                return Err(AppError::Config(
-                    "ONTOLOGY_COMMAND_DATABASE_URL must be distinct from LEAVE_COMMAND_DATABASE_URL"
-                        .to_owned(),
-                ));
-            }
+            ensure_distinct_database_urls([
+                ("DATABASE_URL", database_url.as_deref()),
+                (
+                    "LEAVE_COMMAND_DATABASE_URL",
+                    leave_command_database_url.as_deref(),
+                ),
+                (
+                    "ONTOLOGY_COMMAND_DATABASE_URL",
+                    ontology_command_database_url.as_deref(),
+                ),
+                (
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                    platform_force_command_database_url.as_deref(),
+                ),
+            ])?;
 
-            if let (Some(database_url), Some(leave_url), Some(ontology_url)) = (
+            if let (Some(database_url), Some(leave_url), Some(ontology_url), Some(force_url)) = (
                 database_url.as_deref(),
                 leave_command_database_url.as_deref(),
                 ontology_command_database_url.as_deref(),
+                platform_force_command_database_url.as_deref(),
             ) {
                 let runtime_password =
                     validate_database_url_identity("DATABASE_URL", database_url, "mnt_rt")?;
@@ -618,12 +749,21 @@ impl AppConfig {
                     ontology_url,
                     "mnt_ontology_cmd",
                 )?;
+                let platform_force_password = validate_database_url_identity(
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                    force_url,
+                    "mnt_platform_force_cmd",
+                )?;
                 ensure_distinct_database_credentials([
                     ("DATABASE_URL", Some(runtime_password.as_str())),
                     ("LEAVE_COMMAND_DATABASE_URL", Some(leave_password.as_str())),
                     (
                         "ONTOLOGY_COMMAND_DATABASE_URL",
                         Some(ontology_password.as_str()),
+                    ),
+                    (
+                        "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                        Some(platform_force_password.as_str()),
                     ),
                 ])?;
             }
@@ -659,12 +799,26 @@ impl AppConfig {
                     )
                 })
                 .transpose()?;
+            let platform_force_password = platform_force_command_database_url
+                .as_deref()
+                .map(|url| {
+                    validate_database_url_identity(
+                        "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                        url,
+                        "mnt_platform_force_cmd",
+                    )
+                })
+                .transpose()?;
             ensure_distinct_database_credentials([
                 ("DATABASE_URL", database_password.as_deref()),
                 ("LEAVE_COMMAND_DATABASE_URL", leave_password.as_deref()),
                 (
                     "ONTOLOGY_COMMAND_DATABASE_URL",
                     ontology_password.as_deref(),
+                ),
+                (
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                    platform_force_password.as_deref(),
                 ),
             ])?;
         }
@@ -727,6 +881,8 @@ impl AppConfig {
             "MNT_COLDSTART_OTP_TTL_SECS",
         )?;
         let trusted_proxy_count = parse_trusted_proxy_count(vars.get("MNT_TRUSTED_PROXY_COUNT"))?;
+        let trusted_proxy_cidrs =
+            parse_trusted_proxy_cidrs(vars.get("MNT_TRUSTED_PROXY_CIDRS"), trusted_proxy_count)?;
         let app_links = app_links_config_from_vars(&vars);
         let mail_enabled = match vars.get("MNT_MAIL_ENABLED") {
             Some(raw) => raw
@@ -751,6 +907,25 @@ impl AppConfig {
         };
         let office = office::office_config_from_vars(|key| non_empty(vars.get(key)))
             .map_err(AppError::Config)?;
+        let production_service_principal_hmac_key =
+            non_empty(vars.get("MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY"))
+                .map(|encoded| {
+                    let bytes = base64::engine::general_purpose::STANDARD
+                        .decode(encoded)
+                        .map_err(|_| {
+                            AppError::Config(
+                                "MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must be base64"
+                                    .to_owned(),
+                            )
+                        })?;
+                    bytes.try_into().map_err(|_: Vec<u8>| {
+                        AppError::Config(
+                    "MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must decode to exactly 32 bytes"
+                        .to_owned(),
+                )
+                    })
+                })
+                .transpose()?;
 
         Ok(Self {
             role,
@@ -759,6 +934,7 @@ impl AppConfig {
             database_url,
             leave_command_database_url,
             ontology_command_database_url,
+            platform_force_command_database_url,
             otlp_endpoint,
             jwt,
             auth_rest,
@@ -776,6 +952,7 @@ impl AppConfig {
             coldstart_otp,
             coldstart_otp_ttl,
             trusted_proxy_count,
+            trusted_proxy_cidrs,
             app_links,
             mail_enabled,
             mail_mox_base_url,
@@ -783,6 +960,7 @@ impl AppConfig {
             audit_chain_seal_enabled,
             storefront_org,
             office,
+            production_service_principal_hmac_key,
         })
     }
 }
@@ -862,7 +1040,6 @@ fn auth_rest_config_from_vars(
             DEFAULT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS,
             "MNT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS",
         )?,
-        trusted_proxy_count: parse_trusted_proxy_count(vars.get("MNT_TRUSTED_PROXY_COUNT"))?,
         cookie_secure: parse_cookie_secure(vars.get("MNT_COOKIE_SECURE"))?,
     }))
 }
@@ -879,18 +1056,46 @@ fn parse_cookie_secure(raw: Option<&String>) -> Result<bool, AppError> {
     }
 }
 
-/// Number of trusted reverse proxies in front of the auth service (default 1).
-/// Drives the `X-Forwarded-For` client-IP derivation in the rate limiter: the
-/// real client is the Nth-from-the-right XFF entry. A value of 0 is treated as 1
-/// (there is always at least the ingress proxy), so the leftmost entry is never
-/// blindly trusted.
+/// Number of trusted reverse proxies in front of the process, including the
+/// direct transport peer. Zero is the fail-closed default: raw forwarding
+/// headers are ignored.
 fn parse_trusted_proxy_count(raw: Option<&String>) -> Result<usize, AppError> {
     match raw {
         Some(raw) => raw
             .parse::<usize>()
             .map_err(|err| AppError::Config(format!("invalid MNT_TRUSTED_PROXY_COUNT: {err}"))),
-        None => Ok(1),
+        None => Ok(0),
     }
+}
+
+fn parse_trusted_proxy_cidrs(
+    raw: Option<&String>,
+    trusted_proxy_count: usize,
+) -> Result<Vec<IpNet>, AppError> {
+    let cidrs = raw
+        .map(|value| {
+            value
+                .split(',')
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .map(|value| {
+                    value.parse::<IpNet>().map_err(|err| {
+                        AppError::Config(format!(
+                            "invalid MNT_TRUSTED_PROXY_CIDRS entry {value:?}: {err}"
+                        ))
+                    })
+                })
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .transpose()?
+        .unwrap_or_default();
+    if trusted_proxy_count > 0 && cidrs.is_empty() {
+        return Err(AppError::Config(
+            "MNT_TRUSTED_PROXY_CIDRS is required when MNT_TRUSTED_PROXY_COUNT is nonzero"
+                .to_owned(),
+        ));
+    }
+    Ok(cidrs)
 }
 
 fn storage_config_from_vars(
@@ -1159,6 +1364,9 @@ pub struct AppState {
     leave_command_database: DatabaseDependency,
     /// Narrow command pool for ontology schema mutations and canonical seeding.
     ontology_command_database: DatabaseDependency,
+    /// Dedicated command pool for platform tenant force removal. It is never
+    /// substituted with the tenant-scoped runtime pool.
+    platform_force_command_database: DatabaseDependency,
     jwt_verifier: Option<JwtVerifier>,
     /// JWT issuer used ONLY by the PLATFORM view-as START path to mint
     /// short-lived read-only impersonation tokens. Built from the same ES256
@@ -1262,6 +1470,7 @@ impl AppState {
             database,
             leave_command_database: DatabaseDependency::NotConfigured,
             ontology_command_database: DatabaseDependency::NotConfigured,
+            platform_force_command_database: DatabaseDependency::NotConfigured,
             jwt_verifier,
             view_as_issuer,
             policy_step_up,
@@ -1278,6 +1487,22 @@ impl AppState {
             mail_sync_handle: None,
             audit_attestation_signer,
         })
+    }
+
+    /// Attach the isolated `mnt_leave_cmd` command pool used for protected
+    /// leave and People mutations. Production configuration constructs this
+    /// pool only from `LEAVE_COMMAND_DATABASE_URL`; this builder supports
+    /// explicit dependency injection for integration composition.
+    #[must_use]
+    pub fn with_leave_command_database(mut self, pool: PgPool) -> Self {
+        self.leave_command_database = DatabaseDependency::Postgres(pool);
+        self
+    }
+
+    #[must_use]
+    pub fn with_platform_force_command_database(mut self, pool: PgPool) -> Self {
+        self.platform_force_command_database = DatabaseDependency::Postgres(pool);
+        self
     }
 
     pub async fn from_config(config: AppConfig) -> Result<Self, AppError> {
@@ -1344,10 +1569,26 @@ impl AppState {
             ),
             _ => DatabaseDependency::NotConfigured,
         };
+        let platform_force_command_database = match (
+            config.role,
+            config.database_url.as_ref(),
+            config.platform_force_command_database_url.as_deref(),
+        ) {
+            (AppRole::Api, Some(_), Some(url)) => DatabaseDependency::Postgres(
+                connect_command_pool(
+                    url,
+                    "mnt_platform_force_cmd",
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                )
+                .await?,
+            ),
+            _ => DatabaseDependency::NotConfigured,
+        };
 
         let mut state = Self::new(config.clone(), database)?;
         state.leave_command_database = leave_command_database;
         state.ontology_command_database = ontology_command_database;
+        state.platform_force_command_database = platform_force_command_database;
         if let (DatabaseDependency::Postgres(pool), Some(storage_config)) =
             (&state.database, config.storage.as_ref())
         {
@@ -1887,11 +2128,11 @@ async fn validate_migration_database_connection(
                WHERE (
                    granted.rolname IN (
                        'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                       'mnt_ontology_writer', 'mnt_ontology_cmd'
+                       'mnt_ontology_writer', 'mnt_ontology_cmd', 'mnt_platform_force_cmd'
                    )
                    OR member.rolname IN (
                        'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                       'mnt_ontology_writer', 'mnt_ontology_cmd'
+                       'mnt_ontology_writer', 'mnt_ontology_cmd', 'mnt_platform_force_cmd'
                    )
                )
                AND NOT (
@@ -2193,6 +2434,24 @@ fn postgres_options_set_role(options: &str) -> bool {
     })
 }
 
+fn ensure_distinct_database_urls<const N: usize>(
+    urls: [(&str, Option<&str>); N],
+) -> Result<(), AppError> {
+    for (index, (name, url)) in urls.iter().enumerate() {
+        let Some(url) = url else {
+            continue;
+        };
+        for (earlier_name, earlier_url) in &urls[..index] {
+            if earlier_url.is_some_and(|earlier_url| earlier_url == *url) {
+                return Err(AppError::Config(format!(
+                    "{name} must be distinct from {earlier_name}"
+                )));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn ensure_distinct_database_credentials<const N: usize>(
     credentials: [(&str, Option<&str>); N],
 ) -> Result<(), AppError> {
@@ -2315,6 +2574,7 @@ struct ReadyBody<'a> {
     database: &'a str,
     leave_command_database: &'a str,
     ontology_command_database: &'a str,
+    platform_force_command_database: &'a str,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -2639,6 +2899,7 @@ pub fn build_router(state: AppState) -> Router {
             let todo_store = PgTodoStore::new(pool.clone());
             let registry_store = PgRegistryStore::new(pool.clone());
             let financial_store = PgFinancialStore::new(pool.clone());
+            let evaluation_store = PgEvaluationStore::new(pool.clone());
             let inspection_store = PgInspectionStore::new(pool.clone());
             let compliance_store = PgComplianceStore::new(pool.clone());
             let integrity_store = PgIntegrityStore::new(pool.clone());
@@ -2665,6 +2926,8 @@ pub fn build_router(state: AppState) -> Router {
             let cedar_policy_store = PgCedarPolicyStore::new(pool.clone());
             let work_order_store = PgWorkOrderStore::new(pool.clone())
                 .with_created_listener(Arc::new(messenger_store.clone()));
+            let benefit_store = PgBenefitCatalogStore::new(pool.clone());
+            let logistics_store = PgLogisticsStore::new(pool.clone());
             let leave_store = {
                 let store = mnt_leave_adapter_postgres::PgLeaveStore::new(
                     pool.clone(),
@@ -2706,6 +2969,22 @@ pub fn build_router(state: AppState) -> Router {
                     state.dispatch_job_queue.clone(),
                     state.push_notifier.clone(),
                 )))
+                .merge(mnt_logistics_rest::router(LogisticsRestState::new(
+                    logistics_store,
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_attendance_rest::router(AttendanceRestState::new(
+                    PgAttendanceStore::new(pool.clone()),
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_inventory_rest::router(InventoryRestState::new(
+                    PgInventoryStore::new(pool.clone()),
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_equipment_rest::router(EquipmentRestState::new(
+                    PgEquipment3rStore::new(pool.clone()),
+                    state.jwt_verifier.clone(),
+                )))
                 .merge(mnt_financial_rest::router(
                     FinancialRestState::new(financial_store, state.jwt_verifier.clone())
                         .with_passkey_step_up(state.policy_step_up.clone())
@@ -2720,8 +2999,7 @@ pub fn build_router(state: AppState) -> Router {
                         support_store,
                         state.jwt_verifier.clone(),
                         state.push_notifier.clone(),
-                    )
-                    .with_trusted_proxy_count(state.config.trusted_proxy_count);
+                    );
                     if let Some(storefront_org) = state.config.storefront_org {
                         support_state = support_state.with_storefront_org(storefront_org);
                     }
@@ -2747,12 +3025,36 @@ pub fn build_router(state: AppState) -> Router {
                     let hr_state = hr::HrState::new(pool.clone(), state.jwt_verifier.clone());
                     hr_state.with_leave_command_store(leave_store.clone())
                 }))
+                .merge(mnt_recruiting_rest::router(RecruitingRestState::new(
+                    PgRecruitingStore::new(pool.clone()),
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_evaluation_rest::router(EvaluationRestState::new(
+                    evaluation_store,
+                    state.jwt_verifier.clone(),
+                )))
+                // The hire handshake stays app-level: it shares one transaction
+                // with the HR-owned employee-creation core (see recruiting_hire).
+                .merge(recruiting_hire::router(
+                    recruiting_hire::RecruitingHireState::new(
+                        pool.clone(),
+                        state.jwt_verifier.clone(),
+                        hr::HrState::new(pool.clone(), state.jwt_verifier.clone())
+                            .with_leave_command_store(leave_store.clone()),
+                    ),
+                ))
                 .merge(workflow_studio::router(
                     workflow_studio::WorkflowStudioState::new(
                         pool.clone(),
                         state.jwt_verifier.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
+                ))
+                .merge(workflow_object_context::router(
+                    workflow_object_context::WorkflowObjectContextState::new(
+                        pool.clone(),
+                        state.jwt_verifier.clone(),
+                    ),
                 ))
                 .merge(collaboration::router(
                     collaboration::CollaborationState::new(
@@ -2762,6 +3064,11 @@ pub fn build_router(state: AppState) -> Router {
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(action_inbox::router(action_inbox::ActionInboxState::new(
+                    pool.clone(),
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(workbench::router(workbench::WorkbenchState::new(
+                    Arc::new(workbench_native::NativeWorkbenchReaders::new(pool.clone())),
                     pool.clone(),
                     state.jwt_verifier.clone(),
                 )))
@@ -2792,8 +3099,7 @@ pub fn build_router(state: AppState) -> Router {
                 }))
                 .merge(mnt_sales_rest::router({
                     let mut sales_state =
-                        SalesRestState::new(sales_store, state.jwt_verifier.clone())
-                            .with_trusted_proxy_count(state.config.trusted_proxy_count);
+                        SalesRestState::new(sales_store, state.jwt_verifier.clone());
                     if let Some(storefront_org) = state.config.storefront_org {
                         sales_state = sales_state.with_storefront_org(storefront_org);
                     }
@@ -2828,6 +3134,16 @@ pub fn build_router(state: AppState) -> Router {
                         ),
                     ))
                     .with_job_queue(state.dispatch_job_queue.clone()),
+                ))
+                .merge(mnt_facilities_rest::router(FacilitiesRestState::new(
+                    pool.clone(),
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_production_rest::router(
+                    ProductionRestState::new(pool.clone(), state.jwt_verifier.clone())
+                        .with_service_principal_hmac_key(
+                            state.config.production_service_principal_hmac_key,
+                        ),
                 ))
                 .merge(mnt_messenger_rest::router(MessengerRestState::new(
                     messenger_store,
@@ -2869,6 +3185,14 @@ pub fn build_router(state: AppState) -> Router {
                     leave_store,
                     state.jwt_verifier.clone(),
                 )))
+                .merge(mnt_benefit_rest::router(BenefitRestState::new(
+                    benefit_store,
+                    state.jwt_verifier.clone(),
+                )))
+                .merge(mnt_consulting_rest::router(ConsultingRestState::new(
+                    pool.clone(),
+                    state.jwt_verifier.clone(),
+                )))
                 .merge(mnt_todos_rest::router(TodoRestState::new(
                     todo_store,
                     state.jwt_verifier.clone(),
@@ -2908,6 +3232,12 @@ pub fn build_router(state: AppState) -> Router {
                 ))
                 .merge(mnt_governance_rest::router(GovernanceRestState::new(
                     governance_store,
+                    state.jwt_verifier.clone(),
+                )))
+                // Org-change lifecycle engine (조직 개편 결재): draft → preflight
+                // → ordered SoD approval → effective-dated apply (§15/§16).
+                .merge(mnt_orgchange_rest::router(OrgChangeRestState::new(
+                    PgOrgChangeStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
                 .merge(mnt_platform_authz_rest::router(CedarPolicyRestState::new(
@@ -2972,6 +3302,10 @@ pub fn build_router(state: AppState) -> Router {
                     PlatformProvisioner::new(state.config.coldstart_otp_ttl),
                 )
                 .with_view_as_issuer(state.view_as_issuer.clone())
+                .with_force_remove_command_pool(match &state.platform_force_command_database {
+                    DatabaseDependency::Postgres(pool) => Some(pool.clone()),
+                    DatabaseDependency::NotConfigured => None,
+                })
                 .with_tenant_config_seeder(platform_tenant_config_seeder),
             );
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
@@ -3030,6 +3364,14 @@ pub fn build_router(state: AppState) -> Router {
     let router = router
         .layer(axum::extract::DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
         .layer(http_trace_layer());
+    // This wraps the fully-composed HTTP surface exactly once.  Every router
+    // below consumes the resolved extension; no domain/rate-limit surface is
+    // allowed to interpret raw X-Forwarded-For itself.
+    let router = mnt_platform_request_context::with_trusted_client_ip(
+        router,
+        state.config.trusted_proxy_count,
+        state.config.trusted_proxy_cidrs.clone(),
+    );
     with_metrics(router, &state)
 }
 
@@ -3049,13 +3391,20 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
         readiness_dependency_status(&state.leave_command_database, "leave_command").await;
     let ontology_command_database =
         readiness_dependency_status(&state.ontology_command_database, "ontology_command").await;
+    let platform_force_command_database = readiness_dependency_status(
+        &state.platform_force_command_database,
+        "platform_force_command",
+    )
+    .await;
 
     let ready = database.healthy()
         && (!command_databases_required
             || (leave_command_database.configured
                 && leave_command_database.ready
                 && ontology_command_database.configured
-                && ontology_command_database.ready));
+                && ontology_command_database.ready
+                && platform_force_command_database.configured
+                && platform_force_command_database.ready));
     let status = if ready {
         StatusCode::OK
     } else {
@@ -3070,6 +3419,7 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
             database: database.label,
             leave_command_database: leave_command_database.label,
             ontology_command_database: ontology_command_database.label,
+            platform_force_command_database: platform_force_command_database.label,
         }),
     )
 }
@@ -3813,10 +4163,13 @@ async fn serve_api(config: AppConfig, state: AppState) -> Result<(), AppError> {
         "starting mnt-app"
     );
 
-    axum::serve(listener, build_router(state.clone()))
-        .with_graceful_shutdown(shutdown_signal(config.shutdown_timeout, state))
-        .await
-        .map_err(AppError::Io)
+    axum::serve(
+        listener,
+        build_router(state.clone()).into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal(config.shutdown_timeout, state))
+    .await
+    .map_err(AppError::Io)
 }
 
 /// Seed the cold-start admin's bootstrap OTP at API boot, after migrations have
@@ -3921,6 +4274,7 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     // migration/seed creates a schedule row, so it finds no work until a tenant
     // authors one through the audited studio REST surface.
     let workflow_schedule_handle = workflow_schedules::spawn(pool.clone());
+    let facilities_schedule_handle = facilities_schedule::spawn(pool.clone());
     let alimtalk_policy = if config.solapi.is_some() {
         AlimtalkEscalationPolicy::enabled()
     } else {
@@ -3989,6 +4343,7 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
         handle.shutdown();
     }
     workflow_schedule_handle.shutdown();
+    facilities_schedule_handle.shutdown();
     health_server.abort();
     result
 }
@@ -4166,6 +4521,152 @@ impl From<DbError> for AppError {
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod trusted_ingress_tests {
+    use std::net::SocketAddr;
+
+    use axum::extract::{ConnectInfo, Extension};
+    use axum::routing::get;
+    use http::Request;
+    use mnt_platform_request_context::TrustedClientIp;
+    use tower::ServiceExt;
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn proxy_forwarding_is_disabled_by_default_and_requires_a_trusted_peer_cidr() {
+        let direct = super::AppConfig::from_pairs([
+            ("MNT_APP_ROLE", "api".to_owned()),
+            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ])
+        .unwrap();
+        assert_eq!(direct.trusted_proxy_count, 0);
+        assert!(direct.trusted_proxy_cidrs.is_empty());
+
+        let err = super::AppConfig::from_pairs([
+            ("MNT_APP_ROLE", "api".to_owned()),
+            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("MNT_TRUSTED_PROXY_COUNT", "1".to_owned()),
+        ])
+        .expect_err("a nonzero proxy count without trusted peers must fail closed");
+        assert!(err.to_string().contains("MNT_TRUSTED_PROXY_CIDRS"));
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[tokio::test]
+    async fn ingress_accepts_only_a_complete_trusted_proxy_suffix() {
+        async fn observed_client_ip(Extension(ip): Extension<TrustedClientIp>) -> String {
+            ip.get().to_string()
+        }
+
+        let app = mnt_platform_request_context::with_trusted_client_ip(
+            axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
+            2,
+            vec!["10.0.0.0/8".parse().unwrap()],
+        );
+        let mut request = Request::builder()
+            .uri("/__test/client-ip")
+            .header("x-forwarded-for", "198.51.100.250, 10.0.0.2")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo("10.0.0.3:443".parse::<SocketAddr>().unwrap()));
+
+        let response = app.oneshot(request).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(&body[..], b"198.51.100.250");
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[tokio::test]
+    async fn ingress_rejects_an_untrusted_configured_proxy_suffix() {
+        async fn observed_client_ip(Extension(ip): Extension<TrustedClientIp>) -> String {
+            ip.get().to_string()
+        }
+
+        let app = mnt_platform_request_context::with_trusted_client_ip(
+            axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
+            2,
+            vec!["10.0.0.0/8".parse().unwrap()],
+        );
+        let mut request = Request::builder()
+            .uri("/__test/client-ip")
+            .header("x-forwarded-for", "198.51.100.250, 203.0.113.7")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo("10.0.0.3:443".parse::<SocketAddr>().unwrap()));
+
+        let response = app.oneshot(request).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(&body[..], b"10.0.0.3");
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[tokio::test]
+    async fn ingress_falls_back_to_transport_peer_for_raw_or_short_xff() {
+        async fn observed_client_ip(Extension(ip): Extension<TrustedClientIp>) -> String {
+            ip.get().to_string()
+        }
+
+        let app = mnt_platform_request_context::with_trusted_client_ip(
+            axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
+            2,
+            vec!["10.0.0.0/8".parse().unwrap()],
+        );
+        let mut request = Request::builder()
+            .uri("/__test/client-ip")
+            .header("x-forwarded-for", "198.51.100.250")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo("10.0.0.3:443".parse::<SocketAddr>().unwrap()));
+
+        let response = app.oneshot(request).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(&body[..], b"10.0.0.3");
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[tokio::test]
+    async fn ingress_rejects_direct_client_xff_spoofing_even_with_proxy_hops_configured() {
+        async fn observed_client_ip(Extension(ip): Extension<TrustedClientIp>) -> String {
+            ip.get().to_string()
+        }
+
+        let app = mnt_platform_request_context::with_trusted_client_ip(
+            axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
+            1,
+            vec!["10.0.0.0/8".parse().unwrap()],
+        );
+        let mut request = Request::builder()
+            .uri("/__test/client-ip")
+            .header("x-forwarded-for", "198.51.100.250")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo("192.0.2.10:443".parse::<SocketAddr>().unwrap()));
+
+        let response = app.oneshot(request).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(&body[..], b"192.0.2.10");
+    }
+}
+
+// Every test in this module is `#[cfg(feature = "test-postgres")]`, so without
+// that feature the whole module is helpers and imports with no consumer.
+#[cfg(all(test, feature = "test-postgres"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod readiness_tests {
     use axum::extract::State;
     use axum::response::IntoResponse;
@@ -4191,14 +4692,17 @@ mod readiness_tests {
             .expect("separate readiness pool connects")
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn api_readiness_fails_closed_when_either_command_pool_degrades(pool: PgPool) {
         let leave = separate_pool(&pool).await;
         let ontology = separate_pool(&pool).await;
+        let platform_force = separate_pool(&pool).await;
         let mut state =
             AppState::new(api_config(), DatabaseDependency::Postgres(pool)).expect("state builds");
         state.leave_command_database = DatabaseDependency::Postgres(leave.clone());
         state.ontology_command_database = DatabaseDependency::Postgres(ontology);
+        state.platform_force_command_database = DatabaseDependency::Postgres(platform_force);
 
         let healthy = readyz(State(state.clone())).await.into_response();
         assert_eq!(healthy.status(), StatusCode::OK);
@@ -4219,6 +4723,7 @@ mod wide_event_middleware_tests {
 
     use super::{AppConfig, AppRole, AppState, DatabaseDependency, install_metrics_recorder};
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn http_metrics_label_matched_route_template_not_raw_path() {
         install_metrics_recorder().expect("metrics recorder installs once");
@@ -4277,6 +4782,7 @@ mod wide_event_middleware_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn http_metrics_label_unmatched_route_sentinel_not_raw_path() {
         install_metrics_recorder().expect("metrics recorder installs once");
@@ -4361,6 +4867,7 @@ mod audit_attestation_auth_tests {
         )
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn audit_attestation_builtin_gate_allows_only_super_admin_for_audit_read() {
         assert!(
@@ -4437,6 +4944,7 @@ mod router_layer_tests {
         timed.merge(Router::new().route("/realtime/slow", get(slow)))
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn domain_route_inside_timeout_is_shed_when_slow() {
         let app = compose(Duration::from_millis(200));
@@ -4456,6 +4964,7 @@ mod router_layer_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn realtime_route_merged_outside_timeout_is_never_shed() {
         // Same short timeout, but the realtime-equivalent route is merged
@@ -4479,6 +4988,7 @@ mod router_layer_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn default_request_timeout_is_thirty_seconds() {
         assert_eq!(REQUEST_TIMEOUT, Duration::from_secs(30));
@@ -4490,6 +5000,7 @@ mod router_layer_tests {
 mod worker_identity_tests {
     use super::{DEFAULT_SERVICE_NAME, dispatch_apalis_worker_name};
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_includes_pod_hostname_when_present() {
         let name = dispatch_apalis_worker_name("mnt-app-worker", Some("mnt-worker-abc123"));
@@ -4497,6 +5008,7 @@ mod worker_identity_tests {
         assert_eq!(name, "mnt-app-worker-mnt-worker-abc123-dispatch-worker");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_falls_back_to_service_name_outside_kubernetes() {
         let name = dispatch_apalis_worker_name("mnt-app-worker", None);
@@ -4504,6 +5016,7 @@ mod worker_identity_tests {
         assert_eq!(name, "mnt-app-worker-dispatch-worker");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_ignores_empty_hostname() {
         let name = dispatch_apalis_worker_name("mnt-app-worker", Some("   "));
@@ -4511,6 +5024,7 @@ mod worker_identity_tests {
         assert_eq!(name, "mnt-app-worker-dispatch-worker");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_uses_default_service_for_empty_service_name() {
         let name = dispatch_apalis_worker_name(" ", Some("pod-1"));
@@ -4534,6 +5048,9 @@ mod migration_database_budget_tests {
         reset_migration_database_connection,
     };
 
+    // Consumed only by the `test-postgres` test below; this module also holds
+    // non-featured tests, so it cannot be gated wholesale.
+    #[allow(dead_code)]
     fn isolated_owner_budget_pool_options() -> PgPoolOptions {
         PgPoolOptions::new()
             .max_connections(1)
@@ -4546,6 +5063,7 @@ mod migration_database_budget_tests {
             })
     }
 
+    #[allow(dead_code)]
     async fn cluster_identity_snapshot(pool: &PgPool) -> String {
         sqlx::query_scalar(
             r#"SELECT jsonb_build_object(
@@ -4599,6 +5117,7 @@ mod migration_database_budget_tests {
         .expect("cluster identity snapshot reads")
     }
 
+    #[allow(dead_code)]
     async fn assert_migration_session(pool: &PgPool, expected_user: &str) {
         let (session_user, current_user, lock_timeout, statement_timeout): (
             String,
@@ -4621,11 +5140,13 @@ mod migration_database_budget_tests {
         assert_eq!(statement_timeout, "1min");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn migration_database_budgets_accept_exact_readback() {
         assert!(ensure_expected_migration_database_budgets("5s", "1min", true, true).is_ok());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn migration_database_budgets_reject_any_readback_mismatch() {
         for (lock_timeout_matches, statement_timeout_matches) in
@@ -4646,6 +5167,7 @@ mod migration_database_budget_tests {
         }
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = false)]
     async fn migration_pool_applies_and_restores_session_budgets(pool: PgPool) {
         // Snapshot before the test body performs any session mutation. This
@@ -4689,7 +5211,9 @@ mod migration_database_budget_tests {
     }
 }
 
-#[cfg(test)]
+// As with `readiness_tests`: the single test here is feature-gated, so the
+// module has no non-featured content to compile.
+#[cfg(all(test, feature = "test-postgres"))]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod serving_database_timeout_tests {
     use std::time::Duration;
@@ -4714,6 +5238,7 @@ mod serving_database_timeout_tests {
         assert_eq!(transaction, "45s");
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = false)]
     async fn serving_pool_rejects_overrides_and_restores_role_defaults_after_release(pool: PgPool) {
         let backend_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
@@ -4873,6 +5398,8 @@ mod command_database_config_tests {
     const LEAVE_COMMAND_URL: &str = "postgresql://mnt_leave_cmd:leave-secret@db/maintenance";
     const ONTOLOGY_COMMAND_URL: &str =
         "postgresql://mnt_ontology_cmd:ontology-secret@db/maintenance";
+    const PLATFORM_FORCE_COMMAND_URL: &str =
+        "postgresql://mnt_platform_force_cmd:platform-force-secret@db/maintenance";
 
     fn migration_memberships() -> Vec<RoleMembership> {
         ["mnt_leave_definer", "mnt_ontology_writer"]
@@ -4897,6 +5424,7 @@ mod command_database_config_tests {
             .collect()
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_with_database_requires_distinct_leave_command_database_url() {
         let error = AppConfig::from_pairs([("MNT_APP_ROLE", "api"), ("DATABASE_URL", RUNTIME_URL)])
@@ -4910,6 +5438,7 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn blank_leave_command_database_url_fails_closed_for_database_backed_api() {
         assert!(
@@ -4922,6 +5451,7 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_accepts_distinct_leave_command_database_url() {
         let config = AppConfig::from_pairs([
@@ -4929,6 +5459,10 @@ mod command_database_config_tests {
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
+            (
+                "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                PLATFORM_FORCE_COMMAND_URL,
+            ),
         ])
         .unwrap();
 
@@ -4941,8 +5475,13 @@ mod command_database_config_tests {
             config.ontology_command_database_url.as_deref(),
             Some(ONTOLOGY_COMMAND_URL)
         );
+        assert_eq!(
+            config.platform_force_command_database_url.as_deref(),
+            Some(PLATFORM_FORCE_COMMAND_URL)
+        );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_with_database_requires_distinct_ontology_command_database_url() {
         let error = AppConfig::from_pairs([
@@ -4960,6 +5499,24 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn api_with_database_requires_platform_force_command_database_url() {
+        let error = AppConfig::from_pairs([
+            ("MNT_APP_ROLE", "api"),
+            ("DATABASE_URL", RUNTIME_URL),
+            ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
+            ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
+        ])
+        .unwrap_err();
+        assert!(
+            error
+                .to_string()
+                .contains("PLATFORM_FORCE_COMMAND_DATABASE_URL is required for api role")
+        );
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_rejects_command_urls_equal_to_runtime_or_each_other() {
         let leave_equals_runtime = AppConfig::from_pairs([
@@ -4967,6 +5524,10 @@ mod command_database_config_tests {
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", RUNTIME_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
+            (
+                "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                PLATFORM_FORCE_COMMAND_URL,
+            ),
         ])
         .unwrap_err();
         assert!(
@@ -4980,6 +5541,10 @@ mod command_database_config_tests {
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", RUNTIME_URL),
+            (
+                "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                PLATFORM_FORCE_COMMAND_URL,
+            ),
         ])
         .unwrap_err();
         assert!(
@@ -4993,13 +5558,37 @@ mod command_database_config_tests {
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
+            (
+                "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                PLATFORM_FORCE_COMMAND_URL,
+            ),
         ])
         .unwrap_err();
         assert!(shared_command_url.to_string().contains(
             "ONTOLOGY_COMMAND_DATABASE_URL must be distinct from LEAVE_COMMAND_DATABASE_URL"
         ));
+
+        for (conflicting_url, expected) in [
+            (RUNTIME_URL, "DATABASE_URL"),
+            (LEAVE_COMMAND_URL, "LEAVE_COMMAND_DATABASE_URL"),
+            (ONTOLOGY_COMMAND_URL, "ONTOLOGY_COMMAND_DATABASE_URL"),
+        ] {
+            let error = AppConfig::from_pairs([
+                ("MNT_APP_ROLE", "api"),
+                ("DATABASE_URL", RUNTIME_URL),
+                ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
+                ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
+                ("PLATFORM_FORCE_COMMAND_DATABASE_URL", conflicting_url),
+            ])
+            .unwrap_err();
+            assert!(
+                error.to_string().contains(expected),
+                "platform-force URL collision with {expected} must be rejected: {error}"
+            );
+        }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn connected_role_guards_require_exact_direct_identity_without_membership() {
         assert!(
@@ -5048,6 +5637,7 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn serving_role_guards_reject_each_escalating_attribute() {
         let hostile_attributes = [
@@ -5096,6 +5686,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn database_urls_reject_login_role_aliases_and_role_options() {
         assert!(
@@ -5131,6 +5722,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn database_urls_require_nonempty_decoded_passwords() {
         for url in [
@@ -5148,6 +5740,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn serving_identity_query_checks_all_memberships_and_role_attributes() {
         let query = serving_database_identity_query();
@@ -5175,6 +5768,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn serving_timeout_guards_accept_only_exact_effective_defaults() {
         assert!(
@@ -5217,6 +5811,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn migration_identity_accepts_only_the_exact_owner_topology() {
         assert!(
@@ -5297,6 +5892,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn migration_identity_rejects_membership_and_definer_drift() {
         let mut missing_membership = migration_memberships();
@@ -5377,6 +5973,7 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn migration_identity_rejects_incoming_mnt_app_membership_edge() {
         let error = ensure_expected_migration_database_identity(
@@ -5396,6 +5993,7 @@ mod command_database_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn serving_identity_rejects_outgoing_or_incoming_membership_edges() {
         let error = ensure_expected_serving_database_identity(
@@ -5410,6 +6008,7 @@ mod command_database_config_tests {
         assert!(error.to_string().contains("membership edge"));
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_rejects_pairwise_equal_decoded_database_passwords() {
         let cases = [
@@ -5417,28 +6016,53 @@ mod command_database_config_tests {
                 "postgresql://mnt_rt:shared%2Dsecret@db/maintenance",
                 "postgresql://mnt_leave_cmd:shared-secret@db/leave",
                 ONTOLOGY_COMMAND_URL,
+                PLATFORM_FORCE_COMMAND_URL,
                 "DATABASE_URL and LEAVE_COMMAND_DATABASE_URL",
             ),
             (
                 RUNTIME_URL,
                 "postgresql://mnt_leave_cmd:shared%2Dsecret@db/leave",
                 "postgresql://mnt_ontology_cmd:shared-secret@db/ontology",
+                PLATFORM_FORCE_COMMAND_URL,
                 "LEAVE_COMMAND_DATABASE_URL and ONTOLOGY_COMMAND_DATABASE_URL",
             ),
             (
                 "postgresql://mnt_rt:query-secret@db/runtime",
                 LEAVE_COMMAND_URL,
                 "postgresql://mnt_ontology_cmd:different@db/ontology?password=query-secret",
+                PLATFORM_FORCE_COMMAND_URL,
                 "DATABASE_URL and ONTOLOGY_COMMAND_DATABASE_URL",
+            ),
+            (
+                "postgresql://mnt_rt:force-secret@db/runtime",
+                LEAVE_COMMAND_URL,
+                ONTOLOGY_COMMAND_URL,
+                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
+            ),
+            (
+                RUNTIME_URL,
+                "postgresql://mnt_leave_cmd:force-secret@db/leave",
+                ONTOLOGY_COMMAND_URL,
+                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "LEAVE_COMMAND_DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
+            ),
+            (
+                RUNTIME_URL,
+                LEAVE_COMMAND_URL,
+                "postgresql://mnt_ontology_cmd:force-secret@db/ontology",
+                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "ONTOLOGY_COMMAND_DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
             ),
         ];
 
-        for (runtime, leave, ontology, expected_pair) in cases {
+        for (runtime, leave, ontology, platform_force, expected_pair) in cases {
             let error = AppConfig::from_pairs([
                 ("MNT_APP_ROLE", "api"),
                 ("DATABASE_URL", runtime),
                 ("LEAVE_COMMAND_DATABASE_URL", leave),
                 ("ONTOLOGY_COMMAND_DATABASE_URL", ontology),
+                ("PLATFORM_FORCE_COMMAND_DATABASE_URL", platform_force),
             ])
             .unwrap_err();
             let message = error.to_string();
@@ -5448,9 +6072,11 @@ mod command_database_config_tests {
             );
             assert!(!message.contains("shared-secret"));
             assert!(!message.contains("query-secret"));
+            assert!(!message.contains("force-secret"));
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn database_free_api_does_not_require_leave_command_database_url() {
         let config = AppConfig::from_pairs([("MNT_APP_ROLE", "api")]).unwrap();
@@ -5460,6 +6086,7 @@ mod command_database_config_tests {
         assert!(config.ontology_command_database_url.is_none());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn worker_and_migrate_do_not_require_leave_command_database_url() {
         for (role, database_url) in [
@@ -5478,6 +6105,7 @@ mod command_database_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn worker_requires_exact_runtime_login_but_migrate_keeps_owner_url() {
         assert!(
@@ -5548,12 +6176,14 @@ mod email_config_tests {
         ]
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn unset_group_yields_no_config() {
         let vars = HashMap::new();
         assert!(email_config_from_vars(&vars, None).unwrap().is_none());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn fully_set_group_yields_live_config() {
         let config = email_config_from_vars(&full_email_vars(), None)
@@ -5565,6 +6195,7 @@ mod email_config_tests {
         assert_eq!(config.from_address, "noreply@example.com");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn partial_config_missing_username_without_stub_mode_errors() {
         // ConfigMap set host/port/from, but the Secret (username) is absent.
@@ -5577,6 +6208,7 @@ mod email_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn partial_config_missing_username_with_stub_mode_falls_back_to_stub() {
         let mut vars = full_email_vars();
@@ -5589,6 +6221,7 @@ mod email_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn partial_config_missing_password_without_stub_mode_errors() {
         let mut vars = full_email_vars();
@@ -5599,6 +6232,7 @@ mod email_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn empty_credentials_without_stub_mode_error() {
         // Empty (not absent) creds — e.g. a Secret mounted with blank values —
@@ -5609,6 +6243,7 @@ mod email_config_tests {
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn email_stub_mode_env_accepts_only_explicit_non_production_modes() {
         let vars: HashMap<String, String> = [(EMAIL_STUB_MODE_ENV, "e2e")]
@@ -5627,6 +6262,7 @@ mod email_config_tests {
         assert!(email_stub_mode_from_vars(&vars).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn app_state_without_smtp_or_stub_mode_fails_closed_without_logging_otp() {
         let config = AppConfig::from_pairs(app_pairs()).unwrap();
@@ -5647,6 +6283,7 @@ mod email_config_tests {
         );
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn app_state_with_explicit_stub_mode_allows_nonprod_otp_logging_stub() {
         let mut pairs = app_pairs();
@@ -5671,6 +6308,7 @@ mod email_config_tests {
     /// error outside explicit stub mode. This is the prod scenario — a ConfigMap
     /// supplies some non-secret fields while the credential Secret is not yet
     /// provisioned — across every subset of the non-secret fields.
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn every_partial_config_without_credentials_errors_without_stub_mode() {
         const NON_SECRET_KEYS: [(&str, &str); 4] = [
@@ -5711,6 +6349,7 @@ mod email_config_tests {
         }
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn creds_present_but_missing_host_still_errors() {
         // With BOTH secrets in hand, a missing non-secret field is a genuine
@@ -5721,6 +6360,7 @@ mod email_config_tests {
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn creds_present_but_missing_port_still_errors() {
         let mut vars = full_email_vars();
@@ -5728,6 +6368,7 @@ mod email_config_tests {
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn creds_present_but_missing_from_still_errors() {
         let mut vars = full_email_vars();
@@ -5735,6 +6376,7 @@ mod email_config_tests {
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn creds_present_but_invalid_port_still_errors() {
         // A non-numeric port is an operator typo, not a missing Secret — error.
@@ -5743,6 +6385,7 @@ mod email_config_tests {
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn credentials_only_without_relay_fields_errors() {
         // Only the secrets are set (no host/port/from). The operator must supply

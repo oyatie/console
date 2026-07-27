@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { PredicateEditor } from "./PredicateEditor";
 import { DEFAULT_CANVAS_STRINGS } from "./strings";
-import { STUB_FIELD_REGISTRY } from "./stub";
+import { TEST_FIELD_REGISTRY } from "./testFixtures";
 import type { PredicateGroup } from "./types";
 
 const S = DEFAULT_CANVAS_STRINGS;
@@ -14,7 +14,7 @@ function Harness({ initial, onSnapshot }: { initial: PredicateGroup; onSnapshot?
   return (
     <PredicateEditor
       group={group}
-      registry={STUB_FIELD_REGISTRY}
+      registry={TEST_FIELD_REGISTRY}
       strings={S}
       onChange={(g) => {
         setGroup(g);

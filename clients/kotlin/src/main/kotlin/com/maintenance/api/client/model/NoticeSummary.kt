@@ -23,6 +23,10 @@
 
 package com.maintenance.api.client.model
 
+import com.maintenance.api.client.model.NamedEntity
+import com.maintenance.api.client.model.NoticeCategory
+import com.maintenance.api.client.model.NoticeMyReceipt
+import com.maintenance.api.client.model.NoticeProgress
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -32,13 +36,18 @@ import kotlinx.serialization.Contextual
  *
  *
  * @param id
+ * @param code NT- code, set only once published.
  * @param authorUserId
  * @param title
  * @param body
  * @param status
- * @param createdAt
- * @param code NT- code, set only once published.
  * @param publishedAt
+ * @param createdAt
+ * @param category
+ * @param audienceScope
+ * @param audienceBranches Audience branches with display names; empty for org-wide notices.
+ * @param myReceipt The caller's own 수령확인 state; null when the caller is not a snapshotted recipient.
+ * @param progress Hydrated only for NoticeManage callers; null otherwise.
  */
 @Serializable
 
@@ -46,6 +55,10 @@ data class NoticeSummary (
 
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
+
+    /* NT- code, set only once published. */
+    @SerialName(value = "code")
+    val code: kotlin.String?,
 
     @Contextual @SerialName(value = "author_user_id")
     val authorUserId: java.util.UUID,
@@ -59,15 +72,29 @@ data class NoticeSummary (
     @SerialName(value = "status")
     val status: NoticeSummary.Status,
 
+    @Contextual @SerialName(value = "published_at")
+    val publishedAt: java.time.OffsetDateTime?,
+
     @Contextual @SerialName(value = "created_at")
     val createdAt: java.time.OffsetDateTime,
 
-    /* NT- code, set only once published. */
-    @SerialName(value = "code")
-    val code: kotlin.String? = null,
+    @Contextual @SerialName(value = "category")
+    val category: NoticeCategory,
 
-    @Contextual @SerialName(value = "published_at")
-    val publishedAt: java.time.OffsetDateTime? = null
+    @SerialName(value = "audience_scope")
+    val audienceScope: NoticeSummary.AudienceScope,
+
+    /* Audience branches with display names; empty for org-wide notices. */
+    @SerialName(value = "audience_branches")
+    val audienceBranches: kotlin.collections.List<NamedEntity>,
+
+    /* The caller's own 수령확인 state; null when the caller is not a snapshotted recipient. */
+    @SerialName(value = "my_receipt")
+    val myReceipt: NoticeMyReceipt?,
+
+    /* Hydrated only for NoticeManage callers; null otherwise. */
+    @SerialName(value = "progress")
+    val progress: NoticeProgress?
 
 ) {
 
@@ -80,6 +107,16 @@ data class NoticeSummary (
     enum class Status(val value: kotlin.String) {
         @SerialName(value = "draft") DRAFT("draft"),
         @SerialName(value = "published") PUBLISHED("published");
+    }
+    /**
+     *
+     *
+     * Values: ORG,BRANCHES
+     */
+    @Serializable
+    enum class AudienceScope(val value: kotlin.String) {
+        @SerialName(value = "org") ORG("org"),
+        @SerialName(value = "branches") BRANCHES("branches");
     }
 
 }

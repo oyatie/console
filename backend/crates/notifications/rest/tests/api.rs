@@ -302,3 +302,274 @@ async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {
     .await
     .unwrap();
 }
+
+/// Routing surfaces over the real router: by-object grouping, the unread
+/// toggle, and mute-policy CRUD are all recipient-scoped from the JWT; muted
+/// rows leave the badge but never the list; invalid policy shapes are 422 in
+/// the canonical envelope; cross-user ids are 404.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn notification_routing_rest_is_recipient_scoped(pool: PgPool) {
+    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        let signing_key = SigningKey::random(&mut OsRng);
+        let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+        let public_key_pem = signing_key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+
+        let user_a = UserId::new();
+        let user_b = UserId::new();
+        seed_user(&pool, user_a, "Router A").await;
+        seed_user(&pool, user_b, "Router B").await;
+
+        let approval_link = NotificationLink::Object {
+            kind: "approval".to_owned(),
+            id: "ap-2026-077".to_owned(),
+        };
+        let emit_link =
+            |recipient: UserId, category: &str, link: NotificationLink| EmitNotificationCommand {
+                actor: None,
+                recipient,
+                category: category.to_owned(),
+                kind: "info".to_owned(),
+                text: "결재 문서가 도착했습니다".to_owned(),
+                link,
+                dedup_key: None,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            };
+        let store = PgNotificationStore::new(pool.clone());
+        store
+            .emit_notification(emit_link(user_a, "결재", approval_link.clone()))
+            .await
+            .expect("emit A 결재");
+        store
+            .emit_notification(emit_link(user_a, "멘션", approval_link.clone()))
+            .await
+            .expect("emit A 멘션");
+        let toggle_target = store
+            .emit_notification(emit_link(
+                user_a,
+                "근태",
+                NotificationLink::Screen {
+                    screen: "attendance".to_owned(),
+                },
+            ))
+            .await
+            .expect("emit A 근태");
+        store
+            .emit_notification(emit_link(user_b, "결재", approval_link.clone()))
+            .await
+            .expect("emit B 결재");
+
+        let verifier = JwtVerifier::from_es256_public_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: Duration::minutes(15),
+            },
+            public_key_pem.as_bytes(),
+        )
+        .unwrap();
+        let service = router(NotificationRestState::new(
+            PgNotificationStore::new(runtime_role_pool(&pool).await),
+            Some(verifier),
+        ));
+        let token_a = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_a);
+        let token_b = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_b);
+
+        // --- by-object grouping is recipient-scoped ---
+        let a_groups = get_json(
+            service.clone(),
+            "/api/v1/me/notifications/by-object?limit=10",
+            &token_a,
+        )
+        .await;
+        assert_eq!(a_groups.status, StatusCode::OK, "{:?}", a_groups.json);
+        let a_items = a_groups.json["items"].as_array().unwrap();
+        assert_eq!(a_items.len(), 2, "A: approval group + screen group");
+        let approval_group = a_items
+            .iter()
+            .find(|g| g["link"]["id"].as_str() == Some("ap-2026-077"))
+            .expect("approval group present");
+        assert_eq!(
+            approval_group["total"].as_i64(),
+            Some(2),
+            "B's row on the same link never counts for A"
+        );
+        assert_eq!(approval_group["unread"].as_i64(), Some(2));
+        assert_eq!(approval_group["muted"].as_bool(), Some(false));
+        assert!(approval_group["latest"]["id"].as_str().is_some());
+
+        let b_groups = get_json(
+            service.clone(),
+            "/api/v1/me/notifications/by-object",
+            &token_b,
+        )
+        .await;
+        let b_items = b_groups.json["items"].as_array().unwrap();
+        assert_eq!(b_items.len(), 1);
+        assert_eq!(b_items[0]["total"].as_i64(), Some(1));
+
+        // --- unread toggle: own row round-trips, cross-user is 404 ---
+        let read = post_empty(
+            service.clone(),
+            &format!("/api/v1/me/notifications/{}/read", toggle_target.id),
+            &token_a,
+        )
+        .await;
+        assert_eq!(read.status, StatusCode::OK, "{:?}", read.json);
+        let unread_again = post_empty(
+            service.clone(),
+            &format!("/api/v1/me/notifications/{}/unread", toggle_target.id),
+            &token_a,
+        )
+        .await;
+        assert_eq!(
+            unread_again.status,
+            StatusCode::OK,
+            "{:?}",
+            unread_again.json
+        );
+        assert_eq!(unread_again.json["unread"].as_bool(), Some(true));
+        assert!(
+            unread_again.json["read_at"].as_str().is_some(),
+            "first-read timestamp survives the toggle"
+        );
+        let cross_toggle = post_empty(
+            service.clone(),
+            &format!("/api/v1/me/notifications/{}/unread", toggle_target.id),
+            &token_b,
+        )
+        .await;
+        assert_eq!(cross_toggle.status, StatusCode::NOT_FOUND);
+
+        // --- mute policy CRUD ---
+        let invalid = send_json(
+            service.clone(),
+            "PUT",
+            "/api/v1/me/notification-policies",
+            &token_a,
+            serde_json::json!({ "scope": "category" }),
+        )
+        .await;
+        assert_eq!(invalid.status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(invalid.json["error"]["code"].as_str(), Some("validation"));
+
+        let upserted = send_json(
+            service.clone(),
+            "PUT",
+            "/api/v1/me/notification-policies",
+            &token_a,
+            serde_json::json!({ "scope": "category", "category": "결재" }),
+        )
+        .await;
+        assert_eq!(upserted.status, StatusCode::OK, "{:?}", upserted.json);
+        let policy_id = upserted.json["id"].as_str().unwrap().to_owned();
+        assert_eq!(upserted.json["scope"].as_str(), Some("category"));
+        assert_eq!(upserted.json["action"].as_str(), Some("mute"));
+
+        // Badge truth: muted 결재 leaves unread-count, summary tallies it, the
+        // list still carries the row annotated.
+        let count = get_json(
+            service.clone(),
+            "/api/v1/me/notifications/unread-count",
+            &token_a,
+        )
+        .await;
+        assert_eq!(count.json["unread"].as_i64(), Some(2), "결재 muted out");
+        let summary = get_json(
+            service.clone(),
+            "/api/v1/me/notifications/summary",
+            &token_a,
+        )
+        .await;
+        assert_eq!(summary.json["total_unread"].as_i64(), Some(2));
+        assert_eq!(summary.json["muted_unread"].as_i64(), Some(1));
+        let listed = get_json(
+            service.clone(),
+            "/api/v1/me/notifications?unread=true",
+            &token_a,
+        )
+        .await;
+        let rows = listed.json["items"].as_array().unwrap();
+        assert_eq!(rows.len(), 3, "mute never filters the list");
+        let muted_row = rows
+            .iter()
+            .find(|r| r["category"].as_str() == Some("결재"))
+            .unwrap();
+        assert_eq!(muted_row["muted"].as_bool(), Some(true));
+
+        // Policies list is self-scoped; B sees none and cannot delete A's.
+        let a_policies = get_json(
+            service.clone(),
+            "/api/v1/me/notification-policies",
+            &token_a,
+        )
+        .await;
+        assert_eq!(
+            a_policies.json["items"].as_array().unwrap().len(),
+            1,
+            "{:?}",
+            a_policies.json
+        );
+        let b_policies = get_json(
+            service.clone(),
+            "/api/v1/me/notification-policies",
+            &token_b,
+        )
+        .await;
+        assert_eq!(b_policies.json["items"].as_array().unwrap().len(), 0);
+        let cross_delete = request(
+            service.clone(),
+            "DELETE",
+            &format!("/api/v1/me/notification-policies/{policy_id}"),
+            Some(&token_b),
+        )
+        .await;
+        assert_eq!(cross_delete.status, StatusCode::NOT_FOUND);
+
+        // Own delete = 204; attention restored.
+        let deleted = request(
+            service.clone(),
+            "DELETE",
+            &format!("/api/v1/me/notification-policies/{policy_id}"),
+            Some(&token_a),
+        )
+        .await;
+        assert_eq!(deleted.status, StatusCode::NO_CONTENT);
+        let count_after = get_json(
+            service.clone(),
+            "/api/v1/me/notifications/unread-count",
+            &token_a,
+        )
+        .await;
+        assert_eq!(count_after.json["unread"].as_i64(), Some(3));
+    })
+    .await;
+}
+
+async fn send_json(
+    service: axum::Router,
+    method: &str,
+    uri: &str,
+    token: &str,
+    body: Value,
+) -> JsonResponse {
+    let request = Request::builder()
+        .method(method)
+        .uri(uri)
+        .header(header::AUTHORIZATION, format!("Bearer {token}"))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body.to_string()))
+        .unwrap();
+    let response = service.oneshot(request).await.unwrap();
+    let status = response.status();
+    let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json = if bytes.is_empty() {
+        Value::Null
+    } else {
+        serde_json::from_slice(&bytes).unwrap_or(Value::Null)
+    };
+    JsonResponse { status, json }
+}

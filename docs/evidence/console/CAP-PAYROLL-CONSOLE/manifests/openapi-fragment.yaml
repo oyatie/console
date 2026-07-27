@@ -1,0 +1,348 @@
+# CAP-PAYROLL-CONSOLE — OpenAPI fragment for backend/openapi/openapi.yaml
+# (integrator-owned collision root). Every operation carries `tags: [payroll]`
+# (Kotlin per-tag client rule). Error envelope: {error:{code,message,details?}}.
+# 404 = not-found OR other-org (RLS deny-by-omission). All mutations require
+# the org-wide `payroll_run_manage` feature; reads require `payroll_run_read`.
+# Merge the `paths` block under the existing /api/v1/payroll prefix and the
+# `components.schemas` block alongside the existing Payroll* schemas
+# (PayrollRunSummary/PayrollRunDetail gain the fields listed at the bottom).
+
+paths:
+  /api/v1/payroll/runs/{id}/close-preflight:
+    get:
+      operationId: getPayrollRunClosePreflight
+      tags: [payroll]
+      summary: "§4-29 attendance-close preflight (audited read)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollClosePreflight" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/v1/payroll/runs/{id}/close-attendance:
+    post:
+      operationId: closePayrollRunAttendance
+      tags: [payroll]
+      summary: "Attested attendance close; 409 preflight_blocked carries the failing checks in error.details"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attest]
+              properties:
+                attest: { type: boolean }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollRunDetail" }
+        "409": { description: "preflight_blocked | invalid_state" }
+        "422": { description: "attest:true required" }
+  /api/v1/payroll/runs/{id}/calculate:
+    post:
+      operationId: calculatePayrollRun
+      tags: [payroll]
+      summary: "Per-line draft calculation; lines without a verified gross+NTS source stay blocked with truthful blockers (income tax is never estimated)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollRunDetail" }
+        "409": { description: "invalid_state (only ATTENDANCE_CLOSED calculates)" }
+  /api/v1/payroll/runs/{id}/exceptions:
+    get:
+      operationId: listPayrollRunExceptions
+      tags: [payroll]
+      summary: "예외 검토 queue (audited read; OPEN rows first)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, schema: { type: integer, format: int64 } }
+        - { name: offset, in: query, schema: { type: integer, format: int64 } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollExceptionPage" }
+  /api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve:
+    post:
+      operationId: resolvePayrollRunException
+      tags: [payroll]
+      summary: "CONFIRM or HOLD (reason required; HELD carries to the next run of the series)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: exceptionId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [CONFIRM, HOLD] }
+                reason: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollException" }
+        "409": { description: "already_resolved | invalid_state" }
+        "422": { description: "HOLD without reason / unknown action" }
+  /api/v1/payroll/runs/{id}/submit:
+    post:
+      operationId: submitPayrollRun
+      tags: [payroll]
+      summary: "결재 상신 — fail-closed while any exception is OPEN"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollRunDetail" }
+        "409": { description: "exceptions_open (error.details.open) | invalid_state" }
+  /api/v1/payroll/runs/{id}/decision:
+    post:
+      operationId: decidePayrollRun
+      tags: [payroll]
+      summary: "APPROVE/REJECT with maker-checker SoD (decider ≠ submitter; DB CHECK enforced)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [APPROVE, REJECT] }
+                reason: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollRunDetail" }
+        "409": { description: "sod_violation | invalid_state" }
+        "422": { description: "REJECT without reason / unknown decision" }
+  /api/v1/payroll/runs/{id}/withdraw:
+    post:
+      operationId: withdrawPayrollRun
+      tags: [payroll]
+      summary: "회수 — REJECTED back to CALCULATED (exceptions stay resolved)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollRunDetail" }
+        "409": { description: "invalid_state" }
+  /api/v1/payroll/runs/{id}/schedule-disbursement:
+    post:
+      operationId: schedulePayrollDisbursement
+      tags: [payroll]
+      summary: "이체 예약 (APPROVED only; one disbursement per run)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduled_at]
+              properties:
+                scheduled_at: { type: string, format: date-time }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollDisbursement" }
+        "409": { description: "invalid_state" }
+        "422": { description: "past or non-RFC3339 scheduled_at" }
+  /api/v1/payroll/runs/{id}/disbursement/attest:
+    post:
+      operationId: attestPayrollDisbursement
+      tags: [payroll]
+      summary: "Operator attestation FSM: SCHEDULED→SUBMITTED_TO_BANK→PAID|FAILED(reason)→SCHEDULED retry — no bank API exists; statuses are truthful operator records"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [SCHEDULED, SUBMITTED_TO_BANK, PAID, FAILED] }
+                reason: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollDisbursement" }
+        "409": { description: "invalid_transition | invalid_state" }
+        "422": { description: "FAILED without reason" }
+  /api/v1/payroll/runs/{id}/issue-payslips:
+    post:
+      operationId: issuePayrollPayslips
+      tags: [payroll]
+      summary: "PS- issuance into the personal inbox vault — hard-gated by the registered 노무사/세무사 release-gate record (409 legal_gate otherwise)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollPayslipDeliverySummary" }
+        "409": { description: "legal_gate | invalid_state" }
+  /api/v1/payroll/runs/{id}/payslip-delivery:
+    get:
+      operationId: getPayrollPayslipDelivery
+      tags: [payroll]
+      summary: "Delivery + acknowledgement readback (audited read)"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, schema: { type: integer, format: int64 } }
+        - { name: offset, in: query, schema: { type: integer, format: int64 } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PayrollPayslipDeliverySummary" }
+
+components:
+  schemas:
+    PayrollPreflightCheck:
+      type: object
+      required: [key, label_ko, ok, warn, blocking_refs]
+      properties:
+        key: { type: string }
+        label_ko: { type: string }
+        ok: { type: boolean }
+        warn: { type: boolean }
+        note: { type: string, nullable: true }
+        blocking_refs:
+          type: array
+          items: { type: string, format: uuid }
+    PayrollClosePreflight:
+      type: object
+      required: [checks, can_close]
+      properties:
+        checks:
+          type: array
+          items: { $ref: "#/components/schemas/PayrollPreflightCheck" }
+        can_close: { type: boolean }
+    PayrollRunCalcSummary:
+      type: object
+      required: [version, calculated_at, calculated_lines, blocked_lines, payable, kernel_rate_table]
+      properties:
+        version: { type: integer, format: int32 }
+        calculated_at: { type: string, format: date-time }
+        calculated_lines: { type: integer, format: int64 }
+        blocked_lines: { type: integer, format: int64 }
+        payable: { type: boolean, description: "false until the release gate flips stored rows" }
+        kernel_rate_table: { type: string }
+        total_net_won:
+          type: integer
+          format: int64
+          nullable: true
+          description: "null unless EVERY line calculated — never a partial sum"
+    PayrollException:
+      type: object
+      required: [id, run_id, employee_display_name, kind, severity, summary_ko, detail, linked_refs, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        run_id: { type: string, format: uuid }
+        line_id: { type: string, format: uuid, nullable: true }
+        employee_id: { type: string, format: uuid, nullable: true }
+        employee_display_name: { type: string }
+        kind:
+          type: string
+          enum: [OVERTIME_ALLOWANCE, RETRO_ADJUSTMENT, ABSENCE_DEDUCTION, PRORATION, ACCOUNT_VERIFICATION]
+        severity: { type: string, enum: [info, warn, danger] }
+        amount_delta_won: { type: integer, format: int64, nullable: true }
+        summary_ko: { type: string }
+        detail: { type: object }
+        linked_refs: { type: array, items: { type: object } }
+        status: { type: string, enum: [OPEN, CONFIRMED, HELD] }
+        resolved_by: { type: string, format: uuid, nullable: true }
+        resolved_at: { type: string, format: date-time, nullable: true }
+        resolved_reason: { type: string, nullable: true }
+        carried_from_run_id: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+    PayrollExceptionPage:
+      type: object
+      required: [items, total, open, limit, offset]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PayrollException" }
+        total: { type: integer, format: int64 }
+        open: { type: integer, format: int64 }
+        limit: { type: integer, format: int64 }
+        offset: { type: integer, format: int64 }
+    PayrollDisbursement:
+      type: object
+      required: [id, run_id, scheduled_at, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        run_id: { type: string, format: uuid }
+        scheduled_at: { type: string, format: date-time }
+        status: { type: string, enum: [SCHEDULED, SUBMITTED_TO_BANK, PAID, FAILED] }
+        attested_by: { type: string, format: uuid, nullable: true }
+        attested_at: { type: string, format: date-time, nullable: true }
+        reason: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    PayrollPayslipDeliveryItem:
+      type: object
+      required: [line_id, employee_id, inbox_doc_id, issued_at]
+      properties:
+        line_id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        inbox_doc_id: { type: string, format: uuid }
+        issued_at: { type: string, format: date-time }
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: "read from inbox confirmed_at; the vault does not yet confirm payslips — truthfully null"
+    PayrollPayslipDeliverySummary:
+      type: object
+      required: [run_id, issued, acknowledged, items, total, limit, offset]
+      properties:
+        run_id: { type: string, format: uuid }
+        issued: { type: integer, format: int64 }
+        acknowledged: { type: integer, format: int64 }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PayrollPayslipDeliveryItem" }
+        total: { type: integer, format: int64 }
+        limit: { type: integer, format: int64 }
+        offset: { type: integer, format: int64 }
+
+# --- Extensions to EXISTING schemas (merge, do not replace) ---------------
+# PayrollRunSummary += (all nullable):
+#   close_receipt: object | null
+#   submitted_by / decided_by: uuid | null
+#   submitted_at / decided_at: date-time | null
+#   decision_reason: string | null
+#   approval_ref: uuid | null            # future AP- engine object
+# PayrollRunDetail += :
+#   exceptions_open / exceptions_total: int64 (required)
+#   calculation: PayrollRunCalcSummary | null
+#   disbursement: PayrollDisbursement | null
+#   payslip_delivery: PayrollPayslipDeliverySummary | null

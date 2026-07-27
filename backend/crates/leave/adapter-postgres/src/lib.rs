@@ -42,13 +42,15 @@ use mnt_leave_application::{
 use mnt_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveStatus, LeaveType, LeaveUnits,
-    PartialDayPeriod, PromotionKind, RecordedLeaveChargeSnapshot, SourceRevisionRef,
-    WorkObligation, validate_round,
+    PartialDayPeriod, PromotionContext, PromotionKind, PromotionTrack, RecordedLeaveChargeSnapshot,
+    SourceRevisionRef, WorkObligation, first_round_window, second_round_deadline,
+    validate_designated_dates, validate_push,
 };
 use mnt_platform_db::{DbError, with_audit, with_org_conn};
 use mnt_platform_request_context::current_org;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
+use time::macros::offset;
 
 const REQUEST_COLUMNS: &str = "id, branch_id, requester_user_id, subject_employee_id, leave_type, \
      COALESCE(charge_units, legacy_days)::float8 AS days, \
@@ -68,10 +70,20 @@ enum PromotionInsert {
     Duplicate,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct PromotionRecord {
     id: LeavePromotionId,
     inbox_doc_id: uuid::Uuid,
+    /// The KST date the notice was served — the anchor for the §61 reply window
+    /// and ordering checks.
+    served_on: Date,
+    /// The delivered notice's `source_id`, which encodes the 연차 사용기간 the
+    /// push belongs to. Used to tell a genuine re-push apart from a *different*
+    /// leave period colliding on the current per-employee unique key.
+    source_id: Option<String>,
+    /// The delivered notice's payload — the round-2 designation is read back
+    /// from here rather than restated by the refusal's caller.
+    payload: serde_json::Value,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -143,6 +155,33 @@ pub struct EmployeeHomeBranchUpdate {
     pub updated_at: time::OffsetDateTime,
 }
 
+/// Validated input for the atomic People employee-create command.
+#[derive(Debug)]
+pub struct CreateEmployeeCommand {
+    pub employee_id: uuid::Uuid,
+    pub employee_number: String,
+    pub name: String,
+    pub company: String,
+    pub employment_type: String,
+    pub phone_e164: String,
+    pub org_unit: String,
+    pub position: String,
+    pub site: String,
+    pub home_branch_id: uuid::Uuid,
+    pub base_pay: String,
+    pub idempotency_key: String,
+    pub request_hash: String,
+    pub actor: UserId,
+    pub trace: mnt_kernel_core::TraceContext,
+}
+
+/// Result of the atomic People employee-create command.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct EmployeeCreateResult {
+    pub employee_id: uuid::Uuid,
+    pub replayed: bool,
+}
+
 #[derive(Clone)]
 pub struct PgLeaveStore {
     pool: PgPool,
@@ -212,10 +251,57 @@ impl PgLeaveStore {
         self
     }
 
+    /// Whether the isolated leave command capability is bound. Callers that
+    /// must fail closed BEFORE creating dependent rows (employee creation and
+    /// the recruiting hire handshake pre-check home-branch assignability) use
+    /// this instead of discovering `CommandUnavailable` after a partial write.
+    #[must_use]
+    pub fn has_leave_command_pool(&self) -> bool {
+        self.leave_command_pool.is_some()
+    }
+
     fn command_pool(&self) -> Result<&PgPool, PgLeaveError> {
         self.leave_command_pool
             .as_ref()
             .ok_or(PgLeaveError::CommandUnavailable)
+    }
+
+    /// Create one employee and its employment facts through the isolated
+    /// command capability. The database owns idempotency, branch authority,
+    /// lifecycle evidence, and audit in one transaction.
+    pub async fn create_employee(
+        &self,
+        command: CreateEmployeeCommand,
+    ) -> Result<EmployeeCreateResult, PgLeaveError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let row = sqlx::query(
+            "SELECT * FROM leave_api.create_employee(\
+             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::numeric,$13,$14,$15,$16,$17)",
+        )
+        .bind(org.as_uuid())
+        .bind(command.employee_id)
+        .bind(command.employee_number)
+        .bind(command.name)
+        .bind(command.company)
+        .bind(command.employment_type)
+        .bind(command.phone_e164)
+        .bind(command.org_unit)
+        .bind(command.position)
+        .bind(command.site)
+        .bind(command.home_branch_id)
+        .bind(command.base_pay)
+        .bind(command.idempotency_key)
+        .bind(command.request_hash)
+        .bind(command.actor.as_uuid())
+        .bind(command.trace.trace_id())
+        .bind(command.trace.span_id())
+        .fetch_one(self.command_pool()?)
+        .await
+        .map_err(map_leave_command_sqlx)?;
+        Ok(EmployeeCreateResult {
+            employee_id: row.try_get("employee_id")?,
+            replayed: row.try_get("replayed")?,
+        })
     }
 
     /// Set the authoritative employee approval-routing branch through the
@@ -951,28 +1037,56 @@ impl PgLeaveStore {
 
     /// Serve a §61 promotion (1차/2차) or a 노무수령거부 notice: deliver the
     /// receipt-gated document into the target's 개인 수신함 and record the push.
-    /// Idempotent per `(org, target, kind, round)`.
+    ///
+    /// Every step is judged against 근로기준법 제61조 by
+    /// [`mnt_leave_domain::promotion`] before anything is delivered: round 1
+    /// must fall inside its statutory window, round 2 must follow a recorded
+    /// round 1 by more than the worker's 10-day reply period and land on or
+    /// before the 2차 통보 기한, and a 노무수령거부 must follow a recorded round-2
+    /// designation. A push that misses its window is refused rather than
+    /// delivered as a legally void notice.
+    ///
+    /// Idempotent per `(org, target, kind, round)` **within one 연차 사용기간** —
+    /// a push for a different period collides on the current unique key and is
+    /// refused (fail closed) until `leave_promotions` carries the period; see
+    /// `docs/evidence/console/hotfix/leave-promotion/manifests/`.
     pub async fn statutory_push(
         &self,
         command: StatutoryPushCommand,
     ) -> Result<StatutoryPushView, PgLeaveError> {
         let org = current_org().map_err(KernelError::from)?;
-        let round = validate_round(command.kind, command.round).map_err(PgLeaveError::Domain)?;
         let notice_type = command.kind.notice_type();
         let legal_basis = command.kind.legal_basis();
         let kind = command.kind.as_str();
+        // §61 deadlines are org-local. Korea has observed a fixed +09:00 since
+        // 1988, so the business date is the UTC instant at that offset.
+        let served_on = command.occurred_at.to_offset(offset!(+9)).date();
+        let tag = period_tag(command.track, command.leave_period_end);
 
-        self.ensure_target_employee_exists(org, command.target_employee_id)
+        // §61①1 requires the notice to state the employee's own 미사용 휴가
+        // 일수. It is read from the authoritative roster, never from the caller.
+        let unused_days = self
+            .unused_leave_days(org, command.target_employee_id)
             .await?;
 
+        // The slot this push occupies: a refusal is stored against the round it
+        // follows.
+        let slot_round = if command.kind == PromotionKind::Refusal {
+            2
+        } else {
+            command.round
+        };
+        let dedup_key = promotion_dedup_key(kind, command.target_employee_id, slot_round, &tag);
+
         if let Some(existing) = self
-            .find_promotion(org, command.target_employee_id, kind, round)
+            .find_promotion(org, command.target_employee_id, kind, slot_round)
             .await?
         {
+            ensure_same_period(&existing, &dedup_key, "이 단계의 §61 통지가")?;
             return Ok(StatutoryPushView {
                 id: existing.id,
                 kind: command.kind,
-                round,
+                round: slot_round,
                 target_user_id: command.target_user_id,
                 inbox_doc_id: existing.inbox_doc_id,
                 ap_run_id: None,
@@ -980,19 +1094,108 @@ impl PgLeaveStore {
             });
         }
 
-        let (title, body) = notice_body(&command, round);
-        let dedup_key = format!(
-            "leave-{}-{}-r{round}",
-            command.kind.as_str(),
-            command.target_employee_id
-        );
+        // Only the predecessor this step actually depends on is read, and it
+        // must belong to the same 연차 사용기간.
+        let predecessor = match (command.kind, command.round) {
+            (PromotionKind::Promotion, 2) => {
+                let record = self
+                    .find_promotion(org, command.target_employee_id, "promotion", 1)
+                    .await?;
+                if let Some(record) = record.as_ref() {
+                    let expected =
+                        promotion_dedup_key("promotion", command.target_employee_id, 1, &tag);
+                    ensure_same_period(record, &expected, "1차 촉구가")?;
+                }
+                record
+            }
+            (PromotionKind::Refusal, _) => {
+                let record = self
+                    .find_promotion(org, command.target_employee_id, "promotion", 2)
+                    .await?;
+                if let Some(record) = record.as_ref() {
+                    let expected =
+                        promotion_dedup_key("promotion", command.target_employee_id, 2, &tag);
+                    ensure_same_period(record, &expected, "2차 통보가")?;
+                }
+                record
+            }
+            _ => None,
+        };
+
+        let context = PromotionContext {
+            track: command.track,
+            period_end: command.leave_period_end,
+            served_on,
+            first_round_served_on: match (command.kind, command.round) {
+                (PromotionKind::Promotion, 2) => predecessor.as_ref().map(|r| r.served_on),
+                _ => None,
+            },
+            second_round_served_on: match command.kind {
+                PromotionKind::Refusal => predecessor.as_ref().map(|r| r.served_on),
+                PromotionKind::Promotion => None,
+            },
+        };
+        let round =
+            validate_push(command.kind, command.round, &context).map_err(PgLeaveError::Domain)?;
+
+        // §61①2 / §61②2 require the 2차 통보 to *designate the dates*. A refusal
+        // refuses labour on exactly the dates that designation named, read back
+        // from the recorded notice rather than restated by the caller.
+        let designated_dates = match (command.kind, round) {
+            (PromotionKind::Promotion, 2) => {
+                validate_designated_dates(
+                    &command.designated_dates,
+                    served_on,
+                    command.leave_period_end,
+                )
+                .map_err(PgLeaveError::Domain)?;
+                command.designated_dates.clone()
+            }
+            (PromotionKind::Refusal, _) => {
+                if !command.designated_dates.is_empty() {
+                    return Err(KernelError::validation(
+                        "노무수령거부 통지는 2차 통보에 기록된 지정 사용 시기를 그대로 \
+                         인용합니다 — 별도의 지정 날짜를 받지 않습니다",
+                    )
+                    .into());
+                }
+                let recorded = predecessor
+                    .as_ref()
+                    .map(|record| recorded_designated_dates(&record.payload))
+                    .transpose()?
+                    .unwrap_or_default();
+                if recorded.is_empty() {
+                    return Err(KernelError::conflict(
+                        "기록된 2차 통보에 지정된 사용 시기가 없어 노무수령거부를 \
+                         특정할 수 없습니다 (근로기준법 제61조제1항제2호)",
+                    )
+                    .into());
+                }
+                recorded
+            }
+            _ => {
+                if !command.designated_dates.is_empty() {
+                    return Err(KernelError::validation(
+                        "1차 촉구는 사용 시기를 지정하지 않습니다 — 근로자가 정하여 \
+                         회신합니다 (근로기준법 제61조제1항제1호)",
+                    )
+                    .into());
+                }
+                Vec::new()
+            }
+        };
+
+        let statutory_basis =
+            statutory_basis_snapshot(&command, round, served_on, &designated_dates)?;
+        let (title, body) = notice_body(&command, round, &unused_days, &designated_dates);
         let doc = NewInboxDoc::new(
             InboxDocKind::LegalNotice,
             &title,
             Some(notice_type),
             Some(legal_basis),
             Some("leave_promotion"),
-            // Deterministic source id ties the notice back to the push row.
+            // Deterministic source id ties the notice back to the push row and
+            // pins it to one 연차 사용기간.
             Some(&dedup_key),
             body,
         )
@@ -1036,6 +1239,8 @@ impl PgLeaveStore {
                 "target_user_id": target_user,
                 "inbox_doc_id": inbox_doc_id,
                 "legal_basis": legal_basis,
+                "unused_days": unused_days,
+                "statutory_basis": statutory_basis,
                 "ap_submission": "pending_engine_definition",
             })),
         );
@@ -1048,9 +1253,9 @@ impl PgLeaveStore {
                     let inserted = sqlx::query(
                         "INSERT INTO leave_promotions \
                          (id, org_id, branch_id, target_user_id, target_employee_id, kind, round, \
-                          inbox_doc_id, created_by) \
+                          inbox_doc_id, legal_basis, created_by) \
                          VALUES ($1, NULLIF(current_setting('app.current_org', true), '')::uuid, \
-                                 $2, $3, $4, $5, $6, $7, $8) \
+                                 $2, $3, $4, $5, $6, $7, $8, $9) \
                          ON CONFLICT (org_id, target_employee_id, kind, round) DO NOTHING \
                          RETURNING id",
                     )
@@ -1061,6 +1266,7 @@ impl PgLeaveStore {
                     .bind(kind)
                     .bind(round)
                     .bind(inbox_doc_id)
+                    .bind(legal_basis)
                     .bind(actor)
                     .fetch_optional(tx.as_mut())
                     .await?;
@@ -1073,11 +1279,12 @@ impl PgLeaveStore {
             .await;
 
         let push = match existing_id {
-            Ok(PromotionInsert::Inserted) => PromotionRecord { id, inbox_doc_id },
+            Ok(PromotionInsert::Inserted) => (id, inbox_doc_id),
             // Duplicate push: return the already-recorded row idempotently.
             Ok(PromotionInsert::Duplicate) => self
                 .find_promotion(org, target_employee_id, kind, round)
                 .await?
+                .map(|record| (record.id, record.inbox_doc_id))
                 .ok_or_else(|| {
                     KernelError::internal("duplicate push but no existing promotion row")
                 })?,
@@ -1085,36 +1292,51 @@ impl PgLeaveStore {
         };
 
         Ok(StatutoryPushView {
-            id: push.id,
+            id: push.0,
             kind: command.kind,
             round,
             target_user_id: command.target_user_id,
-            inbox_doc_id: push.inbox_doc_id,
+            inbox_doc_id: push.1,
             ap_run_id: None,
             ap_submission: ApSubmission::PendingEngineDefinition,
         })
     }
 
-    async fn ensure_target_employee_exists(
+    /// The employee's 미사용 연차 일수, exactly as the roster records it
+    /// (`employees.leave_remaining NUMERIC(16,6)` since migration 0166, rendered
+    /// as text — never a float on a legal notice). `trim_scale` drops the storage
+    /// scale's trailing zeros without changing the value, so the notice served to
+    /// a worker reads `13일` / `13.5일`, not `13.000000일`.
+    /// Doubles as the target-exists check: a missing employee is `not_found`,
+    /// an employee whose roster figure was never established is a conflict, and
+    /// neither ever becomes a fabricated zero.
+    async fn unused_leave_days(
         &self,
         org: OrgId,
         target_employee_id: uuid::Uuid,
-    ) -> Result<(), PgLeaveError> {
-        let exists = with_org_conn::<_, _, PgLeaveError>(&self.pool, org, move |tx| {
+    ) -> Result<String, PgLeaveError> {
+        let row = with_org_conn::<_, _, PgLeaveError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                Ok(sqlx::query_scalar::<_, bool>(
-                    "SELECT EXISTS(SELECT 1 FROM employees WHERE id = $1)",
+                Ok(sqlx::query_scalar::<_, Option<String>>(
+                    "SELECT trim_scale(leave_remaining)::text FROM employees WHERE id = $1",
                 )
                 .bind(target_employee_id)
-                .fetch_one(tx.as_mut())
+                .fetch_optional(tx.as_mut())
                 .await?)
             })
         })
         .await?;
-        if exists {
-            Ok(())
-        } else {
-            Err(KernelError::not_found("target employee not found for leave promotion").into())
+        match row {
+            None => {
+                Err(KernelError::not_found("target employee not found for leave promotion").into())
+            }
+            Some(None) => Err(KernelError::conflict(
+                "대상 근로자의 미사용 연차 일수가 확정되지 않아 §61 통지를 발송할 수 \
+                 없습니다 (근로기준법 제61조제1항제1호는 미사용 휴가 일수의 고지를 \
+                 요구합니다)",
+            )
+            .into()),
+            Some(Some(days)) => Ok(days),
         }
     }
 
@@ -1129,8 +1351,12 @@ impl PgLeaveStore {
         let row = with_org_conn::<_, _, PgLeaveError>(&self.pool, org, move |tx| {
             Box::pin(async move {
                 Ok(sqlx::query(
-                    "SELECT id, inbox_doc_id FROM leave_promotions \
-                     WHERE target_employee_id = $1 AND kind = $2 AND round = $3",
+                    "SELECT p.id, p.inbox_doc_id, \
+                            (p.created_at AT TIME ZONE 'Asia/Seoul')::date AS served_on, \
+                            d.source_id, d.payload \
+                       FROM leave_promotions p \
+                       JOIN inbox_docs d ON d.id = p.inbox_doc_id AND d.org_id = p.org_id \
+                      WHERE p.target_employee_id = $1 AND p.kind = $2 AND p.round = $3",
                 )
                 .bind(target_employee_id)
                 .bind(kind)
@@ -1144,6 +1370,9 @@ impl PgLeaveStore {
             Ok(PromotionRecord {
                 id: LeavePromotionId::from_uuid(row.try_get("id")?),
                 inbox_doc_id: row.try_get("inbox_doc_id")?,
+                served_on: row.try_get("served_on")?,
+                source_id: row.try_get("source_id")?,
+                payload: row.try_get("payload")?,
             })
         })
         .transpose()
@@ -1170,13 +1399,16 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         | "leave_home_branch.employee_not_found"
         | "leave_balance_import.employee_not_found"
         | "employee_import_batch.run_not_found"
-        | "leave_home_branch.active_branch_required" => {
+        | "leave_home_branch.active_branch_required"
+        | "employee_create.active_branch_required" => {
             PgLeaveError::Domain(KernelError::not_found(message.to_owned()))
         }
         "leave_resolve.not_pending"
         | "leave_decide.not_pending"
         | "employee_import_batch.run_not_dry_run"
         | "leave_create.idempotency_conflict"
+        | "employee_create.idempotency_conflict"
+        | "employee_create.employee_number_conflict"
         | "leave_balance_import.idempotency_conflict" => {
             PgLeaveError::Domain(KernelError::conflict(message.to_owned()))
         }
@@ -1184,6 +1416,7 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         | "leave_write.branch_forbidden"
         | "leave_write.org_admin_required"
         | "leave_balance_import.actor_forbidden"
+        | "employee_create.actor_forbidden"
         | "leave_create.self_employee_required"
         | "leave_resolve.requester_forbidden"
         | "leave_decide.requester_forbidden"
@@ -1195,6 +1428,7 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         )),
         message
             if message.starts_with("leave_create.")
+                || message.starts_with("employee_create.")
                 || message.starts_with("leave_charge.")
                 || message.starts_with("leave_resolve.")
                 || message.starts_with("leave_decide.")
@@ -1460,42 +1694,206 @@ fn balance_tone(grant: f64, used: f64, left: f64) -> LeaveBalanceTone {
 }
 
 /// Render the statutory notice title + JSONB body delivered into the inbox.
-fn notice_body(command: &StatutoryPushCommand, round: i16) -> (String, serde_json::Value) {
+/// The tag that binds a push to one 연차 사용기간. Until `leave_promotions`
+/// carries the period itself, this is the only thing separating this year's
+/// 촉진 from last year's on the per-employee unique key.
+fn period_tag(track: PromotionTrack, period_end: Date) -> String {
+    format!("{}-{period_end}", track.as_str())
+}
+
+fn promotion_dedup_key(
+    kind: &str,
+    target_employee_id: uuid::Uuid,
+    round: i16,
+    tag: &str,
+) -> String {
+    format!("leave-{kind}-{target_employee_id}-r{round}-{tag}")
+}
+
+/// Fail closed when a recorded push belongs to a *different* 연차 사용기간 than
+/// the one being pushed. The `leave_promotions` unique key is per employee, not
+/// per period, so without this check a second year's 촉진 would silently return
+/// last year's row — a wrong answer wearing a success status.
+fn ensure_same_period(
+    record: &PromotionRecord,
+    expected_source_id: &str,
+    label: &str,
+) -> Result<(), PgLeaveError> {
+    if record.source_id.as_deref() == Some(expected_source_id) {
+        return Ok(());
+    }
+    Err(KernelError::conflict(format!(
+        "{label}다른 연차 사용기간으로 이미 기록되어 있습니다. 현재 스키마는 근로자당 \
+         하나의 사용기간만 보관할 수 있어 이 통지를 발송할 수 없습니다 \
+         (docs/evidence/console/hotfix/leave-promotion/manifests/)"
+    ))
+    .into())
+}
+
+/// Read the 사용 시기 a recorded 2차 통보 designated. The refusal notice must
+/// refuse labour on exactly those days, so they are read back from the notice
+/// rather than restated.
+fn recorded_designated_dates(payload: &serde_json::Value) -> Result<Vec<Date>, PgLeaveError> {
+    let Some(values) = payload.get("designated_dates").and_then(|v| v.as_array()) else {
+        return Ok(Vec::new());
+    };
+    values
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .and_then(|text| {
+                    Date::parse(text, &time::format_description::well_known::Iso8601::DATE).ok()
+                })
+                .ok_or_else(|| {
+                    PgLeaveError::from(KernelError::internal(
+                        "기록된 2차 통보의 지정 사용 시기를 해석할 수 없습니다",
+                    ))
+                })
+        })
+        .collect()
+}
+
+/// The §61 arithmetic this push was judged against, recorded in the audit
+/// snapshot so the window can be re-derived from the trail alone.
+fn statutory_basis_snapshot(
+    command: &StatutoryPushCommand,
+    round: i16,
+    served_on: Date,
+    designated_dates: &[Date],
+) -> Result<serde_json::Value, PgLeaveError> {
+    let mut basis = serde_json::json!({
+        "statute": command.track.statute_paragraph(),
+        "track": command.track.as_str(),
+        "leave_period_end": command.leave_period_end.to_string(),
+        "served_on": served_on.to_string(),
+        "designated_dates": iso_dates(designated_dates),
+    });
+    match (command.kind, round) {
+        (PromotionKind::Promotion, 1) => {
+            let window = first_round_window(command.track, command.leave_period_end)
+                .map_err(PgLeaveError::Domain)?;
+            basis["first_round_window"] = serde_json::json!({
+                "opens_on": window.opens_on.to_string(),
+                "closes_on": window.closes_on.to_string(),
+            });
+        }
+        (PromotionKind::Promotion, _) => {
+            let deadline = second_round_deadline(command.track, command.leave_period_end)
+                .map_err(PgLeaveError::Domain)?;
+            basis["second_round_deadline"] = serde_json::json!(deadline.to_string());
+        }
+        (PromotionKind::Refusal, _) => {
+            basis["refusal_authority"] = serde_json::json!(
+                "대법원 2019다279283 (2020. 2. 27. 선고) — 노무수령 거부의사의 명확한 표시"
+            );
+        }
+    }
+    Ok(basis)
+}
+
+fn iso_dates(dates: &[Date]) -> Vec<String> {
+    dates.iter().map(ToString::to_string).collect()
+}
+
+/// The body of a §61 notice.
+///
+/// Each round states only what the statute requires it to state, and the
+/// refusal states only what the employer is *doing*. The previous refusal body
+/// asserted "본 통지로써 해당 연차에 대한 사용자의 금전 보상 의무가 소멸함" — a legal
+/// conclusion this system cannot reach: §61 relief additionally requires that
+/// the worker did not in fact work the designated day and that the employer
+/// maintained the refusal (대법원 2019다279283). That conclusion is now stated as
+/// the condition it is, not as an accomplished fact.
+fn notice_body(
+    command: &StatutoryPushCommand,
+    round: i16,
+    unused_days: &str,
+    designated_dates: &[Date],
+) -> (String, serde_json::Value) {
     let legal_basis = command.kind.legal_basis();
-    match command.kind {
-        PromotionKind::Promotion => (
-            format!("연차 사용 촉진 통지 ({round}차)"),
+    let statute = command.track.statute_paragraph();
+    let period_end = command.leave_period_end;
+    match (command.kind, round) {
+        (PromotionKind::Promotion, 1) => (
+            "연차 사용 촉진 통지 (1차 촉구)".to_owned(),
             serde_json::json!({
                 "kind": "promotion",
-                "round": round,
+                "round": 1,
                 "target": command.target_name,
-                "unused_days": command.unused_days,
-                "legal_basis": legal_basis,
+                "unused_days": unused_days,
+                "leave_period_end": period_end.to_string(),
+                "legal_basis": format!("{statute}제1호"),
                 "paragraphs": [
                     format!(
-                        "귀하의 미사용 연차 {}일에 대하여 {legal_basis}에 따라 사용을 촉구합니다.",
-                        command.unused_days
+                        "{}. 기준일 현재 귀하의 미사용 연차 유급휴가는 {unused_days}일입니다.",
+                        command.target_name
                     ),
-                    if round >= 2 {
-                        "사용 시기를 지정하여 통보하오니 지정된 시기에 연차를 사용하시기 바랍니다."
-                            .to_owned()
-                    } else {
-                        "미사용 연차의 사용 시기를 정하여 회신하여 주시기 바랍니다.".to_owned()
-                    },
+                    format!(
+                        "위 휴가는 {period_end}까지 사용하지 아니하면 소멸됩니다 \
+                         (근로기준법 제60조제7항)."
+                    ),
+                    format!(
+                        "{statute}제1호에 따라, 본 촉구를 받은 날부터 10일 이내에 \
+                         미사용 휴가의 사용 시기를 정하여 서면으로 회신하여 주시기 바랍니다."
+                    ),
+                    "회신이 없으면 사용자가 사용 시기를 지정하여 다시 서면으로 통보합니다."
+                        .to_owned(),
                 ],
             }),
         ),
-        PromotionKind::Refusal => (
+        (PromotionKind::Promotion, _) => (
+            "연차 사용 촉진 통지 (2차 사용 시기 지정)".to_owned(),
+            serde_json::json!({
+                "kind": "promotion",
+                "round": 2,
+                "target": command.target_name,
+                "unused_days": unused_days,
+                "leave_period_end": period_end.to_string(),
+                "designated_dates": iso_dates(designated_dates),
+                "legal_basis": format!("{statute}제2호"),
+                "paragraphs": [
+                    // The notice designates the days it lists — no more. Saying
+                    // it designates "미사용 연차 {unused_days}일의 사용 시기"
+                    // while listing two dates would be a claim the payload
+                    // itself contradicts.
+                    format!(
+                        "{}. 1차 촉구에 대한 회신이 없어, {statute}제2호에 따라 사용자가 \
+                         미사용 연차 {unused_days}일 중 아래 날짜에 대하여 사용 시기를 \
+                         지정하여 통보합니다.",
+                        command.target_name
+                    ),
+                    format!("지정 사용 시기: {}", iso_dates(designated_dates).join(", ")),
+                    "지정된 날에는 근로 제공 의무가 없으므로 출근하지 마시기 바랍니다."
+                        .to_owned(),
+                ],
+            }),
+        ),
+        (PromotionKind::Refusal, _) => (
             "노무수령거부 통지".to_owned(),
             serde_json::json!({
                 "kind": "refusal",
-                "round": round,
+                "round": 2,
                 "target": command.target_name,
-                "unused_days": command.unused_days,
+                "unused_days": unused_days,
+                "leave_period_end": period_end.to_string(),
+                "designated_dates": iso_dates(designated_dates),
                 "legal_basis": legal_basis,
                 "paragraphs": [
-                    "연차 사용 촉진 절차에도 미사용된 연차에 대하여 노무 수령을 거부합니다.",
-                    "본 통지로써 해당 연차에 대한 사용자의 금전 보상 의무가 소멸함을 안내드립니다.",
+                    format!(
+                        "{}. 2차 통보로 지정된 아래 휴가일에 대하여 사용자는 노무의 수령을 \
+                         거부합니다.",
+                        command.target_name
+                    ),
+                    format!("노무수령 거부일: {}", iso_dates(designated_dates).join(", ")),
+                    "해당 일에 출근하시더라도 업무 지시를 하지 않으며, 제공하시는 노무를 \
+                     수령하지 않습니다."
+                        .to_owned(),
+                    format!(
+                        "{legal_basis}에 따른 미사용수당 보상 의무의 면제 여부는 촉진 절차의 \
+                         적법성과 실제 휴가 미사용 사실에 따라 결정되며, 본 통지가 그 효과를 \
+                         확정하지 않습니다 (대법원 2019다279283)."
+                    ),
                 ],
             }),
         ),
@@ -1562,5 +1960,146 @@ mod exact_charge_tests {
         )
         .unwrap_err();
         assert_eq!(error.kind(), ErrorKind::Validation);
+    }
+}
+
+#[cfg(test)]
+mod statutory_notice_tests {
+    use super::*;
+    use mnt_kernel_core::{TraceContext, UserId};
+    use time::macros::{date, datetime};
+
+    fn command(kind: PromotionKind, round: i16, designated: Vec<Date>) -> StatutoryPushCommand {
+        StatutoryPushCommand {
+            actor: UserId::new(),
+            branch_id: uuid::Uuid::new_v4(),
+            target_user_id: UserId::new(),
+            target_employee_id: uuid::Uuid::new_v4(),
+            target_name: "홍길동".to_owned(),
+            kind,
+            round,
+            track: PromotionTrack::Annual,
+            leave_period_end: date!(2026 - 12 - 31),
+            designated_dates: designated,
+            trace: TraceContext::generate(),
+            occurred_at: datetime!(2026-10-31 10:00:00 +9),
+        }
+    }
+
+    /// The fabrication this hotfix removes: the refusal notice used to tell the
+    /// worker "본 통지로써 해당 연차에 대한 사용자의 금전 보상 의무가 소멸함". §61
+    /// relief also requires that the worker did not in fact work the designated
+    /// day and that the employer maintained the refusal (대법원 2019다279283), so
+    /// no notice can announce that outcome.
+    #[test]
+    fn the_refusal_notice_never_announces_that_the_pay_obligation_is_extinguished() {
+        let designated = vec![date!(2026 - 12 - 23)];
+        let (title, body) = notice_body(
+            &command(PromotionKind::Refusal, 2, Vec::new()),
+            2,
+            "13.5",
+            &designated,
+        );
+        assert_eq!(title, "노무수령거부 통지");
+        let text = body["paragraphs"].to_string();
+        assert!(!text.contains("소멸함"), "{text}");
+        assert!(!text.contains("의무가 소멸"), "{text}");
+        assert!(text.contains("2019다279283"), "{text}");
+        assert_eq!(
+            body["designated_dates"],
+            serde_json::json!(["2026-12-23"]),
+            "the refusal names the days it refuses labour on"
+        );
+    }
+
+    #[test]
+    fn a_round_two_notice_states_the_designated_dates_it_claims_to_designate() {
+        let designated = vec![date!(2026 - 12 - 23), date!(2026 - 12 - 24)];
+        let (title, body) = notice_body(
+            &command(PromotionKind::Promotion, 2, designated.clone()),
+            2,
+            "13.5",
+            &designated,
+        );
+        assert_eq!(title, "연차 사용 촉진 통지 (2차 사용 시기 지정)");
+        let text = body["paragraphs"].to_string();
+        assert!(text.contains("2026-12-23, 2026-12-24"), "{text}");
+        assert_eq!(body["unused_days"], serde_json::json!("13.5"));
+        // Two designated dates against a 13.5-day balance: the notice must say
+        // it designated part of the balance, not all of it. The payload would
+        // otherwise contradict its own prose.
+        assert!(text.contains("13.5일 중"), "{text}");
+        assert!(!text.contains("13.5일의 사용 시기"), "{text}");
+        assert_eq!(
+            body["legal_basis"],
+            serde_json::json!("근로기준법 제61조제1항제2호")
+        );
+    }
+
+    #[test]
+    fn a_round_one_notice_states_the_unused_day_count_and_the_ten_day_reply_duty() {
+        let (title, body) = notice_body(
+            &command(PromotionKind::Promotion, 1, Vec::new()),
+            1,
+            "13.5",
+            &[],
+        );
+        assert_eq!(title, "연차 사용 촉진 통지 (1차 촉구)");
+        let text = body["paragraphs"].to_string();
+        assert!(text.contains("13.5일"), "{text}");
+        assert!(text.contains("10일 이내"), "{text}");
+        assert!(text.contains("2026-12-31"), "{text}");
+    }
+
+    /// The refusal reads its designated days back out of the recorded 2차 통보,
+    /// so the two serialisations have to agree.
+    #[test]
+    fn designated_dates_survive_the_notice_payload_round_trip() {
+        let designated = vec![date!(2026 - 12 - 23), date!(2026 - 12 - 24)];
+        let (_, body) = notice_body(
+            &command(PromotionKind::Promotion, 2, designated.clone()),
+            2,
+            "13.5",
+            &designated,
+        );
+        assert_eq!(recorded_designated_dates(&body).unwrap(), designated);
+        // A notice with no designation reads back empty, never as a fabricated
+        // date.
+        assert!(
+            recorded_designated_dates(&serde_json::json!({}))
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            recorded_designated_dates(&serde_json::json!({"designated_dates": ["not-a-date"]}))
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn the_period_tag_separates_two_leave_years_on_the_same_employee() {
+        let employee = uuid::Uuid::new_v4();
+        let this_year = promotion_dedup_key(
+            "promotion",
+            employee,
+            1,
+            &period_tag(PromotionTrack::Annual, date!(2026 - 12 - 31)),
+        );
+        let next_year = promotion_dedup_key(
+            "promotion",
+            employee,
+            1,
+            &period_tag(PromotionTrack::Annual, date!(2027 - 12 - 31)),
+        );
+        assert_ne!(this_year, next_year);
+        let record = PromotionRecord {
+            id: LeavePromotionId::new(),
+            inbox_doc_id: uuid::Uuid::new_v4(),
+            served_on: date!(2026 - 07 - 01),
+            source_id: Some(this_year.clone()),
+            payload: serde_json::json!({}),
+        };
+        assert!(ensure_same_period(&record, &this_year, "1차 촉구가").is_ok());
+        assert!(ensure_same_period(&record, &next_year, "1차 촉구가").is_err());
     }
 }

@@ -32,18 +32,25 @@ import kotlinx.serialization.Contextual
 /**
  *
  *
- * @param totalUnread
- * @param byCategory
+ * @param totalUnread Unread rows that want attention; rows suppressed by the caller's mute policies are excluded.
+ * @param byCategory Per-category unread breakdown, mute-suppressed rows excluded; a category whose unread is entirely muted is omitted rather than shown as zero.
+ * @param mutedUnread Unread rows suppressed by the caller's mute policies, across all categories.
  */
 @Serializable
 
 data class NotificationCountsSummary (
 
+    /* Unread rows that want attention; rows suppressed by the caller's mute policies are excluded. */
     @SerialName(value = "total_unread")
     val totalUnread: kotlin.Long,
 
+    /* Per-category unread breakdown, mute-suppressed rows excluded; a category whose unread is entirely muted is omitted rather than shown as zero. */
     @SerialName(value = "by_category")
-    val byCategory: kotlin.collections.List<NotificationCategoryCount>
+    val byCategory: kotlin.collections.List<NotificationCategoryCount>,
+
+    /* Unread rows suppressed by the caller's mute policies, across all categories. */
+    @SerialName(value = "muted_unread")
+    val mutedUnread: kotlin.Long
 
 ) {
 

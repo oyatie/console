@@ -34,10 +34,12 @@
 //! audited, mirroring `GET /api/v1/hr/attendance-records/me`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod lifecycle;
+
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use mnt_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
 use mnt_payroll_adapter_postgres::{
@@ -54,11 +56,42 @@ use uuid::Uuid;
 pub const PAYROLL_RUNS_PATH: &str = "/api/v1/payroll/runs";
 pub const PAYROLL_RUN_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}";
 pub const PAYROLL_MY_PAYSLIPS_PATH: &str = "/api/v1/payroll/payslips/me";
+pub const PAYROLL_RUN_CLOSE_PREFLIGHT_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/close-preflight";
+pub const PAYROLL_RUN_CLOSE_ATTENDANCE_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/close-attendance";
+pub const PAYROLL_RUN_CALCULATE_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}/calculate";
+pub const PAYROLL_RUN_EXCEPTIONS_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}/exceptions";
+pub const PAYROLL_RUN_EXCEPTION_RESOLVE_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/exceptions/{exception_id}/resolve";
+pub const PAYROLL_RUN_SUBMIT_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}/submit";
+pub const PAYROLL_RUN_DECISION_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}/decision";
+pub const PAYROLL_RUN_WITHDRAW_PATH_TEMPLATE: &str = "/api/v1/payroll/runs/{id}/withdraw";
+pub const PAYROLL_RUN_SCHEDULE_DISBURSEMENT_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/schedule-disbursement";
+pub const PAYROLL_RUN_DISBURSEMENT_ATTEST_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/disbursement/attest";
+pub const PAYROLL_RUN_ISSUE_PAYSLIPS_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/issue-payslips";
+pub const PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE: &str =
+    "/api/v1/payroll/runs/{id}/payslip-delivery";
 
 pub const PAYROLL_ROUTE_PATHS: &[&str] = &[
     PAYROLL_RUNS_PATH,
     PAYROLL_RUN_PATH_TEMPLATE,
     PAYROLL_MY_PAYSLIPS_PATH,
+    PAYROLL_RUN_CLOSE_PREFLIGHT_PATH_TEMPLATE,
+    PAYROLL_RUN_CLOSE_ATTENDANCE_PATH_TEMPLATE,
+    PAYROLL_RUN_CALCULATE_PATH_TEMPLATE,
+    PAYROLL_RUN_EXCEPTIONS_PATH_TEMPLATE,
+    PAYROLL_RUN_EXCEPTION_RESOLVE_PATH_TEMPLATE,
+    PAYROLL_RUN_SUBMIT_PATH_TEMPLATE,
+    PAYROLL_RUN_DECISION_PATH_TEMPLATE,
+    PAYROLL_RUN_WITHDRAW_PATH_TEMPLATE,
+    PAYROLL_RUN_SCHEDULE_DISBURSEMENT_PATH_TEMPLATE,
+    PAYROLL_RUN_DISBURSEMENT_ATTEST_PATH_TEMPLATE,
+    PAYROLL_RUN_ISSUE_PAYSLIPS_PATH_TEMPLATE,
+    PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE,
 ];
 
 #[derive(Clone)]
@@ -92,14 +125,62 @@ pub fn router(state: PayrollRestState) -> Router {
         .route(PAYROLL_RUNS_PATH, get(list_runs))
         .route(PAYROLL_RUN_PATH_TEMPLATE, get(get_run))
         .route(PAYROLL_MY_PAYSLIPS_PATH, get(list_my_lines))
+        .route(
+            PAYROLL_RUN_CLOSE_PREFLIGHT_PATH_TEMPLATE,
+            get(lifecycle::get_close_preflight),
+        )
+        .route(
+            PAYROLL_RUN_CLOSE_ATTENDANCE_PATH_TEMPLATE,
+            post(lifecycle::close_attendance),
+        )
+        .route(
+            PAYROLL_RUN_CALCULATE_PATH_TEMPLATE,
+            post(lifecycle::calculate_run),
+        )
+        .route(
+            PAYROLL_RUN_EXCEPTIONS_PATH_TEMPLATE,
+            get(lifecycle::list_exceptions),
+        )
+        .route(
+            PAYROLL_RUN_EXCEPTION_RESOLVE_PATH_TEMPLATE,
+            post(lifecycle::resolve_exception),
+        )
+        .route(
+            PAYROLL_RUN_SUBMIT_PATH_TEMPLATE,
+            post(lifecycle::submit_run),
+        )
+        .route(
+            PAYROLL_RUN_DECISION_PATH_TEMPLATE,
+            post(lifecycle::decide_run),
+        )
+        .route(
+            PAYROLL_RUN_WITHDRAW_PATH_TEMPLATE,
+            post(lifecycle::withdraw_run),
+        )
+        .route(
+            PAYROLL_RUN_SCHEDULE_DISBURSEMENT_PATH_TEMPLATE,
+            post(lifecycle::schedule_disbursement),
+        )
+        .route(
+            PAYROLL_RUN_DISBURSEMENT_ATTEST_PATH_TEMPLATE,
+            post(lifecycle::attest_disbursement),
+        )
+        .route(
+            PAYROLL_RUN_ISSUE_PAYSLIPS_PATH_TEMPLATE,
+            post(lifecycle::issue_payslips),
+        )
+        .route(
+            PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE,
+            get(lifecycle::get_payslip_delivery),
+        )
         .with_state(state);
     mnt_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
-struct PageParams {
-    limit: Option<i64>,
-    offset: Option<i64>,
+pub(crate) struct PageParams {
+    pub(crate) limit: Option<i64>,
+    pub(crate) offset: Option<i64>,
 }
 
 async fn list_runs(
@@ -214,7 +295,7 @@ async fn list_my_lines(
 /// Admin-tier run/lines read. Org-wide only (`authorize_org_wide`): the
 /// underlying tables have no `branch_id`, so a branch-scoped ADMIN is denied
 /// rather than silently widened to the whole org (see module docs).
-fn require_run_read(principal: &Principal) -> Result<(), RestError> {
+pub(crate) fn require_run_read(principal: &Principal) -> Result<(), RestError> {
     authorize_org_wide(principal, Action::new(Feature::PayrollRunRead))
         .map_err(RestError::from_kernel)
 }
@@ -228,22 +309,31 @@ struct ErrorBody {
 struct ErrorPayload {
     code: &'static str,
     message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    details: Option<serde_json::Value>,
 }
 
 #[derive(Debug)]
-struct RestError {
-    status: StatusCode,
+pub(crate) struct RestError {
+    pub(crate) status: StatusCode,
     code: &'static str,
     message: String,
+    details: Option<serde_json::Value>,
 }
 
 impl RestError {
-    fn new(status: StatusCode, code: &'static str, message: impl Into<String>) -> Self {
+    pub(crate) fn new(status: StatusCode, code: &'static str, message: impl Into<String>) -> Self {
         Self {
             status,
             code,
             message: message.into(),
+            details: None,
         }
+    }
+
+    pub(crate) fn with_details(mut self, details: Option<serde_json::Value>) -> Self {
+        self.details = details;
+        self
     }
 
     fn unauthorized(message: impl Into<String>) -> Self {
@@ -254,7 +344,7 @@ impl RestError {
         Self::new(StatusCode::SERVICE_UNAVAILABLE, "unavailable", message)
     }
 
-    fn from_kernel(err: KernelError) -> Self {
+    pub(crate) fn from_kernel(err: KernelError) -> Self {
         match err.kind {
             ErrorKind::Validation => {
                 Self::new(StatusCode::UNPROCESSABLE_ENTITY, "validation", err.message)
@@ -270,7 +360,7 @@ impl RestError {
         }
     }
 
-    fn from_store(err: PgPayrollError) -> Self {
+    pub(crate) fn from_store(err: PgPayrollError) -> Self {
         match err {
             PgPayrollError::Domain(err) => Self::from_kernel(err),
             PgPayrollError::Db(_) => {
@@ -305,6 +395,7 @@ impl IntoResponse for RestError {
                 error: ErrorPayload {
                     code: self.code,
                     message: self.message,
+                    details: self.details,
                 },
             }),
         )
@@ -312,7 +403,7 @@ impl IntoResponse for RestError {
     }
 }
 
-async fn principal_from_headers(
+pub(crate) async fn principal_from_headers(
     state: &PayrollRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {

@@ -1,0 +1,45 @@
+{
+  "lane": "CAP-BOARD-CONSOLE",
+  "story": "STORY-BOARD-001",
+  "route": "/console/board",
+  "sharedRootEntries": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "append \"board\" to MOUNTED_SCREEN_KEYS (nav item {screen:\"board\", labelKey:\"console.shell.nav.board\", icon:\"megaphone\"} already exists ungated in the comms group; EXPOSED_SCREEN_KEYS untouched per ADR-0025)"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "add `board: BoardScreenBody` importing from \"../board\" (no-props ComponentType)"
+    },
+    {
+      "file": "web/src/i18n/ko.ts",
+      "change": "none — console.shell.nav.board already present; module strings live in the new module-owned web/src/i18n/board.ts"
+    },
+    {
+      "file": "backend/openapi/openapi.yaml",
+      "change": "tag `notices` (exists): add PATCH /api/v1/notices/{id} (UpdateNoticeDraftRequest -> NoticeSummary; 401/403/404/409/422) and GET /api/v1/notices/{id}/receipts (NoticeReceiptPage; 401/403/404; query acknowledged/limit/offset); extend NoticeSummary with category, audience_scope, audience_branches, my_receipt, progress; extend CreateNoticeDraftRequest with category?, audience?; add NoticeAudienceInput, NoticeReceipt, NoticeReceiptPage schemas; publish gains 422 (empty audience). Field shapes: docs/evidence/console/CAP-BOARD-CONSOLE/design-contract.md §4"
+    },
+    {
+      "file": "clients/{ts,kotlin,swift}",
+      "change": "regenerate + commit after the openapi change (openapi_drift + check:api-drift:portable/swift gates)"
+    },
+    {
+      "file": "backend/crates/platform/db/migrations",
+      "change": "adopt provisional 0197_notice_audience_and_category.sql (DDL in design-contract.md §2) under the next free migration number at consolidation"
+    },
+    {
+      "file": "web/src/console/module/config.ts",
+      "change": "ONLY IF the board build needs a generic-contract extension (per-row detail prog / detail action visibility predicate); prefer expressing board within the existing ModuleConfig shape first"
+    }
+  ],
+  "openapiFragment": "manifests/openapi-fragment.yaml (tag stays `notices` — the 5 shipped /api/v1/notices* operations already carry it; splitting one resource across tags would split the generated Kotlin client)",
+  "expectedRedUntilConsolidation": [
+    "backend/app/tests/openapi_drift.rs::openapi_yaml_covers_configured_route_inventory — NOTICES_ROUTE_PATHS now truthfully advertises /api/v1/notices/{id}/receipts which openapi.yaml does not know until the fragment is merged + clients regenerated"
+  ],
+  "spineFindingsNotCommittedByThisLane": [
+    "MIGRATION COLLISION already on the spine: 0170_financial_purchase_request_queue_index.sql AND 0170_harden_object_policy_attachment_and_blockers.sql share version 170 — every #[sqlx::test] migration run fails with _sqlx_migrations_pkey duplicate (170). This lane verified with a LOCAL UNCOMMITTED rename of the financial index migration to 0181; the integrator must renumber one of the two for real.",
+    "backend/crates/platform/auth/src/jwt.rs does not compile at the spine HEAD (b0d31af8 added the 7th `actor_home_org` parameter to issue_access_token_inner but two 6-arg call sites remain; also two clippy too_many_arguments denies). This lane verified with a LOCAL UNCOMMITTED fix (pass None + #[allow]).",
+    "backend/crates/logistics/adapter-postgres/src/lib.rs does not compile at the spine HEAD (fingerprint() formats sha2 digest with {:x}; the generic-array in the current lockfile no longer implements LowerHex). This lane verified with a LOCAL UNCOMMITTED per-byte hex encode.",
+    "backend/crates/production/rest does not compile at the spine HEAD (4 errors: missing lifetime on source_system_lifecycle_context, source_version moved-then-borrowed in the ingress match, Hmac::new_from_slice needs `use hmac::KeyInit`, PlanSummary initializer missing plan_digest). This lane verified with LOCAL UNCOMMITTED mechanical fixes (clone + lifetime + import + try_get(\"plan_digest\") — the SELECTs already fetch the column); the owning lane must land the real fix."
+  ]
+}

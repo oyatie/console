@@ -116,6 +116,12 @@ pub enum Effect {
 }
 
 impl Effect {
+    /// Database and canonical-wire representation of this effect.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        self.keyword()
+    }
+
     const fn keyword(self) -> &'static str {
         match self {
             Self::Permit => "permit",
@@ -178,6 +184,55 @@ const RESOURCE_ATTRS: &[&str] = &["resource_type", "owner", "branch", "legal_hol
 /// strict validation forbids reading an optional attribute without a `has` guard,
 /// so a condition on one of these emits `resource has <attr> && …`.
 const OPTIONAL_RESOURCE_ATTRS: &[&str] = &["owner", "branch", "legal_hold"];
+
+/// A property an object type declares, admitted into policies scoped to that type.
+///
+/// The execution layer has always supported this: `residual::lower` binds the
+/// attribute key as a value and reads the instance's `attributes` JSONB, with no
+/// whitelist. Only the authoring validator was still limited to the four generic
+/// `Resource` attributes, so a policy over a declared property could be *executed*
+/// but never *authored* — and an enforced row carrying one failed the read path
+/// closed. Widening happens through the schema, not around it: each declared
+/// property is spliced into the `Resource` entity so Cedar strict validation still
+/// proves every attribute read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeclaredAttr {
+    pub key: String,
+    /// `true` renders Cedar `Bool`, `false` renders `String`.
+    pub boolean: bool,
+}
+
+impl DeclaredAttr {
+    const fn cedar_type(&self) -> &'static str {
+        if self.boolean { "Bool" } else { "String" }
+    }
+}
+
+/// The exact text declared properties are spliced after. A unit test asserts it
+/// still occurs exactly once in [`AUTHORING_SCHEMA`], so editing the schema can
+/// never silently disable object-scoped policies.
+const SCHEMA_SPLICE_ANCHOR: &str = "\n  \"legal_hold\"?: Bool\n};";
+
+/// [`AUTHORING_SCHEMA`] widened with an object type's declared properties, each
+/// optional so an instance missing the attribute fails the `when` closed.
+fn object_authoring_schema(declared: &[DeclaredAttr]) -> String {
+    if declared.is_empty() {
+        return AUTHORING_SCHEMA.to_owned();
+    }
+    let extra: String = declared
+        .iter()
+        .map(|attr| format!(",\n  {}?: {}", quote(&attr.key), attr.cedar_type()))
+        .collect();
+    AUTHORING_SCHEMA.replacen(
+        SCHEMA_SPLICE_ANCHOR,
+        &format!("\n  \"legal_hold\"?: Bool{extra}\n}};"),
+        1,
+    )
+}
+
+fn declares(declared: &[DeclaredAttr], attr: &str) -> bool {
+    declared.iter().any(|candidate| candidate.key == attr)
+}
 /// Whitelisted subject attributes referenceable on the right of a condition or
 /// as the set for `contains`.
 const SUBJECT_ATTRS: &[&str] = &["org", "user_id", "roles", "clearance_keys"];
@@ -206,7 +261,15 @@ fn is_ident(s: &str) -> bool {
 /// resource-type stable-key shape. This is the boundary that keeps generated
 /// Cedar text un-injectable: every emitted token comes from a whitelist or a
 /// shape-checked literal, never raw pass-through.
-fn check_blocks(blocks: &NoCodeBlocks) -> Result<(), KernelError> {
+fn check_blocks_with(blocks: &NoCodeBlocks, declared: &[DeclaredAttr]) -> Result<(), KernelError> {
+    for attr in declared {
+        if !is_ident(&attr.key) {
+            return Err(KernelError::validation(format!(
+                "declared property {:?} is not a [a-z0-9_] key",
+                attr.key
+            )));
+        }
+    }
     if !AUTHORING_ACTIONS.contains(&blocks.action.as_str()) {
         return Err(KernelError::validation(format!(
             "unknown authoring action {:?}: expected one of {AUTHORING_ACTIONS:?}",
@@ -234,9 +297,11 @@ fn check_blocks(blocks: &NoCodeBlocks) -> Result<(), KernelError> {
                 }
             }
             ConditionOp::Eq | ConditionOp::Ne => {
-                if !RESOURCE_ATTRS.contains(&cond.attr.as_str()) {
+                if !RESOURCE_ATTRS.contains(&cond.attr.as_str()) && !declares(declared, &cond.attr)
+                {
                     return Err(KernelError::validation(format!(
-                        "condition attribute {:?} is not a whitelisted resource attribute",
+                        "condition attribute {:?} is neither a whitelisted resource attribute \
+                         nor a property declared by this object type",
                         cond.attr
                     )));
                 }
@@ -262,7 +327,7 @@ fn quote(s: &str) -> String {
     serde_json::Value::String(s.to_owned()).to_string()
 }
 
-fn render_condition(cond: &Condition) -> String {
+fn render_condition(cond: &Condition, declared: &[DeclaredAttr]) -> String {
     match cond.op {
         ConditionOp::Contains => {
             // check_blocks rejects a non-literal `contains`; if generation runs on
@@ -289,7 +354,9 @@ fn render_condition(cond: &Condition) -> String {
             };
             // Guard optional attrs so Cedar strict validation can prove the read
             // is safe; an absent attr makes the whole `when` false (fail-closed).
-            if OPTIONAL_RESOURCE_ATTRS.contains(&cond.attr.as_str()) {
+            if OPTIONAL_RESOURCE_ATTRS.contains(&cond.attr.as_str())
+                || declares(declared, &cond.attr)
+            {
                 format!(
                     "resource has {attr} && resource.{attr} {op} {rhs}",
                     attr = cond.attr
@@ -307,11 +374,24 @@ fn render_condition(cond: &Condition) -> String {
 /// authored object type; authored conditions are AND-ed after it.
 #[must_use]
 pub fn generate_cedar_text(blocks: &NoCodeBlocks) -> String {
+    generate_cedar_text_with(blocks, &[])
+}
+
+/// [`generate_cedar_text`] for a policy scoped to an object type that declares
+/// `declared`; those properties render with a `has` guard, like the optional
+/// generic attributes.
+#[must_use]
+pub fn generate_cedar_text_with(blocks: &NoCodeBlocks, declared: &[DeclaredAttr]) -> String {
     let mut clauses = vec![format!(
         "resource.resource_type == {}",
         quote(&blocks.resource_type)
     )];
-    clauses.extend(blocks.conditions.iter().map(render_condition));
+    clauses.extend(
+        blocks
+            .conditions
+            .iter()
+            .map(|cond| render_condition(cond, declared)),
+    );
     format!(
         "{}(\n  principal,\n  action == Action::{},\n  resource\n)\nwhen {{ {} }};\n",
         blocks.effect.keyword(),
@@ -352,11 +432,22 @@ pub struct DraftValidation {
 /// [`engine::compile_bundle_from_sources`]: super::engine::compile_bundle_from_sources
 #[must_use]
 pub fn validate_blocks(org_id: OrgId, blocks: &NoCodeBlocks) -> DraftValidation {
+    validate_blocks_with(org_id, blocks, &[])
+}
+
+/// [`validate_blocks`] for a policy scoped to an object type, admitting that
+/// type's declared properties in addition to the generic `Resource` attributes.
+#[must_use]
+pub fn validate_blocks_with(
+    org_id: OrgId,
+    blocks: &NoCodeBlocks,
+    declared: &[DeclaredAttr],
+) -> DraftValidation {
     let normalized_row = normalize(blocks);
     // Always generate non-empty text so the draft row is storable (the drafts
     // table CHECKs char_length > 0); `valid` is the authoritative signal.
-    let generated_policy_text = generate_cedar_text(blocks);
-    if let Err(err) = check_blocks(blocks) {
+    let generated_policy_text = generate_cedar_text_with(blocks, declared);
+    if let Err(err) = check_blocks_with(blocks, declared) {
         return DraftValidation {
             generated_policy_text,
             normalized_row,
@@ -368,7 +459,7 @@ pub fn validate_blocks(org_id: OrgId, blocks: &NoCodeBlocks) -> DraftValidation 
         org_id,
         1,
         AUTHORING_SCHEMA_VERSION,
-        AUTHORING_SCHEMA,
+        &object_authoring_schema(declared),
         &generated_policy_text,
     ) {
         Ok(_) => DraftValidation {
@@ -888,6 +979,90 @@ mod tests {
             branch: None,
             legal_hold: None,
         }
+    }
+
+    fn flagged_forbid(resource_type: &str) -> NoCodeBlocks {
+        NoCodeBlocks {
+            effect: Effect::Forbid,
+            action: "view".to_owned(),
+            resource_type: resource_type.to_owned(),
+            conditions: vec![Condition {
+                attr: "flagged".to_owned(),
+                op: ConditionOp::Eq,
+                value: ConditionValue::Bool(true),
+            }],
+        }
+    }
+
+    fn flagged_declared() -> Vec<DeclaredAttr> {
+        vec![DeclaredAttr {
+            key: "flagged".to_owned(),
+            boolean: true,
+        }]
+    }
+
+    #[test]
+    fn declared_object_property_authors_and_strict_validates() {
+        let v = validate_blocks_with(
+            OrgId::knl(),
+            &flagged_forbid("policycase"),
+            &flagged_declared(),
+        );
+        assert!(
+            v.valid,
+            "a policy over a declared object property must author: {:?}",
+            v.errors
+        );
+        // Optional in the spliced schema, so an instance without the attribute
+        // fails the `when` closed rather than erroring.
+        assert!(
+            v.generated_policy_text
+                .contains("resource has flagged && resource.flagged == true"),
+            "declared properties must carry a has-guard: {}",
+            v.generated_policy_text
+        );
+    }
+
+    #[test]
+    fn undeclared_object_property_is_still_rejected() {
+        let v = validate_blocks_with(OrgId::knl(), &flagged_forbid("policycase"), &[]);
+        assert!(!v.valid, "an undeclared property must not author");
+        assert!(
+            v.errors.iter().any(|e| e.contains("flagged")),
+            "error must name the offending attribute: {:?}",
+            v.errors
+        );
+    }
+
+    #[test]
+    fn declared_property_type_mismatch_fails_cedar_validation() {
+        // Declared Bool, compared against a string literal: the spliced schema
+        // makes this decidable, so strict validation rejects it.
+        let mut blocks = flagged_forbid("policycase");
+        blocks.conditions[0].value = ConditionValue::Literal("yes".to_owned());
+        let v = validate_blocks_with(OrgId::knl(), &blocks, &flagged_declared());
+        assert!(
+            !v.valid,
+            "Bool property vs string literal must not validate"
+        );
+    }
+
+    #[test]
+    fn schema_splice_anchor_is_exact() {
+        assert_eq!(
+            AUTHORING_SCHEMA.matches(SCHEMA_SPLICE_ANCHOR).count(),
+            1,
+            "editing AUTHORING_SCHEMA must not silently disable object-scoped policies"
+        );
+        assert_eq!(
+            object_authoring_schema(&[]),
+            AUTHORING_SCHEMA,
+            "no declared properties must leave the schema byte-identical"
+        );
+        assert!(
+            object_authoring_schema(&flagged_declared()).contains("\"flagged\"?: Bool"),
+            "declared properties must reach the Resource entity"
+        );
     }
 
     #[test]

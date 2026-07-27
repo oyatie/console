@@ -1,0 +1,9 @@
+# openssl-sys builds the lockfile-pinned openssl-src closure. Capture the build
+# script's static lib names and generated output link-search path so Buck links
+# exactly those artifacts rather than a host SDK or Homebrew installation.
+[buildscript.run]
+rustc_link_lib = true
+rustc_link_search = true
+# openssl-src maps CARGO_MAKEFLAGS into GNU make's MAKEFLAGS. Bound its local
+# compilation fan-out so concurrent Buck actions do not oversubscribe builders.
+env = { CARGO_MAKEFLAGS = "-j4", OPENSSL_RUST_USE_NASM = "0" }

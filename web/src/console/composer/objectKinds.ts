@@ -1,4 +1,5 @@
 import { ko } from "../../i18n/ko";
+import type { FALLBACK_CODE_PREFIXES } from "../ontology/codeGrammar";
 
 /**
  * Object-kind metadata the composer needs to render chips and resolve bare
@@ -6,6 +7,13 @@ import { ko } from "../../i18n/ko";
  * `lib/objectRegistry.ts` (whose route closures target legacy URLs the console
  * navigates past via `state.screen`). Only what the composer uses lives here:
  * code prefix (for `kindFromCode`), a chip tone, and a Korean kind label.
+ *
+ * This map is NOT the parser's prefix set (L-F3). `grammar.ts` recognizes codes
+ * from `ontology/codeGrammar`, which the object-type registry primes at runtime.
+ * KIND_META holds only what a regex cannot carry — the tone and Korean label of
+ * the ELEVEN seeded composer kinds — and it does not grow when a new type is
+ * registered: such a type linkifies through the grammar and resolves its card
+ * slug + label through the registry (see `objectcard/kinds.ts`).
  */
 export type ObjectKind =
   | "approval"
@@ -44,9 +52,16 @@ export interface ObjectCandidate {
   search: string;
 }
 
+/**
+ * A seeded prefix, dash-suffixed. Typed against the grammar's own fallback set
+ * so KIND_META can never claim a prefix the parser will not emit — the drift
+ * that used to be possible in both directions is now a compile error.
+ */
+type SeededCodePrefix = `${(typeof FALLBACK_CODE_PREFIXES)[number]}-`;
+
 interface KindMeta {
   /** DESIGN §2 code prefix incl. trailing "-"; absent for id/name kinds. */
-  codePrefix?: string;
+  codePrefix?: SeededCodePrefix;
   tone: Tone;
   label: string;
 }

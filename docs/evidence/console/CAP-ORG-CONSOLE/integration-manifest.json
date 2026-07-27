@@ -1,0 +1,44 @@
+{
+  "lane": "CAP-ORG-CONSOLE",
+  "stage": "implement",
+  "date": "2026-07-24",
+  "shared_root_requests": [
+    {
+      "root": "backend/openapi/openapi.yaml",
+      "action": "add",
+      "detail": "Splice manifests/openapi-fragment.yaml (this directory): paths /api/v1/org-changes (+/{id}, /preflight, /submit, /approval-steps/{stepId}/decision, /effectuate, /settlement-items/{itemId}/complete, /archive, /cancel) and /api/v1/org-entities + all OrgChange* schemas. Every operation carries tags: [org] (client-gen requirement). Regenerate clients/{ts,kotlin,swift} (three CI drift gates). MUST land in the same commit as the route-census entry below."
+    },
+    {
+      "root": "backend/crates/platform/authz",
+      "action": "add",
+      "detail": "Feature variants OrgChangeRead [D,D,D,A,A,A], OrgChangeDraft [D,D,D,A,A,A], OrgChangeApprove [D,D,D,D,A,A], OrgChangeApply [D,D,D,D,A,A]; as_str keys org_change_read/org_change_draft/org_change_approve/org_change_apply; from_str arms; ALL list. Until then the built-in role floors in orgchange/rest are the complete surface (byte-equal to those matrices); swapping the allow_* helpers to authorize(...) is mechanical."
+    },
+    {
+      "root": "backend/app/src/lib.rs route census + backend/app/tests/openapi_drift.rs",
+      "action": "add",
+      "detail": "Router mount is DONE by this lane (build_router merges mnt_orgchange_rest::router after governance; routes are live behind role floors). Remaining integrator step, in the SAME commit as the openapi.yaml splice: add ConfiguredRouteSurface { name: 'orgchange', paths: mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS } to CONFIGURED_ROUTE_SURFACES (marker comment sits after the governance entry) and a RouteSource for crates/orgchange/rest to openapi_drift.rs — a lane-side census entry would trip the census-subset-of-openapi gate before the splice."
+    },
+    {
+      "root": "backend/crates/platform/db/migrations",
+      "action": "reserve",
+      "detail": "0189_create_org_change.sql exists in this lane (provisional number; repo head 0180 at scout time — renumber to next free immediately before push; cross-lane migration-number collisions are a known hazard). Inserts feature_catalog keys org_change_*."
+    },
+    {
+      "root": "web/src/console/shell/nav.ts",
+      "action": "edit",
+      "detail": "add \"orgchart\" to MOUNTED_SCREEN_KEYS (nav item + gate g(DIRECTORY_ROLES,[FEATURES.EMPLOYEE_DIRECTORY_READ]) already declared at the HR group). Exposure remains governed by EXPOSED_SCREEN_KEYS."
+    },
+    {
+      "root": "web/src/console/screens/registry.ts",
+      "action": "add",
+      "detail": "SCREEN_REGISTRY entry: orgchart: OrgChartScreenBody (import from web/src/console/orgchange or the frontend lane's module dir)."
+    },
+    {
+      "root": "web/src/i18n/ko.ts",
+      "action": "none",
+      "detail": "console.shell.nav.orgchart: \"조직도\" already present (~line 971). Module strings live in new module-owned web/src/i18n/orgchange.ts (production.ts pattern) — no shared-file edit expected."
+    }
+  ],
+  "hot_crate_edits": [],
+  "hot_crate_notes": "identity and registry need NO edits for slice 1: orgchange depends on their published application commands (CreateRegion/Branch, Update*, Deactivate*, CreateSite/UpdateSite) and adapter pub methods only. If a command signature proves insufficient during build, the request routes through this manifest, not a direct edit."
+}

@@ -15,7 +15,7 @@ use std::pin::Pin;
 use mnt_kernel_core::{
     AuditAction, AuditEvent, KernelError, NotificationId, Timestamp, TraceContext, UserId,
 };
-use mnt_notifications_domain::NotificationLink;
+use mnt_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
 use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------------------
@@ -108,6 +108,17 @@ pub struct MarkNotificationReadCommand {
     pub occurred_at: Timestamp,
 }
 
+/// Swipe/secondary-action read TOGGLE, the reverse arc of
+/// [`MarkNotificationReadCommand`]. Never clears `read_at` — the FIRST read
+/// timestamp stays as forensic truth; only the attention flag flips back.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MarkNotificationUnreadCommand {
+    pub recipient: UserId,
+    pub notification_id: NotificationId,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarkAllNotificationsReadCommand {
     pub recipient: UserId,
@@ -132,6 +143,12 @@ pub struct NotificationSummary {
     pub read_at: Option<Timestamp>,
     #[serde(with = "time::serde::rfc3339::option")]
     pub resolved_at: Option<Timestamp>,
+    /// Whether the CALLER's mute policies suppress this row's attention
+    /// (badge counts, realtime). Computed per-row at read time — never stored,
+    /// never filters the list. Additive: serde-defaults false for existing
+    /// payloads and producers.
+    #[serde(default)]
+    pub muted: bool,
 }
 
 /// Per-category unread breakdown for the comms-rail badge (`kind`/`category`
@@ -145,8 +162,108 @@ pub struct NotificationCategoryCount {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NotificationCountsSummary {
+    /// Unread rows that WANT attention: mute-suppressed rows are excluded here
+    /// and in `by_category` (badge truth = attention truth).
     pub total_unread: i64,
     pub by_category: Vec<NotificationCategoryCount>,
+    /// Unread rows suppressed by the caller's mute policies — surfaced so the
+    /// UI can show a truthful "숨김 N" instead of silently losing data.
+    #[serde(default)]
+    pub muted_unread: i64,
+}
+
+// ---------------------------------------------------------------------------
+// Aggregate-by-object read path (개체별 view)
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ListNotificationObjectGroupsQuery {
+    /// Bound from the authenticated principal, never from request input.
+    pub recipient: UserId,
+    /// Only groups that still hold at least one unread row.
+    pub unread_only: bool,
+    /// Opaque keyset cursor from a previous page's `next_cursor`; the caller
+    /// never interprets it. An undecodable or foreign cursor yields an empty
+    /// page (fail-closed), matching the flat list's cursor semantics.
+    pub before: Option<String>,
+    pub limit: i64,
+}
+
+/// One source object with every notification pointing at it rolled up:
+/// totals, per-category unread breakdown, the latest row for preview, and the
+/// caller's object-level mute state (the bell toggle).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NotificationObjectGroup {
+    pub link: NotificationLink,
+    pub total: i64,
+    /// Unread rows in the group. Like the flat list this is NOT mute-filtered —
+    /// grouping annotates, only badges exclude.
+    pub unread: i64,
+    /// Per-category unread breakdown within this group (categories with zero
+    /// unread are omitted).
+    pub categories: Vec<NotificationCategoryCount>,
+    pub latest: NotificationSummary,
+    /// Whether THIS OBJECT is muted for the caller: an `all`-scope or a
+    /// matching `object`-scope policy. Deliberately excludes `category`-scope
+    /// policies — the group bell toggles an object policy, and a category
+    /// policy folded in here could never be un-toggled from the bell.
+    /// Category muting still shows on the individual rows' `muted` flag.
+    pub muted: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NotificationObjectGroupPage {
+    pub items: Vec<NotificationObjectGroup>,
+    /// Opaque cursor for the next page; `None` at the end.
+    pub next_cursor: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
+// Per-user routing policies (mute; `action` extensible to watch later)
+// ---------------------------------------------------------------------------
+
+/// PUT upsert of a mute policy. Direct-apply personal setting (§3.9.0-①) —
+/// no approval lifecycle — but every set is audited.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UpsertNotificationPolicyCommand {
+    pub recipient: UserId,
+    pub scope: NotificationPolicyScope,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+/// DELETE = unmute. Cross-user ids are NotFound, indistinguishable from
+/// absent.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeleteNotificationPolicyCommand {
+    pub recipient: UserId,
+    pub policy_id: NotificationPolicyId,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ListNotificationPoliciesQuery {
+    /// Bound from the authenticated principal, never from request input.
+    pub recipient: UserId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NotificationPolicySummary {
+    pub id: NotificationPolicyId,
+    pub scope: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub link: Option<NotificationLink>,
+    pub action: String,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created_at: Timestamp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NotificationPolicyList {
+    pub items: Vec<NotificationPolicySummary>,
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,51 @@
+{
+  "lane": "CAP-FIELD-CONSOLE",
+  "screen_key": "field",
+  "route": "/console/field",
+  "title": "고객·현장",
+  "dark_status": "MOUNTED only — EXPOSED_SCREEN_KEYS unchanged (ADR-0025; exposure needs its own evidence approval)",
+  "integrator_actions": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "add \"field\" to MOUNTED_SCREEN_KEYS",
+      "note": "the nav item (group fieldOps, icon mapPin, labelKey console.shell.nav.field, gate g(OPERATIONAL_ROLES, [FEATURES.WORK_ORDER_READ_ALL])) ALREADY EXISTS — no nav edit needed"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "import { FieldScreenBody } from \"../field\"; then add `field: FieldScreenBody,` to SCREEN_REGISTRY",
+      "note": "FieldScreenBody is a zero-prop ComponentType; it resolves the active branch via useActiveBranchId() and fails closed without one"
+    }
+  ],
+  "module_exports": {
+    "index": "web/src/console/field/index.ts",
+    "registry_body": "FieldScreenBody",
+    "prop_driven_route": "FieldConsoleRoute({ branchId })",
+    "route_contract": "FieldRouteContract { branchId: string } + FIELD_ROUTE_CONTRACT_FIXTURE"
+  },
+  "authz": {
+    "projection": "GET /api/v1/me/authz via web/src/console/policy/authz.ts (jwt-floor fail-closed while loading)",
+    "capabilities": {
+      "canRead": "login OR work_order_read_all",
+      "canIntake": "login on active branch",
+      "canTriage": "assignee_manage",
+      "canAccept": "assignee_manage",
+      "canComment": "work_order_start"
+    }
+  },
+  "api_dependencies": {
+    "existing": [
+      "GET/POST /api/v1/support/tickets",
+      "GET /api/v1/support/tickets/{id}",
+      "POST /api/v1/support/tickets/{id}/assign",
+      "POST /api/v1/support/tickets/{id}/transition",
+      "POST /api/v1/support/tickets/{id}/comments"
+    ],
+    "contract_new_backend_lane": [
+      "GET /api/v1/field/sites",
+      "GET /api/v1/field/sites/{id}",
+      "POST /api/v1/support/tickets/{id}/link",
+      "POST /api/v1/support/tickets/{id}/acceptance"
+    ],
+    "client_regen": "once the backend lane lands the openapi `field` tag, regenerate clients/{ts,kotlin,swift}; web/src/console/field/fieldApi.ts local contract types then collapse onto components[\"schemas\"] aliases with no call-site change"
+  }
+}

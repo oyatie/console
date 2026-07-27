@@ -20,8 +20,11 @@
 //!       (the read fails closed to NO_RECORD), never leaked.
 
 use mnt_compliance_adapter_postgres::PgComplianceStore;
-use mnt_compliance_application::{ConsentTransitionCommand, ConsentTransitionKind};
-use mnt_compliance_domain::LocationConsentState;
+use mnt_compliance_application::{
+    AcceptEvidenceBindingCommand, ConsentTransitionCommand, ConsentTransitionKind,
+    CreateEvidenceBindingCommand,
+};
+use mnt_compliance_domain::{EvidenceConfidence, EvidenceTargetType, LocationConsentState};
 use mnt_kernel_core::{BranchId, OrgId, TraceContext, UserId};
 use mnt_platform_request_context::scope_org;
 use sqlx::PgPool;
@@ -112,6 +115,102 @@ fn command(
         trace: TraceContext::generate(),
         occurred_at,
     }
+}
+
+/// Runtime-role RLS gate for evidence acceptance: a binding from org A must be
+/// indistinguishable from a missing binding under org B, and the rejected read
+/// must not emit an audit event in either tenant.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn evidence_acceptance_is_tenant_invisible_and_does_not_leak_audit_as_runtime_role(
+    owner_pool: PgPool,
+) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let org_a = OrgId::knl();
+    let org_a_uuid = *org_a.as_uuid();
+    let org_b = OrgId::from_uuid(ORG_B);
+
+    seed_org(&owner_pool, org_a_uuid, "Evidence A").await;
+    seed_org(&owner_pool, ORG_B, "Evidence B").await;
+    let (actor_a, _branch_a) = seed_user_and_branch(&owner_pool, org_a_uuid, "Evidence A").await;
+    let control_a = seed_compliance_control(&owner_pool, org_a_uuid, actor_a, "A").await;
+
+    let binding = scope_org(org_a, async {
+        PgComplianceStore::new(owner_pool.clone())
+            .create_evidence_binding(CreateEvidenceBindingCommand {
+                actor: actor_a,
+                control_id: control_a,
+                obligation_id: None,
+                evidence_target_type: EvidenceTargetType::ExternalDocument,
+                evidence_target_id: "tenant-a-private-evidence".to_owned(),
+                source_audit_event_id: None,
+                confidence: EvidenceConfidence::High,
+                collected_at: None,
+                collected_by: None,
+                valid_from: None,
+                valid_to: None,
+                hash_sha256: None,
+                metadata: serde_json::json!({"tenant": "A"}),
+                trace: TraceContext::generate(),
+                occurred_at: datetime!(2026-07-24 12:00:00 UTC),
+            })
+            .await
+            .expect("owner seeds an org-A proposed evidence binding")
+    })
+    .await;
+
+    let denied = scope_org(org_b, async {
+        PgComplianceStore::new(rt_pool.clone())
+            .accept_evidence_binding(AcceptEvidenceBindingCommand {
+                actor: actor_a,
+                id: binding.id,
+                trace: TraceContext::generate(),
+                occurred_at: datetime!(2026-07-24 12:01:00 UTC),
+            })
+            .await
+            .expect_err("org-B runtime role must not see or accept org-A evidence")
+    })
+    .await;
+    assert_eq!(denied.kind(), mnt_kernel_core::ErrorKind::NotFound);
+
+    let audit_count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events WHERE action = 'compliance.evidence_binding.accept' AND target_id = $1",
+    )
+    .bind(binding.id.to_string())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        audit_count, 0,
+        "an RLS-hidden binding must not produce an audit leak"
+    );
+}
+
+async fn seed_compliance_control(owner_pool: &PgPool, org: Uuid, actor: UserId, tag: &str) -> Uuid {
+    let framework_id: Uuid = sqlx::query_scalar(
+        "INSERT INTO compliance_frameworks (org_id, code, name, version_label, framework_kind, created_by, updated_by) VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id",
+    )
+    .bind(org)
+    .bind(format!("RLS-EVIDENCE-{tag}"))
+    .bind(format!("RLS evidence framework {tag}"))
+    .bind("2026.07")
+    .bind("INTERNAL_CONTROL")
+    .bind(*actor.as_uuid())
+    .fetch_one(owner_pool)
+    .await
+    .unwrap();
+    sqlx::query_scalar(
+        "INSERT INTO compliance_controls (org_id, framework_id, control_key, title, objective, control_type, created_by, updated_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $7) RETURNING id",
+    )
+    .bind(org)
+    .bind(framework_id)
+    .bind(format!("RLS.EVIDENCE.{tag}"))
+    .bind(format!("RLS evidence control {tag}"))
+    .bind("RLS evidence acceptance isolation")
+    .bind("DETECTIVE")
+    .bind(*actor.as_uuid())
+    .fetch_one(owner_pool)
+    .await
+    .unwrap()
 }
 
 // ===========================================================================

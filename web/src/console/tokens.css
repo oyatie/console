@@ -74,6 +74,7 @@
   --sp-4: 10px;
   --sp-5: 12px;
   --sp-6: 15px;
+  --sp-page: 24px;
   --sp-card-y: 12px;
   --radius-chip: 5px;
   --radius-sm: 7px;
@@ -85,6 +86,14 @@
   --shadow-pop: 0 12px 32px rgba(20, 26, 33, 0.16);
   --border-hairline: 1px solid var(--border);
   color-scheme: light;
+}
+
+/* Finance purchase requests mount inside the console token scope rather than
+   inheriting utility classes from the legacy app shell. The legacy px-6/pb-6
+   geometry is 24px; retain it through the named page-spacing token. */
+.console .purchase-requests-workspace {
+  padding-inline: var(--sp-page);
+  padding-block-end: var(--sp-page);
 }
 
 /* Shared keyboard focus ring for window-model controls (§WCAG AA 2.4.11).
@@ -209,6 +218,66 @@
   animation: pop-in 0.14s ease;
 }
 
+[data-cshell-root] {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+[data-cshell-drawer-backdrop] {
+  position: fixed;
+  inset: 0;
+  z-index: 81;
+  border: 0;
+  background: rgba(15, 22, 30, 0.36);
+  cursor: pointer;
+}
+
+.cshell-mobile-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--steel);
+}
+
+@media (max-width: 767px) {
+  [data-cshell-topbar] {
+    gap: 4px !important;
+    padding: 0 6px !important;
+  }
+  .cshell-mobile-trigger {
+    display: inline-flex;
+  }
+  [data-cshell-topbar] .cshell-search {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  [data-cshell-topbar] .cshell-search span[aria-hidden="true"],
+  [data-cshell-topbar] .cshell-scope,
+  [data-cshell-topbar] [role="group"] {
+    display: none !important;
+  }
+  [data-cshell-sidebar],
+  [data-cshell-rail] {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  [data-cshell-sidebar] button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  [data-cshell-rail][data-cshell-drawer-open] button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cshell-hoverable,
   .cshell-search,
@@ -218,7 +287,8 @@
   .cshell-pop {
     animation: none;
   }
-  [data-cshell-sidebar] {
+  [data-cshell-sidebar],
+  [data-cshell-rail] {
     transition: none !important;
   }
 }

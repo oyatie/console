@@ -1,0 +1,70 @@
+# Integrator manifest — openapi-integrator applies this by hand into
+# backend/openapi/openapi.yaml, then regenerates clients/{ts,kotlin,swift}.
+# Never spliced programmatically (ee277e16 -> whole-file revert 9bb877c6).
+#
+# Reason: migration 0184 (already on the spine) dropped
+# equipment_3r_rental_cases.handover_evidence_reference and replaced it with a
+# typed FK handover_evidence_object_id -> docs_evidence_objects(id, org_id).
+# The wire contract still advertises the retired evidence:// string.
+#
+# Scope: two edits, both under the existing `equipment-3r` tag. No new
+# operation, no new schema, no path added or removed, so the Kotlin per-tag
+# split is unaffected.
+
+edits:
+  - anchor: backend/openapi/openapi.yaml
+    operationId: handoverEquipment3rCase
+    locate: "paths./api/v1/equipment-3r/rental-cases/{case_id}/handover.post.requestBody"
+    replace_with:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipientName, evidenceObjectId, handedOverAt]
+              properties:
+                recipientName: { type: string, minLength: 1, maxLength: 160 }
+                evidenceObjectId:
+                  $ref: '#/components/schemas/Uuid'
+                handedOverAt: { type: string, format: date-time }
+    note: >-
+      The server rejects an unknown field (serde deny_unknown_fields), so
+      `evidenceReference` must be removed rather than kept alongside.
+
+  - anchor: backend/openapi/openapi.yaml
+    schema: Equipment3rCaseDetailView
+    locate: "components.schemas.Equipment3rCaseDetailView …handover.properties"
+    replace_with:
+      handover:
+        type: object
+        nullable: true
+        properties:
+          recipientName: { type: string }
+          evidenceObjectId: { $ref: '#/components/schemas/Uuid' }
+          handedOverAt: { type: string, format: date-time }
+
+responses_unchanged: true
+new_status_codes:
+  - code: 404
+    where: handoverEquipment3rCase
+    reason: >-
+      Already documented on this operation. It now also covers the concealed
+      rejection of handover evidence the caller may not use (foreign tenant,
+      unknown object, non-ADMISSIBLE, disposed, or an ORIGINAL copy whose WORM
+      replica was never verified). No new code is introduced.
+
+client_regeneration_required: true
+gates_to_rerun:
+  - "cargo test -p mnt-app --test openapi_drift"
+  - "npm run check:api-drift:portable"
+  - "npm run check:api-drift:swift"
+
+downstream_consumers_that_break_without_this:
+  - clients/ts/src/schema.d.ts
+  - clients/kotlin/.../HandoverEquipment3rCaseRequest.kt
+  - clients/kotlin/.../Equipment3rCaseDetailViewAllOfHandover.kt
+  - clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift
+  # NOT owned by this lane, and already broken at HEAD (the column is gone):
+  - web/src/console/equipment/equipmentApi.ts
+  - web/src/console/equipment/EquipmentCaseDetail.tsx

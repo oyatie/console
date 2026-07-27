@@ -12,8 +12,8 @@
 
 use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext, UserId};
 use mnt_platform_authz::cedar_pbac::authoring::{
-    self, AuthoredPolicy, DraftValidation, NoCodeBlocks, ReviewDecision, ReviewStatus, SimRequest,
-    SimulationOutcome,
+    self, AuthoredPolicy, DeclaredAttr, DraftValidation, NoCodeBlocks, ReviewDecision,
+    ReviewStatus, SimRequest, SimulationOutcome,
 };
 use mnt_platform_db::{DbError, with_audit, with_org_conn};
 use mnt_platform_request_context::current_org;
@@ -407,6 +407,79 @@ impl PgCedarPolicyStore {
             .load_attached_policies(OBJECT_POLICY_SELECT, object_type_id)
             .await?;
         Ok(authoring::simulate(&policies, request))
+    }
+
+    /// Load the enforced no-code blocks attached to an ontology object type.
+    /// The ontology read path lowers these into the SQL residual under the
+    /// already-armed RLS tenant floor; malformed persisted rows are a hard error
+    /// rather than an optimistic unfiltered read.
+    /// `declared` are the object type's own property definitions, supplied by the
+    /// ontology caller. The execution layer has always lowered conditions against
+    /// arbitrary instance attributes; passing the declared set lets the authoring
+    /// validator admit the same properties instead of only the four generic
+    /// `Resource` attributes, while Cedar still strict-validates every read.
+    pub async fn load_enforced_object_policy_blocks(
+        &self,
+        object_type_id: Uuid,
+        declared: &[DeclaredAttr],
+    ) -> Result<Vec<NoCodeBlocks>, PgCedarError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let declared = declared.to_vec();
+        with_org_conn::<_, _, PgCedarError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let rows = sqlx::query(
+                    r#"
+                    SELECT a.effect AS attachment_effect,
+                           c.id,
+                           c.effect,
+                           c.validation_status,
+                           c.normalized_row
+                    FROM ont_object_policies a
+                    JOIN cedar_policy_catalog_entries c
+                      ON c.id = a.cedar_policy_id AND c.org_id = a.org_id
+                    WHERE a.object_type_id = $1
+                      AND c.status = 'enforced'
+                    "#,
+                )
+                .bind(object_type_id)
+                .fetch_all(tx.as_mut())
+                .await?;
+                rows.iter()
+                    .map(|row| {
+                        let attachment_effect: String = row.try_get("attachment_effect")?;
+                        let policy_id: Uuid = row.try_get("id")?;
+                        let catalog_effect: String = row.try_get("effect")?;
+                        let validation_status: String = row.try_get("validation_status")?;
+                        let value: serde_json::Value = row.try_get("normalized_row")?;
+                        let blocks: NoCodeBlocks = serde_json::from_value(value.clone()).map_err(|error| {
+                            PgCedarError::Domain(KernelError::validation(format!(
+                                "invalid enforced object policy row {policy_id}: {error}"
+                            )))
+                        })?;
+                        let validation = authoring::validate_blocks_with(org, &blocks, &declared);
+                        if validation_status != "valid" || !validation.valid {
+                            return Err(PgCedarError::Domain(KernelError::validation(format!(
+                                "enforced object policy row {policy_id} is not valid"
+                            ))));
+                        }
+                        if validation.normalized_row != value {
+                            return Err(PgCedarError::Domain(KernelError::validation(format!(
+                                "enforced object policy row {policy_id} is not canonical"
+                            ))));
+                        }
+                        if blocks.effect.as_str() != catalog_effect
+                            || catalog_effect != attachment_effect
+                        {
+                            return Err(PgCedarError::Domain(KernelError::validation(format!(
+                                "enforced object policy row {policy_id} effect does not match attachment and catalog"
+                            ))));
+                        }
+                        Ok(blocks)
+                    })
+                    .collect()
+            })
+        })
+        .await
     }
 
     /// Live property-policy decision for `property_def_id`.

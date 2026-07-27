@@ -1,0 +1,75 @@
+{
+  "lane": "CAP-NOTIF-CONSOLE",
+  "stage": "2-backend",
+  "collisionRootRequests": {
+    "web/src/console/shell/nav.ts": {
+      "MOUNTED_SCREEN_KEYS": { "add": ["notif"] },
+      "EXPOSED_SCREEN_KEYS": { "unchanged": true, "note": "lands DARK per ADR-0025; nav item { screen: 'notif', labelKey: 'console.shell.nav.notif', icon: 'bell' } already present, ungated" }
+    },
+    "web/src/console/screens/registry.ts": {
+      "SCREEN_REGISTRY": { "add": { "notif": { "component": "NotifScreenBody", "import": "../notif" } } }
+    },
+    "backend/openapi/openapi.yaml": {
+      "fragment": "docs/evidence/console/CAP-NOTIF-CONSOLE/manifests/openapi-fragment.yaml",
+      "tagNote": "charter directed tags:[notif]; the five EXISTING notification ops carry tags:[me] — integrator picks ONE tag for the family so the generated per-tag client does not fork",
+      "addOperations": [
+        { "method": "get", "path": "/api/v1/me/notifications/by-object", "operationId": "listMyNotificationObjectGroups" },
+        { "method": "post", "path": "/api/v1/me/notifications/{id}/unread", "operationId": "markMyNotificationUnread" },
+        { "method": "get", "path": "/api/v1/me/notification-policies", "operationId": "listMyNotificationPolicies" },
+        { "method": "put", "path": "/api/v1/me/notification-policies", "operationId": "upsertMyNotificationPolicy" },
+        { "method": "delete", "path": "/api/v1/me/notification-policies/{id}", "operationId": "deleteMyNotificationPolicy" }
+      ],
+      "amendSchemas": {
+        "NotificationSummary": { "addProperty": { "muted": "boolean, required (computed vs caller's policies; serde default false in Rust)" } },
+        "NotificationCountsSummary": { "addProperty": { "muted_unread": "int64, required; total_unread/by_category now EXCLUDE muted rows (unread-count too)" } }
+      },
+      "addSchemas": ["NotificationObjectGroup", "NotificationObjectGroupPage", "NotificationPolicySummary", "NotificationPolicyList", "UpsertNotificationPolicyRequest"]
+    },
+    "clients/{ts,kotlin,swift}": { "action": "regenerate-and-commit after openapi delta (3 CI drift gates)" },
+    "backend/crates/platform/db/migrations": {
+      "provisionalNumber": "0196",
+      "file": "0196_notification_policies_and_object_agg.sql",
+      "note": "local head was 0180 (plus this lane's 0181 collision repair below); integrator takes next free number immediately before push (cross-lane collision rule)"
+    }
+  },
+  "outOfRootChanges": [
+    {
+      "commit": "fix(auth): repair legacy token-mint call sites for actor_home_org param",
+      "files": ["backend/crates/platform/auth/src/jwt.rs"],
+      "why": "spine commit b0d31a8 left issue_access_token_with_group_roles / issue_scoped_access_token passing 6 of 7 args — nothing depending on mnt-platform-auth compiled; non-delegated mints pass None + two #[allow(clippy::too_many_arguments)]",
+      "integrator": "DROP this commit if the spine lands its own fix"
+    },
+    {
+      "commit": "fix(db): renumber colliding migration 0170 (financial index) to 0181",
+      "files": ["backend/crates/platform/db/migrations/0181_financial_purchase_request_queue_index.sql"],
+      "why": "two 0170_* migrations on the spine abort EVERY #[sqlx::test] run; ontology 0170 must keep its slot (0171 VALIDATEs its constraint) so the standalone financial index moved",
+      "integrator": "reconcile with whatever renumber the spine adopts; already-migrated DBs need the version-row check"
+    },
+    {
+      "commit": "fix(logistics): hex-encode fingerprint without LowerHex on digest output",
+      "files": ["backend/crates/logistics/adapter-postgres/src/lib.rs"],
+      "why": "sha2/hybrid-array resolution dropped LowerHex on digest output; format!(\"{:x}\") fails E0277 and blocks every mnt-app build",
+      "integrator": "DROP if the logistics lane fixes it themselves"
+    },
+    {
+      "commit": "feat(notifications) implementation commit (realtime hunk)",
+      "files": ["backend/crates/platform/realtime/src/lib.rs", "backend/crates/platform/realtime/tests/hub.rs"],
+      "why": "realtime constructs the application NotificationSummary struct literally; the new muted field must be populated (false — emit-time routing already skipped muted rows before fan-out)",
+      "integrator": "mechanical; keep with the DTO change"
+    }
+  ],
+  "blockedVerification": {
+    "backend/app/tests/notif_routing_api.rs": "written and committed but CANNOT RUN in this worktree: mnt-production-rest (4 errors incl. missing PlanSummary.plan_digest value) and mnt-facilities-rest (3 errors) are mid-flight broken by their own active lanes, so mnt-app does not build; per hot-check discipline this lane did not touch those crates. Run once the spine heals."
+  },
+  "verified": {
+    "clippy": "cargo clippy --all-targets -D warnings green: mnt-platform-auth, mnt-notifications-{domain,application,adapter-postgres,rest}, mnt-platform-realtime",
+    "tests": "green against dev Postgres scratch DBs: adapter 8/8 (mnt_rt runtime-role RLS suite incl. 3 new routing tests), rest 2/2 (real router + ES256 JWT), domain 5/5"
+  },
+  "ownershipRootOutputs": [
+    "docs/evidence/console/CAP-NOTIF-CONSOLE/design-spec.md",
+    "docs/evidence/console/CAP-NOTIF-CONSOLE/gap-analysis.md",
+    "docs/evidence/console/CAP-NOTIF-CONSOLE/design-contract.md",
+    "docs/evidence/console/CAP-NOTIF-CONSOLE/integration-manifest.json",
+    "docs/evidence/console/CAP-NOTIF-CONSOLE/manifests/openapi-fragment.yaml"
+  ]
+}

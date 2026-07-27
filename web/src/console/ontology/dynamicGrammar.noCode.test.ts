@@ -99,26 +99,20 @@ describe("dynamic code grammar — no-code new type", () => {
     });
   });
 
-  it("derives a card def + module surface for the new type with no config edit", () => {
+  it("derives a canonical-data module surface for the new type with no config edit", () => {
     primeObjectTypeRegistry([WIDGET]);
 
-    const type = getObjectType("widget");
-    expect(type).toMatchObject({
-      key: "widget",
-      code: "OT-WIDGET",
-      codePrefix: "WD-",
-      nameKey: "위젯",
-    });
-    expect(type?.propSchema.map((prop) => prop.id)).toEqual(["code", "title"]);
+    // Bootstrap metadata can recognise a kind/prefix, but is not schema
+    // authority. The canonical detail read supplies fields at render time.
+    expect(getObjectType("widget")).toBeUndefined();
 
     const screen = getModuleScreen("widget");
     expect(screen.id).toBe("widget");
     expect(screen.objectKind).toBe("widget");
     expect(screen.codePrefix).toBe("WD-");
-    // honest empty state — no fabricated rows until the instances API serves it.
-    expect(screen.emptyMode).toBe("blocked-until-backend");
+    expect(screen.emptyMode).toBe("live");
     expect(screen.rows).toEqual([]);
-    expect(screen.list.columns.map((column) => column.key)).toEqual(["code", "title"]);
+    expect(screen.data.list).toBe("/api/v1/ontology/instances");
   });
 
   it("grammar recognition is NOT authorization — PBAC still gates rendering", () => {

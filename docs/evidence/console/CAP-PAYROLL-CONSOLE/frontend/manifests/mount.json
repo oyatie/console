@@ -1,0 +1,52 @@
+{
+  "module": "CAP-PAYROLL-CONSOLE",
+  "screen_key": "payroll",
+  "shell_route": "/payroll",
+  "console_route": "/console/payroll",
+  "body_export": {
+    "component": "PayrollScreenBody",
+    "import_from": "web/src/console/payroll (index.ts)",
+    "shape": "zero-prop ComponentType matching SCREEN_REGISTRY; wraps PayrollConsoleRoute with the active JWT branch (useActiveBranchId)"
+  },
+  "nav_entry": {
+    "status": "ALREADY PRESENT in web/src/console/shell/nav.ts payroll group — DO NOT re-add",
+    "entry": {
+      "screen": "payroll",
+      "labelKey": "console.shell.nav.payroll",
+      "icon": "calc",
+      "gate": { "roles": ["ADMIN", "EXECUTIVE", "SUPER_ADMIN"], "features": ["employee_directory_read"] }
+    }
+  },
+  "integrator_todo": [
+    "web/src/console/shell/nav.ts: MOUNTED_SCREEN_KEYS += \"payroll\"",
+    "web/src/console/screens/registry.ts: SCREEN_REGISTRY payroll: PayrollScreenBody (import { PayrollScreenBody } from \"../payroll\")",
+    "EXPOSED_SCREEN_KEYS untouched — module ships DARK per ADR-0025 (currently [\"sales\"])",
+    "nav badge (design: open-exception count while calced && !submitted) needs a shell-level badge slot; derivation = PayrollRunDetail.exceptions_open when status==CALCULATED — not wired by this lane",
+    "shared authz crate: NEW Feature::PayrollRunManage \"payroll_run_manage\" mirroring PayrollRunRead (backend-lane manifest item; frontend gates on the feature key only)"
+  ],
+  "authz": {
+    "read_feature": "payroll_run_read",
+    "manage_feature": "payroll_run_manage",
+    "denied_render": "title + denied line, zero API fetches (deny-by-omission; denied is not an error state)"
+  },
+  "api_contract": {
+    "base": "/api/v1/payroll",
+    "generated_routes_used": ["GET /api/v1/payroll/runs", "GET /api/v1/payroll/runs/{id}", "GET /api/v1/payroll/payslips/me"],
+    "contract_routes_pending_openapi": [
+      "GET /runs/{id}/close-preflight",
+      "POST /runs/{id}/close-attendance",
+      "POST /runs/{id}/calculate",
+      "GET /runs/{id}/exceptions",
+      "POST /runs/{id}/exceptions/{exId}/resolve",
+      "POST /runs/{id}/submit",
+      "POST /runs/{id}/decision",
+      "POST /runs/{id}/withdraw",
+      "POST /runs/{id}/schedule-disbursement",
+      "POST /runs/{id}/disbursement/attest",
+      "POST /runs/{id}/issue-payslips",
+      "GET /runs/{id}/payslip-delivery"
+    ],
+    "note": "contract routes are typed locally in payrollApi.ts (derived from the design mirror pay module + HANDOFF; no separate design-contract.md file exists in this lane); once the integrator lands backend/openapi + regenerated clients/ts, the local types must converge on the generated ones (divergence = defect in this module)",
+    "paging": "collection reads (runs, run lines, exceptions) send limit=500&offset and walk pages to the server-reported total; backend clamps limit to MAX_LIMIT=500 (payroll adapter-postgres) — the exceptions contract route must accept the same limit/offset query params"
+  }
+}

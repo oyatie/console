@@ -10,11 +10,11 @@ publish.workspace = true
 [dependencies]
 mnt-kernel-core = { workspace = true }
 serde = { workspace = true }
+time = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
-time = { workspace = true }
 
 [lints]
 workspace = true

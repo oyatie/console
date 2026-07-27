@@ -1,0 +1,282 @@
+# CAP-NOTIF-CONSOLE — OpenAPI fragment (integrator-owned collision root)
+#
+# Apply to backend/openapi/openapi.yaml, then regenerate + commit
+# clients/{ts,kotlin,swift} (3 CI drift gates). Charter directs tags: [notif]
+# on every operation; NOTE for the integrator: the five EXISTING notification
+# operations carry tags: [me] — pick one tag for the whole family when
+# applying (a split would fork the generated per-tag client class).
+#
+# Schema AMENDMENTS to existing components (additive, non-breaking):
+#   NotificationSummary:
+#     + muted (boolean, required): computed against the CALLER's mute
+#       policies at read time; never stored; never filters the list.
+#   NotificationCountsSummary:
+#     + muted_unread (integer int64, required): unread suppressed by the
+#       caller's mute policies. total_unread/by_category now EXCLUDE muted
+#       rows (and so does /me/notifications/unread-count).
+
+paths:
+  /api/v1/me/notifications/by-object:
+    get:
+      tags:
+        - notif
+      operationId: listMyNotificationObjectGroups
+      summary: Aggregate the authenticated user's notifications by source object, newest activity first
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: unread
+        in: query
+        required: false
+        description: When true, return only groups that still hold at least one unread notification.
+        schema:
+          type: boolean
+      - name: before
+        in: query
+        required: false
+        description: Opaque keyset cursor from a previous page's next_cursor; an undecodable or foreign cursor yields an empty page.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: Page size (clamped server-side to 1..=200; default 50).
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: A page of the caller's notifications grouped by source object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationObjectGroupPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: JWT verification is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/me/notifications/{id}/unread:
+    post:
+      tags:
+        - notif
+      operationId: markMyNotificationUnread
+      summary: Mark one of the authenticated user's notifications unread again (read toggle)
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: The notification, unread again. read_at keeps the first-read timestamp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No such notification for this user (cross-user ids are indistinguishable from absent).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '503':
+          description: JWT verification is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/me/notification-policies:
+    get:
+      tags:
+        - notif
+      operationId: listMyNotificationPolicies
+      summary: List the authenticated user's notification routing policies, newest first
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: The caller's routing policies.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPolicyList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: JWT verification is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+    put:
+      tags:
+        - notif
+      operationId: upsertMyNotificationPolicy
+      summary: Upsert a mute policy for the authenticated user (idempotent per target)
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertNotificationPolicyRequest'
+      responses:
+        '200':
+          description: The stored policy (the same row on repeat upserts of one target).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPolicySummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Scope shape is invalid (category requires category only; object requires link only).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '503':
+          description: JWT verification is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/me/notification-policies/{id}:
+    delete:
+      tags:
+        - notif
+      operationId: deleteMyNotificationPolicy
+      summary: Delete (= unmute) one of the authenticated user's notification policies
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: The policy is removed and its rows regain attention.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No such policy for this user (cross-user ids are indistinguishable from absent).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '503':
+          description: JWT verification is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+
+components:
+  schemas:
+    NotificationObjectGroup:
+      type: object
+      required:
+      - link
+      - total
+      - unread
+      - categories
+      - latest
+      - muted
+      properties:
+        link:
+          $ref: '#/components/schemas/NotificationLink'
+        total:
+          type: integer
+          format: int64
+        unread:
+          type: integer
+          format: int64
+          description: Unread rows in the group; annotated, never mute-filtered.
+        categories:
+          type: array
+          description: Per-category unread breakdown within the group; zero-unread categories are omitted.
+          items:
+            $ref: '#/components/schemas/NotificationCategoryCount'
+        latest:
+          $ref: '#/components/schemas/NotificationSummary'
+        muted:
+          type: boolean
+          description: True when an all-scope or matching object-scope policy mutes this object for the caller (category policies never flip the group bell).
+    NotificationObjectGroupPage:
+      type: object
+      required:
+      - items
+      - next_cursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationObjectGroup'
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Opaque keyset cursor for the next page; null at the end.
+    NotificationPolicySummary:
+      type: object
+      required:
+      - id
+      - scope
+      - action
+      - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        scope:
+          type: string
+          enum:
+          - all
+          - category
+          - object
+        category:
+          type: string
+          description: Present iff scope is category.
+        link:
+          $ref: '#/components/schemas/NotificationLink'
+        action:
+          type: string
+          description: Routing action (mute today; extensible, e.g. watch).
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+    NotificationPolicyList:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationPolicySummary'
+    UpsertNotificationPolicyRequest:
+      type: object
+      required:
+      - scope
+      properties:
+        scope:
+          type: string
+          enum:
+          - all
+          - category
+          - object
+        category:
+          type: string
+          description: Required iff scope is category; must be absent otherwise.
+        link:
+          $ref: '#/components/schemas/NotificationLink'

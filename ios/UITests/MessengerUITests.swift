@@ -59,7 +59,7 @@ final class MessengerUITests: FieldUITestCase {
         }
 
         let origin = list.coordinate(withNormalizedOffset: .zero)
-        let trailingGutterX = max(list.frame.width - 8, 8)
+        let trailingGutterX = max(list.frame.width * 0.9, 8)
         let dragStart = origin.withOffset(CGVector(dx: trailingGutterX, dy: list.frame.height * 0.72))
         let dragEnd = origin.withOffset(CGVector(dx: trailingGutterX, dy: list.frame.height * 0.48))
         for _ in 0..<maxSwipes {
@@ -99,28 +99,62 @@ final class MessengerUITests: FieldUITestCase {
         return thread
     }
 
+    /// The composer and send action are a persistent sibling of the List inside
+    /// a `VStack` — deliberately NOT a bottom safe-area inset, which
+    /// `hasUnobscuredTabContentHost` forbids in FieldViews.swift because the
+    /// UIKit `contentLayoutGuide` seam owns bottom insets. Being outside the
+    /// lazy List they are always materialized, so assert them directly:
+    /// scrolling for them would mask a regression that put them back inside the
+    /// List, which is precisely the defect this repairs.
+    private func persistentComposer() -> XCUIElement {
+        app.descendants(matching: .any)[AID.messengerComposerField]
+    }
+
+    private func persistentSendButton() -> XCUIElement {
+        app.buttons[AID.messengerSendButton]
+    }
+
+    /// Wait for existence AND hittability together. Sampling `isHittable` once
+    /// immediately after `waitForExistence` is a race: the bar exists at t≈0
+    /// because it is persistent, so the sample lands while the software keyboard
+    /// is still animating (notably right after `typeText`) or while the
+    /// selected-thread insertion is mid-transaction. This keeps the
+    /// never-scroll-for-it invariant while giving layout time to settle.
+    private func waitUntilHittable(_ element: XCUIElement, timeout: TimeInterval = 15) -> Bool {
+        let hittable = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == true AND isHittable == true"),
+            object: element
+        )
+        return XCTWaiter().wait(for: [hittable], timeout: timeout) == .completed
+    }
+
     func testExactSeededMessengerThreadAndMessageRender() async throws {
-        let thread = try await openSeededThread()
-        XCTAssertNotNil(
-            scrollToMessengerElement(app.descendants(matching: .any)[AID.messengerComposerField], topSentinel: thread),
-            "Selecting the seeded thread must expose the composer."
+        _ = try await openSeededThread()
+        let composer = persistentComposer()
+        XCTAssertTrue(
+            composer.waitForExistence(timeout: 15),
+            "Selecting the seeded thread must expose the persistent composer without scrolling."
+        )
+        XCTAssertTrue(
+            waitUntilHittable(composer),
+            "The persistent composer must become hittable without scrolling."
         )
     }
 
     func testMessengerSendSurvivesBackendRefresh() async throws {
         let thread = try await openSeededThread()
 
-        let composer = app.descendants(matching: .any)[AID.messengerComposerField]
-        guard scrollToMessengerElement(composer, topSentinel: thread) != nil else {
-            XCTFail("Messenger composer must be available for the exact seeded thread.")
+        let composer = persistentComposer()
+        guard composer.waitForExistence(timeout: 15), waitUntilHittable(composer) else {
+            XCTFail("Messenger composer must be persistently available for the exact seeded thread.")
             return
         }
         composer.tap()
         composer.typeText(sentMessageBody)
 
-        let send = app.buttons[AID.messengerSendButton]
-        guard scrollToMessengerElement(send, topSentinel: thread) != nil else {
-            XCTFail("Messenger send button must be available for the exact seeded thread.")
+        let send = persistentSendButton()
+        guard send.waitForExistence(timeout: 15), waitUntilHittable(send) else {
+            XCTFail("Messenger send button must be persistently available for the exact seeded thread.")
             return
         }
         send.tap()

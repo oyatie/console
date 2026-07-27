@@ -36,14 +36,19 @@ import com.maintenance.api.client.model.InboxDocPage
 import com.maintenance.api.client.model.InboxDocSummary
 import com.maintenance.api.client.model.MeAuthzResponse
 import com.maintenance.api.client.model.MyDispatchOfferPage
+import com.maintenance.api.client.model.MyWorkbenchResponse
 import com.maintenance.api.client.model.NotificationCountsSummary
+import com.maintenance.api.client.model.NotificationObjectGroupPage
 import com.maintenance.api.client.model.NotificationPage
+import com.maintenance.api.client.model.NotificationPolicyList
+import com.maintenance.api.client.model.NotificationPolicySummary
 import com.maintenance.api.client.model.NotificationReadAllResponse
 import com.maintenance.api.client.model.NotificationSummary
 import com.maintenance.api.client.model.SetTodoDoneRequest
 import com.maintenance.api.client.model.TodoPage
 import com.maintenance.api.client.model.TodoSummary
 import com.maintenance.api.client.model.UnreadNotificationCountResponse
+import com.maintenance.api.client.model.UpsertNotificationPolicyRequest
 import com.maintenance.api.client.model.WorkspaceResponse
 import com.maintenance.api.client.model.WorkspaceUpsertRequest
 
@@ -219,6 +224,77 @@ open class MeApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/v1/me/todos",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * DELETE /api/v1/me/notification-policies/{id}
+     * Delete (&#x3D; unmute) one of the authenticated user&#39;s notification policies
+     *
+     * @param id
+     * @return void
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun deleteMyNotificationPolicy(id: java.util.UUID) : Unit = withContext(Dispatchers.IO) {
+        val localVarResponse = deleteMyNotificationPolicyWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> Unit
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * DELETE /api/v1/me/notification-policies/{id}
+     * Delete (&#x3D; unmute) one of the authenticated user&#39;s notification policies
+     *
+     * @param id
+     * @return ApiResponse<Unit?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun deleteMyNotificationPolicyWithHttpInfo(id: java.util.UUID) : ApiResponse<Unit?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = deleteMyNotificationPolicyRequestConfig(id = id)
+
+        return@withContext request<Unit, Unit>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation deleteMyNotificationPolicy
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun deleteMyNotificationPolicyRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.DELETE,
+            path = "/api/v1/me/notification-policies/{id}".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -581,6 +657,114 @@ open class MeApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
     }
 
     /**
+     * GET /api/v1/me/workbench
+     * Read the authenticated principal&#39;s bounded operations workbench
+     * Composes the native action-inbox, owner-scoped todo, and collaboration calendar reads under one captured request instant. Each source remains independently authorized and may return a redacted denied or unavailable envelope; the aggregate never owns mutations or duplicates source data.
+     * @param from  (optional)
+     * @param to  (optional)
+     * @param branchId  (optional)
+     * @param actionLimit  (optional, default to 50)
+     * @param todoLimit  (optional, default to 50)
+     * @param calendarLimit  (optional, default to 50)
+     * @return MyWorkbenchResponse
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun getMyWorkbench(from: java.time.OffsetDateTime? = null, to: java.time.OffsetDateTime? = null, branchId: java.util.UUID? = null, actionLimit: kotlin.Int? = 50, todoLimit: kotlin.Int? = 50, calendarLimit: kotlin.Int? = 50) : MyWorkbenchResponse = withContext(Dispatchers.IO) {
+        val localVarResponse = getMyWorkbenchWithHttpInfo(from = from, to = to, branchId = branchId, actionLimit = actionLimit, todoLimit = todoLimit, calendarLimit = calendarLimit)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as MyWorkbenchResponse
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/me/workbench
+     * Read the authenticated principal&#39;s bounded operations workbench
+     * Composes the native action-inbox, owner-scoped todo, and collaboration calendar reads under one captured request instant. Each source remains independently authorized and may return a redacted denied or unavailable envelope; the aggregate never owns mutations or duplicates source data.
+     * @param from  (optional)
+     * @param to  (optional)
+     * @param branchId  (optional)
+     * @param actionLimit  (optional, default to 50)
+     * @param todoLimit  (optional, default to 50)
+     * @param calendarLimit  (optional, default to 50)
+     * @return ApiResponse<MyWorkbenchResponse?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun getMyWorkbenchWithHttpInfo(from: java.time.OffsetDateTime?, to: java.time.OffsetDateTime?, branchId: java.util.UUID?, actionLimit: kotlin.Int?, todoLimit: kotlin.Int?, calendarLimit: kotlin.Int?) : ApiResponse<MyWorkbenchResponse?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = getMyWorkbenchRequestConfig(from = from, to = to, branchId = branchId, actionLimit = actionLimit, todoLimit = todoLimit, calendarLimit = calendarLimit)
+
+        return@withContext request<Unit, MyWorkbenchResponse>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation getMyWorkbench
+     *
+     * @param from  (optional)
+     * @param to  (optional)
+     * @param branchId  (optional)
+     * @param actionLimit  (optional, default to 50)
+     * @param todoLimit  (optional, default to 50)
+     * @param calendarLimit  (optional, default to 50)
+     * @return RequestConfig
+     */
+    fun getMyWorkbenchRequestConfig(from: java.time.OffsetDateTime?, to: java.time.OffsetDateTime?, branchId: java.util.UUID?, actionLimit: kotlin.Int?, todoLimit: kotlin.Int?, calendarLimit: kotlin.Int?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (from != null) {
+                    put("from", listOf(parseDateToQueryString<java.time.OffsetDateTime>(from)))
+                }
+                if (to != null) {
+                    put("to", listOf(parseDateToQueryString<java.time.OffsetDateTime>(to)))
+                }
+                if (branchId != null) {
+                    put("branch_id", listOf(branchId.toString()))
+                }
+                if (actionLimit != null) {
+                    put("action_limit", listOf(actionLimit.toString()))
+                }
+                if (todoLimit != null) {
+                    put("todo_limit", listOf(todoLimit.toString()))
+                }
+                if (calendarLimit != null) {
+                    put("calendar_limit", listOf(calendarLimit.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/me/workbench",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * GET /api/v1/me/notifications/summary
      * Per-category unread breakdown for the comms-rail badge, plus the total
      *
@@ -914,6 +1098,166 @@ open class MeApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
     }
 
     /**
+     * GET /api/v1/me/notifications/by-object
+     * Aggregate the authenticated user&#39;s notifications by source object, newest activity first
+     *
+     * @param unread When true, return only groups that still hold at least one unread notification. (optional)
+     * @param before Opaque keyset cursor from a previous page&#39;s next_cursor; an undecodable or foreign cursor yields an empty page. (optional)
+     * @param limit Page size (clamped server-side to 1..&#x3D;200; default 50). (optional)
+     * @return NotificationObjectGroupPage
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun listMyNotificationObjectGroups(unread: kotlin.Boolean? = null, before: kotlin.String? = null, limit: kotlin.Long? = null) : NotificationObjectGroupPage = withContext(Dispatchers.IO) {
+        val localVarResponse = listMyNotificationObjectGroupsWithHttpInfo(unread = unread, before = before, limit = limit)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NotificationObjectGroupPage
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/me/notifications/by-object
+     * Aggregate the authenticated user&#39;s notifications by source object, newest activity first
+     *
+     * @param unread When true, return only groups that still hold at least one unread notification. (optional)
+     * @param before Opaque keyset cursor from a previous page&#39;s next_cursor; an undecodable or foreign cursor yields an empty page. (optional)
+     * @param limit Page size (clamped server-side to 1..&#x3D;200; default 50). (optional)
+     * @return ApiResponse<NotificationObjectGroupPage?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun listMyNotificationObjectGroupsWithHttpInfo(unread: kotlin.Boolean?, before: kotlin.String?, limit: kotlin.Long?) : ApiResponse<NotificationObjectGroupPage?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listMyNotificationObjectGroupsRequestConfig(unread = unread, before = before, limit = limit)
+
+        return@withContext request<Unit, NotificationObjectGroupPage>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation listMyNotificationObjectGroups
+     *
+     * @param unread When true, return only groups that still hold at least one unread notification. (optional)
+     * @param before Opaque keyset cursor from a previous page&#39;s next_cursor; an undecodable or foreign cursor yields an empty page. (optional)
+     * @param limit Page size (clamped server-side to 1..&#x3D;200; default 50). (optional)
+     * @return RequestConfig
+     */
+    fun listMyNotificationObjectGroupsRequestConfig(unread: kotlin.Boolean?, before: kotlin.String?, limit: kotlin.Long?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (unread != null) {
+                    put("unread", listOf(unread.toString()))
+                }
+                if (before != null) {
+                    put("before", listOf(before.toString()))
+                }
+                if (limit != null) {
+                    put("limit", listOf(limit.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/me/notifications/by-object",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * GET /api/v1/me/notification-policies
+     * List the authenticated user&#39;s notification routing policies, newest first
+     *
+     * @return NotificationPolicyList
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun listMyNotificationPolicies() : NotificationPolicyList = withContext(Dispatchers.IO) {
+        val localVarResponse = listMyNotificationPoliciesWithHttpInfo()
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NotificationPolicyList
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/me/notification-policies
+     * List the authenticated user&#39;s notification routing policies, newest first
+     *
+     * @return ApiResponse<NotificationPolicyList?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun listMyNotificationPoliciesWithHttpInfo() : ApiResponse<NotificationPolicyList?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listMyNotificationPoliciesRequestConfig()
+
+        return@withContext request<Unit, NotificationPolicyList>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation listMyNotificationPolicies
+     *
+     * @return RequestConfig
+     */
+    fun listMyNotificationPoliciesRequestConfig() : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/me/notification-policies",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * GET /api/v1/me/notifications
      * List the authenticated user&#39;s notifications, newest first
      *
@@ -1231,6 +1575,79 @@ open class MeApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
     }
 
     /**
+     * POST /api/v1/me/notifications/{id}/unread
+     * Mark one of the authenticated user&#39;s notifications unread again (read toggle)
+     *
+     * @param id
+     * @return NotificationSummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun markMyNotificationUnread(id: java.util.UUID) : NotificationSummary = withContext(Dispatchers.IO) {
+        val localVarResponse = markMyNotificationUnreadWithHttpInfo(id = id)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NotificationSummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * POST /api/v1/me/notifications/{id}/unread
+     * Mark one of the authenticated user&#39;s notifications unread again (read toggle)
+     *
+     * @param id
+     * @return ApiResponse<NotificationSummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun markMyNotificationUnreadWithHttpInfo(id: java.util.UUID) : ApiResponse<NotificationSummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = markMyNotificationUnreadRequestConfig(id = id)
+
+        return@withContext request<Unit, NotificationSummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation markMyNotificationUnread
+     *
+     * @param id
+     * @return RequestConfig
+     */
+    fun markMyNotificationUnreadRequestConfig(id: java.util.UUID) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/me/notifications/{id}/unread".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * PUT /api/v1/me/workspace
      * Upsert the authenticated user&#39;s console workspace layout
      * Stores the caller&#39;s Oyatie Console layout verbatim. The &#x60;layout&#x60; must be a JSON object and is bounded in size by the server.
@@ -1374,6 +1791,80 @@ open class MeApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/v1/me/todos/{todoId}/done".replace("{"+"todoId"+"}", encodeURIComponent(todoId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * PUT /api/v1/me/notification-policies
+     * Upsert a mute policy for the authenticated user (idempotent per target)
+     *
+     * @param upsertNotificationPolicyRequest
+     * @return NotificationPolicySummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun upsertMyNotificationPolicy(upsertNotificationPolicyRequest: UpsertNotificationPolicyRequest) : NotificationPolicySummary = withContext(Dispatchers.IO) {
+        val localVarResponse = upsertMyNotificationPolicyWithHttpInfo(upsertNotificationPolicyRequest = upsertNotificationPolicyRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NotificationPolicySummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * PUT /api/v1/me/notification-policies
+     * Upsert a mute policy for the authenticated user (idempotent per target)
+     *
+     * @param upsertNotificationPolicyRequest
+     * @return ApiResponse<NotificationPolicySummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun upsertMyNotificationPolicyWithHttpInfo(upsertNotificationPolicyRequest: UpsertNotificationPolicyRequest) : ApiResponse<NotificationPolicySummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = upsertMyNotificationPolicyRequestConfig(upsertNotificationPolicyRequest = upsertNotificationPolicyRequest)
+
+        return@withContext request<UpsertNotificationPolicyRequest, NotificationPolicySummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation upsertMyNotificationPolicy
+     *
+     * @param upsertNotificationPolicyRequest
+     * @return RequestConfig
+     */
+    fun upsertMyNotificationPolicyRequestConfig(upsertNotificationPolicyRequest: UpsertNotificationPolicyRequest) : RequestConfig<UpsertNotificationPolicyRequest> {
+        val localVariableBody = upsertNotificationPolicyRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PUT,
+            path = "/api/v1/me/notification-policies",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

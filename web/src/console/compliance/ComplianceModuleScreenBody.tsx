@@ -16,40 +16,72 @@ import { GenericModuleScreen } from "../modules/GenericModuleScreen";
 import { PolicyGateProvider, type PolicyGate } from "../policy";
 import { COMPLIANCE_ACTIONS } from "./complianceModel";
 import { complianceModuleScreen } from "./complianceModuleScreen";
+import { EvidenceBindingWorkbench } from "./EvidenceBindingWorkbench";
 
 const COMPLIANCE_READ_ROLES = new Set(["EXECUTIVE", "SUPER_ADMIN"]);
-const INTEGRITY_FINDINGS_READ = "integrity_findings_read";
-const READ_ACTIONS = new Set<string>([
-  COMPLIANCE_ACTIONS.read,
-  COMPLIANCE_ACTIONS.regulationRead,
-  COMPLIANCE_ACTIONS.frameworkRead,
-  COMPLIANCE_ACTIONS.audit,
-]);
+const AUDIT_LOG_READ_ROLES = new Set(["ADMIN", "SUPER_ADMIN"]);
 
 export function ComplianceModuleScreenBody() {
   const { api, session } = useAuth();
   const roles = session?.roles;
   const featureGrants = session?.feature_grants;
+  // The provider-owned incarnation changes whenever the effective session or
+  // tenant context changes. Never retain scope-bound rows across a missing or
+  // changed incarnation; the backend remains the authorization authority.
+  const authorityKey =
+    session?.org_id && session.user_id && session.client_session_incarnation
+      ? `${session.org_id}:${session.user_id}:${session.client_session_incarnation}`
+      : undefined;
 
+  const canRead =
+    (roles?.some((role) => COMPLIANCE_READ_ROLES.has(role)) ?? false) ||
+    (featureGrants?.includes(COMPLIANCE_ACTIONS.read) ?? false);
+  const canReadAuditLog =
+    (roles?.some((role) => AUDIT_LOG_READ_ROLES.has(role)) ?? false) ||
+    (featureGrants?.includes(COMPLIANCE_ACTIONS.audit) ?? false);
   const gate = useMemo<PolicyGate>(
     () => ({
       can: (action) => {
-        if (featureGrants?.includes(action)) return true;
-        if (READ_ACTIONS.has(action)) {
-          return (
-            (roles?.some((role) => COMPLIANCE_READ_ROLES.has(role)) ?? false) ||
-            (featureGrants?.includes(INTEGRITY_FINDINGS_READ) ?? false)
-          );
-        }
-        return false;
+        if (
+          action === COMPLIANCE_ACTIONS.read ||
+          action === COMPLIANCE_ACTIONS.regulationRead ||
+          action === COMPLIANCE_ACTIONS.frameworkRead
+        )
+          return canRead;
+        if (action === COMPLIANCE_ACTIONS.audit) return canReadAuditLog;
+        return featureGrants?.includes(action) ?? false;
       },
     }),
-    [featureGrants, roles],
+    [canRead, canReadAuditLog, featureGrants],
   );
+  // The backend permits this org-wide action to SUPER_ADMIN or an org-wide
+  // custom grant. This is a conservative UI hint; the REST boundary remains
+  // authoritative for every submission.
+  const isOrgWideAdmin = roles?.includes("SUPER_ADMIN") ?? false;
+  const canLinkEvidence =
+    canRead &&
+    (isOrgWideAdmin ||
+      (featureGrants?.includes(COMPLIANCE_ACTIONS.evidenceLink) ?? false));
+  const canAcceptEvidence =
+    canRead &&
+    (isOrgWideAdmin ||
+      (featureGrants?.includes(COMPLIANCE_ACTIONS.domainManage) ?? false));
 
   return (
     <PolicyGateProvider gate={gate}>
-      <GenericModuleScreen config={complianceModuleScreen} api={api} />
+      <GenericModuleScreen
+        config={complianceModuleScreen}
+        api={api}
+        authorityKey={authorityKey}
+      />
+      <EvidenceBindingWorkbench
+        key={authorityKey ?? "no-authority"}
+        api={api}
+        authorityKey={authorityKey}
+        canRead={canRead}
+        canLink={canLinkEvidence}
+        canAccept={canAcceptEvidence}
+      />
     </PolicyGateProvider>
   );
 }

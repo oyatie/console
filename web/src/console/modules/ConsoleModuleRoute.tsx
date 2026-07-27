@@ -1,12 +1,14 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { useAuth } from "../../context/auth";
 import { ApprovalCompose } from "../appr/ApprovalCompose";
 import { MESSENGER_ACTIONS, MessengerConsoleScreen } from "../messenger";
+import { loadObjectTypeRegistryForAuthority } from "../ontology/typeRegistrySource";
+import { ontologyWorkspaceAuthorityKey } from "../ontology/useOntologyRevisionCommitQueue";
 import { PolicyGateProvider } from "../policy";
 import { GenericModuleScreen } from "./GenericModuleScreen";
-import { getModuleScreen } from "./moduleScreens";
+import { getModuleScreen, MOD_SCREENS } from "./moduleScreens";
 
 const MODULE_READ_ROLES = new Set([
   "SUPER_ADMIN",
@@ -32,13 +34,94 @@ function sessionCanReadModule(roles: readonly string[] | undefined): boolean {
   return roles?.some((role) => MODULE_READ_ROLES.has(role)) ?? false;
 }
 
+function RoutedModuleScreen({
+  api,
+  config,
+  authorityKey,
+  featureGrants,
+  roles,
+}: {
+  api: ReturnType<typeof useAuth>["api"];
+  config: ReturnType<typeof getModuleScreen>;
+  authorityKey: string | undefined;
+  featureGrants: readonly string[];
+  roles: readonly string[] | undefined;
+}) {
+  const gate = useMemo(
+    () => {
+      return {
+        can: (action: string) => {
+          if (featureGrants.includes(action)) return true;
+          if (action === config.policy.read) return sessionCanReadModule(roles);
+          return false;
+        },
+      };
+    },
+    [config.policy.read, featureGrants, roles],
+  );
+
+  return (
+    <PolicyGateProvider gate={gate}>
+      <GenericModuleScreen api={api} config={config} authorityKey={authorityKey} />
+    </PolicyGateProvider>
+  );
+}
+
+function DynamicModuleScreen({
+  api,
+  screen,
+  authorityKey,
+  featureGrants,
+  roles,
+}: {
+  api: ReturnType<typeof useAuth>["api"];
+  screen: string;
+  authorityKey: string | undefined;
+  featureGrants: readonly string[];
+  roles: readonly string[] | undefined;
+}) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!authorityKey) return;
+    const controller = new AbortController();
+    void loadObjectTypeRegistryForAuthority(api, authorityKey, controller.signal)
+      .then(() => {
+        if (!controller.signal.aborted) setReady(true);
+      })
+      .catch(() => {
+        // Discovery failure is intentionally represented by the fail-closed
+        // empty route below rather than an alternate module surface.
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [api, authorityKey]);
+
+  // Until the exact authority's registry proves that this screen is a dynamic
+  // module, render nothing. In particular, never substitute finance for an
+  // unavailable or stale discovery response.
+  if (!ready) return null;
+  const config = getModuleScreen(screen);
+  if (config.id !== screen) return null;
+  return (
+    <RoutedModuleScreen
+      api={api}
+      config={config}
+      authorityKey={authorityKey}
+      featureGrants={featureGrants}
+      roles={roles}
+    />
+  );
+}
+
 export function ConsoleModuleRoute() {
-  const { api, session } = useAuth();
+  const { api, session, viewAs } = useAuth();
   const [searchParams] = useSearchParams();
   const screen = searchParams.get("screen") ?? "finance";
-  const config = getModuleScreen(screen);
   const featureGrants = useMemo(() => session?.feature_grants ?? [], [session?.feature_grants]);
   const roles = session?.roles;
+  const authorityKey = ontologyWorkspaceAuthorityKey(session, viewAs);
 
   const messengerGate = useMemo(
     () => {
@@ -70,19 +153,6 @@ export function ConsoleModuleRoute() {
     [featureGrants, roles],
   );
 
-  const gate = useMemo(
-    () => {
-      return {
-        can: (action: string) => {
-          if (featureGrants.includes(action)) return true;
-          if (action === config.policy.read) return sessionCanReadModule(roles);
-          return false;
-        },
-      };
-    },
-    [config.policy.read, featureGrants, roles],
-  );
-
   if (screen === "msgr") {
     return (
       <PolicyGateProvider gate={messengerGate}>
@@ -103,9 +173,27 @@ export function ConsoleModuleRoute() {
     );
   }
 
+  if (Object.prototype.hasOwnProperty.call(MOD_SCREENS, screen)) {
+    const config = getModuleScreen(screen);
+    return (
+      <RoutedModuleScreen
+        api={api}
+        config={config}
+        authorityKey={authorityKey}
+        featureGrants={featureGrants}
+        roles={roles}
+      />
+    );
+  }
+
   return (
-    <PolicyGateProvider gate={gate}>
-      <GenericModuleScreen api={api} config={config} />
-    </PolicyGateProvider>
+    <DynamicModuleScreen
+      key={`${screen}:${authorityKey ?? "untrusted"}`}
+      api={api}
+      screen={screen}
+      authorityKey={authorityKey}
+      featureGrants={featureGrants}
+      roles={roles}
+    />
   );
 }

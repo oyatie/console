@@ -45,6 +45,11 @@ struct WorkHubSummary: Equatable {
     }
 }
 
+private enum TodayRefreshOutcome {
+    case succeeded
+    case failed(messageKey: String)
+}
+
 @MainActor
 final class FieldViewModel: ObservableObject {
     @Published var loginState: LoginState = .signedOut()
@@ -54,7 +59,11 @@ final class FieldViewModel: ObservableObject {
     @Published var resultType: Components.Schemas.WorkResultType = .completed
     @Published var diagnosis = ""
     @Published var actionTaken = ""
-    @Published var messageKey: String?
+    @Published var messageKey: String? {
+        didSet {
+            messageAuthorityGeneration &+= 1
+        }
+    }
     @Published var isLoading = false
     @Published var isCameraPresented = false
     @Published var messengerState = MessengerState()
@@ -83,6 +92,7 @@ final class FieldViewModel: ObservableObject {
     private let locationConsentRepository: LocationConsentRepository
     private let mobileOperationsRepository: MobileOperationsRepository
     private let passkeyStepUpRepository: PasskeyStepUpRepository
+    private var messageAuthorityGeneration: UInt64 = 0
 
     init(container: FieldAppContainer) {
         self.authRepository = container.authRepository
@@ -168,19 +178,28 @@ final class FieldViewModel: ObservableObject {
     }
 
     func refreshToday() async {
+        switch await performTodayRefresh() {
+        case .succeeded:
+            messageKey = nil
+        case let .failed(messageKey):
+            self.messageKey = messageKey
+        }
+    }
+
+    private func performTodayRefresh() async -> TodayRefreshOutcome {
         isLoading = true
+        defer { isLoading = false }
         do {
             _ = try await workOrderRepository.replayPending()
             _ = try await evidenceRepository.uploadPending()
             _ = try await messengerRepository.replayPending()
             today = try await workOrderRepository.refreshToday()
             locationConsent = try await locationConsentRepository.status()
-            messageKey = nil
+            return .succeeded
         } catch {
             today = await workOrderRepository.cachedToday()
-            messageKey = failureMessageKey(for: error, fallback: "error_network")
+            return .failed(messageKey: failureMessageKey(for: error, fallback: "error_network"))
         }
-        isLoading = false
     }
 
     func refreshWorkHub() async {
@@ -270,9 +289,23 @@ final class FieldViewModel: ObservableObject {
         do {
             let draft = ReportDraft(resultType: resultType, diagnosis: diagnosis, actionTaken: actionTaken)
             let syncState = try await workOrderRepository.submitReport(id: selectedWorkOrder.id, draft: draft)
-            self.selectedWorkOrder = try await workOrderRepository.detail(id: selectedWorkOrder.id)
+            self.selectedWorkOrder = selectedWorkOrder.applyingSubmittedReport(draft, syncState: syncState)
             today = await workOrderRepository.cachedToday()
             messageKey = syncState == .pending ? "offline_queued" : "report_submitted"
+            let submissionMessageGeneration = messageAuthorityGeneration
+            isLoading = false
+
+            // A confirmed report is the terminal user action. Refreshing Today
+            // is useful but nonessential, so its read failure must not replace
+            // the confirmed mutation outcome with an unrelated network error.
+            if syncState == .synced {
+                _ = await performTodayRefresh()
+                guard messageAuthorityGeneration == submissionMessageGeneration else {
+                    return
+                }
+                messageKey = "report_submitted"
+            }
+            return
         } catch {
             messageKey = failureMessageKey(for: error, fallback: "operation_failed")
         }

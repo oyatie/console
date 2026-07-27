@@ -98,9 +98,12 @@ fn prop(key: &str, title: &str, field_type: &str, config: serde_json::Value) -> 
 /// same-named required param. Handles both create (no `instance_id`) and stage
 /// v+1 (with `instance_id`) via the `instance_revision` writeback.
 ///
-/// Also reused by [`crate::PgOntologyStore::transition_lifecycle`] to
-/// auto-attach a create action to any user-authored `instance`-backed type
-/// published with no create-capable action of its own (no-code gap ①).
+/// The equivalent auto-attach on publish (no-code gap ①) — giving a
+/// user-authored `instance`-backed type a create action when it has none of its
+/// own — is NOT this function: it is owned by the SQL of
+/// `ontology_api.transition_object_type`
+/// (`0165_ontology_object_type_key_revisions.sql`), and
+/// [`crate::PgOntologyStore::transition_lifecycle`] only calls that routine.
 pub(crate) fn create_action(props: &[PropertyDefInput]) -> ActionTypeInput {
     let params_schema: serde_json::Map<String, serde_json::Value> = props
         .iter()

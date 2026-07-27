@@ -1,0 +1,48 @@
+{
+  "capability": "CAP-ORG-CONSOLE",
+  "lane": "frontend",
+  "route": "/console/org",
+  "screen_key": "orgchart",
+  "body_export": {
+    "component": "OrgChartScreenBody",
+    "import_from": "web/src/console/org (index.ts export)"
+  },
+  "integrator_actions": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "action": "append \"orgchart\" to MOUNTED_SCREEN_KEYS (line ~85). Nav item, icon \"network\", labelKey console.shell.nav.orgchart, and gate g(DIRECTORY_ROLES, [FEATURES.EMPLOYEE_DIRECTORY_READ]) already exist at nav.ts ~165; no nav edit needed."
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "action": "add `orgchart: OrgChartScreenBody` to SCREEN_REGISTRY with `import { OrgChartScreenBody } from \"../org\";`"
+    },
+    {
+      "file": "web/src/i18n/ko.ts",
+      "action": "none — console.shell.nav.orgchart=\"조직도\" already present"
+    }
+  ],
+  "exposure": "EXPOSED_SCREEN_KEYS decision stays with the roadmap owner (currently [\"sales\"]); mounting is dark inventory until named there.",
+  "authz": {
+    "nav_gate": "DIRECTORY_ROLES + EMPLOYEE_DIRECTORY_READ (existing)",
+    "screen_features": [
+      "employee_directory_read (tree read)",
+      "org_change_read",
+      "org_change_draft",
+      "org_change_approve",
+      "org_change_apply"
+    ],
+    "note": "org_change_* Feature variants land with the CAP-ORG-CONSOLE backend lane; until fetchAuthzProjection carries them the screen renders read-only tree and reports the org-change strip as unavailable on 404 (truthful dark state). Deny-by-omission: 401/403/404 on side reads render absence, never error."
+  },
+  "api_dependency": {
+    "existing": ["GET /api/v1/hr/org-chart", "GET /api/v1/regions", "GET /api/v1/branches", "GET /api/v1/users/me"],
+    "backend_lane_contract": [
+      "GET /api/v1/org-entities",
+      "GET/POST /api/v1/org-changes",
+      "GET/PATCH /api/v1/org-changes/{id}",
+      "POST /api/v1/org-changes/{id}/{preflight|submit|effectuate|archive|cancel}",
+      "POST /api/v1/org-changes/{id}/approval-steps/{stepId}/decision",
+      "POST /api/v1/org-changes/{id}/settlement-items/{itemId}/complete"
+    ],
+    "note": "org-change DTOs are hand-typed in web/src/console/org/orgApi.ts to the scout-digest contract; delete the rawClient cast point in orgApi.ts once backend/openapi + regenerated clients land (integrator)."
+  }
+}

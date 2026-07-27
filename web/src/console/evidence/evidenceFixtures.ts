@@ -91,10 +91,9 @@ export function evidenceFixtures(): [EvidenceObjectDetail, EvidenceObjectDetail]
         },
       ],
       custody: [
-        custodyEvent("cu-12-4", "evidence_legal_hold.apply", S.actors.compliance, "2026-07-07T10:00:00+09:00", "EV-2026-00012"),
-        custodyEvent("cu-12-3", "evidence_object.read", S.actors.admin, "2026-07-06T17:40:00+09:00", "EV-2026-00012"),
-        custodyEvent("cu-12-2", "evidence_copy.worm_verified", null, "2026-07-06T09:20:00+09:00", "EV-2026-00012"),
-        custodyEvent("cu-12-1", "evidence_object.register", S.actors.custodian, "2026-07-06T09:12:00+09:00", "EV-2026-00012"),
+        custodyEvent("cu-12-4", "LEGAL_HOLD_APPLIED", S.actors.compliance, "2026-07-07T10:00:00+09:00", "EV-2026-00012"),
+        custodyEvent("cu-12-2", "WORM_REPLICATED", null, "2026-07-06T09:20:00+09:00", "EV-2026-00012"),
+        custodyEvent("cu-12-1", "REGISTERED", S.actors.custodian, "2026-07-06T09:12:00+09:00", "EV-2026-00012"),
       ],
     },
     {
@@ -123,8 +122,8 @@ export function evidenceFixtures(): [EvidenceObjectDetail, EvidenceObjectDetail]
       ],
       holds: [],
       custody: [
-        custodyEvent("cu-13-2", "evidence_copy.register_original", S.actors.custodian, "2026-07-08T14:05:00+09:00", "EV-2026-00013"),
-        custodyEvent("cu-13-1", "evidence_object.register", S.actors.custodian, "2026-07-08T14:03:00+09:00", "EV-2026-00013"),
+        custodyEvent("cu-13-2", "HASH_RECORDED", S.actors.custodian, "2026-07-08T14:05:00+09:00", "EV-2026-00013"),
+        custodyEvent("cu-13-1", "REGISTERED", S.actors.custodian, "2026-07-08T14:03:00+09:00", "EV-2026-00013"),
       ],
     },
   ];

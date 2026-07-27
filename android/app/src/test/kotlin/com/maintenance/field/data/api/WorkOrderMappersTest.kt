@@ -66,6 +66,11 @@ class WorkOrderMappersTest {
         status = status,
         priority = priority,
         resultType = WorkResultType.UNKNOWN,
+        // Required-but-nullable on the wire. The field app carries no domain
+        // field for either, so the mapper drops them; null is what the server
+        // sends when a work order has not been classified.
+        maintenanceType = null,
+        maintenanceCause = null,
         targetDueAt = OffsetDateTime.parse("2026-06-12T13:00:00Z"),
         createdAt = OffsetDateTime.parse("2026-06-12T08:00:00Z"),
         updatedAt = OffsetDateTime.parse("2026-06-12T08:05:00Z"),

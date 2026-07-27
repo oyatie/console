@@ -18,19 +18,29 @@ import { defineConfig, devices } from "@playwright/test";
  * switcher, and weakening its DEV-only predicate to make it render there is
  * exactly the wrong fix (mnt-gate-dev-auth-absence + dev_auth_absence.rs
  * already prove the feature is compiled OUT of a default/release build; this
- * spec proves the opposite build actually works). Set MNT_DEV_AUTH_E2E=1 and
- * bring up the real stack first — `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs
- * bootstrap` starts the backend WITH dev-auth and the Vite dev server in the
- * background; `node scripts/dev-up.mjs down` tears both down — then run this
- * config; a "dev-auth" project appears and the default "chromium" project
- * skips the spec. Unset (the default everywhere else, including the existing
- * "Browser E2E" CI job), this file behaves exactly as before.
+ * spec proves the opposite build actually works). Attendance coverage runs in
+ * that same production-faithful Vite development build; it exercises the active
+ * `/attendance` route, not the independently gated `/console/*` preview.
+ * `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap` starts the backend
+ * WITH dev-auth, `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
+ * runs the production-faithful dev-auth suite, and `node scripts/dev-up.mjs
+ * down` tears the stack down. Console-preview E2E is intentionally a separate,
+ * opt-in project: it requires the exact three-flag selector below and is never
+ * part of the required dev-auth job.
  */
-const PORT = Number(process.env.E2E_WEB_PORT ?? process.env.MNT_DEV_VITE_PORT ?? 5173);
+const PORT = Number(
+  process.env.E2E_WEB_PORT ?? process.env.MNT_DEV_VITE_PORT ?? 5173,
+);
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 const DEV_AUTH_SPEC =
-  /(?:admin-29-console-window|auth-09-dev-role-switcher|chrome-0[123]-(?:mobile-drawer|axe|workspace)|console-01-shell|hr-30-absence-exit-settlement)\.spec\.ts$/;
+  /(?:admin-29-console-window|auth-09-dev-role-switcher|chrome-0[123]-(?:mobile-drawer|axe|workspace)|console-01-shell|hr-30-absence-exit-settlement|attendance-31-console-live)\.spec\.ts$/;
+const DEV_AUTH_CONSOLE_PREVIEW_SPEC =
+  /evaluation-32-live-user-story\.spec\.ts$/;
 const DEV_AUTH_E2E = process.env.MNT_DEV_AUTH_E2E === "1";
+const DEV_AUTH_CONSOLE_PREVIEW_E2E =
+  DEV_AUTH_E2E &&
+  process.env.MNT_CONSOLE_PREVIEW_E2E === "1" &&
+  process.env.VITE_CONSOLE_DEV_PREVIEW === "1";
 const STATIC_PREVIEW_FALLBACK = process.env.E2E_STATIC_PREVIEW_FALLBACK === "1";
 
 export default defineConfig({
@@ -54,7 +64,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      testIgnore: DEV_AUTH_SPEC,
+      testIgnore: [DEV_AUTH_SPEC, DEV_AUTH_CONSOLE_PREVIEW_SPEC],
       use: { ...devices["Desktop Chrome"] },
     },
     // Only exists when explicitly requested — `npx playwright test` with no
@@ -68,23 +78,37 @@ export default defineConfig({
           },
         ]
       : []),
+    // Evaluation is a currently known-red product lifecycle suite. It runs
+    // only in an explicitly requested dev-auth + console-preview stack and is
+    // intentionally excluded from the required production-faithful dev-auth
+    // CI project above. Do not set VITE_CONSOLE_DEV_PREVIEW globally.
+    ...(DEV_AUTH_CONSOLE_PREVIEW_E2E
+      ? [
+          {
+            name: "dev-auth-console-preview-known-red",
+            testMatch: DEV_AUTH_CONSOLE_PREVIEW_SPEC,
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : []),
   ],
   // DEV_AUTH_E2E: both tiers are already running for real (see the module doc
   // above) — nothing for Playwright to manage. STATIC_PREVIEW_FALLBACK is for
   // public storefront visual specs in restricted local sandboxes where binding a
   // preview port is not allowed; the spec fulfills built assets through route
   // handlers instead. Every other run builds and serves the production bundle.
-  webServer: DEV_AUTH_E2E || STATIC_PREVIEW_FALLBACK
-    ? undefined
-    : {
-        // Build first, then serve the static build through Vite preview (which we
-        // teach to proxy /api in web/vite.config.ts). Reusing an already-running
-        // preview keeps local iteration fast.
-        command: `npm --prefix web run build && npm --prefix web run preview -- --host localhost --port ${PORT} --strictPort`,
-        url: BASE_URL,
-        timeout: 180_000,
-        reuseExistingServer: !process.env.CI,
-        stdout: "pipe",
-        stderr: "pipe",
-      },
+  webServer:
+    DEV_AUTH_E2E || STATIC_PREVIEW_FALLBACK
+      ? undefined
+      : {
+          // Build first, then serve the static build through Vite preview (which we
+          // teach to proxy /api in web/vite.config.ts). Reusing an already-running
+          // preview keeps local iteration fast.
+          command: `npm --prefix web run build && npm --prefix web run preview -- --host localhost --port ${PORT} --strictPort`,
+          url: BASE_URL,
+          timeout: 180_000,
+          reuseExistingServer: !process.env.CI,
+          stdout: "pipe",
+          stderr: "pipe",
+        },
 });

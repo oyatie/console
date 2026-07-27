@@ -2,7 +2,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use axum::body::Bytes;
-use axum::extract::{Path, State};
+use axum::extract::{Path, RawQuery, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
@@ -11,11 +11,12 @@ use mnt_financial_adapter_postgres::{PgFinancialError, PgFinancialStore};
 use mnt_financial_application::{
     AppendCostLedgerEntryCommand, ConfirmPurchaseAttachmentUploadCommand, CostLedgerSource,
     CreatePurchaseRequestCommand, CreateRentalQuoteCommand, ExecutePurchaseCommand,
-    FinancialConfigSnapshot, PrepareExpenditureCommand, PreparePurchaseAttachmentUploadCommand,
-    PurchaseApprovalCommand, PurchaseRequestLineInput, PurchaseRestartCommand,
-    PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand, financial_audit_event,
+    FinancialConfigSnapshot, ListPurchaseRequestsQuery, PrepareExpenditureCommand,
+    PreparePurchaseAttachmentUploadCommand, PurchaseApprovalCommand, PurchaseRequestLineInput,
+    PurchaseRestartCommand, PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand,
+    financial_audit_event,
 };
-use mnt_financial_domain::{MoneyInput, RentalQuoteInput, compute_rental_quote};
+use mnt_financial_domain::{MoneyInput, PurchaseStatus, RentalQuoteInput, compute_rental_quote};
 use mnt_kernel_core::{
     BranchId, EquipmentId, ErrorKind, EvidenceId, KernelError, PurchaseRequestId, QuoteId,
     TraceContext, WorkOrderId,
@@ -141,7 +142,7 @@ pub fn router(state: FinancialRestState) -> Router {
         )
         .route(
             FINANCIAL_PURCHASE_REQUESTS_PATH,
-            post(create_purchase_request),
+            get(list_purchase_requests).post(create_purchase_request),
         )
         .route(
             FINANCIAL_PURCHASE_REQUEST_PREFERENCES_PATH,
@@ -233,6 +234,15 @@ struct CreatePurchaseRequest {
     quote_attachment_ids: Vec<uuid::Uuid>,
     memo: String,
     config: FinancialConfigSnapshot,
+}
+
+struct PurchaseRequestListParams {
+    /// Collection reads are deliberately branch-explicit: no unbounded tenant
+    /// queue exists at this endpoint.
+    branch_id: BranchId,
+    statuses: Vec<PurchaseStatus>,
+    limit: i64,
+    offset: i64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -501,6 +511,162 @@ async fn create_purchase_request(
         .await
         .map_err(RestError::from_store)?;
     Ok((StatusCode::CREATED, Json(purchase)))
+}
+
+async fn list_purchase_requests(
+    State(state): State<FinancialRestState>,
+    headers: HeaderMap,
+    RawQuery(raw_query): RawQuery,
+) -> Result<impl IntoResponse, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    let params = parse_purchase_request_list_query(raw_query.as_deref())?;
+    if !principal.branch_scope.allows(params.branch_id) {
+        return Err(RestError::from_kernel(KernelError::forbidden(
+            "resource branch is outside principal scope",
+        )));
+    }
+
+    // The individual GET endpoint permits a requester to read their own
+    // request without the broader PurchaseRequestRead grant.  Preserve that
+    // contract here without materializing other requesters' branch rows.
+    let requester_id = authorize(
+        &principal,
+        Action::limited(Feature::PurchaseRequestRead),
+        params.branch_id,
+    )
+    .is_err()
+    .then_some(principal.user_id);
+    let page = state
+        .store
+        .list_purchase_requests(ListPurchaseRequestsQuery {
+            branch_id: params.branch_id,
+            statuses: params.statuses,
+            requester_id,
+            limit: params.limit,
+            offset: params.offset,
+        })
+        .await
+        .map_err(RestError::from_store)?;
+    Ok(Json(page))
+}
+
+/// Strict collection parser. Axum's `Query<Vec<_>>` does not provide a stable
+/// repeated-key contract, so keep this boundary explicit and reject every
+/// alternate/unknown spelling rather than silently changing queue semantics.
+fn parse_purchase_request_list_query(
+    raw_query: Option<&str>,
+) -> Result<PurchaseRequestListParams, RestError> {
+    let mut branch_id = None;
+    let mut statuses = Vec::new();
+    let mut limit = None;
+    let mut offset = None;
+    if let Some(raw_query) = raw_query {
+        for pair in raw_query.split('&').filter(|pair| !pair.is_empty()) {
+            let (raw_key, raw_value) = pair.split_once('=').unwrap_or((pair, ""));
+            let key = decode_purchase_query_component(raw_key)?;
+            let value = decode_purchase_query_component(raw_value)?;
+            match key.as_str() {
+                "branch_id" => {
+                    if branch_id.is_some() {
+                        return Err(purchase_query_validation("branch_id may appear only once"));
+                    }
+                    let parsed = uuid::Uuid::parse_str(value.trim())
+                        .map_err(|_| purchase_query_validation("branch_id must be a UUID"))?;
+                    branch_id = Some(BranchId::from_uuid(parsed));
+                }
+                "status" => statuses.push(
+                    PurchaseStatus::from_db_str(value.trim()).map_err(RestError::from_kernel)?,
+                ),
+                "limit" => {
+                    if limit.is_some() {
+                        return Err(purchase_query_validation("limit may appear only once"));
+                    }
+                    limit = Some(parse_purchase_query_i64("limit", &value)?);
+                }
+                "offset" => {
+                    if offset.is_some() {
+                        return Err(purchase_query_validation("offset may appear only once"));
+                    }
+                    offset = Some(parse_purchase_query_i64("offset", &value)?);
+                }
+                _ => {
+                    return Err(purchase_query_validation(format!(
+                        "unsupported purchase-request query parameter {key:?}"
+                    )));
+                }
+            }
+        }
+    }
+    let branch_id = branch_id.ok_or_else(|| purchase_query_validation("branch_id is required"))?;
+    let limit = limit.unwrap_or(25);
+    if !(1..=100).contains(&limit) {
+        return Err(purchase_query_validation("limit must be between 1 and 100"));
+    }
+    let offset = offset.unwrap_or(0);
+    if offset < 0 {
+        return Err(purchase_query_validation("offset must not be negative"));
+    }
+    Ok(PurchaseRequestListParams {
+        branch_id,
+        statuses,
+        limit,
+        offset,
+    })
+}
+
+fn parse_purchase_query_i64(name: &str, value: &str) -> Result<i64, RestError> {
+    value
+        .trim()
+        .parse::<i64>()
+        .map_err(|_| purchase_query_validation(format!("{name} must be an integer")))
+}
+
+fn purchase_query_validation(message: impl Into<String>) -> RestError {
+    RestError::from_kernel(KernelError::validation(message))
+}
+
+fn decode_purchase_query_component(input: &str) -> Result<String, RestError> {
+    let bytes = input.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'+' => {
+                decoded.push(b' ');
+                index += 1;
+            }
+            b'%' => {
+                if index + 2 >= bytes.len() {
+                    return Err(purchase_query_validation(
+                        "query contains an incomplete percent-escape",
+                    ));
+                }
+                let high = purchase_query_hex_value(bytes[index + 1]).ok_or_else(|| {
+                    purchase_query_validation("query contains an invalid percent-escape")
+                })?;
+                let low = purchase_query_hex_value(bytes[index + 2]).ok_or_else(|| {
+                    purchase_query_validation("query contains an invalid percent-escape")
+                })?;
+                decoded.push((high << 4) | low);
+                index += 3;
+            }
+            byte => {
+                decoded.push(byte);
+                index += 1;
+            }
+        }
+    }
+    String::from_utf8(decoded)
+        .map_err(|_| purchase_query_validation("query contains invalid UTF-8 data"))
+}
+
+const fn purchase_query_hex_value(byte: u8) -> Option<u8> {
+    match byte {
+        b'0'..=b'9' => Some(byte - b'0'),
+        b'a'..=b'f' => Some(byte - b'a' + 10),
+        b'A'..=b'F' => Some(byte - b'A' + 10),
+        _ => None,
+    }
 }
 
 async fn get_purchase_preferences(
@@ -1469,6 +1635,42 @@ mod tests {
     fn empty_sensitive_financial_body_is_decoded_as_missing_step_up() {
         let body: FinancialStepUpRequest = decode_financial_request(Bytes::new()).unwrap();
         assert!(body.step_up.is_none());
+    }
+
+    #[test]
+    fn purchase_request_collection_parser_accepts_only_repeated_status_keys() {
+        let branch_id = BranchId::new();
+        let parsed = parse_purchase_request_list_query(Some(&format!(
+            "branch_id={branch_id}&status=STATEMENT_ATTACHED&status=REQUEST_SUBMITTED&limit=10&offset=2"
+        )))
+        .unwrap();
+        assert_eq!(parsed.branch_id, branch_id);
+        assert_eq!(
+            parsed.statuses,
+            vec![
+                PurchaseStatus::StatementAttached,
+                PurchaseStatus::RequestSubmitted
+            ]
+        );
+        assert_eq!(parsed.limit, 10);
+        assert_eq!(parsed.offset, 2);
+    }
+
+    #[test]
+    fn purchase_request_collection_parser_rejects_ambiguous_or_malformed_keys() {
+        let branch_id = BranchId::new();
+        for raw in [
+            format!("branch_id={branch_id}&status[]=STATEMENT_ATTACHED"),
+            format!("branch_id={branch_id}&limit=one"),
+            format!("branch_id={branch_id}&offset=-1"),
+            "branch_id=not-a-uuid".to_owned(),
+            format!("branch_id={branch_id}&unknown=value"),
+        ] {
+            assert!(
+                parse_purchase_request_list_query(Some(&raw)).is_err(),
+                "{raw}"
+            );
+        }
     }
 
     #[test]

@@ -1,6 +1,6 @@
-// Simulation-panel shell — runs the predicate set over a seed sample and shows
+// Simulation-panel shell — runs the predicate set over consumer-supplied samples and shows
 // pass/total. This is REAL eval (runSimulation over the samples), not a
-// decorative toast (DESIGN §4-20). Seed samples are stubbed (wire-pending Phase C).
+// decorative toast (DESIGN §4-20).
 
 import { useState } from "react";
 import type { CSSProperties } from "react";
@@ -62,7 +62,7 @@ export interface SimulationPanelProps {
   group: PredicateGroup;
   registry: FieldRegistry;
   strings: CanvasStrings;
-  /** Seed sample rows. wire-pending: Phase C swaps in a real object-set. */
+  /** Governed sample rows supplied by the consumer adapter. */
   samples: readonly SampleRow[];
 }
 

@@ -27,11 +27,7 @@ export type TsaStatus =
 /** SHA-256 fixity of the original lineage, server-derived. */
 export type FixityStatus = "VERIFIED" | "PENDING" | "MISMATCH";
 
-/**
- * Custody ledger stages — mirrors the wire CustodyStage enum exactly, plus
- * ACCESSED which is a client-side synthesis for read/view-shaped audit
- * actions (no such wire stage exists; see custodyStageOfAudit).
- */
+/** Custody ledger stages — mirrors the generated wire CustodyStage enum exactly. */
 export type CustodyStage =
   | "REGISTERED"
   | "HASH_RECORDED"
@@ -45,7 +41,6 @@ export type CustodyStage =
   | "LEGAL_HOLD_RELEASED"
   | "EXPORTED"
   | "ARCHIVED"
-  | "ACCESSED"
   | "DISPOSAL_REQUESTED"
   | "DISPOSED";
 
@@ -137,12 +132,24 @@ export type VerifyOutcome =
   | { state: "verified"; processedAt: string | null; copyVerdicts: CopyVerdictMap }
   | { state: "processing" }
   | { state: "failed"; reason: string | null; copyVerdicts: CopyVerdictMap }
-  /** Object storage not configured (503) or the request failed outright. */
-  | { state: "unavailable" };
+  /** The current principal is not allowed to run this integrity action (401/403). */
+  | { state: "denied" }
+  /** The request failed before the backend returned an integrity verdict; retry is allowed. */
+  | { state: "error" }
+  /** The storage check could not establish fixity, with any known copy evidence retained. */
+  | { state: "unavailable"; copyVerdicts: CopyVerdictMap };
 
 export type VerifyEvidence = (
   detail: EvidenceObjectDetail,
 ) => Promise<VerifyOutcome>;
+
+/** A mutation committed, but its mandatory authoritative detail reread failed. */
+export class EvidenceDetailRefreshError extends Error {
+  constructor(readonly retry: () => Promise<void>) {
+    super("Evidence mutation succeeded but the authoritative detail reread failed.");
+    this.name = "EvidenceDetailRefreshError";
+  }
+}
 
 /**
  * Hold-release four-eyes state (contract: hold-release requires a distinct-
@@ -159,8 +166,8 @@ export type ReleaseFlowState =
   | { stage: "releasing"; holdId: string; requestRef: string }
   | { stage: "error"; message: string };
 
-// PBAC actions (deny-by-omission via PolicyGated — absent, never disabled-with-
-// excuse, except the hold⇒dispose gate which is a deliberate fail-closed lock).
+// Policy action identifiers remain shared with IntegrityPage. This module renders
+// only actions that have a typed evidence backend endpoint.
 export const EVIDENCE_ACTIONS = {
   read: "evidence.read",
   custodyManage: "evidence.custody.manage",

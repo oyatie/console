@@ -1,0 +1,437 @@
+# CAP-MAINTENANCE-CONSOLE — OpenAPI fragment for the consolidation integrator.
+# Merge into backend/openapi/openapi.yaml, then regenerate clients/{ts,kotlin,swift}
+# (3 drift gates). Source of truth: backend/crates/workorder/rest/src/lib.rs.
+#
+# TAGGING NOTE (integrator arbitration): new operations below carry
+# `tags: [maintenance]` per the lane charter. The four EXISTING operations in
+# the deltas section already carry `tags: [work-orders]` in openapi.yaml and
+# this fragment does NOT retag them. If the integrator prefers one client
+# surface for the whole domain, retag the new operations to `work-orders` —
+# either choice satisfies the per-domain client-tagging gate.
+
+paths:
+  /api/v1/work-orders/{workOrderId}/settlement:
+    parameters:
+      - name: workOrderId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/WorkOrderId"
+    get:
+      tags:
+        - maintenance
+      operationId: getWorkOrderSettlement
+      summary: Live (non-VOID) cost settlement of a work order
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Live settlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SettlementSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - maintenance
+      operationId: createWorkOrderSettlement
+      summary: Open a DRAFT cost settlement on a report-submitted, admin-review, or final-completed order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: >-
+            Client idempotency key, at least 16 characters. Replaying the same
+            key with an identical body returns the existing settlement without
+            a second audit event; the same key with a different body is a 409.
+          schema:
+            type: string
+            minLength: 16
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSettlementRequest"
+      responses:
+        "201":
+          description: Draft settlement (also returned on an idempotent replay)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SettlementSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /api/v1/settlements/{settlementId}/submit:
+    post:
+      tags:
+        - maintenance
+      operationId: submitSettlement
+      summary: Submit a DRAFT settlement for review (creator or completion reviewer)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Submitted settlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SettlementSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/settlements/{settlementId}/review:
+    post:
+      tags:
+        - maintenance
+      operationId: reviewSettlement
+      summary: Four-eyes review of a SUBMITTED settlement (approver must differ from submitter)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewSettlementRequest"
+      responses:
+        "200":
+          description: Reviewed settlement (APPROVED, or RETURNED back to DRAFT)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SettlementSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /api/v1/settlements/{settlementId}/void:
+    post:
+      tags:
+        - maintenance
+      operationId: voidSettlement
+      summary: Void a DRAFT or SUBMITTED settlement (completion reviewer with an admin-tier role; reason required)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoidSettlementRequest"
+      responses:
+        "200":
+          description: Voided settlement (frees the one-live-settlement slot)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SettlementSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+components:
+  schemas:
+    MaintenanceType:
+      type: string
+      description: Typed maintenance classification (유형).
+      enum: [EMERGENCY, CORRECTIVE, PREVENTIVE, INSPECTION]
+    MaintenanceCause:
+      type: string
+      description: Typed maintenance cause (원인).
+      enum: [BREAKDOWN, RETURN_PREP, SCHEDULED, INSPECTION_FINDING, OTHER]
+    SettlementStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, APPROVED, VOID]
+    SettlementLineKind:
+      type: string
+      enum: [LABOR, PART, OUTSOURCE, OTHER]
+    SettlementLineInput:
+      type: object
+      required: [kind, label, amount_krw]
+      properties:
+        kind:
+          $ref: "#/components/schemas/SettlementLineKind"
+        label:
+          type: string
+          minLength: 1
+        amount_krw:
+          type: integer
+          format: int64
+          minimum: 0
+        source_ref:
+          type: string
+          nullable: true
+          description: PO/IV/outsource code when known; absent renders no link chip.
+        sort_order:
+          type: integer
+          nullable: true
+    CreateSettlementRequest:
+      type: object
+      required: [lines]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/SettlementLineInput"
+        note:
+          type: string
+          nullable: true
+    ReviewSettlementRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVED, RETURNED]
+        comment:
+          type: string
+          nullable: true
+          description: Required (non-empty) when decision is RETURNED.
+    VoidSettlementRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+    SettlementLine:
+      type: object
+      required: [id, kind, label, amount_krw, sort_order]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          $ref: "#/components/schemas/SettlementLineKind"
+        label:
+          type: string
+        amount_krw:
+          type: integer
+          format: int64
+        source_ref:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+    SettlementSummary:
+      type: object
+      required:
+        [
+          id,
+          work_order_id,
+          branch_id,
+          status,
+          total_amount_krw,
+          lines,
+          created_by,
+          created_at,
+          updated_at,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        work_order_id:
+          $ref: "#/components/schemas/WorkOrderId"
+        branch_id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/SettlementStatus"
+        total_amount_krw:
+          type: integer
+          format: int64
+        voucher_ref:
+          type: string
+          nullable: true
+          description: Finance journal/voucher code once posted (finance-gl lane).
+        note:
+          type: string
+          nullable: true
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementLine"
+        created_by:
+          type: string
+          format: uuid
+        submitted_by:
+          type: string
+          format: uuid
+          nullable: true
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+# ---------------------------------------------------------------------------
+# Deltas to EXISTING operations/schemas (keep their current `work-orders` tag).
+# ---------------------------------------------------------------------------
+existing_operation_deltas:
+  - path: /api/v1/work-orders
+    method: get
+    add_query_parameters:
+      - name: equipment_id
+        in: query
+        required: false
+        schema: { type: string, format: uuid }
+        description: Restrict to one asset's orders (asset → WO history).
+      - name: maintenance_type
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items: { $ref: "#/components/schemas/MaintenanceType" }
+      - name: maintenance_cause
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items: { $ref: "#/components/schemas/MaintenanceCause" }
+  - path: /api/work-orders
+    method: post
+    schema_changes:
+      CreateWorkOrderRequest:
+        add_properties:
+          maintenance_type:
+            allOf: [{ $ref: "#/components/schemas/MaintenanceType" }]
+            nullable: true
+            description: Optional on the wire; the console intake requires it client-side.
+          maintenance_cause:
+            allOf: [{ $ref: "#/components/schemas/MaintenanceCause" }]
+            nullable: true
+  - path: /api/work-orders/{workOrderId}
+    method: patch
+    schema_changes:
+      UpdateWorkOrderIntakeRequest:
+        add_properties:
+          maintenance_type:
+            allOf: [{ $ref: "#/components/schemas/MaintenanceType" }]
+            nullable: true
+            description: Omitted = unchanged; classification cannot be cleared once set.
+          maintenance_cause:
+            allOf: [{ $ref: "#/components/schemas/MaintenanceCause" }]
+            nullable: true
+  - path: /api/v1/work-orders/{workOrderId}
+    method: get
+    schema_changes:
+      WorkOrderDetail:
+        add_properties:
+          maintenance_type:
+            type: string
+            nullable: true
+          maintenance_cause:
+            type: string
+            nullable: true
+          settlement:
+            allOf: [{ $ref: "#/components/schemas/SettlementSummary" }]
+            nullable: true
+            description: Live (non-VOID) cost settlement, if one exists.
+existing_schema_deltas:
+  WorkOrderListItem:
+    add_properties:
+      maintenance_type: { type: string, nullable: true }
+      maintenance_cause: { type: string, nullable: true }
+  WorkOrderSummary:
+    add_properties:
+      maintenance_type: { type: string, nullable: true }
+      maintenance_cause: { type: string, nullable: true }
+  WorkOrderLensAggregates:
+    add_properties:
+      preventive_on_time_rate:
+        type: number
+        format: double
+        nullable: true
+        description: >-
+          Share (0..1) of closed preventive orders that reached FINAL_COMPLETED
+          no later than their target due date; null when no basis exists.
+      mttr_minutes:
+        type: number
+        format: double
+        nullable: true
+        description: >-
+          Mean minutes from first IN_PROGRESS to first REPORT_SUBMITTED
+          (OT-13 MTTR); null when no order has completed that span.
+  WorkOrderLensFacets:
+    add_properties:
+      maintenance_type:
+        type: array
+        items: { $ref: "#/components/schemas/WorkOrderFacetBucket" }
+      maintenance_cause:
+        type: array
+        items: { $ref: "#/components/schemas/WorkOrderFacetBucket" }

@@ -91,22 +91,25 @@ const session: AuthSession = {
   isPlatform: false,
 };
 
-function renderApp(path = "/settings/workflows") {
-  const auth: AuthContextValue = {
-    session,
+function authFor(activeSession: AuthSession = session): AuthContextValue {
+  return {
+    session: activeSession,
     restoring: false,
     login: vi.fn(),
     logout: vi.fn(),
     refresh: vi.fn(),
     acceptTokens: vi.fn(),
     clearPasskeySetup: vi.fn(),
-    api: createConsoleApiClient(() => session.access_token),
+    api: createConsoleApiClient(() => activeSession.access_token),
     viewAs: undefined,
     enterViewAs: vi.fn(),
     exitViewAs: vi.fn(),
   };
+}
+
+function renderApp(path = "/settings/workflows", activeSession: AuthSession = session) {
   return render(
-    <AuthContext.Provider value={auth}>
+    <AuthContext.Provider value={authFor(activeSession)}>
       <MemoryRouter initialEntries={[path]}>
         <WorkflowStudioPage />
       </MemoryRouter>
@@ -434,6 +437,90 @@ describe("WorkflowStudioPage", () => {
     expect(await screen.findByText("워크플로 수동 실행을 요청했습니다.")).toBeInTheDocument();
     expect(screen.getByText("수동 실행 시작")).toBeInTheDocument();
     expect(screen.getByText("RUN-999")).toBeInTheDocument();
+  });
+
+  it("omits the unsaved canvas simulation control because no authenticated runtime endpoint exists for an unpersisted definition", async () => {
+    installBaseHandlers();
+    server.use(
+      http.get("*/api/v1/workflow-studio/definitions", () =>
+        HttpResponse.json({ items: [] }),
+      ),
+    );
+
+    renderApp();
+
+    await screen.findByRole("heading", { name: "워크플로 스튜디오" });
+    expect(screen.queryByRole("button", { name: "시뮬레이션" })).not.toBeInTheDocument();
+  });
+
+  it("fences a late workflow-run success behind an authority replacement", async () => {
+    let releaseRun: (() => void) | undefined;
+    let runDelivered: (() => void) | undefined;
+    const delivered = new Promise<void>((resolve) => {
+      runDelivered = () => {
+        resolve();
+      };
+    });
+    const triggeredRun = {
+      ...runLogResponse.items[0],
+      id: "99999999-9999-4999-8999-999999999998",
+      code: "RUN-STALE",
+      definition_id: executableDefinition.id,
+      status: "SUCCEEDED",
+      summary: "이전 권한 실행 완료",
+      completed_at: "2026-07-09T08:12:00Z",
+      failed_at: null,
+      error_message: null,
+    };
+    server.use(
+      http.get("*/api/v1/workflow-studio/catalog", () =>
+        HttpResponse.json(catalogResponse),
+      ),
+      http.get("*/api/v1/workflow-studio/definitions", () =>
+        HttpResponse.json({ items: [executableDefinition] }),
+      ),
+      http.get("*/api/v1/workflow-studio/definitions/:id/history", () =>
+        HttpResponse.json(historyResponse),
+      ),
+      http.get("*/api/v1/workflow-studio/definitions/:id/run-log", () =>
+        HttpResponse.json({ items: [] }),
+      ),
+      http.post("*/api/v1/workflow-studio/definitions/:id/run", async ({ request }) => {
+        runRequests.push(await request.json());
+        await new Promise<void>((resolve) => {
+          releaseRun = resolve;
+        });
+        runDelivered?.();
+        return HttpResponse.json(triggeredRun);
+      }),
+    );
+
+    const view = renderApp();
+    await userEvent.click(await screen.findByRole("button", { name: "수동 실행" }));
+    await waitFor(() => {
+      expect(runRequests).toHaveLength(1);
+    });
+
+    const replacementSession: AuthSession = {
+      ...session,
+      access_token: "replacement-token",
+      user_id: "00000000-0000-4000-8000-0000000000bb",
+      client_session_incarnation: "replacement-incarnation",
+    };
+    view.rerender(
+      <AuthContext.Provider value={authFor(replacementSession)}>
+        <MemoryRouter initialEntries={["/settings/workflows"]}>
+          <WorkflowStudioPage />
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    );
+    releaseRun?.();
+    await delivered;
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+    expect(screen.queryByText("워크플로 수동 실행을 요청했습니다.")).not.toBeInTheDocument();
+    expect(screen.queryByText("이전 권한 실행 완료")).not.toBeInTheDocument();
+    expect(screen.queryByText("RUN-STALE")).not.toBeInTheDocument();
   });
 
   it("renders wf.exec.v1 schedules from definitions with runtime schedule controls", async () => {

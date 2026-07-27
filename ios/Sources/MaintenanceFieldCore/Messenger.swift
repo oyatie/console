@@ -135,7 +135,14 @@ public struct MessengerReducer: Sendable {
         case let .threadsLoaded(threads):
             var next = state
             next.threads = threads.sortedForDisplay()
-            next.selectedThreadID = state.selectedThreadID ?? next.threads.first?.id
+            // Loading threads does not choose one. Selection is what the person
+            // opened, so an arriving list must not manufacture it: falling back
+            // to `threads.first` meant Messenger opened with a conversation
+            // already selected, and therefore with the composer occupying the
+            // bottom of a screen where nobody had opened anything. At
+            // accessibility text sizes that cost enough height to push a thread
+            // row's own member count out of the list. `next` already carries any
+            // selection the person made, so preserving it needs no assignment.
             return next
         case let .threadSelected(threadID):
             var next = state

@@ -1,0 +1,23 @@
+{
+ "schema": "wave4-integrator-manifest-v1",
+ "lane": "L-P0-EPOCH",
+ "produced": "2026-07-25",
+ "target_file": "docs/program/console-fanout-epoch-contract.md",
+ "why_a_manifest": "The epoch contract is integrator-owned authority and sits outside L-P0-EPOCH's declared roots (docs/program/console-capability-registry.json, docs/program/wave4-migration-slot-ledger.md, docs/evidence/console/wave4/**).",
+ "decision": "D-2 (docs/evidence/console/wave4/inputs/DECISIONS.md)",
+ "problem": "The contract admitted only a serialized rebase/cherry-pick train. Rebase is classifier-blocked on this spine, so under the contract as written every wave-4 lane is formally inadmissible. Plain merge is also what every successful landing in this program has actually used: wave-1, wave-2/3, and the openapi integration.",
+ "operation": "replace_exact",
+ "anchor": {
+  "line_start": 115,
+  "line_end": 118,
+  "file_sha256_before": "dc9636ce251c75c755a42dd37d5fd4f5f366a1431fba281528f9594adca030eb"
+ },
+ "old_text": "The complete closure is a serialized rebase/cherry-pick admission train:\n`epoch → authorized leaf → direct receipt-only review → … → manifest-only\nadmission`. No merge, unreviewed intermediate, unrelated commit, or divergent\nleaf branch is admitted.",
+ "new_text": "The complete closure is a serialized **plain-merge** admission train:\n`epoch → authorized leaf → direct receipt-only review → … → manifest-only\nadmission`, where each lane integrates with `git merge origin/<spine>` before it\npushes. Amended 2026-07-25 by wave-4 decision D-2: the previous clause admitted\nonly a rebase/cherry-pick train, but rebase is classifier-blocked on this spine,\nwhich made every fan-out lane formally inadmissible. **The rebase/cherry-pick\nclause is struck, not carried forward and not escalated. No lane may rebase.**\nThe merge commit that integrates the spine is the admitted merge; unreviewed\nintermediates, unrelated commits, and divergent leaf branches remain rejected.\nShared OpenAPI, generated clients, migrations, route/nav, tokens and generated\nBuck faces remain integrator manifests, exactly as the paragraph below requires.",
+ "invariants_preserved": [
+  "Serialized train, one lane at a time.",
+  "Receipt-only review commits stay direct and unreviewed intermediates stay rejected.",
+  "Shared roots (openapi, clients, migrations, route/nav, tokens, generated Buck faces) remain integrator manifests — contract lines 126-127 are untouched."
+ ],
+ "consequence": "All 19 wave-4 lanes become admissible; no lane may rebase."
+}

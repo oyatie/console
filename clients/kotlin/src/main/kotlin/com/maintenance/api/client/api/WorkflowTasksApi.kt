@@ -27,6 +27,7 @@ import java.io.IOException
 import okhttp3.Call
 import okhttp3.HttpUrl
 
+import com.maintenance.api.client.model.BulkApprovalInboxResponse
 import com.maintenance.api.client.model.ClaimWorkflowTaskRequest
 import com.maintenance.api.client.model.ClaimWorkflowTaskResponse
 import com.maintenance.api.client.model.DecideWorkflowTaskRequest
@@ -288,6 +289,90 @@ open class WorkflowTasksApi(basePath: kotlin.String = defaultBasePath, client: C
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/v1/workflow-tasks/{task_id}/finalize".replace("{"+"task_id"+"}", encodeURIComponent(taskId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * GET /api/v1/approval-inbox/bulk-tasks
+     * List canonical bulk-approval tasks
+     * A keyset-paginated, authorization-filtered personal inbox. Only explicit approval_decide workflow tasks are exposed; omitted rows do not affect page cardinality.
+     * @param cursor  (optional)
+     * @param limit  (optional)
+     * @return BulkApprovalInboxResponse
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun listBulkApprovalInbox(cursor: kotlin.String? = null, limit: kotlin.Int? = null) : BulkApprovalInboxResponse = withContext(Dispatchers.IO) {
+        val localVarResponse = listBulkApprovalInboxWithHttpInfo(cursor = cursor, limit = limit)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as BulkApprovalInboxResponse
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/approval-inbox/bulk-tasks
+     * List canonical bulk-approval tasks
+     * A keyset-paginated, authorization-filtered personal inbox. Only explicit approval_decide workflow tasks are exposed; omitted rows do not affect page cardinality.
+     * @param cursor  (optional)
+     * @param limit  (optional)
+     * @return ApiResponse<BulkApprovalInboxResponse?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun listBulkApprovalInboxWithHttpInfo(cursor: kotlin.String?, limit: kotlin.Int?) : ApiResponse<BulkApprovalInboxResponse?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listBulkApprovalInboxRequestConfig(cursor = cursor, limit = limit)
+
+        return@withContext request<Unit, BulkApprovalInboxResponse>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation listBulkApprovalInbox
+     *
+     * @param cursor  (optional)
+     * @param limit  (optional)
+     * @return RequestConfig
+     */
+    fun listBulkApprovalInboxRequestConfig(cursor: kotlin.String?, limit: kotlin.Int?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (cursor != null) {
+                    put("cursor", listOf(cursor.toString()))
+                }
+                if (limit != null) {
+                    put("limit", listOf(limit.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/approval-inbox/bulk-tasks",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

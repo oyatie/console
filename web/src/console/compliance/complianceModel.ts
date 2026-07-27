@@ -17,11 +17,13 @@ import type {
 const NS = "console.modules.compliance";
 
 export const COMPLIANCE_ACTIONS = {
-  read: "compliance_obligation_read",
-  manage: "compliance_obligation_manage",
-  regulationRead: "compliance_regulation_read",
-  frameworkRead: "compliance_framework_read",
+  read: "compliance_domain_read",
+  manage: "compliance_domain_manage",
+  regulationRead: "compliance_domain_read",
+  frameworkRead: "compliance_domain_read",
   frameworkManage: "compliance_framework_manage",
+  evidenceLink: "compliance_evidence_link",
+  domainManage: "compliance_domain_manage",
   audit: "audit_log_read",
 } as const;
 
@@ -137,25 +139,34 @@ const EVIDENCE_TONE: Record<string, ModuleChipTone> = {
   RETRACTED: "danger",
 };
 
-const COVERAGE_LABEL_KEY: Record<string, string> = {
-  PRIMARY: `${NS}.coverageLevels.primary`,
-  PARTIAL: `${NS}.coverageLevels.partial`,
-  SUPPORTING: `${NS}.coverageLevels.supporting`,
-  COMPENSATING: `${NS}.coverageLevels.compensating`,
+const EVIDENCE_TONE_SEVERITY: Record<ModuleChipTone, number> = {
+  neutral: 0,
+  info: 1,
+  ok: 2,
+  warn: 3,
+  danger: 4,
+  accent: 1,
+  purple: 4,
 };
+
+function evidenceToneFor(bindings: ComplianceFramework["controls"][number]["evidenceBindings"]): ModuleChipTone {
+  return bindings.reduce<ModuleChipTone>((current, binding) => {
+    const candidate = EVIDENCE_TONE[binding.status] ?? "neutral";
+    return EVIDENCE_TONE_SEVERITY[candidate] > EVIDENCE_TONE_SEVERITY[current] ? candidate : current;
+  }, "neutral");
+}
 
 /** FW- control→evidence coverage matrix, reusing the ledger detail variant. */
 export function controlEvidenceLedger(framework: ComplianceFramework): ModuleLedgerValue {
-  const accepted = framework.controls.filter((c) => c.evidenceStatus === "ACCEPTED").length;
+  const accepted = framework.controls.filter((control) => control.evidenceBindings.some((binding) => binding.status === "ACCEPTED")).length;
   return {
     total: `${String(accepted)}/${String(framework.controls.length)}`,
     entries: framework.controls.map((control) => ({
       id: control.id,
       label: `${control.controlKey} · ${control.title}`,
-      amount: control.evidenceCount,
+      amount: control.evidenceBindings.length,
       meta: control.objective,
-      sourceLabelKey: COVERAGE_LABEL_KEY[control.coverageLevel],
-      tone: EVIDENCE_TONE[control.evidenceStatus] ?? "neutral",
+      tone: evidenceToneFor(control.evidenceBindings),
     })),
   };
 }
@@ -211,6 +222,7 @@ function toRow(item: ComplianceCatalogItem): ModuleRow {
     cells,
     detail,
     linkChips,
+    sourceRecord: item,
   };
 }
 

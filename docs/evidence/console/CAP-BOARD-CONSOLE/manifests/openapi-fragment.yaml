@@ -1,0 +1,272 @@
+# CAP-BOARD-CONSOLE — openapi.yaml fragment (integrator merges; lanes never
+# edit backend/openapi/openapi.yaml directly).
+#
+# Tag decision: every operation keeps the EXISTING per-domain tag `notices`.
+# The lane charter template said `tags: [board]`, but the five already-shipped
+# /api/v1/notices* operations in openapi.yaml carry `notices`; splitting one
+# resource's operations across two tags would split the generated Kotlin
+# client (NoticesApi vs BoardApi) for the same endpoints. If the integrator
+# prefers `board`, ALL notices operations must move together.
+#
+# Merge instructions:
+#   1. paths: add PATCH under the existing `/api/v1/notices/{id}` entry; add
+#      the new `/api/v1/notices/{id}/receipts` entry after `/progress`.
+#   2. paths: REPLACE the CreateNoticeDraftRequest schema (gains optional
+#      category + audience) and ADD the '422' response to
+#      POST /api/v1/notices/{id}/publish (empty effective audience).
+#   3. components.schemas: REPLACE NoticeSummary (5 new required-shape
+#      fields), REPLACE CreateNoticeDraftRequest, ADD UpdateNoticeDraftRequest,
+#      NoticeCategory, NoticeAudienceInput, NoticeAudienceBranch,
+#      NoticeMyReceipt, NoticeReceipt, NoticeReceiptPage.
+#   4. Regenerate + commit clients/{ts,kotlin,swift} (openapi_drift +
+#      check:api-drift:portable/swift gates).
+#
+# Until merged, backend/app/tests/openapi_drift.rs
+# `openapi_yaml_covers_configured_route_inventory` is expectedly RED in this
+# lane's worktree: mnt_notices_rest::NOTICES_ROUTE_PATHS already advertises
+# /api/v1/notices/{id}/receipts (truthful route inventory), which openapi.yaml
+# does not know yet.
+
+paths:
+  /api/v1/notices/{id}:
+    patch:
+      tags:
+      - notices
+      operationId: updateNoticeDraft
+      summary: Edit a DRAFT notice (NoticeManage only); 409 once published, audience replaced whole
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNoticeDraftRequest'
+      responses:
+        '200':
+          description: The updated draft.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/notices/{id}/publish:
+    post:
+      # EXISTING operation — only change: add this response.
+      responses:
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/notices/{id}/receipts:
+    get:
+      tags:
+      - notices
+      operationId: listNoticeReceipts
+      summary: 수령확인 receipts drill for one notice (NoticeManage only); acknowledged=false is the outstanding chase list
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      - name: acknowledged
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 50
+          maximum: 200
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: Recipient receipts, newest acknowledgment first, then name.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeReceiptPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    NoticeSummary:
+      type: object
+      required:
+      - id
+      - author_user_id
+      - title
+      - body
+      - status
+      - created_at
+      - category
+      - audience_scope
+      - audience_branches
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        code:
+          type:
+          - string
+          - 'null'
+          description: NT- code, set only once published.
+        author_user_id:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [draft, published]
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        category:
+          $ref: '#/components/schemas/NoticeCategory'
+        audience_scope:
+          type: string
+          enum: [org, branches]
+        audience_branches:
+          type: array
+          description: Empty for org-wide notices.
+          items:
+            $ref: '#/components/schemas/NoticeAudienceBranch'
+        my_receipt:
+          oneOf:
+          - $ref: '#/components/schemas/NoticeMyReceipt'
+          - type: 'null'
+          description: The caller's own receipt state; null when the caller is not a recipient.
+        progress:
+          oneOf:
+          - $ref: '#/components/schemas/NoticeProgress'
+          - type: 'null'
+          description: Hydrated only for NoticeManage callers.
+    NoticeCategory:
+      type: string
+      enum: [general, legal, hr_order, training]
+    NoticeAudienceBranch:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+    NoticeMyReceipt:
+      type: object
+      required: []
+      properties:
+        acknowledged_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    NoticeAudienceInput:
+      type: object
+      required:
+      - scope
+      properties:
+        scope:
+          type: string
+          enum: [org, branches]
+        branch_ids:
+          type: array
+          description: Required non-empty iff scope is branches; must be empty for org.
+          items:
+            $ref: '#/components/schemas/Uuid'
+    CreateNoticeDraftRequest:
+      type: object
+      required:
+      - title
+      - body
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        body:
+          type: string
+          maxLength: 20000
+        category:
+          $ref: '#/components/schemas/NoticeCategory'
+        audience:
+          $ref: '#/components/schemas/NoticeAudienceInput'
+    UpdateNoticeDraftRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        body:
+          type: string
+          maxLength: 20000
+        category:
+          $ref: '#/components/schemas/NoticeCategory'
+        audience:
+          $ref: '#/components/schemas/NoticeAudienceInput'
+    NoticeReceipt:
+      type: object
+      required:
+      - recipient_user_id
+      - display_name
+      properties:
+        recipient_user_id:
+          $ref: '#/components/schemas/Uuid'
+        display_name:
+          type: string
+        acknowledged_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    NoticeReceiptPage:
+      type: object
+      required:
+      - items
+      - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoticeReceipt'
+        total:
+          type: integer
+          format: int64
+          description: Total matching rows before limit/offset.

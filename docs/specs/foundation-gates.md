@@ -12,7 +12,7 @@ This document is the durable `G002-wave-1-shared-contracts-and-hard-gat` contrac
 - Route/persona ownership register: `docs/benchmarks/enterprise-ui-route-audit.json`
 - Automated gates: `npm run check:foundation-gates` and `npm run check:enterprise-ux-parity`
 - CI enforcement: `.github/workflows/ci.yml` runs both gates and watches `docs/specs/**` plus `docs/benchmarks/**`.
-- Team launch path: `omx team 6:executor "<task>"` is supported by the installed `omx team [N:agent-type]` syntax and `~/.codex/agents/executor.toml` metadata. The G002 gate verifies syntax/metadata only; a durable tmux team should be launched only when a later implementation lane is ready to own worktrees and PRs.
+- Concurrent-delivery authority: `docs/program/console-fanout-epoch-contract.md` and `docs/program/console-buck2-scale-playbook.md` define the repository-owned Buck2-only, immutable exact-SHA, bounded-fan-out, multi-cell, candidate-CI, and release-matrix evidence policy. The G002 gate verifies those durable contracts only; it does not depend on a developer-local profile, home-state metadata, or external orchestration runtime.
 
 ## Gate A — policy/audit/passkey contract baseline
 

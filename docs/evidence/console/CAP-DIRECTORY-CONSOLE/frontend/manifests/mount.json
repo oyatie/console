@@ -1,0 +1,38 @@
+{
+  "story": "STORY-DIRECTORY-001",
+  "module": "web/src/console/directory",
+  "route": "/console/directory",
+  "screenKey": "directory",
+  "integrator_actions": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "change": "append \"directory\" to MOUNTED_SCREEN_KEYS",
+      "note": "nav item { screen: \"directory\", labelKey: \"console.shell.nav.directory\", icon: \"book\" } already exists ungated in the comms group (nav.ts:296); EXPOSED_SCREEN_KEYS stays [\"sales\"] — the body remains DARK until ADR-0025 approval"
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "change": "add entry `directory: DirectoryScreenBody` (import { DirectoryScreenBody } from \"../directory\")",
+      "note": "no-prop body per Record<MountedScreenKey, ComponentType>"
+    },
+    {
+      "file": "web/src/i18n/ko.ts",
+      "change": "none",
+      "note": "console.shell.nav.directory = \"주소록\" already present (ko.ts:1000)"
+    }
+  ],
+  "gate": {
+    "nav": "ungated (comms group — every authenticated persona, messenger parity)",
+    "capabilities": "web/src/console/directory/directoryCapabilities.ts — member tier (six messenger roles + active branch) for roster/person card/DM; employee_directory_read (or ADMIN/EXECUTIVE/SUPER_ADMIN role floor) for the HR register enhancement; backend re-authorizes every call (deny-by-omission, server-reconciled)"
+  },
+  "search_params": {
+    "person": "selection persistence — `m:<userId>` (branch member) or `e:<employeeId>` (HR register); restored on mount, replace-synced on change",
+    "handoff": "메시지 navigates to /console/messenger?thread=<threadId>"
+  },
+  "new_files_outside_ownership_root": [
+    {
+      "file": "web/src/i18n/directory.ts",
+      "reason": "check-ui-strings gate requires all Korean literals under web/src/i18n; new module file, no shared-file collision (ko.ts untouched)"
+    }
+  ],
+  "openapi": "no changes — module consumes existing endpoints only (see api section of the story digest); GAP-DIR-1..5 remain open backend charters"
+}

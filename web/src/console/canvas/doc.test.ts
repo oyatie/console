@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { connect, emptyDoc, parseDoc, serializeDoc, validateDoc } from "./doc";
-import { stubCanvasDoc } from "./stub";
+import { testCanvasDoc } from "./testFixtures";
 import type { CanvasDoc } from "./types";
 
 describe("connect", () => {
@@ -45,14 +45,14 @@ describe("validateDoc", () => {
     expect(validateDoc(doc)).toContain("branch-needs-two-outputs:x");
   });
 
-  it("accepts the stub doc", () => {
-    expect(validateDoc(stubCanvasDoc())).toEqual([]);
+  it("accepts the canonical test document", () => {
+    expect(validateDoc(testCanvasDoc())).toEqual([]);
   });
 });
 
 describe("serialize / parse", () => {
   it("round-trips a doc", () => {
-    const doc = stubCanvasDoc();
+    const doc = testCanvasDoc();
     expect(parseDoc(serializeDoc(doc))).toEqual(doc);
   });
 

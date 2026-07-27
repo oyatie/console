@@ -1,0 +1,34 @@
+{
+  "lane": "hf-leave-promotion",
+  "collision_root": "backend/crates/platform/db/migrations/**",
+  "slot": "TAKE FROM THE LEDGER — do not `ls`",
+  "blocking": false,
+  "why_not_blocking": "The lane fails closed without it. A push for a second 연차 사용기간 collides on the existing per-employee unique key and now returns HTTP 409 with a message naming this manifest, instead of silently returning last period's row. Correct but restrictive: an org cannot run 촉진 in two consecutive years until this lands.",
+  "table": "leave_promotions",
+  "changes": [
+    {
+      "kind": "add_column",
+      "column": "leave_period_end DATE",
+      "rationale": "제60조제7항 본문에 따른 기간의 마지막 날 — the date every §61 window is counted back from. Today it survives only inside the delivered notice's `source_id` and the audit snapshot, which is why the period check is a string comparison instead of a column comparison.",
+      "backfill": "Parse from inbox_docs.source_id (`leave-{kind}-{employee}-r{round}-{track}-{YYYY-MM-DD}`) for rows written by this lane. Rows written before this lane carry the old key shape and have no recoverable period — leave NULL and set NOT NULL only after an operator dispositions them."
+    },
+    {
+      "kind": "add_column",
+      "column": "track TEXT CHECK (track IN ('annual','first_year_early','first_year_late'))",
+      "rationale": "§61① and §61② have different windows and the 단서 case differs again. Same recovery path as leave_period_end."
+    },
+    {
+      "kind": "add_column",
+      "column": "served_on DATE",
+      "rationale": "Ordering and the 10-day reply window are currently anchored on `created_at AT TIME ZONE 'Asia/Seoul'`. In production that equals the command's `occurred_at` (the REST layer sets it to now), but the validated date and the persisted date are two different values and should be one. Write the validated `served_on` explicitly."
+    },
+    {
+      "kind": "replace_unique",
+      "from": "UNIQUE (org_id, target_employee_id, kind, round)",
+      "to": "UNIQUE (org_id, target_employee_id, leave_period_end, kind, round)",
+      "rationale": "The current key allows exactly ONE round-1 촉구 per employee for their entire employment. §61 is an annual procedure."
+    }
+  ],
+  "rls": "unchanged — the table already has ENABLE + FORCE ROW LEVEL SECURITY keyed on app.current_org, and mnt_rt keeps SELECT/INSERT/UPDATE with DELETE revoked.",
+  "followup_in_code": "Once the columns exist, replace `period_tag`/`ensure_same_period` in backend/crates/leave/adapter-postgres/src/lib.rs with a direct `leave_period_end = $n` predicate on find_promotion, and drop the source_id round-trip."
+}

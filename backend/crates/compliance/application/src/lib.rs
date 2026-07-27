@@ -493,6 +493,17 @@ pub struct CreateEvidenceBindingCommand {
     pub occurred_at: Timestamp,
 }
 
+/// Authenticated action that accepts a proposed evidence binding. Catalog
+/// identity and evidence provenance remain immutable; only this lifecycle edge
+/// may change the binding status.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AcceptEvidenceBindingCommand {
+    pub actor: UserId,
+    pub id: uuid::Uuid,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ComplianceStatusCommand<S> {
     pub actor: UserId,

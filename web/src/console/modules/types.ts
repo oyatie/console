@@ -226,6 +226,9 @@ export interface ModuleRow {
   detail?: Record<string, ModuleDetailValue>;
   linkChips?: ModuleLinkChipValue[];
   actions?: ModuleActionConfig[];
+  /** Authenticated source record retained by the data adapter for detail hydration.
+   * It is never rendered directly; adapters must validate its shape before use. */
+  sourceRecord?: unknown;
   statValues?: Record<string, ModuleStatValue | undefined>;
 }
 
@@ -237,6 +240,8 @@ export interface ModuleListLoadResult {
 
 export interface ModuleListLoadContext {
   api: ConsoleApiClient;
+  /** Aborted when a newer query, retry, or authority scope supersedes this read. */
+  signal: AbortSignal;
   query: string;
   hasPolicy: (action: string, resource?: PolicyResource) => boolean;
 }
@@ -248,6 +253,8 @@ export interface ModuleDetailLoadResult {
 
 export interface ModuleDetailLoadContext {
   api: ConsoleApiClient;
+  /** Aborted when selection, unmount, or authority scope changes. */
+  signal: AbortSignal;
   row: ModuleRow;
   hasPolicy: (action: string, resource?: PolicyResource) => boolean;
 }

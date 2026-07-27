@@ -1,0 +1,806 @@
+# CAP-RECRUITING — OpenAPI fragment for the consolidation integrator.
+# Merge into backend/openapi/openapi.yaml (paths + components.schemas), then
+# regenerate clients/{ts,kotlin,swift} (3 CI drift gates). Every operation
+# carries `tags: [recruiting]` (per-domain tag rule — kotlinc OOM otherwise).
+# Also add to backend/app/src/lib.rs CONFIGURED_ROUTE_SURFACES:
+#   { name: "recruiting", paths: mnt_recruiting_rest::RECRUITING_ROUTE_PATHS }
+#   plus the app-owned hire path "/api/v1/recruiting/applicants/{applicant_id}/hire"
+# and to backend/app/tests/openapi_drift.rs CONFIGURED_ROUTE_SOURCES:
+#   { name: "recruiting REST router", surface: "recruiting",
+#     source: include_str!("../../crates/recruiting/rest/src/lib.rs"), ignored_route_refs: &[] }
+# (the hire route lives in app/src/recruiting_hire.rs).
+#
+# Error envelope everywhere: { error: { code, message } }. Publish 422 adds
+# top-level `checks` + `publishable:false`; hire 409 replay adds top-level
+# `employee_id`. Optimistic concurrency via `expected_updated_at` (RFC 3339).
+
+paths:
+  /api/v1/recruiting/postings:
+    get:
+      tags: [recruiting]
+      operationId: listRecruitPostings
+      summary: List job postings with per-stage applicant counts
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/RecruitPostingStatus' }
+        - name: scope
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/RecruitPostingScope' }
+      responses:
+        '200':
+          description: Postings visible to the caller's organization.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPostingListResponse' }
+        '403': { $ref: '#/components/responses/RecruitingForbidden' }
+    post:
+      tags: [recruiting]
+      operationId: createRecruitPosting
+      summary: Create a draft job posting (JP-)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRecruitPostingRequest' }
+      responses:
+        '201':
+          description: The draft posting.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPosting' }
+        '403': { $ref: '#/components/responses/RecruitingForbidden' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/postings/{postingId}:
+    get:
+      tags: [recruiting]
+      operationId: getRecruitPosting
+      summary: Posting detail with its applicants
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      responses:
+        '200':
+          description: Posting and applicant summaries.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPostingDetailResponse' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+    put:
+      tags: [recruiting]
+      operationId: updateRecruitPosting
+      summary: Edit a DRAFT posting in place (409 otherwise)
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRecruitPostingRequest' }
+      responses:
+        '200':
+          description: The updated draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPosting' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/postings/{postingId}/preflight:
+    post:
+      tags: [recruiting]
+      operationId: preflightRecruitPosting
+      summary: Read-only publish checklist evaluation
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      responses:
+        '200':
+          description: Check vector and automatic-check verdict.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPostingPreflightResponse' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+  /api/v1/recruiting/postings/{postingId}/publish:
+    post:
+      tags: [recruiting]
+      operationId: publishRecruitPosting
+      summary: Publish a draft (atomic preflight + exposure attest; fail-closed)
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishRecruitPostingRequest' }
+      responses:
+        '200':
+          description: The published posting.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPosting' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422':
+          description: Preflight gate unmet — full check vector returned.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPreflightFailedResponse' }
+  /api/v1/recruiting/postings/{postingId}/close:
+    post:
+      tags: [recruiting]
+      operationId: closeRecruitPosting
+      summary: Close a published posting (archive-not-delete)
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseRecruitPostingRequest' }
+      responses:
+        '200':
+          description: The closed posting.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitPosting' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+  /api/v1/recruiting/postings/{postingId}/applicants:
+    post:
+      tags: [recruiting]
+      operationId: createRecruitApplicant
+      summary: Recruiter intake — register an applicant (APL-) on a published posting
+      parameters: [{ $ref: '#/components/parameters/RecruitPostingId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRecruitApplicantRequest' }
+      responses:
+        '201':
+          description: The applicant at APPLIED.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/applicants/{applicantId}:
+    get:
+      tags: [recruiting]
+      operationId: getRecruitApplicant
+      summary: Applicant detail (audited PII view) with offers and timeline
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      responses:
+        '200':
+          description: Applicant, offer versions, and stage-event history.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicantDetailResponse' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+  /api/v1/recruiting/applicants/{applicantId}/advance:
+    post:
+      tags: [recruiting]
+      operationId: advanceRecruitApplicant
+      summary: Advance one stage (INTERVIEW→OFFER is offer-only — 422)
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdvanceRecruitApplicantRequest' }
+      responses:
+        '200':
+          description: The advanced applicant.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/applicants/{applicantId}/assess:
+    post:
+      tags: [recruiting]
+      operationId: assessRecruitApplicant
+      summary: Record the interview assessment (offer prerequisite)
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssessRecruitApplicantRequest' }
+      responses:
+        '200':
+          description: The assessed applicant.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/applicants/{applicantId}/hold:
+    post:
+      tags: [recruiting]
+      operationId: holdRecruitApplicant
+      summary: Toggle the hold flag
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HoldRecruitApplicantRequest' }
+      responses:
+        '200':
+          description: The applicant with the new hold state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+  /api/v1/recruiting/applicants/{applicantId}/request-documents:
+    post:
+      tags: [recruiting]
+      operationId: requestRecruitApplicantDocuments
+      summary: Flag supplementary documents as requested
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      responses:
+        '200':
+          description: The applicant with doc_requested set.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+  /api/v1/recruiting/applicants/{applicantId}/reject:
+    post:
+      tags: [recruiting]
+      operationId: rejectRecruitApplicant
+      summary: Reject with an enum reason — archives into the talent pool
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectRecruitApplicantRequest' }
+      responses:
+        '200':
+          description: The rejected applicant.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/applicants/{applicantId}/reinstate:
+    post:
+      tags: [recruiting]
+      operationId: reinstateRecruitApplicant
+      summary: Reinstate a rejected applicant to their prior stage
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      responses:
+        '200':
+          description: The reinstated applicant.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitApplicant' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+  /api/v1/recruiting/applicants/{applicantId}/offer:
+    post:
+      tags: [recruiting]
+      operationId: extendRecruitOffer
+      summary: Extend an offer (assessment-gated; one live offer per applicant)
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExtendRecruitOfferRequest' }
+      responses:
+        '201':
+          description: The extended offer (applicant moves to OFFER).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitOffer' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422':
+          description: Validation failure, including code ASSESSMENT_REQUIRED.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+  /api/v1/recruiting/applicants/{applicantId}/hire:
+    post:
+      tags: [recruiting]
+      operationId: hireRecruitApplicant
+      summary: Hire — one transaction through the HR-owned employee core
+      description: Requires recruiting_manage AND employee_directory_manage. Creates the employee via the same idempotent
+        core as People & Workforce (idempotency key recruit-hire-{applicantId}), links the applicant (HIRED), and
+        increments the posting fill count. POOL_DAILY postings return 422 POOL_REGISTRATION_UNAVAILABLE.
+      parameters: [{ $ref: '#/components/parameters/RecruitApplicantId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HireRecruitApplicantRequest' }
+      responses:
+        '201':
+          description: Employee created and linked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRecruitApplicantResponse' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409':
+          description: Conflict — an already-hired replay carries the linked employee_id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitHireConflictResponse' }
+        '422':
+          description: Validation failure, including code POOL_REGISTRATION_UNAVAILABLE.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+  /api/v1/recruiting/offers/{offerId}/adjust:
+    post:
+      tags: [recruiting]
+      operationId: adjustRecruitOffer
+      summary: Adjust a live offer — immutable v+1 row, prior SUPERSEDED
+      parameters: [{ $ref: '#/components/parameters/RecruitOfferId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdjustRecruitOfferRequest' }
+      responses:
+        '201':
+          description: The new offer version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitOffer' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/offers/{offerId}/withdraw:
+    post:
+      tags: [recruiting]
+      operationId: withdrawRecruitOffer
+      summary: Withdraw a live offer (applicant returns to INTERVIEW)
+      parameters: [{ $ref: '#/components/parameters/RecruitOfferId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WithdrawRecruitOfferRequest' }
+      responses:
+        '200':
+          description: The withdrawn offer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitOffer' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/offers/{offerId}/record-reply:
+    post:
+      tags: [recruiting]
+      operationId: recordRecruitOfferReply
+      summary: Record the candidate's reply (ACCEPTED or DECLINED)
+      parameters: [{ $ref: '#/components/parameters/RecruitOfferId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordRecruitOfferReplyRequest' }
+      responses:
+        '200':
+          description: The resolved offer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitOffer' }
+        '404': { $ref: '#/components/responses/RecruitingNotFound' }
+        '409': { $ref: '#/components/responses/RecruitingConflict' }
+        '422': { $ref: '#/components/responses/RecruitingValidation' }
+  /api/v1/recruiting/talent-pool:
+    get:
+      tags: [recruiting]
+      operationId: listRecruitTalentPool
+      summary: Rejected-applicant archive (talent pool)
+      responses:
+        '200':
+          description: Talent-pool rows, newest rejection first.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecruitTalentPoolListResponse' }
+        '403': { $ref: '#/components/responses/RecruitingForbidden' }
+
+components:
+  parameters:
+    RecruitPostingId:
+      name: postingId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    RecruitApplicantId:
+      name: applicantId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    RecruitOfferId:
+      name: offerId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    RecruitingForbidden:
+      description: The caller lacks the recruiting capability (deny-by-default).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+    RecruitingNotFound:
+      description: Not found in the caller's organization (no cross-org existence signal).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+    RecruitingConflict:
+      description: State or optimistic-concurrency conflict.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+    RecruitingValidation:
+      description: Request failed validation.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/RecruitingErrorResponse' }
+  schemas:
+    RecruitPostingStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, CLOSED]
+    RecruitPostingScope:
+      type: string
+      enum: [INTERNAL, EXTERNAL]
+    RecruitEmploymentType:
+      type: string
+      enum: [REGULAR, RESIDENT_SHIFT, PART_TIME, POOL_DAILY]
+    RecruitApplicantStage:
+      type: string
+      enum: [APPLIED, SCREENING, INTERVIEW, OFFER, HIRED]
+    RecruitRejectReason:
+      type: string
+      enum: [CAREER_SHORTFALL, ROLE_MISMATCH, COMP_MISMATCH, ACCEPTED_ELSEWHERE, OTHER]
+    RecruitAssessmentScore:
+      type: string
+      enum: [SUITABLE, NEUTRAL, UNSUITABLE]
+    RecruitOfferStatus:
+      type: string
+      enum: [EXTENDED, SUPERSEDED, WITHDRAWN, ACCEPTED, DECLINED]
+    RecruitAmountPeriod:
+      type: string
+      enum: [MONTHLY, DAILY]
+    RecruitingErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+    RecruitPreflightCheck:
+      type: object
+      required: [key, ok, note]
+      properties:
+        key: { type: string, enum: [role_defined, quota_defined, no_duplicate_open, exposure_attested] }
+        ok: { type: boolean }
+        note: { type: string }
+    RecruitPostingPreflightResponse:
+      type: object
+      required: [checks, publishable]
+      properties:
+        checks:
+          type: array
+          items: { $ref: '#/components/schemas/RecruitPreflightCheck' }
+        publishable:
+          type: boolean
+          description: Verdict over the automatic checks; the exposure attest is collected at publish.
+    RecruitPreflightFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/RecruitingErrorResponse'
+        - type: object
+          required: [checks, publishable]
+          properties:
+            checks:
+              type: array
+              items: { $ref: '#/components/schemas/RecruitPreflightCheck' }
+            publishable: { type: boolean }
+    RecruitStageCounts:
+      type: object
+      required: [applied, screening, interview, offer]
+      properties:
+        applied: { type: integer, format: int64 }
+        screening: { type: integer, format: int64 }
+        interview: { type: integer, format: int64 }
+        offer: { type: integer, format: int64 }
+    RecruitPosting:
+      type: object
+      required: [id, posting_no, role_title, company, worksite, employment_type, scope, headcount, hired_count, requirements, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        posting_no: { type: string }
+        role_title: { type: string }
+        company: { type: string }
+        worksite: { type: string }
+        employment_type: { $ref: '#/components/schemas/RecruitEmploymentType' }
+        scope: { $ref: '#/components/schemas/RecruitPostingScope' }
+        headcount: { type: integer, format: int32 }
+        hired_count: { type: integer, format: int32 }
+        deadline: { type: [string, 'null'], format: date, description: Null = open-ended (상시). }
+        requirements:
+          type: array
+          items: { type: string }
+        position_ref: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/RecruitPostingStatus' }
+        published_at: { type: [string, 'null'], format: date-time }
+        closed_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    RecruitPostingSummary:
+      allOf:
+        - $ref: '#/components/schemas/RecruitPosting'
+        - type: object
+          required: [stage_counts]
+          properties:
+            stage_counts: { $ref: '#/components/schemas/RecruitStageCounts' }
+    RecruitPostingListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/RecruitPostingSummary' }
+    RecruitPostingDetailResponse:
+      type: object
+      required: [posting, applicants]
+      properties:
+        posting: { $ref: '#/components/schemas/RecruitPosting' }
+        applicants:
+          type: array
+          items: { $ref: '#/components/schemas/RecruitApplicantSummary' }
+    RecruitApplicantSummary:
+      type: object
+      description: >-
+        Non-PII pipeline projection for posting detail. Profile lines, source
+        document, reject note, and the assessment signature are served only by
+        the audited applicant detail read.
+      required: [id, posting_id, applicant_no, name, stage, hold, doc_requested, assessed, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        posting_id: { type: string, format: uuid }
+        applicant_no: { type: string }
+        name: { type: string }
+        stage: { $ref: '#/components/schemas/RecruitApplicantStage' }
+        hold: { type: boolean }
+        doc_requested: { type: boolean }
+        rejected_at: { type: [string, 'null'], format: date-time }
+        reject_reason:
+          oneOf:
+            - $ref: '#/components/schemas/RecruitRejectReason'
+            - type: 'null'
+        assessed: { type: boolean }
+        hired_employee_id: { type: [string, 'null'], format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    RecruitAssessment:
+      type: object
+      required: [score, by, at]
+      properties:
+        score: { $ref: '#/components/schemas/RecruitAssessmentScore' }
+        by: { type: string, format: uuid }
+        at: { type: string, format: date-time }
+    RecruitApplicant:
+      type: object
+      required: [id, posting_id, applicant_no, name, profile_lines, stage, hold, doc_requested, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        posting_id: { type: string, format: uuid }
+        applicant_no: { type: string }
+        name: { type: string }
+        profile_lines:
+          type: array
+          items: { type: string }
+        source_document: { type: [string, 'null'] }
+        stage: { $ref: '#/components/schemas/RecruitApplicantStage' }
+        hold: { type: boolean }
+        doc_requested: { type: boolean }
+        rejected_at: { type: [string, 'null'], format: date-time }
+        reject_reason:
+          oneOf:
+            - $ref: '#/components/schemas/RecruitRejectReason'
+            - type: 'null'
+        reject_note: { type: [string, 'null'] }
+        assessment:
+          oneOf:
+            - $ref: '#/components/schemas/RecruitAssessment'
+            - type: 'null'
+        hired_employee_id: { type: [string, 'null'], format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    RecruitOffer:
+      type: object
+      required: [id, applicant_id, version, amount, amount_period, currency, reply_deadline, status, extended_by, extended_at]
+      properties:
+        id: { type: string, format: uuid }
+        applicant_id: { type: string, format: uuid }
+        version: { type: integer, format: int32 }
+        amount: { type: string, description: Canonical NUMERIC(14,2) decimal string (KRW). }
+        amount_period: { $ref: '#/components/schemas/RecruitAmountPeriod' }
+        currency: { type: string }
+        reply_deadline: { type: string, format: date }
+        status: { $ref: '#/components/schemas/RecruitOfferStatus' }
+        withdraw_reason: { type: [string, 'null'] }
+        extended_by: { type: string, format: uuid }
+        extended_at: { type: string, format: date-time }
+        resolved_at: { type: [string, 'null'], format: date-time }
+    RecruitStageEvent:
+      type: object
+      required: [id, action, actor, occurred_at]
+      properties:
+        id: { type: string, format: uuid }
+        action:
+          type: string
+          enum: [APPLY, ADVANCE, ASSESS, HOLD, UNHOLD, REQUEST_DOCUMENTS, OFFER_EXTEND, OFFER_ADJUST, OFFER_WITHDRAW, OFFER_REPLY, REJECT, REINSTATE, HIRE]
+        from_stage:
+          oneOf:
+            - $ref: '#/components/schemas/RecruitApplicantStage'
+            - type: 'null'
+        to_stage:
+          oneOf:
+            - $ref: '#/components/schemas/RecruitApplicantStage'
+            - type: 'null'
+        reason: { type: [string, 'null'] }
+        actor: { type: string, format: uuid }
+        occurred_at: { type: string, format: date-time }
+    RecruitApplicantDetailResponse:
+      type: object
+      required: [applicant, offers, events]
+      properties:
+        applicant: { $ref: '#/components/schemas/RecruitApplicant' }
+        offers:
+          type: array
+          items: { $ref: '#/components/schemas/RecruitOffer' }
+        events:
+          type: array
+          items: { $ref: '#/components/schemas/RecruitStageEvent' }
+    RecruitTalentPoolListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [applicant_id, applicant_no, name, role_title, rejected_at]
+            properties:
+              applicant_id: { type: string, format: uuid }
+              applicant_no: { type: string }
+              name: { type: string }
+              role_title: { type: string }
+              reason:
+                oneOf:
+                  - $ref: '#/components/schemas/RecruitRejectReason'
+                  - type: 'null'
+              rejected_at: { type: string, format: date-time }
+    CreateRecruitPostingRequest:
+      type: object
+      required: [role_title, company, worksite, employment_type, scope, headcount]
+      properties:
+        role_title: { type: string }
+        company: { type: string }
+        worksite: { type: string }
+        employment_type: { $ref: '#/components/schemas/RecruitEmploymentType' }
+        scope: { $ref: '#/components/schemas/RecruitPostingScope' }
+        headcount: { type: integer, format: int32, minimum: 1, maximum: 999 }
+        deadline: { type: [string, 'null'], format: date }
+        requirements:
+          type: array
+          items: { type: string }
+        position_ref: { type: [string, 'null'] }
+    UpdateRecruitPostingRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateRecruitPostingRequest'
+        - type: object
+          required: [expected_updated_at]
+          properties:
+            expected_updated_at: { type: string, format: date-time }
+    PublishRecruitPostingRequest:
+      type: object
+      required: [attest_exposure_scope, expected_updated_at]
+      properties:
+        attest_exposure_scope: { type: boolean }
+        expected_updated_at: { type: string, format: date-time }
+    CloseRecruitPostingRequest:
+      type: object
+      required: [expected_updated_at]
+      properties:
+        expected_updated_at: { type: string, format: date-time }
+    CreateRecruitApplicantRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        profile_lines:
+          type: array
+          items: { type: string }
+        source_document: { type: [string, 'null'] }
+    AdvanceRecruitApplicantRequest:
+      type: object
+      required: [expected_updated_at]
+      properties:
+        expected_updated_at: { type: string, format: date-time }
+    AssessRecruitApplicantRequest:
+      type: object
+      required: [score]
+      properties:
+        score: { $ref: '#/components/schemas/RecruitAssessmentScore' }
+    HoldRecruitApplicantRequest:
+      type: object
+      required: [hold]
+      properties:
+        hold: { type: boolean }
+    RejectRecruitApplicantRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { $ref: '#/components/schemas/RecruitRejectReason' }
+        note: { type: [string, 'null'] }
+    ExtendRecruitOfferRequest:
+      type: object
+      required: [amount, amount_period, reply_deadline]
+      properties:
+        amount: { type: string, description: Canonical NUMERIC(14,2) decimal string (KRW). }
+        amount_period: { $ref: '#/components/schemas/RecruitAmountPeriod' }
+        reply_deadline: { type: string, format: date }
+    AdjustRecruitOfferRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount: { type: string }
+        reply_deadline: { type: [string, 'null'], format: date }
+    WithdrawRecruitOfferRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+    RecordRecruitOfferReplyRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [ACCEPTED, DECLINED]
+    HireRecruitApplicantRequest:
+      type: object
+      required: [employee_number, phone, org_unit, position, site, home_branch_id]
+      properties:
+        employee_number: { type: string }
+        phone: { type: string }
+        org_unit: { type: string }
+        position: { type: string }
+        site: { type: string }
+        home_branch_id: { type: string, format: uuid }
+        base_pay:
+          type: [string, 'null']
+          description: Defaults to the accepted MONTHLY offer amount; required for DAILY offers.
+    HireRecruitApplicantResponse:
+      type: object
+      required: [employee_id, applicant, posting]
+      properties:
+        employee_id: { type: string, format: uuid }
+        applicant: { $ref: '#/components/schemas/RecruitApplicant' }
+        posting: { $ref: '#/components/schemas/RecruitPosting' }
+    RecruitHireConflictResponse:
+      allOf:
+        - $ref: '#/components/schemas/RecruitingErrorResponse'
+        - type: object
+          properties:
+            employee_id:
+              type: [string, 'null']
+              format: uuid
+              description: Present on an already-hired replay — the linked employee.

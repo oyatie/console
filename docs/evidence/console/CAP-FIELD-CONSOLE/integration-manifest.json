@@ -1,0 +1,63 @@
+{
+  "lane": "CAP-FIELD-CONSOLE",
+  "story": "STORY-FIELD-001",
+  "screen_key": "field",
+  "route": "/console/field",
+  "shared_root_entries": {
+    "web/src/console/shell/nav.ts": {
+      "MOUNTED_SCREEN_KEYS": ["field"],
+      "EXPOSED_SCREEN_KEYS": [],
+      "nav_item": "already present (screen 'field', labelKey 'console.shell.nav.field', icon 'mapPin', gate OPERATIONAL_ROLES x work_order_read_all) - no change"
+    },
+    "web/src/console/screens/registry.ts": {
+      "add": { "field": "FieldScreenBody" },
+      "import": "import { FieldScreenBody } from \"../field\";"
+    },
+    "web/src/i18n/ko.ts": { "add": [], "note": "console.shell.nav.field ('고객·현장') already exists at ~line 983; module strings live in lane-owned web/src/i18n/field.ts" },
+    "backend/openapi": {
+      "tag": "field",
+      "fragment": "manifests/openapi-fragment.yaml (BUILT — merge verbatim, style-matched to the live document)",
+      "new_paths": [
+        "GET /api/v1/field/sites",
+        "GET /api/v1/field/sites/{id}",
+        "POST /api/v1/support/tickets/{id}/link",
+        "POST /api/v1/support/tickets/{id}/acceptance (requires Idempotency-Key header 16..=200; replay returns stored acceptance, changed replay 409)"
+      ],
+      "changed_schemas": [
+        "SupportTicketSummary (+site_id,+site_name,+customer_id,+customer_name,+work_order_id — all nullable, always serialized)",
+        "GET /api/v1/support/tickets (+site_id query filter)"
+      ],
+      "new_schemas": [
+        "FieldSlaState", "FieldSitePage", "FieldSiteRow", "FieldSiteSummary", "FieldSiteDetail",
+        "FieldSlaSummary", "FieldWorkOrderRef", "FieldAttendanceEvent",
+        "LinkSupportTicketRequest", "SupportTicketAcceptanceKind", "SupportTicketAcceptanceChannel",
+        "RecordSupportTicketAcceptanceRequest", "SupportTicketAcceptance"
+      ],
+      "clients": "regenerate clients/{ts,kotlin,swift}; per-tag 'field' required for kotlin OOM rule",
+      "drift_gate_status": "SUPPORT_ROUTE_PATHS in support/rest already lists the 4 new paths, so app openapi_drift stays RED on this branch until the fragment is merged — expected lane-level state, same protocol as migration renumbering"
+    },
+    "backend/crates/platform/db/migrations": {
+      "provisional": "0194_field_console_support_extensions.sql",
+      "note": "renumber to next free number at integration; full DDL in design-contract.md §6 + idempotency_key/request_fingerprint columns (UNIQUE (org_id, idempotency_key), fingerprint sha256 hex CHECK)",
+      "preexisting_collision": "spine already has DUPLICATE 0170 (0170_financial_purchase_request_queue_index.sql [4828c7b4] vs 0170_harden_object_policy_attachment_and_blockers.sql [05515d46]) — every #[sqlx::test(migrations)] fails on version 170 until resolved; this lane verified with an UNCOMMITTED local rename of the index-only file to 0181"
+    }
+  },
+  "verification": {
+    "stage3": "fresh-eyes adversarial pass 2026-07-24 — 3 findings fixed (field read gate Login→work_order_read_all matching the nav gate; link_ticket work-order lookup scope-confined 404; Idempotency-Key bounds in chars); see backend-verification.md",
+    "field_read_gate": "GET /api/v1/field/sites[/{id}] require work_order_read_all (MEMBER 403) — frontend canRead must derive from work_order_read_all, not login",
+    "integration_test": "backend/app/tests/field_visit_api.rs — 3 tests green as mnt_rt (full story incl. accept/decline/idempotency; deny-without-leakage 404/403 incl. MEMBER read denial + out-of-scope work-order 404; cross-tenant RLS isolation; audit readback with PII-free snapshots)",
+    "unit_tests": "support domain/application/adapter/rest all green (incl. adapter RLS-as-runtime-role suites)",
+    "lint": "cargo fmt + clippy --tests -D warnings clean on all four support crates",
+    "spine_breakage_not_ours": "worktree HEAD does not compile: platform/auth jwt.rs (b0d31af8 missed 2 call sites + clippy 8/7 args), logistics adapter sha2 hex, facilities/rest (4 errors), production/rest (4 errors) — patched LOCALLY UNCOMMITTED to verify; owning lanes must land real fixes"
+  },
+  "cross_lane_needs": {
+    "workorder (maintenance lane)": [
+      "W1 site_id filter on work-order list API",
+      "W2 create-WO-from-ticket provenance (source_ticket_id)",
+      "W3 JL- work-log per-site/date read projection",
+      "W4 manual device-attested check-in/out writing site_attendance_events (arbitrate with compliance)"
+    ],
+    "registry": ["R1 optional customer_name+geo in site list DTO"],
+    "finance/laborcost": ["billing consumption of acceptance + SLA breach evidence (event contract only)"]
+  }
+}

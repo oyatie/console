@@ -182,6 +182,7 @@ async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_
                     assignee_user_id: None,
                     include_untriaged: true,
                     limit: None,
+                    site_id: None,
                     cursor: None,
                 })
                 .await
@@ -212,6 +213,7 @@ async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_
                     assignee_user_id: None,
                     include_untriaged: true,
                     limit: None,
+                    site_id: None,
                     cursor: None,
                 })
                 .await

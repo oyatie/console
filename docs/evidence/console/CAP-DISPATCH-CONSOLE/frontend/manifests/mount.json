@@ -1,0 +1,45 @@
+{
+  "capability": "CAP-DISPATCH-CONSOLE",
+  "module": "dispatch",
+  "route": "/console/dispatch",
+  "screen_key": "dispatch",
+  "consolidation_actions": [
+    {
+      "file": "web/src/console/shell/nav.ts",
+      "action": "add \"dispatch\" to MOUNTED_SCREEN_KEYS (line ~85). EXPOSED_SCREEN_KEYS stays untouched — module remains DARK per ADR-0025."
+    },
+    {
+      "file": "web/src/console/screens/registry.ts",
+      "action": "import { DispatchScreenBody } from \"../dispatch\"; add `dispatch: DispatchScreenBody` to SCREEN_REGISTRY."
+    }
+  ],
+  "nav_entry": {
+    "status": "already declared — no edit needed",
+    "location": "web/src/console/shell/nav.ts fieldOps group",
+    "declaration": "{ screen: \"dispatch\", labelKey: \"console.shell.nav.dispatch\", icon: \"truck\", gate: g(OPERATIONAL_ROLES, [FEATURES.WORK_ORDER_READ_ALL]) }",
+    "label_key_present_in_ko_ts": true
+  },
+  "module_exports": {
+    "registry_body": "DispatchScreenBody (zero-prop adapter; queue branch scope is applied server-side in SQL)",
+    "route_component": "DispatchConsoleRoute({ branchId }) for a branch-pinned mount",
+    "barrel": "web/src/console/dispatch/index.ts"
+  },
+  "authz": {
+    "read": "work_order_read_all (queue, responses)",
+    "request": "work_order_create (POST p1-dispatch broadcast)",
+    "assign": "assignee_manage (candidates read, force-assign)",
+    "history": "audit_log_read (platform audit, target_type=p1_dispatch)",
+    "fail_closed": "JWT floor projection until /authz projection loads; denied state renders without fetching"
+  },
+  "api_contract_sync_points": [
+    "GET /api/v1/console/dispatch/queue (backend lane G1 — DispatchQueuePage; called untyped via shared client until client regeneration)",
+    "GET /api/v1/p1-dispatches/{dispatch_id}/candidates (G2 — DispatchCandidatePage)",
+    "GET /api/v1/p1-dispatches/{dispatch_id}/responses (G3 — P1DispatchResponseSummary items)"
+  ],
+  "gaps_recorded": [
+    "고객 upstream link absent, not dead: registry_customers has no read surface (objects resolver registers no customer kind; /api/v1/customers is POST-only). Needs a customer read or customer_name denormalized into DispatchQueuePage — backend charter, not this lane.",
+    "부품 PO- / 재고 IV- / 일지 JL- / 전표 VC- cross-links from the design row are cost-linkage gaps (G8 other lanes); omitted rather than fabricated.",
+    "Design action label \"배차 요청 기안\" implies an approval draft; no dispatch approval workflow exists in the backend contract, so the action is labeled \"배차 요청\" and directly starts the authorized broadcast (truthful behavior over simulated approval).",
+    "운영 지도/ETA/geo intentionally absent (design-intent-only, G6 never-build fake geo)."
+  ]
+}

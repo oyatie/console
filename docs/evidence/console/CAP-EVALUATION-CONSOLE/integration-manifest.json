@@ -1,0 +1,47 @@
+{
+  "capability": "CAP-EVALUATION-CONSOLE",
+  "stage": "design-contract-scout",
+  "date": "2026-07-24",
+  "shared_root_requests": {
+    "web/src/console/screens/registry.ts": {
+      "add_import": "import { EvaluationScreenBody } from \"../evaluation\";",
+      "add_entry": "evaluation: EvaluationScreenBody"
+    },
+    "web/src/console/shell/nav.ts": {
+      "MOUNTED_SCREEN_KEYS": "add \"evaluation\" (nav item + gate already declared at the hr group; ko.ts label console.shell.nav.evaluation already present)",
+      "EXPOSED_SCREEN_KEYS": "no change — stays dark per ADR-0025 until evidence-approved"
+    },
+    "web/src/i18n/ko.ts": "no change required (evaluation nav label exists)",
+    "backend/openapi/openapi.yaml": {
+      "tag": "evaluation",
+      "paths": [
+        "POST /api/v1/evaluation/cycles",
+        "GET /api/v1/evaluation/cycles",
+        "GET /api/v1/evaluation/cycles/{cycleId}",
+        "GET /api/v1/evaluation/cycles/{cycleId}/preflight",
+        "POST /api/v1/evaluation/cycles/{cycleId}/open",
+        "POST /api/v1/evaluation/cycles/{cycleId}/start-calibration",
+        "POST /api/v1/evaluation/cycles/{cycleId}/finalize",
+        "POST /api/v1/evaluation/cycles/{cycleId}/archive",
+        "POST /api/v1/evaluation/subjects",
+        "GET /api/v1/evaluation/subjects/{subjectId}",
+        "PUT /api/v1/evaluation/subjects/{subjectId}/goals",
+        "PUT /api/v1/evaluation/subjects/{subjectId}/reviews/{kind}",
+        "POST /api/v1/evaluation/subjects/{subjectId}/reviews/{kind}/submit",
+        "POST /api/v1/evaluation/subjects/{subjectId}/calibrate",
+        "GET /api/v1/evaluation/my-tasks",
+        "GET /api/v1/evaluation/employees/{employeeId}/reviews"
+      ],
+      "schemas_source": "design-contract.md §4 (component names as listed)",
+      "note": "every operation needs the per-domain tags: entry (kotlin client OOM guard, PR #261)"
+    },
+    "clients": "regenerate ts/kotlin/swift after openapi lands (3 CI drift gates)",
+    "backend/app/src (build_router)": "mount mnt_evaluation_rest::router(...) under the tenant middleware in the same change as the openapi paths (openapi drift test couples them); until then the crate stays dark and app-test-mounted",
+    "migrations": "0190_create_evaluation.sql per design-contract.md §6; renumber to next free slot at push time if 0181-0189 lanes collide"
+  },
+  "features_added_in_lane": ["evaluation_read", "evaluation_manage", "evaluation_submit"],
+  "notes": [
+    "platform/authz Feature enum edits are lane-local (not in must_not_touch) but append-only; integrator resolves enum-order merge conflicts if parallel lanes add variants",
+    "self-service SELF reviews need a user<->employee linkage that does not exist yet; contract records evaluator_user_id as recorder (open item)"
+  ]
+}

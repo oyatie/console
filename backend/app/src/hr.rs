@@ -12,7 +12,7 @@ use mnt_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
+use mnt_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeaveStore};
 use mnt_leave_domain::LeaveBalanceAmount;
 use mnt_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
@@ -29,6 +29,7 @@ use time::{Date, Month, OffsetDateTime};
 use uuid::Uuid;
 
 pub const EMPLOYEES_PATH: &str = "/api/v1/employees";
+pub const EMPLOYEE_DETAIL_PATH_TEMPLATE: &str = "/api/v1/employees/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
 pub const EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE: &str =
@@ -56,6 +57,7 @@ pub const HR_EXIT_CASE_APPROVAL_DRAFT_PATH_TEMPLATE: &str =
     "/api/v1/hr/exit-cases/{id}/approval-draft";
 pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYEES_PATH,
+    EMPLOYEE_DETAIL_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
     EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE,
@@ -111,7 +113,8 @@ pub fn router(state: HrState) -> Router {
     let verifier = state.jwt_verifier.clone();
     let pool = state.pool.clone();
     let router = Router::new()
-        .route(EMPLOYEES_PATH, get(list_employees))
+        .route(EMPLOYEES_PATH, get(list_employees).post(create_employee))
+        .route(EMPLOYEE_DETAIL_PATH_TEMPLATE, get(get_employee_detail))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
         .route(HR_ATTENDANCE_SUMMARY_PATH, get(list_attendance_summary))
@@ -182,6 +185,7 @@ pub fn router(state: HrState) -> Router {
 #[derive(Debug, Deserialize)]
 struct EmployeeListQuery {
     company: Option<String>,
+    search: Option<String>,
     home_branch_review_required: Option<bool>,
     limit: Option<i64>,
     offset: Option<i64>,
@@ -235,6 +239,53 @@ struct EmployeeResponse {
     identity_name_only_merge: bool,
     created_at: time::OffsetDateTime,
     updated_at: time::OffsetDateTime,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CreateEmployeeRequest {
+    pub(crate) employee_number: String,
+    pub(crate) name: String,
+    pub(crate) company: String,
+    pub(crate) employment_type: String,
+    pub(crate) phone: String,
+    pub(crate) org_unit: String,
+    pub(crate) position: String,
+    pub(crate) site: String,
+    pub(crate) home_branch_id: Uuid,
+    pub(crate) base_pay: String,
+    pub(crate) idempotency_key: String,
+}
+
+#[derive(Debug, Serialize)]
+struct EmployeeEmploymentDetail {
+    employment_type: String,
+    phone_e164: String,
+    base_pay: String,
+    currency: String,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct EmployeeDetailResponse {
+    employee: EmployeeResponse,
+    employment: EmployeeEmploymentDetail,
+}
+
+impl EmployeeDetailResponse {
+    /// The created (or replayed) employee id, for callers that link the
+    /// employee object without re-reading the row.
+    pub(crate) fn employee_id(&self) -> Uuid {
+        self.employee.id
+    }
+
+    pub(crate) fn employee_home_branch_id(&self) -> Option<Uuid> {
+        self.employee.home_branch_id
+    }
+
+    /// CAS token for the command-side home-branch assignment.
+    pub(crate) fn employee_updated_at(&self) -> time::OffsetDateTime {
+        self.employee.updated_at
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -344,10 +395,24 @@ struct AttendanceSummaryItem {
     last_event_at: Option<time::OffsetDateTime>,
 }
 #[derive(Debug, Deserialize)]
-struct AttendanceRecordsQuery {
+struct AttendanceSummaryQuery {
+    limit: Option<i64>,
+    offset: Option<i64>,
+    branch_id: Option<Uuid>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AttendanceManagerRecordsQuery {
     limit: Option<i64>,
     offset: Option<i64>,
     employee_id: Option<Uuid>,
+    branch_id: Option<Uuid>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AttendanceSelfRecordsQuery {
+    limit: Option<i64>,
+    offset: Option<i64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -413,6 +478,7 @@ struct HrPayrollReadinessSummary {
     draft_runs: i64,
     blocked_runs: i64,
     calculation_enabled_runs: i64,
+    active_close_runs: i64,
     draft_lines: i64,
     payroll_source_rows: i64,
     attendance_source_rows: i64,
@@ -735,6 +801,10 @@ async fn list_employees(
         .company
         .map(|value| value.trim().to_owned())
         .filter(|value| !value.is_empty());
+    let search = query
+        .search
+        .map(|value| value.trim().to_owned())
+        .filter(|value| !value.is_empty());
     let home_branch_review_required = query.home_branch_review_required;
 
     let (items, total) = with_org_conn::<_, _, HrError>(&state.pool, org, move |tx| {
@@ -749,6 +819,13 @@ async fn list_employees(
                 count.push(" AND e.company = ");
                 count.push_bind(company);
             }
+            if let Some(search) = search.as_deref() {
+                count.push(" AND (e.name ILIKE ");
+                count.push_bind(format!("%{search}%"));
+                count.push(" OR e.employee_number ILIKE ");
+                count.push_bind(format!("%{search}%"));
+                count.push(")");
+            }
             if let Some(required) = home_branch_review_required {
                 count.push(" AND (b.id IS NULL) = ");
                 count.push_bind(required);
@@ -761,6 +838,13 @@ async fn list_employees(
             if let Some(company) = company.as_deref() {
                 rows.push(" AND e.company = ");
                 rows.push_bind(company);
+            }
+            if let Some(search) = search.as_deref() {
+                rows.push(" AND (e.name ILIKE ");
+                rows.push_bind(format!("%{search}%"));
+                rows.push(" OR e.employee_number ILIKE ");
+                rows.push_bind(format!("%{search}%"));
+                rows.push(")");
             }
             if let Some(required) = home_branch_review_required {
                 rows.push(" AND (b.id IS NULL) = ");
@@ -789,6 +873,321 @@ async fn list_employees(
         limit,
         offset,
     }))
+}
+
+async fn create_employee(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Json(body): Json<CreateEmployeeRequest>,
+) -> Result<(StatusCode, Json<EmployeeDetailResponse>), HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryManage)?;
+    let command_store = state.leave_command_store.clone().ok_or_else(|| {
+        HrError::unavailable(
+            "leave command database is not configured; employee creation is unavailable",
+        )
+    })?;
+    let request = normalize_create_employee_request(body)?;
+    let org = principal.org_id;
+    let org_uuid = *org.as_uuid();
+    let actor = principal.user_id;
+    let request_hash = sha256_hex(
+        serde_json::to_string(&request)
+            .map_err(|_| HrError::validation("employee request could not be serialized"))?
+            .as_bytes(),
+    );
+    let employee_id = Uuid::new_v4();
+    let result = mnt_platform_request_context::scope_org(org, async move {
+        command_store
+            .create_employee(CreateEmployeeCommand {
+                employee_id,
+                employee_number: request.employee_number,
+                name: request.name,
+                company: request.company,
+                employment_type: request.employment_type,
+                phone_e164: request.phone_e164,
+                org_unit: request.org_unit,
+                position: request.position,
+                site: request.site,
+                home_branch_id: request.home_branch_id,
+                base_pay: request.base_pay,
+                idempotency_key: request.idempotency_key,
+                request_hash,
+                actor,
+                trace: TraceContext::generate(),
+            })
+            .await
+    })
+    .await
+    .map_err(HrError::from_leave_store)?;
+    let detail = with_org_conn::<_, _, HrError>(&state.pool, org, move |tx| {
+        Box::pin(async move { load_employee_detail(tx, org_uuid, result.employee_id).await })
+    })
+    .await?;
+    Ok((
+        if result.replayed {
+            StatusCode::OK
+        } else {
+            StatusCode::CREATED
+        },
+        Json(detail),
+    ))
+}
+
+pub(crate) fn employee_create_db_error(error: sqlx::Error) -> HrError {
+    if error
+        .as_database_error()
+        .and_then(|database| database.code())
+        .is_some_and(|code| code == "23505")
+    {
+        return HrError::from_kernel(KernelError::conflict(
+            "employee number or idempotency key is already in use",
+        ));
+    }
+    HrError::from(error)
+}
+
+/// The home-branch command capability both employee-creating surfaces
+/// (People & Workforce create, recruiting hire) must hold BEFORE writing.
+pub(crate) fn require_home_branch_command_store(state: &HrState) -> Result<PgLeaveStore, HrError> {
+    state
+        .leave_command_store
+        .clone()
+        .filter(PgLeaveStore::has_leave_command_pool)
+        .ok_or_else(|| {
+            HrError::unavailable(
+                "leave command database is not configured; employee creation requires the home-branch command capability",
+            )
+        })
+}
+
+/// Establish the employee's first home-branch routing authority through the
+/// isolated leave command capability (`leave_api.set_employee_home_branch`,
+/// which CASes on `updated_at`, re-validates the branch, requires the
+/// org-wide admin capability for a first assignment, and writes its own
+/// `employee.home_branch_set` audit). Idempotent and race-convergent: an
+/// already-assigned employee (replay) is returned untouched, and losing a
+/// concurrent first-assignment race to the SAME branch is success.
+pub(crate) async fn assign_home_branch_if_unset(
+    pool: &PgPool,
+    command_store: &PgLeaveStore,
+    org: OrgId,
+    employee_id: Uuid,
+    home_branch_id: Uuid,
+    actor: UserId,
+) -> Result<EmployeeDetailResponse, HrError> {
+    let load = |pool: &PgPool| {
+        let pool = pool.clone();
+        async move {
+            with_org_conn::<_, _, HrError>(&pool, org, move |tx| {
+                Box::pin(async move { load_employee_detail(tx, *org.as_uuid(), employee_id).await })
+            })
+            .await
+        }
+    };
+    let detail = load(pool).await?;
+    if detail.employee_home_branch_id().is_some() {
+        // Replayed create: the routing authority is already established and a
+        // replay must never clobber a later reassignment.
+        return Ok(detail);
+    }
+    match command_store
+        .set_employee_home_branch(
+            employee_id,
+            home_branch_id,
+            detail.employee_updated_at(),
+            actor,
+            TraceContext::generate(),
+        )
+        .await
+    {
+        Ok(_) => load(pool).await,
+        Err(PgLeaveError::ConcurrentModification) => {
+            let current = load(pool).await?;
+            if current.employee_home_branch_id() == Some(home_branch_id) {
+                // A same-key race partner won the identical first assignment.
+                Ok(current)
+            } else {
+                Err(HrError::from_leave_store(
+                    PgLeaveError::ConcurrentModification,
+                ))
+            }
+        }
+        Err(error) => Err(HrError::from_leave_store(error)),
+    }
+}
+
+/// The transactional core of employee creation — the ONLY write path into
+/// `employees` + `employee_employment_profiles`. Shared by the People &
+/// Workforce endpoint above and the recruiting hire handshake
+/// (`recruiting_hire`), which calls it inside its own `with_audits`
+/// transaction so the employee row and the recruiting linkage commit
+/// atomically. Same idempotency reservation, same tables, same lifecycle
+/// event. Callers own authorization and append the `employee.create` audit
+/// (from [`employee_create_audit`]) only when `replayed` is false.
+pub(crate) async fn create_employee_core(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    org_uuid: Uuid,
+    actor: UserId,
+    request: &NormalizedCreateEmployeeRequest,
+    request_hash: &str,
+    employee_id: Uuid,
+) -> Result<(EmployeeDetailResponse, bool), HrError> {
+    sqlx::query(
+        "INSERT INTO employee_create_idempotency (org_id, idempotency_key, request_hash) VALUES ($1, $2, $3) ON CONFLICT (org_id, idempotency_key) DO NOTHING",
+    )
+    .bind(org_uuid)
+    .bind(&request.idempotency_key)
+    .bind(request_hash)
+    .execute(tx.as_mut())
+    .await
+    .map_err(employee_create_db_error)?;
+    let reservation = sqlx::query(
+        "SELECT request_hash, employee_id FROM employee_create_idempotency WHERE org_id = $1 AND idempotency_key = $2 FOR UPDATE",
+    )
+    .bind(org_uuid)
+    .bind(&request.idempotency_key)
+    .fetch_one(tx.as_mut())
+    .await?;
+    let stored_hash: String = reservation.try_get("request_hash")?;
+    if stored_hash != request_hash {
+        return Err(HrError::from_kernel(KernelError::conflict(
+            "idempotency key already used with a different employee payload",
+        )));
+    }
+    if let Some(existing_id) = reservation.try_get::<Option<Uuid>, _>("employee_id")? {
+        return Ok((load_employee_detail(tx, org_uuid, existing_id).await?, true));
+    }
+    let branch_exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM branches WHERE org_id = $1 AND id = $2 AND deactivated_at IS NULL)",
+    )
+    .bind(org_uuid)
+    .bind(request.home_branch_id)
+    .fetch_one(tx.as_mut())
+    .await?;
+    if !branch_exists {
+        return Err(HrError::from_kernel(KernelError::not_found(
+            "active home branch was not found in this organization",
+        )));
+    }
+
+    // home_branch_id is intentionally NOT inserted: since 0166 the branch
+    // routing authority is command-only (the mnt_rt guard rejects it), so the
+    // caller establishes it post-commit via [`assign_home_branch_if_unset`].
+    sqlx::query(
+        r#"INSERT INTO employees (
+            id, org_id, company, name, employee_number, org_unit, position,
+            worksite_name, source_filename, source_sheet,
+            source_row, source_key, raw_row, source_metadata,
+            identity_resolution_strategy, identity_resolution_confidence,
+            identity_review_required, identity_name_only_merge
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, 'console', 'people', 1,
+            $9, '{}'::jsonb, '{}'::jsonb, 'employee_number', 'high', FALSE, FALSE
+        )"#,
+    )
+    .bind(employee_id)
+    .bind(org_uuid)
+    .bind(&request.company)
+    .bind(&request.name)
+    .bind(&request.employee_number)
+    .bind(&request.org_unit)
+    .bind(&request.position)
+    .bind(&request.site)
+    .bind(format!("console:{}", request.employee_number))
+    .execute(tx.as_mut())
+    .await
+    .map_err(employee_create_db_error)?;
+    sqlx::query(
+        r#"INSERT INTO employee_employment_profiles (
+            employee_id, org_id, employment_type, phone_e164, base_pay,
+            idempotency_key, request_hash, created_by
+        ) VALUES ($1, $2, $3, $4, $5::numeric, $6, $7, $8)"#,
+    )
+    .bind(employee_id)
+    .bind(org_uuid)
+    .bind(&request.employment_type)
+    .bind(&request.phone_e164)
+    .bind(&request.base_pay)
+    .bind(&request.idempotency_key)
+    .bind(request_hash)
+    .bind(*actor.as_uuid())
+    .execute(tx.as_mut())
+    .await
+    .map_err(employee_create_db_error)?;
+    sqlx::query(
+        r#"INSERT INTO employee_lifecycle_events (
+            id, org_id, employee_id, event_type, to_status, to_company,
+            to_org_unit, to_position, effective_date, comment, signoffs, created_by
+        ) VALUES ($1, $2, $3, 'ONBOARD', 'ACTIVE', $4, $5, $6, $7,
+            'Created through People & Workforce',
+            '{}'::jsonb,
+            $8)"#,
+    )
+    .bind(Uuid::new_v4())
+    .bind(org_uuid)
+    .bind(employee_id)
+    .bind(&request.company)
+    .bind(&request.org_unit)
+    .bind(&request.position)
+    .bind(OffsetDateTime::now_utc().date().to_string())
+    .bind(*actor.as_uuid())
+    .execute(tx.as_mut())
+    .await
+    .map_err(employee_create_db_error)?;
+    sqlx::query(
+        "UPDATE employee_create_idempotency SET employee_id = $3 WHERE org_id = $1 AND idempotency_key = $2",
+    )
+    .bind(org_uuid).bind(&request.idempotency_key).bind(employee_id)
+    .execute(tx.as_mut()).await?;
+    Ok((
+        load_employee_detail(tx, org_uuid, employee_id).await?,
+        false,
+    ))
+}
+
+/// The `employee.create` audit event that accompanies a non-replayed
+/// [`create_employee_core`] call, identical for both write paths.
+pub(crate) fn employee_create_audit(
+    org: OrgId,
+    actor: UserId,
+    request: &NormalizedCreateEmployeeRequest,
+    employee_id: Uuid,
+) -> Result<AuditEvent, HrError> {
+    Ok(AuditEvent::new(
+        Some(actor),
+        AuditAction::new("employee.create").map_err(HrError::from_kernel)?,
+        "employee",
+        employee_id.to_string(),
+        TraceContext::generate(),
+        OffsetDateTime::now_utc(),
+    )
+    .with_org(org)
+    .with_branch(BranchId::from_uuid(request.home_branch_id))
+    .with_snapshots(
+        None,
+        Some(json!({
+            "employee_number": &request.employee_number,
+            "employment_type": &request.employment_type,
+            "requested_home_branch_id": request.home_branch_id,
+            "compensation_recorded": true,
+            "phone_recorded": true
+        })),
+    ))
+}
+
+async fn get_employee_detail(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(employee_id): Path<Uuid>,
+) -> Result<Json<EmployeeDetailResponse>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryManage)?;
+    let org = principal.org_id;
+    let org_uuid = *org.as_uuid();
+    let detail = with_org_conn::<_, _, HrError>(&state.pool, org, move |tx| {
+        Box::pin(async move { load_employee_detail(tx, org_uuid, employee_id).await })
+    })
+    .await?;
+    Ok(Json(detail))
 }
 
 /// Assign the employee's authoritative approval-routing branch. No inference is
@@ -1065,12 +1464,15 @@ async fn list_leave_balances(
 async fn list_attendance_summary(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
-    Query(query): Query<HrListQuery>,
+    Query(query): Query<AttendanceSummaryQuery>,
 ) -> Result<Json<AttendanceSummaryPage>, HrError> {
-    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    let scope = authorize_hr_attendance_branch_query(
+        &principal,
+        Feature::EmployeeDirectoryRead,
+        query.branch_id,
+    )?;
     record_hr_read("attendance_summary");
     let org = principal.org_id;
-    let scope = principal.branch_scope.clone();
     let limit = query.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT);
     let offset = query.offset.unwrap_or(0).max(0);
 
@@ -1079,7 +1481,7 @@ async fn list_attendance_summary(
             let mut total_query = QueryBuilder::<Postgres>::new(
                 "SELECT COUNT(*) FROM (SELECT l.user_id FROM site_attendance_events l WHERE ",
             );
-            push_attendance_branch_scope(&mut total_query, &scope);
+            push_attendance_branch_filter(&mut total_query, scope);
             total_query.push(" GROUP BY l.user_id) counted");
             let total: i64 = total_query
                 .build_query_scalar()
@@ -1100,7 +1502,7 @@ async fn list_attendance_summary(
                 WHERE
                 "#,
             );
-            push_attendance_branch_scope(&mut rows_query, &scope);
+            push_attendance_branch_filter(&mut rows_query, scope);
             rows_query.push(
                 " GROUP BY l.user_id, u.display_name ORDER BY last_event_at DESC, l.user_id DESC LIMIT ",
             );
@@ -1140,7 +1542,7 @@ async fn list_attendance_summary(
 async fn list_my_attendance_records(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
-    Query(query): Query<AttendanceRecordsQuery>,
+    Query(query): Query<AttendanceSelfRecordsQuery>,
 ) -> Result<Json<EmployeeAttendanceRecordPage>, HrError> {
     record_hr_read("employee_attendance_self");
     let org = principal.org_id;
@@ -1156,7 +1558,7 @@ async fn list_my_attendance_records(
             // require a link via `load_linked_employee_for_user`.)
             match load_optional_linked_employee_id(tx, org, user_id).await? {
                 Some(employee_id) => {
-                    list_attendance_records_for_employee(tx, employee_id, limit, offset).await
+                    list_attendance_records_for_employee(tx, employee_id, None, limit, offset).await
                 }
                 None => Ok(EmployeeAttendanceRecordPage {
                     items: Vec::new(),
@@ -1175,9 +1577,13 @@ async fn list_my_attendance_records(
 async fn list_attendance_records(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
-    Query(query): Query<AttendanceRecordsQuery>,
+    Query(query): Query<AttendanceManagerRecordsQuery>,
 ) -> Result<Json<EmployeeAttendanceRecordPage>, HrError> {
-    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    let branch_id = authorize_hr_attendance_branch_query(
+        &principal,
+        Feature::EmployeeDirectoryRead,
+        query.branch_id,
+    )?;
     record_hr_read("employee_attendance_management");
     let org = principal.org_id;
     let limit = query.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT);
@@ -1187,9 +1593,10 @@ async fn list_attendance_records(
     let page = with_org_conn::<_, _, HrError>(&state.pool, org, move |tx| {
         Box::pin(async move {
             if let Some(employee_id) = employee_id {
-                list_attendance_records_for_employee(tx, employee_id, limit, offset).await
+                list_attendance_records_for_employee(tx, employee_id, branch_id, limit, offset)
+                    .await
             } else {
-                list_attendance_records_for_org(tx, limit, offset).await
+                list_attendance_records_for_org(tx, branch_id, limit, offset).await
             }
         })
     })
@@ -1424,6 +1831,11 @@ async fn get_hr_readiness_summary(
                     COUNT(*)::BIGINT AS draft_runs,
                     COUNT(*) FILTER (WHERE status = 'BLOCKED_LEGAL_GATE')::BIGINT AS blocked_runs,
                     COUNT(*) FILTER (WHERE calculation_enabled)::BIGINT AS calculation_enabled_runs,
+                    -- Inspectable close states are STAGED, BLOCKED_LEGAL_GATE,
+                    -- READY_FOR_REVIEW, and APPROVED. ISSUED and VOID are terminal history.
+                    COUNT(*) FILTER (
+                        WHERE status IN ('STAGED', 'BLOCKED_LEGAL_GATE', 'READY_FOR_REVIEW', 'APPROVED')
+                    )::BIGINT AS active_close_runs,
                     (ARRAY_AGG(status ORDER BY updated_at DESC, id DESC))[1] AS latest_status,
                     (ARRAY_AGG(source_label ORDER BY updated_at DESC, id DESC))[1] AS latest_source_label,
                     (ARRAY_AGG(period_start::TEXT ORDER BY updated_at DESC, id DESC))[1] AS latest_period_start,
@@ -1498,6 +1910,7 @@ async fn get_hr_readiness_summary(
                     blocked_runs: payroll_run_row.try_get("blocked_runs")?,
                     calculation_enabled_runs: payroll_run_row
                         .try_get("calculation_enabled_runs")?,
+                    active_close_runs: payroll_run_row.try_get("active_close_runs")?,
                     draft_lines: payroll_line_row.try_get("draft_lines")?,
                     payroll_source_rows: payroll_line_row.try_get("payroll_source_rows")?,
                     attendance_source_rows: payroll_line_row
@@ -5535,7 +5948,7 @@ async fn compute_employee_import_dry_run(
     })
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
     hex::encode(hasher.finalize())
@@ -6447,7 +6860,9 @@ fn with_ordinary_wage_basis(
 /// in production (safe — nothing gates on it yet, and the atomic reset in every
 /// settlement UPDATE plus the digest-match honoring below hold the invariant the
 /// moment a recording path is added). It is exercised by the certification tests.
-#[cfg_attr(not(test), allow(dead_code))]
+// The certification tests that exercise it are `#[cfg(feature =
+// "test-postgres")]`, so it is unused in a plain `cfg(test)` build too.
+#[allow(dead_code)]
 fn certification_artifact_json(validation: &ProfessionalValidation) -> Value {
     let reviewer_kind = match validation.reviewer_kind {
         ProfessionalReviewerKind::LaborAttorney => "LABOR_ATTORNEY",
@@ -6989,17 +7404,24 @@ async fn load_optional_linked_employee_id(
 async fn list_attendance_records_for_employee(
     tx: &mut sqlx::Transaction<'_, Postgres>,
     employee_id: Uuid,
+    branch_id: Option<Uuid>,
     limit: i64,
     offset: i64,
 ) -> Result<EmployeeAttendanceRecordPage, HrError> {
-    let total: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*)::BIGINT FROM employee_attendance_records WHERE employee_id = $1",
-    )
-    .bind(employee_id)
-    .fetch_one(tx.as_mut())
-    .await?;
+    let mut total_query = QueryBuilder::<Postgres>::new(
+        "SELECT COUNT(*)::BIGINT FROM employee_attendance_records r JOIN employees e ON e.id = r.employee_id AND e.org_id = r.org_id WHERE r.employee_id = ",
+    );
+    total_query.push_bind(employee_id);
+    if let Some(branch_id) = branch_id {
+        total_query.push(" AND e.home_branch_id = ");
+        total_query.push_bind(branch_id);
+    }
+    let total: i64 = total_query
+        .build_query_scalar()
+        .fetch_one(tx.as_mut())
+        .await?;
 
-    let rows = sqlx::query(
+    let mut rows_query = QueryBuilder::<Postgres>::new(
         r#"
         SELECT
             r.id,
@@ -7018,16 +7440,19 @@ async fn list_attendance_records_for_employee(
         JOIN payroll_attendance_material_refs pmr
           ON pmr.attendance_record_id = r.id
          AND pmr.org_id = r.org_id
-        WHERE r.employee_id = $1
-        ORDER BY r.occurred_at DESC, r.created_at DESC, r.id DESC
-        LIMIT $2 OFFSET $3
+        WHERE r.employee_id =
         "#,
-    )
-    .bind(employee_id)
-    .bind(limit)
-    .bind(offset)
-    .fetch_all(tx.as_mut())
-    .await?;
+    );
+    rows_query.push_bind(employee_id);
+    if let Some(branch_id) = branch_id {
+        rows_query.push(" AND e.home_branch_id = ");
+        rows_query.push_bind(branch_id);
+    }
+    rows_query.push(" ORDER BY r.occurred_at DESC, r.created_at DESC, r.id DESC LIMIT ");
+    rows_query.push_bind(limit);
+    rows_query.push(" OFFSET ");
+    rows_query.push_bind(offset);
+    let rows = rows_query.build().fetch_all(tx.as_mut()).await?;
 
     let items = rows
         .into_iter()
@@ -7044,14 +7469,23 @@ async fn list_attendance_records_for_employee(
 
 async fn list_attendance_records_for_org(
     tx: &mut sqlx::Transaction<'_, Postgres>,
+    branch_id: Option<Uuid>,
     limit: i64,
     offset: i64,
 ) -> Result<EmployeeAttendanceRecordPage, HrError> {
-    let total: i64 = sqlx::query_scalar("SELECT COUNT(*)::BIGINT FROM employee_attendance_records")
+    let mut total_query = QueryBuilder::<Postgres>::new(
+        "SELECT COUNT(*)::BIGINT FROM employee_attendance_records r JOIN employees e ON e.id = r.employee_id AND e.org_id = r.org_id WHERE TRUE",
+    );
+    if let Some(branch_id) = branch_id {
+        total_query.push(" AND e.home_branch_id = ");
+        total_query.push_bind(branch_id);
+    }
+    let total: i64 = total_query
+        .build_query_scalar()
         .fetch_one(tx.as_mut())
         .await?;
 
-    let rows = sqlx::query(
+    let mut rows_query = QueryBuilder::<Postgres>::new(
         r#"
         SELECT
             r.id,
@@ -7070,14 +7504,18 @@ async fn list_attendance_records_for_org(
         JOIN payroll_attendance_material_refs pmr
           ON pmr.attendance_record_id = r.id
          AND pmr.org_id = r.org_id
-        ORDER BY r.occurred_at DESC, r.created_at DESC, r.id DESC
-        LIMIT $1 OFFSET $2
+        WHERE TRUE
         "#,
-    )
-    .bind(limit)
-    .bind(offset)
-    .fetch_all(tx.as_mut())
-    .await?;
+    );
+    if let Some(branch_id) = branch_id {
+        rows_query.push(" AND e.home_branch_id = ");
+        rows_query.push_bind(branch_id);
+    }
+    rows_query.push(" ORDER BY r.occurred_at DESC, r.created_at DESC, r.id DESC LIMIT ");
+    rows_query.push_bind(limit);
+    rows_query.push(" OFFSET ");
+    rows_query.push_bind(offset);
+    let rows = rows_query.build().fetch_all(tx.as_mut()).await?;
 
     let items = rows
         .into_iter()
@@ -7251,6 +7689,146 @@ fn normalize_optional_text(value: Option<String>) -> Option<String> {
     value
         .map(|value| value.trim().to_owned())
         .filter(|value| !value.is_empty())
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct NormalizedCreateEmployeeRequest {
+    employee_number: String,
+    name: String,
+    company: String,
+    employment_type: String,
+    phone_e164: String,
+    org_unit: String,
+    position: String,
+    site: String,
+    home_branch_id: Uuid,
+    base_pay: String,
+    idempotency_key: String,
+}
+
+fn required_employee_text(value: String, field: &str) -> Result<String, HrError> {
+    let normalized = value.trim().to_owned();
+    if normalized.is_empty() || normalized.len() > 200 {
+        return Err(HrError::validation(format!(
+            "{field} is required and must be 200 characters or fewer"
+        )));
+    }
+    Ok(normalized)
+}
+
+fn normalize_phone_e164(value: String) -> Result<String, HrError> {
+    let compact: String = value
+        .chars()
+        .filter(|c| c.is_ascii_digit() || *c == '+')
+        .collect();
+    let phone = if let Some(local) = compact.strip_prefix("+82") {
+        format!("+82{}", local.strip_prefix('0').unwrap_or(local))
+    } else if let Some(international) = compact.strip_prefix("82") {
+        format!(
+            "+82{}",
+            international.strip_prefix('0').unwrap_or(international)
+        )
+    } else if let Some(local) = compact.strip_prefix('0') {
+        format!("+82{local}")
+    } else if compact.starts_with('+') {
+        compact
+    } else {
+        format!("+{compact}")
+    };
+    let valid = phone.len() >= 9
+        && phone.len() <= 16
+        && phone.starts_with('+')
+        && phone[1..].chars().next().is_some_and(|c| c != '0')
+        && phone[1..].chars().all(|c| c.is_ascii_digit());
+    if !valid {
+        return Err(HrError::validation("phone must be an E.164 number"));
+    }
+    Ok(phone)
+}
+
+pub(crate) fn normalize_create_employee_request(
+    body: CreateEmployeeRequest,
+) -> Result<NormalizedCreateEmployeeRequest, HrError> {
+    let employment_type = normalize_enum_text(body.employment_type);
+    if !matches!(
+        employment_type.as_str(),
+        "REGULAR" | "CONTRACT" | "PART_TIME" | "INTERN"
+    ) {
+        return Err(HrError::validation(
+            "employment_type must be REGULAR, CONTRACT, PART_TIME, or INTERN",
+        ));
+    }
+    let base_pay = normalize_employee_base_pay(body.base_pay)?;
+    Ok(NormalizedCreateEmployeeRequest {
+        employee_number: required_employee_text(body.employee_number, "employee_number")?,
+        name: required_employee_text(body.name, "name")?,
+        company: required_employee_text(body.company, "company")?,
+        employment_type,
+        phone_e164: normalize_phone_e164(body.phone)?,
+        org_unit: required_employee_text(body.org_unit, "org_unit")?,
+        position: required_employee_text(body.position, "position")?,
+        site: required_employee_text(body.site, "site")?,
+        home_branch_id: body.home_branch_id,
+        base_pay,
+        idempotency_key: normalize_idempotency_key(body.idempotency_key)?,
+    })
+}
+
+/// Produces a fixed-scale decimal accepted by PostgreSQL `NUMERIC(14,2)` without
+/// float rounding, exponent notation, leading zeros, or silent truncation.
+fn normalize_employee_base_pay(value: String) -> Result<String, HrError> {
+    let value = value.trim();
+    let (whole, fraction) = value
+        .split_once('.')
+        .map_or((value, None), |(whole, fraction)| (whole, Some(fraction)));
+    let valid_whole = whole == "0"
+        || (whole.len() <= 12
+            && !whole.starts_with('0')
+            && whole.chars().all(|character| character.is_ascii_digit()));
+    let valid_fraction = fraction.is_none_or(|fraction| {
+        !fraction.is_empty()
+            && fraction.len() <= 2
+            && fraction.chars().all(|character| character.is_ascii_digit())
+    });
+    if !valid_whole || !valid_fraction {
+        return Err(HrError::validation(
+            "base_pay must be a canonical NUMERIC(14,2) decimal",
+        ));
+    }
+    let fraction = fraction.unwrap_or("0");
+    Ok(format!("{whole}.{fraction:0<2}"))
+}
+
+async fn load_employee_detail(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    org_id: Uuid,
+    employee_id: Uuid,
+) -> Result<EmployeeDetailResponse, HrError> {
+    let row = sqlx::query(
+        r#"SELECT e.id, e.company, e.name, e.employee_number, e.org_unit, e.job,
+            e.position, e.worksite_name, e.worksite_address, e.hire_date, e.exit_date,
+            e.employment_status, e.leave_accrued::TEXT AS leave_accrued,
+            e.leave_used::TEXT AS leave_used, e.leave_remaining::TEXT AS leave_remaining,
+            b.id AS home_branch_id, b.name AS home_branch_name,
+            e.identity_resolution_strategy, e.identity_resolution_confidence,
+            e.identity_review_required, e.identity_name_only_merge, e.created_at, e.updated_at,
+            p.employment_type, p.phone_e164, p.base_pay::TEXT AS base_pay, p.currency
+        FROM employees e
+        JOIN employee_employment_profiles p ON p.employee_id = e.id AND p.org_id = e.org_id
+        LEFT JOIN branches b ON b.id = e.home_branch_id AND b.org_id = e.org_id AND b.deactivated_at IS NULL
+        WHERE e.org_id = $1 AND e.id = $2"#,
+    ).bind(org_id).bind(employee_id).fetch_optional(tx.as_mut()).await?
+        .ok_or_else(|| HrError::from_kernel(KernelError::not_found("employee was not found in this organization")))?;
+    let employment = EmployeeEmploymentDetail {
+        employment_type: row.try_get("employment_type")?,
+        phone_e164: row.try_get("phone_e164")?,
+        base_pay: row.try_get("base_pay")?,
+        currency: row.try_get("currency")?,
+    };
+    Ok(EmployeeDetailResponse {
+        employee: employee_from_row(row)?,
+        employment,
+    })
 }
 
 fn employee_from_row(row: sqlx::postgres::PgRow) -> Result<EmployeeResponse, HrError> {
@@ -7505,6 +8083,22 @@ fn push_attendance_branch_scope(builder: &mut QueryBuilder<Postgres>, scope: &Br
     };
 }
 
+/// Manager attendance endpoints either receive a concrete authorized branch or
+/// passed the explicit organization-wide gate. Do not derive a filter from the
+/// caller's ambient scope here: branch omission is already a distinct contract.
+fn push_attendance_branch_filter(builder: &mut QueryBuilder<Postgres>, branch_id: Option<Uuid>) {
+    match branch_id {
+        Some(branch_id) => {
+            builder.push(" l.branch_id = ");
+            builder.push_bind(branch_id);
+            builder.push(" ");
+        }
+        None => {
+            builder.push(" TRUE ");
+        }
+    }
+}
+
 fn push_branch_scope_column(
     builder: &mut QueryBuilder<Postgres>,
     scope: &BranchScope,
@@ -7543,6 +8137,31 @@ fn record_hr_import(inserted: usize, updated: usize) {
 
 fn authorize_hr_org_wide(principal: &Principal, feature: Feature) -> Result<(), HrError> {
     authorize_org_wide(principal, Action::new(feature)).map_err(HrError::from_kernel)
+}
+
+/// Attendance manager routes are explicit about whether a concrete branch was
+/// requested. A missing query parameter is an org-wide request; it is never
+/// inferred from the caller's branch membership.
+fn authorize_hr_attendance_branch_query(
+    principal: &Principal,
+    feature: Feature,
+    branch_id: Option<Uuid>,
+) -> Result<Option<Uuid>, HrError> {
+    match branch_id {
+        Some(branch_id) => {
+            authorize(
+                principal,
+                Action::new(feature),
+                BranchId::from_uuid(branch_id),
+            )
+            .map_err(HrError::from_kernel)?;
+            Ok(Some(branch_id))
+        }
+        None => {
+            authorize_hr_org_wide(principal, feature)?;
+            Ok(None)
+        }
+    }
 }
 
 fn authorize_hr_scoped(principal: &Principal, feature: Feature) -> Result<(), HrError> {
@@ -7685,14 +8304,14 @@ fn normalize_optional_limited_text(
 }
 
 #[derive(Debug)]
-struct HrError {
+pub(crate) struct HrError {
     status: StatusCode,
     code: &'static str,
     message: String,
 }
 
 impl HrError {
-    fn from_kernel(error: KernelError) -> Self {
+    pub(crate) fn from_kernel(error: KernelError) -> Self {
         let status = match error.kind {
             ErrorKind::Validation => StatusCode::UNPROCESSABLE_ENTITY,
             ErrorKind::NotFound => StatusCode::NOT_FOUND,
@@ -7707,7 +8326,7 @@ impl HrError {
         }
     }
 
-    fn validation(message: impl Into<String>) -> Self {
+    pub(crate) fn validation(message: impl Into<String>) -> Self {
         Self::from_kernel(KernelError::validation(message.into()))
     }
 
@@ -7799,6 +8418,7 @@ mod tests {
     use super::*;
     use calamine::Range;
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn parses_each_sheet_as_company_and_preserves_extra_columns() -> Result<(), String> {
         let mut range = Range::new((0, 0), (2, 2));
@@ -7825,6 +8445,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn missing_name_header_is_a_workbook_error() -> Result<(), String> {
         let mut range = Range::new((0, 0), (0, 0));
@@ -7840,6 +8461,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_csv_parses_valid_rows_and_masks_preview_values() -> Result<(), String> {
         let csv = "\
@@ -7874,6 +8496,7 @@ E-001,=홍길동,본사,2026-07-01,09:00,18:00,540,=cmd|' /C calc'!A0
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_marks_missing_employee_and_duplicate_rows() -> Result<(), String> {
         let missing_employee_csv = "\
@@ -7914,6 +8537,7 @@ E-001,홍길동,본사,2026-07-01,09:00,18:00
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_rejects_invalid_work_date() -> Result<(), String> {
         let csv = "\
@@ -7933,6 +8557,7 @@ E-001,홍길동,본사,45500,09:00
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_rejects_invalid_attendance_time() -> Result<(), String> {
         let csv = "\
@@ -7951,6 +8576,7 @@ E-001,홍길동,본사,2026-07-01,25:99
         );
         Ok(())
     }
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn attendance_import_resolves_dedups_and_enforces_runtime_guards(
         pool: sqlx::PgPool,
@@ -8340,6 +8966,7 @@ E-001,홍길동,본사,2026-07-01,25:99
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_keeps_invalid_minutes_as_row_error() -> Result<(), String> {
         let csv = "\
@@ -8359,6 +8986,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_import_rejects_unclosed_csv_quote() -> Result<(), String> {
         let err = match parse_csv_rows("\"unterminated") {
@@ -8369,6 +8997,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn governed_import_detects_schema_header_below_title_rows() -> Result<(), String> {
         let mut range = Range::new((0, 0), (2, 2));
@@ -8402,6 +9031,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn canonical_employee_fields_extract_hr_safe_columns() {
         let raw = json!({
@@ -8429,6 +9059,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert_eq!(canonical.leave_remaining.as_deref(), Some("7.500000"));
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn canonical_employee_fields_marks_exited_people_without_deleting_raw_data() {
         let raw = json!({
@@ -8444,6 +9075,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert_eq!(raw["퇴직금 중간정산일"], json!("2025-12-31"));
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn governed_import_preview_preserves_blank_name_rows_and_masks_sensitive_columns()
     -> Result<(), String> {
@@ -8477,6 +9109,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn governed_import_maps_shuffled_alias_headers_without_column_position_assumptions()
     -> Result<(), String> {
@@ -8534,12 +9167,14 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn standardized_csv_neutralizes_spreadsheet_formulas() {
         assert_eq!(csv_field("=cmd|' /C calc'!A0"), "'=cmd|' /C calc'!A0");
         assert_eq!(csv_field("hello, world"), "\"hello, world\"");
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_response_serializes_canonical_fields_without_import_provenance()
     -> Result<(), String> {
@@ -8594,6 +9229,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_identity_resolution_rejects_name_only_and_untrusted_confidence() {
         let metadata = json!({
@@ -8613,6 +9249,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert!(!identity.name_only_merge);
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_identity_resolution_accepts_high_confidence_trusted_strategies() {
         let metadata = json!({
@@ -8630,6 +9267,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert!(!identity.name_only_merge);
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_identity_resolution_keeps_weak_strategies_review_required() {
         let metadata = json!({
@@ -8647,6 +9285,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert!(!identity.name_only_merge);
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn org_wide_hr_authorization_rejects_branch_scoped_principals() -> Result<(), String> {
         use mnt_kernel_core::{BranchId, OrgId, UserId};
@@ -8672,6 +9311,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn org_wide_hr_authorization_uses_core_org_wide_gate() -> Result<(), String> {
         use mnt_kernel_core::{OrgId, UserId};
@@ -8707,6 +9347,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn home_branch_assignment_requires_org_wide_authority_when_unassigned() -> Result<(), String> {
         use mnt_kernel_core::{OrgId, UserId};
@@ -8735,6 +9376,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn home_branch_assignment_fails_closed_without_command_pool() -> Result<(), String> {
         use mnt_kernel_core::{OrgId, UserId};
@@ -8770,6 +9412,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn home_branch_reassignment_requires_authority_over_old_and_new_branch() {
         use mnt_kernel_core::{OrgId, UserId};
@@ -8811,6 +9454,7 @@ E-001,홍길동,본사,2026-07-01,abc
         );
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn employee_import_batch_rolls_back_mid_batch_then_retries_atomically(
         pool: sqlx::PgPool,
@@ -9051,6 +9695,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn legacy_employee_import_audits_roster_only_apply_and_skips_exact_replay(
         pool: sqlx::PgPool,
@@ -9151,6 +9796,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn home_branch_assignment_is_explicit_versioned_and_audited(
         pool: sqlx::PgPool,
@@ -9274,6 +9920,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert_eq!(inactive_err.status, StatusCode::NOT_FOUND);
         Ok(())
     }
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_attendance_state_machine_accepts_mobile_pc_workday_flow() -> Result<(), String> {
         assert_eq!(
@@ -9303,6 +9950,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn employee_attendance_state_machine_rejects_invalid_duplicate_punches() -> Result<(), String> {
         let err = match next_employee_attendance_state(None, "CLOCK_OUT") {
@@ -9321,6 +9969,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn attendance_input_normalization_bounds_mobile_retry_fields() {
         let kind = normalize_attendance_kind(" business_trip ")
@@ -9342,6 +9991,7 @@ E-001,홍길동,본사,2026-07-01,abc
         );
     }
 
+    #[allow(dead_code)]
     fn sample_settlement_input() -> ExitSettlementInput {
         ExitSettlementInput {
             average_wage_period_start: "2026-04-01".to_owned(),
@@ -9352,6 +10002,7 @@ E-001,홍길동,본사,2026-07-01,abc
         }
     }
 
+    #[allow(dead_code)]
     async fn arm_mnt_rt(
         tx: &mut sqlx::Transaction<'_, Postgres>,
         org_id: Uuid,
@@ -9368,6 +10019,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[allow(dead_code)]
     async fn seed_exit_case(pool: &sqlx::PgPool) -> Result<(Uuid, Uuid), String> {
         let org_id = Uuid::new_v4();
         let region_id = Uuid::new_v4();
@@ -9441,6 +10093,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok((org_id, case_id))
     }
 
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn certified_package_digest_is_deterministic_and_canonical() {
         let statutory = json!({"formula": "avg*30*days/365", "authority": "MOEL"});
@@ -9495,6 +10148,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// ONLY the monthly ordinary wage (holding severance and every other covered
     /// field byte-identical — the case where the average wage governs the floor)
     /// must still change the digest.
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn certified_digest_binds_ordinary_wage_even_when_severance_unchanged() {
         let statutory = json!({"formula": "avg*30*days/365"});
@@ -9529,6 +10183,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// BEFORE dividing (`(monthly * 8) / 209`), never floor `monthly / 209` first.
     /// Flooring first understated the daily ordinary wage by up to 7 won/day and
     /// under-paid severance whenever the ordinary floor governed.
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn ordinary_daily_wage_multiplies_before_dividing() -> Result<(), String> {
         // monthly % 209 != 0 and the remainder × 8 crosses 209, so the buggy
@@ -9556,6 +10211,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn settlement_recalculation_reverts_certification(
         pool: sqlx::PgPool,
@@ -9644,6 +10300,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn certification_honored_only_when_digest_binds_current_numbers(
         pool: sqlx::PgPool,
@@ -9813,6 +10470,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// proving migration 0094's `enforce_settlement_certification_reset()` BEFORE
     /// UPDATE trigger fires for ANY write path, not just the two app statements.
     /// This asserts the STORED row (not merely the read-path demotion).
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn direct_covered_field_update_resets_stored_certification(
         pool: sqlx::PgPool,
@@ -9936,6 +10594,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// FAILS if either payload fails to flip to CERTIFIED once a matching
     /// digest is recorded — proving the marker derives from the single
     /// effective-status computation rather than being hand-placed per payload.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn generated_payloads_carry_the_uncertified_draft_marker(
         pool: sqlx::PgPool,
@@ -10117,6 +10776,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[allow(dead_code)]
     async fn seed_exit_confirmer(
         pool: &sqlx::PgPool,
         org_id: Uuid,
@@ -10139,6 +10799,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// US-005 two-tier separation of duties, pure decision function: HQ
     /// confirmation is gated on stored state + a distinct actor, never the
     /// client `hq_confirmation` boolean alone.
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn exit_confirmation_hq_tier_enforces_state_and_distinct_actor() -> Result<(), String> {
         let hr_actor = Uuid::new_v4();
@@ -10178,6 +10839,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// US-005 per-endpoint capability matrix, checked as capabilities against a
     /// real case's branch as `mnt_rt`: a role lacking each new capability is
     /// rejected on the corresponding endpoint's gate.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn exit_endpoints_reject_roles_lacking_the_new_capabilities(
         pool: sqlx::PgPool,
@@ -10256,6 +10918,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// the decision derives from the persisted status + `hr_confirmed_by`, not
     /// the client flag. Covers (a) same-actor HQ rejected, (b) out-of-order HQ
     /// (still REPORTED) rejected, (c) a distinct HQ actor allowed.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn exit_confirmation_two_tier_uses_stored_state_not_client_flag(
         pool: sqlx::PgPool,
@@ -10360,6 +11023,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// org GUC armed — the ONLY correct way to exercise RLS here, since the test
     /// pool logs in as the superuser/BYPASSRLS migration role and `mnt_rt` is
     /// NOLOGIN (cannot be a login pool).
+    #[allow(dead_code)]
     async fn armed_tx(
         pool: &sqlx::PgPool,
         org_id: Uuid,
@@ -10376,6 +11040,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// the superuser pool role. Returns `(org_id, branch_id, employee_id,
     /// user_id)`. Seeding deliberately bypasses RLS; the isolation checks run in
     /// a separate `mnt_rt` transaction.
+    #[allow(dead_code)]
     async fn seed_g009_base(pool: &sqlx::PgPool) -> Result<(Uuid, Uuid, Uuid, Uuid), String> {
         let org_id = Uuid::new_v4();
         let region_id = Uuid::new_v4();
@@ -10433,6 +11098,7 @@ E-001,홍길동,본사,2026-07-01,abc
 
     /// Seed one row into each of the three G009 tenant tables for `org_id`.
     /// Returns `(alert_id, case_id, package_id)`.
+    #[allow(dead_code)]
     async fn seed_g009_rows(
         pool: &sqlx::PgPool,
         org_id: Uuid,
@@ -10494,6 +11160,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// Seeding runs as the superuser pool role; the assertions run strictly as
     /// `mnt_rt` (via `arm_mnt_rt`), so a broken `org_isolation` policy cannot be
     /// masked by BYPASSRLS.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn g009_tables_isolate_tenants_as_mnt_rt(pool: sqlx::PgPool) -> Result<(), String> {
         let (org_a, branch_a, emp_a, user_a) = seed_g009_base(&pool).await?;
@@ -10617,6 +11284,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// certification state. This drives the real handlers through the test pool
     /// role (audit emission is role-independent); the RLS proof is the dedicated
     /// `mnt_rt` test above.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn exit_workflow_handlers_emit_audit_events(pool: sqlx::PgPool) -> Result<(), String> {
         use mnt_platform_authz::Role;
@@ -10795,6 +11463,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// employee_id, work_date, source)) AND rewrites no existing row (the
     /// IS DISTINCT FROM guard on the ON CONFLICT UPDATE), proving a repeated
     /// dashboard GET cannot write-storm.
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn absence_alert_materializer_is_idempotent_and_write_bounded(
         pool: sqlx::PgPool,
@@ -10927,6 +11596,7 @@ E-001,홍길동,본사,2026-07-01,abc
     /// emit an audit event that records the changed row count/ids + source facts.
     /// A SECOND read over unchanged imports must emit NO further event, so the
     /// idempotency / write-storm guard is preserved (audit real mutations only).
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn dashboard_materializer_emits_audit_on_changed_facts(
         pool: sqlx::PgPool,

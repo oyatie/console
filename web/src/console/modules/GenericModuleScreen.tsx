@@ -4,11 +4,17 @@ import type { ConsoleApiClient } from "../../api/client";
 import { ko } from "../../i18n/ko";
 import { StatusChip } from "../components";
 import { ObjectCardModal, objectCardWindowEntry } from "../objectcard";
+import { AccountLedgerDrill } from "../finance/AccountLedgerDrill";
 import { PolicyGated, usePolicyGate } from "../policy";
 import { objDrag, useOptionalWindowManager } from "../window";
 import "../tokens.css";
 import {
+  CANONICAL_ONTOLOGY_LIST,
+  canonicalOntologyDataAdapter,
+} from "./moduleScreens";
+import {
   columnVariantFor,
+  canOpenTypeCard,
   detailVariantFor,
   getObjectType,
   getProperty,
@@ -452,13 +458,30 @@ function actionResourceFor(
   return row ? { kind, id: row.id } : { kind };
 }
 
-function LinkChip({ chip }: { chip: ModuleLinkChipValue }) {
+function LinkChip({
+  chip,
+  onActivate,
+}: {
+  chip: ModuleLinkChipValue;
+  /** Module-owned, real read surfaces may turn an otherwise presentational
+   * link chip into a keyboard-operable drill trigger. */
+  onActivate?: () => void;
+}) {
   const label = resolveText(chip.labelKey);
   const ariaLabel = chip.code ? `${label} ${chip.code}` : label;
   const content = <StatusChip tone={chip.tone ?? "info"}>{chip.code ?? label}</StatusChip>;
   return (
     <PolicyGated action={chip.policyAction} resource={{ kind: chip.kind, id: chip.id }}>
-      {chip.href ? (
+      {onActivate ? (
+        <button
+          type="button"
+          onClick={onActivate}
+          aria-label={ariaLabel}
+          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", font: "inherit" }}
+        >
+          {content}
+        </button>
+      ) : chip.href ? (
         <a href={chip.href} style={{ color: "inherit", textDecoration: "none" }} aria-label={ariaLabel}>
           {content}
         </a>
@@ -723,6 +746,7 @@ function renderCell(
 function TypeChip({ type }: { type: OntObjectType }) {
   const windowManager = useOptionalWindowManager();
   const [modalOpen, setModalOpen] = useState(false);
+  if (!canOpenTypeCard(type)) return null;
   const ariaLabel = `${type.code} ${resolveText("console.modules.common.openTypeCard")}`;
   return (
     <>
@@ -838,7 +862,7 @@ type ModuleRuntimeAction =
       stats: Record<string, ModuleStatValue | undefined> | undefined;
       selectedRowId: string | undefined;
     }
-  | { type: "listFailed" }
+  | { type: "listFailed"; clear: boolean }
   | { type: "detailIdle" }
   | { type: "detailLoading" }
   | {
@@ -885,12 +909,17 @@ function moduleRuntimeReducer(
       };
     }
     case "listFailed":
+      if (!action.clear) return { ...state, listState: "error" };
+      // Canonical ontology reads are authority-scoped. A failed refresh means
+      // the prior schema/rows cannot be asserted for this render anymore.
       return {
         ...state,
         selectedRowId: undefined,
-        loadedRows: [],
+        loadedRows: EMPTY_ROWS,
         listStats: {},
+        detailStats: {},
         listState: "error",
+        detailState: "idle",
       };
     case "detailIdle":
       return { ...state, detailStats: {}, detailState: "idle" };
@@ -919,19 +948,27 @@ function moduleRuntimeReducer(
 export function GenericModuleScreen({
   config,
   api,
+  authorityKey,
 }: {
   config: ModuleScreenConfig;
   api?: ConsoleApiClient;
+  /** Effective tenant/user/session incarnation. Changing it must discard all
+   * retained module state before a new authority can resolve. */
+  authorityKey?: string;
 }) {
-  return <GenericModuleScreenBody key={config.id} api={api} config={config} />;
+  // A keyed remount clears rows, stats, selection, detail, and retry/error state
+  // during reconciliation, then effect cleanup aborts the superseded requests.
+  return <GenericModuleScreenBody key={`${config.id}:${authorityKey ?? "untrusted"}`} api={api} config={config} authorityKey={authorityKey} />;
 }
 
 function GenericModuleScreenBody({
   config,
   api,
+  authorityKey,
 }: {
   config: ModuleScreenConfig;
   api?: ConsoleApiClient;
+  authorityKey?: string;
 }) {
   const gate = usePolicyGate();
   const windowManager = useOptionalWindowManager();
@@ -942,7 +979,16 @@ function GenericModuleScreenBody({
   const [refreshToken, setRefreshToken] = useState(0);
   const [actionBusyKey, setActionBusyKey] = useState<string | undefined>(undefined);
   const [actionErrorKey, setActionErrorKey] = useState<string | undefined>(undefined);
-  const loadRows = config.dataAdapter?.loadRows;
+  // Finance's GL-account read is a concrete backend operation, unlike generic
+  // object links. Keeping this state in the shared shell lets its authority-key
+  // remount and selected-row lifecycle fence the drill panel.
+  const [ledgerAccountCode, setLedgerAccountCode] = useState<string | undefined>(undefined);
+  const canonicalOntology = config.data.list === CANONICAL_ONTOLOGY_LIST;
+  const canonicalAdapter = useMemo(
+    () => canonicalOntologyDataAdapter(config.objectKind, authorityKey),
+    [authorityKey, config.objectKind],
+  );
+  const loadRows = canonicalOntology ? canonicalAdapter.loadRows : config.dataAdapter?.loadRows;
   const loadDetail = config.dataAdapter?.loadDetail;
   const usesListLoader = Boolean(loadRows && api);
   const rows = useMemo(
@@ -951,10 +997,16 @@ function GenericModuleScreenBody({
   );
 
   // §18 registry binding: config picks WHICH fields, ONT_TYPES defines them.
-  const type = getObjectType(config.typeKey);
+  const type = getObjectType(config.typeKey, authorityKey);
+  const configuredColumns: ModuleColumnConfig[] = canonicalOntology && type
+    ? type.propSchema.map((property) => ({ key: property.id }))
+    : config.list.columns;
+  const configuredDetailFields: ModuleDetailFieldConfig[] = canonicalOntology && type
+    ? type.propSchema.map((property) => ({ key: property.id }))
+    : config.detail.fields;
   const columns = useMemo(
     () =>
-      config.list.columns.map((column) => {
+      configuredColumns.map((column) => {
         const prop = getProperty(type, column.key);
         return {
           ...column,
@@ -962,11 +1014,11 @@ function GenericModuleScreenBody({
           variant: column.variant ?? columnVariantFor(prop),
         };
       }),
-    [config.list.columns, type],
+    [configuredColumns, type],
   );
   const detailFields = useMemo(
     () =>
-      config.detail.fields.map((field) => {
+      configuredDetailFields.map((field) => {
         const prop = getProperty(type, field.key);
         return {
           ...field,
@@ -974,7 +1026,7 @@ function GenericModuleScreenBody({
           variant: field.variant ?? detailVariantFor(prop),
         };
       }),
-    [config.detail.fields, type],
+    [configuredDetailFields, type],
   );
   const laneChoices = config.list.laneGroupBy
     ? propChoices(getProperty(type, config.list.laneGroupBy))
@@ -983,6 +1035,7 @@ function GenericModuleScreenBody({
 
   const selectRow = useCallback(
     (row: ModuleRow) => {
+      setLedgerAccountCode(undefined);
       dispatch({ type: "select", rowId: row.id });
       // §4.7-3: a row click also opens the object as the right pin when a
       // window shell hosts the screen; without one, the split detail stands.
@@ -1015,9 +1068,10 @@ function GenericModuleScreenBody({
 
   useEffect(() => {
     if (!api || !loadRows) return;
+    const controller = new AbortController();
     let active = true;
     dispatch({ type: "listLoading" });
-    void loadRows({ api, query, hasPolicy: gate.can })
+    void loadRows({ api, signal: controller.signal, query, hasPolicy: gate.can })
       .then((result) => {
         if (!active) return;
         dispatch({
@@ -1029,12 +1083,17 @@ function GenericModuleScreenBody({
       })
       .catch(() => {
         if (!active) return;
-        dispatch({ type: "listFailed" });
+        dispatch({ type: "listFailed", clear: canonicalOntology });
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [api, gate.can, loadRows, query, refreshToken]);
+  }, [api, canonicalOntology, gate.can, loadRows, query, refreshToken]);
+
+  const retryList = useCallback(() => {
+    setRefreshToken((token) => token + 1);
+  }, []);
 
   const selectedRow = rows.find((row) => row.id === runtime.selectedRowId) ?? rows.at(0);
 
@@ -1043,9 +1102,10 @@ function GenericModuleScreenBody({
       dispatch({ type: "detailIdle" });
       return;
     }
+    const controller = new AbortController();
     let active = true;
     dispatch({ type: "detailLoading" });
-    void loadDetail({ api, row: selectedRow, hasPolicy: gate.can })
+    void loadDetail({ api, signal: controller.signal, row: selectedRow, hasPolicy: gate.can })
       .then((result) => {
         if (!active) return;
         dispatch({
@@ -1061,6 +1121,7 @@ function GenericModuleScreenBody({
       });
     return () => {
       active = false;
+      controller.abort();
     };
     // Depend on the row's id (not the `selectedRow` object) and refreshToken,
     // not `selectedRow` itself: loadDetail always returns a freshly-mapped row
@@ -1255,7 +1316,12 @@ function GenericModuleScreenBody({
               <StatusChip role="status" tone="info">{T.loading}</StatusChip>
             ) : null}
             {runtime.listState === "error" ? (
-              <StatusChip role="alert" tone="danger">{T.loadFailed}</StatusChip>
+              <div role="alert" style={chipRowStyle}>
+                <StatusChip tone="danger">{T.loadFailed}</StatusChip>
+                <button type="button" onClick={retryList} style={ghostButtonStyle}>
+                  {ko.page.retry}
+                </button>
+              </div>
             ) : null}
           </section>
 
@@ -1298,14 +1364,35 @@ function GenericModuleScreenBody({
                   <StatusChip role="status" tone="info">{T.loading}</StatusChip>
                 ) : null}
                 {runtime.detailState === "error" ? (
-                  <StatusChip role="alert" tone="danger">{T.loadFailed}</StatusChip>
+                  <div role="alert" style={chipRowStyle}>
+                    <StatusChip tone="danger">{T.loadFailed}</StatusChip>
+                    <button type="button" onClick={retryList} style={ghostButtonStyle}>
+                      {ko.page.retry}
+                    </button>
+                  </div>
                 ) : null}
                 {selectedRow.linkChips && selectedRow.linkChips.length > 0 ? (
                   <span style={chipRowStyle}>
                     {selectedRow.linkChips.map((chip) => (
-                      <LinkChip key={chip.key} chip={chip} />
+                      <LinkChip
+                        key={chip.key}
+                        chip={chip}
+                        onActivate={
+                          config.id === "finance" && chip.kind === "gl_account" && api
+                            ? () => { setLedgerAccountCode(chip.id); }
+                            : undefined
+                        }
+                      />
                     ))}
                   </span>
+                ) : null}
+                {config.id === "finance" && api && ledgerAccountCode ? (
+                  <AccountLedgerDrill
+                    key={ledgerAccountCode}
+                    api={api}
+                    accountCode={ledgerAccountCode}
+                    onClose={() => { setLedgerAccountCode(undefined); }}
+                  />
                 ) : null}
                 <span style={chipRowStyle}>
                   {(selectedRow.actions ?? config.detail.actions)

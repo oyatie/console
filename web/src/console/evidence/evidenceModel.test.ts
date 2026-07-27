@@ -14,20 +14,17 @@ import { evidenceFixtures } from "./evidenceFixtures";
 import type { EvidenceLegalHold } from "./types";
 
 describe("custodyStageOfAudit", () => {
-  it("maps the EV audit actions to custody stages", () => {
-    expect(custodyStageOfAudit("evidence_object.register")).toBe("REGISTERED");
-    expect(custodyStageOfAudit("evidence_copy.worm_verified")).toBe("WORM_REPLICATED");
-    expect(custodyStageOfAudit("evidence_legal_hold.apply")).toBe("LEGAL_HOLD_APPLIED");
-    expect(custodyStageOfAudit("evidence_export.create")).toBe("EXPORTED");
+  it("accepts only generated docs-rest custody stages", () => {
+    expect(custodyStageOfAudit("REGISTERED")).toBe("REGISTERED");
+    expect(custodyStageOfAudit("WORM_REPLICATED")).toBe("WORM_REPLICATED");
+    expect(custodyStageOfAudit("LEGAL_HOLD_APPLIED")).toBe("LEGAL_HOLD_APPLIED");
+    expect(custodyStageOfAudit("EXPORTED")).toBe("EXPORTED");
   });
 
-  it("maps read/access-shaped actions to ACCESSED", () => {
-    expect(custodyStageOfAudit("evidence_object.read")).toBe("ACCESSED");
-    expect(custodyStageOfAudit("copy.download")).toBe("ACCESSED");
-  });
-
-  it("returns null for unknown actions (timeline shows the raw action)", () => {
-    expect(custodyStageOfAudit("workflow.execute")).toBeNull();
+  it("does not infer a custody fact from a read or legacy audit action", () => {
+    expect(custodyStageOfAudit("evidence_object.read")).toBeNull();
+    expect(custodyStageOfAudit("copy.download")).toBeNull();
+    expect(custodyStageOfAudit("evidence_object.register")).toBeNull();
   });
 });
 

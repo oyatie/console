@@ -327,6 +327,8 @@ async fn flag_off_executive_approval_to_final_completed_is_byte_identical_to_leg
     let work_order = mnt_platform_request_context::scope_org(knl, async {
         let created = store
             .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
                 actor: receptionist,
                 branch_id: branch,
                 management_no: "290".to_owned(),

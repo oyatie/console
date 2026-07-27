@@ -34,9 +34,11 @@ export const FEATURES = {
   KPI_READ: "kpi_read",
   EXCEL_DOWNLOAD: "excel_download",
   EMPLOYEE_DIRECTORY_READ: "employee_directory_read",
+  BENEFIT_CATALOG_READ: "benefit_catalog_read",
   AUDIT_LOG_READ: "audit_log_read",
   INTEGRITY_FINDINGS_READ: "integrity_findings_read",
   ROLE_MANAGE: "role_manage",
+  SALES_MANAGE: "sales_manage",
 } as const;
 
 const ADMIN_ROLES = [ROLES.ADMIN, ROLES.SUPER_ADMIN];
@@ -54,6 +56,13 @@ const OPERATIONAL_ROLES = [
 const ROLE_MANAGE_ROLES = [ROLES.SUPER_ADMIN];
 /** HR directory read (ADMIN/EXECUTIVE/SUPER_ADMIN). */
 const DIRECTORY_ROLES = MANAGEMENT_ROLES;
+/**
+ * Payroll run surfaces are org-wide: the backend's `authorize_org_wide`
+ * built-in path admits EXECUTIVE/SUPER_ADMIN only. `ConsoleGrants` flattens
+ * feature capabilities without their branch scope, so a feature hint cannot
+ * safely prove the custom all-branch grant required by payroll.
+ */
+const PAYROLL_ORG_WIDE_ROLES = [ROLES.EXECUTIVE, ROLES.SUPER_ADMIN];
 /** Integrity/compliance findings (EXECUTIVE/SUPER_ADMIN — ADMIN excluded by design). */
 const INTEGRITY_ROLES = [ROLES.EXECUTIVE, ROLES.SUPER_ADMIN];
 
@@ -82,10 +91,16 @@ export interface ConsoleNavGroup {
  */
 export const MOUNTED_SCREEN_KEYS = [
   "overview",
+  "attendance",
   "mywork",
   "inbox",
   "leave",
+  "benefit",
+  "people",
+  "sales",
+  "consulting",
   "finance",
+  "inventory",
   "asset",
   "appr",
   "policy",
@@ -100,16 +115,29 @@ export const MOUNTED_SCREEN_KEYS = [
   "scheduled",
   "messenger",
   "mail",
+  "logistics",
+  "equipment",
+  "payroll",
+  "recruit",
+  "orgchart",
+  "evaluation",
+  "maintenance",
+  "field",
+  "notif",
+  "board",
+  "directory",
 ] as const;
 
 export type MountedScreenKey = (typeof MOUNTED_SCREEN_KEYS)[number];
 
 /**
- * ADR-0025 evidence-approved production exposure manifest.
+ * Production exposure manifest.
  *
- * Bodies in `MOUNTED_SCREEN_KEYS` remain useful development inventory, but no
- * body currently satisfies every production evidence requirement. Keep this
- * empty until the evidence is independently reviewed and approved.
+ * Bodies in `MOUNTED_SCREEN_KEYS` remain development inventory unless named
+ * here. The exact candidate has no independently verified production-exposure
+ * authority, so every mounted body remains DARK. A future vertical may be added
+ * only with its own completed evidence gate; server rollout alone cannot expose
+ * an inventory body.
  */
 export const EXPOSED_SCREEN_KEYS: readonly MountedScreenKey[] = [];
 
@@ -143,7 +171,7 @@ export const NAV_GROUPS: readonly ConsoleNavGroup[] = [
     labelId: "hr",
     items: [
       {
-        screen: "hr",
+        screen: "people",
         labelKey: "console.shell.nav.hr",
         icon: "users",
         gate: g(DIRECTORY_ROLES, [FEATURES.EMPLOYEE_DIRECTORY_READ]),
@@ -169,6 +197,18 @@ export const NAV_GROUPS: readonly ConsoleNavGroup[] = [
     ],
   },
   {
+    labelKey: "console.shell.nav.groups.commercial",
+    labelId: "commercial",
+    items: [
+      {
+        screen: "sales",
+        labelKey: "console.shell.nav.sales",
+        icon: "trend",
+        gate: g(MANAGEMENT_ROLES, [FEATURES.SALES_MANAGE]),
+      },
+    ],
+  },
+  {
     labelKey: "console.shell.nav.groups.payroll",
     labelId: "payroll",
     items: [
@@ -176,11 +216,14 @@ export const NAV_GROUPS: readonly ConsoleNavGroup[] = [
         screen: "payroll",
         labelKey: "console.shell.nav.payroll",
         icon: "calc",
-        gate: g(DIRECTORY_ROLES, [FEATURES.EMPLOYEE_DIRECTORY_READ]),
+        gate: g(PAYROLL_ORG_WIDE_ROLES),
       },
+      // Personal attendance self-service is available to every authenticated
+      // principal in the mounted inventory. Manager workspace access remains
+      // server-authorized and separately gated inside the screen.
       { screen: "attendance", labelKey: "console.shell.nav.attendance", icon: "clock" },
       { screen: "leave", labelKey: "console.shell.nav.leave", icon: "calCheck" },
-      { screen: "benefit", labelKey: "console.shell.nav.benefit", icon: "heart" },
+      { screen: "benefit", labelKey: "console.shell.nav.benefit", icon: "heart", gate: g(MANAGEMENT_ROLES, [FEATURES.BENEFIT_CATALOG_READ]) },
     ],
   },
   {
@@ -214,6 +257,28 @@ export const NAV_GROUPS: readonly ConsoleNavGroup[] = [
         labelKey: "console.shell.nav.field",
         icon: "mapPin",
         gate: g(OPERATIONAL_ROLES, [FEATURES.WORK_ORDER_READ_ALL]),
+      },
+      {
+        screen: "logistics",
+        labelKey: "console.shell.nav.logistics",
+        icon: "truck",
+        // grant-only PBAC module: built-in role matrix denies every logistics
+        // feature, so the gate lists features only — roles cannot widen it.
+        gate: g(undefined, [
+          "logistics_receive",
+          "logistics_putaway",
+          "logistics_release",
+          "logistics_pick_pack",
+          "logistics_dispatch",
+          "logistics_pod",
+          "logistics_settle",
+        ]),
+      },
+      {
+        screen: "equipment",
+        labelKey: "console.shell.nav.equipment",
+        icon: "box",
+        gate: g(OPERATIONAL_ROLES, ["equipment_3r_observe"]),
       },
     ],
   },

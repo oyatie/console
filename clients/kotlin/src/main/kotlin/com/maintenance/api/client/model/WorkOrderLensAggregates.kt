@@ -35,6 +35,8 @@ import kotlinx.serialization.Contextual
  * @param p1Count
  * @param overdueOpenCount
  * @param unassignedCount
+ * @param preventiveOnTimeRate Share (0..1) of closed preventive orders that reached FINAL_COMPLETED no later than their target due date; null when the filtered set has no basis.
+ * @param mttrMinutes Mean minutes from the first IN_PROGRESS transition to the first REPORT_SUBMITTED transition (OT-13 MTTR); null when no order has completed that span.
  */
 @Serializable
 
@@ -50,7 +52,15 @@ data class WorkOrderLensAggregates (
     val overdueOpenCount: kotlin.Long,
 
     @SerialName(value = "unassigned_count")
-    val unassignedCount: kotlin.Long
+    val unassignedCount: kotlin.Long,
+
+    /* Share (0..1) of closed preventive orders that reached FINAL_COMPLETED no later than their target due date; null when the filtered set has no basis. */
+    @SerialName(value = "preventive_on_time_rate")
+    val preventiveOnTimeRate: kotlin.Double?,
+
+    /* Mean minutes from the first IN_PROGRESS transition to the first REPORT_SUBMITTED transition (OT-13 MTTR); null when no order has completed that span. */
+    @SerialName(value = "mttr_minutes")
+    val mttrMinutes: kotlin.Double?
 
 ) {
 

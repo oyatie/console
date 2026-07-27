@@ -1,0 +1,15 @@
+
+/console window host — http://127.0.0.1:5211
+  screen=overview
+  ok   exactly one window host — count=1
+  ok   host wraps the shell root
+  ok   no host nested inside a screen section
+  ok   shell still fills the viewport — shell=900 viewport=900
+  ok   screen body keeps real height — screen=844
+  ok   no document-level horizontal scroll — scrollWidth=1440 clientWidth=1440
+  ok   no uncaught page error
+  ok   host padding reflows the shell (real split, not overlay) — 1440 -> 1080
+  ok   the split does not push the document into horizontal scroll
+  ok   removing the padding restores the full width — restored=1440
+
+all checks passed

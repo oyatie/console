@@ -9,7 +9,16 @@
 //! The statutory push ([`PromotionKind`]) is the employer's 연차 사용 촉진
 //! (§61, two rounds) and, after the second round, the 노무수령거부 notice. Each
 //! push is delivered as a receipt-gated document into the target's 개인 수신함.
+//! The statutory timing of those steps lives in [`promotion`], which carries the
+//! verbatim statute text and its live citations.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
+
+pub mod promotion;
+
+pub use promotion::{
+    PromotionContext, PromotionTrack, PromotionWindow, first_round_window, second_round_deadline,
+    validate_designated_dates, validate_promotion, validate_refusal,
+};
 
 use mnt_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
@@ -517,10 +526,19 @@ impl LeaveDecision {
     }
 }
 
-/// The two statutory-push kinds. 연차 사용 촉진 has two rounds under §61
-/// (round 1 = 사용 촉구, round 2 = 시기 지정); after round 2 the employer may
-/// serve a 노무수령거부 notice to decline the labor and extinguish the leave-pay
-/// liability.
+/// The two statutory-push kinds. 연차 사용 촉진 has two rounds under 근로기준법
+/// 제61조 (round 1 = 사용 촉구, round 2 = 사용 시기 지정 통보), each with its own
+/// mandatory window — see [`crate::promotion`]. After round 2 the employer may
+/// serve a 노무수령거부 notice declining the labour on the designated days.
+///
+/// **The refusal notice does not itself extinguish anything.** §61 relieves the
+/// employer of the 미사용수당 obligation only where every step was taken in
+/// 서면 inside its window *and* the worker still did not use the leave; and
+/// 대법원 2019다279283 (2020. 2. 27.) holds that where the worker nonetheless
+/// works on a designated day and the employer accepts the labour, the
+/// obligation survives. Whether that condition was met is a matter of fact for
+/// the employer's 노무사 to certify — this system records the acts, and never
+/// asserts their legal effect.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PromotionKind {
@@ -569,22 +587,18 @@ impl PromotionKind {
     }
 }
 
-/// Validate the promotion round. Only round 1 or 2 exist for a promotion; a
-/// refusal carries no round (it follows round 2). Returns the canonical round
-/// (`1`/`2` for a promotion, `2` for a refusal — the round it follows).
-pub fn validate_round(kind: PromotionKind, round: i16) -> Result<i16, KernelError> {
+/// Validate a statutory push against 근로기준법 제61조 and return the canonical
+/// stored round (`1`/`2` for a promotion, `2` for a refusal — the round it
+/// follows). Delegates to [`crate::promotion`], which holds the statutory
+/// windows and their citations.
+pub fn validate_push(
+    kind: PromotionKind,
+    round: i16,
+    context: &PromotionContext,
+) -> Result<i16, KernelError> {
     match kind {
-        PromotionKind::Promotion => {
-            if round == 1 || round == 2 {
-                Ok(round)
-            } else {
-                Err(KernelError::validation(
-                    "연차 촉진 round must be 1 or 2 (§61)",
-                ))
-            }
-        }
-        // A refusal always follows a completed round-2 promotion.
-        PromotionKind::Refusal => Ok(2),
+        PromotionKind::Promotion => validate_promotion(context, round),
+        PromotionKind::Refusal => validate_refusal(context),
     }
 }
 
@@ -827,12 +841,32 @@ mod tests {
     }
 
     #[test]
-    fn round_validation() {
-        assert_eq!(validate_round(PromotionKind::Promotion, 1).unwrap(), 1);
-        assert_eq!(validate_round(PromotionKind::Promotion, 2).unwrap(), 2);
-        assert!(validate_round(PromotionKind::Promotion, 3).is_err());
-        assert!(validate_round(PromotionKind::Promotion, 0).is_err());
-        // A refusal normalizes to the round it follows.
-        assert_eq!(validate_round(PromotionKind::Refusal, 0).unwrap(), 2);
+    fn push_validation_routes_each_kind_to_its_statutory_rule() {
+        use time::macros::date;
+        let mut context = PromotionContext {
+            track: PromotionTrack::Annual,
+            period_end: date!(2026 - 12 - 31),
+            served_on: date!(2026 - 07 - 01),
+            first_round_served_on: None,
+            second_round_served_on: None,
+        };
+        assert_eq!(
+            validate_push(PromotionKind::Promotion, 1, &context).unwrap(),
+            1
+        );
+        // The round no longer passes on its number alone: an in-range round
+        // served outside its statutory window is refused.
+        context.served_on = date!(2026 - 07 - 11);
+        assert!(validate_push(PromotionKind::Promotion, 1, &context).is_err());
+        assert!(validate_push(PromotionKind::Promotion, 3, &context).is_err());
+        // A refusal normalizes to the round it follows — but only once that
+        // round exists.
+        assert!(validate_push(PromotionKind::Refusal, 0, &context).is_err());
+        context.second_round_served_on = Some(date!(2026 - 10 - 31));
+        context.served_on = date!(2026 - 12 - 24);
+        assert_eq!(
+            validate_push(PromotionKind::Refusal, 0, &context).unwrap(),
+            2
+        );
     }
 }

@@ -1,7 +1,6 @@
 export { ObjectCard, ObjectCardModal, objectCardWindowEntry, type ObjectCardProps } from "./ObjectCard";
 export { GovernedObjectCard, type GovernedObjectCardProps } from "./wired";
 export { objectCardGovStrings, type ObjectCardGovStrings } from "./strings";
-export { createObjectCardStub } from "./stub";
 export {
   OBJECT_CARD_ACTIONS,
   type LinkCardinality,

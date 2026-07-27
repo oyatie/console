@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { existsSync, lstatSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 function isSafeWorkspacePath(path) {
@@ -22,6 +22,78 @@ function readJson(root, path, failures) {
   }
 }
 
+function inspectLocalDirectory(root, path) {
+  const result = {
+    exists: false,
+    hasSymbolicLink: false,
+    isDirectory: false,
+    isWithinRoot: false,
+  };
+  let current = resolve(root);
+
+  try {
+    for (const component of path.split(/[\\/]+/)) {
+      current = resolve(current, component);
+      const metadata = lstatSync(current, { throwIfNoEntry: false });
+      if (!metadata) return result;
+      if (metadata.isSymbolicLink()) {
+        result.exists = true;
+        result.hasSymbolicLink = true;
+        return result;
+      }
+      if (!metadata.isDirectory()) {
+        result.exists = true;
+        return result;
+      }
+    }
+
+    result.exists = true;
+    result.isDirectory = true;
+    const resolvedFromRoot = relative(realpathSync(root), realpathSync(current));
+    result.isWithinRoot =
+      resolvedFromRoot === "" ||
+      (
+        resolvedFromRoot !== ".." &&
+        !resolvedFromRoot.startsWith(`..${sep}`) &&
+        !isAbsolute(resolvedFromRoot)
+      );
+    return result;
+  } catch {
+    return result;
+  }
+}
+
+function collectFileOverrideSpecs(value, specs = []) {
+  if (typeof value === "string") {
+    if (value.startsWith("file:")) {
+      specs.push(value.slice("file:".length).replaceAll("\\", "/"));
+    }
+    return specs;
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return specs;
+  }
+  for (const nested of Object.values(value)) {
+    collectFileOverrideSpecs(nested, specs);
+  }
+  return specs;
+}
+
+function findLocalOverrideTargets(packageJson, packages, declared) {
+  const specs = collectFileOverrideSpecs(packageJson.overrides);
+  return new Set(
+    Object.keys(packages).filter((path) => {
+      if (path === "" || path.includes("node_modules/") || declared.has(path)) {
+        return false;
+      }
+      return (
+        isSafeWorkspacePath(path) &&
+        specs.some((spec) => spec === path || spec.endsWith(`/${path}`))
+      );
+    }),
+  );
+}
+
 function checkLockfileWorkspaceTopology(packageJson, packageLock, failures) {
   const declaredWorkspaces = packageJson.workspaces;
   const packages = packageLock?.packages;
@@ -38,18 +110,56 @@ function checkLockfileWorkspaceTopology(packageJson, packageLock, failures) {
   }
 
   const declared = new Set(declaredWorkspaces);
+  const localOverrideTargets = findLocalOverrideTargets(
+    packageJson,
+    packages,
+    declared,
+  );
+  const allowedLocalPackages = new Set([...declared, ...localOverrideTargets]);
   for (const [path, metadata] of Object.entries(packages)) {
     if (path === "") continue;
 
     if (!path.includes("node_modules/")) {
-      if (!declared.has(path)) {
+      if (!allowedLocalPackages.has(path)) {
         failures.push(`package-lock.json contains stale workspace package entry ${JSON.stringify(path)}`);
       }
       continue;
     }
 
-    if (metadata?.link === true && typeof metadata.resolved === "string" && !declared.has(metadata.resolved)) {
+    if (
+      metadata?.link === true &&
+      typeof metadata.resolved === "string" &&
+      !allowedLocalPackages.has(metadata.resolved)
+    ) {
       failures.push(`package-lock.json contains stale workspace link ${JSON.stringify(path)} -> ${JSON.stringify(metadata.resolved)}`);
+    }
+  }
+}
+
+function checkLocalOverridePackages(root, packageJson, packageLock, failures) {
+  const packages = packageLock?.packages;
+  if (!packages || typeof packages !== "object" || Array.isArray(packages)) {
+    return;
+  }
+  const declared = new Set(packageJson.workspaces);
+  for (const path of findLocalOverrideTargets(packageJson, packages, declared)) {
+    const directory = inspectLocalDirectory(root, path);
+    if (
+      !directory.exists ||
+      directory.hasSymbolicLink ||
+      !directory.isDirectory ||
+      !directory.isWithinRoot
+    ) {
+      failures.push(
+        `package.json local override target ${JSON.stringify(path)} must resolve to an existing non-symlink directory`,
+      );
+      continue;
+    }
+    const manifest = readJson(root, `${path}/package.json`, failures);
+    if (manifest && manifest.private !== true) {
+      failures.push(
+        `package.json local override target ${JSON.stringify(path)} must be private`,
+      );
     }
   }
 }
@@ -71,25 +181,28 @@ export function evaluateRootWorkspaces(root) {
       continue;
     }
 
-    const workspaceDirectory = resolve(root, workspace);
-    if (!existsSync(workspaceDirectory)) {
+    const workspaceDirectory = inspectLocalDirectory(root, workspace);
+    if (!workspaceDirectory.exists) {
       failures.push(`package.json workspace ${JSON.stringify(workspace)} must resolve to an existing directory`);
       continue;
     }
-    if (lstatSync(workspaceDirectory).isSymbolicLink()) {
+    if (workspaceDirectory.hasSymbolicLink) {
       failures.push(`package.json workspace ${JSON.stringify(workspace)} must not be a symbolic link`);
       continue;
     }
-    if (!statSync(workspaceDirectory).isDirectory()) {
+    if (!workspaceDirectory.isDirectory || !workspaceDirectory.isWithinRoot) {
       failures.push(`package.json workspace ${JSON.stringify(workspace)} must resolve to an existing directory`);
       continue;
     }
-    if (!existsSync(resolve(workspaceDirectory, "package.json"))) {
+    if (!existsSync(resolve(root, workspace, "package.json"))) {
       failures.push(`package.json workspace ${JSON.stringify(workspace)} must contain package.json`);
     }
   }
 
-  if (packageLock) checkLockfileWorkspaceTopology(packageJson, packageLock, failures);
+  if (packageLock) {
+    checkLockfileWorkspaceTopology(packageJson, packageLock, failures);
+    checkLocalOverridePackages(root, packageJson, packageLock, failures);
+  }
 
   return { failures };
 }

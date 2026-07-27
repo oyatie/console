@@ -30,7 +30,9 @@ import okhttp3.HttpUrl
 import com.maintenance.api.client.model.CreateNoticeDraftRequest
 import com.maintenance.api.client.model.ErrorBody
 import com.maintenance.api.client.model.NoticeProgress
+import com.maintenance.api.client.model.NoticeReceiptPage
 import com.maintenance.api.client.model.NoticeSummary
+import com.maintenance.api.client.model.UpdateNoticeDraftRequest
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -352,6 +354,99 @@ open class NoticesApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
     }
 
     /**
+     * GET /api/v1/notices/{id}/receipts
+     * 수령확인 receipts drill for one notice (NoticeManage only); acknowledged&#x3D;false is the outstanding chase list
+     *
+     * @param id
+     * @param acknowledged  (optional)
+     * @param limit  (optional, default to 50L)
+     * @param offset  (optional, default to 0L)
+     * @return NoticeReceiptPage
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun listNoticeReceipts(id: java.util.UUID, acknowledged: kotlin.Boolean? = null, limit: kotlin.Long? = 50L, offset: kotlin.Long? = 0L) : NoticeReceiptPage = withContext(Dispatchers.IO) {
+        val localVarResponse = listNoticeReceiptsWithHttpInfo(id = id, acknowledged = acknowledged, limit = limit, offset = offset)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NoticeReceiptPage
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * GET /api/v1/notices/{id}/receipts
+     * 수령확인 receipts drill for one notice (NoticeManage only); acknowledged&#x3D;false is the outstanding chase list
+     *
+     * @param id
+     * @param acknowledged  (optional)
+     * @param limit  (optional, default to 50L)
+     * @param offset  (optional, default to 0L)
+     * @return ApiResponse<NoticeReceiptPage?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun listNoticeReceiptsWithHttpInfo(id: java.util.UUID, acknowledged: kotlin.Boolean?, limit: kotlin.Long?, offset: kotlin.Long?) : ApiResponse<NoticeReceiptPage?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = listNoticeReceiptsRequestConfig(id = id, acknowledged = acknowledged, limit = limit, offset = offset)
+
+        return@withContext request<Unit, NoticeReceiptPage>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation listNoticeReceipts
+     *
+     * @param id
+     * @param acknowledged  (optional)
+     * @param limit  (optional, default to 50L)
+     * @param offset  (optional, default to 0L)
+     * @return RequestConfig
+     */
+    fun listNoticeReceiptsRequestConfig(id: java.util.UUID, acknowledged: kotlin.Boolean?, limit: kotlin.Long?, offset: kotlin.Long?) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (acknowledged != null) {
+                    put("acknowledged", listOf(acknowledged.toString()))
+                }
+                if (limit != null) {
+                    put("limit", listOf(limit.toString()))
+                }
+                if (offset != null) {
+                    put("offset", listOf(offset.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/api/v1/notices/{id}/receipts".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
      * GET /api/v1/notices
      * List notices (published-only for most callers; NoticeManage sees drafts too)
      *
@@ -495,6 +590,83 @@ open class NoticesApi(basePath: kotlin.String = defaultBasePath, client: Call.Fa
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/api/v1/notices/{id}/publish".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * PATCH /api/v1/notices/{id}
+     * Edit a DRAFT notice (NoticeManage only); every field optional, audience replaced whole, 409 once published
+     *
+     * @param id
+     * @param updateNoticeDraftRequest
+     * @return NoticeSummary
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    suspend fun updateNoticeDraft(id: java.util.UUID, updateNoticeDraftRequest: UpdateNoticeDraftRequest) : NoticeSummary = withContext(Dispatchers.IO) {
+        val localVarResponse = updateNoticeDraftWithHttpInfo(id = id, updateNoticeDraftRequest = updateNoticeDraftRequest)
+
+        return@withContext when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as NoticeSummary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * PATCH /api/v1/notices/{id}
+     * Edit a DRAFT notice (NoticeManage only); every field optional, audience replaced whole, 409 once published
+     *
+     * @param id
+     * @param updateNoticeDraftRequest
+     * @return ApiResponse<NoticeSummary?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    suspend fun updateNoticeDraftWithHttpInfo(id: java.util.UUID, updateNoticeDraftRequest: UpdateNoticeDraftRequest) : ApiResponse<NoticeSummary?> = withContext(Dispatchers.IO) {
+        val localVariableConfig = updateNoticeDraftRequestConfig(id = id, updateNoticeDraftRequest = updateNoticeDraftRequest)
+
+        return@withContext request<UpdateNoticeDraftRequest, NoticeSummary>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation updateNoticeDraft
+     *
+     * @param id
+     * @param updateNoticeDraftRequest
+     * @return RequestConfig
+     */
+    fun updateNoticeDraftRequestConfig(id: java.util.UUID, updateNoticeDraftRequest: UpdateNoticeDraftRequest) : RequestConfig<UpdateNoticeDraftRequest> {
+        val localVariableBody = updateNoticeDraftRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.PATCH,
+            path = "/api/v1/notices/{id}".replace("{"+"id"+"}", encodeURIComponent(id.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

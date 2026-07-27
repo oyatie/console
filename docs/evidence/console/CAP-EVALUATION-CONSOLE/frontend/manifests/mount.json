@@ -1,0 +1,28 @@
+{
+  "capability": "CAP-EVALUATION-CONSOLE",
+  "lane": "frontend",
+  "route": "/console/evaluation",
+  "screen_key": "evaluation",
+  "module_root": "web/src/console/evaluation/",
+  "body_export": { "import": "../evaluation", "name": "EvaluationScreenBody" },
+  "nav": {
+    "status": "already_present",
+    "location": "web/src/console/shell/nav.ts NAV_GROUPS hr group",
+    "entry": {
+      "screen": "evaluation",
+      "labelKey": "console.shell.nav.evaluation",
+      "icon": "circleCheck",
+      "gate": "g(DIRECTORY_ROLES, [FEATURES.EMPLOYEE_DIRECTORY_READ])"
+    },
+    "ko_ts": { "status": "already_present", "key": "console.shell.nav.evaluation", "value": "평가" }
+  },
+  "integrator_changes": [
+    "web/src/console/shell/nav.ts: add \"evaluation\" to MOUNTED_SCREEN_KEYS",
+    "web/src/console/screens/registry.ts: import { EvaluationScreenBody } from \"../evaluation\"; add `evaluation: EvaluationScreenBody` to SCREEN_REGISTRY",
+    "EXPOSED_SCREEN_KEYS stays [\"sales\"] — module lands DARK per ADR-0025"
+  ],
+  "authz": {
+    "features": ["evaluation_read", "evaluation_manage", "evaluation_submit"],
+    "render_gate": "deriveEvaluationCapabilities over policy/authz projection; denied without fetch when neither read nor submit"
+  }
+}

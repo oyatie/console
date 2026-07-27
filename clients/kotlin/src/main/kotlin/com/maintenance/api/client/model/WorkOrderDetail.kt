@@ -27,8 +27,11 @@ import com.maintenance.api.client.model.ApprovalStepSummary
 import com.maintenance.api.client.model.AssignmentSummary
 import com.maintenance.api.client.model.EquipmentSummary
 import com.maintenance.api.client.model.EvidenceSummary
+import com.maintenance.api.client.model.MaintenanceCause
+import com.maintenance.api.client.model.MaintenanceType
 import com.maintenance.api.client.model.NamedEntity
 import com.maintenance.api.client.model.PriorityLevel
+import com.maintenance.api.client.model.SettlementSummary
 import com.maintenance.api.client.model.SiteContact
 import com.maintenance.api.client.model.StatusHistorySummary
 import com.maintenance.api.client.model.WorkOrderStatus
@@ -47,6 +50,8 @@ import kotlinx.serialization.Contextual
  * @param status
  * @param priority
  * @param resultType
+ * @param maintenanceType
+ * @param maintenanceCause
  * @param targetDueAt
  * @param createdAt
  * @param updatedAt
@@ -68,6 +73,7 @@ import kotlinx.serialization.Contextual
  * @param approvalLine
  * @param statusHistory
  * @param evidence
+ * @param settlement The live (non-VOID) cost settlement of this order, if one exists.
  */
 @Serializable
 
@@ -90,6 +96,12 @@ data class WorkOrderDetail (
 
     @Contextual @SerialName(value = "result_type")
     val resultType: WorkResultType,
+
+    @Contextual @SerialName(value = "maintenance_type")
+    val maintenanceType: MaintenanceType,
+
+    @Contextual @SerialName(value = "maintenance_cause")
+    val maintenanceCause: MaintenanceCause,
 
     @Contextual @SerialName(value = "target_due_at")
     val targetDueAt: java.time.OffsetDateTime,
@@ -153,7 +165,11 @@ data class WorkOrderDetail (
     val statusHistory: kotlin.collections.List<StatusHistorySummary>,
 
     @SerialName(value = "evidence")
-    val evidence: kotlin.collections.List<EvidenceSummary>
+    val evidence: kotlin.collections.List<EvidenceSummary>,
+
+    /* The live (non-VOID) cost settlement of this order, if one exists. */
+    @SerialName(value = "settlement")
+    val settlement: SettlementSummary?
 
 ) {
 

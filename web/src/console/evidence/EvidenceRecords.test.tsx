@@ -3,12 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { ko } from "../../i18n/ko";
+import { PolicyGateProvider, type PolicyGate } from "../policy";
 import { WindowManagerProvider } from "../window";
 import { EvidenceRecords } from "./EvidenceRecords";
 import { evidenceFixtures } from "./evidenceFixtures";
 
 const T = ko.console.evidence;
 const [heldWire, plainWire] = evidenceFixtures();
+const allowGate: PolicyGate = { can: () => true };
 
 interface ApiResult {
   data?: unknown;
@@ -117,7 +119,7 @@ function makeApi() {
 describe("EvidenceRecords list (real-wired)", () => {
   it("fetches the real EV- list and renders every row as an objDrag source", async () => {
     const api = makeApi();
-    render(<EvidenceRecords api={api} />);
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
     await waitFor(() => {
       expect(screen.getByText(heldWire.code)).toBeTruthy();
     });
@@ -128,7 +130,7 @@ describe("EvidenceRecords list (real-wired)", () => {
 
   it("shows the compact stat bar with per-status counts", async () => {
     const api = makeApi();
-    render(<EvidenceRecords api={api} />);
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
     await waitFor(() => {
       expect(screen.getByText(heldWire.code)).toBeTruthy();
     });
@@ -136,10 +138,68 @@ describe("EvidenceRecords list (real-wired)", () => {
     expect(within(bar).getByRole("button", { name: new RegExp(T.records.all) })).toBeTruthy();
   });
 
+  it("owns and aborts the paged register request on unmount", async () => {
+    let listSignal: AbortSignal | undefined;
+    const GET = vi.fn((path: string, options?: { signal?: AbortSignal }) => {
+      if (path === "/api/v1/evidence/objects") {
+        listSignal = options?.signal;
+        return new Promise(() => undefined);
+      }
+      return Promise.resolve({ data: { items: [] }, response: { ok: true, status: 200 } });
+    });
+    const api = { GET, POST: vi.fn() } as unknown as ConsoleApiClient;
+    const { unmount } = render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
+
+    await waitFor(() => {
+      expect(listSignal).toBeDefined();
+    });
+    unmount();
+    expect(listSignal?.aborted).toBe(true);
+  });
+
+  it("synchronously clears prior-session rows while the replacement session is pending", async () => {
+    let resolveB: ((value: ApiResult) => void) | undefined;
+    const pendingB = new Promise<ApiResult>((resolve) => {
+      resolveB = resolve;
+    });
+    const apiA = {
+      GET: vi.fn((path: string) => {
+        if (path === "/api/v1/evidence/objects") {
+          return Promise.resolve({
+            data: { items: [listRow(heldWire)], limit: 200, offset: 0, total: 1 },
+            response: { ok: true, status: 200 },
+          });
+        }
+        return Promise.resolve({ data: { items: [] }, response: { ok: true, status: 200 } });
+      }),
+      POST: vi.fn(),
+    } as unknown as ConsoleApiClient;
+    const apiB = {
+      GET: vi.fn((path: string) =>
+        path === "/api/v1/evidence/objects"
+          ? pendingB
+          : Promise.resolve({ data: { items: [] }, response: { ok: true, status: 200 } }),
+      ),
+      POST: vi.fn(),
+    } as unknown as ConsoleApiClient;
+
+    const view = render(<EvidenceRecords api={apiA} sessionIncarnation="session-a" />);
+    expect(await screen.findByText(heldWire.code)).toBeVisible();
+
+    view.rerender(<EvidenceRecords api={apiB} sessionIncarnation="session-b" />);
+    expect(screen.queryByText(heldWire.code)).toBeNull();
+    expect(screen.getByText(T.records.loading)).toBeVisible();
+
+    resolveB?.({
+      data: { items: [], limit: 200, offset: 0, total: 0 },
+      response: { ok: true, status: 200 },
+    });
+  });
+
   it("shows a retry affordance when the list fails to load", async () => {
     const GET = vi.fn(() => Promise.resolve({ data: undefined, response: { ok: false, status: 500 } }));
     const api = { GET, POST: vi.fn() } as unknown as ConsoleApiClient;
-    render(<EvidenceRecords api={api} />);
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
     await waitFor(() => {
       expect(screen.getByText(T.records.loadFailed)).toBeTruthy();
     });
@@ -147,22 +207,48 @@ describe("EvidenceRecords list (real-wired)", () => {
   });
 });
 
-describe("EvidenceRecords filtering", () => {
-  it("filters to legal-hold rows and toggles back to all", async () => {
+describe("EvidenceRecords list truthfulness", () => {
+  it("does not synthesize a hold from a list-row flag before detail is fetched", async () => {
     const api = makeApi();
-    render(<EvidenceRecords api={api} />);
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
     await waitFor(() => {
       expect(screen.getByText(heldWire.code)).toBeTruthy();
     });
-    const bar = screen.getByRole("group", { name: T.records.statBar });
-    const holdButton = within(bar).getByRole("button", { name: new RegExp(T.hold.active) });
+    expect(screen.queryByText(T.hold.active)).toBeNull();
+    expect(screen.queryByRole("button", { name: new RegExp(T.hold.active) })).toBeNull();
+  });
 
-    fireEvent.click(holdButton);
-    expect(screen.getByText(heldWire.code)).toBeTruthy();
-    expect(screen.queryByText(plainWire.code)).toBeNull();
+  it("keeps an opened object's authoritative detail when the user directory resolves late", async () => {
+    let resolveUsers: ((value: ApiResult) => void) | undefined;
+    const pendingUsers = new Promise<ApiResult>((resolve) => {
+      resolveUsers = resolve;
+    });
+    const wired = makeApi();
+    const wiredGet = wired.GET as unknown as (path: string, options?: unknown) => Promise<ApiResult>;
+    const GET = vi.fn((path: string, options?: unknown) =>
+      path === "/api/v1/users" ? pendingUsers : wiredGet(path, options),
+    );
+    const api = { GET, POST: vi.fn() } as unknown as ConsoleApiClient;
 
-    fireEvent.click(holdButton);
-    expect(screen.getByText(plainWire.code)).toBeTruthy();
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
+    await screen.findByText(heldWire.code);
+    fireEvent.click(
+      screen.getAllByRole("button", { name: T.records.open(heldWire.code, heldWire.title) })[0],
+    );
+    const detail = await screen.findByLabelText(T.detailAria(heldWire.code));
+    expect(within(detail).getByText(T.hold.active)).toBeTruthy();
+
+    // The directory lands after the object is already open. It may only rename
+    // actors. It must not re-seed the register: the list endpoint carries no
+    // holds, custody or copies, so re-seeding redraws a held object as unheld.
+    resolveUsers?.({
+      data: { items: [{ id: "creator-1", display_name: "김보관" }] },
+      response: { ok: true, status: 200 },
+    });
+    await within(detail).findByText("김보관");
+
+    expect(GET.mock.calls.filter(([path]) => path === "/api/v1/evidence/objects")).toHaveLength(1);
+    expect(within(detail).getByText(T.hold.active)).toBeTruthy();
   });
 });
 
@@ -171,7 +257,7 @@ describe("EvidenceRecords detail opening", () => {
     const api = makeApi();
     render(
       <WindowManagerProvider>
-        <EvidenceRecords api={api} />
+        <EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />
       </WindowManagerProvider>,
     );
     await waitFor(() => {
@@ -187,9 +273,46 @@ describe("EvidenceRecords detail opening", () => {
     expect(within(detail).getByText(T.worm.sealed)).toBeTruthy();
   });
 
+  it("loads authoritative custody and hold detail, then invokes the real verify endpoint", async () => {
+    const api = makeApi();
+    const POST = api.POST as unknown as ReturnType<typeof vi.fn>;
+    POST.mockResolvedValue({
+      data: {
+        evidence_object_id: heldWire.id,
+        verified_at: "2026-07-24T00:00:00Z",
+        outcome: "VERIFIED",
+        copies: heldWire.copies.map((copy) => ({
+          copy_id: copy.id,
+          copy_kind: copy.kind,
+          status: "MATCH",
+        })),
+      },
+      response: { ok: true, status: 200 },
+    });
+
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
+    await screen.findByText(heldWire.code);
+    expect(screen.queryByText(T.hold.active)).toBeNull();
+
+    fireEvent.click(
+      screen.getAllByRole("button", { name: T.records.open(heldWire.code, heldWire.title) })[0],
+    );
+    const detail = await screen.findByLabelText(T.detailAria(heldWire.code));
+    expect(within(detail).getByText(T.hold.active)).toBeTruthy();
+    expect(within(detail).getByText(T.custody.stages.LEGAL_HOLD_APPLIED)).toBeTruthy();
+
+    fireEvent.click(within(detail).getByRole("button", { name: T.actions.verify }));
+    await waitFor(() => {
+      expect(POST).toHaveBeenCalledWith("/api/v1/evidence/objects/{id}/verify", {
+        params: { path: { id: heldWire.id } },
+      });
+    });
+    expect(await within(detail).findByText(T.actions.verifyOk)).toBeTruthy();
+  });
+
   it("opens the EvidenceCard inline when no window shell is mounted", async () => {
     const api = makeApi();
-    render(<EvidenceRecords api={api} />);
+    render(<EvidenceRecords api={api} sessionIncarnation="evidence-records-test" />);
     await waitFor(() => {
       expect(screen.getByText(heldWire.code)).toBeTruthy();
     });
@@ -202,5 +325,85 @@ describe("EvidenceRecords detail opening", () => {
 
     fireEvent.click(screen.getByRole("button", { name: T.records.close }));
     expect(screen.queryByLabelText(T.detailAria(heldWire.code))).toBeNull();
+  });
+
+  it("reports a successful release with a failed authoritative reread and retries that reread", async () => {
+    let detailReads = 0;
+    const releasedWire = {
+      ...heldWire,
+      holds: heldWire.holds.map((hold) => ({
+        ...hold,
+        status: "RELEASED" as const,
+        releasedAt: "2026-07-24T01:00:00Z",
+      })),
+    };
+    const GET = vi.fn((path: string): Promise<ApiResult> => {
+      if (path === "/api/v1/evidence/objects") {
+        return Promise.resolve({
+          data: { items: [listRow(heldWire)], limit: 200, offset: 0, total: 1 },
+          response: { ok: true, status: 200 },
+        });
+      }
+      if (path === "/api/v1/evidence/objects/{id}") {
+        detailReads += 1;
+        if (detailReads === 2) {
+          return Promise.resolve({ data: undefined, response: { ok: false, status: 503 } });
+        }
+        return Promise.resolve({
+          data: detailWire(detailReads === 1 ? heldWire : releasedWire),
+          response: { ok: true, status: 200 },
+        });
+      }
+      if (path === "/api/v1/users") {
+        return Promise.resolve({ data: { items: [] }, response: { ok: true, status: 200 } });
+      }
+      return Promise.resolve({ data: undefined, response: { ok: false, status: 404 } });
+    });
+    const POST = vi.fn((path: string): Promise<ApiResult> => {
+      if (path === "/api/v1/governance/approvals") {
+        return Promise.resolve({ data: { request_ref: "req-1", requested_by: "user-a" }, response: { ok: true, status: 200 } });
+      }
+      if (path === "/api/v1/governance/approvals/decide") {
+        return Promise.resolve({ data: {}, response: { ok: true, status: 200 } });
+      }
+      if (path === "/api/v1/evidence/objects/{id}/hold") {
+        return Promise.resolve({
+          data: { id: heldWire.holds[0]?.id, case_ref: heldWire.holds[0]?.caseRef, status: "RELEASED", applied_at: heldWire.holds[0]?.appliedAt },
+          response: { ok: true, status: 200 },
+        });
+      }
+      return Promise.resolve({ data: undefined, response: { ok: false, status: 404 } });
+    });
+    const api = { GET, POST } as unknown as ConsoleApiClient;
+
+    render(
+      <PolicyGateProvider gate={allowGate}>
+        <EvidenceRecords api={api} currentUserId="user-b" sessionIncarnation="release-refresh-failure" />
+      </PolicyGateProvider>,
+    );
+    await screen.findByText(heldWire.code);
+    fireEvent.click(screen.getAllByRole("button", { name: T.records.open(heldWire.code, heldWire.title) })[0]);
+    const detail = await screen.findByLabelText(T.detailAria(heldWire.code));
+    fireEvent.click(within(detail).getByRole("button", { name: T.hold.requestRelease }));
+    await waitFor(() => {
+      expect(within(detail).getByRole("button", { name: T.hold.decideApprove })).toBeTruthy();
+    });
+    fireEvent.click(within(detail).getByRole("button", { name: T.hold.decideApprove }));
+    await waitFor(() => {
+      expect(within(detail).getByRole("button", { name: T.hold.release })).toBeTruthy();
+    });
+    fireEvent.click(within(detail).getByRole("button", { name: T.hold.release }));
+
+    await waitFor(() => {
+      expect(within(detail).getByText(T.hold.releaseRefreshFailed)).toBeTruthy();
+    });
+    expect(within(detail).getByText(T.hold.active)).toBeTruthy();
+    fireEvent.click(within(detail).getByRole("button", { name: T.hold.refreshRetry }));
+    await waitFor(() => {
+      expect(detailReads).toBe(3);
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(T.hold.active)).toBeNull();
+    });
   });
 });

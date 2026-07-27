@@ -49,6 +49,18 @@ async fn seed_org(owner_pool: &PgPool, org: Uuid, tag: &str) {
     .unwrap();
 }
 
+async fn seed_user(owner_pool: &PgPool, org: Uuid, display_name: &str) -> Uuid {
+    sqlx::query_scalar(
+        "INSERT INTO users (org_id, display_name, roles) VALUES ($1, $2, ARRAY['ADMIN']) \
+         RETURNING id",
+    )
+    .bind(org)
+    .bind(display_name)
+    .fetch_one(owner_pool)
+    .await
+    .unwrap()
+}
+
 async fn seed_active_lock(owner_pool: &PgPool, org: Uuid, domain: &str) -> Uuid {
     sqlx::query_scalar(
         "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
@@ -204,9 +216,19 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let object_id = Uuid::new_v4();
     let today = date!(2026 - 07 - 09);
+    // Two actors: submitted → approved is a maker–checker transition, so the
+    // 기안자 cannot also be the 승인자 (see lifecycle_maker_checker.rs).
+    let maker = seed_user(&owner_pool, org_a, "기안자").await;
+    let checker = seed_user(&owner_pool, org_a, "승인자").await;
 
     // Walk the full legal chain (first transition implicitly registers at draft).
-    for to_state in ["submitted", "approved", "active", "revised", "archived"] {
+    for (to_state, actor) in [
+        ("submitted", maker),
+        ("approved", checker),
+        ("active", checker),
+        ("revised", maker),
+        ("archived", maker),
+    ] {
         let record =
             with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
                 Box::pin(async move {
@@ -216,7 +238,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
                         "document",
                         object_id,
                         to_state,
-                        None,
+                        Some(actor),
                         "정상 전이",
                         today,
                     )
