@@ -34,7 +34,13 @@ const expectedShardBudgets = new Map([
   // Measured 134s, 149s, 151s and 183s passing, then 193s killed, against the
   // old 180s budget: it was already grazing the ceiling before the thread
   // selection became explicit, which added a tap and a message load per launch.
-  ["messenger-mutation", 240],
+  // 240 -> 300 after a kill on main. The tests did not change: run 30220083869
+  // passed with 95.9s + 47.2s of test time, so ~191s including launch, i.e. 80%
+  // of 240 and already at the erosion-warning line. On run 30231861115 the same
+  // 47.2s test took 66.7s -- a 1.41x contended runner puts the shard near 250s,
+  // past the old ceiling. 300 restores headroom without hiding a regression:
+  // the >=80% warning now fires at 240s, which is where this shard last passed.
+  ["messenger-mutation", 300],
   ["audit-dynamic-today", 150],
   ["audit-dynamic-detail", 150],
   ["audit-dynamic-messenger", 210],
@@ -161,7 +167,7 @@ function hasFunctionalColdStartProof(files) {
     && /preflight-restore\)\s*\n\s*SHARD_TIMEOUT_SECONDS=150\s*\n\s*SHARD_SELECTORS=\(ConsoleUITests\/PreflightUITests\/testSeederRestoresThenClearsRealSession\)/.test(activeJob)
     && /critical-today\)\s*\n\s*SHARD_TIMEOUT_SECONDS=240\s*\n\s*SHARD_SELECTORS=\([\s\S]{0,240}testDispatchListRendersDeterministicMechanicWorkOrder[\s\S]{0,160}testFullFixtureRowsRemainReachableAboveTabBar[\s\S]{0,80}\)/.test(activeJob)
     && !/critical-today\)[\s\S]{0,360}testAuthenticatedLaunchShowsTodayTabInKorean/.test(activeJob)
-    && /messenger-mutation\)\s*\n\s*SHARD_TIMEOUT_SECONDS=240\s*\n\s*SHARD_SELECTORS=\([\s\S]{0,240}testMessengerSendSurvivesBackendRefresh[\s\S]{0,160}testMessengerSearchUnmatchedQueryShowsRealNoResults[\s\S]{0,80}\)/.test(activeJob)
+    && /messenger-mutation\)\s*\n\s*SHARD_TIMEOUT_SECONDS=300\s*\n\s*SHARD_SELECTORS=\([\s\S]{0,240}testMessengerSendSurvivesBackendRefresh[\s\S]{0,160}testMessengerSearchUnmatchedQueryShowsRealNoResults[\s\S]{0,80}\)/.test(activeJob)
     && /run_xcode_with_timeout\s+"\$shard_name"\s+"\$result"\s+"\$SHARD_TIMEOUT_SECONDS"\s+"\$\{SHARD_SELECTORS\[@\]\}"\s+\|\|\s+\{\s*shard_status=\$\?;\s*TEST_STATUS=1;\s*\}/.test(activeJob);
 }
 
@@ -391,8 +397,9 @@ function hasValidLoopbackWebauthnPolicy(job, launcher) {
   const forbiddenLowLevelControls = /\b(?:E2E_AUTH_DIR|E2E_HTTP_ADDR|E2E_PORT_CONFLICT_MODE|E2E_COLDSTART_OTP|E2E_RP_ORIGIN|E2E_RP_ID)\b|e2e\/harness\/boot-backend\.sh/;
   // Reseal whenever the backend step legitimately changes; the pin exists to
   // force that change through review, not to freeze the step. Last resealed to
-  // raise the critical-location shard budget 150 -> 240 seconds.
-  const approvedBackendStepSha256 = "fd85722f40a6a0b543c6ea5cdfe27b07faa7dde30943ebadc6f46dc7383535e8";
+  // raise the messenger-mutation budget 240 -> 300 seconds and give xcodebuild 45s
+  // rather than 10s to finalize its result bundle before SIGKILL.
+  const approvedBackendStepSha256 = "d1a14c1cf335f08b8946b534bbfd8fe546ed6c02476056870e6cd1df22fa030a";
   const approvedLauncherSha256 = "f18a155f6f3d093087f5c52bd185e46f628bdf78066ca2abc204f2ccb1ee591c";
   const backendStepSha256 = createHash("sha256").update(backendStep).digest("hex");
   const launcherSha256 = createHash("sha256").update(launcher).digest("hex");

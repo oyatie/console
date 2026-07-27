@@ -346,7 +346,7 @@ jobs:
                 SHARD_SELECTORS=(ConsoleUITests/MessengerUITests/testExactSeededMessengerThreadAndMessageRender)
                 ;;
               messenger-mutation)
-                SHARD_TIMEOUT_SECONDS=240
+                SHARD_TIMEOUT_SECONDS=300
                 SHARD_SELECTORS=(
                   ConsoleUITests/MessengerUITests/testMessengerSendSurvivesBackendRefresh
                   ConsoleUITests/MessengerUITests/testMessengerSearchUnmatchedQueryShowsRealNoResults
@@ -469,7 +469,7 @@ jobs:
                 echo "$shard_name exceeded its ${timeout_seconds}-second measured shard budget" >&2
                 printf '%s\n' "$shard_name exceeded its ${timeout_seconds}-second measured shard budget" > "$timeout_marker"
                 kill -TERM -- "-$test_pid" 2>/dev/null || true
-                sleep 10
+                sleep 45
                 kill -KILL -- "-$test_pid" 2>/dev/null || true
               fi
             ) &

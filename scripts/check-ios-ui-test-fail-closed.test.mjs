@@ -100,7 +100,7 @@ describe("iOS hermetic UI CI contract", () => {
       ["preflight-restore", 150, 120],
       ["critical-report", 360, 540],
             ["camera-capture", 150, 90],
-      ["messenger-mutation", 240, 120],
+      ["messenger-mutation", 300, 120],
     ]) {
       expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
         `${shard})
