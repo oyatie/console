@@ -39,13 +39,13 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use console_kernel_core::{
     AuditAction, AuditEvent, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_storage::{PresignGetRequest, S3ObjectStore, SeaweedS3Storage};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -117,7 +117,8 @@ pub fn office_config_from_vars(
     get: impl Fn(&str) -> Option<String>,
 ) -> Result<Option<OfficeConfig>, String> {
     let secret = get("CONSOLE_OFFICE_JWT_SECRET").filter(|s| !s.trim().is_empty());
-    let callback_base_url = get("CONSOLE_OFFICE_CALLBACK_BASE_URL").filter(|s| !s.trim().is_empty());
+    let callback_base_url =
+        get("CONSOLE_OFFICE_CALLBACK_BASE_URL").filter(|s| !s.trim().is_empty());
     let docserver_url = get("CONSOLE_OFFICE_DOCSERVER_URL").filter(|s| !s.trim().is_empty());
     match (secret, callback_base_url, docserver_url) {
         (Some(jwt_secret), Some(callback_base_url), Some(docserver_url)) => {

@@ -29,7 +29,6 @@ use std::panic::AssertUnwindSafe;
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
-use futures::FutureExt;
 use console_identity_adapter_postgres::PgOrgStore;
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
 use console_platform_authz::cedar_pbac::engine;
@@ -39,6 +38,7 @@ use console_platform_authz::{
     evaluate_cedar_pbac_boundary,
 };
 use console_platform_db::{DbError, with_audit};
+use futures::FutureExt;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use time::OffsetDateTime;

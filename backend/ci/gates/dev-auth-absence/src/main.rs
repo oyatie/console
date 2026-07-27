@@ -20,10 +20,11 @@ fn run_gate(workspace_dir: &Path) {
         workspace_dir.display()
     );
 
-    let metadata = console_gate_dev_auth_absence::load_metadata(workspace_dir).unwrap_or_else(|e| {
-        eprintln!("ERROR: {e}");
-        std::process::exit(1);
-    });
+    let metadata =
+        console_gate_dev_auth_absence::load_metadata(workspace_dir).unwrap_or_else(|e| {
+            eprintln!("ERROR: {e}");
+            std::process::exit(1);
+        });
 
     let result = console_gate_dev_auth_absence::check(&metadata).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");

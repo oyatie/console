@@ -128,17 +128,19 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(a_todo.links.len(), 1);
 
     // (a) owner isolation: A sees only A's; B sees only B's.
-    let a_list =
-        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
-            .await
-            .expect("A list");
+    let a_list = console_platform_request_context::scope_org(knl, async {
+        store.list(list_open(user_a)).await
+    })
+    .await
+    .expect("A list");
     assert_eq!(a_list.items.len(), 1, "A sees exactly one todo");
     assert_eq!(a_list.items[0].id, a_todo.id);
 
-    let b_list =
-        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_b)).await })
-            .await
-            .expect("B list");
+    let b_list = console_platform_request_context::scope_org(knl, async {
+        store.list(list_open(user_b)).await
+    })
+    .await
+    .expect("B list");
     assert_eq!(b_list.items.len(), 1);
     assert_ne!(b_list.items[0].id, a_todo.id, "B must never see A's todo");
 
@@ -195,10 +197,11 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     assert!(marked.done);
     assert!(marked.done_at.is_some());
 
-    let open_after =
-        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
-            .await
-            .expect("A open list after done");
+    let open_after = console_platform_request_context::scope_org(knl, async {
+        store.list(list_open(user_a)).await
+    })
+    .await
+    .expect("A open list after done");
     assert!(
         open_after.items.is_empty(),
         "done todo leaves the open list"

@@ -111,7 +111,9 @@ async fn leave_command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE console_leave_cmd").execute(conn).await?;
+                sqlx::query("SET ROLE console_leave_cmd")
+                    .execute(conn)
+                    .await?;
                 Ok(())
             })
         })
@@ -861,11 +863,12 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
             "definer {attribute} must be false"
         );
     }
-    let command_can_assume_definer: bool =
-        sqlx::query_scalar("SELECT pg_has_role('console_leave_cmd','console_leave_definer','MEMBER')")
-            .fetch_one(&owner_pool)
-            .await
-            .unwrap();
+    let command_can_assume_definer: bool = sqlx::query_scalar(
+        "SELECT pg_has_role('console_leave_cmd','console_leave_definer','MEMBER')",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
     assert!(
         !command_can_assume_definer,
         "command role must not inherit or assume the definer"

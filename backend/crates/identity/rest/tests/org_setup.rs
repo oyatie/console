@@ -10,7 +10,6 @@ use std::collections::BTreeSet;
 
 use axum::Router;
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_identity_adapter_postgres::PgOrgStore;
 use console_identity_application::ReplacePolicyRoleAssignmentsCommand;
 use console_identity_rest::{IdentityRestState, router};
@@ -25,6 +24,7 @@ use console_platform_auth::{
 use console_platform_db::{DbError, with_audit};
 use console_platform_request_context::scope_org;
 use console_platform_test_support::runtime_role_pool;
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};

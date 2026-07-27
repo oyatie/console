@@ -153,12 +153,13 @@ pub async fn run_soak_gates(
     let mut owner_connection = sqlx::PgConnection::connect(database_url).await?;
     migrate_and_reconcile_apalis_postgres(&mut owner_connection).await?;
 
-    let runtime_database_url = std::env::var("CONSOLE_APALIS_RUNTIME_DATABASE_URL").map_err(|_| {
-        JobQueueError::Soak(
+    let runtime_database_url =
+        std::env::var("CONSOLE_APALIS_RUNTIME_DATABASE_URL").map_err(|_| {
+            JobQueueError::Soak(
             "CONSOLE_APALIS_RUNTIME_DATABASE_URL is required and must authenticate as console_rt"
                 .to_owned(),
         )
-    })?;
+        })?;
     let observation_pool = sqlx::PgPool::connect(database_url).await?;
     ensure_observation_schema(&observation_pool).await?;
 

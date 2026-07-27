@@ -9,7 +9,9 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use console_equipment_adapter_postgres::{BranchAuthorization, PgEquipment3rError, PgEquipment3rStore};
+use console_equipment_adapter_postgres::{
+    BranchAuthorization, PgEquipment3rError, PgEquipment3rStore,
+};
 use console_equipment_application::{
     AssessReturn, CompleteDisposition, DecideApproval, DispatchCase, HandoverCase, InspectCase,
     QuoteCase, RegisterUnit,

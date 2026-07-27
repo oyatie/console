@@ -53,9 +53,9 @@ use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
 use std::time::Duration as StdDuration;
 
-use futures::FutureExt;
 use console_kernel_core::OrgId;
 use console_platform_db::{DbError, with_org_conn};
+use futures::FutureExt;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Transaction};
 use time::{Duration, OffsetDateTime, UtcOffset};
@@ -500,10 +500,12 @@ pub async fn seal_org_once(
             // Per-org advisory lock: two worker replicas never seal one org
             // concurrently (belt-and-suspenders over the PK/UNIQUE constraints).
             // Transaction-scoped ⇒ auto-released on COMMIT/ROLLBACK.
-            sqlx::query("SELECT pg_advisory_xact_lock(hashtext('console.audit-chain'), hashtext($1))")
-                .bind(org_id.to_string())
-                .execute(tx.as_mut())
-                .await?;
+            sqlx::query(
+                "SELECT pg_advisory_xact_lock(hashtext('console.audit-chain'), hashtext($1))",
+            )
+            .bind(org_id.to_string())
+            .execute(tx.as_mut())
+            .await?;
 
             // Head seal → resume cursor + predecessor hash + sequence.
             let head: Option<HeadRow> = sqlx::query_as(SELECT_HEAD)

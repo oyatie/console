@@ -220,10 +220,11 @@ async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
 async fn summary_for(pool: &PgPool, org_id: Uuid) -> OpsSummary {
     let rt_pool = console_rt_pool(pool).await;
     let repo = PgKpiRepository::new(rt_pool.clone());
-    let summary = console_platform_request_context::scope_org(OrgId::from_uuid(org_id), async move {
-        repo.ops_summary(QUERY).await.unwrap()
-    })
-    .await;
+    let summary =
+        console_platform_request_context::scope_org(OrgId::from_uuid(org_id), async move {
+            repo.ops_summary(QUERY).await.unwrap()
+        })
+        .await;
     rt_pool.close().await;
     summary
 }

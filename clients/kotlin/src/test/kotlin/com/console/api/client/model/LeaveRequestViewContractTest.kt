@@ -1,6 +1,6 @@
-package com.maintenance.api.client.model
+package com.console.api.client.model
 
-import com.maintenance.api.client.infrastructure.Serializer
+import com.console.api.client.infrastructure.Serializer
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.kotlintest.specs.StringSpec

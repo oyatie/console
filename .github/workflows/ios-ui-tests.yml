@@ -216,7 +216,7 @@ jobs:
           xcrun simctl list runtimes -j | python3 -c 'import json,sys; target=sys.argv[1]; assert any(x.get("isAvailable") and x.get("identifier") == target for x in json.load(sys.stdin)["runtimes"])' "$SIM_RUNTIME"
           SIM_DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
           xcrun simctl list devicetypes -j | python3 -c 'import json,sys; target=sys.argv[1]; assert any(x.get("identifier") == target for x in json.load(sys.stdin)["devicetypes"])' "$SIM_DEVICE_TYPE"
-          UUID="$(xcrun simctl create "Maintenance CI ${CONSOLE_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "$SIM_DEVICE_TYPE" "$SIM_RUNTIME")"; write_state; xcrun simctl boot "$UUID"; xcrun simctl bootstatus "$UUID" -b
+          UUID="$(xcrun simctl create "Console CI ${CONSOLE_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "$SIM_DEVICE_TYPE" "$SIM_RUNTIME")"; write_state; xcrun simctl boot "$UUID"; xcrun simctl bootstatus "$UUID" -b
           xcodebuild build-for-testing -onlyUsePackageVersionsFromResolvedFile -project Console.xcodeproj -scheme ConsoleApp -destination "platform=iOS Simulator,id=$UUID" -derivedDataPath "$DERIVED"
           BUILT_PLIST="$(find "$DERIVED/Build/Products" -path '*ConsoleApp.app/Info.plist' -print -quit)"; test -n "$BUILT_PLIST"; # Built.app/Info.plist receives CI-only NSAllowsLocalNetworking
           /usr/libexec/PlistBuddy -c 'Print :UILaunchScreen' "$BUILT_PLIST" >/dev/null
@@ -430,7 +430,7 @@ jobs:
             python3 - "$otp" > "$AUTH_DIR/otp.json" <<'PY'
           import json,sys; print(json.dumps({"otp": sys.argv[1]}))
           PY
-            curl --fail --silent --show-error -X POST "$URL/api/v1/auth/otp/redeem" -H 'content-type: application/json' -H 'x-maintenance-client: mobile' --data-binary @- < "$AUTH_DIR/otp.json" > "$AUTH_DIR/tokens.json" || { rm -f "$AUTH_DIR/otp.json" "$AUTH_DIR/tokens.json"; return 1; }
+            curl --fail --silent --show-error -X POST "$URL/api/v1/auth/otp/redeem" -H 'content-type: application/json' -H 'x-console-client: mobile' --data-binary @- < "$AUTH_DIR/otp.json" > "$AUTH_DIR/tokens.json" || { rm -f "$AUTH_DIR/otp.json" "$AUTH_DIR/tokens.json"; return 1; }
             rm -f "$AUTH_DIR/otp.json"
             CONSOLE_UITEST_ACCESS_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["access_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
             CONSOLE_UITEST_REFRESH_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["refresh_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }

@@ -1,4 +1,9 @@
-import { createConsoleApiClient } from "@console/api-client-ts";
+// The generated client's factory now shares this module's exported wrapper name
+// (`createConsoleApiClient`), so it is imported under an alias. Without the
+// alias the import collides with the local declaration, the wrapper's inferred
+// return type collapses to `any`, and every consumer of the API client degrades
+// with it.
+import { createConsoleApiClient as createGeneratedApiClient } from "@console/api-client-ts";
 
 import { getDeviceId } from "./device";
 import { isAuthPath, shouldSkipAuthRefresh, singleFlightRefresh } from "./refresh";
@@ -287,7 +292,7 @@ export function createConsoleApiClient(
     }
   }
 
-  const client = createConsoleApiClient({
+  const client = createGeneratedApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL ?? window.location.origin,
     bearerToken,
   });

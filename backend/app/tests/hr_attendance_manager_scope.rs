@@ -3,12 +3,12 @@
 //! Buck target before it can run independently.
 
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use console_inbox_adapter_postgres::PgInboxStore;
 use console_kernel_core::{OrgId, TraceContext, UserId};
 use console_leave_adapter_postgres::PgLeaveStore;
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -369,7 +369,11 @@ async fn scoped_role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
             Box::pin(async move {
                 match role {
                     "console_rt" => sqlx::query("SET ROLE console_rt").execute(conn).await?,
-                    "console_leave_cmd" => sqlx::query("SET ROLE console_leave_cmd").execute(conn).await?,
+                    "console_leave_cmd" => {
+                        sqlx::query("SET ROLE console_leave_cmd")
+                            .execute(conn)
+                            .await?
+                    }
                     _ => unreachable!("test role is fixed by its helper"),
                 };
                 Ok(())

@@ -8,9 +8,9 @@
 //! caller passes (not the MIME), and `received_at` falls back from the server
 //! `INTERNALDATE` to the `Date:` header.
 
-use mail_parser::{Address, HeaderValue, MessageParser, MimeHeaders};
 use console_comms_application::{FetchedAttachment, FetchedMessage, MAX_INBOUND_ATTACHMENT_BYTES};
 use console_comms_domain::MessageAddress;
+use mail_parser::{Address, HeaderValue, MessageParser, MimeHeaders};
 use time::OffsetDateTime;
 
 const MAX_SUBJECT_CHARS: usize = 998;

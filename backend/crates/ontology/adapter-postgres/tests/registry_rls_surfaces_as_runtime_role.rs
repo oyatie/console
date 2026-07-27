@@ -879,36 +879,42 @@ async fn concurrent_stage_stage_has_one_cas_winner_as_runtime_role(owner_pool: P
     let gate = hold_advisory_gate(&owner_pool, INSERT_GATE).await;
     let first_pool = rt_pool.clone();
     let first_cmd_pool = command_role_pool(&owner_pool).await;
-    let first = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(first_pool)
-            .with_command_pool(first_cmd_pool)
-            .stage_revision(
-                actor,
-                "wo.concurrent_stage",
-                expected,
-                revision_draft("wo.concurrent_stage", "first hostile stage", "from_first"),
-                TraceContext::generate(),
-                at,
-            )
-            .await
-    }));
+    let first = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(first_pool)
+                .with_command_pool(first_cmd_pool)
+                .stage_revision(
+                    actor,
+                    "wo.concurrent_stage",
+                    expected,
+                    revision_draft("wo.concurrent_stage", "first hostile stage", "from_first"),
+                    TraceContext::generate(),
+                    at,
+                )
+                .await
+        },
+    ));
     wait_for_advisory_waiters(&owner_pool, 1).await;
 
     let second_pool = rt_pool.clone();
     let second_cmd_pool = command_role_pool(&owner_pool).await;
-    let second = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(second_pool)
-            .with_command_pool(second_cmd_pool)
-            .stage_revision(
-                actor,
-                "wo.concurrent_stage",
-                expected,
-                revision_draft("wo.concurrent_stage", "second hostile stage", "from_second"),
-                TraceContext::generate(),
-                at,
-            )
-            .await
-    }));
+    let second = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(second_pool)
+                .with_command_pool(second_cmd_pool)
+                .stage_revision(
+                    actor,
+                    "wo.concurrent_stage",
+                    expected,
+                    revision_draft("wo.concurrent_stage", "second hostile stage", "from_second"),
+                    TraceContext::generate(),
+                    at,
+                )
+                .await
+        },
+    ));
 
     tokio::task::yield_now().await;
     assert!(
@@ -1088,37 +1094,43 @@ async fn concurrent_stage_review_has_one_cas_winner_as_runtime_role(owner_pool: 
         in_property_policy: false,
     });
 
-    let stage = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(stage_pool)
-            .with_command_pool(stage_cmd_pool)
-            .stage_revision(
-                actor,
-                "wo.concurrent_publish",
-                expected,
-                staged_draft,
-                TraceContext::generate(),
-                at,
-            )
-            .await
-    }));
+    let stage = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(stage_pool)
+                .with_command_pool(stage_cmd_pool)
+                .stage_revision(
+                    actor,
+                    "wo.concurrent_publish",
+                    expected,
+                    staged_draft,
+                    TraceContext::generate(),
+                    at,
+                )
+                .await
+        },
+    ));
     wait_for_advisory_waiters(&owner_pool, 1).await;
 
     let review_pool = rt_pool.clone();
     let review_cmd_pool = command_role_pool(&owner_pool).await;
-    let review = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(review_pool)
-            .with_command_pool(review_cmd_pool)
-            .transition_lifecycle(
-                actor,
-                v2.id,
-                expected,
-                SchemaLifecycleState::ReviewPending,
-                true,
-                TraceContext::generate(),
-                at,
-            )
-            .await
-    }));
+    let review = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(review_pool)
+                .with_command_pool(review_cmd_pool)
+                .transition_lifecycle(
+                    actor,
+                    v2.id,
+                    expected,
+                    SchemaLifecycleState::ReviewPending,
+                    true,
+                    TraceContext::generate(),
+                    at,
+                )
+                .await
+        },
+    ));
 
     tokio::task::yield_now().await;
     assert!(
@@ -1387,26 +1399,32 @@ async fn concurrent_create_create_serializes_to_one_success_and_one_typed_confli
     let gate = hold_advisory_gate(&owner_pool, CREATE_GATE).await;
     let first_pool = rt_pool.clone();
     let first_cmd_pool = command_role_pool(&owner_pool).await;
-    let first = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        let mut draft = work_order_draft("wo.concurrent_create");
-        draft.title = "first hostile create".to_owned();
-        PgOntologyStore::new(first_pool)
-            .with_command_pool(first_cmd_pool)
-            .create_object_type(actor, draft, TraceContext::generate(), at)
-            .await
-    }));
+    let first = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            let mut draft = work_order_draft("wo.concurrent_create");
+            draft.title = "first hostile create".to_owned();
+            PgOntologyStore::new(first_pool)
+                .with_command_pool(first_cmd_pool)
+                .create_object_type(actor, draft, TraceContext::generate(), at)
+                .await
+        },
+    ));
     wait_for_advisory_waiters(&owner_pool, 1).await;
 
     let second_pool = rt_pool.clone();
     let second_cmd_pool = command_role_pool(&owner_pool).await;
-    let second = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        let mut draft = work_order_draft("wo.concurrent_create");
-        draft.title = "second hostile create".to_owned();
-        PgOntologyStore::new(second_pool)
-            .with_command_pool(second_cmd_pool)
-            .create_object_type(actor, draft, TraceContext::generate(), at)
-            .await
-    }));
+    let second = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            let mut draft = work_order_draft("wo.concurrent_create");
+            draft.title = "second hostile create".to_owned();
+            PgOntologyStore::new(second_pool)
+                .with_command_pool(second_cmd_pool)
+                .create_object_type(actor, draft, TraceContext::generate(), at)
+                .await
+        },
+    ));
     tokio::task::yield_now().await;
     release_advisory_gate(gate, CREATE_GATE).await;
 

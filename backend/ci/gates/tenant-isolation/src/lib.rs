@@ -1149,8 +1149,10 @@ mod tests {
     }
 
     fn tmpdir(tag: &str) -> PathBuf {
-        let base =
-            std::env::temp_dir().join(format!("console-gate-tenant-isolation-{tag}-{}", uuid_like()));
+        let base = std::env::temp_dir().join(format!(
+            "console-gate-tenant-isolation-{tag}-{}",
+            uuid_like()
+        ));
         fs::create_dir_all(&base).unwrap();
         base
     }

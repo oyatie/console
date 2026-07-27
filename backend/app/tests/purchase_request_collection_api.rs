@@ -6,10 +6,10 @@
 //! and the public error envelope are exercised together.
 
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use console_kernel_core::{BranchId, OrgId, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -613,7 +613,9 @@ async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|connection, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt")
+                    .execute(connection)
+                    .await?;
                 Ok(())
             })
         })

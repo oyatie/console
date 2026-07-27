@@ -15,7 +15,9 @@ use std::pin::Pin;
 use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, NotificationId, Timestamp, TraceContext, UserId,
 };
-use console_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
+use console_notifications_domain::{
+    NotificationLink, NotificationPolicyId, NotificationPolicyScope,
+};
 use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------------------

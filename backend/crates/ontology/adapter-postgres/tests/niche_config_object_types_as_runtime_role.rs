@@ -14,7 +14,9 @@
 //!       §3.9.0 staging semantics come free from the engine for the new types too.
 
 use console_ontology_adapter_postgres::PgOntologyStore;
-use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
+use console_ontology_adapter_postgres::instances::{
+    CreateInstance, PgInstanceStore, StageRevision,
+};
 use console_ontology_adapter_postgres::seed::{
     HANDOVER_POLICY_KEY, LABOR_REFUSAL_KEY, PROFITABILITY_ANALYTIC_KEY, REGULATION_PARAM_KEY,
     SHIFT_TIMETABLE_KEY, SITE_COVERAGE_KEY, SLA_SETTING_KEY, seed_governed_config_object_types,

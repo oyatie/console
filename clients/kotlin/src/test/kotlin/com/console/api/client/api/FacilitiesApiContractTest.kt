@@ -1,11 +1,11 @@
-package com.maintenance.api.client.api
+package com.console.api.client.api
 
-import com.maintenance.api.client.model.FacilitiesAcceptanceRequest
-import com.maintenance.api.client.model.FacilitiesAssignRequest
-import com.maintenance.api.client.model.FacilitiesCase
-import com.maintenance.api.client.model.FacilitiesObservationRequest
-import com.maintenance.api.client.model.FacilitiesSubmitRequest
-import com.maintenance.api.client.model.FacilitiesTriageRequest
+import com.console.api.client.model.FacilitiesAcceptanceRequest
+import com.console.api.client.model.FacilitiesAssignRequest
+import com.console.api.client.model.FacilitiesCase
+import com.console.api.client.model.FacilitiesObservationRequest
+import com.console.api.client.model.FacilitiesSubmitRequest
+import com.console.api.client.model.FacilitiesTriageRequest
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 import java.time.OffsetDateTime

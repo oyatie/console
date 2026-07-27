@@ -772,7 +772,8 @@ async fn queue_is_branch_scoped_and_cursor_pages_are_disjoint(pool: PgPool) {
                 statuses: DispatchQueueStatus::parse_csv(None).unwrap(),
                 limit: 1,
                 after: Some(
-                    console_dispatch_application::DispatchQueueCursor::decode(&cursor, now).unwrap(),
+                    console_dispatch_application::DispatchQueueCursor::decode(&cursor, now)
+                        .unwrap(),
                 ),
                 now,
             })
@@ -1136,7 +1137,10 @@ async fn audit_actions_for_dispatch(
     .unwrap()
 }
 
-async fn alert_counts(pool: &PgPool, dispatch_id: console_kernel_core::P1DispatchId) -> AlertCounts {
+async fn alert_counts(
+    pool: &PgPool,
+    dispatch_id: console_kernel_core::P1DispatchId,
+) -> AlertCounts {
     let row = sqlx::query(
         r#"
         SELECT
@@ -1302,9 +1306,11 @@ async fn dispatch_summary_returns_same_tenant_and_hides_cross_tenant_as_runtime_
     assert_eq!(same_tenant.work_order_id, seeded.work_order_id);
     assert_eq!(same_tenant.target_count, started.target_count);
 
-    let cross_tenant =
-        console_platform_request_context::scope_org(OrgId::new(), runtime_store.dispatch(started.id))
-            .await
-            .expect_err("cross-tenant dispatch must be invisible as console_rt");
+    let cross_tenant = console_platform_request_context::scope_org(
+        OrgId::new(),
+        runtime_store.dispatch(started.id),
+    )
+    .await
+    .expect_err("cross-tenant dispatch must be invisible as console_rt");
     assert_eq!(cross_tenant.kind(), ErrorKind::NotFound);
 }

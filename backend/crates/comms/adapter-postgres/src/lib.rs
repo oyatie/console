@@ -24,7 +24,9 @@ use console_comms_application::{
     ThreadView, address_ambiguous_audit_event, thread_grouping_key,
 };
 use console_comms_domain::{MailSecurity, MessageAddress, normalize_subject};
-use console_kernel_core::{AuditEvent, ErrorKind, KernelError, OrgId, Timestamp, TraceContext, UserId};
+use console_kernel_core::{
+    AuditEvent, ErrorKind, KernelError, OrgId, Timestamp, TraceContext, UserId,
+};
 use console_platform_db::{DbError, with_audit, with_org_conn};
 use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -874,7 +876,8 @@ impl MailReadStore for PgMailStore {
         org: OrgId,
         account: EmailAccountId,
         folders: &'a [ImapFolder],
-    ) -> console_comms_application::MailFuture<'a, Result<Vec<FolderCursor>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Vec<FolderCursor>, MailServiceError>>
+    {
         Box::pin(async move {
             self.upsert_folders_inner(org, account, folders)
                 .await
@@ -987,7 +990,8 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         thread_id: uuid::Uuid,
-    ) -> console_comms_application::MailFuture<'a, Result<Option<ThreadDetail>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Option<ThreadDetail>, MailServiceError>>
+    {
         Box::pin(async move {
             self.get_thread_inner(org, thread_id)
                 .await
@@ -999,7 +1003,8 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         message_id: EmailMessageId,
-    ) -> console_comms_application::MailFuture<'a, Result<Option<MessageView>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Option<MessageView>, MailServiceError>>
+    {
         Box::pin(async move {
             self.get_message_inner(org, message_id)
                 .await

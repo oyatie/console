@@ -16,12 +16,16 @@ use console_financial_application::{
     PurchaseRestartCommand, PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand,
     financial_audit_event,
 };
-use console_financial_domain::{MoneyInput, PurchaseStatus, RentalQuoteInput, compute_rental_quote};
+use console_financial_domain::{
+    MoneyInput, PurchaseStatus, RentalQuoteInput, compute_rental_quote,
+};
 use console_kernel_core::{
     BranchId, EquipmentId, ErrorKind, EvidenceId, KernelError, PurchaseRequestId, QuoteId,
     TraceContext, WorkOrderId,
 };
-use console_platform_auth::{AuthError, JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_auth::{
+    AuthError, JwtVerifier, PasskeyAuthenticationCredential, PasskeyService,
+};
 use console_platform_authz::{Action, Feature, Principal, authorize};
 use console_platform_db::{DbError, with_audit};
 use console_platform_storage::{
@@ -1376,7 +1380,13 @@ async fn authorize_for_purchase(
     headers: &HeaderMap,
     purchase_request_id: PurchaseRequestId,
     action: Action,
-) -> Result<(console_financial_application::PurchaseRequestSummary, Principal), RestError> {
+) -> Result<
+    (
+        console_financial_application::PurchaseRequestSummary,
+        Principal,
+    ),
+    RestError,
+> {
     let (purchase, principal) =
         authorize_for_purchase_read(state, headers, purchase_request_id).await?;
     authorize(&principal, action, purchase.branch_id).map_err(RestError::from_kernel)?;
@@ -1387,7 +1397,13 @@ async fn authorize_for_purchase_read(
     state: &FinancialRestState,
     headers: &HeaderMap,
     purchase_request_id: PurchaseRequestId,
-) -> Result<(console_financial_application::PurchaseRequestSummary, Principal), RestError> {
+) -> Result<
+    (
+        console_financial_application::PurchaseRequestSummary,
+        Principal,
+    ),
+    RestError,
+> {
     let principal = principal_from_headers(state, headers).await?;
     let purchase = state
         .store

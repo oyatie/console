@@ -16,7 +16,9 @@
 //!       proven in the governance lane.
 
 use console_ontology_adapter_postgres::PgOntologyStore;
-use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
+use console_ontology_adapter_postgres::instances::{
+    CreateInstance, PgInstanceStore, StageRevision,
+};
 use console_ontology_adapter_postgres::seed::{
     CONSOLE_VIEW_KEY, SUPPORT_SLO_SETTING_KEY, seed_governed_config_object_types,
 };

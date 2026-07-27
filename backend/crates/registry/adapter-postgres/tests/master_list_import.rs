@@ -446,7 +446,9 @@ fn rewrite_cell(path: &Path, sheet: &str, cell: &str, value: &str) {
     umya_spreadsheet::writer::xlsx::write(&workbook, path).unwrap();
 }
 
-fn equipment_numbers(candidates: &[console_registry_application::SubstituteCandidate]) -> Vec<&str> {
+fn equipment_numbers(
+    candidates: &[console_registry_application::SubstituteCandidate],
+) -> Vec<&str> {
     candidates
         .iter()
         .map(|candidate| candidate.equipment_no.as_str())

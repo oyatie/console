@@ -19,7 +19,9 @@ use console_notifications_application::{
     MarkNotificationReadCommand, MarkNotificationUnreadCommand, NotificationCountsSummaryQuery,
     NotificationPolicyList, UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
 };
-use console_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
+use console_notifications_domain::{
+    NotificationLink, NotificationPolicyId, NotificationPolicyScope,
+};
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::Principal;
 use console_platform_request_context::RequestContextError;

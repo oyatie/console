@@ -128,7 +128,9 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt")
+                    .execute(connection)
+                    .await?;
                 Ok(())
             })
         })
@@ -572,7 +574,10 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .fetch_one(&pool)
     .await
     .unwrap();
-    assert_eq!(schema_acl.get::<String, _>("owner"), "console_ontology_writer");
+    assert_eq!(
+        schema_acl.get::<String, _>("owner"),
+        "console_ontology_writer"
+    );
     assert_eq!(
         schema_acl.get::<Vec<String>, _>("acl"),
         vec![
@@ -703,7 +708,10 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
                 | "transition_object_type"
                 | "install_builtin_catalog"
         ) {
-            vec!["console_ontology_cmd:EXECUTE", "console_ontology_writer:EXECUTE"]
+            vec![
+                "console_ontology_cmd:EXECUTE",
+                "console_ontology_writer:EXECUTE",
+            ]
         } else {
             vec!["console_ontology_writer:EXECUTE"]
         };
@@ -723,7 +731,11 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .fetch_all(&mut *transaction)
     .await
     .unwrap();
-    assert_eq!(visible.len(), 2, "console_rt sees only the armed tenant's keys");
+    assert_eq!(
+        visible.len(),
+        2,
+        "console_rt sees only the armed tenant's keys"
+    );
     assert!(
         visible
             .iter()

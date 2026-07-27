@@ -30,7 +30,9 @@
 use console_app::workflow_schedules::poll_org;
 use console_kernel_core::OrgId;
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
-use console_workorder_rest::workflow_triggers::{WORK_ORDER_COMPLETED_EVENT, dispatch_event_bindings};
+use console_workorder_rest::workflow_triggers::{
+    WORK_ORDER_COMPLETED_EVENT, dispatch_event_bindings,
+};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use time::OffsetDateTime;

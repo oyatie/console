@@ -5,8 +5,8 @@
 //! single feature this credential may exercise.
 
 use base64::Engine as _;
-use hmac::{Hmac, KeyInit, Mac};
 use console_kernel_core::{BranchId, OrgId, ServicePrincipalId};
+use hmac::{Hmac, KeyInit, Mac};
 use sha2::Sha256;
 use subtle::ConstantTimeEq;
 

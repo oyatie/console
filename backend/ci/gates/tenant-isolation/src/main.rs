@@ -19,10 +19,11 @@ fn run_gate(workspace_dir: &Path) {
         workspace_dir.display()
     );
 
-    let result = console_gate_tenant_isolation::check_workspace(workspace_dir).unwrap_or_else(|e| {
-        eprintln!("ERROR: {e}");
-        std::process::exit(1);
-    });
+    let result =
+        console_gate_tenant_isolation::check_workspace(workspace_dir).unwrap_or_else(|e| {
+            eprintln!("ERROR: {e}");
+            std::process::exit(1);
+        });
 
     if result.passed() {
         eprintln!("console-gate-tenant-isolation: PASSED");

@@ -310,7 +310,10 @@ async fn shadow_reads_and_audits_as_runtime_role_and_stay_org_scoped(owner_pool:
             authorize_org_manage_observed(&state, &principal, Feature::RoleManage),
         )
         .await;
-    assert!(observed.is_ok(), "SUPER_ADMIN allow must stand as console_rt");
+    assert!(
+        observed.is_ok(),
+        "SUPER_ADMIN allow must stand as console_rt"
+    );
     assert_eq!(
         count_shadow_audit_rows(&owner_pool, org_a).await,
         1,

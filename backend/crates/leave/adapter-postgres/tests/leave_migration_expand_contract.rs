@@ -216,7 +216,9 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt")
+                    .execute(connection)
+                    .await?;
                 Ok(())
             })
         })

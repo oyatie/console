@@ -23,7 +23,7 @@ const WORKFLOW = ".github/workflows/ci.yml";
 const MIRRORED_JOBS = ["preflight", "backend", "kubernetes-manifests"];
 const POSTGRES_IMAGE =
   "postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20";
-const BOOTSTRAP_GUC = "options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1";
+const BOOTSTRAP_GUC = "options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1";
 
 /**
  * Every `run:` step in the mirrored jobs, keyed by its CI step name.

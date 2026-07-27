@@ -107,7 +107,7 @@ function hasExactShaBatchIsolation(job) {
     && /RAW_RESULTS="\$D\/raw-xcresults"/.test(job)
     && /ARTIFACTS="\$D\/artifacts"/.test(job)
     && /XCTESTRUN="\$\(find\s+"\$DERIVED\/Build\/Products"/.test(job)
-    && /simctl\s+create\s+"Maintenance CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
+    && /simctl\s+create\s+"Console CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
     && /name:\s*"ios-ui-test-results-\$\{\{ matrix\.batch \}\}"/.test(job)
     && /path:\s*"\$\{\{ runner\.temp \}\}\/ios-ui-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ matrix\.batch \}\}\/artifacts"/.test(job);
 }
@@ -397,9 +397,9 @@ function hasValidLoopbackWebauthnPolicy(job, launcher) {
   const forbiddenLowLevelControls = /\b(?:E2E_AUTH_DIR|E2E_HTTP_ADDR|E2E_PORT_CONFLICT_MODE|E2E_COLDSTART_OTP|E2E_RP_ORIGIN|E2E_RP_ID)\b|e2e\/harness\/boot-backend\.sh/;
   // Reseal whenever the backend step legitimately changes; the pin exists to
   // force that change through review, not to freeze the step. Last resealed to
-  // raise the messenger-mutation budget 240 -> 300 seconds and give xcodebuild 45s
-  // rather than 10s to finalize its result bundle before SIGKILL.
-  const approvedBackendStepSha256 = "d1a14c1cf335f08b8946b534bbfd8fe546ed6c02476056870e6cd1df22fa030a";
+  // retire the last product-naming remnants: the CI simulator name and the
+  // vestigial x-maintenance-client header the backend never reads.
+  const approvedBackendStepSha256 = "8be525a70b2ebfb2051d21bd0c277cbbbffe7261dc773ce8d960288b66a252cf";
   const approvedLauncherSha256 = "f18a155f6f3d093087f5c52bd185e46f628bdf78066ca2abc204f2ccb1ee591c";
   const backendStepSha256 = createHash("sha256").update(backendStep).digest("hex");
   const launcherSha256 = createHash("sha256").update(launcher).digest("hex");
@@ -666,7 +666,7 @@ function hasOwnedCleanup(job) {
   return scan !== -1 && upload > scan && cleanup > upload
     && /path:\s*"\$\{\{ runner\.temp \}\}\/ios-ui-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ matrix\.batch \}\}\/artifacts"/.test(job)
     && /D="\$RUNNER_TEMP\/ios-ui-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{CONSOLE_IOS_BATCH_NAME\}"/.test(job)
-    && /simctl\s+create\s+"Maintenance CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
+    && /simctl\s+create\s+"Console CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
     && /name:\s*"ios-ui-test-results-\$\{\{ matrix\.batch \}\}"/.test(job)
     && /if-no-files-found:\s*error/.test(job)
     && !/\$\{\{ env\.CONSOLE_IOS_JOB_ROOT \}\}/.test(job.replace(/#.*$/gm, ""))

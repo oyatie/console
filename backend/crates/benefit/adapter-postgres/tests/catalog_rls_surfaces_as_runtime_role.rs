@@ -17,7 +17,9 @@ use console_benefit_domain::{BenefitCategory, BenefitConditionKind, BenefitCondi
 use console_kernel_core::{BranchScope, OrgId, TraceContext};
 use console_platform_db::lifecycle;
 use console_platform_request_context::scope_org;
-use console_platform_test_support::{grant_console_rt, runtime_role_pool, seed_org_and_super_admin};
+use console_platform_test_support::{
+    grant_console_rt, runtime_role_pool, seed_org_and_super_admin,
+};
 use serde_json::json;
 use sqlx::{PgPool, Row};
 use time::OffsetDateTime;

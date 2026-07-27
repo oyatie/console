@@ -171,7 +171,7 @@ PGPASSWORD="$APP_PASSWORD" psql -h 127.0.0.1 -p "$CONSOLE_IOS_LOCAL_PGPORT" -U c
 export CONSOLE_UITEST_BASE_URL="http://127.0.0.1:$CONSOLE_IOS_LOCAL_BACKEND_PORT"
 python3 -c 'import json,sys;print(json.dumps({"otp":sys.argv[1]}))' "$OTP" > "$AUTH/otp.json"
 curl --fail --silent --show-error -X POST "$CONSOLE_UITEST_BASE_URL/api/v1/auth/otp/redeem" \
-  -H 'content-type: application/json' -H 'x-maintenance-client: mobile' \
+  -H 'content-type: application/json' -H 'x-console-client: mobile' \
   --data-binary @- < "$AUTH/otp.json" > "$AUTH/tokens.json"
 rm -f "$AUTH/otp.json"
 CONSOLE_UITEST_ACCESS_TOKEN="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["access_token"])' "$AUTH/tokens.json")"

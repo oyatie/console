@@ -25,17 +25,17 @@ pub mod ssrf;
 
 use std::str::FromStr;
 
+use console_comms_application::{
+    ALLOWED_SMTP_PORTS, MailServiceError, SendMessageCommand, SmtpSender, SmtpTransportConfig,
+    TestConnectionResult,
+};
+use console_comms_domain::{MailSecurity, MessageAddress};
 use hickory_resolver::Resolver;
 use lettre::message::header::ContentType;
 use lettre::message::{Attachment, Mailbox, MessageBuilder, MultiPart, SinglePart};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
-use console_comms_application::{
-    ALLOWED_SMTP_PORTS, MailServiceError, SendMessageCommand, SmtpSender, SmtpTransportConfig,
-    TestConnectionResult,
-};
-use console_comms_domain::{MailSecurity, MessageAddress};
 use secrecy::ExposeSecret;
 
 use crate::ssrf::SsrfError;
@@ -107,7 +107,8 @@ impl SmtpSender for LettreMailSender {
     fn test_connection<'a>(
         &'a self,
         config: &'a SmtpTransportConfig,
-    ) -> console_comms_application::MailFuture<'a, Result<TestConnectionResult, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<TestConnectionResult, MailServiceError>>
+    {
         Box::pin(async move {
             let transport = match Self::build_transport(config).await {
                 Ok(t) => t,

@@ -58,7 +58,10 @@ impl AnalyticsPeriod {
     }
 
     /// Validates a whole UTC calendar month, ending at the next month's start.
-    pub fn monthly(start: Timestamp, end: Timestamp) -> Result<Self, console_kernel_core::KernelError> {
+    pub fn monthly(
+        start: Timestamp,
+        end: Timestamp,
+    ) -> Result<Self, console_kernel_core::KernelError> {
         let period = Self::new(start, end)?;
         if start.day() != 1 || start.time() != time::Time::MIDNIGHT {
             return Err(console_kernel_core::KernelError::validation(
@@ -70,7 +73,9 @@ impl AnalyticsPeriod {
         } else {
             time::Date::from_calendar_date(start.year(), start.month().next(), 1)
         }
-        .map_err(|_| console_kernel_core::KernelError::validation("invalid monthly analytics period"))?
+        .map_err(|_| {
+            console_kernel_core::KernelError::validation("invalid monthly analytics period")
+        })?
         .with_time(time::Time::MIDNIGHT)
         .assume_utc();
         if end != next_month {
@@ -213,7 +218,10 @@ pub struct DurationEvidence {
 
 impl DurationEvidence {
     /// Creates duration evidence for one or more matched attendance pairs.
-    pub fn new(total_seconds: u64, pair_count: u64) -> Result<Self, console_kernel_core::KernelError> {
+    pub fn new(
+        total_seconds: u64,
+        pair_count: u64,
+    ) -> Result<Self, console_kernel_core::KernelError> {
         if pair_count == 0 {
             return Err(console_kernel_core::KernelError::validation(
                 "duration evidence requires at least one attendance pair",
@@ -237,7 +245,9 @@ impl DurationEvidence {
             .pair_count
             .checked_add(other.pair_count)
             .ok_or_else(|| {
-                console_kernel_core::KernelError::validation("duration evidence pair count overflow")
+                console_kernel_core::KernelError::validation(
+                    "duration evidence pair count overflow",
+                )
             })?;
         Self::new(total_seconds, pair_count)
     }

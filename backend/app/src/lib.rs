@@ -23,8 +23,6 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use base64::Engine as _;
-use ipnet::IpNet;
-use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use console_analytics_quant_rest::AnalyticsQuantState;
 use console_attendance_adapter_postgres::PgAttendanceStore;
 use console_attendance_rest::AttendanceRestState;
@@ -134,6 +132,8 @@ use console_todos_adapter_postgres::PgTodoStore;
 use console_todos_rest::TodoRestState;
 use console_workorder_adapter_postgres::PgWorkOrderStore;
 use console_workorder_rest::{MobileRestState, WorkOrderRestState};
+use ipnet::IpNet;
+use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use opentelemetry::global;
 use opentelemetry::trace::{TraceContextExt, TracerProvider};
 use opentelemetry_otlp::WithExportConfig;
@@ -849,15 +849,18 @@ impl AppConfig {
             })?,
             None => true,
         };
-        let evidence_transcode_concurrency = match vars.get("CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY") {
-            Some(raw) => raw
-                .parse::<usize>()
-                .map_err(|err| {
-                    AppError::Config(format!("invalid CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY: {err}"))
-                })
-                .map(|value| value.max(1))?,
-            None => DEFAULT_EVIDENCE_TRANSCODE_CONCURRENCY,
-        };
+        let evidence_transcode_concurrency =
+            match vars.get("CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY") {
+                Some(raw) => raw
+                    .parse::<usize>()
+                    .map_err(|err| {
+                        AppError::Config(format!(
+                            "invalid CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY: {err}"
+                        ))
+                    })
+                    .map(|value| value.max(1))?,
+                None => DEFAULT_EVIDENCE_TRANSCODE_CONCURRENCY,
+            };
         let fcm = fcm_config_from_vars(&vars)?;
         let (solapi, solapi_disabled_reason) = solapi_config_from_vars(&vars)?;
         let email_stub_mode = email_stub_mode_from_vars(&vars)?;
@@ -880,9 +883,12 @@ impl AppConfig {
             DEFAULT_COLDSTART_OTP_TTL_SECS,
             "CONSOLE_COLDSTART_OTP_TTL_SECS",
         )?;
-        let trusted_proxy_count = parse_trusted_proxy_count(vars.get("CONSOLE_TRUSTED_PROXY_COUNT"))?;
-        let trusted_proxy_cidrs =
-            parse_trusted_proxy_cidrs(vars.get("CONSOLE_TRUSTED_PROXY_CIDRS"), trusted_proxy_count)?;
+        let trusted_proxy_count =
+            parse_trusted_proxy_count(vars.get("CONSOLE_TRUSTED_PROXY_COUNT"))?;
+        let trusted_proxy_cidrs = parse_trusted_proxy_cidrs(
+            vars.get("CONSOLE_TRUSTED_PROXY_CIDRS"),
+            trusted_proxy_count,
+        )?;
         let app_links = app_links_config_from_vars(&vars);
         let mail_enabled = match vars.get("CONSOLE_MAIL_ENABLED") {
             Some(raw) => raw
@@ -1008,7 +1014,9 @@ fn auth_rest_config_from_vars(
         )
     })?;
     let rp_id = non_empty(vars.get("CONSOLE_WEBAUTHN_RP_ID")).ok_or_else(|| {
-        AppError::Config("CONSOLE_WEBAUTHN_RP_ID is required when auth REST is configured".to_owned())
+        AppError::Config(
+            "CONSOLE_WEBAUTHN_RP_ID is required when auth REST is configured".to_owned(),
+        )
     })?;
     let rp_origin = non_empty(vars.get("CONSOLE_WEBAUTHN_RP_ORIGIN")).ok_or_else(|| {
         AppError::Config(
@@ -1110,9 +1118,9 @@ fn storage_config_from_vars(
         })
     };
     let force_path_style = match non_empty(vars.get("CONSOLE_S3_FORCE_PATH_STYLE")) {
-        Some(raw) => raw
-            .parse::<bool>()
-            .map_err(|err| AppError::Config(format!("invalid CONSOLE_S3_FORCE_PATH_STYLE: {err}")))?,
+        Some(raw) => raw.parse::<bool>().map_err(|err| {
+            AppError::Config(format!("invalid CONSOLE_S3_FORCE_PATH_STYLE: {err}"))
+        })?,
         None => true,
     };
 
@@ -1167,7 +1175,9 @@ fn fcm_config_from_vars(vars: &HashMap<String, String>) -> Result<Option<FcmConf
             AppError::Config("CONSOLE_FCM_PROJECT_ID is required when FCM is configured".to_owned())
         })?,
         client_email: client_email.ok_or_else(|| {
-            AppError::Config("CONSOLE_FCM_CLIENT_EMAIL is required when FCM is configured".to_owned())
+            AppError::Config(
+                "CONSOLE_FCM_CLIENT_EMAIL is required when FCM is configured".to_owned(),
+            )
         })?,
         private_key_pem: private_key_pem.ok_or_else(|| {
             AppError::Config(
@@ -1176,7 +1186,8 @@ fn fcm_config_from_vars(vars: &HashMap<String, String>) -> Result<Option<FcmConf
         })?,
         token_uri: non_empty(vars.get("CONSOLE_FCM_TOKEN_URI"))
             .unwrap_or_else(|| DEFAULT_FCM_TOKEN_URI.to_owned()),
-        scope: non_empty(vars.get("CONSOLE_FCM_SCOPE")).unwrap_or_else(|| DEFAULT_FCM_SCOPE.to_owned()),
+        scope: non_empty(vars.get("CONSOLE_FCM_SCOPE"))
+            .unwrap_or_else(|| DEFAULT_FCM_SCOPE.to_owned()),
     };
     config
         .validate()
@@ -1554,7 +1565,8 @@ impl AppState {
             config.leave_command_database_url.as_deref(),
         ) {
             (AppRole::Api, Some(_), Some(url)) => DatabaseDependency::Postgres(
-                connect_command_pool(url, "console_leave_cmd", "LEAVE_COMMAND_DATABASE_URL").await?,
+                connect_command_pool(url, "console_leave_cmd", "LEAVE_COMMAND_DATABASE_URL")
+                    .await?,
             ),
             _ => DatabaseDependency::NotConfigured,
         };
@@ -1671,7 +1683,8 @@ impl AppState {
             }
             Err(_) => {
                 return Err(AppError::Config(
-                    "CONSOLE_MAIL_MASTER_KEY is set but is not a valid base64 32-byte key".to_owned(),
+                    "CONSOLE_MAIL_MASTER_KEY is set but is not a valid base64 32-byte key"
+                        .to_owned(),
                 ));
             }
         }
@@ -3167,10 +3180,12 @@ pub fn build_router(state: AppState) -> Router {
                         .unwrap_or_default(),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(console_notifications_rest::router(NotificationRestState::new(
-                    notification_store.clone(),
-                    state.jwt_verifier.clone(),
-                )))
+                .merge(console_notifications_rest::router(
+                    NotificationRestState::new(
+                        notification_store.clone(),
+                        state.jwt_verifier.clone(),
+                    ),
+                ))
                 .merge(console_inbox_rest::router(
                     InboxRestState::new(
                         PgInboxStore::new(pool.clone()),
@@ -3181,10 +3196,12 @@ pub fn build_router(state: AppState) -> Router {
                 // Leave-request queue + §61 statutory push. The push delivers a
                 // receipt-gated notice through the SAME inbox vault (a fresh
                 // `PgInboxStore` over the shared pool as the `InboxDocSink`).
-                .merge(console_leave_rest::router(console_leave_rest::LeaveRestState::new(
-                    leave_store,
-                    state.jwt_verifier.clone(),
-                )))
+                .merge(console_leave_rest::router(
+                    console_leave_rest::LeaveRestState::new(
+                        leave_store,
+                        state.jwt_verifier.clone(),
+                    ),
+                ))
                 .merge(console_benefit_rest::router(BenefitRestState::new(
                     benefit_store,
                     state.jwt_verifier.clone(),
@@ -3240,10 +3257,9 @@ pub fn build_router(state: AppState) -> Router {
                     PgOrgChangeStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(console_platform_authz_rest::router(CedarPolicyRestState::new(
-                    cedar_policy_store,
-                    state.jwt_verifier.clone(),
-                )))
+                .merge(console_platform_authz_rest::router(
+                    CedarPolicyRestState::new(cedar_policy_store, state.jwt_verifier.clone()),
+                ))
                 // Notice board (사내 게시판): publish snapshots recipients into
                 // `notice_receipts` and fans out one notification per recipient
                 // through the SAME notification-center sink the messenger
@@ -3264,10 +3280,9 @@ pub fn build_router(state: AppState) -> Router {
                     state.jwt_verifier.clone(),
                 )))
                 // Deterministic statistical projection (read-only, stateless).
-                .merge(console_analytics_quant_rest::router(AnalyticsQuantState::new(
-                    pool.clone(),
-                    state.jwt_verifier.clone(),
-                )));
+                .merge(console_analytics_quant_rest::router(
+                    AnalyticsQuantState::new(pool.clone(), state.jwt_verifier.clone()),
+                ));
             // READ-ONLY WALL for PLATFORM "view as": wrap the WHOLE tenant
             // domain router so any request carrying a `view_as` token may use
             // ONLY GET/HEAD — every other method is rejected 403 `view_as_read_only`
@@ -3513,7 +3528,9 @@ async fn android_assetlinks(State(state): State<AppState>) -> Response<Body> {
 ///
 /// Serialization of these tiny, statically-shaped documents cannot realistically
 /// fail; if it ever did we surface a 500 rather than serving a malformed body.
-fn well_known_json_response(body: Result<String, console_platform_auth::AuthError>) -> Response<Body> {
+fn well_known_json_response(
+    body: Result<String, console_platform_auth::AuthError>,
+) -> Response<Body> {
     match body {
         Ok(json) => ([(header::CONTENT_TYPE, "application/json")], json).into_response(),
         Err(err) => {
@@ -4526,8 +4543,8 @@ mod trusted_ingress_tests {
 
     use axum::extract::{ConnectInfo, Extension};
     use axum::routing::get;
-    use http::Request;
     use console_platform_request_context::TrustedClientIp;
+    use http::Request;
     use tower::ServiceExt;
 
     #[cfg(not(feature = "test-postgres"))]
@@ -5005,7 +5022,10 @@ mod worker_identity_tests {
     fn dispatch_worker_name_includes_pod_hostname_when_present() {
         let name = dispatch_apalis_worker_name("console-app-worker", Some("console-worker-abc123"));
 
-        assert_eq!(name, "console-app-worker-console-worker-abc123-dispatch-worker");
+        assert_eq!(
+            name,
+            "console-app-worker-console-worker-abc123-dispatch-worker"
+        );
     }
 
     #[cfg(not(feature = "test-postgres"))]
@@ -5427,8 +5447,9 @@ mod command_database_config_tests {
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_with_database_requires_distinct_leave_command_database_url() {
-        let error = AppConfig::from_pairs([("CONSOLE_APP_ROLE", "api"), ("DATABASE_URL", RUNTIME_URL)])
-            .unwrap_err();
+        let error =
+            AppConfig::from_pairs([("CONSOLE_APP_ROLE", "api"), ("DATABASE_URL", RUNTIME_URL)])
+                .unwrap_err();
 
         assert!(
             error
@@ -5714,7 +5735,8 @@ mod command_database_config_tests {
             "postgresql://console_rt:secret@db/console?options%5Brole%5D=console_rt",
             "postgresql://local_dev:secret@db/console?user=console_rt",
         ] {
-            let error = validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
+            let error =
+                validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
             assert!(
                 error.to_string().contains("must not set PostgreSQL role"),
                 "unexpected error: {error}"
@@ -5730,7 +5752,8 @@ mod command_database_config_tests {
             "postgresql://console_rt:@db/console",
             "postgresql://console_rt:secret@db/console?password=",
         ] {
-            let error = validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
+            let error =
+                validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
             let message = error.to_string();
             assert!(
                 message.contains("nonempty password"),
@@ -6111,10 +6134,7 @@ mod command_database_config_tests {
         assert!(
             AppConfig::from_pairs([
                 ("CONSOLE_APP_ROLE", "worker"),
-                (
-                    "DATABASE_URL",
-                    "postgresql://local_dev:secret@db/console",
-                ),
+                ("DATABASE_URL", "postgresql://local_dev:secret@db/console",),
             ])
             .is_err()
         );
@@ -6381,7 +6401,10 @@ mod email_config_tests {
     fn creds_present_but_invalid_port_still_errors() {
         // A non-numeric port is an operator typo, not a missing Secret — error.
         let mut vars = full_email_vars();
-        vars.insert("CONSOLE_EMAIL_SMTP_PORT".to_owned(), "not-a-port".to_owned());
+        vars.insert(
+            "CONSOLE_EMAIL_SMTP_PORT".to_owned(),
+            "not-a-port".to_owned(),
+        );
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 

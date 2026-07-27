@@ -392,34 +392,40 @@ async fn same_base_stage_has_one_winner_and_one_zero_mutation_precondition_loser
 
     let first_pool = rt_pool.clone();
     let first_cmd_pool = cmd_pool.clone();
-    let first = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(first_pool)
-            .with_command_pool(first_cmd_pool)
-            .stage_revision(
-                actor,
-                "cas.race",
-                expected,
-                draft("cas.race", "first"),
-                TraceContext::generate(),
-                datetime!(2026-07-19 12:10 UTC),
-            )
-            .await
-    }));
+    let first = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(first_pool)
+                .with_command_pool(first_cmd_pool)
+                .stage_revision(
+                    actor,
+                    "cas.race",
+                    expected,
+                    draft("cas.race", "first"),
+                    TraceContext::generate(),
+                    datetime!(2026-07-19 12:10 UTC),
+                )
+                .await
+        },
+    ));
     let second_pool = rt_pool.clone();
     let second_cmd_pool = cmd_pool.clone();
-    let second = tokio::spawn(console_platform_request_context::scope_org(org, async move {
-        PgOntologyStore::new(second_pool)
-            .with_command_pool(second_cmd_pool)
-            .stage_revision(
-                actor,
-                "cas.race",
-                expected,
-                draft("cas.race", "second"),
-                TraceContext::generate(),
-                datetime!(2026-07-19 12:10 UTC),
-            )
-            .await
-    }));
+    let second = tokio::spawn(console_platform_request_context::scope_org(
+        org,
+        async move {
+            PgOntologyStore::new(second_pool)
+                .with_command_pool(second_cmd_pool)
+                .stage_revision(
+                    actor,
+                    "cas.race",
+                    expected,
+                    draft("cas.race", "second"),
+                    TraceContext::generate(),
+                    datetime!(2026-07-19 12:10 UTC),
+                )
+                .await
+        },
+    ));
     let outcomes = [first.await.unwrap(), second.await.unwrap()];
     assert_eq!(outcomes.iter().filter(|result| result.is_ok()).count(), 1);
     assert_eq!(
@@ -740,12 +746,13 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
         ("ont_analytics", &["INSERT"][..]),
     ] {
         for privilege in ["INSERT", "UPDATE", "DELETE", "TRUNCATE"] {
-            let granted: bool = sqlx::query_scalar("SELECT has_table_privilege('console_rt', $1, $2)")
-                .bind(table)
-                .bind(privilege)
-                .fetch_one(&owner_pool)
-                .await
-                .unwrap();
+            let granted: bool =
+                sqlx::query_scalar("SELECT has_table_privilege('console_rt', $1, $2)")
+                    .bind(table)
+                    .bind(privilege)
+                    .fetch_one(&owner_pool)
+                    .await
+                    .unwrap();
             assert_eq!(
                 granted,
                 retained.contains(&privilege),

@@ -382,22 +382,25 @@ async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: 
         let first = tokio::spawn({
             let config = financial_config();
             async move {
-                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-                    first_store
-                        .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
-                            actor: admin,
-                            branch_id,
-                            equipment_id,
-                            work_order_id: Some(work_order_id),
-                            source: CostLedgerSource::ManualAdmin,
-                            amount_won: 1_000_000,
-                            memo: "first concurrent cost".to_owned(),
-                            config,
-                            trace: TraceContext::generate(),
-                            occurred_at,
-                        })
-                        .await
-                })
+                console_platform_request_context::scope_org(
+                    console_kernel_core::OrgId::knl(),
+                    async move {
+                        first_store
+                            .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
+                                actor: admin,
+                                branch_id,
+                                equipment_id,
+                                work_order_id: Some(work_order_id),
+                                source: CostLedgerSource::ManualAdmin,
+                                amount_won: 1_000_000,
+                                memo: "first concurrent cost".to_owned(),
+                                config,
+                                trace: TraceContext::generate(),
+                                occurred_at,
+                            })
+                            .await
+                    },
+                )
                 .await
             }
         });
@@ -405,22 +408,25 @@ async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: 
         let second = tokio::spawn({
             let config = financial_config();
             async move {
-                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-                    second_store
-                        .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
-                            actor: admin,
-                            branch_id,
-                            equipment_id,
-                            work_order_id: Some(work_order_id),
-                            source: CostLedgerSource::ManualAdmin,
-                            amount_won: 2_000_000,
-                            memo: "second concurrent cost".to_owned(),
-                            config,
-                            trace: TraceContext::generate(),
-                            occurred_at,
-                        })
-                        .await
-                })
+                console_platform_request_context::scope_org(
+                    console_kernel_core::OrgId::knl(),
+                    async move {
+                        second_store
+                            .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
+                                actor: admin,
+                                branch_id,
+                                equipment_id,
+                                work_order_id: Some(work_order_id),
+                                source: CostLedgerSource::ManualAdmin,
+                                amount_won: 2_000_000,
+                                memo: "second concurrent cost".to_owned(),
+                                config,
+                                trace: TraceContext::generate(),
+                                occurred_at,
+                            })
+                            .await
+                    },
+                )
                 .await
             }
         });

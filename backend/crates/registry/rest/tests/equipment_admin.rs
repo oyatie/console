@@ -8,13 +8,13 @@ use std::path::PathBuf;
 
 use axum::Router;
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use console_platform_db::{DbError, with_audit};
 use console_platform_test_support::runtime_role_pool;
 use console_registry_adapter_postgres::PgRegistryStore;
 use console_registry_rest::{RegistryRestState, router};
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};

@@ -517,15 +517,17 @@ async fn create_obligation(
         .regulation_links
         .into_iter()
         .map(|link| {
-            Ok(console_compliance_application::CreateObligationRegulationLink {
-                regulation_impact_id: link.regulation_impact_id.parse().map_err(|_| {
-                    RestError::from_kernel(KernelError::validation(
-                        "regulation_impact_id must be a UUID",
-                    ))
-                })?,
-                relationship: link.relationship,
-                rationale: link.rationale,
-            })
+            Ok(
+                console_compliance_application::CreateObligationRegulationLink {
+                    regulation_impact_id: link.regulation_impact_id.parse().map_err(|_| {
+                        RestError::from_kernel(KernelError::validation(
+                            "regulation_impact_id must be a UUID",
+                        ))
+                    })?,
+                    relationship: link.relationship,
+                    rationale: link.rationale,
+                },
+            )
         })
         .collect::<Result<Vec<_>, RestError>>()?;
     let result = state
@@ -1296,9 +1298,11 @@ fn rest_error_from_request_context(
         | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
-            KernelError::internal("no tenant context is bound to the current request"),
-        ),
+        console_platform_request_context::RequestContextError::MissingOrg => {
+            RestError::from_kernel(KernelError::internal(
+                "no tenant context is bound to the current request",
+            ))
+        }
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }

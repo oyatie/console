@@ -14,7 +14,9 @@
 //!   (d) a cross-org request is invisible under another tenant's GUC (RLS).
 
 use console_governance_adapter_postgres::PgGovernanceStore;
-use console_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
+use console_governance_application::{
+    ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand,
+};
 use console_kernel_core::{OrgId, TraceContext, UserId};
 use console_platform_request_context::scope_org;
 use serde_json::json;

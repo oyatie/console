@@ -213,20 +213,23 @@ async fn concurrent_first_pings_for_same_day_share_partition_creation(pool: PgPo
         for offset in 0..32 {
             let store = Arc::clone(&store);
             handles.push(tokio::spawn(async move {
-                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-                    let ping = LocationPing::new(
-                        LocationPingId::new(),
-                        user_id,
-                        branch_id,
-                        37.5665,
-                        126.9780,
-                        None,
-                        datetime!(2026-06-14 09:00:00 UTC) + Duration::seconds(offset),
-                        true,
-                    )
-                    .unwrap();
-                    store.record_location_ping(ping).await
-                })
+                console_platform_request_context::scope_org(
+                    console_kernel_core::OrgId::knl(),
+                    async move {
+                        let ping = LocationPing::new(
+                            LocationPingId::new(),
+                            user_id,
+                            branch_id,
+                            37.5665,
+                            126.9780,
+                            None,
+                            datetime!(2026-06-14 09:00:00 UTC) + Duration::seconds(offset),
+                            true,
+                        )
+                        .unwrap();
+                        store.record_location_ping(ping).await
+                    },
+                )
                 .await
             }));
         }

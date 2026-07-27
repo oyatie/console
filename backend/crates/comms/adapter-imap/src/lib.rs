@@ -32,13 +32,13 @@ use std::time::Duration;
 
 use async_imap::types::{Fetch, Flag, Name};
 use async_imap::{Client, Session};
-use futures::StreamExt;
-use hickory_resolver::Resolver;
 use console_comms_application::{
     ALLOWED_IMAP_PORTS, FetchedMessage, ImapClient, ImapFolder, ImapSelect, ImapSession,
     ImapTransportConfig, MailFuture, MailServiceError, SYNC_FETCH_ITEMS, TestConnectionResult,
 };
 use console_comms_domain::{FolderRole, MailSecurity};
+use futures::StreamExt;
+use hickory_resolver::Resolver;
 use secrecy::ExposeSecret;
 use time::OffsetDateTime;
 use tokio::io::{AsyncRead, AsyncWrite};

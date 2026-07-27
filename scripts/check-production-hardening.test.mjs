@@ -530,7 +530,7 @@ const validPr473Files = {
           echo "::add-mask::$RT_PASSWORD"
           echo "::add-mask::$BUCK_ADMIN_PASSWORD"
           {
-            echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:\${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+            echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:\${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
             echo "CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:\${APP_PASSWORD}@localhost:5432/console_apalis_contract"
             echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:\${RT_PASSWORD}@localhost:5432/console_apalis_contract"
             echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"

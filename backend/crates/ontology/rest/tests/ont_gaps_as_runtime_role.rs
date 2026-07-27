@@ -23,7 +23,9 @@ use console_governance_adapter_postgres::PgGovernanceStore;
 use console_governance_application::ConfigureTransitionCommand;
 use console_governance_domain::{LifecycleState, TransitionRequirements};
 use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
-use console_ontology_adapter_postgres::instances::{CreateInstance, InstanceState, PgInstanceStore};
+use console_ontology_adapter_postgres::instances::{
+    CreateInstance, InstanceState, PgInstanceStore,
+};
 use console_ontology_adapter_postgres::{
     ActingKind, CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput,
 };

@@ -56,7 +56,9 @@ use axum::{Extension, Json, Router};
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
 use console_platform_auth::{AccessTokenInput, JwtVerifier};
 use console_platform_authz::{PlatformPrincipal, Role};
-use console_platform_db::{DbError, SubjectAuthzFreshness, read_subject_authz_freshness, with_audit};
+use console_platform_db::{
+    DbError, SubjectAuthzFreshness, read_subject_authz_freshness, with_audit,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};

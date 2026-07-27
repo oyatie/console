@@ -438,8 +438,9 @@ fn spawn_close(
     store: PgAttendanceStore,
     caller: CallerScope,
     command: CloseMonth,
-) -> tokio::task::JoinHandle<Result<console_attendance_application::MonthCloseRead, AttendanceStoreError>>
-{
+) -> tokio::task::JoinHandle<
+    Result<console_attendance_application::MonthCloseRead, AttendanceStoreError>,
+> {
     tokio::spawn(async move { scope_org(OrgId::knl(), store.close_month(&caller, command)).await })
 }
 

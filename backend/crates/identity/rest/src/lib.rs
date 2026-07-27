@@ -4590,9 +4590,11 @@ fn rest_error_from_request_context(
         | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
-            KernelError::internal("no tenant context is bound to the current request"),
-        ),
+        console_platform_request_context::RequestContextError::MissingOrg => {
+            RestError::from_kernel(KernelError::internal(
+                "no tenant context is bound to the current request",
+            ))
+        }
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
@@ -4779,7 +4781,9 @@ mod cedar_shadow_wiring_tests {
         .with_rls_scope_proof(RlsScopeProof::runtime_role_guc(org))
     }
 
-    fn shadow_entry(bundle_key: console_platform_authz::CompiledBundleCacheKey) -> CoexistenceMapEntry {
+    fn shadow_entry(
+        bundle_key: console_platform_authz::CompiledBundleCacheKey,
+    ) -> CoexistenceMapEntry {
         CoexistenceMapEntry::new(
             format!("{DOMAIN}.role_manage"),
             DOMAIN,

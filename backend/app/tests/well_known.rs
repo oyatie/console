@@ -8,8 +8,8 @@
 //! that an unconfigured deployment still serves a well-formed empty document.
 
 use axum::body::Body;
-use http::{Request, StatusCode, header};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use http::{Request, StatusCode, header};
 use serde_json::Value;
 use tower::ServiceExt;
 

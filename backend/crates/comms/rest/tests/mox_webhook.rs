@@ -23,7 +23,9 @@ use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
 use base64::Engine as _;
 use console_comms_adapter_postgres::PgMailStore;
-use console_comms_application::{AccountUpsert, EmailAccountId, MailStore, account_config_audit_event};
+use console_comms_application::{
+    AccountUpsert, EmailAccountId, MailStore, account_config_audit_event,
+};
 use console_comms_credential_cipher::{
     Aad, CredentialCipher, EnvelopeCredentialCipher, SealedCredential,
 };

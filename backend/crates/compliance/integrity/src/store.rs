@@ -4,7 +4,9 @@
 //! Triage writes via `with_audit` (audited mutation path).
 
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, OrgId, UserId};
-use console_platform_db::{DbError, OpenFinding, upsert_open_finding_tx, with_audit, with_org_conn};
+use console_platform_db::{
+    DbError, OpenFinding, upsert_open_finding_tx, with_audit, with_org_conn,
+};
 use console_platform_request_context::current_org;
 use sqlx::{PgPool, Row};
 

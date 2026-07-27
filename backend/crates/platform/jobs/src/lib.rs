@@ -886,7 +886,8 @@ async fn validate_apalis_owner_state(conn: &mut sqlx::PgConnection) -> Result<()
         .await?;
     if !acl_is_exact {
         return Err(JobQueueError::ApalisPostgres(
-            "Apalis console_rt privileges do not match the least-privilege runtime contract".to_owned(),
+            "Apalis console_rt privileges do not match the least-privilege runtime contract"
+                .to_owned(),
         ));
     }
     let public_helper_acl_is_exact: bool = sqlx::query_scalar(

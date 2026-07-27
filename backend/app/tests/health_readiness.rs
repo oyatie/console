@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use axum::body::Body;
-use http::{Request, StatusCode};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use http::{Request, StatusCode};
 use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 

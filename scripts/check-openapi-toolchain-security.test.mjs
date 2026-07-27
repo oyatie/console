@@ -74,7 +74,7 @@ test("applies matching Redocly HTTP headers through the real URL-loading path", 
     headers: [
       {
         matches: "example.test/{openapi,schema}.yaml",
-        name: "x-maintenance-contract",
+        name: "x-console-contract",
         value: "verified",
       },
     ],
@@ -89,7 +89,7 @@ test("applies matching Redocly HTTP headers through the real URL-loading path", 
 
   assert.deepEqual(observedRequest, {
     url: "https://example.test/openapi.yaml",
-    headers: { "x-maintenance-contract": "verified" },
+    headers: { "x-console-contract": "verified" },
   });
   assert.deepEqual(result, {
     body: "openapi: 3.1.0\n",

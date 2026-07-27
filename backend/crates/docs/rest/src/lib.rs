@@ -626,7 +626,9 @@ impl HoldError {
         use console_governance_adapter_postgres::PgGovernanceError as E;
         match error {
             E::Db(db) => Self::Docs(console_docs_adapter_postgres::PgDocsError::from(db)),
-            E::Domain(kernel) => Self::Docs(console_docs_adapter_postgres::PgDocsError::from(kernel)),
+            E::Domain(kernel) => {
+                Self::Docs(console_docs_adapter_postgres::PgDocsError::from(kernel))
+            }
         }
     }
 }

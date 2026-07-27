@@ -8,7 +8,7 @@
   "changelog-path": "CHANGELOG.md",
   "packages": {
     ".": {
-      "component": "maintenance",
+      "component": "console",
       "extra-files": [
         {
           "type": "json",

@@ -6,7 +6,6 @@
 //! notice is readable by anyone; 수령확인 is recipient-scoped from the JWT.
 
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
 use console_notices_adapter_postgres::PgNoticeStore;
 use console_notices_rest::{NoticeRestState, router};
@@ -14,6 +13,7 @@ use console_notifications_adapter_postgres::PgNotificationStore;
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use console_platform_db::{DbError, with_audit};
 use console_platform_test_support::{grant_console_rt, runtime_role_pool};
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};

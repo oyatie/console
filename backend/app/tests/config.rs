@@ -71,7 +71,10 @@ fn solapi_credentials_with_approved_template_enable_alimtalk() {
         ("CONSOLE_SOLAPI_API_SECRET", "secret".to_owned()),
         ("CONSOLE_SOLAPI_FROM", "0212345678".to_owned()),
         ("CONSOLE_SOLAPI_PF_ID", "pf".to_owned()),
-        ("CONSOLE_SOLAPI_TEMPLATE_ID", "KA01TP250612000001".to_owned()),
+        (
+            "CONSOLE_SOLAPI_TEMPLATE_ID",
+            "KA01TP250612000001".to_owned(),
+        ),
     ]);
     let config = AppConfig::from_pairs(pairs).unwrap();
 
@@ -202,7 +205,10 @@ fn invalid_email_stub_mode_is_rejected() {
     let err = AppConfig::from_pairs(pairs).unwrap_err();
     let message = err.to_string();
 
-    assert!(message.contains("invalid CONSOLE_EMAIL_STUB_MODE"), "{message}");
+    assert!(
+        message.contains("invalid CONSOLE_EMAIL_STUB_MODE"),
+        "{message}"
+    );
     assert!(message.contains("local"), "{message}");
     assert!(message.contains("dev"), "{message}");
     assert!(message.contains("e2e"), "{message}");
@@ -214,8 +220,14 @@ fn mox_settings_are_resolved_from_app_config_pairs() {
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("CONSOLE_MAIL_MOX_BASE_URL", "https://mox.internal".to_owned()),
-        ("CONSOLE_MAIL_MOX_WEBHOOK_SECRET", "delivery-secret".to_owned()),
+        (
+            "CONSOLE_MAIL_MOX_BASE_URL",
+            "https://mox.internal".to_owned(),
+        ),
+        (
+            "CONSOLE_MAIL_MOX_WEBHOOK_SECRET",
+            "delivery-secret".to_owned(),
+        ),
     ])
     .unwrap();
 

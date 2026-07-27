@@ -16,7 +16,9 @@
 //! the published head → executing it creates an instance immediately.
 
 use console_governance_adapter_postgres::PgGovernanceStore;
-use console_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
+use console_governance_application::{
+    ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand,
+};
 use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
 use console_ontology_adapter_postgres::{

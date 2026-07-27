@@ -73,8 +73,9 @@ async fn message_send_persists_audit_before_post_commit_notify(pool: PgPool) {
 async fn at_mention_emits_notification_for_thread_member_only(pool: PgPool) {
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
-        let sink =
-            Arc::new(console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
+        let sink = Arc::new(
+            console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()),
+        );
         let store = PgMessengerStore::new(pool.clone()).with_notification_sink(sink);
         // Thread members: sender + recipient. receptionist is NOT a member.
         let thread = create_team_thread(&store, &seeded).await;
@@ -1041,8 +1042,9 @@ async fn reply_quote_is_same_thread_only_and_surfaced(pool: PgPool) {
 async fn mute_suppresses_mention_notification_and_flags_thread(pool: PgPool) {
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
-        let sink =
-            Arc::new(console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
+        let sink = Arc::new(
+            console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()),
+        );
         let store = PgMessengerStore::new(pool.clone()).with_notification_sink(sink);
         let thread = create_team_thread(&store, &seeded).await;
         let base = OffsetDateTime::now_utc();

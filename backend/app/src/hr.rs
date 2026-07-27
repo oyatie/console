@@ -9561,7 +9561,9 @@ E-001,홍길동,본사,2026-07-01,abc
         .map_err(|error| error.to_string())?;
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(
+                pool.clone(),
+            )),
         )
         .with_leave_command_pool(pool.clone());
         let state = HrState::new(pool.clone(), None).with_leave_command_store(command_store);
@@ -9737,7 +9739,9 @@ E-001,홍길동,본사,2026-07-01,abc
         };
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(
+                pool.clone(),
+            )),
         )
         .with_leave_command_pool(pool.clone());
         let state = HrState::new(pool.clone(), None).with_leave_command_store(command_store);
@@ -9866,7 +9870,9 @@ E-001,홍길동,본사,2026-07-01,abc
         );
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(
+                pool.clone(),
+            )),
         )
         .with_leave_command_pool(pool.clone());
         let response = set_employee_home_branch(

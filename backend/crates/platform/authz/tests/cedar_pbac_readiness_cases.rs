@@ -559,7 +559,9 @@ fn every_readiness_case_binds_to_a_fail_closed_boundary_decision() {
     }
 }
 
-fn metric_label_keys(metric: &console_platform_authz::AuthorizationMetricLabels) -> BTreeSet<String> {
+fn metric_label_keys(
+    metric: &console_platform_authz::AuthorizationMetricLabels,
+) -> BTreeSet<String> {
     let value = serde_json::to_value(metric).expect("metric labels serialize");
     value
         .as_object()

@@ -153,7 +153,9 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
         ),
         (
             "Unicode-escaped owner-only target",
-            &[r#"GRANT SELECT ON public.U&"ont\005fbuiltin\005fcatalog\005fallowlist" TO console_rt"#],
+            &[
+                r#"GRANT SELECT ON public.U&"ont\005fbuiltin\005fcatalog\005fallowlist" TO console_rt"#,
+            ],
         ),
         (
             "quoted-semicolon column privilege",
@@ -186,9 +188,11 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
     sqlx::query("CREATE TABLE public.console_owner_only_default_acl_probe (id bigint)")
         .execute(&mut *default_acl)
         .await?;
-    let inherited =
-        effective_runtime_privileges(&mut default_acl, "public.console_owner_only_default_acl_probe")
-            .await?;
+    let inherited = effective_runtime_privileges(
+        &mut default_acl,
+        "public.console_owner_only_default_acl_probe",
+    )
+    .await?;
     assert!(
         inherited
             .iter()

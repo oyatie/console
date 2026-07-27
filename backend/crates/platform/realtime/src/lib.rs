@@ -1272,10 +1272,11 @@ async fn principal_from_headers(
             "realtime database is not configured",
         )
     })?;
-    let principal =
-        console_platform_request_context::resolve_principal_from_bearer_token(verifier, pool, token)
-            .await
-            .map_err(realtime_error_from_request_context)?;
+    let principal = console_platform_request_context::resolve_principal_from_bearer_token(
+        verifier, pool, token,
+    )
+    .await
+    .map_err(realtime_error_from_request_context)?;
     Ok(RealtimePrincipal {
         user_id: principal.user_id,
         branch_scope: principal.branch_scope,

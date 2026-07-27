@@ -19,7 +19,9 @@
 //! SEED as the owner and CREATE/LIST as `console_rt` under the armed GUC.
 
 use console_inspection_adapter_postgres::PgInspectionStore;
-use console_inspection_application::{CreateInspectionScheduleCommand, ListInspectionSchedulesQuery};
+use console_inspection_application::{
+    CreateInspectionScheduleCommand, ListInspectionSchedulesQuery,
+};
 use console_inspection_domain::InspectionCycle;
 use console_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
 use sqlx::PgPool;

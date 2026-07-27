@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::time::Duration as StdDuration;
 
-use hmac::{Hmac, KeyInit, Mac};
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, EvidenceId, KernelError, OrgId, Timestamp, TraceContext,
     UserId, WorkOrderId,
@@ -18,6 +17,7 @@ use console_kernel_core::{
 use console_platform_db::{DbError, with_audit, with_org_conn};
 use console_platform_request_context::current_org;
 use console_workorder_domain::AttachmentStage;
+use hmac::{Hmac, KeyInit, Mac};
 use reqwest::header::{CONTENT_LENGTH, CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
@@ -2754,113 +2754,119 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn presign_flow_records_pending_evidence_and_upload_audit(pool: PgPool) {
-        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-            let seeded = seed_work_order(&pool).await;
-            let service = EvidenceService::new(
-                pool.clone(),
-                StaticObjectStore::ok(),
-                "primary".to_owned(),
-                "replica".to_owned(),
-            );
+        console_platform_request_context::scope_org(
+            console_kernel_core::OrgId::knl(),
+            async move {
+                let seeded = seed_work_order(&pool).await;
+                let service = EvidenceService::new(
+                    pool.clone(),
+                    StaticObjectStore::ok(),
+                    "primary".to_owned(),
+                    "replica".to_owned(),
+                );
 
-            let ticket = service
-                .issue_presigned_upload(EvidenceUploadCommand {
-                    actor: seeded.uploaded_by,
-                    work_order_id: seeded.work_order_id,
-                    stage: AttachmentStage::After,
-                    content_type: "image/jpeg".to_owned(),
-                    size_bytes: 1024,
-                    checksum_sha256: None,
-                    trace: TraceContext::generate(),
-                    occurred_at: OffsetDateTime::now_utc(),
-                })
+                let ticket = service
+                    .issue_presigned_upload(EvidenceUploadCommand {
+                        actor: seeded.uploaded_by,
+                        work_order_id: seeded.work_order_id,
+                        stage: AttachmentStage::After,
+                        content_type: "image/jpeg".to_owned(),
+                        size_bytes: 1024,
+                        checksum_sha256: None,
+                        trace: TraceContext::generate(),
+                        occurred_at: OffsetDateTime::now_utc(),
+                    })
+                    .await
+                    .unwrap();
+
+                assert_eq!(ticket.upload.method, "PUT");
+                assert_eq!(ticket.media.stage, AttachmentStage::After);
+                assert_eq!(ticket.media.worm_replica_status, WormReplicaStatus::Pending);
+                assert!(
+                    ticket
+                        .media
+                        .s3_key
+                        .contains(&seeded.work_order_id.to_string())
+                );
+
+                let audit_count: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM audit_events WHERE action = 'evidence.upload'",
+                )
+                .fetch_one(&pool)
                 .await
                 .unwrap();
-
-            assert_eq!(ticket.upload.method, "PUT");
-            assert_eq!(ticket.media.stage, AttachmentStage::After);
-            assert_eq!(ticket.media.worm_replica_status, WormReplicaStatus::Pending);
-            assert!(
-                ticket
-                    .media
-                    .s3_key
-                    .contains(&seeded.work_order_id.to_string())
-            );
-
-            let audit_count: i64 = sqlx::query_scalar(
-                "SELECT COUNT(*) FROM audit_events WHERE action = 'evidence.upload'",
-            )
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-            assert_eq!(audit_count, 1);
-        })
+                assert_eq!(audit_count, 1);
+            },
+        )
         .await;
     }
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn failed_after_max_retries_is_visible_in_admin_queue(pool: PgPool) {
-        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-            let seeded = seed_work_order(&pool).await;
-            let service = EvidenceService::new(
-                pool.clone(),
-                StaticObjectStore::fail_copy(vec!["source missing", "still missing"]),
-                "primary".to_owned(),
-                "replica".to_owned(),
-            )
-            .with_replication_config(ReplicationConfig {
-                primary_bucket: "primary".to_owned(),
-                replica_bucket: "replica".to_owned(),
-                max_retries: 2,
-                base_retry_delay: Duration::seconds(1),
-                max_retry_delay: Duration::seconds(5),
-                retention_period: Duration::days(1),
-            });
-            let ticket = service
-                .issue_presigned_upload(EvidenceUploadCommand {
-                    actor: seeded.uploaded_by,
-                    work_order_id: seeded.work_order_id,
-                    stage: AttachmentStage::Report,
-                    content_type: "image/jpeg".to_owned(),
-                    size_bytes: 1024,
-                    checksum_sha256: None,
-                    trace: TraceContext::generate(),
-                    occurred_at: OffsetDateTime::now_utc(),
-                })
-                .await
-                .unwrap();
-
-            let first = service
-                .replicate_once(
-                    ticket.media.id,
-                    TraceContext::generate(),
-                    OffsetDateTime::now_utc(),
+        console_platform_request_context::scope_org(
+            console_kernel_core::OrgId::knl(),
+            async move {
+                let seeded = seed_work_order(&pool).await;
+                let service = EvidenceService::new(
+                    pool.clone(),
+                    StaticObjectStore::fail_copy(vec!["source missing", "still missing"]),
+                    "primary".to_owned(),
+                    "replica".to_owned(),
                 )
-                .await
-                .unwrap();
-            assert_eq!(first.status, WormReplicaStatus::Pending);
-            assert_eq!(first.retry_count, 1);
+                .with_replication_config(ReplicationConfig {
+                    primary_bucket: "primary".to_owned(),
+                    replica_bucket: "replica".to_owned(),
+                    max_retries: 2,
+                    base_retry_delay: Duration::seconds(1),
+                    max_retry_delay: Duration::seconds(5),
+                    retention_period: Duration::days(1),
+                });
+                let ticket = service
+                    .issue_presigned_upload(EvidenceUploadCommand {
+                        actor: seeded.uploaded_by,
+                        work_order_id: seeded.work_order_id,
+                        stage: AttachmentStage::Report,
+                        content_type: "image/jpeg".to_owned(),
+                        size_bytes: 1024,
+                        checksum_sha256: None,
+                        trace: TraceContext::generate(),
+                        occurred_at: OffsetDateTime::now_utc(),
+                    })
+                    .await
+                    .unwrap();
 
-            let second = service
-                .replicate_once(
-                    ticket.media.id,
-                    TraceContext::generate(),
-                    OffsetDateTime::now_utc(),
+                let first = service
+                    .replicate_once(
+                        ticket.media.id,
+                        TraceContext::generate(),
+                        OffsetDateTime::now_utc(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(first.status, WormReplicaStatus::Pending);
+                assert_eq!(first.retry_count, 1);
+
+                let second = service
+                    .replicate_once(
+                        ticket.media.id,
+                        TraceContext::generate(),
+                        OffsetDateTime::now_utc(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(second.status, WormReplicaStatus::Failed);
+                assert_eq!(second.retry_count, 2);
+
+                let queued: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM unverified_evidence_admin_queue WHERE id = $1",
                 )
+                .bind(*ticket.media.id.as_uuid())
+                .fetch_one(&pool)
                 .await
                 .unwrap();
-            assert_eq!(second.status, WormReplicaStatus::Failed);
-            assert_eq!(second.retry_count, 2);
-
-            let queued: i64 = sqlx::query_scalar(
-                "SELECT COUNT(*) FROM unverified_evidence_admin_queue WHERE id = $1",
-            )
-            .bind(*ticket.media.id.as_uuid())
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-            assert_eq!(queued, 1);
-        })
+                assert_eq!(queued, 1);
+            },
+        )
         .await;
     }
 
@@ -2869,49 +2875,53 @@ mod tests {
     // invalidated after FINAL_COMPLETED.
     #[sqlx::test(migrations = "../db/migrations")]
     async fn presign_rejected_for_after_evidence_on_terminal_work_order(pool: PgPool) {
-        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-            let seeded = seed_work_order_with_status(&pool, "FINAL_COMPLETED").await;
-            let service = EvidenceService::new(
-                pool.clone(),
-                StaticObjectStore::ok(),
-                "primary".to_owned(),
-                "replica".to_owned(),
-            );
+        console_platform_request_context::scope_org(
+            console_kernel_core::OrgId::knl(),
+            async move {
+                let seeded = seed_work_order_with_status(&pool, "FINAL_COMPLETED").await;
+                let service = EvidenceService::new(
+                    pool.clone(),
+                    StaticObjectStore::ok(),
+                    "primary".to_owned(),
+                    "replica".to_owned(),
+                );
 
-            let err = service
-                .issue_presigned_upload(EvidenceUploadCommand {
-                    actor: seeded.uploaded_by,
-                    work_order_id: seeded.work_order_id,
-                    stage: AttachmentStage::After,
-                    content_type: "image/jpeg".to_owned(),
-                    size_bytes: 1024,
-                    checksum_sha256: None,
-                    trace: TraceContext::generate(),
-                    occurred_at: OffsetDateTime::now_utc(),
-                })
-                .await
-                .unwrap_err();
-            assert!(
-                err.to_string().contains("terminal"),
-                "expected terminal-status rejection, got: {err}"
-            );
-
-            // No evidence row and no audit row should have been written.
-            let media_count: i64 =
-                sqlx::query_scalar("SELECT COUNT(*) FROM evidence_media WHERE work_order_id = $1")
-                    .bind(*seeded.work_order_id.as_uuid())
-                    .fetch_one(&pool)
+                let err = service
+                    .issue_presigned_upload(EvidenceUploadCommand {
+                        actor: seeded.uploaded_by,
+                        work_order_id: seeded.work_order_id,
+                        stage: AttachmentStage::After,
+                        content_type: "image/jpeg".to_owned(),
+                        size_bytes: 1024,
+                        checksum_sha256: None,
+                        trace: TraceContext::generate(),
+                        occurred_at: OffsetDateTime::now_utc(),
+                    })
                     .await
-                    .unwrap();
-            assert_eq!(media_count, 0);
-            let audit_count: i64 = sqlx::query_scalar(
-                "SELECT COUNT(*) FROM audit_events WHERE action = 'evidence.upload'",
-            )
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-            assert_eq!(audit_count, 0);
-        })
+                    .unwrap_err();
+                assert!(
+                    err.to_string().contains("terminal"),
+                    "expected terminal-status rejection, got: {err}"
+                );
+
+                // No evidence row and no audit row should have been written.
+                let media_count: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM evidence_media WHERE work_order_id = $1",
+                )
+                .bind(*seeded.work_order_id.as_uuid())
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+                assert_eq!(media_count, 0);
+                let audit_count: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM audit_events WHERE action = 'evidence.upload'",
+                )
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+                assert_eq!(audit_count, 0);
+            },
+        )
         .await;
     }
 

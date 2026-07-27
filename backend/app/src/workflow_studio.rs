@@ -7108,8 +7108,10 @@ async fn set_trigger_binding_enabled(
     };
     // with_audits (not with_audit): the before-snapshot must record the REAL
     // prior enabled state read in the same transaction, not an assumption.
-    let response =
-        console_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
+    let response = console_platform_db::with_audits::<_, _, WorkflowStudioError>(
+        &state.pool,
+        org,
+        move |tx| {
             Box::pin(async move {
                 let prior: Option<bool> = sqlx::query_scalar(
                     "SELECT enabled FROM workflow_trigger_bindings WHERE id = $1 FOR UPDATE",
@@ -7150,8 +7152,9 @@ async fn set_trigger_binding_enabled(
                 );
                 Ok((response, vec![event]))
             })
-        })
-        .await?;
+        },
+    )
+    .await?;
     record_workflow_studio_request(
         if enabled {
             "trigger_binding_enable"
@@ -7415,8 +7418,10 @@ async fn update_schedule(
 
     let actor = principal.user_id;
     let org = principal.org_id;
-    let response =
-        console_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
+    let response = console_platform_db::with_audits::<_, _, WorkflowStudioError>(
+        &state.pool,
+        org,
+        move |tx| {
             Box::pin(async move {
                 let current = sqlx::query(
                     "SELECT id, label, cron_expr, timezone, definition_id, enabled, \
@@ -7520,8 +7525,9 @@ async fn update_schedule(
                 );
                 Ok((response, vec![event]))
             })
-        })
-        .await?;
+        },
+    )
+    .await?;
     record_workflow_studio_request("schedule_update", "success");
     Ok(Json(response))
 }

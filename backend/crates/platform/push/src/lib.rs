@@ -9,9 +9,9 @@ use std::collections::BTreeMap;
 use std::future::Future;
 use std::pin::Pin;
 
+use console_kernel_core::{Clock, Timestamp};
 use hmac::{Hmac, KeyInit, Mac};
 use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
-use console_kernel_core::{Clock, Timestamp};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderValue};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;

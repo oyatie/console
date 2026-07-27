@@ -2,7 +2,6 @@
 
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
-use http::{Request, StatusCode, header};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use console_financial_adapter_postgres::PgFinancialStore;
 use console_financial_application::{
@@ -14,6 +13,7 @@ use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, PurchaseRequestId, TraceContext, UserId, WorkOrderId,
 };
 use console_platform_provisioning::BootstrapCredentialStore;
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -1732,8 +1732,8 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
 
     // Cookie-mode usernameless passkey login -> cookie set, body refresh null.
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
-    let login_cookie =
-        console_refresh_set_cookie(&login).expect("cookie-mode login must set an console_refresh cookie");
+    let login_cookie = console_refresh_set_cookie(&login)
+        .expect("cookie-mode login must set an console_refresh cookie");
     let cookie_value = cookie_token(&login_cookie).to_owned();
     let login_body = body_json(login).await;
     assert!(login_body["refresh_token"].is_null());
@@ -1769,8 +1769,8 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     )
     .await;
     assert_eq!(logout.status(), StatusCode::NO_CONTENT);
-    let clear_cookie =
-        console_refresh_set_cookie(&logout).expect("logout must emit a clearing console_refresh cookie");
+    let clear_cookie = console_refresh_set_cookie(&logout)
+        .expect("logout must emit a clearing console_refresh cookie");
     assert!(clear_cookie.contains("Max-Age=0"), "{clear_cookie}");
     assert!(clear_cookie.contains("Path=/api/v1/auth"), "{clear_cookie}");
 
@@ -1840,8 +1840,8 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
     let credential_id = enroll_passkey(&service, &mut authenticator, &access_token).await;
 
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
-    let login_cookie =
-        console_refresh_set_cookie(&login).expect("cookie-mode login must set an console_refresh cookie");
+    let login_cookie = console_refresh_set_cookie(&login)
+        .expect("cookie-mode login must set an console_refresh cookie");
     let mut cookie_value = cookie_token(&login_cookie).to_owned();
 
     for attempt in 1..=12 {

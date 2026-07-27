@@ -229,8 +229,10 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
         ("revised", maker),
         ("archived", maker),
     ] {
-        let record =
-            with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        let record = with_org_conn::<_, _, console_platform_db::DbError>(
+            &rt_pool,
+            OrgId::knl(),
+            move |tx| {
                 Box::pin(async move {
                     Ok(lifecycle::transition_lifecycle(
                         tx,
@@ -244,10 +246,11 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
                     )
                     .await)
                 })
-            })
-            .await
-            .unwrap()
-            .unwrap_or_else(|e| panic!("transition to {to_state} must succeed: {e:?}"));
+            },
+        )
+        .await
+        .unwrap()
+        .unwrap_or_else(|e| panic!("transition to {to_state} must succeed: {e:?}"));
         assert_eq!(record.current_state, to_state);
     }
 
@@ -300,26 +303,27 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
     );
 
     // Dispose gate 1: legal hold blocks dispose.
-    let held = with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
-        Box::pin(async move {
-            lifecycle::set_lifecycle_hold(tx, org_a, "document", object_id, true, None)
-                .await
-                .unwrap();
-            Ok(lifecycle::transition_lifecycle(
-                tx,
-                org_a,
-                "document",
-                object_id,
-                "disposed",
-                None,
-                "폐기 시도",
-                today,
-            )
-            .await)
+    let held =
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+            Box::pin(async move {
+                lifecycle::set_lifecycle_hold(tx, org_a, "document", object_id, true, None)
+                    .await
+                    .unwrap();
+                Ok(lifecycle::transition_lifecycle(
+                    tx,
+                    org_a,
+                    "document",
+                    object_id,
+                    "disposed",
+                    None,
+                    "폐기 시도",
+                    today,
+                )
+                .await)
+            })
         })
-    })
-    .await
-    .unwrap();
+        .await
+        .unwrap();
     assert_eq!(
         held.expect_err("dispose under legal hold must be refused")
             .kind,

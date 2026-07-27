@@ -1,7 +1,9 @@
 //! Inspection application layer.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use console_inspection_domain::{InspectionCycle, InspectionRoundOutcome, InspectionScheduleStatus};
+use console_inspection_domain::{
+    InspectionCycle, InspectionRoundOutcome, InspectionScheduleStatus,
+};
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, EquipmentId, InspectionRoundId,
     InspectionScheduleId, KernelError, Timestamp, TraceContext, UserId,

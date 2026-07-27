@@ -101,7 +101,7 @@ docker exec "${container_name}" sh -ceu 'set -a; . /topology.env; exec bash /top
 port_mapping="$(docker port "${container_name}" 5432/tcp)"
 port="${port_mapping##*:}"
 if [[ ! "${port}" =~ ^[0-9]+$ ]]; then echo "buck-postgres: could not resolve disposable PostgreSQL loopback port" >&2; exit 1; fi
-database_url="postgres://console_buck_admin:${admin_password}@127.0.0.1:${port}/${database}?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+database_url="postgres://console_buck_admin:${admin_password}@127.0.0.1:${port}/${database}?options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
 apalis_owner_database_url="postgres://console_app:${app_password}@127.0.0.1:${port}/${database}"
 apalis_runtime_database_url="postgres://console_rt:${runtime_password}@127.0.0.1:${port}/${database}"
 test_env_file="$(mktemp "${TMPDIR:-/tmp}/console-buck-postgres-env.XXXXXX")"

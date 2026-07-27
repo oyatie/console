@@ -18,7 +18,9 @@ use console_notifications_application::{
     NotificationCreatedNotification, NotificationNotifier, NotificationNotifyFuture,
     UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
 };
-use console_notifications_domain::{NotificationCategory, NotificationLink, NotificationPolicyScope};
+use console_notifications_domain::{
+    NotificationCategory, NotificationLink, NotificationPolicyScope,
+};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::{Arc, Mutex};
@@ -331,10 +333,11 @@ async fn mark_all_read_and_dedup_idempotency_as_runtime_role(owner_pool: PgPool)
     .expect("mark all");
     assert_eq!(marked, 3, "all three unread are marked");
 
-    let unread_after =
-        console_platform_request_context::scope_org(knl, async { store.list(list_unread(user)).await })
-            .await
-            .expect("list");
+    let unread_after = console_platform_request_context::scope_org(knl, async {
+        store.list(list_unread(user)).await
+    })
+    .await
+    .expect("list");
     assert!(unread_after.items.is_empty());
 
     // Dedup: two emits with the same key produce ONE row and fire the realtime
@@ -390,7 +393,9 @@ async fn summary_is_grouped_by_category_as_runtime_role(owner_pool: PgPool) {
     let summary = console_platform_request_context::scope_org(knl, async {
         store
             .summary(
-                console_notifications_application::NotificationCountsSummaryQuery { recipient: user },
+                console_notifications_application::NotificationCountsSummaryQuery {
+                    recipient: user,
+                },
             )
             .await
     })

@@ -2211,12 +2211,15 @@ async fn lock_purchase_tx(
         branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
         equipment_id: equipment_id.map(EquipmentId::from_uuid),
         work_order_id: work_order_id.map(WorkOrderId::from_uuid),
-        statement_evidence_id: statement_evidence_id.map(console_kernel_core::EvidenceId::from_uuid),
+        statement_evidence_id: statement_evidence_id
+            .map(console_kernel_core::EvidenceId::from_uuid),
         status: PurchaseStatus::from_db_str(&status)?,
         amount_won: row.try_get("amount_won")?,
         executive_threshold_won,
         config: FinancialConfigSnapshot {
-            depreciation_method: console_financial_domain::DepreciationMethod::from_db_str(&method)?,
+            depreciation_method: console_financial_domain::DepreciationMethod::from_db_str(
+                &method,
+            )?,
             useful_life_months: u32::try_from(useful_life_months)
                 .map_err(|_| KernelError::validation("stored useful life months is negative"))?,
             residual_rate_bps: row.try_get("residual_rate_bps")?,
@@ -2404,7 +2407,8 @@ fn purchase_from_parts(
         branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
         equipment_id: equipment_id.map(EquipmentId::from_uuid),
         work_order_id: work_order_id.map(WorkOrderId::from_uuid),
-        statement_evidence_id: statement_evidence_id.map(console_kernel_core::EvidenceId::from_uuid),
+        statement_evidence_id: statement_evidence_id
+            .map(console_kernel_core::EvidenceId::from_uuid),
         purchase_type: PurchaseType::from_db_str(&purchase_type_raw)?,
         vendor_name: row.try_get("vendor_name")?,
         amount_won: row.try_get("amount_won")?,

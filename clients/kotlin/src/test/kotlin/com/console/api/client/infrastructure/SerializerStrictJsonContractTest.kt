@@ -1,6 +1,6 @@
-package com.maintenance.api.client.infrastructure
+package com.console.api.client.infrastructure
 
-import com.maintenance.api.client.model.TokenPairResponse
+import com.console.api.client.model.TokenPairResponse
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.kotlintest.specs.StringSpec

@@ -10,7 +10,6 @@
 //!     required), and a valid step-up confirms + unlocks + is idempotent.
 
 use axum::body::{Body, to_bytes};
-use http::{Request, StatusCode, header};
 use console_inbox_adapter_postgres::PgInboxStore;
 use console_inbox_application::EmitInboxDocCommand;
 use console_inbox_domain::{InboxDocKind, NewInboxDoc};
@@ -22,6 +21,7 @@ use console_platform_auth::{
 };
 use console_platform_db::{DbError, with_audit};
 use console_platform_test_support::runtime_role_pool;
+use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};

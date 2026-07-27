@@ -1968,7 +1968,8 @@ impl PgOrgChangeStore {
         .await?;
         let mut by_org = std::collections::BTreeMap::new();
         for group_id in group_ids {
-            for member in console_platform_group::group_member_orgs(&self.pool, group_id, actor).await?
+            for member in
+                console_platform_group::group_member_orgs(&self.pool, group_id, actor).await?
             {
                 by_org.insert(
                     *member.org_id.as_uuid(),
