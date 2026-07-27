@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.2](https://github.com/jason931225/console/compare/v0.2.1...v0.2.2) (2026-07-27)
+
+
+### Features
+
+* **console:** land the console program spine on main ([#493](https://github.com/jason931225/console/issues/493)) ([78cf160](https://github.com/jason931225/console/commit/78cf1600fd43fa014bc778a9125ddf43956f288e))
+
+
+### Bug Fixes
+
+* **ci:** size the messenger-mutation budget to measurement and let xcodebuild finalize ([#496](https://github.com/jason931225/console/issues/496)) ([6655747](https://github.com/jason931225/console/commit/665574758e568e809d9ca480e7df107a8ee6ee23))
+* **console:** drop the AX5-occluded selected badge and settle the audit viewport ([#500](https://github.com/jason931225/console/issues/500)) ([c1a68d3](https://github.com/jason931225/console/commit/c1a68d3b0d35859303b727b15d5f4a0992c2ce05))
+* **console:** land the rename remnants [#497](https://github.com/jason931225/console/issues/497) merged without ([#499](https://github.com/jason931225/console/issues/499)) ([28ad6ef](https://github.com/jason931225/console/commit/28ad6ef9d5f2b0348dfa0fa420324a3a2ca01ddb))
+* **console:** retire the last product-naming remnants ([#497](https://github.com/jason931225/console/issues/497)) ([6822161](https://github.com/jason931225/console/commit/682216103954228c722338b38593c16e720d761a))
+
 ## [0.2.1](https://github.com/jason931225/maintenance/compare/v0.2.0...v0.2.1) (2026-07-23)
 
 
