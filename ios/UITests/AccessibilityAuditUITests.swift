@@ -178,7 +178,7 @@ final class AccessibilityAuditUITests: ConsoleUITestCase {
             let frame = element.frame
             guard frame.height <= targetBottom - targetTop else { return false }
             if frame.minY >= targetTop && frame.maxY <= targetBottom {
-                return true
+                return waitForScrollToSettle(element, targetTop: targetTop, targetBottom: targetBottom)
             }
 
             let previousMidY = frame.midY
@@ -201,6 +201,43 @@ final class AccessibilityAuditUITests: ConsoleUITestCase {
                 stalledAttempts += 1
                 if stalledAttempts >= 2 { return false }
             }
+        }
+        return false
+    }
+
+    /// A drag leaves the scroll view decelerating. Landing the frame in range is
+    /// therefore not the same as the screen having stopped: returning here while
+    /// momentum is still running lets the audit sample a moving screen, where
+    /// content near the container edge is composited through the scroll-edge
+    /// fade and reads as a contrast failure that no static colour pair explains.
+    /// That is the whole reason this failure was intermittent rather than
+    /// deterministic. Require the frame to actually stop, then re-check that it
+    /// is still inside the viewport once it has.
+    private func waitForScrollToSettle(
+        _ element: XCUIElement,
+        targetTop: CGFloat,
+        targetBottom: CGFloat,
+        stableSamples: Int = 3,
+        interval: TimeInterval = 0.15,
+        timeout: TimeInterval = 6
+    ) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        var previousMinY = element.frame.minY
+        var stable = 0
+
+        while Date() < deadline {
+            Thread.sleep(forTimeInterval: interval)
+            guard element.exists else { return false }
+            let current = element.frame
+            if abs(current.minY - previousMinY) < 0.5 {
+                stable += 1
+                if stable >= stableSamples {
+                    return current.minY >= targetTop && current.maxY <= targetBottom
+                }
+            } else {
+                stable = 0
+            }
+            previousMinY = current.minY
         }
         return false
     }

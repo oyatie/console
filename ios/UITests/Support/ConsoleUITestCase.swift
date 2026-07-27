@@ -702,6 +702,7 @@ class ConsoleUITestCase: XCTestCase {
         continueAfterFailure = true
         defer { continueAfterFailure = priorContinueAfterFailure }
 
+        var sawIssue = false
         do {
             try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType)) { issue in
                 let element = issue.element
@@ -716,10 +717,27 @@ class ConsoleUITestCase: XCTestCase {
                         + "identifier=\(identifier.debugDescription) "
                         + "frame=\(frame)"
                 )
+                sawIssue = true
                 return false
             }
         } catch {
             XCTFail("Accessibility audit reported issues: \(error)", file: file, line: line)
+        }
+
+        // A contrast finding on this screen has repeatedly arrived with no
+        // element attached, which makes it unattributable from the issue alone.
+        // The element is still recoverable: dump every element's own frame and
+        // correlate it against the attached screenshot's rendered pixels. Only
+        // emitted when an issue actually fired, so green runs stay silent, and
+        // only semantic type plus geometry -- never a label or identifier.
+        if sawIssue {
+            for element in app.descendants(matching: .any).allElementsBoundByIndex where element.exists {
+                print(
+                    "CONSOLE_IOS_AUDIT_TREE "
+                        + "type=\(element.elementType.rawValue) "
+                        + "frame=\(NSCoder.string(for: element.frame))"
+                )
+            }
         }
     }
 

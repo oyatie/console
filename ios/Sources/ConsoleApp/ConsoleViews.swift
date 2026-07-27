@@ -832,6 +832,13 @@ struct MessengerTabView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier(ConsoleAccessibilityID.messengerThreadRow(thread.id))
+                    // Selection is a trait, not a caption. A visible "selected"
+                    // label duplicated state VoiceOver already conveys, and its
+                    // frame settled under the opaque navigation bar at AX5, where
+                    // the audit measured it at 1.03:1 against the bar's own fill.
+                    .accessibilityAddTraits(
+                        viewModel.messengerState.selectedThreadID == thread.id ? [.isSelected] : []
+                    )
                 }
             }
 
@@ -1026,7 +1033,6 @@ struct MessengerThreadRow: View {
                     .font(.headline)
                 ConsoleChip(key: thread.kind.fieldLabelKey)
                 memberCount
-                selectionStatus
             }
         } else {
             VStack(alignment: .leading, spacing: 6) {
@@ -1037,7 +1043,6 @@ struct MessengerThreadRow: View {
                     ConsoleChip(key: thread.kind.fieldLabelKey)
                 }
                 memberCount
-                selectionStatus
             }
         }
     }
@@ -1046,15 +1051,6 @@ struct MessengerThreadRow: View {
         Text(localizedString("messenger_member_count_format", thread.memberCount))
             .font(.footnote)
             .foregroundStyle(.primary)
-    }
-
-    @ViewBuilder
-    private var selectionStatus: some View {
-        if isSelected {
-            Text("messenger_selected")
-                .font(.caption)
-                .foregroundStyle(.primary)
-        }
     }
 }
 
