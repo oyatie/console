@@ -31,11 +31,11 @@ use lettre::message::{Attachment, Mailbox, MessageBuilder, MultiPart, SinglePart
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
-use mnt_comms_application::{
+use console_comms_application::{
     ALLOWED_SMTP_PORTS, MailServiceError, SendMessageCommand, SmtpSender, SmtpTransportConfig,
     TestConnectionResult,
 };
-use mnt_comms_domain::{MailSecurity, MessageAddress};
+use console_comms_domain::{MailSecurity, MessageAddress};
 use secrecy::ExposeSecret;
 
 use crate::ssrf::SsrfError;
@@ -107,7 +107,7 @@ impl SmtpSender for LettreMailSender {
     fn test_connection<'a>(
         &'a self,
         config: &'a SmtpTransportConfig,
-    ) -> mnt_comms_application::MailFuture<'a, Result<TestConnectionResult, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<TestConnectionResult, MailServiceError>> {
         Box::pin(async move {
             let transport = match Self::build_transport(config).await {
                 Ok(t) => t,
@@ -139,7 +139,7 @@ impl SmtpSender for LettreMailSender {
         config: &'a SmtpTransportConfig,
         message: &'a SendMessageCommand,
         from_address: &'a str,
-    ) -> mnt_comms_application::MailFuture<'a, Result<String, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<String, MailServiceError>> {
         Box::pin(async move {
             let transport = Self::build_transport(config).await?;
             // Mint the Message-ID ourselves so we know the exact value to persist
@@ -270,8 +270,8 @@ fn to_mailbox(addr: &MessageAddress) -> Result<Mailbox, MailServiceError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_comms_application::SendKind;
-    use mnt_kernel_core::{TraceContext, UserId};
+    use console_comms_application::SendKind;
+    use console_kernel_core::{TraceContext, UserId};
     use secrecy::SecretString;
     use time::OffsetDateTime;
 
@@ -346,7 +346,7 @@ mod tests {
     #[test]
     fn attachment_produces_multipart() {
         let mut cmd = command();
-        cmd.attachments = vec![mnt_comms_application::OutboundAttachment {
+        cmd.attachments = vec![console_comms_application::OutboundAttachment {
             filename: "quote.pdf".to_owned(),
             content_type: "application/pdf".to_owned(),
             bytes: b"%PDF-1.4 test".to_vec(),

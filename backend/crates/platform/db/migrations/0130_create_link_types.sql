@@ -20,7 +20,7 @@
 -- ---------------------------------------------------------------------------
 -- link_types — seeded relationship-label registry (global reference data).
 -- ---------------------------------------------------------------------------
--- mnt-gate: global-table link_types (rationale: canonical edge-type vocabulary, seeded platform-wide, no tenant data)
+-- console-gate: global-table link_types (rationale: canonical edge-type vocabulary, seeded platform-wide, no tenant data)
 CREATE TABLE link_types (
     -- Same slug shape as object_links.link_type's existing CHECK.
     link_type   TEXT        PRIMARY KEY CHECK (link_type ~ '^[a-z][a-z0-9_]{1,63}$'),
@@ -49,12 +49,12 @@ INSERT INTO link_types (link_type, description) VALUES
     ('supersedes',    'Source replaces/supersedes the destination');
 
 REVOKE ALL ON link_types FROM PUBLIC;
-GRANT SELECT ON link_types TO mnt_rt;
+GRANT SELECT ON link_types TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- Backfill: adopt any in-use link_type the seed did not already cover, so the
 -- FK add below cannot orphan an existing edge. Runs as the migration role (not
--- mnt_rt), so it sees every tenant's rows regardless of RLS.
+-- console_rt), so it sees every tenant's rows regardless of RLS.
 -- ---------------------------------------------------------------------------
 INSERT INTO link_types (link_type, description)
 SELECT DISTINCT ol.link_type,

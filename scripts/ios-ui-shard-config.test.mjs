@@ -27,14 +27,14 @@ test("reads a shard's own overrides", () => {
   assert.equal(ax5.fixtureProfile, "accessibility-audit-one-row");
   assert.equal(ax5.contentSize, "accessibility-extra-extra-extra-large");
   assert.deepEqual(ax5.selectors, [
-    "MaintenanceFieldUITests/DynamicTypeRuntimeUITests/testAccessibilityExtraExtraExtraLargeRuntimeContract",
+    "ConsoleUITests/DynamicTypeRuntimeUITests/testAccessibilityExtraExtraExtraLargeRuntimeContract",
   ]);
 });
 
 test("reads every selector of a multi-test shard", () => {
   const shard = shardConfig("messenger-mutation", WORKFLOW);
   assert.equal(shard.selectors.length, 2);
-  assert.ok(shard.selectors.every((s) => s.startsWith("MaintenanceFieldUITests/")));
+  assert.ok(shard.selectors.every((s) => s.startsWith("ConsoleUITests/")));
 });
 
 test("only camera-capture resets camera privacy", () => {

@@ -4,7 +4,7 @@
 -- work_orders.status. Location pings remain in the destructible compliance
 -- store; dispatch tables keep only ranking facts such as distance and score.
 
--- mnt-gate: audited-table p1_dispatches
+-- console-gate: audited-table p1_dispatches
 CREATE TABLE p1_dispatches (
     id                        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id             UUID        NOT NULL REFERENCES work_orders(id) ON DELETE CASCADE,
@@ -46,7 +46,7 @@ CREATE INDEX idx_p1_dispatches_accept_window
     ON p1_dispatches (status, accept_window_ends_at)
     WHERE status = 'BROADCASTING';
 
--- mnt-gate: audited-table p1_dispatch_targets
+-- console-gate: audited-table p1_dispatch_targets
 CREATE TABLE p1_dispatch_targets (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     dispatch_id       UUID        NOT NULL REFERENCES p1_dispatches(id) ON DELETE CASCADE,
@@ -61,7 +61,7 @@ CREATE TABLE p1_dispatch_targets (
 CREATE INDEX idx_p1_dispatch_targets_user
     ON p1_dispatch_targets (user_id, fanout_created_at DESC);
 
--- mnt-gate: audited-table p1_dispatch_responses
+-- console-gate: audited-table p1_dispatch_responses
 CREATE TABLE p1_dispatch_responses (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     dispatch_id     UUID        NOT NULL REFERENCES p1_dispatches(id) ON DELETE CASCADE,
@@ -80,7 +80,7 @@ CREATE TABLE p1_dispatch_responses (
 CREATE INDEX idx_p1_dispatch_responses_dispatch
     ON p1_dispatch_responses (dispatch_id, response, responded_at);
 
--- mnt-gate: audited-table p1_dispatch_alerts
+-- console-gate: audited-table p1_dispatch_alerts
 CREATE TABLE p1_dispatch_alerts (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     dispatch_id          UUID        NOT NULL REFERENCES p1_dispatches(id) ON DELETE CASCADE,

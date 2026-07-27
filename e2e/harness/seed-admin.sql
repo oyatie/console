@@ -1,5 +1,5 @@
 -- E2E seed data for ADMIN / SUPER_ADMIN story specs.
--- Run as migration-only mnt_app (BYPASSRLS) against mnt_e2e, AFTER seed.sql + seed-mech.sql.
+-- Run as migration-only console_app (BYPASSRLS) against console_e2e, AFTER seed.sql + seed-mech.sql.
 -- Idempotent via ON CONFLICT DO NOTHING.
 --
 -- Provides admin-only prerequisite rows the ADMIN/SADMIN specs act on:

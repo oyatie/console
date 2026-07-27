@@ -29,7 +29,7 @@ import {
  * PostgreSQL.
  *
  * Production exclusion is defense in depth:
- * - Playwright only creates this project when MNT_DEV_AUTH_E2E=1.
+ * - Playwright only creates this project when CONSOLE_DEV_AUTH_E2E=1.
  * - This module refuses to seed unless the dev-auth E2E flag is exact.
  * - The app's default/release graph compiles dev-auth out entirely.
  */
@@ -40,17 +40,17 @@ const BRANCH_ID = randomUUID();
 const branchName = `E2E 근태 지점 ${BRANCH_ID.slice(0, 8)}`;
 const SEED_ACTOR_ID = "00000000-0000-0000-0000-00000000d001";
 const DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_URL ??
-  "postgres://mnt_rt:mnt-dev-runtime-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_URL ??
+  "postgres://console_rt:console-dev-runtime-change-me@127.0.0.1:55432/console_dev";
 const OWNER_DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_OWNER_URL ??
-  "postgres://mnt_app:mnt-dev-owner-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_OWNER_URL ??
+  "postgres://console_app:console-dev-owner-change-me@127.0.0.1:55432/console_dev";
 const LEAVE_COMMAND_DATABASE_URL =
   process.env.LEAVE_COMMAND_DATABASE_URL ??
-  "postgres://mnt_leave_cmd:mnt-dev-leave-command-change-me@127.0.0.1:55432/mnt_dev";
+  "postgres://console_leave_cmd:console-dev-leave-command-change-me@127.0.0.1:55432/console_dev";
 const DEV_AUTH_API_BASE_URL =
-  process.env.MNT_DEV_API_BASE_URL ??
-  `http://127.0.0.1:${process.env.MNT_DEV_HTTP_PORT ?? "8090"}`;
+  process.env.CONSOLE_DEV_API_BASE_URL ??
+  `http://127.0.0.1:${process.env.CONSOLE_DEV_HTTP_PORT ?? "8090"}`;
 
 const runId = randomUUID();
 const blockedEmployeeId = randomUUID();
@@ -127,9 +127,9 @@ const weekStartValue = seoulWeekStart(now);
 type DevRole = "관리자" | "일반 멤버";
 
 function assertDevOnlyEnvironment(): void {
-  if (process.env.MNT_DEV_AUTH_E2E !== "1") {
+  if (process.env.CONSOLE_DEV_AUTH_E2E !== "1") {
     throw new Error(
-      "ATTENDANCE-31 may run only with MNT_DEV_AUTH_E2E=1.",
+      "ATTENDANCE-31 may run only with CONSOLE_DEV_AUTH_E2E=1.",
     );
   }
 }

@@ -3,7 +3,7 @@
 Date: 2026-07-24 · Verifier: independent stage-3 lane (did not author the code)
 Scope: commits `07d3fb9c..52210fb4` on `claude/console-evaluation-backend-20260724`
 plus three verification-pass commits (dead-code completion, audit-readback
-widening, rustfmt normalization of two unformatted cross-lane mnt-app tests —
+widening, rustfmt normalization of two unformatted cross-lane console-app tests —
 the latter verified token-identical modulo whitespace/trailing-commas).
 
 Verdict: **PASS** — all claims in the build report were re-verified against the
@@ -21,11 +21,11 @@ cross-lane repair commits were read in full. All gates were re-run locally
 
 | Gate | Result |
 | --- | --- |
-| `cargo fmt --check` (4 evaluation crates + mnt-app test) | clean |
+| `cargo fmt --check` (4 evaluation crates + console-app test) | clean |
 | `cargo clippy --all-targets -- -D warnings` (4 evaluation crates) | clean (after fix 1 below) |
-| `cargo test -p mnt-evaluation-domain` | 5/5 |
-| `cargo test -p mnt-evaluation-application` | 1/1 |
-| `cargo test -p mnt-app --test evaluation_cycle_api` | 2/2 (real scratch DBs, full migration chain, HTTP through the mounted router as `SET ROLE mnt_rt`) |
+| `cargo test -p console-evaluation-domain` | 5/5 |
+| `cargo test -p console-evaluation-application` | 1/1 |
+| `cargo test -p console-app --test evaluation_cycle_api` | 2/2 (real scratch DBs, full migration chain, HTTP through the mounted router as `SET ROLE console_rt`) |
 | placeholder scan (`TODO/FIXME/unimplemented!/todo!/#[ignore]/.skip`) | zero hits in lane files |
 | migration version collision scan | none (0180 → 0185 → 0190, no duplicates) |
 
@@ -54,14 +54,14 @@ cross-lane repair commits were read in full. All gates were re-run locally
 false, so an unarmed GUC fails closed). Org-immutability triggers on the three
 UPDATE-bearing lifecycle tables; goals/evidence rows are replace-set objects
 and the counter's org_id is its PK — WITH CHECK blocks re-tenanting on all of
-them regardless. `mnt_rt` grants omit DELETE on all lifecycle objects.
+them regardless. `console_rt` grants omit DELETE on all lifecycle objects.
 
-**Test runs as mnt_rt, count-leak-free isolation.** The router pool is built
-with `after_connect → SET ROLE mnt_rt` (NOSUPERUSER, NOBYPASSRLS); every HTTP
+**Test runs as console_rt, count-leak-free isolation.** The router pool is built
+with `after_connect → SET ROLE console_rt` (NOSUPERUSER, NOBYPASSRLS); every HTTP
 request in both tests executes as the runtime role. Cross-tenant proof: a
 foreign-org ADMIN gets `total: 0` from the list endpoint (count leak), 404 on
 direct cycle/subject/ledger fetches, and a raw unarmed `SELECT count(*)` on
-the mnt_rt pool returns 0 while the owner pool sees the row.
+the console_rt pool returns 0 while the owner pool sees the row.
 
 **Deny-by-default authz.** Three new features registered in `feature_catalog`
 and the compile-time matrix (`EvaluationRead`/`Submit` = ADMIN + EXECUTIVE +
@@ -143,7 +143,7 @@ fire (proven for name length and weight_pct).
    `aa181e45` (platform/auth jwt.rs, logistics adapter, facilities rest,
    production rest compile fixes) touch files outside this lane's ownership.
    Verified minimal and behavior-preserving; owning lanes may supersede.
-2. Dark landing: mount `mnt_evaluation_rest::router` in `build_router` AND
+2. Dark landing: mount `console_evaluation_rest::router` in `build_router` AND
    merge `manifests/openapi-fragment.yaml` into `backend/openapi/openapi.yaml`
    in the same change (drift gate couples them), then regenerate
    `clients/{ts,kotlin,swift}`. Migration 0190 renumber-at-consolidation if
@@ -155,5 +155,5 @@ fire (proven for name length and weight_pct).
    FSM-guard + row-lock + UNIQUE-constraint based (see above); integrator
    parity review vs the logistics-style keyed endpoints stands.
 5. Branch-wide `clippy -D warnings` is still not green outside this lane
-   (e.g. mnt-app lib `dead_code`, facilities unused import); only lane-owned
+   (e.g. console-app lib `dead_code`, facilities unused import); only lane-owned
    or lane-repaired crates were brought to green.

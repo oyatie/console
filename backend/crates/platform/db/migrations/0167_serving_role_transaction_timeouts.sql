@@ -25,11 +25,11 @@ BEGIN
         -- These shared-catalog row locks serialize parallel sqlx test databases.
         PERFORM rolname
         FROM pg_authid
-        WHERE rolname IN ('mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd')
+        WHERE rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd')
         ORDER BY rolname
         FOR UPDATE;
 
-        FOREACH serving_role IN ARRAY ARRAY['mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd']
+        FOREACH serving_role IN ARRAY ARRAY['console_rt', 'console_leave_cmd', 'console_ontology_cmd']
         LOOP
             EXECUTE format('ALTER ROLE %I SET statement_timeout = ''30s''', serving_role);
             EXECUTE format('ALTER ROLE %I SET idle_in_transaction_session_timeout = ''30s''', serving_role);
@@ -42,7 +42,7 @@ BEGIN
             JOIN pg_roles role ON role.oid = settings.setrole
             JOIN pg_database database ON database.oid = settings.setdatabase
             CROSS JOIN LATERAL unnest(settings.setconfig) setting
-            WHERE role.rolname IN ('mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd')
+            WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd')
               AND split_part(setting, '=', 1) IN (
                 'statement_timeout',
                 'idle_in_transaction_session_timeout',
@@ -77,7 +77,7 @@ DECLARE
 BEGIN
     SELECT count(*) INTO missing_or_wrong
     FROM (VALUES
-      ('mnt_rt'), ('mnt_leave_cmd'), ('mnt_ontology_cmd')
+      ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd')
     ) expected(role_name)
     WHERE NOT EXISTS (
       SELECT 1
@@ -97,7 +97,7 @@ BEGIN
       FROM pg_db_role_setting settings
       JOIN pg_roles role ON role.oid = settings.setrole
       CROSS JOIN LATERAL unnest(settings.setconfig) setting
-      WHERE role.rolname IN ('mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd')
+      WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd')
         AND settings.setdatabase <> 0
         AND split_part(setting, '=', 1) IN (
           'statement_timeout',

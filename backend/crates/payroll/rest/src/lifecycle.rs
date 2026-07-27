@@ -19,16 +19,16 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
-use mnt_inbox_adapter_postgres::{PgInboxError, PgInboxStore};
-use mnt_inbox_application::EmitInboxDocCommand;
-use mnt_inbox_domain::{InboxDocKind, NewInboxDoc};
-use mnt_kernel_core::{AuditAction, AuditEvent, TraceContext, UserId};
-use mnt_payroll_adapter_postgres::lifecycle::{
+use console_inbox_adapter_postgres::{PgInboxError, PgInboxStore};
+use console_inbox_application::EmitInboxDocCommand;
+use console_inbox_domain::{InboxDocKind, NewInboxDoc};
+use console_kernel_core::{AuditAction, AuditEvent, TraceContext, UserId};
+use console_payroll_adapter_postgres::lifecycle::{
     self, ClosePreflight, Disbursement, ExceptionPage, PayrollException, PayslipDeliverySummary,
 };
-use mnt_payroll_adapter_postgres::{PayrollRunDetail, get_run_in_tx};
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{with_audits, with_org_conn};
+use console_payroll_adapter_postgres::{PayrollRunDetail, get_run_in_tx};
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{with_audits, with_org_conn};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use time::OffsetDateTime;
@@ -109,7 +109,7 @@ impl RestError {
 
 fn audit_event(
     actor: UserId,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     action: &str,
     target_type: &'static str,
     target_id: impl ToString,
@@ -695,13 +695,13 @@ pub(crate) async fn get_payslip_delivery(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_platform_authz::Role;
+    use console_platform_authz::Role;
     use std::collections::BTreeSet;
 
-    fn principal(role: Role, scope: mnt_kernel_core::BranchScope) -> Principal {
+    fn principal(role: Role, scope: console_kernel_core::BranchScope) -> Principal {
         Principal::new(
-            mnt_kernel_core::UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::UserId::new(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([role]),
             scope,
         )
@@ -711,12 +711,12 @@ mod tests {
     fn manage_gate_mirrors_read_gate_exactly() {
         // Denied: MEMBER, built-in ADMIN (any scope), branch-scoped ADMIN.
         for p in [
-            principal(Role::Member, mnt_kernel_core::BranchScope::All),
-            principal(Role::Admin, mnt_kernel_core::BranchScope::All),
+            principal(Role::Member, console_kernel_core::BranchScope::All),
+            principal(Role::Admin, console_kernel_core::BranchScope::All),
             principal(
                 Role::Admin,
-                mnt_kernel_core::BranchScope::Branches(BTreeSet::from([
-                    mnt_kernel_core::BranchId::new(),
+                console_kernel_core::BranchScope::Branches(BTreeSet::from([
+                    console_kernel_core::BranchId::new(),
                 ])),
             ),
         ] {
@@ -727,7 +727,7 @@ mod tests {
         }
         // Allowed: EXECUTIVE + SUPER_ADMIN org-wide.
         for role in [Role::Executive, Role::SuperAdmin] {
-            let p = principal(role, mnt_kernel_core::BranchScope::All);
+            let p = principal(role, console_kernel_core::BranchScope::All);
             assert!(require_run_manage(&p).is_ok(), "{role:?} must manage runs");
         }
     }

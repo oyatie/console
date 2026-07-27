@@ -2,14 +2,14 @@
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_rest::{
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_rest::{
     CommsRestState, MAIL_ACCOUNT_PATH, MAIL_FOLDERS_PATH, MAIL_SEND_PATH, MAIL_THREADS_PATH, router,
 };
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -18,12 +18,12 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn missing_mail_master_key_keeps_read_paths_clean_and_send_unavailable(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key

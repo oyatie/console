@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-OBJ object graph traversal (GET /api/objects/{kind}/{id}/graph).
 //!
-//! Runs as the genuine non-owner runtime role `mnt_rt` (NOBYPASSRLS, FORCE
+//! Runs as the genuine non-owner runtime role `console_rt` (NOBYPASSRLS, FORCE
 //! RLS) — NOT the default `#[sqlx::test]` BYPASSRLS superuser pool
 //! `object_resolve_api.rs` uses. That distinction matters here specifically:
 //! the resolve leak caught in the slice-1 review makes this endpoint the #1
@@ -22,9 +22,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -35,8 +35,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x0bad_0bad_0bad_0bad_0bad_0bad_0bad_0bad);
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -736,7 +736,7 @@ async fn seed_work_order(pool: &PgPool, branch: BranchId, requested_by: UserId) 
 /// Plants a link directly via the owner/BYPASSRLS pool, exactly like
 /// `object_links_api.rs`'s cross-org isolation test — the fixture, not the
 /// thing under test (`object_graph`'s own RLS-scoped read, exercised as
-/// `mnt_rt` below, is what's actually asserted).
+/// `console_rt` below, is what's actually asserted).
 async fn seed_link(
     pool: &PgPool,
     org: OrgId,
@@ -762,18 +762,18 @@ async fn seed_link(
     .unwrap();
 }
 
-/// A pool whose every connection drops to the genuine runtime role `mnt_rt`
+/// A pool whose every connection drops to the genuine runtime role `console_rt`
 /// (NOSUPERUSER, NOBYPASSRLS) before use. `user_branches` (needed by
 /// `resolve_person`'s branch-scoped join) predates the runtime role and has no
 /// explicit grant, and the `#[sqlx::test]` harness runs migrations as a
-/// non-`mnt_app` superuser so the post-0031 default-privilege auto-grant never
+/// non-`console_app` superuser so the post-0031 default-privilege auto-grant never
 /// fires for it either — so it, like `object_links`/`object_types`, needs an
 /// explicit grant here to faithfully exercise the runtime read path.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, DELETE ON object_links TO mnt_rt",
-        "GRANT SELECT ON object_types TO mnt_rt",
-        "GRANT SELECT ON user_branches TO mnt_rt",
+        "GRANT SELECT, INSERT, DELETE ON object_links TO console_rt",
+        "GRANT SELECT ON object_types TO console_rt",
+        "GRANT SELECT ON user_branches TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -782,7 +782,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -842,13 +842,13 @@ fn issue_token_with_roles(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

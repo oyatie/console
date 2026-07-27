@@ -45,10 +45,10 @@ test("terminal consulting child mutations expose typed conflicts in OpenAPI and 
   const openapi = read("backend/openapi/openapi.yaml");
   const typescript = read("clients/ts/src/schema.d.ts");
   const kotlin = read(
-    "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/ConsultingApi.kt",
+    "clients/kotlin/src/main/kotlin/com/console/api/client/api/ConsultingApi.kt",
   );
   const swift = read(
-    "clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift",
+    "clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift",
   );
 
   for (const { path, operation, nextPath, nextOperation } of operations) {

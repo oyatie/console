@@ -252,7 +252,7 @@ test('failed calls leave no successful or partial receipt behind', async () => {
 });
 
 test('wrapper-affecting environment is a fail-closed admission boundary', async () => {
-  const saved = Object.fromEntries(['MNT_BUCK_NEEDS_POSTGRES_TEST_BUCK', 'MNT_BUCK_NEEDS_POSTGRES_TEST_EXACT'].map((key) => [key, process.env[key]]));
+  const saved = Object.fromEntries(['CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK', 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT'].map((key) => [key, process.env[key]]));
   try {
     for (const key of Object.keys(saved)) {
       process.env[key] = 'forged';

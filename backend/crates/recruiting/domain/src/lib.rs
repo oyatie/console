@@ -5,7 +5,7 @@
 //! offer (EXTENDED→SUPERSEDED|WITHDRAWN|ACCEPTED|DECLINED). HIRED is set
 //! exclusively by the hire handshake through the owning HR use-case; `advance`
 //! can never reach it, and INTERVIEW→OFFER happens only via an offer extension.
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 /// Publish preflight check keys (server-evaluated, fail-closed).
@@ -225,11 +225,11 @@ mod tests {
         }
         assert_eq!(
             ApplicantStage::from_db("UNKNOWN").unwrap_err().kind,
-            mnt_kernel_core::ErrorKind::Internal
+            console_kernel_core::ErrorKind::Internal
         );
         assert_eq!(
             ApplicantStage::from_input("UNKNOWN").unwrap_err().kind,
-            mnt_kernel_core::ErrorKind::Validation
+            console_kernel_core::ErrorKind::Validation
         );
     }
 }

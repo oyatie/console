@@ -6,7 +6,7 @@
 -- no network listener; public MX rollout is gated by DNS/TLS/abuse/backup/
 -- observability checks in docs/specs/standalone-corporate-mailbox-server.md.
 
--- mnt-gate: audited-table mailbox_domains
+-- console-gate: audited-table mailbox_domains
 CREATE TABLE mailbox_domains (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -40,7 +40,7 @@ CREATE TABLE mailbox_domains (
     CHECK (status <> 'ACTIVE' OR (verification_status = 'VERIFIED' AND mx_verified AND spf_verified AND dkim_verified AND dmarc_verified))
 );
 
--- mnt-gate: audited-table mailboxes
+-- console-gate: audited-table mailboxes
 CREATE TABLE mailboxes (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -72,7 +72,7 @@ CREATE TABLE mailboxes (
     CHECK ((mailbox_kind = 'USER' AND owner_user_id IS NOT NULL) OR mailbox_kind <> 'USER')
 );
 
--- mnt-gate: audited-table mailbox_aliases
+-- console-gate: audited-table mailbox_aliases
 CREATE TABLE mailbox_aliases (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -102,7 +102,7 @@ CREATE TABLE mailbox_aliases (
     CHECK ((alias_kind = 'CATCH_ALL' AND local_part = '*') OR (alias_kind <> 'CATCH_ALL' AND local_part <> '*'))
 );
 
--- mnt-gate: audited-table mailbox_messages
+-- console-gate: audited-table mailbox_messages
 CREATE TABLE mailbox_messages (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -134,7 +134,7 @@ CREATE TABLE mailbox_messages (
     CHECK ((direction = 'IN' AND received_at IS NOT NULL) OR direction = 'OUT')
 );
 
--- mnt-gate: audited-table mailbox_deliveries
+-- console-gate: audited-table mailbox_deliveries
 CREATE TABLE mailbox_deliveries (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -191,7 +191,7 @@ BEGIN
             'CREATE POLICY org_isolation ON %I '
             || 'USING (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid) '
             || 'WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)', t);
-        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO mnt_rt', t);
+        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO console_rt', t);
         EXECUTE format(
             'CREATE TRIGGER trg_%s_org_immutable BEFORE UPDATE ON %I '
             || 'FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()', t, t);

@@ -9,8 +9,8 @@
 
 use std::sync::Arc;
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_provisioning::BootstrapCredentialStore;
+use console_kernel_core::OrgId;
+use console_platform_provisioning::BootstrapCredentialStore;
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tokio::sync::Barrier;

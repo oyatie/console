@@ -1,7 +1,7 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 //! Contract tests for the workbench composition seam.
 
-// Source-included rather than imported (the module is private to `mnt-app`),
+// Source-included rather than imported (the module is private to `console-app`),
 // so items this contract test does not exercise read as dead here.
 #[path = "../src/workbench.rs"]
 #[allow(dead_code)]
@@ -11,8 +11,8 @@ use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 
 use axum::response::IntoResponse;
-use mnt_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-use mnt_platform_authz::Principal;
+use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+use console_platform_authz::Principal;
 use time::OffsetDateTime;
 use uuid::Uuid;
 use workbench::{

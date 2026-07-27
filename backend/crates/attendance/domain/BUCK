@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-attendance-domain",
+    name = "console-attendance-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_attendance_domain",
+    crate = "console_attendance_domain",
     edition = "2024",
     crate_root = "backend/crates/attendance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -25,9 +25,9 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-attendance-domain-unit",
+    name = "console-attendance-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_attendance_domain",
+    crate = "console_attendance_domain",
     edition = "2024",
     crate_root = "backend/crates/attendance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -42,7 +42,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-attendance-domain-itest-range_and_history",
+    name = "console-attendance-domain-itest-range_and_history",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/domain", ["tests/range_and_history.rs"]),
     crate = "range_and_history",
     edition = "2024",
@@ -55,6 +55,6 @@ rust_test(
         "//third-party/rust:thiserror",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
-        ":mnt-attendance-domain",
+        ":console-attendance-domain",
     ],
 )

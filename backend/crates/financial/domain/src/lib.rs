@@ -4,7 +4,7 @@
 //! asset lifecycle / total-cost-of-ownership math.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 
 pub mod tco;
 

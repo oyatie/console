@@ -5,7 +5,7 @@
 //! could never reach a seeded environment.
 //!
 //! Everything the tenant can observe is read back as the genuine non-owner
-//! `mnt_rt` role under FORCE RLS with `app.current_org` armed — the only
+//! `console_rt` role under FORCE RLS with `app.current_org` armed — the only
 //! faithful exercise of the isolation these tables claim.
 //!
 //! Proves:
@@ -26,14 +26,14 @@
 //!       to a prose caveat, and it is the only case where the marker append and
 //!       its audit row are the whole transaction.
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::seed::{
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::seed::{
     BUILTIN_CATALOG_VERSION, CUSTOMER_KEY, builtin_catalog_manifest,
 };
-use mnt_ontology_adapter_postgres::{
+use console_ontology_adapter_postgres::{
     CreateObjectTypeDraft, LinkTypeInput, PgOntologyError, PgOntologyStore, PropertyDefInput,
 };
-use mnt_ontology_domain::{BackingKind, LinkCardinality, SchemaLifecycleState};
+use console_ontology_domain::{BackingKind, LinkCardinality, SchemaLifecycleState};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -55,9 +55,9 @@ async fn role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
         .after_connect(move |conn, _meta| {
             Box::pin(async move {
                 match role {
-                    "mnt_rt" => sqlx::query("SET ROLE mnt_rt").execute(conn).await?,
-                    "mnt_ontology_cmd" => {
-                        sqlx::query("SET ROLE mnt_ontology_cmd")
+                    "console_rt" => sqlx::query("SET ROLE console_rt").execute(conn).await?,
+                    "console_ontology_cmd" => {
+                        sqlx::query("SET ROLE console_ontology_cmd")
                             .execute(conn)
                             .await?
                     }
@@ -195,7 +195,7 @@ async fn install(
 ) -> Result<(bool, i64), PgOntologyError> {
     let manifest = manifest.clone();
     let catalog_version = catalog_version.to_owned();
-    mnt_platform_request_context::scope_org(org, async move {
+    console_platform_request_context::scope_org(org, async move {
         store
             .install_builtin_catalog(
                 actor,
@@ -210,7 +210,7 @@ async fn install(
     .await
 }
 
-/// Every registry row the named keys own, read as `mnt_rt`. Row ids and
+/// Every registry row the named keys own, read as `console_rt`. Row ids and
 /// timestamps are included on purpose: an upgrade that recreated or restaged a
 /// retained key would change them.
 const FINGERPRINT_SQL: &str = r#"
@@ -235,7 +235,7 @@ FROM (
 ) s
 "#;
 
-/// A pooled `mnt_rt` connection with this tenant's `app.current_org` armed —
+/// A pooled `console_rt` connection with this tenant's `app.current_org` armed —
 /// the only context in which the FORCE RLS policies are actually exercised.
 async fn armed_runtime_conn(
     rt_pool: &PgPool,
@@ -316,8 +316,8 @@ async fn additive_upgrade_adds_only_new_keys_and_is_idempotent_as_runtime_role(o
     let org_uuid = Uuid::from_u128(0x1a1a_1a1a_1a1a_1a1a_1a1a_1a1a_1a1a_1a1a);
     let org = OrgId::from_uuid(org_uuid);
     let actor = seed_org_and_user(&owner_pool, org_uuid, "seeded").await;
-    let rt_pool = role_pool(&owner_pool, "mnt_rt").await;
-    let cmd_pool = role_pool(&owner_pool, "mnt_ontology_cmd").await;
+    let rt_pool = role_pool(&owner_pool, "console_rt").await;
+    let cmd_pool = role_pool(&owner_pool, "console_ontology_cmd").await;
     let store = PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool);
 
     let base = builtin_catalog_manifest().unwrap();
@@ -366,7 +366,7 @@ async fn additive_upgrade_adds_only_new_keys_and_is_idempotent_as_runtime_role(o
         "an additive upgrade must not change one byte of an already-installed key"
     );
 
-    let probe = mnt_platform_request_context::scope_org(org, async {
+    let probe = console_platform_request_context::scope_org(org, async {
         store.get_object_type(PROBE_KEY, None).await.unwrap()
     })
     .await;
@@ -503,8 +503,8 @@ async fn upgraded_catalog_installs_whole_on_a_fresh_tenant_and_stays_isolated_as
     let legacy = OrgId::from_uuid(legacy_uuid);
     let fresh_actor = seed_org_and_user(&owner_pool, fresh_uuid, "fresh").await;
     let legacy_actor = seed_org_and_user(&owner_pool, legacy_uuid, "legacy").await;
-    let rt_pool = role_pool(&owner_pool, "mnt_rt").await;
-    let cmd_pool = role_pool(&owner_pool, "mnt_ontology_cmd").await;
+    let rt_pool = role_pool(&owner_pool, "console_rt").await;
+    let cmd_pool = role_pool(&owner_pool, "console_ontology_cmd").await;
     let store = PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool);
 
     let base = builtin_catalog_manifest().unwrap();
@@ -591,8 +591,8 @@ async fn retained_key_contradicting_the_projection_contract_fails_closed_as_runt
     let org_uuid = Uuid::from_u128(0x4d4d_4d4d_4d4d_4d4d_4d4d_4d4d_4d4d_4d4d);
     let org = OrgId::from_uuid(org_uuid);
     let actor = seed_org_and_user(&owner_pool, org_uuid, "conflict").await;
-    let rt_pool = role_pool(&owner_pool, "mnt_rt").await;
-    let cmd_pool = role_pool(&owner_pool, "mnt_ontology_cmd").await;
+    let rt_pool = role_pool(&owner_pool, "console_rt").await;
+    let cmd_pool = role_pool(&owner_pool, "console_ontology_cmd").await;
     let store = PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool);
 
     let base = builtin_catalog_manifest().unwrap();
@@ -676,8 +676,8 @@ async fn edit_only_catalog_version_is_recorded_and_changes_nothing_else_as_runti
     let org_uuid = Uuid::from_u128(0x5e5e_5e5e_5e5e_5e5e_5e5e_5e5e_5e5e_5e5e);
     let org = OrgId::from_uuid(org_uuid);
     let actor = seed_org_and_user(&owner_pool, org_uuid, "edit-only").await;
-    let rt_pool = role_pool(&owner_pool, "mnt_rt").await;
-    let cmd_pool = role_pool(&owner_pool, "mnt_ontology_cmd").await;
+    let rt_pool = role_pool(&owner_pool, "console_rt").await;
+    let cmd_pool = role_pool(&owner_pool, "console_ontology_cmd").await;
     let store = PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool);
 
     let base = builtin_catalog_manifest().unwrap();

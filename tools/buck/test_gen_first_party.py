@@ -77,25 +77,25 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         resources = GENERATOR.RESOURCE_CONFIG
 
         self.assertEqual(
-            resources["mnt-platform-authz"]["external"][
+            resources["console-platform-authz"]["external"][
                 "//docs/specs:cedar-pbac-map"
             ],
             "docs/specs/cedar-pbac-coexistence-map.json",
         )
         self.assertEqual(
-            resources["mnt-reporting-adapter-postgres"]["external"][
+            resources["console-reporting-adapter-postgres"]["external"][
                 "//docs/reference:daily-progress"
             ],
             "docs/reference/일일업무진행현황_0605.xlsx",
         )
         self.assertEqual(
-            resources["mnt-app"]["external"]["//backend/openapi:openapi.yaml"],
+            resources["console-app"]["external"]["//backend/openapi:openapi.yaml"],
             "backend/openapi/openapi.yaml",
         )
 
     def test_sqlx_tests_map_the_authoritative_migration_tree(self) -> None:
         external = GENERATOR.integration_external_resources(
-            "mnt-leave-adapter-postgres",
+            "console-leave-adapter-postgres",
             "tests/leave_migration_expand_contract.rs",
             '#[sqlx::test(migrations = "../../platform/db/migrations")]',
         )
@@ -107,7 +107,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
     def test_openapi_drift_maps_real_rest_source_trees(self) -> None:
         config = GENERATOR.integration_resource_config(
-            "mnt-app",
+            "console-app",
             "tests/openapi_drift.rs",
         )
 
@@ -132,7 +132,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         source = test_path.read_text(encoding="utf-8")
         include_paths = re.findall(r'include_str!\(\s*"([^"]+)"', source)
         config = GENERATOR.integration_resource_config(
-            "mnt-app",
+            "console-app",
             "tests/openapi_drift.rs",
         )
         mapped_roots = [
@@ -159,7 +159,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
     def test_workbench_integration_test_maps_its_path_module(self) -> None:
         config = GENERATOR.integration_resource_config(
-            "mnt-app",
+            "console-app",
             "tests/workbench_api.rs",
         )
 
@@ -177,11 +177,11 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
     def test_production_parser_unit_target_stays_hermetic(self) -> None:
         self.assertFalse(
-            GENERATOR.requires_postgres("mnt-production-rest", "test.unit")
+            GENERATOR.requires_postgres("console-production-rest", "test.unit")
         )
 
-    def test_mnt_app_inline_postgres_variant_is_feature_gated(self) -> None:
-        variant = GENERATOR.INLINE_TEST_VARIANTS["mnt-app"][0]
+    def test_console_app_inline_postgres_variant_is_feature_gated(self) -> None:
+        variant = GENERATOR.INLINE_TEST_VARIANTS["console-app"][0]
         app_dir = Path(GENERATOR.REPO) / "backend" / "app"
         manifest = GENERATOR.load(app_dir)
         app_source = (app_dir / "src").glob("**/*.rs")
@@ -211,46 +211,46 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         self.assertEqual(
             ("dev-auth",),
             GENERATOR.integration_test_features(
-                "mnt-app", "tests/dev_auth_persona_guard_feature.rs"
+                "console-app", "tests/dev_auth_persona_guard_feature.rs"
             ),
         )
 
     def test_dev_auth_feature_variants_propagate_through_app_and_auth_rest(self) -> None:
-        auth_rest_variant = GENERATOR.INLINE_TEST_VARIANTS["mnt-platform-auth-rest"][0]
+        auth_rest_variant = GENERATOR.INLINE_TEST_VARIANTS["console-platform-auth-rest"][0]
         self.assertEqual("itest-dev-auth-postgres", auth_rest_variant["name"])
         self.assertEqual("dev-auth", auth_rest_variant["feature"])
         self.assertEqual("postgres", auth_rest_variant["resource"])
         self.assertEqual(
-            ":mnt-app-lib-dev-auth",
+            ":console-app-lib-dev-auth",
             GENERATOR.integration_test_library_target(
-                "mnt-app", "tests/dev_auth_persona_guard_feature.rs", ":mnt-app-lib"
+                "console-app", "tests/dev_auth_persona_guard_feature.rs", ":console-app-lib"
             ),
         )
         self.assertEqual(
-            ":mnt-platform-auth-rest-dev-auth",
+            ":console-platform-auth-rest-dev-auth",
             GENERATOR.integration_test_library_target(
-                "mnt-platform-auth-rest", "tests/dev_auth_session.rs", ":mnt-platform-auth-rest"
+                "console-platform-auth-rest", "tests/dev_auth_session.rs", ":console-platform-auth-rest"
             ),
         )
         self.assertEqual(
             ("dev-auth",),
             GENERATOR.integration_test_features(
-                "mnt-platform-auth-rest", "tests/group_admin_tenant_context.rs"
+                "console-platform-auth-rest", "tests/group_admin_tenant_context.rs"
             ),
         )
         self.assertEqual(
-            ":mnt-platform-auth-rest-dev-auth",
+            ":console-platform-auth-rest-dev-auth",
             GENERATOR.integration_test_library_target(
-                "mnt-platform-auth-rest",
+                "console-platform-auth-rest",
                 "tests/group_admin_tenant_context.rs",
-                ":mnt-platform-auth-rest",
+                ":console-platform-auth-rest",
             ),
         )
 
     def test_inline_test_variants_reject_missing_manifest_features(self) -> None:
         with self.assertRaisesRegex(ValueError, "feature is absent"):
             GENERATOR.validate_inline_test_variants(
-                {"mnt-app": {"features": {}}}
+                {"console-app": {"features": {}}}
             )
 
 
@@ -294,10 +294,10 @@ class TestTaxonomy(unittest.TestCase):
 
 class TestResourceClassification(unittest.TestCase):
     def test_benefit_and_facilities_units_are_hermetic_even_when_sources_mention_postgres(self) -> None:
-        for package in ("mnt-benefit-rest", "mnt-facilities-rest"):
+        for package in ("console-benefit-rest", "console-facilities-rest"):
             self.assertFalse(GENERATOR.requires_postgres(package, "test.unit"))
             labels = GENERATOR.test_labels(
-                "backend/crates/{}/rest".format(package.removeprefix("mnt-").removesuffix("-rest")),
+                "backend/crates/{}/rest".format(package.removeprefix("console-").removesuffix("-rest")),
                 "test.unit",
                 GENERATOR.requires_postgres(package, "test.unit"),
             )
@@ -306,16 +306,16 @@ class TestResourceClassification(unittest.TestCase):
 
     def test_comments_and_unrelated_library_code_cannot_require_postgres(self) -> None:
         self.assertNotIn("PgPool", inspect.getsource(GENERATOR.requires_postgres))
-        self.assertFalse(GENERATOR.requires_postgres("mnt-facilities-rest", "test.unit"))
+        self.assertFalse(GENERATOR.requires_postgres("console-facilities-rest", "test.unit"))
         with self.assertRaisesRegex(ValueError, "missing reviewed resource metadata"):
             GENERATOR.requires_postgres(
-                "mnt-facilities-rest", "test.integration", "tests/comment_only.rs"
+                "console-facilities-rest", "test.integration", "tests/comment_only.rs"
             )
 
     def test_reviewed_database_integration_target_is_postgres_bound(self) -> None:
         self.assertTrue(
             GENERATOR.requires_postgres(
-                "mnt-benefit-adapter-postgres",
+                "console-benefit-adapter-postgres",
                 "test.integration",
                 "tests/catalog_rls_surfaces_as_runtime_role.rs",
             )
@@ -329,7 +329,7 @@ class TestResourceClassification(unittest.TestCase):
     def test_attendance_self_service_integration_is_postgres_bound(self) -> None:
         self.assertTrue(
             GENERATOR.requires_postgres(
-                "mnt-attendance-adapter-postgres",
+                "console-attendance-adapter-postgres",
                 "test.integration",
                 "tests/self_service.rs",
             )
@@ -338,21 +338,21 @@ class TestResourceClassification(unittest.TestCase):
     def test_equipment_discoveries_have_reviewed_resources(self) -> None:
         self.assertTrue(
             GENERATOR.requires_postgres(
-                "mnt-app", "test.integration", "tests/equipment_3r_api.rs"
+                "console-app", "test.integration", "tests/equipment_3r_api.rs"
             )
         )
-        self.assertFalse(GENERATOR.requires_postgres("mnt-equipment-domain", "test.unit"))
+        self.assertFalse(GENERATOR.requires_postgres("console-equipment-domain", "test.unit"))
 
     def test_integration_resource_lookup_requires_a_target_path(self) -> None:
         with self.assertRaises(ValueError):
-            GENERATOR.requires_postgres("mnt-benefit-adapter-postgres", "test.integration")
+            GENERATOR.requires_postgres("console-benefit-adapter-postgres", "test.integration")
 
     def test_unreviewed_discovered_test_fails_generation_preflight(self) -> None:
         discovered = {
-            ("mnt-benefit-rest", "test.unit", None),
-            ("mnt-benefit-rest", "test.integration", "tests/unreviewed.rs"),
+            ("console-benefit-rest", "test.unit", None),
+            ("console-benefit-rest", "test.integration", "tests/unreviewed.rs"),
         }
-        requirements = {"mnt-benefit-rest": {"unit": "none"}}
+        requirements = {"console-benefit-rest": {"unit": "none"}}
         with self.assertRaisesRegex(ValueError, "missing"):
             GENERATOR.validate_resource_metadata(discovered, requirements)
 

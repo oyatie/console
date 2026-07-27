@@ -19,23 +19,23 @@ reference in `ops/compose.yml`:
 - image: `chrislusf/seaweedfs:4.32`
 - command shape: `server -s3 -ip.bind=0.0.0.0 -dir=/data -s3.port=8333`
 - in-cluster S3 endpoint:
-  `http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333`
-- addressing mode for consumers: path-style (`MNT_S3_FORCE_PATH_STYLE=true`)
+  `http://console-object-store-s3.console-object-store.svc.cluster.local:8333`
+- addressing mode for consumers: path-style (`CONSOLE_S3_FORCE_PATH_STYLE=true`)
 
 ## Deployment-context matrix
 
 | Context | Argo/app path | Evidence/app endpoint | CNPG Barman endpoint | Checksum behavior | Credential source |
 |---|---|---|---|---|---|
-| `oci-guest` / current prod | `deploy/apps/maintenance/overlays/prod` today; `deploy/apps/maintenance/overlays/oci-guest` is the explicit ADR-0024 alias | OCI Object Storage S3-compatible endpoint in `ap-chuncheon-1` | OCI Object Storage `s3://mnt-db-backups/` through `oci-objectstore-creds` | Keep `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` and `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required`; this is an OCI compatibility workaround | OCI Vault recovery bundle projected to `mnt-secrets` and `oci-objectstore-creds` |
-| `on-prem` / DARK activation context | `deploy/apps/maintenance/overlays/on-prem` only after the on-prem substrate is approved | `http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333`, region `us-east-1`, path-style | same in-cluster S3 Service via `mnt-cnpg-objectstore-creds` | Do not inherit the OCI checksum workaround; SeaweedFS validation passed with default boto3/Barman checksum behavior | OpenBao/External Secrets for production activation; one-time Kubernetes secrets only for a rehearsal |
+| `oci-guest` / current prod | `deploy/apps/console/overlays/prod` today; `deploy/apps/console/overlays/oci-guest` is the explicit ADR-0024 alias | OCI Object Storage S3-compatible endpoint in `ap-chuncheon-1` | OCI Object Storage `s3://mnt-db-backups/` through `oci-objectstore-creds` | Keep `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` and `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required`; this is an OCI compatibility workaround | OCI Vault recovery bundle projected to `console-secrets` and `oci-objectstore-creds` |
+| `on-prem` / DARK activation context | `deploy/apps/console/overlays/on-prem` only after the on-prem substrate is approved | `http://console-object-store-s3.console-object-store.svc.cluster.local:8333`, region `us-east-1`, path-style | same in-cluster S3 Service via `console-cnpg-objectstore-creds` | Do not inherit the OCI checksum workaround; SeaweedFS validation passed with default boto3/Barman checksum behavior | OpenBao/External Secrets for production activation; one-time Kubernetes secrets only for a rehearsal |
 
 Selecting the endpoint context is a deployment decision, not an app-code change:
 
 - Keep OCI guest deployments on OCI Object Storage by continuing to sync the live
-  `maintenance` Application from `deploy/apps/maintenance/overlays/prod` (or the
+  `maintenance` Application from `deploy/apps/console/overlays/prod` (or the
   explicit `overlays/oci-guest` alias once the app path is migrated).
 - Select self-hosted S3 only by deploying the on-prem context
-  `deploy/apps/maintenance/overlays/on-prem` in an approved on-prem or rehearsal
+  `deploy/apps/console/overlays/on-prem` in an approved on-prem or rehearsal
   cluster. Do not point the current OCI guest at the in-cluster self-hosted
   endpoint unless a separate rollback/bridge ticket explicitly says so.
 - Do not edit `backend/crates/platform/storage/**` or other S3 client code for
@@ -59,14 +59,14 @@ created after an operator explicitly applies/syncs the dark app.
 - `project.yaml` — isolated Argo CD AppProject for the dark object-store stack.
 - `application.yaml` — manual-sync Argo CD Application pointing at
   `deploy/apps/object-store/manifests`.
-- `manifests/namespace.yaml` — restricted `maintenance-object-store` namespace.
+- `manifests/namespace.yaml` — restricted `console-object-store` namespace.
 - `manifests/services.yaml` — headless StatefulSet service plus the consumer S3
-  ClusterIP service `mnt-object-store-s3` on port `8333`.
+  ClusterIP service `console-object-store-s3` on port `8333`.
 - `manifests/statefulset.yaml` — single-pod SeaweedFS S3 StatefulSet with a
   `50Gi` PVC that uses the activation context's default replicated StorageClass,
-  plus credential references to `mnt-object-store-credentials`.
+  plus credential references to `console-object-store-credentials`.
 - `manifests/networkpolicy.yaml` — allows S3 ingress only from the `maintenance`
-  and `maintenance-object-store` namespaces.
+  and `console-object-store` namespaces.
 
 ## Activation prerequisites
 
@@ -80,7 +80,7 @@ created after an operator explicitly applies/syncs the dark app.
    `kubectl create secret` commands below are acceptable only for a rehearsal and
    must be replaced by the selected secret manager before production data moves.
 4. NetworkPolicy/equivalent egress from the `maintenance` namespace to
-   `mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333` is
+   `console-object-store-s3.console-object-store.svc.cluster.local:8333` is
    allowed before app/worker/CNPG consumers are switched.
 5. Required buckets exist before consumers move: `mnt-evidence`,
    `mnt-evidence-replica` if the current app config remains unchanged, and
@@ -103,34 +103,34 @@ the following names and keys are the Kubernetes consumer contract.
 SeaweedFS S3 server credentials in the object-store namespace:
 
 ```sh
-kubectl create namespace maintenance-object-store
-kubectl -n maintenance-object-store create secret generic mnt-object-store-credentials \
+kubectl create namespace console-object-store
+kubectl -n console-object-store create secret generic console-object-store-credentials \
   --from-literal=AWS_ACCESS_KEY_ID='<object-store-access-key>' \
   --from-literal=AWS_SECRET_ACCESS_KEY='<object-store-secret-key>'
 ```
 
 CNPG/Barman credentials in the maintenance namespace. The on-prem overlay expects
 the same key names as the live OCI Barman secret, but under the on-prem secret
-name `mnt-cnpg-objectstore-creds`:
+name `console-cnpg-objectstore-creds`:
 
 ```sh
-kubectl -n maintenance create secret generic mnt-cnpg-objectstore-creds \
+kubectl -n console create secret generic console-cnpg-objectstore-creds \
   --from-literal=ACCESS_KEY_ID='<object-store-access-key>' \
   --from-literal=ACCESS_SECRET_KEY='<object-store-secret-key>'
 ```
 
-App/worker evidence credentials continue to come from `mnt-secrets` via
+App/worker evidence credentials continue to come from `console-secrets` via
 `envFrom`. For on-prem, project the approved self-hosted S3 credentials into
 these existing keys; do not rename them in app manifests:
 
 ```text
-MNT_S3_ENDPOINT_URL=http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333
-MNT_S3_REGION=us-east-1
-MNT_S3_FORCE_PATH_STYLE=true
-MNT_S3_ACCESS_KEY_ID=<approved self-hosted S3 access key, from secret>
-MNT_S3_SECRET_ACCESS_KEY=<approved self-hosted S3 secret key, from secret>
-MNT_S3_PRIMARY_BUCKET=mnt-evidence
-MNT_S3_REPLICA_BUCKET=mnt-evidence-replica
+CONSOLE_S3_ENDPOINT_URL=http://console-object-store-s3.console-object-store.svc.cluster.local:8333
+CONSOLE_S3_REGION=us-east-1
+CONSOLE_S3_FORCE_PATH_STYLE=true
+CONSOLE_S3_ACCESS_KEY_ID=<approved self-hosted S3 access key, from secret>
+CONSOLE_S3_SECRET_ACCESS_KEY=<approved self-hosted S3 secret key, from secret>
+CONSOLE_S3_PRIMARY_BUCKET=mnt-evidence
+CONSOLE_S3_REPLICA_BUCKET=mnt-evidence-replica
 ```
 
 SeaweedFS uses `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` as fallback S3
@@ -146,17 +146,17 @@ Render first, then apply/sync only in the approved context:
 kubectl kustomize deploy/apps/object-store
 kubectl kustomize deploy/apps/object-store/manifests
 kubectl apply -k deploy/apps/object-store
-kubectl get application maintenance-object-store-dark -n argocd -o yaml
-argocd app sync maintenance-object-store-dark
+kubectl get application console-object-store-dark -n argocd -o yaml
+argocd app sync console-object-store-dark
 ```
 
 Confirm that the Application still has no `syncPolicy.automated` before syncing.
 After sync, verify the pod and S3 path-style endpoint with signed requests:
 
 ```sh
-kubectl -n maintenance-object-store rollout status statefulset/mnt-object-store
-kubectl -n maintenance-object-store get svc mnt-object-store-s3 -o yaml
-kubectl -n maintenance-object-store port-forward svc/mnt-object-store-s3 8333:8333
+kubectl -n console-object-store rollout status statefulset/console-object-store
+kubectl -n console-object-store get svc console-object-store-s3 -o yaml
+kubectl -n console-object-store port-forward svc/console-object-store-s3 8333:8333
 ```
 
 From a separate shell while the port-forward is active:
@@ -181,17 +181,17 @@ Run a signed object smoke for each bucket. Use non-production test keys and clea
 them up afterward:
 
 ```sh
-printf 'object-store-smoke %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/mnt-s3-smoke.txt
+printf 'object-store-smoke %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/console-s3-smoke.txt
 for bucket in mnt-evidence mnt-evidence-replica mnt-db-backups; do
   AWS_ACCESS_KEY_ID='<object-store-access-key>' \
   AWS_SECRET_ACCESS_KEY='<object-store-secret-key>' \
-  aws --endpoint-url http://127.0.0.1:8333 s3 cp /tmp/mnt-s3-smoke.txt "s3://$bucket/smoke/mnt-s3-smoke.txt"
+  aws --endpoint-url http://127.0.0.1:8333 s3 cp /tmp/console-s3-smoke.txt "s3://$bucket/smoke/console-s3-smoke.txt"
   AWS_ACCESS_KEY_ID='<object-store-access-key>' \
   AWS_SECRET_ACCESS_KEY='<object-store-secret-key>' \
-  aws --endpoint-url http://127.0.0.1:8333 s3 cp "s3://$bucket/smoke/mnt-s3-smoke.txt" -
+  aws --endpoint-url http://127.0.0.1:8333 s3 cp "s3://$bucket/smoke/console-s3-smoke.txt" -
   AWS_ACCESS_KEY_ID='<object-store-access-key>' \
   AWS_SECRET_ACCESS_KEY='<object-store-secret-key>' \
-  aws --endpoint-url http://127.0.0.1:8333 s3 rm "s3://$bucket/smoke/mnt-s3-smoke.txt"
+  aws --endpoint-url http://127.0.0.1:8333 s3 rm "s3://$bucket/smoke/console-s3-smoke.txt"
 done
 ```
 
@@ -206,11 +206,11 @@ consumer endpoint is moved.
 Render the explicit contexts and compare the endpoints before applying anything:
 
 ```sh
-kubectl kustomize deploy/apps/maintenance/overlays/oci-guest > /tmp/mnt-oci-guest.yaml
-kubectl kustomize deploy/apps/maintenance/overlays/on-prem > /tmp/mnt-on-prem.yaml
+kubectl kustomize deploy/apps/console/overlays/oci-guest > /tmp/console-oci-guest.yaml
+kubectl kustomize deploy/apps/console/overlays/on-prem > /tmp/console-on-prem.yaml
 
-grep -n 'MNT_S3_ENDPOINT_URL\|endpointURL\|AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION' /tmp/mnt-oci-guest.yaml
-grep -n 'MNT_S3_ENDPOINT_URL\|endpointURL\|AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION' /tmp/mnt-on-prem.yaml
+grep -n 'CONSOLE_S3_ENDPOINT_URL\|endpointURL\|AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION' /tmp/console-oci-guest.yaml
+grep -n 'CONSOLE_S3_ENDPOINT_URL\|endpointURL\|AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION' /tmp/console-on-prem.yaml
 ```
 
 Expected result:
@@ -218,14 +218,14 @@ Expected result:
 - `oci-guest` shows the OCI Object Storage endpoint, region `ap-chuncheon-1`, and
   the OCI-only checksum env workaround.
 - `on-prem` shows the in-cluster self-hosted endpoint, region `us-east-1`, the
-  `mnt-cnpg-objectstore-creds` secret name, and no `AWS_*_CHECKSUM_*` env on the
+  `console-cnpg-objectstore-creds` secret name, and no `AWS_*_CHECKSUM_*` env on the
   rendered CNPG `Cluster`.
 
 Only after the object store, buckets, secrets, network path, WORM check, and
 Barman drill are proven should an activation lane point the maintenance Argo
-Application at `deploy/apps/maintenance/overlays/on-prem` (or sync that overlay
+Application at `deploy/apps/console/overlays/on-prem` (or sync that overlay
 in the approved on-prem cluster). Until then, the live `maintenance` Application
-remains on `deploy/apps/maintenance/overlays/prod`, so OCI guest deployments keep
+remains on `deploy/apps/console/overlays/prod`, so OCI guest deployments keep
 using OCI Object Storage.
 
 ## Post-cutover verification
@@ -235,12 +235,12 @@ After the on-prem context is synced, verify the three consumer classes.
 1. App/worker evidence configuration:
 
    ```sh
-   kubectl -n maintenance get configmap mnt-config -o jsonpath='{.data.MNT_S3_ENDPOINT_URL}{"\n"}{.data.MNT_S3_REGION}{"\n"}{.data.MNT_S3_FORCE_PATH_STYLE}{"\n"}{.data.MNT_S3_PRIMARY_BUCKET}{"\n"}{.data.MNT_S3_REPLICA_BUCKET}{"\n"}'
-   kubectl -n maintenance get pods -l app=mnt-app -o wide
-   kubectl -n maintenance get pods -l app=mnt-worker -o wide
+   kubectl -n console get configmap console-config -o jsonpath='{.data.CONSOLE_S3_ENDPOINT_URL}{"\n"}{.data.CONSOLE_S3_REGION}{"\n"}{.data.CONSOLE_S3_FORCE_PATH_STYLE}{"\n"}{.data.CONSOLE_S3_PRIMARY_BUCKET}{"\n"}{.data.CONSOLE_S3_REPLICA_BUCKET}{"\n"}'
+   kubectl -n console get pods -l app=console-app -o wide
+   kubectl -n console get pods -l app=console-worker -o wide
    ```
 
-   Expected endpoint: `http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333`.
+   Expected endpoint: `http://console-object-store-s3.console-object-store.svc.cluster.local:8333`.
    Expected buckets: `mnt-evidence` and `mnt-evidence-replica`. Use the app's
    normal evidence workflow or a controlled non-production evidence smoke to
    confirm primary/replica object writes and reads.
@@ -248,13 +248,13 @@ After the on-prem context is synced, verify the three consumer classes.
 2. CNPG/Barman configuration:
 
    ```sh
-   kubectl -n maintenance get objectstore.barmancloud.cnpg.io mnt-backups -o yaml
-   kubectl -n maintenance get cluster.postgresql.cnpg.io mnt-db -o yaml
-   kubectl -n maintenance get scheduledbackup.postgresql.cnpg.io mnt-db-daily -o yaml
+   kubectl -n console get objectstore.barmancloud.cnpg.io console-backups -o yaml
+   kubectl -n console get cluster.postgresql.cnpg.io console-db -o yaml
+   kubectl -n console get scheduledbackup.postgresql.cnpg.io console-db-daily -o yaml
    ```
 
    Expected endpoint: the in-cluster self-hosted S3 Service. Expected credential
-   secret: `mnt-cnpg-objectstore-creds`. Expected checksum posture: no inherited
+   secret: `console-cnpg-objectstore-creds`. Expected checksum posture: no inherited
    `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` or
    `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required` in the on-prem CNPG Cluster.
 
@@ -282,8 +282,8 @@ was never synced, delete the dark Application/Project objects. This does not
 touch the live OCI app-of-apps root or any maintenance consumer endpoint:
 
 ```sh
-kubectl -n argocd delete application maintenance-object-store-dark --ignore-not-found
-kubectl -n argocd delete appproject maintenance-object-store-dark --ignore-not-found
+kubectl -n argocd delete application console-object-store-dark --ignore-not-found
+kubectl -n argocd delete appproject console-object-store-dark --ignore-not-found
 ```
 
 ### If SeaweedFS was synced but consumers did not move
@@ -292,13 +292,13 @@ Stop before deleting storage. Confirm no app/CNPG consumers use the self-hosted
 endpoint, then preserve or export any rehearsal data:
 
 ```sh
-kubectl -n maintenance get configmap mnt-config -o jsonpath='{.data.MNT_S3_ENDPOINT_URL}{"\n"}'
-kubectl -n maintenance get objectstore.barmancloud.cnpg.io mnt-backups -o jsonpath='{.spec.configuration.endpointURL}{"\n"}'
-argocd app terminate-op maintenance-object-store-dark || true
-argocd app delete maintenance-object-store-dark --cascade=false --yes
+kubectl -n console get configmap console-config -o jsonpath='{.data.CONSOLE_S3_ENDPOINT_URL}{"\n"}'
+kubectl -n console get objectstore.barmancloud.cnpg.io console-backups -o jsonpath='{.spec.configuration.endpointURL}{"\n"}'
+argocd app terminate-op console-object-store-dark || true
+argocd app delete console-object-store-dark --cascade=false --yes
 ```
 
-Do not prune the `mnt-object-store` PVC until the operator confirms that no legal
+Do not prune the `console-object-store` PVC until the operator confirms that no legal
 evidence, backup, WORM, or validation data exists only on that volume.
 
 ### If consumers were moved to `on-prem`
@@ -308,26 +308,26 @@ evidence or Barman objects were written to self-hosted S3 and must be copied bac
 to OCI. Then roll the maintenance Application back to the previous context:
 
 1. Restore the maintenance Argo Application source path to
-   `deploy/apps/maintenance/overlays/prod` (or `overlays/oci-guest` if that is the
+   `deploy/apps/console/overlays/prod` (or `overlays/oci-guest` if that is the
    explicit live path at rollback time), or sync the last known-good commit.
-2. Restore the OCI-backed `mnt-secrets` S3 keys and `oci-objectstore-creds` from
+2. Restore the OCI-backed `console-secrets` S3 keys and `oci-objectstore-creds` from
    OCI Vault. Do not reuse self-hosted S3 credentials against OCI.
 3. Sync the maintenance Application and restart workloads if the cluster does not
    automatically roll pods after the ConfigMap/Secret change:
 
    ```sh
    argocd app sync maintenance
-   kubectl -n maintenance patch rollout.argoproj.io/mnt-app --type merge \
+   kubectl -n console patch rollout.argoproj.io/console-app --type merge \
      -p "{\"spec\":{\"restartAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}}"
-   kubectl -n maintenance rollout restart deployment/mnt-worker
+   kubectl -n console rollout restart deployment/console-worker
    ```
 
 4. Verify rollback state:
 
    ```sh
-   kubectl -n maintenance get configmap mnt-config -o jsonpath='{.data.MNT_S3_ENDPOINT_URL}{"\n"}{.data.MNT_S3_REGION}{"\n"}'
-   kubectl -n maintenance get objectstore.barmancloud.cnpg.io mnt-backups -o jsonpath='{.spec.configuration.endpointURL}{"\n"}'
-   kubectl kustomize deploy/apps/maintenance/overlays/oci-guest | grep -n 'AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION'
+   kubectl -n console get configmap console-config -o jsonpath='{.data.CONSOLE_S3_ENDPOINT_URL}{"\n"}{.data.CONSOLE_S3_REGION}{"\n"}'
+   kubectl -n console get objectstore.barmancloud.cnpg.io console-backups -o jsonpath='{.spec.configuration.endpointURL}{"\n"}'
+   kubectl kustomize deploy/apps/console/overlays/oci-guest | grep -n 'AWS_REQUEST_CHECKSUM_CALCULATION\|AWS_RESPONSE_CHECKSUM_VALIDATION'
    ```
 
    Expected rollback endpoint: the OCI Object Storage S3-compatible endpoint in

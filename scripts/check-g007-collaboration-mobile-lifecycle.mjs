@@ -183,8 +183,8 @@ if (matrix) {
     "web/src/features/messenger/MessengerPanel.tsx",
     "web/src/pages/MailPage.tsx",
     "web/src/features/comms/CommsRail.tsx",
-    "ios/Sources/MaintenanceFieldApp/FieldViews.swift",
-    "android/app/src/main/kotlin/com/maintenance/field/ui/FieldApp.kt",
+    "ios/Sources/ConsoleApp/ConsoleViews.swift",
+    "android/app/src/main/kotlin/com/console/app/ui/ConsoleApp.kt",
   ];
   for (const file of collaborationUxFiles) {
     for (const needle of bannedCopyNeedles) {

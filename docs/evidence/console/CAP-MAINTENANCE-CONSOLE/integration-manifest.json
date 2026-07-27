@@ -9,7 +9,7 @@
       "backend/crates/workorder/rest (equipment_id + maintenance_type/cause list filters, classification facets, preventive_on_time_rate + mttr_minutes lens aggregates, settlement routes, detail.settlement)"
     ],
     "migration": "backend/crates/platform/db/migrations/0193_workorder_maintenance_console.sql (provisional number; FORCE RLS + org policy + immutable-org trigger on both settlement tables; live-settlement partial unique; org-scoped idempotency unique)",
-    "integration_test": "backend/app/tests/maintenance_chain_api.rs (mnt_rt pool: story chain to APPROVED settlement, idempotent replay, eligibility 409, four-eyes 403, RETURNED comment 422, void discipline, MEMBER deny w/o leakage, cross-tenant 404 + empty list, audit readback, lens/facet/filter truthfulness)",
+    "integration_test": "backend/app/tests/maintenance_chain_api.rs (console_rt pool: story chain to APPROVED settlement, idempotent replay, eligibility 409, four-eyes 403, RETURNED comment 422, void discipline, MEMBER deny w/o leakage, cross-tenant 404 + empty list, audit readback, lens/facet/filter truthfulness)",
     "openapi_fragment": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/manifests/openapi-fragment.yaml",
     "tag_arbitration": "new settlement operations carry tags:[maintenance] per lane charter; scout row below said tags:[work-orders]; existing four modified operations keep work-orders. Integrator picks one surface — both satisfy the per-domain client-tagging gate.",
     "base_breakage_fixed_locally_not_committed": [

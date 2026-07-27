@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for approvals-CREATE, exercised as the genuine non-owner
-//! `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only faithful
+//! `console_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only faithful
 //! exercise of RLS org-isolation.
 //!
 //! Proves:
@@ -13,10 +13,10 @@
 //!   (c) the pending request row is append-only (UPDATE/DELETE rejected);
 //!   (d) a cross-org request is invisible under another tenant's GUC (RLS).
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use serde_json::json;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -31,7 +31,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })

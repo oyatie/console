@@ -9,36 +9,36 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-financial-domain",
+    name = "console-financial-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/financial/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_financial_domain",
+    crate = "console_financial_domain",
     edition = "2024",
     crate_root = "backend/crates/financial/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-financial-domain-unit",
+    name = "console-financial-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/financial/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_financial_domain",
+    crate = "console_financial_domain",
     edition = "2024",
     crate_root = "backend/crates/financial/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/domain"},
     labels = ["owner.backend.crates.financial.domain", "domain.financial", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-financial-domain-itest-quote_and_residual",
+    name = "console-financial-domain-itest-quote_and_residual",
     mapped_srcs = repo_mapped_srcs("backend/crates/financial/domain", ["tests/quote_and_residual.rs"]),
     crate = "quote_and_residual",
     edition = "2024",
@@ -47,8 +47,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/domain"},
     labels = ["owner.backend.crates.financial.domain", "domain.financial", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
-        ":mnt-financial-domain",
+        ":console-financial-domain",
     ],
 )

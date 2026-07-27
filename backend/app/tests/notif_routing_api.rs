@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Notification ROUTING surfaces (by-object grouping, unread toggle, mute
-//! policies) E2E over the REAL app router on a genuine non-owner `mnt_rt`
+//! policies) E2E over the REAL app router on a genuine non-owner `console_rt`
 //! pool: full signature chain (ES256 JWT -> principal -> armed tenant GUC ->
 //! RLS), denial WITHOUT existence leakage (anon 401; cross-user and
 //! cross-tenant ids 404, indistinguishable from absent), and audit readback
@@ -9,9 +9,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -22,8 +22,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x7207_2472_0724_7207_2472_0724_7207_2472);
 
 struct Keys {
@@ -81,7 +81,7 @@ async fn notification_routing_is_isolated_over_http_as_runtime_role(pool: PgPool
         .unwrap();
     assert_eq!(anon.status(), StatusCode::UNAUTHORIZED);
 
-    // --- by-object grouping over HTTP as mnt_rt (GUC armed by the chain) ---
+    // --- by-object grouping over HTTP as console_rt (GUC armed by the chain) ---
     let a_groups = get(
         service.clone(),
         "/api/v1/me/notifications/by-object",
@@ -336,7 +336,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -345,13 +345,13 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

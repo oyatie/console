@@ -1,7 +1,7 @@
 //! SSRF guard for the inbound IMAP connection.
 //!
 //! Identical in intent and ranges to the outbound-SMTP guard
-//! (`mnt-comms-adapter-smtp::ssrf`): the admin-configured IMAP host is resolved
+//! (`console-comms-adapter-smtp::ssrf`): the admin-configured IMAP host is resolved
 //! ONCE via [`hickory_resolver`], every resolved IP is checked against a denylist
 //! (RFC1918, loopback, link-local incl. the `169.254.169.254` cloud-metadata
 //! endpoint, ULA `fc00::/7`, CGNAT `100.64/10`, …), and the connection then dials

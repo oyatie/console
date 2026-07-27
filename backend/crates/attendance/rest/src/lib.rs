@@ -10,21 +10,21 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use mnt_attendance_adapter_postgres::{AttendanceStoreError, PgAttendanceStore};
-use mnt_attendance_application::{
+use console_attendance_adapter_postgres::{AttendanceStoreError, PgAttendanceStore};
+use console_attendance_application::{
     AcknowledgeWeek52, AmendClose, AssignSubstitute, AttendanceEvidence, AttendanceExceptionRead,
     AttendanceSubstitutionRead, CallerScope, CancelSubstitution, CloseMonth, ClosePreflightRead,
     ListExceptions, ListSubstitutions, MonthCloseRead, RaiseException, ResolveException,
     SubstitutionCandidateQuery, SubstitutionCandidateRead, Week52Read, validate_week52_start,
     week52_tone,
 };
-use mnt_attendance_domain::{
+use console_attendance_domain::{
     AttendanceDateRange, ExceptionKind, ResolutionAction, SubstitutionWindow,
 };
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_request_context::{RequestContextError, resolve_principal};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_request_context::{RequestContextError, resolve_principal};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::json;
 use time::{Date, Duration};
@@ -153,7 +153,7 @@ pub fn router(state: AttendanceRestState) -> Router {
             get(self_service::read_own_week52),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(r, verifier, pool)
+    console_platform_request_context::with_request_context(r, verifier, pool)
 }
 
 async fn principal(
@@ -1029,7 +1029,7 @@ async fn list_closes(
         .list_closes(&scope(&p), q.branch_id, month)
         .await
         .map_err(RestError::store)?;
-    let open = |checks: &[mnt_attendance_application::CloseCheckRead],
+    let open = |checks: &[console_attendance_application::CloseCheckRead],
                 key: &str|
      -> Result<i64, RestError> {
         checks
@@ -1165,7 +1165,7 @@ struct Week52RowDto {
 }
 impl From<Week52Read> for Week52RowDto {
     fn from(v: Week52Read) -> Self {
-        let tone = week52_tone(&mnt_attendance_application::Week52Input {
+        let tone = week52_tone(&console_attendance_application::Week52Input {
             employee_id: v.employee_id,
             week_start: v.week_start,
             current_hours: v.current_hours,
@@ -1180,9 +1180,9 @@ impl From<Week52Read> for Week52RowDto {
             current_hours: v.current_hours,
             projected_hours: v.projected_hours,
             tone: match tone {
-                mnt_attendance_application::Week52Tone::Ok => "OK",
-                mnt_attendance_application::Week52Tone::Warn => "WARN",
-                mnt_attendance_application::Week52Tone::Danger => "DANGER",
+                console_attendance_application::Week52Tone::Ok => "OK",
+                console_attendance_application::Week52Tone::Warn => "WARN",
+                console_attendance_application::Week52Tone::Danger => "DANGER",
             }
             .into(),
             acked: v.acknowledged_at.is_some(),
@@ -1337,7 +1337,7 @@ impl RestError {
     fn store(error: AttendanceStoreError) -> Self {
         match error {
             AttendanceStoreError::Application(e) => match e {
-                mnt_attendance_application::AttendanceApplicationError::ForbiddenBranch => {
+                console_attendance_application::AttendanceApplicationError::ForbiddenBranch => {
                     Self::new(StatusCode::FORBIDDEN, "forbidden", e.to_string())
                 }
                 _ => Self::new(
@@ -1385,8 +1385,8 @@ impl IntoResponse for RestError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::{OrgId, UserId};
-    use mnt_platform_authz::Role;
+    use console_kernel_core::{OrgId, UserId};
+    use console_platform_authz::Role;
     use std::{
         collections::BTreeSet,
         future::Future,

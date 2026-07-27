@@ -4,7 +4,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 harness="${repo_root}/tools/buck/test_batched.sh"
-scratch="$(mktemp -d "${TMPDIR:-/tmp}/mnt-buck-batched-test.XXXXXX")"
+scratch="$(mktemp -d "${TMPDIR:-/tmp}/console-buck-batched-test.XXXXXX")"
 trap 'rm -rf "${scratch}"' EXIT
 log="${scratch}/calls.log"
 
@@ -30,21 +30,21 @@ BUCK
 chmod +x "${scratch}/buck"
 
 run() {
-  HARNESS_LOG="${log}" MNT_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
-    MNT_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" "${harness}" 1
+  HARNESS_LOG="${log}" CONSOLE_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
+    CONSOLE_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" "${harness}" 1
 }
 
 run
 grep -Fq 'BUCK_ISOLATION_DIR=batched-lock uquery ' "${log}"
 test "$(grep -Fc 'BUCK_ISOLATION_DIR=batched-lock test ' "${log}")" = 2
 
-if HARNESS_LOG="${log}" MNT_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
-  MNT_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=fail "${harness}" 1; then
+if HARNESS_LOG="${log}" CONSOLE_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=fail "${harness}" 1; then
   echo "expected failing target batch to fail the harness" >&2
   exit 1
 fi
-if HARNESS_LOG="${log}" MNT_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
-  MNT_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=crash "${harness}" 1; then
+if HARNESS_LOG="${log}" CONSOLE_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=crash "${harness}" 1; then
   echo "expected crashed target batch to fail the harness" >&2
   exit 1
 fi
@@ -52,8 +52,8 @@ if "${harness}" 0 >/dev/null 2>&1; then
   echo "expected invalid batch size to fail" >&2
   exit 1
 fi
-if HARNESS_LOG="${log}" MNT_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
-  MNT_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=empty "${harness}"; then
+if HARNESS_LOG="${log}" CONSOLE_BUCK_TEST_BATCHED_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_TEST_BATCHED_ISOLATION_DIR="batched-lock" FAKE_BUCK_MODE=empty "${harness}"; then
   echo "expected an empty target query to fail" >&2
   exit 1
 fi

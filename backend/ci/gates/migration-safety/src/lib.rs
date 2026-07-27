@@ -177,7 +177,7 @@ fn discover_audited_tables(content: &str, audited_tables: &mut HashSet<String>) 
         if !trimmed.starts_with("--") {
             continue;
         }
-        if let Some((_prefix, table)) = trimmed.split_once("mnt-gate: audited-table") {
+        if let Some((_prefix, table)) = trimmed.split_once("console-gate: audited-table") {
             let table = normalize_identifier(table.trim());
             if !table.is_empty() {
                 audited_tables.insert(table);

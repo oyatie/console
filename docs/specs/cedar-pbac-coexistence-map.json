@@ -46,7 +46,7 @@
     ]
   },
   "invariants": {
-    "rlsHardBoundary": "Cedar decides capabilities/actions; Postgres mnt_rt/FORCE RLS decides row visibility and mutation reach.",
+    "rlsHardBoundary": "Cedar decides capabilities/actions; Postgres console_rt/FORCE RLS decides row visibility and mutation reach.",
     "serverAuthoritative": "Client projections and JWT feature hints never grant; every protected endpoint reauthorizes server-side.",
     "uiProjectionNonAuthoritative": true,
     "subjectFreshnessRequired": true,

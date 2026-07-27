@@ -8,7 +8,7 @@
 -- 0180). The consolidation integrator renumbers to the next free number
 -- immediately before push, per the cross-lane collision rule.
 
--- mnt-gate: audited-table notification_policies
+-- console-gate: audited-table notification_policies
 CREATE TABLE notification_policies (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -42,7 +42,7 @@ CREATE POLICY org_isolation ON notification_policies
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Personal settings: delete = unmute (a real removal, not a governed archive).
-GRANT SELECT, INSERT, UPDATE, DELETE ON notification_policies TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON notification_policies TO console_rt;
 
 -- Backs GROUP BY link (aggregate-by-object read path) and resolve-by-link sweeps.
 CREATE INDEX idx_notifications_recipient_link

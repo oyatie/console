@@ -44,12 +44,12 @@ INSERT INTO object_types (kind, description) VALUES
     ('payroll_period',    'Payroll period run'),
     ('purchase_request',  'Financial purchase request');
 
-GRANT SELECT ON object_types TO mnt_rt;
+GRANT SELECT ON object_types TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- object_links — generic, audited, removable edges (tenant data).
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table object_links
+-- console-gate: audited-table object_links
 CREATE TABLE object_links (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -81,6 +81,6 @@ CREATE POLICY org_isolation ON object_links
 
 -- Links are removable (hard delete), and every removal is audited by the
 -- application via with_audit (the audit event's before-snapshot preserves the
--- removed edge). mnt_rt therefore gets DELETE here, unlike append-only tables.
+-- removed edge). console_rt therefore gets DELETE here, unlike append-only tables.
 -- Links are immutable once created (re-link = delete + create), so no UPDATE.
-GRANT SELECT, INSERT, DELETE ON object_links TO mnt_rt;
+GRANT SELECT, INSERT, DELETE ON object_links TO console_rt;

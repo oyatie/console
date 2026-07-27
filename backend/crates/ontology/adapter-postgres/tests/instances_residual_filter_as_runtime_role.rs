@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the L-CEDAR-residual list-filter (arch §5d / decision D1),
-//! exercised as the genuine non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS,
+//! exercised as the genuine non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS,
 //! FORCE RLS) — the only faithful exercise of the org_isolation floor. A BYPASSRLS
 //! superuser would mask a residual that leaks across tenants.
 //!
@@ -19,13 +19,13 @@
 //! migration-number collision has been reconciled, so no deduplicated copy is
 //! needed.
 
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
-use mnt_ontology_adapter_postgres::{CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput};
-use mnt_ontology_domain::{BackingKind, ObjectTypeId};
+use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
+use console_ontology_adapter_postgres::{CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput};
+use console_ontology_domain::{BackingKind, ObjectTypeId};
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_authz::cedar_pbac::authoring::Effect;
-use mnt_platform_authz::cedar_pbac::residual::{
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_authz::cedar_pbac::authoring::Effect;
+use console_platform_authz::cedar_pbac::residual::{
     ObjectPolicy, Predicate, PredicateValue, ResidualOp, SqlValue, SubjectAttrs,
 };
 use sqlx::PgPool;
@@ -41,7 +41,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -56,7 +56,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -96,7 +96,7 @@ async fn seed_object_type(
     actor: UserId,
     key: &str,
 ) -> ObjectTypeId {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
         let draft = CreateObjectTypeDraft {
@@ -193,7 +193,7 @@ async fn residual_permit_forbid_and_untranslatable(owner_pool: PgPool) {
     let type_id = seed_object_type(&owner_pool, org, actor, "case.inst").await;
     let at = datetime!(2026-07-09 12:00 UTC);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInstanceStore::new(rt.clone());
         // alice owns two (one flagged), bob owns one.
         store
@@ -297,7 +297,7 @@ async fn residual_cannot_widen_past_the_rls_floor(owner_pool: PgPool) {
     let at = datetime!(2026-07-09 12:00 UTC);
 
     // Both orgs have an alice-owned instance.
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         PgInstanceStore::new(rt.clone())
             .create_instance(
                 actor_a,
@@ -309,7 +309,7 @@ async fn residual_cannot_widen_past_the_rls_floor(owner_pool: PgPool) {
             .unwrap();
     })
     .await;
-    mnt_platform_request_context::scope_org(org_b, async {
+    console_platform_request_context::scope_org(org_b, async {
         PgInstanceStore::new(rt.clone())
             .create_instance(
                 actor_b,
@@ -324,7 +324,7 @@ async fn residual_cannot_widen_past_the_rls_floor(owner_pool: PgPool) {
 
     // (e) Under org-A's GUC, a permit that matches alice everywhere still cannot
     // reveal org-B's row — RLS is the hard floor the residual only narrows.
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         let store = PgInstanceStore::new(rt.clone());
         let alice = subject("alice");
         let a_rows = store

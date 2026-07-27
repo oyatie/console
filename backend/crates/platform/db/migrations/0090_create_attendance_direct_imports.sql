@@ -12,7 +12,7 @@ ALTER TABLE data_import_rows
     ADD CONSTRAINT data_import_rows_id_org_key UNIQUE (id, org_id);
 
 
--- mnt-gate: audited-table attendance_direct_import_events
+-- console-gate: audited-table attendance_direct_import_events
 CREATE TABLE attendance_direct_import_events (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -78,7 +78,7 @@ CREATE TRIGGER trg_attendance_direct_import_events_no_delete
     BEFORE DELETE ON attendance_direct_import_events
     FOR EACH ROW EXECUTE FUNCTION attendance_direct_import_events_append_only();
 
-GRANT SELECT, INSERT ON attendance_direct_import_events TO mnt_rt;
+GRANT SELECT, INSERT ON attendance_direct_import_events TO console_rt;
 -- Keep direct attendance import rows compatible with the platform force-remove
 -- erasure path without weakening append-only behavior for normal runtime access.
 CREATE OR REPLACE FUNCTION data_import_rows_append_only()
@@ -266,4 +266,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION platform_force_remove_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO console_rt;

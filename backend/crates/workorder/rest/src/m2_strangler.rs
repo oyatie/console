@@ -30,20 +30,20 @@
 //! runtime waiting tasks (which would require start/park wiring at earlier lifecycle
 //! steps — a separate charter).
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, OrgId, TraceContext, UserId,
     WorkOrderId,
 };
-use mnt_platform_authz::{AuthorizationAuditEvent, Feature, Principal};
-use mnt_platform_db::{DbError, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_workflow_domain::{RunStatus, TriggerType};
-use mnt_workflow_runtime::idempotency::run_completion_key;
-use mnt_workflow_runtime::{
+use console_platform_authz::{AuthorizationAuditEvent, Feature, Principal};
+use console_platform_db::{DbError, with_org_conn};
+use console_platform_request_context::current_org;
+use console_workflow_domain::{RunStatus, TriggerType};
+use console_workflow_runtime::idempotency::run_completion_key;
+use console_workflow_runtime::{
     AuditContext, NODE_TRANSITION_DOMAIN, NodeKind, NodeSpec, ProcessNodeRequest, StartRunRequest,
     build_guard_request, guard, process_node, start_run, workflow_coexistence_entry,
 };
-use mnt_workflow_runtime_adapter_postgres::{M2_STRANGLER_FLAG, PgWorkflowRuntimeStore};
+use console_workflow_runtime_adapter_postgres::{M2_STRANGLER_FLAG, PgWorkflowRuntimeStore};
 use serde_json::json;
 use sqlx::Row;
 use time::OffsetDateTime;
@@ -364,7 +364,7 @@ pub async fn drive_completion_tail(
 }
 
 /// RECOVERY RECONCILER (design §Strangler crash-safety). One per-tenant pass, run by
-/// the outbox drain worker under `scope_org` as `mnt_rt`.
+/// the outbox drain worker under `scope_org` as `console_rt`.
 ///
 /// The legacy path commits `FINAL_COMPLETED` and only THEN does the REST handler run
 /// the runtime tail across several separate transactions. A crash in between leaves a
@@ -454,7 +454,7 @@ pub async fn reconcile_completion_tails(
 /// path completes the missing steps. A run already `SUCCEEDED` is excluded, so it is
 /// never re-selected (idempotent — re-driving one would be a clean no-op anyway).
 ///
-/// Read as `mnt_rt` under the armed `app.current_org` (via `with_org_conn`), so RLS
+/// Read as `console_rt` under the armed `app.current_org` (via `with_org_conn`), so RLS
 /// scopes both `work_orders` and the `workflow_runs` existence check to this tenant.
 //
 // ponytail: bounded per-tick scan (LIMIT). A dark/enrolled tenant has ~zero of these

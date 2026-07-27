@@ -48,11 +48,11 @@ function fixtureSchemas() {
 
 function fixtureStaging(schemas) {
   const stagingDir = mkdtempSync(join(tmpdir(), "kotlin-union-"));
-  const modelDir = join(stagingDir, "src/main/kotlin/com/maintenance/api/client/model");
+  const modelDir = join(stagingDir, "src/main/kotlin/com/console/api/client/model");
   mkdirSync(modelDir, { recursive: true });
   for (const name of schemas.keys()) {
     if (name.includes("Envelope") || name === "WorkbenchEffectiveScope" || name.startsWith("WorkbenchScope") || name.endsWith("SourceOk") || name.startsWith("Production")) {
-      writeFileSync(join(modelDir, `${name}.kt`), `package com.maintenance.api.client.model\n\n@kotlinx.serialization.Serializable\ndata class ${name} (\n) {\n}\n`);
+      writeFileSync(join(modelDir, `${name}.kt`), `package com.console.api.client.model\n\n@kotlinx.serialization.Serializable\ndata class ${name} (\n) {\n}\n`);
     }
   }
   // This unmapped component is a non-target sentinel: generation must not touch it.
@@ -61,7 +61,7 @@ function fixtureStaging(schemas) {
 }
 
 function digestTree(stagingDir, names) {
-  return createHash("sha256").update(names.map((name) => readFileSync(join(stagingDir, "src/main/kotlin/com/maintenance/api/client/model", `${name}.kt`))).join("\0")).digest("hex");
+  return createHash("sha256").update(names.map((name) => readFileSync(join(stagingDir, "src/main/kotlin/com/console/api/client/model", `${name}.kt`))).join("\0")).digest("hex");
 }
 
 test("strict Workbench union patch renders deterministic parents and patches shared children once", () => {
@@ -78,13 +78,13 @@ test("strict Workbench union patch renders deterministic parents and patches sha
     { unionCount: firstResult.unionCount, variantCount: firstResult.variantCount },
     { unionCount: secondResult.unionCount, variantCount: secondResult.variantCount },
   );
-  const denied = readFileSync(join(first, "src/main/kotlin/com/maintenance/api/client/model/WorkbenchDeniedSourceEnvelope.kt"), "utf8");
+  const denied = readFileSync(join(first, "src/main/kotlin/com/console/api/client/model/WorkbenchDeniedSourceEnvelope.kt"), "utf8");
   assert.match(denied, /:.*WorkbenchActionSourceEnvelope,\n    WorkbenchCalendarSourceEnvelope,\n    WorkbenchTodoSourceEnvelope/s);
-  const parent = readFileSync(join(first, "src/main/kotlin/com/maintenance/api/client/model/WorkbenchActionSourceEnvelope.kt"), "utf8");
+  const parent = readFileSync(join(first, "src/main/kotlin/com/console/api/client/model/WorkbenchActionSourceEnvelope.kt"), "utf8");
   assert.match(parent, /sealed interface WorkbenchActionSourceEnvelope/);
   assert.match(parent, /"ok" -> jsonDecoder\.json\.decodeFromJsonElement\(WorkbenchActionSourceOk\.serializer\(\), element\)/);
   assert.match(parent, /actualDiscriminator != expectedDiscriminator/);
-  assert.equal(readFileSync(join(first, "src/main/kotlin/com/maintenance/api/client/model/EvidenceHoldRequest.kt"), "utf8"), "unmapped inline oneOf remains unchanged\n");
+  assert.equal(readFileSync(join(first, "src/main/kotlin/com/console/api/client/model/EvidenceHoldRequest.kt"), "utf8"), "unmapped inline oneOf remains unchanged\n");
   assert.equal(digestTree(first, [...supportedWorkbenchUnionNames, "WorkbenchActionSourceOk", "WorkbenchTodoSourceOk", "WorkbenchCalendarSourceOk", "WorkbenchDeniedSourceEnvelope", "WorkbenchUnavailableSourceEnvelope", "WorkbenchScopeAll", "WorkbenchScopeBranches", "ProductionDemandIngress", "ProductionCapacityIngress", "ProductionMaterialIngress"]), digestTree(second, [...supportedWorkbenchUnionNames, "WorkbenchActionSourceOk", "WorkbenchTodoSourceOk", "WorkbenchCalendarSourceOk", "WorkbenchDeniedSourceEnvelope", "WorkbenchUnavailableSourceEnvelope", "WorkbenchScopeAll", "WorkbenchScopeBranches", "ProductionDemandIngress", "ProductionCapacityIngress", "ProductionMaterialIngress"]));
 });
 
@@ -118,14 +118,14 @@ test("strict patch fails before write when generated model files or declarations
   const schemas = fixtureSchemas();
   const unions = validateSupportedKotlinDiscriminatorUnions(schemas);
   const staging = fixtureStaging(schemas);
-  const broken = join(staging, "src/main/kotlin/com/maintenance/api/client/model/WorkbenchScopeBranches.kt");
-  writeFileSync(broken, "package com.maintenance.api.client.model\n");
-  const untouchedParent = join(staging, "src/main/kotlin/com/maintenance/api/client/model/WorkbenchActionSourceEnvelope.kt");
+  const broken = join(staging, "src/main/kotlin/com/console/api/client/model/WorkbenchScopeBranches.kt");
+  writeFileSync(broken, "package com.console.api.client.model\n");
+  const untouchedParent = join(staging, "src/main/kotlin/com/console/api/client/model/WorkbenchActionSourceEnvelope.kt");
   const before = readFileSync(untouchedParent, "utf8");
   assert.throws(() => patchGeneratedKotlinMappedUnions({ stagingDir: staging, unions }), /concrete data-class declaration/);
   assert.equal(readFileSync(untouchedParent, "utf8"), before, "validation failure must not partially rewrite parent files");
 
   const missingStaging = fixtureStaging(schemas);
-  rmSync(join(missingStaging, "src/main/kotlin/com/maintenance/api/client/model/WorkbenchScopeBranches.kt"));
+  rmSync(join(missingStaging, "src/main/kotlin/com/console/api/client/model/WorkbenchScopeBranches.kt"));
   assert.throws(() => patchGeneratedKotlinMappedUnions({ stagingDir: missingStaging, unions }), /generated child WorkbenchScopeBranches is missing/);
 });

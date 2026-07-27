@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + recipient-isolation gate for the statutory-notice vault.
 //!
-//! Proven as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the `#[sqlx::test]` BYPASSRLS superuser pool,
 //! which sees every row and would green-light a broken recipient filter. There
 //! is no per-person GUC, so recipient scoping is enforced in application code.
@@ -11,13 +11,13 @@
 //! legal notice never discloses its body before receipt; reading it does not
 //! auto-confirm; and a double-confirm is idempotent.
 
-use mnt_inbox_adapter_postgres::PgInboxStore;
-use mnt_inbox_application::{
+use console_inbox_adapter_postgres::PgInboxStore;
+use console_inbox_application::{
     ConfirmReceiptCommand, EmitInboxDocCommand, GetInboxDocQuery, InboxDocFilter,
     ListInboxDocsQuery,
 };
-use mnt_inbox_domain::{InboxDocKind, NewInboxDoc};
-use mnt_kernel_core::{ErrorKind, InboxDocId, OrgId, TraceContext, UserId};
+use console_inbox_domain::{InboxDocKind, NewInboxDoc};
+use console_kernel_core::{ErrorKind, InboxDocId, OrgId, TraceContext, UserId};
 use serde_json::json;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -28,10 +28,10 @@ const OTHER_ORG: Uuid = Uuid::from_u128(0x7202_7202_7202_7202_7202_7202_7202_720
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON inbox_docs TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON inbox_docs TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -40,7 +40,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -134,7 +134,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     let store = PgInboxStore::new(rt_pool.clone());
 
     // Deliver a legal notice to A.
-    let doc = mnt_platform_request_context::scope_org(knl, async {
+    let doc = console_platform_request_context::scope_org(knl, async {
         store.emit_inbox_doc(legal_notice_to(user_a, None)).await
     })
     .await
@@ -144,7 +144,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
 
     // (a) LOCK-BEFORE-CONFIRM: A reads the locked doc — metadata yes, body no,
     //     and reading does NOT auto-confirm.
-    let locked_view = mnt_platform_request_context::scope_org(knl, async {
+    let locked_view = console_platform_request_context::scope_org(knl, async {
         store
             .get(GetInboxDocQuery {
                 recipient: user_a,
@@ -165,7 +165,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     );
 
     // (b) CROSS-USER READ: B cannot read A's doc — NotFound, invisibly.
-    let cross_read = mnt_platform_request_context::scope_org(knl, async {
+    let cross_read = console_platform_request_context::scope_org(knl, async {
         store
             .get(GetInboxDocQuery {
                 recipient: user_b,
@@ -181,7 +181,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     );
 
     // (c) CROSS-USER CONFIRM: B cannot confirm A's receipt — NotFound.
-    let cross_confirm = mnt_platform_request_context::scope_org(knl, async {
+    let cross_confirm = console_platform_request_context::scope_org(knl, async {
         store.confirm_receipt(confirm(user_b, doc.id)).await
     })
     .await;
@@ -194,7 +194,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     );
 
     // A's doc is still unconfirmed after the failed cross-user confirm.
-    let still_locked = mnt_platform_request_context::scope_org(knl, async {
+    let still_locked = console_platform_request_context::scope_org(knl, async {
         store
             .get(GetInboxDocQuery {
                 recipient: user_a,
@@ -207,7 +207,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     assert!(still_locked.summary.locked, "A's doc stays locked");
 
     // (d) A confirms its own receipt -> unlocked, stamped by A.
-    let confirmed = mnt_platform_request_context::scope_org(knl, async {
+    let confirmed = console_platform_request_context::scope_org(knl, async {
         store.confirm_receipt(confirm(user_a, doc.id)).await
     })
     .await
@@ -217,7 +217,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     assert!(confirmed.confirmed_at.is_some());
 
     // After confirm, the body is disclosed.
-    let unlocked_view = mnt_platform_request_context::scope_org(knl, async {
+    let unlocked_view = console_platform_request_context::scope_org(knl, async {
         store
             .get(GetInboxDocQuery {
                 recipient: user_a,
@@ -234,7 +234,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
 
     // (e) DOUBLE-CONFIRM is idempotent: same stamp, and only ONE receipt audit
     //     event exists.
-    let again = mnt_platform_request_context::scope_org(knl, async {
+    let again = console_platform_request_context::scope_org(knl, async {
         store.confirm_receipt(confirm(user_a, doc.id)).await
     })
     .await
@@ -257,7 +257,7 @@ async fn legal_notice_lock_confirm_and_cross_user_isolation(owner_pool: PgPool) 
     );
 
     // (f) CROSS-TENANT: under another org's GUC, A's doc is invisible (RLS).
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store
             .list(ListInboxDocsQuery {
                 recipient: user_a,
@@ -282,7 +282,7 @@ async fn payslip_is_frictionless_and_never_receipt_confirmed(owner_pool: PgPool)
     let user = seed_user(&owner_pool, *knl.as_uuid(), "Payee").await;
     let store = PgInboxStore::new(rt_pool.clone());
 
-    let pay = mnt_platform_request_context::scope_org(knl, async {
+    let pay = console_platform_request_context::scope_org(knl, async {
         store.emit_inbox_doc(payslip_to(user)).await
     })
     .await
@@ -293,7 +293,7 @@ async fn payslip_is_frictionless_and_never_receipt_confirmed(owner_pool: PgPool)
     );
 
     // Self-view discloses the body immediately, no confirmation gate.
-    let view = mnt_platform_request_context::scope_org(knl, async {
+    let view = console_platform_request_context::scope_org(knl, async {
         store
             .get(GetInboxDocQuery {
                 recipient: user,
@@ -309,7 +309,7 @@ async fn payslip_is_frictionless_and_never_receipt_confirmed(owner_pool: PgPool)
     );
 
     // A payslip cannot be receipt-confirmed.
-    let rejected = mnt_platform_request_context::scope_org(knl, async {
+    let rejected = console_platform_request_context::scope_org(knl, async {
         store.confirm_receipt(confirm(user, pay.id)).await
     })
     .await;
@@ -329,12 +329,12 @@ async fn filters_and_dedup_idempotency(owner_pool: PgPool) {
     let user = seed_user(&owner_pool, *knl.as_uuid(), "Filterer").await;
     let store = PgInboxStore::new(rt_pool.clone());
 
-    let legal = mnt_platform_request_context::scope_org(knl, async {
+    let legal = console_platform_request_context::scope_org(knl, async {
         store.emit_inbox_doc(legal_notice_to(user, None)).await
     })
     .await
     .expect("emit legal");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_inbox_doc(payslip_to(user)).await
     })
     .await
@@ -343,7 +343,7 @@ async fn filters_and_dedup_idempotency(owner_pool: PgPool) {
     let list = |filter: InboxDocFilter| {
         let store = store.clone();
         async move {
-            mnt_platform_request_context::scope_org(knl, async move {
+            console_platform_request_context::scope_org(knl, async move {
                 store
                     .list(ListInboxDocsQuery {
                         recipient: user,
@@ -370,7 +370,7 @@ async fn filters_and_dedup_idempotency(owner_pool: PgPool) {
     assert_eq!(list(InboxDocFilter::All).await.items.len(), 2);
 
     // Confirm the legal notice -> it leaves 확인 필요 and enters 완료.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.confirm_receipt(confirm(user, legal.id)).await
     })
     .await
@@ -379,14 +379,14 @@ async fn filters_and_dedup_idempotency(owner_pool: PgPool) {
     assert_eq!(list(InboxDocFilter::Done).await.items.len(), 1);
 
     // Dedup: two emits with the same key produce ONE row.
-    let first = mnt_platform_request_context::scope_org(knl, async {
+    let first = console_platform_request_context::scope_org(knl, async {
         store
             .emit_inbox_doc(legal_notice_to(user, Some("promote-run-1")))
             .await
     })
     .await
     .expect("first dedup emit");
-    let second = mnt_platform_request_context::scope_org(knl, async {
+    let second = console_platform_request_context::scope_org(knl, async {
         store
             .emit_inbox_doc(legal_notice_to(user, Some("promote-run-1")))
             .await

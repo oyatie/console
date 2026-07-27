@@ -12,13 +12,13 @@
 pub mod instances;
 pub mod seed;
 
-use mnt_kernel_core::{KernelError, TraceContext, UserId};
-use mnt_ontology_domain::{
+use console_kernel_core::{KernelError, TraceContext, UserId};
+use console_ontology_domain::{
     ActionDispatch, ActionTypeId, AnalyticId, BackingKind, FieldKind, LinkCardinality, LinkTypeId,
     ObjectTypeId, PropertyDefId, SchemaLifecycleState,
 };
-use mnt_platform_db::{DbError, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_org_conn};
+use console_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use std::collections::HashSet;
@@ -331,7 +331,7 @@ pub struct PgOntologyStore {
 
 impl PgOntologyStore {
     /// Construct a read-only ontology store. Every mutation fails closed until
-    /// an isolated `mnt_ontology_cmd` pool is explicitly attached.
+    /// an isolated `console_ontology_cmd` pool is explicitly attached.
     #[must_use]
     pub fn new(pool: PgPool) -> Self {
         Self {
@@ -341,7 +341,7 @@ impl PgOntologyStore {
     }
 
     /// Production constructor: reads use the general RLS runtime pool, while all
-    /// object-type mutations use the execute-only `mnt_ontology_cmd` credential.
+    /// object-type mutations use the execute-only `console_ontology_cmd` credential.
     #[must_use]
     pub fn new_with_command_pool(pool: PgPool, command_pool: PgPool) -> Self {
         Self {
@@ -506,7 +506,7 @@ impl PgOntologyStore {
 
     /// Advance one object-type version along the database-owned lifecycle FSM.
     /// The legacy boolean is ignored: draft publication is never available to
-    /// mnt_rt; publication consumes target-bound four-eyes evidence atomically.
+    /// console_rt; publication consumes target-bound four-eyes evidence atomically.
     #[allow(clippy::too_many_arguments)]
     pub async fn transition_lifecycle(
         &self,
@@ -1209,7 +1209,7 @@ fn validate_draft(draft: &CreateObjectTypeDraft) -> Result<(), PgOntologyError> 
 #[cfg(test)]
 mod tests {
     use super::ontology_database_kernel_error;
-    use mnt_kernel_core::ErrorKind;
+    use console_kernel_core::ErrorKind;
 
     #[test]
     fn ontology_database_markers_map_only_by_exact_code_and_message() {

@@ -3,7 +3,7 @@
 **Lane** `hf-leave-promotion` · **Worktree** `hf-leave-promotion-20260725` · **Date** 2026-07-25
 
 **Status: COMPLETE.** Statutory logic implemented and red-proofed (§4.2); the runtime-role
-test runs as `mnt_rt` and is green (§4.1); `fmt` and `clippy -D warnings` clean. 58 of 59
+test runs as `console_rt` and is green (§4.1); `fmt` and `clippy -D warnings` clean. 58 of 59
 lane tests green — the single red is pre-existing on the base branch and belongs to
 migration `0183` (§4.3). Wire/migration/web collision roots are specified as manifests, not
 edited (§5).
@@ -267,12 +267,12 @@ is supplied from the environment and appears in no committed file.
 
 | Suite | Count | Result |
 |---|---|---|
-| `mnt-leave-domain` (13 new §61 boundary tests + 7 pre-existing) | 20 | green |
-| `mnt-leave-adapter-postgres` unit (5 new notice-content tests + 2 pre-existing) | 7 | green |
-| `mnt-leave-rest` unit | 8 | green |
-| `mnt-leave-rest` `leave_http_personas` (DB) | 2 | green |
-| `mnt-leave-adapter-postgres` `leave_migration_expand_contract` (DB) | 9 | green |
-| `mnt-leave-adapter-postgres` `leave_rls_surfaces_as_runtime_role` (DB, as `mnt_rt`) | 13 | 12 green, 1 pre-existing red |
+| `console-leave-domain` (13 new §61 boundary tests + 7 pre-existing) | 20 | green |
+| `console-leave-adapter-postgres` unit (5 new notice-content tests + 2 pre-existing) | 7 | green |
+| `console-leave-rest` unit | 8 | green |
+| `console-leave-rest` `leave_http_personas` (DB) | 2 | green |
+| `console-leave-adapter-postgres` `leave_migration_expand_contract` (DB) | 9 | green |
+| `console-leave-adapter-postgres` `leave_rls_surfaces_as_runtime_role` (DB, as `console_rt`) | 13 | 12 green, 1 pre-existing red |
 
 Boundary coverage — each is a distinct off-by-one the old code accepted:
 
@@ -296,7 +296,7 @@ crates.
 `statutory_push_target_binding_is_enforced_as_runtime_role` in
 `backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs`
 **both pass.** They drive the whole procedure through `PgLeaveStore` as the genuine
-`mnt_rt` runtime role — `NOBYPASSRLS`, `FORCE RLS`, `app.current_org` armed — across
+`console_rt` runtime role — `NOBYPASSRLS`, `FORCE RLS`, `app.current_org` armed — across
 simulated §61 dates, asserting every window, the ordering gates, the notice payloads, the
 cross-period fail-closed 409 and the missing-roster-figure 409. The `#[sqlx::test]`
 superuser is the harness bootstrapper only; it seeds and it backdates, it never asserts.
@@ -304,7 +304,7 @@ superuser is the harness bootstrapper only; it seeds and it backdates, it never 
 The first execution failed, and usefully: it caught the `13.000000` scale defect (§1.4)
 that every hand-written fixture had hidden, then a second failure exposed a fixture of my
 own reaching around `trg_employees_leave_command_only` with a bare `UPDATE`. The fixture
-now drops to `mnt_leave_definer` — the sole role the trigger exempts — the same way
+now drops to `console_leave_definer` — the sole role the trigger exempts — the same way
 `seed_employee` does, so the guard is honoured rather than bypassed.
 
 ### 4.2 Red-proof — the tests fail when the fix is removed
@@ -340,19 +340,19 @@ entrypoints and no helpers"* — and it now sees eight:
 
 Both arrive from `crates/platform/db/migrations/0183_leave_api_create_employee.sql`, which
 landed without updating the matrix. `create_employee` is a deliberate new entrypoint,
-correctly `REVOKE ALL … FROM PUBLIC, mnt_rt` then granted to `mnt_leave_cmd` (line 229).
+correctly `REVOKE ALL … FROM PUBLIC, console_rt` then granted to `console_leave_cmd` (line 229).
 `assert_employee_directory_manager` (line 61) is **not** an entrypoint — it is the internal
 authorization assertion `create_employee` calls via `PERFORM` — and it is
 `SECURITY DEFINER` with **no `REVOKE` at all**, so it keeps PostgreSQL's default
 `EXECUTE TO PUBLIC`, unlike every sibling function in the same file.
 
-Severity is **low, not nil**: only `mnt_leave_cmd` holds `USAGE ON SCHEMA leave_api`
+Severity is **low, not nil**: only `console_leave_cmd` holds `USAGE ON SCHEMA leave_api`
 (granted in 0166), and that role may already call `create_employee`, so there is no
-privilege gain and no reach from `mnt_rt`. What is real is that a `SECURITY DEFINER` authz
+privilege gain and no reach from `console_rt`. What is real is that a `SECURITY DEFINER` authz
 predicate over `users` / `user_role_assignments` / `policy_roles` is directly callable with
 an arbitrary `p_org_id`, and the deny-by-default tripwire designed to catch exactly that is
 currently red on the spine. Correct resolution is the missing
-`REVOKE ALL ON FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) FROM PUBLIC, mnt_rt;`
+`REVOKE ALL ON FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) FROM PUBLIC, console_rt;`
 in a new numbered migration — restoring the invariant without widening the allowlist.
 **Not fixed here:** it is another lane's migration, `0183` is already applied so it cannot
 be edited in place, and migration numbers collide across concurrent lanes. Owner of the
@@ -367,7 +367,7 @@ evidence of a code defect.
 
 ### 4.4 Infrastructure — resolved
 
-The disk exhaustion that parked this test (`mnt-dev-postgres-1` crash-looping on
+The disk exhaustion that parked this test (`console-dev-postgres-1` crash-looping on
 `FATAL: could not write lock file "postmaster.pid": No space left on device`, 707 Docker
 volumes / 187.7 GB, 84.9 GB reclaimable from 676 anonymous dangling volumes) was reclaimed
 by the coordinator: **707 → 35 volumes, 187.7 GB → 135 GB**, container healthy. The

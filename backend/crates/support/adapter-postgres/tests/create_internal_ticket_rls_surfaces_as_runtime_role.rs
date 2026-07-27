@@ -7,34 +7,34 @@
 //! `ensure_active_user_in_branch` and (2) INSERTs the ticket. Under FORCE RLS the
 //! membership SELECT is filtered and the INSERT's `WITH CHECK` is evaluated
 //! against the GUC — so if the audit event is NOT armed with `.with_org(org)`,
-//! BOTH the membership lookup and the insert fail closed as the real `mnt_rt`
+//! BOTH the membership lookup and the insert fail closed as the real `console_rt`
 //! runtime role. The existing `support_tickets.rs` tests use the default
 //! `#[sqlx::test]` BYPASSRLS superuser pool, which masks that gap entirely.
 //!
-//! This test exercises the create as the genuine non-owner runtime role `mnt_rt`
+//! This test exercises the create as the genuine non-owner runtime role `console_rt`
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the
 //! tenant policy. It asserts, with two tenants A (KNL) and B:
 //!   * under A's armed GUC, `create_internal_ticket` SUCCEEDS and the row is
 //!     org-scoped to A (visible to A, invisible to B);
 //!   * cross-tenant isolation: under B's GUC, A's created ticket is NOT FOUND;
-//!   * fail-closed: a raw `mnt_rt` INSERT into `support_tickets` with NO GUC
+//!   * fail-closed: a raw `console_rt` INSERT into `support_tickets` with NO GUC
 //!     armed is rejected by the `org_isolation` WITH CHECK policy — proving the
 //!     create only succeeds because `with_audit` arms `app.current_org`.
 
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_support_application::{CommentAudience, CreateInternalTicketCommand, ListTicketsQuery};
-use mnt_support_domain::{TicketCategory, TicketOrigin, TicketPriority};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
+use console_support_adapter_postgres::PgSupportStore;
+use console_support_application::{CommentAudience, CreateInternalTicketCommand, ListTicketsQuery};
+use console_support_domain::{TicketCategory, TicketOrigin, TicketPriority};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x4444_4444_4444_4444_4444_4444_4444_4444);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -42,7 +42,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -128,7 +128,7 @@ async fn seed_user(owner_pool: &PgPool, org: Uuid, branch: Uuid, display_name: &
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_pool: PgPool) {
+async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_console_rt(owner_pool: PgPool) {
     let org_a = OrgId::knl();
     let org_a_uuid = *org_a.as_uuid();
     let org_b = OrgId::from_uuid(ORG_B);
@@ -163,7 +163,7 @@ async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_
                     occurred_at: now,
                 })
                 .await
-                .expect("create_internal_ticket must succeed as mnt_rt with armed GUC")
+                .expect("create_internal_ticket must succeed as console_rt with armed GUC")
         })
         .await;
     assert_eq!(created.origin, TicketOrigin::Internal);
@@ -222,7 +222,7 @@ async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_
         })
         .await;
 
-    // Fail-closed proof: a raw mnt_rt INSERT into support_tickets with NO GUC
+    // Fail-closed proof: a raw console_rt INSERT into support_tickets with NO GUC
     // armed is rejected by the org_isolation WITH CHECK policy. This is exactly
     // the path create_internal_ticket would hit if `.with_org(org)` were dropped.
     let unarmed_insert = sqlx::query(
@@ -246,6 +246,6 @@ async fn create_internal_ticket_arms_org_and_is_tenant_isolated_as_mnt_rt(owner_
     .await;
     assert!(
         unarmed_insert.is_err(),
-        "mnt_rt INSERT without an armed app.current_org must be rejected by FORCE RLS WITH CHECK"
+        "console_rt INSERT without an armed app.current_org must be rejected by FORCE RLS WITH CHECK"
     );
 }

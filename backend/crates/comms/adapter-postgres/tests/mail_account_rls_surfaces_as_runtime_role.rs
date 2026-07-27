@@ -3,7 +3,7 @@
 //!
 //! Mirrors `region_branch_crud_rls_surfaces_as_runtime_role.rs`: we SEED as the
 //! owner (raw inserts, row_security off) and MUTATE/READ as the genuine non-owner
-//! runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
+//! runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
 //! faithful exercise of the `org_isolation` policy. The default `#[sqlx::test]`
 //! pool is a BYPASSRLS superuser and would green-light a broken/leaking path.
 //!
@@ -14,23 +14,23 @@
 //!   * get_account under A returns the mailbox, and its write-only view carries
 //!     NO password field (only `has_*_password` booleans);
 //!   * cross-tenant isolation: under B's armed GUC, A's mailbox is INVISIBLE
-//!     (get_account returns None) as `mnt_rt`;
+//!     (get_account returns None) as `console_rt`;
 //!   * FAIL-CLOSED: with no GUC armed, get_account returns None / errors, never
 //!     A's row;
 //!   * persist_outbound writes a direction=OUT message + thread + SENT folder
 //!     and an `email.send` audit row, all org-scoped.
 
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_application::{
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_application::{
     AccountUpsert, EmailAccountId, EmailMessageId, MailStore, OutboundRecord, SendKind,
     account_config_audit_event, send_audit_event,
 };
-use mnt_comms_credential_cipher::{
+use console_comms_credential_cipher::{
     Aad, CredentialCipher, EnvelopeCredentialCipher, SealedCredential,
 };
-use mnt_comms_domain::{MailSecurity, MessageAddress};
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_comms_domain::{MailSecurity, MessageAddress};
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -52,7 +52,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -207,7 +207,7 @@ async fn upsert_and_get_account_as_runtime_role_persist_ciphertext_only(owner_po
     let stored = CURRENT_ORG
         .scope(org, store.upsert_account(upsert, audit))
         .await
-        .expect("upsert_account must succeed as mnt_rt under the armed GUC");
+        .expect("upsert_account must succeed as console_rt under the armed GUC");
     assert_eq!(stored.id, account_id);
 
     // Audited.
@@ -234,7 +234,7 @@ async fn upsert_and_get_account_as_runtime_role_persist_ciphertext_only(owner_po
     let view = CURRENT_ORG
         .scope(org, store.get_account())
         .await
-        .expect("get_account as mnt_rt")
+        .expect("get_account as console_rt")
         .expect("the configured mailbox is visible under its own org");
     let json = serde_json::to_string(&view.to_view()).unwrap();
     assert!(!json.contains("smtp-secret"));
@@ -260,7 +260,7 @@ async fn upsert_and_get_account_as_runtime_role_persist_ciphertext_only(owner_po
 }
 
 // ===========================================================================
-// Cross-tenant isolation: B's GUC cannot see A's mailbox as mnt_rt.
+// Cross-tenant isolation: B's GUC cannot see A's mailbox as console_rt.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn account_is_invisible_to_another_org_as_runtime_role(owner_pool: PgPool) {
@@ -293,7 +293,7 @@ async fn account_is_invisible_to_another_org_as_runtime_role(owner_pool: PgPool)
     let seen_by_b = CURRENT_ORG
         .scope(org_b, store.get_account())
         .await
-        .expect("get_account as mnt_rt under B");
+        .expect("get_account as console_rt under B");
     assert!(seen_by_b.is_none(), "B must never see A's mailbox");
 
     // FAIL-CLOSED: with no GUC armed at all, the read returns nothing/errors.
@@ -364,7 +364,7 @@ async fn persist_outbound_writes_direction_out_and_audits(owner_pool: PgPool) {
     CURRENT_ORG
         .scope(org, store.persist_outbound(record, send_audit))
         .await
-        .expect("persist_outbound as mnt_rt under the armed GUC");
+        .expect("persist_outbound as console_rt under the armed GUC");
 
     // The message landed as direction=OUT under the org.
     let mut tx = owner_pool.begin().await.unwrap();

@@ -6,7 +6,7 @@
 -- clean-room Rust runtime substrate for no-code corporate workflows while
 -- keeping every run tenant-scoped, idempotent, auditable, and replay-safe.
 
--- mnt-gate: audited-table workflow_runs
+-- console-gate: audited-table workflow_runs
 CREATE TABLE workflow_runs (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -47,7 +47,7 @@ CREATE INDEX idx_workflow_runs_object
     ON workflow_runs (org_id, object_type, object_id, started_at DESC)
     WHERE object_type IS NOT NULL;
 
--- mnt-gate: audited-table workflow_node_runs
+-- console-gate: audited-table workflow_node_runs
 CREATE TABLE workflow_node_runs (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -75,7 +75,7 @@ CREATE INDEX idx_workflow_node_runs_run
 CREATE INDEX idx_workflow_node_runs_status
     ON workflow_node_runs (org_id, status, updated_at DESC);
 
--- mnt-gate: audited-table workflow_waiting_tasks
+-- console-gate: audited-table workflow_waiting_tasks
 CREATE TABLE workflow_waiting_tasks (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -123,7 +123,7 @@ CREATE INDEX idx_workflow_waiting_tasks_source_object
     ON workflow_waiting_tasks (org_id, source_object_type, source_object_id)
     WHERE source_object_type IS NOT NULL;
 
--- mnt-gate: audited-table workflow_outbox_events
+-- console-gate: audited-table workflow_outbox_events
 CREATE TABLE workflow_outbox_events (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -160,7 +160,7 @@ CREATE INDEX idx_workflow_outbox_events_run
 CREATE INDEX idx_workflow_outbox_events_channel
     ON workflow_outbox_events (org_id, channel, status, created_at DESC);
 
--- mnt-gate: audited-table workflow_execution_locks
+-- console-gate: audited-table workflow_execution_locks
 CREATE TABLE workflow_execution_locks (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -227,11 +227,11 @@ CREATE POLICY org_isolation ON workflow_execution_locks
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON workflow_runs TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON workflow_node_runs TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON workflow_waiting_tasks TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON workflow_outbox_events TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON workflow_execution_locks TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_runs TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_node_runs TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_waiting_tasks TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_outbox_events TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_execution_locks TO console_rt;
 
 CREATE TRIGGER trg_workflow_runs_org_immutable
     BEFORE UPDATE ON workflow_runs

@@ -31,21 +31,21 @@ while True:
 }
 
 async function createMarkerApp(directory, marker) {
-  const app = path.join(directory, "mnt-app-marker");
+  const app = path.join(directory, "console-app-marker");
   await writeFile(app, `#!/usr/bin/env sh\ntouch "${marker}"\n`, "utf8");
   await chmod(app, 0o700);
   return app;
 }
 
 async function createReadyMarkerApp(directory) {
-  const app = path.join(directory, "mnt-app-ready-marker");
+  const app = path.join(directory, "console-app-ready-marker");
   await writeFile(app, `#!/usr/bin/env sh
-touch "\${MNT_MARKER:?MNT_MARKER must be set}"
+touch "\${CONSOLE_MARKER:?CONSOLE_MARKER must be set}"
 exec python3 -u -c '
 import os
 import socket
 
-host, _, port = os.environ["MNT_HTTP_ADDR"].rpartition(":")
+host, _, port = os.environ["CONSOLE_HTTP_ADDR"].rpartition(":")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((host, int(port)))
@@ -146,7 +146,7 @@ test("fail conflict mode refuses an already-owned loopback port without killing 
     E2E_AUTH_DIR: path.join(directory, "auth"),
     E2E_HTTP_ADDR: `127.0.0.1:${port}`,
     E2E_PORT_CONFLICT_MODE: "fail",
-    MNT_APP_BIN: await createMarkerApp(directory, marker),
+    CONSOLE_APP_BIN: await createMarkerApp(directory, marker),
   });
 
   assert.notEqual(result.status, 0, result.stdout + result.stderr);
@@ -164,7 +164,7 @@ test("unknown port conflict modes fail before backend startup", async (t) => {
     E2E_AUTH_DIR: path.join(directory, "auth"),
     E2E_HTTP_ADDR: `127.0.0.1:${await reserveThenReleaseLoopbackPort()}`,
     E2E_PORT_CONFLICT_MODE: "unexpected",
-    MNT_APP_BIN: await createMarkerApp(directory, marker),
+    CONSOLE_APP_BIN: await createMarkerApp(directory, marker),
   });
 
   assert.notEqual(result.status, 0, result.stdout + result.stderr);
@@ -195,8 +195,8 @@ test("reclaim conflict mode kills a stale loopback listener and boots the marker
     E2E_AUTH_DIR: path.join(directory, "auth"),
     E2E_HTTP_ADDR: `127.0.0.1:${port}`,
     E2E_PORT_CONFLICT_MODE: "reclaim",
-    MNT_APP_BIN: await createReadyMarkerApp(directory),
-    MNT_MARKER: marker,
+    CONSOLE_APP_BIN: await createReadyMarkerApp(directory),
+    CONSOLE_MARKER: marker,
     PATH: `${lsofDirectory}:${process.env.PATH}`,
   });
 

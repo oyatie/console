@@ -3,7 +3,7 @@
 //! Given a typed [`NodeSpec`] and the node's input payload, decide the node's
 //! outcome — succeed (optionally emitting transactional-outbox side effects),
 //! park on a waiting task, or fail. No I/O: the [`engine`](crate::engine) turns the
-//! outcome into an atomic [`mnt_workflow_domain::NodeStepCommit`].
+//! outcome into an atomic [`console_workflow_domain::NodeStepCommit`].
 //!
 //! The typed model mirrors the completion→approval→payroll template (design
 //! §template): `object_gate`/`object_mutation` pass through, `human_task` parks on
@@ -13,9 +13,9 @@
 
 use std::str::FromStr;
 
-use mnt_kernel_core::{AuditAction, KernelError};
-use mnt_platform_authz::Feature;
-use mnt_workflow_domain::{NewWaitingTask, NodeStatus, OutboxChannel, OutboxEmission};
+use console_kernel_core::{AuditAction, KernelError};
+use console_platform_authz::Feature;
+use console_workflow_domain::{NewWaitingTask, NodeStatus, OutboxChannel, OutboxEmission};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use uuid::Uuid;

@@ -1,0 +1,71 @@
+package com.console.app.ui
+
+import androidx.annotation.StringRes
+import com.console.api.client.model.MessengerThreadKind
+import com.console.api.client.model.LocationConsentState
+import com.console.api.client.model.PriorityLevel
+import com.console.api.client.model.WorkOrderStatus
+import com.console.api.client.model.WorkResultType
+import com.console.app.R
+import com.console.app.data.offline.SyncState
+
+@StringRes
+fun PriorityLevel.labelRes(): Int = when (this) {
+    PriorityLevel.P1 -> R.string.priority_p1
+    PriorityLevel.P2 -> R.string.priority_p2
+    PriorityLevel.P3 -> R.string.priority_p3
+    PriorityLevel.OUTSOURCE -> R.string.priority_outsource
+    PriorityLevel.UNSET -> R.string.priority_unset
+}
+
+@StringRes
+fun WorkOrderStatus.labelRes(): Int = when (this) {
+    WorkOrderStatus.ASSIGNED -> R.string.status_assigned
+    WorkOrderStatus.IN_PROGRESS -> R.string.status_in_progress
+    WorkOrderStatus.REPORT_SUBMITTED -> R.string.status_report_submitted
+    WorkOrderStatus.FINAL_COMPLETED -> R.string.status_final_completed
+    WorkOrderStatus.REJECTED -> R.string.status_rejected
+    WorkOrderStatus.ON_HOLD -> R.string.status_on_hold
+    WorkOrderStatus.DELAYED -> R.string.status_delayed
+    WorkOrderStatus.TEMPORARY_ACTION -> R.string.status_temporary_action
+    WorkOrderStatus.PART_WAITING -> R.string.status_part_waiting
+    WorkOrderStatus.EQUIPMENT_IN_USE -> R.string.status_equipment_in_use
+    WorkOrderStatus.REVISIT_REQUIRED -> R.string.status_revisit_required
+    WorkOrderStatus.ARCHIVED -> R.string.status_archived
+    WorkOrderStatus.CANCELLED -> R.string.status_cancelled
+    WorkOrderStatus.RECEIVED -> R.string.status_received
+    WorkOrderStatus.UNASSIGNED -> R.string.status_unassigned
+    WorkOrderStatus.ADMIN_REVIEW -> R.string.status_admin_review
+}
+
+@StringRes
+fun SyncState.labelRes(): Int = when (this) {
+    SyncState.SYNCED -> R.string.sync_synced
+    SyncState.PENDING -> R.string.sync_pending
+    SyncState.FAILED -> R.string.sync_failed
+}
+
+@StringRes
+fun LocationConsentState.labelRes(): Int = when (this) {
+    LocationConsentState.NO_RECORD -> R.string.location_consent_state_no_record
+    LocationConsentState.GRANTED -> R.string.location_consent_state_granted
+    LocationConsentState.SUSPENDED -> R.string.location_consent_state_suspended
+    LocationConsentState.WITHDRAWN -> R.string.location_consent_state_withdrawn
+}
+
+@StringRes
+fun WorkResultType.labelRes(): Int = when (this) {
+    WorkResultType.COMPLETED -> R.string.result_completed
+    WorkResultType.TEMPORARY_ACTION -> R.string.result_temporary_action
+    WorkResultType.INCOMPLETE -> R.string.result_incomplete
+    WorkResultType.REVISIT_REQUIRED -> R.string.result_revisit_required
+    WorkResultType.UNKNOWN -> R.string.result_unknown
+}
+
+@StringRes
+fun MessengerThreadKind.labelRes(): Int = when (this) {
+    MessengerThreadKind.WORK_ORDER -> R.string.messenger_kind_work_order
+    MessengerThreadKind.TEAM -> R.string.messenger_kind_team
+    MessengerThreadKind.DM -> R.string.messenger_kind_dm
+    MessengerThreadKind.GROUP -> R.string.messenger_kind_group
+}

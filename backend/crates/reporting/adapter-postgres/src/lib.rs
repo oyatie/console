@@ -3,29 +3,29 @@
 
 use std::io::Cursor;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, KernelError, RegionId, Timestamp, TraceContext,
     UserId,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_excel::{
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_excel::{
     CellWrite, DAILY_STATUS_TEMPLATE, DailyStatusSection, SectionFill, TemplateRow,
     fill_template_bytes, umya_spreadsheet,
 };
-use mnt_platform_request_context::current_org;
-use mnt_reporting_application::{
+use console_platform_request_context::current_org;
+use console_reporting_application::{
     ExportedWorkbook, KpiExportQuery, KpiQuery, KpiQueryError, KpiQueryPort, OpsSummaryPort,
     OpsSummaryQuery, ReportingExportError, ReportingExportPort, ReportingExportQuery,
     WorkDiaryConfirmCommand, WorkDiaryDraftPort, WorkDiaryQuery, WorkDiaryUpdateCommand,
 };
-use mnt_reporting_domain::{
+use console_reporting_domain::{
     DailyStatusReport, DailyStatusRow, ExportSourceNote, KPI_EXPORT_HEADERS, KpiInputRecord,
     KpiInspectionRecord, KpiMetric, KpiP1Record, KpiPriorityLevel, KpiReport, KpiRollupScope,
     KpiScope, KpiWorkOrderStatus, KpiWorkResultType, OpsEquipmentStatus, OpsFunnel,
     OpsMechanicLoad, OpsSummary, PeriodicInspectionRow, UnavailableMetric, WorkDiaryActionEntry,
     WorkDiaryBody, WorkDiaryDraft, WorkDiaryStatus, calculate_kpi_report, kpi_export_rows,
 };
-use mnt_workorder_domain::{PriorityLevel, WorkOrderStatus, WorkResultType};
+use console_workorder_domain::{PriorityLevel, WorkOrderStatus, WorkResultType};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
 use time::{Date, Duration, OffsetDateTime, Time};
 
@@ -527,7 +527,7 @@ impl PgKpiRepository {
             })
             .collect();
         // Audited exactly like the sibling daily-status / work-diary exports:
-        // one excel_export_logs row + one audit_events row, under RLS as mnt_rt.
+        // one excel_export_logs row + one audit_events row, under RLS as console_rt.
         self.record_export_log(ExportLogCommand {
             export_kind: "kpi",
             action: "export.kpi",

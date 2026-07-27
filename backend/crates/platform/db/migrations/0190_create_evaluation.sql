@@ -164,9 +164,9 @@ CREATE TRIGGER trg_evaluation_reviews_org_immutable   BEFORE UPDATE ON evaluatio
 
 -- No DELETE on lifecycle objects (archive-not-delete); goals and evidence
 -- links are replace-set editable while their parent is still mutable.
-GRANT SELECT, INSERT, UPDATE         ON evaluation_cycles         TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_subjects       TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_goals          TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_reviews        TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_evidence_links TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_code_counters  TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_cycles         TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_subjects       TO console_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_goals          TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_reviews        TO console_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_evidence_links TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_code_counters  TO console_rt;

@@ -2,7 +2,7 @@
 //! RUNTIME RLS gate for the four 0186 lifecycle tables
 //! (`payroll_line_calculations`, `payroll_run_exceptions`,
 //! `payroll_disbursements`, `payroll_payslip_deliveries`), proven as the
-//! genuine non-owner `mnt_rt` role — never the BYPASSRLS superuser pool.
+//! genuine non-owner `console_rt` role — never the BYPASSRLS superuser pool.
 //!
 //! What this proves:
 //!  * every lifecycle read (exceptions page, disbursement, payslip delivery,
@@ -13,13 +13,13 @@
 //!  * a lifecycle mutation (`close_attendance_in_tx`) against another org's
 //!    run id is a NotFound, not a cross-org write.
 
-use mnt_kernel_core::OrgId;
-use mnt_payroll_adapter_postgres::lifecycle::{
+use console_kernel_core::OrgId;
+use console_payroll_adapter_postgres::lifecycle::{
     LifecycleError, close_attendance_in_tx, get_disbursement_in_tx, list_exceptions_in_tx,
     payslip_delivery_in_tx,
 };
-use mnt_platform_db::with_org_conn;
-use mnt_platform_test_support::runtime_role_pool;
+use console_platform_db::with_org_conn;
+use console_platform_test_support::runtime_role_pool;
 use sqlx::PgPool;
 use time::OffsetDateTime;
 use time::macros::date;

@@ -7,7 +7,7 @@ import test from "node:test";
 import { findForbiddenProductionArtifacts } from "./check-production-dev-auth-absence.mjs";
 
 async function withDist(files, run) {
-  const dir = await mkdtemp(join(tmpdir(), "mnt-production-dev-auth-"));
+  const dir = await mkdtemp(join(tmpdir(), "console-production-dev-auth-"));
   try {
     for (const [name, content] of Object.entries(files)) {
       const path = join(dir, name);

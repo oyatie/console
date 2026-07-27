@@ -3,13 +3,13 @@
 //! Command DTOs intentionally omit `org_id`; adapters derive tenant scope from
 //! request context and arm Postgres with `with_org_conn` / `with_audits`.
 
-use mnt_docs_domain::{
+use console_docs_domain::{
     AdmissibilityReason, AdmissibilityStatus, CustodyStage, DerivativeKind, EvidenceClassification,
     EvidenceCode, EvidenceCopyEvidentiaryStatus, EvidenceCopyKind, EvidenceSourceRef,
     EvidenceStorageRef, LegalHoldState, LegalHoldStatus, Sha256Digest, TsaProofStatus,
     WormStorageStatus,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, EvidenceCopyId, EvidenceCustodyEventId, EvidenceExportId, EvidenceId,
     EvidenceLegalHoldId, EvidenceObjectId, EvidenceTsaProofId, KernelError, Timestamp,
     TraceContext, UserId,
@@ -125,7 +125,7 @@ pub struct CustodyEventView {
     pub location_label: Option<String>,
     pub reason: String,
     pub source_ref: Option<EvidenceSourceRef>,
-    pub audit_event_id: Option<mnt_kernel_core::AuditEventId>,
+    pub audit_event_id: Option<console_kernel_core::AuditEventId>,
     pub previous_event_id: Option<EvidenceCustodyEventId>,
     pub event_digest_sha256: Sha256Digest,
     #[serde(with = "time::serde::rfc3339")]
@@ -149,7 +149,7 @@ pub struct LegalHoldRecordView {
     #[serde(with = "time::serde::rfc3339::option")]
     pub released_at: Option<Timestamp>,
     pub release_reason: Option<String>,
-    pub audit_event_id: Option<mnt_kernel_core::AuditEventId>,
+    pub audit_event_id: Option<console_kernel_core::AuditEventId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -178,7 +178,7 @@ pub struct EvidenceObjectDetail {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ListEvidenceObjectsQuery {
     pub q: Option<String>,
-    pub source_type: Option<mnt_docs_domain::EvidenceSourceType>,
+    pub source_type: Option<console_docs_domain::EvidenceSourceType>,
     pub source_id: Option<String>,
     pub admissibility_status: Option<AdmissibilityStatus>,
     pub legal_hold_state: Option<LegalHoldState>,

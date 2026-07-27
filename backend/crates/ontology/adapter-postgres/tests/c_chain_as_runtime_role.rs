@@ -1,9 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the C-chain (거래처 계약 → 직무 → 채용 공고) engine types,
-//! exercised as the genuine non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS,
+//! exercised as the genuine non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS,
 //! FORCE RLS) — the only faithful exercise of `org_isolation`. The default
 //! `#[sqlx::test]` pool is a BYPASSRLS superuser that would green-light a broken
-//! policy, so every store call rides a `SET ROLE mnt_rt` pool.
+//! policy, so every store call rides a `SET ROLE console_rt` pool.
 //!
 //! Proves:
 //!   (a) `seed_c_chain_object_types` publishes contract/position/posting through
@@ -15,17 +15,17 @@
 //!       `traverse(contract, depth)` returns the downstream position + posting
 //!       nodes at the right depths — the §2 search-around walk over the chain;
 //!   (c) traversal is org-scoped: org B, walking org A's contract id, sees no
-//!       edges and no hydrated nodes (cross-tenant graph isolation as mnt_rt).
+//!       edges and no hydrated nodes (cross-tenant graph isolation as console_rt).
 
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
-use mnt_ontology_adapter_postgres::seed::{
+use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
+use console_ontology_adapter_postgres::seed::{
     CONTRACT_KEY, POSITION_KEY, POSTING_KEY, seed_c_chain_object_types,
 };
-use mnt_ontology_adapter_postgres::{ObjectTypeDetail, PgOntologyStore};
-use mnt_ontology_domain::{InstanceId, LinkTypeId, ObjectTypeId, SchemaLifecycleState};
+use console_ontology_adapter_postgres::{ObjectTypeDetail, PgOntologyStore};
+use console_ontology_domain::{InstanceId, LinkTypeId, ObjectTypeId, SchemaLifecycleState};
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -35,7 +35,7 @@ const ORG_A: Uuid = Uuid::from_u128(0x0C0C_0C0C_0C0C_0C0C_0C0C_0C0C_0C0C_0C0C);
 const ORG_B: Uuid = Uuid::from_u128(0x0B0B_0B0B_0B0B_0B0B_0B0B_0B0B_0B0B_0B0B);
 const AT: time::OffsetDateTime = datetime!(2026-07-10 09:00 UTC);
 
-/// Every connection becomes the genuine non-owner `mnt_rt`. The registry/instance
+/// Every connection becomes the genuine non-owner `console_rt`. The registry/instance
 /// migrations grant it the needed privileges, so no manual GRANT here.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -43,7 +43,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -58,7 +58,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -354,7 +354,7 @@ async fn c_chain_instances_link_and_traverse_downstream(owner_pool: PgPool) {
     assert_eq!(depth_of(posting_inst), 2, "posting is two hops downstream");
 
     // (c) Cross-tenant: org B walking org A's contract id sees no edges and no
-    // hydrated nodes — the whole chain is invisible under RLS as mnt_rt.
+    // hydrated nodes — the whole chain is invisible under RLS as console_rt.
     let cross = scope_org(org_b, async {
         instances.traverse(contract_inst, None, 8).await
     })

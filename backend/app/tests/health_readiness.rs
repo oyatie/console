@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use axum::body::Body;
 use http::{Request, StatusCode};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 
@@ -38,7 +38,7 @@ async fn readyz_returns_503_when_configured_database_is_unreachable()
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .acquire_timeout(Duration::from_millis(100))
-        .connect_lazy("postgres://mnt_app:wrong@127.0.0.1:1/mnt_missing")?;
+        .connect_lazy("postgres://console_app:wrong@127.0.0.1:1/console_missing")?;
     let state = AppState::new(config, DatabaseDependency::Postgres(pool))?;
     let response = build_router(state)
         .oneshot(Request::builder().uri("/readyz").body(Body::empty())?)
@@ -54,11 +54,11 @@ async fn metrics_endpoint_exposes_the_slo_http_duration_histogram()
     // The global recorder is process-wide and shared across this test binary;
     // installation is idempotent and the unique service_name isolates this
     // test's series from any other test's measured requests.
-    mnt_app::install_metrics_recorder()?;
+    console_app::install_metrics_recorder()?;
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_SERVICE_NAME", "mnt-app-api".to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_SERVICE_NAME", "console-app-api".to_owned()),
     ])?;
     let state = AppState::new(config, DatabaseDependency::NotConfigured)?;
     let app = build_router(state);
@@ -91,7 +91,7 @@ async fn metrics_endpoint_exposes_the_slo_http_duration_histogram()
         "exposition must include the SLO latency histogram buckets; got:\n{text}"
     );
     assert!(
-        text.contains("service_name=\"mnt-app-api\""),
+        text.contains("service_name=\"console-app-api\""),
         "histogram series must carry the service_name label the SLO filters on; got:\n{text}"
     );
     assert!(
@@ -103,9 +103,9 @@ async fn metrics_endpoint_exposes_the_slo_http_duration_histogram()
     Ok(())
 }
 
-fn app_config(role: AppRole) -> Result<AppConfig, mnt_app::AppError> {
+fn app_config(role: AppRole) -> Result<AppConfig, console_app::AppError> {
     AppConfig::from_pairs([
-        ("MNT_APP_ROLE", role.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_APP_ROLE", role.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
     ])
 }

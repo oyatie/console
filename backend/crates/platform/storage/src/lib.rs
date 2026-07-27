@@ -11,13 +11,13 @@ use std::pin::Pin;
 use std::time::Duration as StdDuration;
 
 use hmac::{Hmac, KeyInit, Mac};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, EvidenceId, KernelError, OrgId, Timestamp, TraceContext,
     UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_workorder_domain::AttachmentStage;
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
+use console_workorder_domain::AttachmentStage;
 use reqwest::header::{CONTENT_LENGTH, CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
@@ -1227,7 +1227,7 @@ where
     ) -> Result<(), StorageError> {
         // Arm the tenant so `with_audit` sets `app.current_org` for the status
         // UPDATE; without it the RLS policy filters the row out and the UPDATE
-        // silently no-ops as `mnt_rt`.
+        // silently no-ops as `console_rt`.
         let org = current_org().map_err(KernelError::from)?;
         let event = evidence_audit_event(
             "evidence.process",
@@ -1275,7 +1275,7 @@ where
         trace: TraceContext,
         occurred_at: Timestamp,
     ) -> Result<(), StorageError> {
-        // Arm the tenant so the FAILED status UPDATE is RLS-visible as `mnt_rt`.
+        // Arm the tenant so the FAILED status UPDATE is RLS-visible as `console_rt`.
         let org = current_org().map_err(KernelError::from)?;
         let event = evidence_audit_event(
             "evidence.process",
@@ -1852,7 +1852,7 @@ pub const EVIDENCE_IMAGE_QSCALE: u32 = 4;
 /// Env var overriding the per-job ffmpeg wall-clock timeout (whole seconds). A
 /// transcode that exceeds it is KILLED and the row marked FAILED, bounding the
 /// CPU/wall-clock a single adversarial upload can consume.
-pub const FFMPEG_TIMEOUT_ENV: &str = "MNT_EVIDENCE_FFMPEG_TIMEOUT_SECS";
+pub const FFMPEG_TIMEOUT_ENV: &str = "CONSOLE_EVIDENCE_FFMPEG_TIMEOUT_SECS";
 /// Default per-job video transcode timeout (5 min). H.264 of a 200 MiB original
 /// at `-preset medium` is comfortably faster than this on the worker node.
 pub const FFMPEG_VIDEO_TIMEOUT_SECS: u64 = 300;
@@ -2648,8 +2648,8 @@ fn sigv4_signature(
 mod tests {
     use std::sync::{Arc, Mutex};
 
-    use mnt_kernel_core::OrgId;
-    use mnt_workorder_domain::PriorityLevel;
+    use console_kernel_core::OrgId;
+    use console_workorder_domain::PriorityLevel;
     use sqlx::PgPool;
     use time::OffsetDateTime;
 
@@ -2754,7 +2754,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn presign_flow_records_pending_evidence_and_upload_audit(pool: PgPool) {
-        mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             let service = EvidenceService::new(
                 pool.clone(),
@@ -2800,7 +2800,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn failed_after_max_retries_is_visible_in_admin_queue(pool: PgPool) {
-        mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             let service = EvidenceService::new(
                 pool.clone(),
@@ -2869,7 +2869,7 @@ mod tests {
     // invalidated after FINAL_COMPLETED.
     #[sqlx::test(migrations = "../db/migrations")]
     async fn presign_rejected_for_after_evidence_on_terminal_work_order(pool: PgPool) {
-        mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+        console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
             let seeded = seed_work_order_with_status(&pool, "FINAL_COMPLETED").await;
             let service = EvidenceService::new(
                 pool.clone(),
@@ -3141,7 +3141,7 @@ mod tests {
             let err = validate_upload_command(&upload_command(content_type, 1024)).unwrap_err();
             match err {
                 StorageError::Domain(kernel) => {
-                    assert_eq!(kernel.kind, mnt_kernel_core::ErrorKind::Validation);
+                    assert_eq!(kernel.kind, console_kernel_core::ErrorKind::Validation);
                 }
                 other => panic!("expected validation error, got {other:?}"),
             }
@@ -3155,7 +3155,7 @@ mod tests {
                 .unwrap_err();
         match err {
             StorageError::Domain(kernel) => {
-                assert_eq!(kernel.kind, mnt_kernel_core::ErrorKind::Validation);
+                assert_eq!(kernel.kind, console_kernel_core::ErrorKind::Validation);
             }
             other => panic!("expected validation error, got {other:?}"),
         }
@@ -3500,7 +3500,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn staging_upload_then_process_transitions_to_ready_with_org_prefixed_keys(pool: PgPool) {
-        mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        console_platform_request_context::scope_org(OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             let store = RecordingStore::default();
             let service = EvidenceService::new(
@@ -3584,7 +3584,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn process_failure_marks_failed_and_retains_staging(pool: PgPool) {
-        mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        console_platform_request_context::scope_org(OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             let store = RecordingStore {
                 fail_get: true,
@@ -3635,7 +3635,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn process_rejects_content_type_mismatch_before_transcode(pool: PgPool) {
-        mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        console_platform_request_context::scope_org(OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             // Declared an IMAGE, but the staging bytes are a QuickTime VIDEO: the
             // post-download magic-number re-validation must reject this and mark
@@ -3698,7 +3698,7 @@ mod tests {
 
     #[sqlx::test(migrations = "../db/migrations")]
     async fn process_rejects_staging_object_over_size_cap(pool: PgPool) {
-        mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+        console_platform_request_context::scope_org(OrgId::knl(), async move {
             let seeded = seed_work_order(&pool).await;
             // The gateway "lied": the actual staging object HEADs larger than the
             // per-kind image cap. The defensive size check must reject it before

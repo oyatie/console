@@ -1,5 +1,5 @@
 [package]
-name = "mnt-orgchange-rest"
+name = "console-orgchange-rest"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
@@ -8,12 +8,12 @@ publish.workspace = true
 
 [dependencies]
 axum = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-orgchange-adapter-postgres = { path = "../adapter-postgres" }
-mnt-orgchange-domain = { path = "../domain" }
-mnt-platform-auth = { workspace = true }
-mnt-platform-authz = { workspace = true }
-mnt-platform-request-context = { workspace = true }
+console-kernel-core = { workspace = true }
+console-orgchange-adapter-postgres = { path = "../adapter-postgres" }
+console-orgchange-domain = { path = "../domain" }
+console-platform-auth = { workspace = true }
+console-platform-authz = { workspace = true }
+console-platform-request-context = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }

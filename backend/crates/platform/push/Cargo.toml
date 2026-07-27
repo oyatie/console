@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-push"
+name = "console-platform-push"
 version = "0.1.0"
 description = "FCM HTTP v1 and Solapi Alimtalk push adapters behind platform ports."
 edition.workspace = true
@@ -10,7 +10,7 @@ publish.workspace = true
 [dependencies]
 hmac = { workspace = true }
 jsonwebtoken = { workspace = true }
-mnt-kernel-core = { workspace = true }
+console-kernel-core = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

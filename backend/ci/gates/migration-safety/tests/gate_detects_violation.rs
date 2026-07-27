@@ -1,10 +1,10 @@
-use mnt_gate_migration_safety::{ViolationKind, check_migrations_root};
+use console_gate_migration_safety::{ViolationKind, check_migrations_root};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 fn temp_workspace(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let dir = std::env::temp_dir().join(format!(
-        "mnt-migration-gate-test-{name}-{}",
+        "console-migration-gate-test-{name}-{}",
         std::process::id()
     ));
     if dir.exists() {
@@ -28,7 +28,7 @@ fn gate_rejects_drop_table_on_audited_table() -> Result<(), Box<dyn std::error::
     write_file(
         &ws.join("crates/platform/db/migrations/0001_bad.sql"),
         r#"
--- mnt-gate: audited-table work_orders
+-- console-gate: audited-table work_orders
 DROP TABLE IF EXISTS work_orders;
 "#,
     )?;
@@ -77,7 +77,7 @@ fn gate_rejects_drop_column_on_audited_table() -> Result<(), Box<dyn std::error:
     write_file(
         &ws.join("crates/platform/db/migrations/0001_bad.sql"),
         r#"
--- mnt-gate: audited-table work_orders
+-- console-gate: audited-table work_orders
 ALTER TABLE work_orders DROP COLUMN status;
 "#,
     )?;

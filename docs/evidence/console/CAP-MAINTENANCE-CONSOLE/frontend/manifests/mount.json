@@ -19,7 +19,7 @@
     "features": ["work_order_read_all", "work_order_create", "work_order_edit_intake", "work_order_start", "work_report_submit", "completion_review", "priority_manage", "assignee_manage", "target_manage", "evidence_attach", "settlement_submit", "settlement_review", "org_wide_queue_triage"]
   },
   "api_contract_sync_points": {
-    "G2": "maintenance_type/maintenance_cause optional on WorkOrderListItem/WorkOrderDetail/CreateWorkOrderRequest + list filters — local optional declarations in maintenanceApi.ts to be superseded by regenerated @maintenance/api-client-ts",
+    "G2": "maintenance_type/maintenance_cause optional on WorkOrderListItem/WorkOrderDetail/CreateWorkOrderRequest + list filters — local optional declarations in maintenanceApi.ts to be superseded by regenerated @console/api-client-ts",
     "G3": "settlement routes GET/POST /api/v1/work-orders/{id}/settlement, POST /api/v1/settlements/{id}/submit|review|void — called through the authenticated client via a raw view until client regen",
     "G4": "lens aggregates preventive_on_time_rate + mttr_minutes optional — stats render only when present",
     "G1": "equipment_id list filter — used by asset-history drill chips"

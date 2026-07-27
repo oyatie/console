@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-db"
+name = "console-platform-db"
 version = "0.1.0"
 description = "Postgres schema migrations and with_audit transactional helper (append-only audit_events invariant)."
 edition.workspace = true
@@ -8,7 +8,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
+console-kernel-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

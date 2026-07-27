@@ -1,14 +1,14 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use sqlx::PgPool;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn websocket_route_is_mounted_and_auth_gated_at_upgrade(pool: PgPool) {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
     ])
     .unwrap();
     let state = AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap();

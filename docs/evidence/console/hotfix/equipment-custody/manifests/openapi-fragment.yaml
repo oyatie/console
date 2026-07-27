@@ -56,7 +56,7 @@ new_status_codes:
 
 client_regeneration_required: true
 gates_to_rerun:
-  - "cargo test -p mnt-app --test openapi_drift"
+  - "cargo test -p console-app --test openapi_drift"
   - "npm run check:api-drift:portable"
   - "npm run check:api-drift:swift"
 
@@ -64,7 +64,7 @@ downstream_consumers_that_break_without_this:
   - clients/ts/src/schema.d.ts
   - clients/kotlin/.../HandoverEquipment3rCaseRequest.kt
   - clients/kotlin/.../Equipment3rCaseDetailViewAllOfHandover.kt
-  - clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift
+  - clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift
   # NOT owned by this lane, and already broken at HEAD (the column is gone):
   - web/src/console/equipment/equipmentApi.ts
   - web/src/console/equipment/EquipmentCaseDetail.tsx

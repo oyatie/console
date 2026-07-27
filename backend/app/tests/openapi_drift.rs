@@ -2,8 +2,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use mnt_app::{AUDIT_ROUTE_PATH, CONFIGURED_ROUTE_SURFACES};
-use mnt_platform_rest::PLATFORM_ROUTE_OPERATIONS;
+use console_app::{AUDIT_ROUTE_PATH, CONFIGURED_ROUTE_SURFACES};
+use console_platform_rest::PLATFORM_ROUTE_OPERATIONS;
 
 const OPENAPI_YAML: &str = include_str!("../../openapi/openapi.yaml");
 const REQUIRED_CONFIGURED_SURFACES: &[&str] = &[
@@ -562,7 +562,7 @@ fn openapi_yaml_covers_platform_route_operations() {
         .collect();
     assert!(
         unexpected.is_empty(),
-        "OpenAPI YAML documents platform operations that are not in mnt_platform_rest::PLATFORM_ROUTE_OPERATIONS:\n{}",
+        "OpenAPI YAML documents platform operations that are not in console_platform_rest::PLATFORM_ROUTE_OPERATIONS:\n{}",
         unexpected.join("\n")
     );
 }
@@ -851,10 +851,10 @@ fn normalize_path_parameters(path: &str) -> String {
 fn dispatch_read_openapi_operations_match_generated_client_faces() {
     const TS: &str = include_str!("../../../clients/ts/src/schema.d.ts");
     const KOTLIN: &str = include_str!(
-        "../../../clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/P1DispatchesApi.kt"
+        "../../../clients/kotlin/src/main/kotlin/com/console/api/client/api/P1DispatchesApi.kt"
     );
     const SWIFT: &str =
-        include_str!("../../../clients/swift/Sources/MaintenanceAPIClient/Generated/Client.swift");
+        include_str!("../../../clients/swift/Sources/ConsoleAPIClient/Generated/Client.swift");
     for (path, operation, schema) in [
         (
             "/api/v1/console/dispatch/queue",
@@ -925,15 +925,15 @@ fn bounded_section<'a>(source: &'a str, start: &str, end: &str) -> &'a str {
 fn dispatch_queue_parameter_and_error_faces_preserve_wire_contract() {
     const TS: &str = include_str!("../../../clients/ts/src/schema.d.ts");
     const KOTLIN: &str = include_str!(
-        "../../../clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/P1DispatchesApi.kt"
+        "../../../clients/kotlin/src/main/kotlin/com/console/api/client/api/P1DispatchesApi.kt"
     );
     const KOTLIN_ENUM: &str = include_str!(
-        "../../../clients/kotlin/src/main/kotlin/com/maintenance/api/client/model/DispatchQueueStatus.kt"
+        "../../../clients/kotlin/src/main/kotlin/com/console/api/client/model/DispatchQueueStatus.kt"
     );
     const SWIFT: &str =
-        include_str!("../../../clients/swift/Sources/MaintenanceAPIClient/Generated/Client.swift");
+        include_str!("../../../clients/swift/Sources/ConsoleAPIClient/Generated/Client.swift");
     const SWIFT_TYPES: &str =
-        include_str!("../../../clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift");
+        include_str!("../../../clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift");
     let queue = operation_section(
         OPENAPI_YAML,
         "/api/v1/console/dispatch/queue",

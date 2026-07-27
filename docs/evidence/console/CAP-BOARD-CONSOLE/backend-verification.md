@@ -35,7 +35,7 @@ post-commit (receipts are the record). Net: −2 queries, −54 lines.
 
 Pinned by: `notices_rls_surfaces_as_runtime_role.rs` — a rejected
 empty-audience publish now provably leaves status `draft`, **no NT- code**,
-and **zero receipt rows** (atomic rollback, asserted as `mnt_rt`).
+and **zero receipt rows** (atomic rollback, asserted as `console_rt`).
 
 ### F2 — progress fabricated 0/0 for a nonexistent notice (FIXED)
 
@@ -53,13 +53,13 @@ router with ES256 tokens.
 - **FORCE RLS + org policy on every new table**: `notice_audience_branches`
   (migration 0197) has ENABLE + FORCE RLS + `org_isolation` USING/WITH CHECK
   on `app.current_org`; `notices`/`notice_receipts` already forced in 0162;
-  `user_branches` (new `GRANT SELECT ... TO mnt_rt`) is in the 0035 FORCE-RLS
+  `user_branches` (new `GRANT SELECT ... TO console_rt`) is in the 0035 FORCE-RLS
   rollout list — the grant does not open a cross-tenant read. Composite
   same-org FKs `(notice_id, org_id)`/`(branch_id, org_id)`; explicit
   `REVOKE UPDATE` ordered after CREATE TABLE so it also wins over the 0031
   default-privileges auto-grant in production.
-- **Tests genuinely run as `mnt_rt`**: both adapter RLS tests and the
-  app-level `board_ack_api` build their pools with `SET ROLE mnt_rt` in
+- **Tests genuinely run as `console_rt`**: both adapter RLS tests and the
+  app-level `board_ack_api` build their pools with `SET ROLE console_rt` in
   `after_connect` (NOSUPERUSER/NOBYPASSRLS), seeding via the owner pool only.
   Cross-tenant proof is count-based, not error-based: other-org GUC sees
   `COUNT(*) = 0` on `notice_audience_branches` and an empty notices list —
@@ -118,11 +118,11 @@ router with ES256 tokens.
 |---|---|
 | `cargo fmt --check` (4 notices crates) | clean |
 | `cargo clippy --all-targets -- -D warnings` (4 notices crates) | clean |
-| `cargo test -p mnt-notices-domain` | 6/6 |
-| `cargo test -p mnt-notices-adapter-postgres` (RLS as `mnt_rt`) | 2/2 |
-| `cargo test -p mnt-notices-rest` (real router, ES256) | 2/2 |
-| `cargo test -p mnt-app --test board_ack_api` (assembled router, `mnt_rt`) | 1/1 |
-| `cargo test -p mnt-app --test openapi_drift` | 4/5 — the single documented expected-red: `/api/v1/notices/{id}/receipts` not yet in openapi.yaml (integrator collision root; fragment in `manifests/openapi-fragment.yaml`) |
+| `cargo test -p console-notices-domain` | 6/6 |
+| `cargo test -p console-notices-adapter-postgres` (RLS as `console_rt`) | 2/2 |
+| `cargo test -p console-notices-rest` (real router, ES256) | 2/2 |
+| `cargo test -p console-app --test board_ack_api` (assembled router, `console_rt`) | 1/1 |
+| `cargo test -p console-app --test openapi_drift` | 4/5 — the single documented expected-red: `/api/v1/notices/{id}/receipts` not yet in openapi.yaml (integrator collision root; fragment in `manifests/openapi-fragment.yaml`) |
 
 ## Open items (unchanged from the build report, still true)
 
@@ -130,7 +130,7 @@ router with ES256 tokens.
    `clients/{ts,kotlin,swift}` → clears the one red drift assertion.
 2. INTEGRATOR: renumber provisional migration 0197 to the next free slot.
 3. SPINE (pre-existing, not this lane's): 0170 migration-number collision;
-   compile breakage in mnt-platform-auth / logistics adapter /
+   compile breakage in console-platform-auth / logistics adapter /
    production-rest / facilities-rest at spine HEAD. This worktree carries
    LOCAL UNCOMMITTED mechanical workarounds for verification only
    (catalogued in `integration-manifest.json`); owning lanes must land real

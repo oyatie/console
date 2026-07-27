@@ -435,7 +435,7 @@ def build_sql(rows: list[dict[str, Any]], *, workbook: Path, org_id: str, branch
     footer = "ROLLBACK;" if mode == "dry-run" else "COMMIT;"
     parts = [
         "\\set ON_ERROR_STOP on",
-        "SET ROLE mnt_rt;",
+        "SET ROLE console_rt;",
         "BEGIN;",
         f"SELECT set_config('app.current_org', {sql_str(org_id)}, true);",
         "SELECT 'target_org', slug, id FROM organizations WHERE id = " + sql_uuid(org_id) + ";",

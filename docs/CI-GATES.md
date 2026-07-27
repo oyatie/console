@@ -67,13 +67,13 @@ so a fresh session does not gain false confidence from a partial run.
 # Backend core (from backend/)
 cargo fmt --all -- --check
 SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
-SQLX_OFFLINE=true DATABASE_URL=postgres://<user>@localhost/mnt_dev cargo test
+SQLX_OFFLINE=true DATABASE_URL=postgres://<user>@localhost/console_dev cargo test
 for g in layer-boundary audit-coverage migration-safety tenant-isolation pii-no-logs rls-arming dev-auth-absence; do
-  cargo run -q -p mnt-gate-$g            # each must exit 0
+  cargo run -q -p console-gate-$g            # each must exit 0
 done
-SQLX_OFFLINE=true cargo test -p mnt-platform-auth-rest --features dev-auth
-SQLX_OFFLINE=true cargo test -p mnt-app --features dev-auth --test dev_auth_persona_guard_feature
-SQLX_OFFLINE=true cargo test -p mnt-platform-provisioning --test dev_principal_upsert_race
+SQLX_OFFLINE=true cargo test -p console-platform-auth-rest --features dev-auth
+SQLX_OFFLINE=true cargo test -p console-app --features dev-auth --test dev_auth_persona_guard_feature
+SQLX_OFFLINE=true cargo test -p console-platform-provisioning --test dev_principal_upsert_race
 
 # API/client contract gates (from repo root after npm ci)
 npm run check:api-drift:portable          # regenerate ts+kotlin, expect no diff
@@ -82,7 +82,7 @@ npm run check:kotlin
 npm run check:api-drift:swift             # macOS/Swift toolchain gate
 npm run check:swift                       # macOS/Swift toolchain gate
 npm run check:openapi-app                 # committed openapi.yaml covers mounted routes
-CONTRACT_DATABASE_URL=postgres://<user>@localhost/mnt_contract npm run test:contract
+CONTRACT_DATABASE_URL=postgres://<user>@localhost/console_contract npm run test:contract
 
 # Web console + product-maturity gates (from repo root after npm ci)
 npm run test:adrs
@@ -120,9 +120,9 @@ npm run check:production-dev-auth-absence --workspace @console/web
 
 # Deployment and mobile parity gates
 npm run check:k8s                         # render manifests; CI warns if no live cluster
-MNT_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
-MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto \
+CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
+CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
   npm run smoke:k8s:networkpolicy-deny
 npm run check:production-hardening
 node scripts/check-i18n.mjs
@@ -135,15 +135,15 @@ node scripts/check-i18n.mjs
 # iOS local gates (macOS with Swift toolchain)
 swift build --package-path ios
 swift test --package-path ios
-swift run --package-path ios MaintenanceFieldCoreBehaviorTests
+swift run --package-path ios ConsoleCoreBehaviorTests
 ```
 
 CI also runs heavier or runner-contextual gates. Reproduce them locally only when
 their prerequisites are available:
 
 - `npm run dev:bootstrap`, `/readyz`,
-  `MNT_DEV_AUTH_E2E=1 npm run dev:bootstrap`, and
-  `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
+  `CONSOLE_DEV_AUTH_E2E=1 npm run dev:bootstrap`, and
+  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
   for the dev-up/dev-auth smoke.
 - `VITE_CONSOLE_DEV_PREVIEW=1 npm run dev:bootstrap` for the independent,
   Vite-development-only full console preview. Do not add this flag to the
@@ -188,16 +188,16 @@ runbook together.
 workflow and package manifests. The lists intentionally track stable command/gate
 names only, not incidental workflow prose or runner setup text.
 
-### Backend mnt-gate binaries run by CI
+### Backend console-gate binaries run by CI
 
-- `mnt-gate-audit-coverage`
-- `mnt-gate-dev-auth-absence`
-- `mnt-gate-iac-tier`
-- `mnt-gate-layer-boundary`
-- `mnt-gate-migration-safety`
-- `mnt-gate-pii-no-logs`
-- `mnt-gate-rls-arming`
-- `mnt-gate-tenant-isolation`
+- `console-gate-audit-coverage`
+- `console-gate-dev-auth-absence`
+- `console-gate-iac-tier`
+- `console-gate-layer-boundary`
+- `console-gate-migration-safety`
+- `console-gate-pii-no-logs`
+- `console-gate-rls-arming`
+- `console-gate-tenant-isolation`
 
 ### Root package scripts run by CI
 
@@ -254,16 +254,16 @@ names only, not incidental workflow prose or runner setup text.
 
 - **Backend — fmt / clippy / test / gates**: `cargo fmt --all -- --check`,
   `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`,
-  `SQLX_OFFLINE=true cargo test`, seven `mnt-gate-*` binaries
+  `SQLX_OFFLINE=true cargo test`, seven `console-gate-*` binaries
   (`layer-boundary`, `audit-coverage`, `migration-safety`, `tenant-isolation`,
   `pii-no-logs`, `rls-arming`, `dev-auth-absence`), and three dev-auth feature
-  tests for `mnt-platform-auth-rest`, `mnt-app`, and
-  `mnt-platform-provisioning`.
+  tests for `console-platform-auth-rest`, `console-app`, and
+  `console-platform-provisioning`.
 - **dev-up.mjs smoke — compose deps + migrate + /readyz + dev-auth e2e**:
   `node scripts/dev-up.mjs bootstrap`, `/readyz` curl, `node scripts/dev-up.mjs
   down`, dev-auth bootstrap with
-  `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
-  `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
+  `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
+  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
 - **API clients — TypeScript / Kotlin generation and compile**:
   `npm run gen:api:portable`, `git diff --exit-code -- clients/ts
   clients/kotlin`, `npm run check:ts`, and `npm run check:kotlin`. The local
@@ -310,7 +310,7 @@ names only, not incidental workflow prose or runner setup text.
   resulting tokens through a mode-0600 runner-temp androidTest asset, and parses
   JUnit output to require `WorkOrderFlowTest` with zero skips/failures/errors.
 - **iOS app — Swift build and behavior tests**: `swift build`, `swift test`, and
-  `swift run MaintenanceFieldCoreBehaviorTests` from `ios/` on macOS.
+  `swift run ConsoleCoreBehaviorTests` from `ios/` on macOS.
 - **iOS UI tests — XCUITest/accessibility audit (Simulator)**:
   `.github/workflows/ios-ui-tests.yml` runs on a GitHub-hosted `macos-26` VM and
   treats Xcode 26.6 build `17F113`, Apple Swift 6.3.3 in strict Swift 6 language
@@ -324,7 +324,7 @@ names only, not incidental workflow prose or runner setup text.
   runner-temporary root. Missing inputs, entitlements, fixtures, expected tests,
   secret-scan evidence, or cleanup proof fail; there is no external session
   secret, `XCTSkip`, or fork-reduced test path.
-- **Browser E2E — Playwright (all user stories)**: backend `mnt-app` build,
+- **Browser E2E — Playwright (all user stories)**: backend `console-app` build,
   Postgres/psql/Python helper setup, `npx playwright install --with-deps
   chromium`, and `bash e2e/run.sh`.
 
@@ -349,7 +349,7 @@ The full workspace suite, including the DB-backed integration tests under
 at a Postgres database migrated to head (the suite is isolation-safe: tests key
 on fresh UUIDs and do not assert on global counts, so they run in parallel).
 
-### `mnt-gate-layer-boundary` — clean-architecture + manifest hygiene
+### `console-gate-layer-boundary` — clean-architecture + manifest hygiene
 
 Source: `backend/ci/gates/layer-boundary/`. Enforces the dependency direction
 ([ADR-0001](decisions/ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md)):
@@ -366,7 +366,7 @@ app         → everything
 Plus:
 - **Purity:** `domain` and `application` crates may not depend on `sqlx`, `axum`,
   or `tokio` (no I/O in the pure core).
-- **Manifest hygiene:** every workspace crate name starts with `mnt-`, uses
+- **Manifest hygiene:** every workspace crate name starts with `console-`, uses
   `edition.workspace = true`, opts into non-publishability with
   `publish.workspace = true` (inheriting workspace `publish = false`) or direct
   `publish = false`, and carries `[lints] workspace = true`.
@@ -375,10 +375,10 @@ Plus:
   (a merge commit shipped with unresolved markers); see
   [MISTAKES-LEDGER.md](MISTAKES-LEDGER.md).
 
-### `mnt-gate-audit-coverage` — audit-first discipline
+### `console-gate-audit-coverage` — audit-first discipline
 
 Source: `backend/ci/gates/audit-coverage/`. Every state-changing handler marked
-`// mnt-gate: state-changing-handler` must construct an `AuditEvent` and route
+`// console-gate: state-changing-handler` must construct an `AuditEvent` and route
 its mutation through `with_audit` / `with_audits` / `insert_audit_event`, so the
 audit row is written in the **same transaction** as the mutation
 ([ADR-0002](decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md)).
@@ -393,7 +393,7 @@ rejected. (Path binding was hardened in `fix/harden-1`; previously the exemption
 matched on reason only, which could silently apply to the wrong handler — see
 [review/security-compliance.md](../.omc/review/security-compliance.md).)
 
-### `mnt-gate-migration-safety` — append-only audit trail
+### `console-gate-migration-safety` — append-only audit trail
 
 Source: `backend/ci/gates/migration-safety/`. Migrations are append-only and may
 not erode the audit trail. It rejects:
@@ -405,7 +405,7 @@ not erode the audit trail. It rejects:
 The append-only protection on `audit_events` (REVOKE UPDATE/DELETE + trigger) is
 thus immune to being silently undone by a later migration.
 
-### `mnt-gate-pii-no-logs` — PIPA log hygiene
+### `console-gate-pii-no-logs` — PIPA log hygiene
 
 Source: `backend/ci/gates/pii-no-logs/`. Scans the bodies of logging macros
 (`info!`/`debug!`/`warn!`/`error!`/etc.) and rejects:
@@ -416,7 +416,7 @@ Source: `backend/ci/gates/pii-no-logs/`. Scans the bodies of logging macros
 PII/location data may be persisted (audited or destructible per policy) but must
 never be written to logs.
 
-### `mnt-gate-tenant-isolation` — RLS tenant-scope coverage
+### `console-gate-tenant-isolation` — RLS tenant-scope coverage
 
 Source: `backend/ci/gates/tenant-isolation/`. Statically scans database
 migrations and the audit GUC source path to ensure tenant-scoped tables are
@@ -428,25 +428,25 @@ GUC arming that could bleed tenant context across requests.
 The static scan is a fast source-level lint, not a reimplementation of
 PostgreSQL privilege resolution. During the PostgreSQL 18 boot smoke, CI also
 runs `owner_only_acl_postgres18` immediately after migrations execute as the
-production owner role (`mnt_app`). That contract reuses the gate's owner-only
-table allowlist and asks PostgreSQL for the effective `mnt_rt` table and column
+production owner role (`console_app`). That contract reuses the gate's owner-only
+table allowlist and asks PostgreSQL for the effective `console_rt` table and column
 privileges, so direct, `PUBLIC`, role-inherited, column-level, schema-wide, and
 default-privilege grants are evaluated by the database itself. It also rejects
-roles that `mnt_rt` can assume with `SET ROLE`, case-distinct table-like
+roles that `console_rt` can assume with `SET ROLE`, case-distinct table-like
 relation shadows in `public`, and proves adversarial ACL mutations are
 observable before rolling them back.
 
-### `mnt-gate-rls-arming` — production queries use an armed org context
+### `console-gate-rls-arming` — production queries use an armed org context
 
 Source: `backend/ci/gates/rls-arming/`. Scans adapter/rest data-layer code for
 query execution on a bare pool where no per-transaction `app.current_org` GUC is
 armed. Legitimately global reads must carry an inline `// rls-arming: ok
 <reason>` marker so each exception is reviewed and path-local.
 
-### `mnt-gate-dev-auth-absence` — dev auth stays out of release defaults
+### `console-gate-dev-auth-absence` — dev auth stays out of release defaults
 
 Source: `backend/ci/gates/dev-auth-absence/`. Uses `cargo metadata` to prove the
-`mnt-app` default feature set does not transitively enable `dev-auth`, so the
+`console-app` default feature set does not transitively enable `dev-auth`, so the
 local role-switch endpoint cannot ship in the default release binary. HTTP-level
 absence tests complement this feature-graph proof.
 
@@ -456,9 +456,9 @@ CI separately runs the non-default dev-auth path so the code remains healthy
 without making it part of the release feature set:
 
 ```bash
-SQLX_OFFLINE=true cargo test -p mnt-platform-auth-rest --features dev-auth
-SQLX_OFFLINE=true cargo test -p mnt-app --features dev-auth --test dev_auth_persona_guard_feature
-SQLX_OFFLINE=true cargo test -p mnt-platform-provisioning --test dev_principal_upsert_race
+SQLX_OFFLINE=true cargo test -p console-platform-auth-rest --features dev-auth
+SQLX_OFFLINE=true cargo test -p console-app --features dev-auth --test dev_auth_persona_guard_feature
+SQLX_OFFLINE=true cargo test -p console-platform-provisioning --test dev_principal_upsert_race
 ```
 
 ---
@@ -471,8 +471,8 @@ clients and the spec in lockstep.
 
 The authoritative platform-admin API contract is the same OpenAPI document, not a
 sidecar or undocumented internal surface. `/api/platform/*` route definitions in
-`mnt-platform-rest` must match the OpenAPI path+method inventory, and
-`web/src/api/platform.ts` must consume the generated `@maintenance/api-client-ts`
+`console-platform-rest` must match the OpenAPI path+method inventory, and
+`web/src/api/platform.ts` must consume the generated `@console/api-client-ts`
 types for platform DTOs/request/response shapes. The raw fetch wrapper in the web
 module is transport-only: it preserves bearer/cookie/device behavior while the
 contract remains schema-driven.
@@ -498,7 +498,7 @@ Generated-client source-control policy for cleanup issue #108:
   reproducible source and CI can fail on drift.
 - Regenerate clients with `npm run gen:api:portable` and `npm run gen:api:swift`;
   do not hand-edit `clients/ts/src/schema.d.ts`, `clients/kotlin/**`, or
-  `clients/swift/Sources/MaintenanceAPIClient/Generated/**`.
+  `clients/swift/Sources/ConsoleAPIClient/Generated/**`.
 - Code review and audit de-emphasize generated hunks and instead review
   `backend/openapi/openapi.yaml`, generator scripts/configuration, and the drift
   gate output for intent.
@@ -526,7 +526,7 @@ contract/drift gate so future routes do not inherit compatibility mode silently.
 `node scripts/check-openapi-app.mjs` first runs
 `scripts/check-platform-contract-drift.mjs`, then asserts the app-served OpenAPI
 document is byte-for-byte equal to the committed `backend/openapi/openapi.yaml`.
-The platform drift gate parses `mnt-platform-rest` router definitions in
+The platform drift gate parses `console-platform-rest` router definitions in
 `src/lib.rs` and `src/view_as.rs` and fails when any `/api/platform/*`
 path+HTTP-method is missing from OpenAPI, or when OpenAPI documents a platform
 operation that the backend router does not define. The backend
@@ -599,15 +599,15 @@ The Kubernetes manifests job runs `npm run check:k8s`, which renders the
 production overlays, guards Argo CD targets, and invokes
 `scripts/check-networkpolicy-enforcement.sh`. Generic CI has no production
 kubeconfig, so that live NetworkPolicy readback runs with
-`MNT_NETWORKPOLICY_PREFLIGHT=warn`: CI may prove manifests render, but it must
+`CONSOLE_NETWORKPOLICY_PREFLIGHT=warn`: CI may prove manifests render, but it must
 not be cited as proof that the target cluster enforces NetworkPolicy isolation.
 
 Before deployment, an operator with a kubeconfig for the target cluster must run:
 
 ```bash
-MNT_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
-MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto \
+CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
+CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
   npm run smoke:k8s:networkpolicy-deny
 ```
 
@@ -615,26 +615,26 @@ That required mode reads the selected cluster context, confirms the `maintenance
 namespace has applied NetworkPolicy objects, and fails unless it detects a
 policy-capable enforcer such as Cilium, Calico/Canal, Antrea, kube-router, or
 OVN-Kubernetes. Plain flannel-only clusters fail the preflight. Use
-`MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium` (or another supported value) when a
+`CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium` (or another supported value) when a
 deployment context has a declared CNI owner. The denied-traffic smoke then creates
 temporary same-namespace pods: an unlabeled control pod must reach an
-`app=mnt-web` target on TCP/8080; an `app=mnt-app` client selected by
+`app=console-web` target on TCP/8080; an `app=console-app` client selected by
 `default-deny-egress-app-tier` must resolve kube-dns, reach outbound HTTPS on
-TCP/443, and reach `mnt-db-rw:5432` when the CNPG Service exists; that same
+TCP/443, and reach `console-db-rw:5432` when the CNPG Service exists; that same
 app-tier client must fail to reach the temporary HTTP target on TCP/8080. A smoke
 PASS is the deny/allow packet evidence required for production isolation; a
 preflight or smoke FAIL means wrong context/RBAC, missing policies, public
-image-pull blocking (override `MNT_NETWORKPOLICY_SMOKE_*_IMAGE` to approved
+image-pull blocking (override `CONSOLE_NETWORKPOLICY_SMOKE_*_IMAGE` to approved
 mirrors), no approved HTTPS probe, or a CNI/policy regression that must be fixed
 before launch.
 
 `scripts/deploy.sh` is the deployment output contract, not just a digest helper.
 Default mode must fail closed unless it can produce fresh rollout evidence. A
 deployment-complete claim requires all of these signals from the same run: a
-successful `image-release.yml` run for the target commit; fresh `mnt-app` and
-`mnt-web` digest artifacts; the prod overlay/bump revision that Argo should sync;
+successful `image-release.yml` run for the target commit; fresh `console-app` and
+`console-web` digest artifacts; the prod overlay/bump revision that Argo should sync;
 Argo Application `maintenance` reporting `Synced` at that revision;
-`mnt-app`/`mnt-web` Rollouts Healthy; `mnt-worker` Deployment rolled out;
+`console-app`/`console-web` Rollouts Healthy; `console-worker` Deployment rolled out;
 workload template image digests and running/ready pod image IDs or image
 references matching the built digests; and HTTP 200 from both public endpoints.
 Missing `kubectl`, missing target kubeconfig/RBAC, an unreachable Argo
@@ -651,11 +651,11 @@ cited as deployed, verified, production-ready, or a G008 rollout completion.
 
 After the Kubernetes check, CI/local validation still runs
 `npm run check:production-hardening`. That production-hardening contract includes
-the SMTP relay fail-closed guard: if the production-like `mnt-config` ConfigMap
-sets non-secret `MNT_EMAIL_*` relay fields (`MNT_EMAIL_SMTP_HOST`,
-`MNT_EMAIL_SMTP_PORT`, `MNT_EMAIL_FROM`, or `MNT_EMAIL_FROM_NAME`), the API and
-worker manifests must explicitly require `MNT_EMAIL_SMTP_USERNAME` and
-`MNT_EMAIL_SMTP_PASSWORD` from `mnt-secrets` via non-optional `secretKeyRef`
+the SMTP relay fail-closed guard: if the production-like `console-config` ConfigMap
+sets non-secret `CONSOLE_EMAIL_*` relay fields (`CONSOLE_EMAIL_SMTP_HOST`,
+`CONSOLE_EMAIL_SMTP_PORT`, `CONSOLE_EMAIL_FROM`, or `CONSOLE_EMAIL_FROM_NAME`), the API and
+worker manifests must explicitly require `CONSOLE_EMAIL_SMTP_USERNAME` and
+`CONSOLE_EMAIL_SMTP_PASSWORD` from `console-secrets` via non-optional `secretKeyRef`
 entries. `envFrom` alone is not enough because Kubernetes silently omits missing
 Secret keys; local/dev/e2e stub-email configs should omit the whole SMTP relay
 group. Local reproduction needs the same renderer tooling that CI installs,
@@ -663,7 +663,7 @@ including a compatible `kubectl`/kustomize runtime.
 
 These are manifest and desired-state gates, not live packet-enforcement proof.
 They prove that the NetworkPolicy manifests such as
-`deploy/apps/maintenance/base/networkpolicy.yaml` render and that the production
+`deploy/apps/console/base/networkpolicy.yaml` render and that the production
 hardening contract still points at the intended deployment surfaces. They do not
 prove that traffic is isolated in a running cluster. Production NetworkPolicy
 isolation requires a policy-capable CNI (the staged on-prem path uses Cilium;
@@ -677,7 +677,7 @@ deny/allow DNS, Postgres-if-present, HTTPS, and explicit denied-flow connectivit
 evidence from `npm run smoke:k8s:networkpolicy-deny` (or an equivalent recorded
 pod-connectivity transcript) before claiming network isolation. Cross-reference
 the enforcement notes in
-`deploy/apps/maintenance/base/networkpolicy.yaml`, the on-prem CNI stage in
+`deploy/apps/console/base/networkpolicy.yaml`, the on-prem CNI stage in
 `deploy/apps/cilium/README.md`, and the Talos on-prem substrate notes in
 `deploy/talos/on-prem/README.md` when reviewing those gates.
 
@@ -699,7 +699,7 @@ target, its iOS implementation, and the evidence commands that prove parity
 
 ### iOS app — build + behavior tests
 
-`swift build`, `swift test`, and `swift run MaintenanceFieldCoreBehaviorTests`
+`swift build`, `swift test`, and `swift run ConsoleCoreBehaviorTests`
 from `ios/`. The behavior runner mirrors the Android unit-test assertions for
 shared domain logic (consent state machine, messenger reducer, sync, etc.). These
 gates are local on macOS with a compatible Swift toolchain and otherwise rely on
@@ -719,7 +719,7 @@ The current merge authority is Xcode 26.6 build `17F113`, Apple Swift 6.3.3 in
 strict Swift 6 language mode, and the exact iOS 26.5 Simulator runtime. The job
 fails if any version differs. XcodeGen 2.46.0 is downloaded into the job root and
 verified against the repository-pinned SHA-256. It generates
-`ios/MaintenanceField.xcodeproj` from `ios/project.yml`; that project is a test
+`ios/Console.xcodeproj` from `ios/project.yml`; that project is a test
 artifact, not a committed archive-capable project, TestFlight proof, or
 release-signing gate.
 
@@ -732,7 +732,7 @@ The database, backend, build, and session boundary is job-local:
 2. It verifies `git rev-parse HEAD` against `GITHUB_SHA`, downloads PostgreSQL
    18.4 from the official source location, and verifies SHA-256
    `81a81ec695fb0c7901407defaa1d2f7973617154cf27ba74e3a7ab8e64436094`
-   before building it. The mode-`0700` cluster and candidate `mnt-app` backend
+   before building it. The mode-`0700` cluster and candidate `console-app` backend
    use separate random loopback ports.
 3. It applies migrations and deterministic UI fixtures. Before each named shard,
    it generates a new random one-use OTP and stores only its SHA-256 digest in
@@ -767,8 +767,8 @@ fail-closed contract:
 | --- | --- | --- | ---: |
 | `preflight` | `PreflightUITests` | light / large | 90 s |
 | `login-validation` | `LoginValidationUITests` | light / large | 90 s |
-| `accessibility-id-parity` | `FieldAccessibilityIDParityTests` | light / large | 45 s |
-| `critical-path` | `FieldCriticalPathUITests` | light / large | 360 s |
+| `accessibility-id-parity` | `ConsoleAccessibilityIDParityTests` | light / large | 45 s |
+| `critical-path` | `ConsoleCriticalPathUITests` | light / large | 360 s |
 | `messenger` | `MessengerUITests` | light / large | 210 s |
 | `camera-capture` | `CameraCaptureUITests` | light / large | 90 s |
 | `audit-dynamic-today` | Today Dynamic Type audit method | light / large | 150 s |
@@ -843,11 +843,11 @@ fails the gate. No `-skip-testing`, `XCTSkip`, optional-session branch, external
 backend/session secret, or fork-specific reduced suite is valid.
 
 The job-local backend uses a CI-only loopback ATS allowance. Production
-`ios/Sources/MaintenanceFieldApp/Info.plist`, TestFlight/archive settings, and
+`ios/Sources/ConsoleApp/Info.plist`, TestFlight/archive settings, and
 release networking policy remain unchanged. The shared keychain entitlement is
 still required so the test process can seed the same production Keychain layout
 that the app restores. The test resolves the granted group directly; a locally
-supplied `MNT_IOS_KEYCHAIN_GROUP` remains a diagnostic override, not a CI input
+supplied `CONSOLE_IOS_KEYCHAIN_GROUP` remains a diagnostic override, not a CI input
 or session credential.
 
 ### Android app — build, unit/accessibility, and screenshots
@@ -862,7 +862,7 @@ tests, and the third verifies committed Roborazzi screenshot goldens.
 
 The `android-instrumented` job in `.github/workflows/ci.yml` runs on a Linux
 runner with KVM and Gradle Managed Device setup. It starts PostgreSQL 18.4,
-verifies the checkout equals `GITHUB_SHA`, builds that candidate's `mnt-app`,
+verifies the checkout equals `GITHUB_SHA`, builds that candidate's `console-app`,
 migrates and seeds an isolated database, boots the API on loopback, and redeems a
 random short-lived mechanic OTP. The fresh token pair is stored in a mode-0600
 runner-temp androidTest asset before `./gradlew fieldApi34DebugAndroidTest` runs.
@@ -904,10 +904,10 @@ dependencies are available:
 
 - **dev-up smoke:** `node scripts/dev-up.mjs bootstrap`, `/readyz`, cleanup with
   `node scripts/dev-up.mjs down`, dev-auth bootstrap with
-  `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
-  `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
+  `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
+  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
 - **Browser E2E:** `bash e2e/run.sh` after CI-equivalent setup for Postgres,
-  `psql`, Python E2E helpers, Rust `mnt-app`, Node dependencies, and Playwright
+  `psql`, Python E2E helpers, Rust `console-app`, Node dependencies, and Playwright
   Chromium. This is the all-user-stories browser gate and should be used for UI
   feature completion evidence when applicable.
 
@@ -915,7 +915,7 @@ dependencies are available:
 
 ## Notes
 
-- The seven `mnt-gate-*` binaries exit non-zero on the first violation with a
+- The seven `console-gate-*` binaries exit non-zero on the first violation with a
   `file:detail` message; run an individual gate locally to see what it caught.
 - When a change touches OpenAPI routes/schemas, the generated-client drift,
   client compile, `check:openapi-app`, and `test:contract` gates must all be

@@ -2,16 +2,16 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, OrgId, TraceContext, UserId,
 };
-use mnt_messenger_adapter_postgres::PgMessengerStore;
-use mnt_messenger_application::CreateThreadCommand;
-use mnt_messenger_domain::ThreadKind;
-use mnt_messenger_rest::{MessengerRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
+use console_messenger_adapter_postgres::PgMessengerStore;
+use console_messenger_application::CreateThreadCommand;
+use console_messenger_domain::ThreadKind;
+use console_messenger_rest::{MessengerRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,12 +20,12 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -56,7 +56,7 @@ async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool
                 title: Some("정비팀".to_owned()),
                 work_order_id: None,
                 member_ids: vec![sender, recipient],
-                trace: mnt_kernel_core::TraceContext::generate(),
+                trace: console_kernel_core::TraceContext::generate(),
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await
@@ -225,7 +225,7 @@ async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool
 // the caller must explicitly pass `visibility: "channel"` to opt in.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_thread_named_team_thread_defaults_to_direct_via_rest(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key

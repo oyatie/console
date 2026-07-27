@@ -4,11 +4,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, EvidenceId, KernelError, MessageId, ThreadId, TraceContext,
     UserId, WorkOrderId,
 };
-use mnt_messenger_application::{
+use console_messenger_application::{
     AckSummary, CreateThreadCommand, EnsureWorkOrderThreadCommand, JoinThreadCommand,
     ListChannelsQuery, ListMembersQuery, ListThreadsQuery, MarkThreadReadCommand, MemberPresence,
     MemberProfileQuery, MemberSummary, MessageAckNotification, MessageNotifier, MessagePage,
@@ -16,15 +16,15 @@ use mnt_messenger_application::{
     SearchMessagesQuery, SendMessageCommand, SetThreadMuteCommand, ThreadMuteSummary,
     ThreadPresenceQuery, ThreadSummary, ToggleAckCommand, messenger_audit_event,
 };
-use mnt_messenger_domain::{
+use console_messenger_domain::{
     MessageBody, ThreadKind, ThreadVisibility, extract_mention_user_ids, extract_object_code_refs,
     presence_status_for_age,
 };
-use mnt_notifications_application::{EmitNotificationCommand, NotificationSink};
-use mnt_notifications_domain::NotificationLink;
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_workorder_application::{
+use console_notifications_application::{EmitNotificationCommand, NotificationSink};
+use console_notifications_domain::NotificationLink;
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
+use console_workorder_application::{
     WorkOrderCreatedEvent, WorkOrderCreatedFuture, WorkOrderCreatedListener,
 };
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
@@ -369,7 +369,7 @@ impl PgMessengerStore {
                     recipient,
                     category: "메신저".to_owned(),
                     // ponytail: unrelated-lane unblock (BE-ingest-checklist-gates
-                    // needed a green `cargo check -p mnt-app`) — `kind` landed on
+                    // needed a green `cargo check -p console-app`) — `kind` landed on
                     // `EmitNotificationCommand` without updating this call site;
                     // "info" mirrors the notices crate's generic default. The
                     // notifications-kind lane should replace with a precise kind.

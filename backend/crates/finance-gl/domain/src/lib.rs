@@ -5,9 +5,9 @@
 //! derivation for a reversal. No persistence or HTTP concerns live here.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 
-/// Defines a UUID-backed ID newtype (mirrors `mnt_kernel_core::typed_id!`, kept
+/// Defines a UUID-backed ID newtype (mirrors `console_kernel_core::typed_id!`, kept
 /// local so this new domain does not have to edit the shared kernel id table).
 macro_rules! typed_id {
     ($(#[$doc:meta])* $name:ident) => {

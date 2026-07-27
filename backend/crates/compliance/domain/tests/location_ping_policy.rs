@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_compliance_domain::{LocationPing, PingVolumeBound};
-use mnt_kernel_core::{BranchId, LocationPingId, UserId};
+use console_compliance_domain::{LocationPing, PingVolumeBound};
+use console_kernel_core::{BranchId, LocationPingId, UserId};
 use time::{Duration, macros::datetime};
 
 #[test]

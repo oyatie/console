@@ -14,7 +14,7 @@
 --   * RLS: `users` already has `org_isolation` from migration 0030; this column
 --     rides inside the same RLS-scoped row and needs no additional policy.
 --
--- mnt-gate: audited-table users
+-- console-gate: audited-table users
 ALTER TABLE users
     ADD COLUMN is_org_lead BOOLEAN NOT NULL DEFAULT false;
 

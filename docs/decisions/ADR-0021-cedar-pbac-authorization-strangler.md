@@ -47,7 +47,7 @@ shadowed, audited, and promoted through explicit gates.
 decisions. Built-in roles and tenant custom roles are subject inputs/policy bundle generators, not
    authoritative allow decisions by themselves.
 2. **RLS remains the row boundary.** Cedar may allow an action on a resource type or object id, but every
-   database read/write still runs under `mnt_rt` / armed RLS. Cedar cannot widen `org_id`, bypass RLS, or
+   database read/write still runs under `console_rt` / armed RLS. Cedar cannot widen `org_id`, bypass RLS, or
    replace per-org consolidated-read rules.
 3. **Server decisions are authoritative.** Web/mobile/desktop clients may receive policy projections for UX
    only. Navigation, button visibility, and Policy Studio previews are non-authoritative; every endpoint and
@@ -95,7 +95,7 @@ Later implementation goals must prove these invariants before live promotion:
 
 - stale policy bundle denies;
 - stale subject freshness denies;
-- Cedar allow cannot bypass `mnt_rt` / RLS row filtering;
+- Cedar allow cannot bypass `console_rt` / RLS row filtering;
 - UI projection cannot expose or grant `RoleManage`-tier authority;
 - dual-engine map absence/malformed mode/error disagreement fails closed;
 - dependency/source pin is current at implementation time and recorded in audit/metrics;

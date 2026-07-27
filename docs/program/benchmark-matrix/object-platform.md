@@ -147,7 +147,7 @@ Cell key: 1–3 lines, HOW that vendor does it, [V]/[I] labeled. `N/A` = vendor 
 
 | OURS | Foundry | SAP MDG/SF | n8n | Slack | Teams | Asana | Rippling |
 |---|---|---|---|---|---|---|---|
-| Native Android app (`com.maintenance.field`) is field-ops, not the ontology console (web-first); Korean-native UI (`ko.ts`) and 전자결재 substrate exist. Group→법인→branch→worksite Cedar scoping is target/shadow, not a universal live mobile boundary | Foundry mobile app exists; **weak Korean-B2B fit**: no native 전자결재/근로기준법 model, US-gov origin [I] | Fiori mobile; SAP is deeply localized incl. Korea (payroll/statutory) but 전자결재 needs config [I] | Web-only; no mobile; no localization for KR B2B ops [I] | First-class mobile; Korean UI; but no ontology/master-data model to govern [I] | First-class mobile; Korean UI; same — chat surface, not a data platform [I] | Strong mobile; Korean UI; project mgmt only [I] | Strong mobile; **weak Korea payroll/근로기준법**; US-centric HR model [I] |
+| Native Android app (`com.console.app`) is field-ops, not the ontology console (web-first); Korean-native UI (`ko.ts`) and 전자결재 substrate exist. Group→법인→branch→worksite Cedar scoping is target/shadow, not a universal live mobile boundary | Foundry mobile app exists; **weak Korean-B2B fit**: no native 전자결재/근로기준법 model, US-gov origin [I] | Fiori mobile; SAP is deeply localized incl. Korea (payroll/statutory) but 전자결재 needs config [I] | Web-only; no mobile; no localization for KR B2B ops [I] | First-class mobile; Korean UI; but no ontology/master-data model to govern [I] | First-class mobile; Korean UI; same — chat surface, not a data platform [I] | Strong mobile; Korean UI; project mgmt only [I] | Strong mobile; **weak Korea payroll/근로기준법**; US-centric HR model [I] |
 
 ---
 

@@ -7,7 +7,7 @@
 -- Cycle counts reconcile counted-vs-system variances through a maker≠checker
 -- approval into ADJUSTMENT movements with full audit lineage.
 
--- mnt-gate: audited-table inventory_cycle_counts
+-- console-gate: audited-table inventory_cycle_counts
 CREATE TABLE inventory_cycle_counts (
     id                           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                       UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -61,7 +61,7 @@ CREATE TABLE inventory_cycle_count_counters (
     last_value BIGINT NOT NULL CHECK (last_value >= 1)
 );
 
--- mnt-gate: audited-table inventory_cycle_count_lines
+-- console-gate: audited-table inventory_cycle_count_lines
 CREATE TABLE inventory_cycle_count_lines (
     id                     UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -87,7 +87,7 @@ CREATE TABLE inventory_cycle_count_lines (
 CREATE INDEX idx_inventory_cycle_count_lines_org_count
     ON inventory_cycle_count_lines (org_id, count_id);
 
--- mnt-gate: audited-table inventory_movements
+-- console-gate: audited-table inventory_movements
 CREATE TABLE inventory_movements (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -137,7 +137,7 @@ ALTER TABLE inventory_cycle_counts FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_cycle_counts
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON inventory_cycle_counts TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inventory_cycle_counts TO console_rt;
 CREATE TRIGGER trg_inventory_cycle_counts_org_immutable
     BEFORE UPDATE ON inventory_cycle_counts
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
@@ -147,14 +147,14 @@ ALTER TABLE inventory_cycle_count_counters FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_cycle_count_counters
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_counters TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_counters TO console_rt;
 
 ALTER TABLE inventory_cycle_count_lines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_cycle_count_lines FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_cycle_count_lines
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_lines TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_lines TO console_rt;
 CREATE TRIGGER trg_inventory_cycle_count_lines_org_immutable
     BEFORE UPDATE ON inventory_cycle_count_lines
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
@@ -165,7 +165,7 @@ CREATE POLICY org_isolation ON inventory_movements
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 -- Append-only: no UPDATE grant.
-GRANT SELECT, INSERT ON inventory_movements TO mnt_rt;
+GRANT SELECT, INSERT ON inventory_movements TO console_rt;
 CREATE TRIGGER trg_inventory_movements_org_immutable
     BEFORE UPDATE ON inventory_movements
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();

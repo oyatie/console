@@ -18,7 +18,7 @@ CREATE TABLE docs_evidence_code_counters (
     PRIMARY KEY (org_id, object_prefix)
 );
 
--- mnt-gate: audited-table docs_evidence_objects
+-- console-gate: audited-table docs_evidence_objects
 CREATE TABLE docs_evidence_objects (
     id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                   UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -63,7 +63,7 @@ CREATE INDEX idx_docs_evidence_objects_org_legal_hold
 CREATE INDEX idx_docs_evidence_objects_org_classification
     ON docs_evidence_objects (org_id, classification, updated_at DESC);
 
--- mnt-gate: audited-table docs_evidence_copies
+-- console-gate: audited-table docs_evidence_copies
 CREATE TABLE docs_evidence_copies (
     id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                   UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -102,7 +102,7 @@ CREATE INDEX idx_docs_evidence_copies_worm_status
     ON docs_evidence_copies (org_id, worm_status, created_at)
     WHERE worm_status IN ('PENDING','FAILED');
 
--- mnt-gate: audited-table docs_evidence_tsa_proofs
+-- console-gate: audited-table docs_evidence_tsa_proofs
 CREATE TABLE docs_evidence_tsa_proofs (
     id                              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -139,7 +139,7 @@ CREATE INDEX idx_docs_evidence_tsa_proofs_copy_created
 CREATE INDEX idx_docs_evidence_tsa_proofs_status
     ON docs_evidence_tsa_proofs (org_id, status, created_at DESC);
 
--- mnt-gate: audited-table docs_evidence_custody_events
+-- console-gate: audited-table docs_evidence_custody_events
 CREATE TABLE docs_evidence_custody_events (
     id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                   UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -169,7 +169,7 @@ CREATE TABLE docs_evidence_custody_events (
 CREATE INDEX idx_docs_evidence_custody_events_object_occurred
     ON docs_evidence_custody_events (org_id, evidence_object_id, occurred_at DESC, id DESC);
 
--- mnt-gate: audited-table docs_evidence_legal_holds
+-- console-gate: audited-table docs_evidence_legal_holds
 CREATE TABLE docs_evidence_legal_holds (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -198,7 +198,7 @@ CREATE UNIQUE INDEX docs_evidence_legal_holds_active_case_key
 CREATE INDEX idx_docs_evidence_legal_holds_object_status
     ON docs_evidence_legal_holds (org_id, evidence_object_id, status, applied_at DESC);
 
--- mnt-gate: audited-table docs_evidence_exports
+-- console-gate: audited-table docs_evidence_exports
 CREATE TABLE docs_evidence_exports (
     id                     UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -364,18 +364,18 @@ CREATE TRIGGER trg_docs_evidence_exports_no_delete
     BEFORE DELETE ON docs_evidence_exports
     FOR EACH ROW EXECUTE FUNCTION docs_evidence_append_only_guard();
 
-GRANT SELECT, INSERT, UPDATE ON docs_evidence_code_counters TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON docs_evidence_objects TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON docs_evidence_copies TO mnt_rt;
-GRANT SELECT, INSERT ON docs_evidence_tsa_proofs TO mnt_rt;
-GRANT SELECT, INSERT ON docs_evidence_custody_events TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON docs_evidence_legal_holds TO mnt_rt;
-GRANT SELECT, INSERT ON docs_evidence_exports TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON docs_evidence_code_counters TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON docs_evidence_objects TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON docs_evidence_copies TO console_rt;
+GRANT SELECT, INSERT ON docs_evidence_tsa_proofs TO console_rt;
+GRANT SELECT, INSERT ON docs_evidence_custody_events TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON docs_evidence_legal_holds TO console_rt;
+GRANT SELECT, INSERT ON docs_evidence_exports TO console_rt;
 
-REVOKE DELETE ON docs_evidence_code_counters FROM mnt_rt;
-REVOKE DELETE ON docs_evidence_objects FROM mnt_rt;
-REVOKE DELETE ON docs_evidence_copies FROM mnt_rt;
-REVOKE UPDATE, DELETE ON docs_evidence_tsa_proofs FROM mnt_rt;
-REVOKE UPDATE, DELETE ON docs_evidence_custody_events FROM mnt_rt;
-REVOKE DELETE ON docs_evidence_legal_holds FROM mnt_rt;
-REVOKE UPDATE, DELETE ON docs_evidence_exports FROM mnt_rt;
+REVOKE DELETE ON docs_evidence_code_counters FROM console_rt;
+REVOKE DELETE ON docs_evidence_objects FROM console_rt;
+REVOKE DELETE ON docs_evidence_copies FROM console_rt;
+REVOKE UPDATE, DELETE ON docs_evidence_tsa_proofs FROM console_rt;
+REVOKE UPDATE, DELETE ON docs_evidence_custody_events FROM console_rt;
+REVOKE DELETE ON docs_evidence_legal_holds FROM console_rt;
+REVOKE UPDATE, DELETE ON docs_evidence_exports FROM console_rt;

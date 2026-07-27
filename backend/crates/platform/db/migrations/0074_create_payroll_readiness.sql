@@ -133,6 +133,6 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON payroll_draft_lines TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON annual_leave_obligations TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_draft_lines TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON annual_leave_obligations TO console_rt;

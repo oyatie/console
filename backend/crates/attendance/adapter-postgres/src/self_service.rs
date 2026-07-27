@@ -4,14 +4,14 @@
 //! armed, then queries that one employee directly.  Do not route these methods
 //! through the manager list or Week52 aggregations and filter afterwards.
 
-use mnt_attendance_application::{
+use console_attendance_application::{
     self as app, AttendanceEvidence, AttendancePage, ListOwnExceptions, OwnAttendanceExceptionPage,
     OwnAttendanceExceptionRead, OwnExceptionResolutionRead, OwnWeek52Read, ReadOwnWeek52,
     SelfAttendanceScope,
 };
-use mnt_attendance_domain::{ExceptionKind, ResolutionAction, StrictDurationEvent};
-use mnt_kernel_core::OrgId;
-use mnt_platform_db::with_org_conn;
+use console_attendance_domain::{ExceptionKind, ResolutionAction, StrictDurationEvent};
+use console_kernel_core::OrgId;
+use console_platform_db::with_org_conn;
 use sqlx::{Postgres, Row, Transaction};
 use time::Duration;
 use uuid::Uuid;

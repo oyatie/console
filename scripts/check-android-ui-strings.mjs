@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const sourceRoots = [
-  join(repoRoot, "android/app/src/main/kotlin/com/maintenance/field/ui"),
-  join(repoRoot, "android/app/src/main/kotlin/com/maintenance/field/data/messenger"),
+  join(repoRoot, "android/app/src/main/kotlin/com/console/app/ui"),
+  join(repoRoot, "android/app/src/main/kotlin/com/console/app/data/messenger"),
 ];
 const stringsPath = join(repoRoot, "android/app/src/main/res/values/strings.xml");
 const kotlinStringLiteral = /"""[\s\S]*?"""|"(?:\\.|[^"\\])*"/g;

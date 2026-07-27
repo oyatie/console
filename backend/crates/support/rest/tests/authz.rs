@@ -6,14 +6,14 @@
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_support_application::CreateInternalTicketCommand;
-use mnt_support_domain::{TicketCategory, TicketPriority};
-use mnt_support_rest::{SupportRestState, router};
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
+use console_support_adapter_postgres::PgSupportStore;
+use console_support_application::CreateInternalTicketCommand;
+use console_support_domain::{TicketCategory, TicketPriority};
+use console_support_rest::{SupportRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -22,8 +22,8 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 /// The token claims a branch the user is NOT a member of, while the user's real
 /// (DB) membership is a different branch that holds a ticket. After the fix the
@@ -31,7 +31,7 @@ const TEST_AUDIENCE: &str = "mnt-api";
 /// branch's ticket and the spoofed claim is ignored.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn list_tickets_resolves_branch_scope_from_db_not_token_claim(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key

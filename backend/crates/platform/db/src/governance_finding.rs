@@ -2,8 +2,8 @@
 //!
 //! Generalizes the near-identical `governance_findings` write that three
 //! detectors each hand-rolled (financial self-approval, workflow self-approval,
-//! integrity price-outlier) into one helper. Lives in `mnt-platform-db` (not
-//! `mnt-integrity`, which owns the *domain* of governance findings) because
+//! integrity price-outlier) into one helper. Lives in `console-platform-db` (not
+//! `console-integrity`, which owns the *domain* of governance findings) because
 //! the layer-boundary gate forbids adapter-to-adapter dependencies: financial's
 //! and workflow's adapter crates cannot depend on integrity's adapter crate,
 //! but every adapter already depends on this platform crate.
@@ -12,7 +12,7 @@
 //! `with_audits` write), so the finding write shares the caller's tenant GUC
 //! and commits atomically with the detection it records.
 
-use mnt_kernel_core::OrgId;
+use console_kernel_core::OrgId;
 use sqlx::{Postgres, Transaction};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -40,7 +40,7 @@ pub struct OpenFinding<'a> {
 /// This is the single owner of the `governance_findings` write shape, shared by
 /// every detector that records a finding as a side effect of its own audited
 /// write: financial + workflow self-approval SoD guards and the integrity
-/// price-outlier detector. Runs on the armed `tx` (RLS-scoped as `mnt_rt`); the
+/// price-outlier detector. Runs on the armed `tx` (RLS-scoped as `console_rt`); the
 /// caller commits.
 pub async fn upsert_open_finding_tx(
     tx: &mut Transaction<'_, Postgres>,

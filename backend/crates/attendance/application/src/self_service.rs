@@ -2,7 +2,7 @@
 //! employee record.  These projections must not grow manager-facing identity,
 //! branch, team, actor, or object-link fields.
 
-use mnt_attendance_domain::{AttendanceDateRange, ExceptionKind, ResolutionAction};
+use console_attendance_domain::{AttendanceDateRange, ExceptionKind, ResolutionAction};
 use serde::{Deserialize, Serialize};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;

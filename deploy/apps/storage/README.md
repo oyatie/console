@@ -2,8 +2,8 @@
 
 This directory stages the ADR-0024 on-prem replicated block-storage app without
 changing the live OCI guest. The selected first backend for issue #379 is
-**Longhorn**, exposed through the maintenance-owned StorageClass name
-`mnt-pg-hot`.
+**Longhorn**, exposed through the console-owned StorageClass name
+`console-pg-hot`.
 
 It is intentionally under `deploy/apps/storage/`, not `deploy/argocd/apps/`, and
 `application.yaml` has no `syncPolicy.automated` block. A merge to `main` is
@@ -21,7 +21,7 @@ therefore a no-op for the current Argo app-of-apps root, because
   stable maintenance contract instead of `longhorn`.
 - `manifests/namespace.yaml` declares `longhorn-system` with privileged Pod
   Security labels required by Longhorn's host-mounted engine/CSI workloads.
-- `manifests/storageclass-mnt-pg-hot.yaml` declares the on-prem default
+- `manifests/storageclass-console-pg-hot.yaml` declares the on-prem default
   replicated block StorageClass:
   - `provisioner: driver.longhorn.io`
   - `numberOfReplicas: "3"`
@@ -51,7 +51,7 @@ manual on-prem activation, verify and record:
    Longhorn's `create-default-disk` workflow before the first sync, because
    `values.yaml` sets `createDefaultDiskLabeledNodes: true`.
 5. The on-prem CNPG overlay explicitly uses `spec.storage.storageClass:
-   mnt-pg-hot`; do not patch `deploy/apps/maintenance/base/database.yaml` away
+   console-pg-hot`; do not patch `deploy/apps/console/base/database.yaml` away
    from the current single-node OCI posture.
 6. Issue #371's production-hardening gate rewrite and founder/operator cutover
    approval are complete before wiring this app into live Argo CD.
@@ -61,7 +61,7 @@ manual on-prem activation, verify and record:
 - The staged StorageClass uses three Longhorn replicas for PostgreSQL data.
 - Raw disk consumption is approximately three times requested PVC size, plus
   snapshots/backups/replica rebuild headroom.
-- `mnt-db` currently requests `5Gi`; keep substantially more than `15Gi` usable
+- `console-db` currently requests `5Gi`; keep substantially more than `15Gi` usable
   raw Longhorn capacity available before even a small rehearsal.
 - Production sizing must account for WAL/base backup retention, failover drills,
   replica rebuild traffic, node maintenance windows, and the future CNPG
@@ -100,7 +100,7 @@ manual on-prem activation, verify and record:
    ```
 
 5. Only after Longhorn is healthy should the separate on-prem CNPG overlay be
-   synced with `storageClass: mnt-pg-hot` and `instances: 3`.
+   synced with `storageClass: console-pg-hot` and `instances: 3`.
 
 ## Verification
 
@@ -108,13 +108,13 @@ After a manual sync on the on-prem cluster:
 
 ```sh
 kubectl -n longhorn-system get pods
-kubectl get storageclass mnt-pg-hot -o yaml
+kubectl get storageclass console-pg-hot -o yaml
 kubectl get storageclass local-path -o yaml  # OCI only; verify it remains the current guest default there
 ```
 
-Confirm `mnt-pg-hot` has `driver.longhorn.io`, three replicas, `Retain`,
+Confirm `console-pg-hot` has `driver.longhorn.io`, three replicas, `Retain`,
 `WaitForFirstConsumer`, and the default-class annotation in the on-prem context.
-Then create a disposable PVC that explicitly sets `storageClassName: mnt-pg-hot`,
+Then create a disposable PVC that explicitly sets `storageClassName: console-pg-hot`,
 wait for it to bind with a test pod, delete the test workload, and retain the PVC
 until the Longhorn UI/CRs show the expected healthy replicas.
 
@@ -131,11 +131,11 @@ That does not touch the live OCI app-of-apps root.
 If Longhorn was synced:
 
 1. Stop new consumers by reverting or pausing the on-prem CNPG overlay first.
-2. Remove the default marker from `mnt-pg-hot` before returning another class to
+2. Remove the default marker from `console-pg-hot` before returning another class to
    default status:
 
    ```sh
-   kubectl annotate storageclass mnt-pg-hot \
+   kubectl annotate storageclass console-pg-hot \
      storageclass.kubernetes.io/is-default-class- --overwrite
    ```
 

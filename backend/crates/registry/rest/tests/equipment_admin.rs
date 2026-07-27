@@ -9,12 +9,12 @@ use std::path::PathBuf;
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_registry_adapter_postgres::PgRegistryStore;
-use mnt_registry_rest::{RegistryRestState, router};
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
+use console_registry_adapter_postgres::PgRegistryStore;
+use console_registry_rest::{RegistryRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -23,8 +23,8 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const BOUNDARY: &str = "----mnttestboundary7MA4YWxkTrZu0gW";
 
 fn master_list_path() -> PathBuf {
@@ -34,7 +34,7 @@ fn master_list_path() -> PathBuf {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
         let body = multipart_xlsx(&bytes);
@@ -73,7 +73,7 @@ async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn import_endpoint_rejects_non_admin(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
         let body = multipart_xlsx(&bytes);
@@ -92,7 +92,7 @@ async fn import_endpoint_rejects_non_admin(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn equipment_crud_create_update_soft_delete_is_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
         let create_body = json!({
@@ -255,7 +255,7 @@ async fn fetch_equipment_view(pool: &PgPool, id: &str) -> EquipmentView {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn ownership_transfer_requires_ordered_legal_and_accounting_signoff(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
         let create_body = json!({
@@ -373,7 +373,7 @@ async fn audit_count(pool: &PgPool, action: &str) -> i64 {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_equipment_rejects_non_admin(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let body = json!({
             "equipment_no": "CFO25-7778",
@@ -393,7 +393,7 @@ async fn create_equipment_rejects_non_admin(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn equipment_get_by_id_returns_master_detail_without_page_scan(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "SUPER_ADMIN").await;
         let equipment_id = create_equipment(&harness, "CFO25-7790", "779").await;
 
@@ -421,7 +421,7 @@ async fn equipment_get_by_id_returns_master_detail_without_page_scan(pool: PgPoo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn substitute_assign_and_return_are_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let source = create_equipment(&harness, "CFO25-7777", "777").await;
         let substitute = create_equipment(&harness, "CFO25-8888", "888").await;
@@ -484,7 +484,7 @@ async fn substitute_assign_and_return_are_audited(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn substitute_assign_rejects_non_admin(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let body = json!({
             "source_equipment_id": "00000000-0000-4000-8000-000000000001",
@@ -505,7 +505,7 @@ async fn substitute_assign_rejects_non_admin(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_customer_and_site_appear_in_location_list_and_are_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
         // Create a customer.
@@ -599,7 +599,7 @@ async fn create_customer_and_site_appear_in_location_list_and_are_audited(pool: 
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_customer_rejects_non_admin(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let (status, _) = harness
             .send(
@@ -615,7 +615,7 @@ async fn create_customer_rejects_non_admin(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_customer_rejects_blank_name(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, _) = harness
             .send(
@@ -631,7 +631,7 @@ async fn create_customer_rejects_blank_name(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, _) = harness
             .send(
@@ -650,7 +650,7 @@ async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_site_rejects_one_sided_coordinate(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, body) = harness
             .send(
@@ -681,7 +681,7 @@ async fn create_site_rejects_one_sided_coordinate(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn update_site_coordinates_set_clear_read_back_and_validate_pair(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, body) = harness
             .send(

@@ -16,17 +16,17 @@
 //! password is never returned to a client.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_comms_application::{
+use console_comms_application::{
     AccountUpsert, AddressAccount, AddressLookup, AttachmentRef, AttachmentView, DueAccount,
     EmailAccountId, EmailMessageId, FolderCursor, FolderView, ImapFolder, InboundUpsert,
     MailFuture, MailNotifier, MailReadStore, MailServiceError, MailStore, MessageView,
     OutboundRecord, SealedCredential, StoredAccount, StoredAttachment, ThreadDetail, ThreadQuery,
     ThreadView, address_ambiguous_audit_event, thread_grouping_key,
 };
-use mnt_comms_domain::{MailSecurity, MessageAddress, normalize_subject};
-use mnt_kernel_core::{AuditEvent, ErrorKind, KernelError, OrgId, Timestamp, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_comms_domain::{MailSecurity, MessageAddress, normalize_subject};
+use console_kernel_core::{AuditEvent, ErrorKind, KernelError, OrgId, Timestamp, TraceContext, UserId};
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, Row, Transaction};
 
 /// Adapter error. Mirrors `PgOrgError`: domain failures carry safe messages;
@@ -235,7 +235,7 @@ impl PgMailStore {
 impl MailStore for PgMailStore {
     fn get_account(
         &self,
-    ) -> mnt_comms_application::MailFuture<'_, Result<Option<StoredAccount>, MailServiceError>>
+    ) -> console_comms_application::MailFuture<'_, Result<Option<StoredAccount>, MailServiceError>>
     {
         Box::pin(async move { self.get_account_inner().await.map_err(Into::into) })
     }
@@ -244,7 +244,7 @@ impl MailStore for PgMailStore {
         &self,
         upsert: AccountUpsert,
         audit: AuditEvent,
-    ) -> mnt_comms_application::MailFuture<'_, Result<StoredAccount, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'_, Result<StoredAccount, MailServiceError>> {
         Box::pin(async move {
             self.upsert_account_inner(upsert, audit)
                 .await
@@ -256,7 +256,7 @@ impl MailStore for PgMailStore {
         &self,
         record: OutboundRecord,
         audit: AuditEvent,
-    ) -> mnt_comms_application::MailFuture<'_, Result<(), MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'_, Result<(), MailServiceError>> {
         Box::pin(async move {
             self.persist_outbound_inner(record, audit)
                 .await
@@ -269,7 +269,7 @@ impl MailStore for PgMailStore {
         actor: UserId,
         endpoint: &'static str,
         window_start: Timestamp,
-    ) -> mnt_comms_application::MailFuture<'_, Result<i64, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'_, Result<i64, MailServiceError>> {
         Box::pin(async move {
             self.increment_send_rate_inner(actor, endpoint, window_start)
                 .await
@@ -362,9 +362,9 @@ impl PgMailStore {
         upsert: InboundUpsert,
     ) -> Result<bool, PgMailError> {
         // Build the audit BEFORE the transaction so `with_audit` arms the org.
-        let audit = mnt_comms_application::inbound_sync_audit_event(
+        let audit = console_comms_application::inbound_sync_audit_event(
             upsert.id,
-            mnt_kernel_core::TraceContext::generate(),
+            console_kernel_core::TraceContext::generate(),
             Timestamp::now_utc(),
         )
         .map_err(PgMailError::Domain)?
@@ -538,7 +538,7 @@ impl PgMailStore {
         limit: i32,
     ) -> Result<Vec<DueAccount>, PgMailError> {
         // Cross-tenant id-only CLAIM via the SECURITY DEFINER function. Runs on the
-        // raw pool (NO org armed) — the function REVOKEs PUBLIC and only mnt_rt may
+        // raw pool (NO org armed) — the function REVOKEs PUBLIC and only console_rt may
         // EXECUTE it; it atomically locks the due, unclaimed rows with FOR UPDATE
         // SKIP LOCKED, stamps a `claimed_until` lease + a fresh `claim_token` on
         // each, and returns ONLY the (org_id, account_id, claim_token) triples.
@@ -555,7 +555,7 @@ impl PgMailStore {
         .bind(now)
         .bind(limit.clamp(0, SYNC_DISPATCH_LIMIT))
         .bind(SYNC_CLAIM_LEASE_SECS)
-        // rls-arming: ok comms_due_email_accounts is a SECURITY DEFINER function (REVOKE PUBLIC, GRANT mnt_rt) that returns id-only (org_id, account_id, claim_token) triples across tenants for the scheduler; it cannot be org-armed (it predates knowing the orgs) and exposes no tenant data — it only stamps its own claim lease + fencing token
+        // rls-arming: ok comms_due_email_accounts is a SECURITY DEFINER function (REVOKE PUBLIC, GRANT console_rt) that returns id-only (org_id, account_id, claim_token) triples across tenants for the scheduler; it cannot be org-armed (it predates knowing the orgs) and exposes no tenant data — it only stamps its own claim lease + fencing token
         .fetch_all(&self.pool)
         .await?;
         rows.into_iter()
@@ -575,7 +575,7 @@ impl PgMailStore {
     ) -> Result<AddressLookup, PgMailError> {
         // Cross-tenant id-only lookup via 0122_comms_account_by_address.sql. Runs
         // on the raw pool (NO org armed) — the function REVOKEs PUBLIC and only
-        // mnt_rt may EXECUTE it; it returns ONLY the (org_id, account_id) pairs of
+        // console_rt may EXECUTE it; it returns ONLY the (org_id, account_id) pairs of
         // every ACTIVE account matching this recipient address. `email_accounts`
         // is unique only per (org_id, email_address), so >1 row means the SAME
         // address exists under DIFFERENT orgs — a tenant-boundary anomaly, not a
@@ -584,7 +584,7 @@ impl PgMailStore {
         let rows: Vec<sqlx::postgres::PgRow> =
             sqlx::query("SELECT org_id, account_id FROM comms_account_by_address($1)")
                 .bind(address)
-                // rls-arming: ok comms_account_by_address is a SECURITY DEFINER function (REVOKE PUBLIC, GRANT mnt_rt) returning id-only (org_id, account_id) for the mox delivery webhook, which has no principal to arm an org with; it exposes no tenant data
+                // rls-arming: ok comms_account_by_address is a SECURITY DEFINER function (REVOKE PUBLIC, GRANT console_rt) returning id-only (org_id, account_id) for the mox delivery webhook, which has no principal to arm an org with; it exposes no tenant data
                 .fetch_all(&self.pool)
                 .await?;
         match rows.len() {
@@ -874,7 +874,7 @@ impl MailReadStore for PgMailStore {
         org: OrgId,
         account: EmailAccountId,
         folders: &'a [ImapFolder],
-    ) -> mnt_comms_application::MailFuture<'a, Result<Vec<FolderCursor>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Vec<FolderCursor>, MailServiceError>> {
         Box::pin(async move {
             self.upsert_folders_inner(org, account, folders)
                 .await
@@ -887,7 +887,7 @@ impl MailReadStore for PgMailStore {
         org: OrgId,
         folder_id: uuid::Uuid,
         uid_validity: i64,
-    ) -> mnt_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
         Box::pin(async move {
             self.reset_folder_cursor_inner(org, folder_id, uid_validity)
                 .await
@@ -899,7 +899,7 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         upsert: InboundUpsert,
-    ) -> mnt_comms_application::MailFuture<'a, Result<bool, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<bool, MailServiceError>> {
         Box::pin(async move {
             self.upsert_inbound_inner(org, upsert)
                 .await
@@ -914,7 +914,7 @@ impl MailReadStore for PgMailStore {
         claim_token: uuid::Uuid,
         status: &'a str,
         error: Option<&'a str>,
-    ) -> mnt_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
         Box::pin(async move {
             self.record_sync_result_inner(org, account, claim_token, status, error)
                 .await
@@ -927,7 +927,7 @@ impl MailReadStore for PgMailStore {
         org: OrgId,
         account: EmailAccountId,
         claim_token: uuid::Uuid,
-    ) -> mnt_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
         Box::pin(async move {
             self.release_claim_inner(org, account, claim_token)
                 .await
@@ -939,7 +939,7 @@ impl MailReadStore for PgMailStore {
         &self,
         now: Timestamp,
         limit: i32,
-    ) -> mnt_comms_application::MailFuture<'_, Result<Vec<DueAccount>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'_, Result<Vec<DueAccount>, MailServiceError>> {
         Box::pin(async move {
             self.list_due_accounts_inner(now, limit)
                 .await
@@ -950,7 +950,7 @@ impl MailReadStore for PgMailStore {
     fn find_account_by_address<'a>(
         &'a self,
         address: &'a str,
-    ) -> mnt_comms_application::MailFuture<'a, Result<AddressLookup, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<AddressLookup, MailServiceError>> {
         Box::pin(async move {
             self.find_account_by_address_inner(address)
                 .await
@@ -962,7 +962,7 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         account: EmailAccountId,
-    ) -> mnt_comms_application::MailFuture<'a, Result<Vec<FolderView>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Vec<FolderView>, MailServiceError>> {
         Box::pin(async move {
             self.list_folders_inner(org, account)
                 .await
@@ -975,7 +975,7 @@ impl MailReadStore for PgMailStore {
         org: OrgId,
         account: EmailAccountId,
         query: &'a ThreadQuery,
-    ) -> mnt_comms_application::MailFuture<'a, Result<Vec<ThreadView>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Vec<ThreadView>, MailServiceError>> {
         Box::pin(async move {
             self.list_threads_inner(org, account, query)
                 .await
@@ -987,7 +987,7 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         thread_id: uuid::Uuid,
-    ) -> mnt_comms_application::MailFuture<'a, Result<Option<ThreadDetail>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Option<ThreadDetail>, MailServiceError>> {
         Box::pin(async move {
             self.get_thread_inner(org, thread_id)
                 .await
@@ -999,7 +999,7 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         message_id: EmailMessageId,
-    ) -> mnt_comms_application::MailFuture<'a, Result<Option<MessageView>, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<Option<MessageView>, MailServiceError>> {
         Box::pin(async move {
             self.get_message_inner(org, message_id)
                 .await
@@ -1011,7 +1011,7 @@ impl MailReadStore for PgMailStore {
         &'a self,
         org: OrgId,
         attachment_id: uuid::Uuid,
-    ) -> mnt_comms_application::MailFuture<'a, Result<Option<AttachmentRef>, MailServiceError>>
+    ) -> console_comms_application::MailFuture<'a, Result<Option<AttachmentRef>, MailServiceError>>
     {
         Box::pin(async move {
             self.get_attachment_key_inner(org, attachment_id)
@@ -1026,7 +1026,7 @@ impl MailReadStore for PgMailStore {
         thread_id: uuid::Uuid,
         seen: bool,
         audit: AuditEvent,
-    ) -> mnt_comms_application::MailFuture<'a, Result<bool, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<bool, MailServiceError>> {
         Box::pin(async move {
             self.set_thread_seen_inner(org, thread_id, seen, audit)
                 .await

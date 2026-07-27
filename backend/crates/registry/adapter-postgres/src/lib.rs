@@ -10,13 +10,13 @@ use std::io::Cursor;
 use std::path::Path;
 
 use calamine::{Data, DataType, Range, Reader, open_workbook_auto, open_workbook_auto_from_rs};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, AuditEventId, BranchId, BranchScope, CustomerId, EquipmentId,
     EquipmentSubstitutionId, KernelError, SiteId, TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, ObjectVersions, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_registry_application::{
+use console_platform_db::{DbError, ObjectVersions, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
+use console_registry_application::{
     CreateCustomerCommand, CreateEquipmentCommand, CreateEquipmentOwnershipTransferCommand,
     CreateSiteCommand, CreatedCustomer, CreatedSite, DecideEquipmentOwnershipTransferCommand,
     DeleteEquipmentCommand, EquipmentByLocationQuery, EquipmentCostLedgerSummary,
@@ -36,7 +36,7 @@ use mnt_registry_application::{
     registry_import_audit_event, site_create_audit_event, site_update_audit_event,
     substitute_assign_audit_event, substitute_return_audit_event,
 };
-use mnt_registry_domain::{
+use console_registry_domain::{
     EquipmentNo, EquipmentStatus, MoneyWon, SubstituteEquipmentProfile, Ton,
     rank_substitute_candidates,
 };
@@ -95,7 +95,7 @@ impl PgRegistryStore {
     /// Import an uploaded master-list workbook supplied as raw bytes.
     ///
     /// Uploaded bytes are parsed in memory via `calamine`, so the REST upload
-    /// path never creates `mnt-registry-import-*` temp staging files that can be
+    /// path never creates `console-registry-import-*` temp staging files that can be
     /// left behind after parse/import failures.
     pub async fn import_master_list_bytes(
         &self,
@@ -112,7 +112,7 @@ impl PgRegistryStore {
     /// the row on their own branch so direct creates are immediately visible in
     /// the same branch-scoped browse/detail reads; org-wide principals land on
     /// the tenant default HQ branch, matching the importer fallback.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_equipment(
         &self,
         command: CreateEquipmentCommand,
@@ -178,7 +178,7 @@ impl PgRegistryStore {
     /// armed transaction (mirroring `create_equipment`'s equipment-no check) so the
     /// conflict surfaces as a domain error; the `registry_customers (branch_id, name)`
     /// UNIQUE key is the backstop for a TOCTOU race.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_customer(
         &self,
         command: CreateCustomerCommand,
@@ -197,7 +197,7 @@ impl PgRegistryStore {
                 // Land on the caller's branch when supplied (so a branch-scoped
                 // admin sees the new customer in its own branch-scoped reads), else
                 // on the org's default HQ. Either way the branch lookup/upsert runs
-                // on the armed tx so it passes FORCE-RLS WITH CHECK as `mnt_rt`.
+                // on the armed tx so it passes FORCE-RLS WITH CHECK as `console_rt`.
                 let branch_uuid = resolve_create_branch(tx, requested_branch, org_uuid).await?;
                 let branch_id = BranchId::from_uuid(branch_uuid);
                 let existing: Option<uuid::Uuid> = sqlx::query_scalar(
@@ -247,7 +247,7 @@ impl PgRegistryStore {
     /// customer's own branch. A same-name site under the same customer is a
     /// `conflict` (→ 409); the optional location/contact fields are written in the
     /// same INSERT so a site can be onboarded with its address in one step.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_site(
         &self,
         command: CreateSiteCommand,
@@ -357,7 +357,7 @@ impl PgRegistryStore {
     }
 
     /// Apply a partial update to one equipment row, audited with before/after.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_equipment(
         &self,
         command: UpdateEquipmentCommand,
@@ -453,7 +453,7 @@ impl PgRegistryStore {
     pub async fn list_equipment_versions(
         &self,
         equipment_id: EquipmentId,
-    ) -> Result<Vec<mnt_platform_db::ObjectVersionRecord>, PgRegistryError> {
+    ) -> Result<Vec<console_platform_db::ObjectVersionRecord>, PgRegistryError> {
         let org = current_org().map_err(KernelError::from)?;
         with_org_conn::<_, _, PgRegistryError>(&self.pool, org, move |tx| {
             Box::pin(async move {
@@ -475,7 +475,7 @@ impl PgRegistryStore {
     /// a NEW version (`status = 'ROLLBACK'`, `source_version = target`), never
     /// by mutating history. The stored content is re-applied through the same
     /// scalar update path a normal edit uses, inside one audited transaction.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn rollback_equipment(
         &self,
         command: RollbackEquipmentCommand,
@@ -544,7 +544,7 @@ impl PgRegistryStore {
 
     /// Soft-delete one equipment row by marking it 폐기 (Disposed). Never hard
     /// deletes, so audit history and work-order/substitution FKs stay intact.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn soft_delete_equipment(
         &self,
         command: DeleteEquipmentCommand,
@@ -899,7 +899,7 @@ impl PgRegistryStore {
     /// Apply a partial coordinate/address update to one site, audited with
     /// before/after snapshots. This is the only coordinate entry point: a site
     /// is pinnable only once an admin writes a valid lat/lon pair here.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_site(&self, command: UpdateSiteCommand) -> Result<(), PgRegistryError> {
         if command.fields.is_empty() {
             return Err(KernelError::validation("no site fields to update").into());
@@ -979,7 +979,7 @@ impl PgRegistryStore {
         // Tag the audit event with the calling tenant so `with_audit` arms the
         // transaction-local `app.current_org` GUC before the upsert loop runs.
         // Without this, the customer/site/equipment INSERTs hit FORCE RLS with an
-        // unset GUC and are rejected as `mnt_rt` (the production 500); the
+        // unset GUC and are rejected as `console_rt` (the production 500); the
         // BYPASSRLS superuser tests never exercise that path.
         let event = equipment_import_event(actor, branch_id, source_name, &parsed)?.with_org(org);
         let branch_uuid = *branch_id.as_uuid();
@@ -1431,7 +1431,7 @@ impl PgRegistryStore {
     /// RLS-armed: the region/branch upserts run inside `with_org_conn`, which
     /// binds the transaction-local `app.current_org` GUC to `current_org()`, so
     /// the `org_id = current_org` WITH CHECK on `regions`/`branches` passes under
-    /// FORCE RLS as the runtime role `mnt_rt`. Both rows carry the caller's org,
+    /// FORCE RLS as the runtime role `console_rt`. Both rows carry the caller's org,
     /// so a non-KNL tenant gets its own HQ rather than KNL's — equipment import
     /// lands in the CALLER's org. A bare-pool transaction (no armed GUC) would
     /// fail closed in production while passing the BYPASSRLS superuser tests.
@@ -1605,9 +1605,9 @@ fn push_equipment_list_filters(
     builder: &mut QueryBuilder<Postgres>,
     branch_scope: &BranchScope,
     status: Option<EquipmentStatus>,
-    branch_id_filter: Option<mnt_kernel_core::BranchId>,
-    customer_id_filter: Option<mnt_kernel_core::CustomerId>,
-    site_id_filter: Option<mnt_kernel_core::SiteId>,
+    branch_id_filter: Option<console_kernel_core::BranchId>,
+    customer_id_filter: Option<console_kernel_core::CustomerId>,
+    site_id_filter: Option<console_kernel_core::SiteId>,
     model_filter: &Option<String>,
     maker_filter: &Option<String>,
     q_normalized: &Option<String>,
@@ -2329,7 +2329,7 @@ fn candidate_row_from_row(row: &sqlx::postgres::PgRow) -> Result<CandidateRow, P
             customer_name: row.try_get("customer_name")?,
             site_name: row.try_get("site_name")?,
             placement_location: row.try_get("placement_location")?,
-            match_kind: mnt_registry_domain::SubstituteMatchKind::ExactTon,
+            match_kind: console_registry_domain::SubstituteMatchKind::ExactTon,
             ton_delta_milli: None,
         },
         profile,
@@ -2877,7 +2877,7 @@ async fn upsert_equipment(
 ///
 /// This mirrors `ensure_default_hq_branch` but runs on the caller's armed tx
 /// instead of an unscoped standalone transaction, so the `regions`/`branches`
-/// upserts satisfy the FORCE-RLS `WITH CHECK` as the runtime role `mnt_rt`. The
+/// upserts satisfy the FORCE-RLS `WITH CHECK` as the runtime role `console_rt`. The
 /// direct customer/site creates use this so the whole create — branch resolution
 /// plus the row INSERT plus the audit row — is one atomic, org-scoped unit.
 async fn ensure_hq_branch_in_tx(
@@ -3149,7 +3149,7 @@ const EQUIPMENT_VERSIONS: ObjectVersions = ObjectVersions::new("registry_equipme
 /// never written back directly.
 fn equipment_fields_from_version_content(
     content: &serde_json::Value,
-) -> Result<mnt_registry_application::UpdateEquipmentFields, KernelError> {
+) -> Result<console_registry_application::UpdateEquipmentFields, KernelError> {
     let map = content
         .as_object()
         .ok_or_else(|| KernelError::validation("version content must be a JSON object"))?;
@@ -3169,7 +3169,7 @@ fn equipment_fields_from_version_content(
         None => None,
     };
 
-    Ok(mnt_registry_application::UpdateEquipmentFields {
+    Ok(console_registry_application::UpdateEquipmentFields {
         customer_name: None,
         site_name: None,
         status,
@@ -3210,7 +3210,7 @@ fn equipment_fields_from_version_content(
 /// after-image without re-reading the row post-write.
 fn update_after_snapshot(
     before: &serde_json::Value,
-    fields: &mnt_registry_application::UpdateEquipmentFields,
+    fields: &console_registry_application::UpdateEquipmentFields,
 ) -> serde_json::Value {
     let mut after = before.clone();
     let Some(map) = after.as_object_mut() else {
@@ -3293,7 +3293,7 @@ fn merge_opt_string(
 async fn apply_scalar_equipment_update(
     tx: &mut Transaction<'_, Postgres>,
     equipment_id: EquipmentId,
-    fields: &mnt_registry_application::UpdateEquipmentFields,
+    fields: &console_registry_application::UpdateEquipmentFields,
 ) -> Result<(), PgRegistryError> {
     let mut builder =
         QueryBuilder::<Postgres>::new("UPDATE registry_equipment SET updated_at = now()");
@@ -3404,7 +3404,7 @@ fn equipment_import_event(
     branch_id: BranchId,
     source_name: &str,
     parsed: &ParsedMasterList,
-) -> Result<mnt_kernel_core::AuditEvent, PgRegistryError> {
+) -> Result<console_kernel_core::AuditEvent, PgRegistryError> {
     registry_import_audit_event(
         actor,
         branch_id,

@@ -6,11 +6,11 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
-  project: maintenance
+  project: console
   source:
     # Official pinned release manifest, wrapped by a thin kustomization so
     # Renovate can bump the tag. Installs the operator into cnpg-system.
-    repoURL: https://github.com/jason931225/maintenance.git # replace OWNER
+    repoURL: https://github.com/jason931225/console.git # replace OWNER
     targetRevision: main
     path: deploy/infra/cnpg-operator
   destination:

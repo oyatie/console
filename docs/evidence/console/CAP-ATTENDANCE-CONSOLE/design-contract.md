@@ -3,7 +3,7 @@
 New crate: `backend/crates/attendance` (members: `domain`, `adapter-postgres`, `rest` — leave/payroll crate shape).
 Owns ONLY genuinely new domain state (design-spec §3, gap-analysis §2): exceptions + resolutions,
 month closes + amendments, substitutions, week-52 acks. All reads of plans/records/leave/payroll
-reuse existing REST. Everything is org-RLS (`app.current_org`), tested as `mnt_rt`, audited,
+reuse existing REST. Everything is org-RLS (`app.current_org`), tested as `console_rt`, audited,
 deny-by-omission (unauthorized = same 404/empty as nonexistent — no existence leakage).
 
 ## 1. FSMs
@@ -130,10 +130,10 @@ otherwise 404 (no leakage).
 ## 4. DDL — provisional migration `0188_create_attendance_console.sql`
 (number provisional; integrator renumbers. Patterns copied from 0091/0107: composite (id, org_id)
 PK+FK, RLS+FORCE `org_isolation` on `app.current_org`, `enforce_org_id_immutable`, append-only
-triggers, `mnt-gate: audited-table` markers, mnt_rt grants per 0058.)
+triggers, `console-gate: audited-table` markers, console_rt grants per 0058.)
 
 ```sql
--- mnt-gate: audited-table attendance_exceptions
+-- console-gate: audited-table attendance_exceptions
 CREATE TABLE attendance_exceptions (
     id            UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id        UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -161,7 +161,7 @@ CREATE INDEX attendance_exceptions_emp_idx    ON attendance_exceptions (org_id, 
 -- + RLS/FORCE org_isolation + trg org_immutable (0091 pattern)
 -- status is the ONLY mutable column (guard trigger: UPDATE allowed solely OPEN→RESOLVED with same row values)
 
--- mnt-gate: audited-table attendance_exception_resolutions  (append-only)
+-- console-gate: audited-table attendance_exception_resolutions  (append-only)
 CREATE TABLE attendance_exception_resolutions (
     id               UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id           UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -179,7 +179,7 @@ CREATE TABLE attendance_exception_resolutions (
 );
 -- + RLS + platform_append_only_immutable trigger (0107 fn)
 
--- mnt-gate: audited-table attendance_substitutions
+-- console-gate: audited-table attendance_substitutions
 CREATE TABLE attendance_substitutions (
     id                   UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id               UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -214,7 +214,7 @@ CREATE INDEX attendance_substitutions_date_idx ON attendance_substitutions (org_
 CREATE INDEX attendance_substitutions_cov_idx  ON attendance_substitutions (org_id, covered_employee_id, cover_date);
 -- + RLS; mutable columns limited to status/cancel_reason/approval_ref/contract_ref (guard trigger)
 
--- mnt-gate: audited-table attendance_month_closes
+-- console-gate: audited-table attendance_month_closes
 CREATE TABLE attendance_month_closes (
     id             UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id         UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -234,7 +234,7 @@ CREATE TABLE attendance_month_closes (
 );
 -- + RLS + append-only trigger (a close is immutable; corrections go below)
 
--- mnt-gate: audited-table attendance_close_amendments  (append-only retro adjustments)
+-- console-gate: audited-table attendance_close_amendments  (append-only retro adjustments)
 CREATE TABLE attendance_close_amendments (
     id            UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id        UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -252,7 +252,7 @@ CREATE TABLE attendance_close_amendments (
 );
 -- + RLS + append-only trigger
 
--- mnt-gate: audited-table attendance_week52_acknowledgements  (append-only)
+-- console-gate: audited-table attendance_week52_acknowledgements  (append-only)
 CREATE TABLE attendance_week52_acknowledgements (
     id            UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id        UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -265,14 +265,14 @@ CREATE TABLE attendance_week52_acknowledgements (
     FOREIGN KEY (employee_id, org_id) REFERENCES employees(id, org_id) ON DELETE RESTRICT
 );
 -- + RLS + append-only trigger
--- GRANT SELECT/INSERT (+UPDATE where mutable) ON all five tables TO mnt_rt (0058 pattern)
+-- GRANT SELECT/INSERT (+UPDATE where mutable) ON all five tables TO console_rt (0058 pattern)
 ```
 
 ## 5. Module completion mapping (console-enterprise-roadmap contract)
 
 - **List/overview**: day board (plans ⨯ records ⨯ exceptions ⨯ substitutions) + month drill + stat bar; **object detail**: exception detail + EmployeeDay composition (audited view); **action/workflow**: resolve (mandatory reason), substitute assign (incl. future-dated cover planner), week52 ack, gated month close (preflight+attest); **history**: resolutions, amendments, audit stream.
 - **≥2 upstream links**: employee/person card, daily work plan (workorder), leave request (leave), site/branch. **≥2 downstream**: payroll run gate + material refs, approval AP- refs, notifications, labor-cost series.
-- **Authorization**: deny-by-omission at scope level (aggregates computed only inside caller's branch scope; out-of-scope ids → 404), self floor for own rows, RLS verified as `mnt_rt`.
+- **Authorization**: deny-by-omission at scope level (aggregates computed only inside caller's branch scope; out-of-scope ids → 404), self floor for own rows, RLS verified as `console_rt`.
 - **State survival**: selection/drafts (resolve reason draft, close attest) are client concerns for stage 3; `attendance_week52_acknowledgements` has an identity-unique acknowledgement row, and closes/resolutions have their own domain uniqueness.
 - **Create retry boundary**: exception/substitution/amendment persistence stores tenant-scoped
   `idempotency_key` plus canonical payload fingerprint with a unique key.  This is the database

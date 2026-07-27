@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-policy-domain",
+    name = "console-policy-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/policy/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_policy_domain",
+    crate = "console_policy_domain",
     edition = "2024",
     crate_root = "backend/crates/policy/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/policy/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -26,16 +26,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-policy-domain-unit",
+    name = "console-policy-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/policy/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_policy_domain",
+    crate = "console_policy_domain",
     edition = "2024",
     crate_root = "backend/crates/policy/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/policy/domain"},
     labels = ["owner.backend.crates.policy.domain", "domain.policy", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

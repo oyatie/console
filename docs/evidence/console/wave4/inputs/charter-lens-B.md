@@ -124,7 +124,7 @@ of 13 rewrites.
 5. **No dead affordance.** A control that cannot act is omitted (deny-by-omission), not disabled.
 6. **A11y AA**: every icon-only control has a Korean accessible name; status = text chip, not colour;
    informational chips are not focusable. `npx vitest run <lane files>` + `pnpm -C web tsc --noEmit`.
-7. **Backend lanes additionally**: RLS `FORCE` and tested as `mnt_rt` (never superuser), deny-by-default
+7. **Backend lanes additionally**: RLS `FORCE` and tested as `console_rt` (never superuser), deny-by-default
    PBAC, audit row on every mutation, canonical error envelope `{error:{code,message}}`, idempotency
    key on every POST, one story-level integration test, `BUCK` target present and building.
 8. **No stubs.** No `TODO`, no `test.skip`/`.only`, no unimplemented branch. `ponytail:` comments are
@@ -318,8 +318,8 @@ Migration slot: 0210 (provisional; integrator renumbers).
 
 DoD:
 - Concurrency test: N parallel issuances for the same (org, prefix) produce N distinct, gap-free codes
-  (run as `mnt_rt`, not superuser).
-- RLS `FORCE` on the sequence table; a cross-org read as `mnt_rt` with `app.current_org` armed to org B
+  (run as `console_rt`, not superuser).
+- RLS `FORCE` on the sequence table; a cross-org read as `console_rt` with `app.current_org` armed to org B
   returns zero rows for org A.
 - Idempotency: re-issuing for the same (kind, entity id, idempotency key) returns the same code.
 - Every issued prefix appears as an object-type registry row with `code_prefix`, and a REST test of
@@ -349,7 +349,7 @@ Roots: `backend/crates/ontology/search/**` (or the crate the coordination decide
 Must not touch: module dirs, `objects.rs`, `openapi.yaml` (manifest).
 
 DoD:
-- Query as `mnt_rt` for org A never returns an org-B object; a PBAC-denied kind returns zero rows
+- Query as `console_rt` for org A never returns an org-B object; a PBAC-denied kind returns zero rows
   (deny-by-omission), verified in an integration test with two orgs.
 - Korean substring + 초성 query returns the expected ranked set; empty query returns the
   recent/suggested set, not everything.
@@ -382,7 +382,7 @@ surface** — emit a manifest for the kind-registration lines, do not edit.
 Must not touch: `objects.rs`, `lib.rs` beyond appended register lines, `openapi.yaml` (manifest).
 
 DoD:
-- Each of the four reads returns real rows for at least two kinds, tested as `mnt_rt` with
+- Each of the four reads returns real rows for at least two kinds, tested as `console_rt` with
   `app.current_org` armed; a cross-org id 404s (not 403 leaking existence).
 - Relations respect PBAC per-edge: an edge to an unreadable object is omitted, and the test asserts
   the omission rather than a masked placeholder.
@@ -416,7 +416,7 @@ DoD:
 - Prefill round-trip: module CTA → composer opens with the exact fields → submit creates the draft
   with `source_object` recorded → audit row.
 - Prefill referencing an object the actor cannot read is rejected server-side (deny-by-default),
-  tested as `mnt_rt`.
+  tested as `console_rt`.
 - Idempotency key honoured: double-submit yields one draft.
 - Contract test consumed by at least one module lane's CTA test (equipment 취득 기안).
 
@@ -443,7 +443,7 @@ with non-empty `buck2_targets` — keep them green.
 
 DoD: universal clauses + the three window assertions on both row lists; KRW mask test (typing
 `1234567` renders `1,234,567`, submits `1234567`); sort cycle test asc→desc→none; acquisition draft
-test proves no direct save path remains; `mnt_rt` RLS test on the new code column.
+test proves no direct save path remains; `console_rt` RLS test on the new code column.
 
 ---
 
@@ -466,7 +466,7 @@ Roots: `web/src/console/logistics/**`, `backend/crates/logistics/**`, migration 
 `docs/evidence/console/CAP-LOGISTICS-PILOT/**`. `MOD_SCREENS` entry → manifest.
 Must not touch: `modules/moduleScreens.ts` (manifest), other module dirs.
 
-DoD: universal clauses + the three window assertions; `mnt_rt` RLS test proving branch scoping on all
+DoD: universal clauses + the three window assertions; `console_rt` RLS test proving branch scoping on all
 three list endpoints; adapter mapper test (server row → `ModuleRow`); a config-shape test mirroring
 `FinanceModuleScreen.test.tsx`; stepper renders `aria-current="step"` with state in **text**.
 
@@ -493,7 +493,7 @@ Must not touch: shared collision roots. **This crate is missing `BUCK` files**
 generated-face regeneration (`tools/buck/gen_first_party.py`) to the integrator in its manifest.
 
 DoD: universal clauses + three window assertions; stat-button filter test (click 진행중 → list shows
-only that state, count matches); context endpoint returns real cross-module rows as `mnt_rt` and
+only that state, count matches); context endpoint returns real cross-module rows as `console_rt` and
 fabricates nothing when a source module has no data (`[]` + honest-empty chip); toast test asserts the
 `RV-` code appears in the message.
 
@@ -541,7 +541,7 @@ Must not touch: `web/src/console/payroll/**` (that is L-B11).
 
 DoD: universal BE clauses; every exposed amount traces to an engine-computed value with a test naming
 its source (no derived-in-the-DTO arithmetic); masked-by-default is enforced server-side for callers
-without the unmask grant, tested as `mnt_rt`; totals are `null` unless every line calculated (preserve
+without the unmask grant, tested as `console_rt`; totals are `null` unless every line calculated (preserve
 the existing "never a partial sum shown as a total" rule at `payrollApi.ts` `RunCalcSummary`); any
 statutory rate used is cited inline with its source URL and effective date.
 
@@ -587,7 +587,7 @@ Roots: `web/src/console/directory/**`, `backend/crates/identity/directory/**`, m
 Must not touch: `backend/crates/identity` auth/session paths; other module dirs. `identity` is tier-2
 hot (22 hits/48h) — plain-merge before push.
 
-DoD: universal clauses; field-level PBAC test as `mnt_rt` (a caller without the contact grant gets the
+DoD: universal clauses; field-level PBAC test as `console_rt` (a caller without the contact grant gets the
 field **absent**, not masked-empty); server sort test proves ordering is stable across pages; the
 drag/pin deferral is a named gap-manifest line, and no test asserts a UUID as a code.
 
@@ -664,7 +664,7 @@ not hand-write them.
 
 DoD: universal clauses + three window assertions on the `OC-` chips; the bespoke `CardShell` file is
 **deleted**, not left orphaned; view-audit test proves expanding the finance section writes an audit
-row as `mnt_rt`; the `hc > 0` team-removal guard still fail-closes with a forbid audit while `hc === 0`
+row as `console_rt`; the `hc > 0` team-removal guard still fail-closes with a forbid audit while `hc === 0`
 enqueues a counted proposal; reason enum rejects an unlisted value unless it arrives via the
 직접 입력 path, which is recorded as such.
 
@@ -720,7 +720,7 @@ Must not touch: shared collision roots. **`recruiting` has ZERO `BUCK` files** (
 `tools/buck/gen_first_party.py` regeneration to the integrator as a blocking manifest item.
 
 DoD: universal clauses; pool registration creates a pool entry and **no** employee, verified as
-`mnt_rt` with the audit row; consent state is explicit on every pool entry (no implied consent);
+`console_rt` with the audit row; consent state is explicit on every pool entry (no implied consent);
 retention/notification periods cite their statutory source inline; mask tests for phone and 사번;
 the confirm-sheet test asserts only phone is editable.
 
@@ -788,7 +788,7 @@ Must not touch: `web/src/console/evidence/**` (that is L-B23's decision), `opena
 `docs` is tier-2 hot (30 hits) — plain-merge before push.
 
 DoD: universal BE clauses; the forbid path writes an audit row **before** the refusal, tested as
-`mnt_rt`; export passes the §3.10-⑤ egress gate and logs it; retention periods cite their source;
+`console_rt`; export passes the §3.10-⑤ egress gate and logs it; retention periods cite their source;
 pending registration is not visible as archived until approved (state test, not UI copy).
 
 ---
@@ -870,7 +870,7 @@ Must not touch: `web/src/features/attendance/**` (that is L-B24), `openapi.yaml`
 
 DoD: universal BE clauses; the plan lane is **absent** (not zero-filled) for employees with no
 schedule row — honest-empty, asserted; cover queue returns only D+7 and only cover-required roles,
-tested as `mnt_rt`; site grouping is server-attributed, not client-guessed.
+tested as `console_rt`; site grouping is server-attributed, not client-guessed.
 
 ---
 

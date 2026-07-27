@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../api/client";
 import type { TokenPairResponse } from "../api/types";
@@ -320,7 +320,7 @@ export async function finishPasskeyRegistration(
 
 /**
  * Rotate the session in the web cookie transport. The refresh token rides in the
- * HttpOnly `mnt_refresh` cookie (sent automatically by the browser), so the body
+ * HttpOnly `console_refresh` cookie (sent automatically by the browser), so the body
  * is empty and the response carries only a fresh access token — the rotated
  * refresh token is set back as a cookie and never reaches JS.
  */
@@ -335,7 +335,7 @@ export async function refreshToken(
 
 /**
  * Log out in the web cookie transport: the backend reads the refresh token from
- * the `mnt_refresh` cookie, revokes the family, and clears the cookie. No token
+ * the `console_refresh` cookie, revokes the family, and clears the cookie. No token
  * is sent in the body.
  */
 export async function logout(api: WebAuthnApi) {

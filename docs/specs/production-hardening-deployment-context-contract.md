@@ -21,8 +21,8 @@ The first registry entries are:
 
 | Context | Status | Canonical evidence paths | Intent |
 |---|---|---|---|
-| `oci-guest` | live/current production substrate | `deploy/OPS-RUNBOOK.md`, `deploy/SECRETS.md`, `deploy/apps/maintenance/base/database.yaml`, `deploy/apps/maintenance/overlays/prod/kustomization.yaml`, `docs/ENTERPRISE-READINESS.md` | Preserve the current Oracle Cloud Ampere A1 single-node target honestly: no false HA, OCI Vault/Object Storage are documented, CNPG remains one instance, and HA-only storage patches are not applied to the live prod overlay. |
-| `on-prem-ha` | DARK/additive ADR-0024 target until operator activation | `deploy/OPS-RUNBOOK-baremetal.md`, `deploy/apps/maintenance/overlays/on-prem/kustomization.yaml`, `deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml`, `deploy/apps/storage/manifests/storageclass-mnt-pg-hot.yaml`, `deploy/apps/storage/README.md`, `deploy/apps/maintenance/overlays/on-prem/README.md`, `deploy/apps/observability/README.md` | Stage the portable HA substrate without mutating the live OCI target: OpenBao/External Secrets, self-hosted S3-compatible storage, replicated block storage, CNPG >= 3, topology spread/failover evidence, and explicit DARK/cutover boundaries. |
+| `oci-guest` | live/current production substrate | `deploy/OPS-RUNBOOK.md`, `deploy/SECRETS.md`, `deploy/apps/console/base/database.yaml`, `deploy/apps/console/overlays/prod/kustomization.yaml`, `docs/ENTERPRISE-READINESS.md` | Preserve the current Oracle Cloud Ampere A1 single-node target honestly: no false HA, OCI Vault/Object Storage are documented, CNPG remains one instance, and HA-only storage patches are not applied to the live prod overlay. |
+| `on-prem-ha` | DARK/additive ADR-0024 target until operator activation | `deploy/OPS-RUNBOOK-baremetal.md`, `deploy/apps/console/overlays/on-prem/kustomization.yaml`, `deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml`, `deploy/apps/storage/manifests/storageclass-console-pg-hot.yaml`, `deploy/apps/storage/README.md`, `deploy/apps/console/overlays/on-prem/README.md`, `deploy/apps/observability/README.md` | Stage the portable HA substrate without mutating the live OCI target: OpenBao/External Secrets, self-hosted S3-compatible storage, replicated block storage, CNPG >= 3, topology spread/failover evidence, and explicit DARK/cutover boundaries. |
 
 Implementation shape: keep a registry constant such as `DEPLOYMENT_CONTEXTS = [{ id, status, checks }]`. Each check should return a pass/fail with the context id in its label. Avoid a flat list of OCI-specific `requireIncludes` calls with labels that imply universal production truth.
 
@@ -64,7 +64,7 @@ Required properties:
    - It documents OCI Vault as the recovery source for Talos/kubeconfig/app secret bundles.
    - `deploy/SECRETS.md` documents the current OCI Vault/manual Kubernetes secret bootstrap path and the External Secrets/Sealed Secrets upgrade path.
 2. **Object-store endpoint and retention**
-   - `deploy/apps/maintenance/base/database.yaml` defines a CNPG Barman `ObjectStore` with `destinationPath: s3://mnt-db-backups/` and an OCI Object Storage S3-compatible `endpointURL`.
+   - `deploy/apps/console/base/database.yaml` defines a CNPG Barman `ObjectStore` with `destinationPath: s3://mnt-db-backups/` and an OCI Object Storage S3-compatible `endpointURL`.
    - The credential secret remains explicit, e.g. `oci-objectstore-creds` with `ACCESS_KEY_ID` / `ACCESS_SECRET_KEY`.
    - Retention posture is explicit: either a real `retentionPolicy` is present or the file documents indefinite retention / no pruning and its storage-growth consequence.
    - OCI-specific Barman checksum workarounds may be allowed here, but must be labeled as OCI-specific and must not be required for `on-prem-ha`.
@@ -73,9 +73,9 @@ Required properties:
    - `docs/ENTERPRISE-READINESS.md` states that `oci-guest` is single-node, not automatic failover, and a node loss is restore-from-backup rather than HA.
    - Any OCI-specific MTU/NTP/Bastion guidance stays scoped to `oci-guest` docs.
 4. **Database instance-count and storage shape**
-   - `deploy/apps/maintenance/base/database.yaml` keeps CNPG `spec.instances: 1` for the live single-node base.
+   - `deploy/apps/console/base/database.yaml` keeps CNPG `spec.instances: 1` for the live single-node base.
    - The base must not pin the on-prem replicated storage class.
-   - `deploy/apps/maintenance/overlays/prod/kustomization.yaml` inherits the base and must not include `cnpg-ha-patch.yaml`, `mnt-pg-hot`, `/spec/instances` HA patches, or `/spec/storage/storageClass` patches.
+   - `deploy/apps/console/overlays/prod/kustomization.yaml` inherits the base and must not include `cnpg-ha-patch.yaml`, `console-pg-hot`, `/spec/instances` HA patches, or `/spec/storage/storageClass` patches.
 
 Passing `oci-guest` means the live context is honest and safe for its current substrate. It does not mean the platform has multi-node HA.
 
@@ -99,11 +99,11 @@ Required properties:
    - VIP/ingress failover evidence is required before traffic cutover.
    - DARK boundaries are explicit: on-prem apps/overlays are not wired into live Argo CD until founder/operator activation.
 4. **Database instance-count and replicated storage**
-   - `deploy/apps/maintenance/overlays/on-prem/kustomization.yaml` inherits `../../base` and applies `cnpg-ha-patch.yaml` to `Cluster/mnt-db`.
+   - `deploy/apps/console/overlays/on-prem/kustomization.yaml` inherits `../../base` and applies `cnpg-ha-patch.yaml` to `Cluster/console-db`.
    - `cnpg-ha-patch.yaml` sets `/spec/instances` to at least `3`.
-   - The patch sets `/spec/storage/storageClass` to the canonical replicated storage class, currently `mnt-pg-hot`.
+   - The patch sets `/spec/storage/storageClass` to the canonical replicated storage class, currently `console-pg-hot`.
    - The patch includes synchronous replication / failover posture, and either anti-affinity or topology spread by hostname or stronger failure-domain labels.
-   - `deploy/apps/storage/manifests/storageclass-mnt-pg-hot.yaml` defines `StorageClass/mnt-pg-hot`, uses a replicated provisioner such as Longhorn (`driver.longhorn.io` for the current DARK lane), has at least three replicas, `Retain`, and `WaitForFirstConsumer`.
+   - `deploy/apps/storage/manifests/storageclass-console-pg-hot.yaml` defines `StorageClass/console-pg-hot`, uses a replicated provisioner such as Longhorn (`driver.longhorn.io` for the current DARK lane), has at least three replicas, `Retain`, and `WaitForFirstConsumer`.
 5. **Observability and SLO activation**
    - The on-prem observability docs stage self-hosted telemetry (OTel plus metrics/logs/traces backend) or explicitly explain the selected alternative.
    - The app overlay that enables on-prem observability must preserve the portable `/metrics`/OpenSLO contract rather than replacing it with provider-specific monitoring.

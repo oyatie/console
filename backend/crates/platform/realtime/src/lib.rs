@@ -14,21 +14,21 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, MessageId, NotificationId, OrgId, ThreadId, UserId,
 };
-use mnt_messenger_application::{
+use console_messenger_application::{
     MessageAckNotification, MessageNotifier, MessageNotifyFuture, MessagePostedNotification,
     MessageSummary,
 };
-use mnt_notifications_application::{
+use console_notifications_application::{
     NotificationCreatedNotification, NotificationNotifier, NotificationNotifyFuture,
     NotificationSummary,
 };
-use mnt_notifications_domain::NotificationLink;
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_db::{DbError, with_org_conn};
-use mnt_platform_request_context::{RequestContextError, current_org};
+use console_notifications_domain::NotificationLink;
+use console_platform_auth::JwtVerifier;
+use console_platform_db::{DbError, with_org_conn};
+use console_platform_request_context::{RequestContextError, current_org};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgListener;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
@@ -1273,7 +1273,7 @@ async fn principal_from_headers(
         )
     })?;
     let principal =
-        mnt_platform_request_context::resolve_principal_from_bearer_token(verifier, pool, token)
+        console_platform_request_context::resolve_principal_from_bearer_token(verifier, pool, token)
             .await
             .map_err(realtime_error_from_request_context)?;
     Ok(RealtimePrincipal {
@@ -1471,7 +1471,7 @@ fn message_summary_from_row(row: &sqlx::postgres::PgRow) -> Result<MessageSummar
         quoted_sender_name: row.try_get("quoted_sender_name")?,
         attachment_evidence_ids: attachment_ids
             .into_iter()
-            .map(mnt_kernel_core::EvidenceId::from_uuid)
+            .map(console_kernel_core::EvidenceId::from_uuid)
             .collect(),
         sent_at: row.try_get("sent_at")?,
         created_at: row.try_get("created_at")?,

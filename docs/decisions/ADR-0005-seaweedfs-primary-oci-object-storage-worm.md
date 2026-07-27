@@ -21,7 +21,7 @@ Maintenance photo/video evidence is legally meaningful and must be tamper-proof 
 
 ## Decision
 
-SeaweedFS remains the self-hosted primary behind the current S3-specific storage implementation (`mnt-platform-storage`), hardened: Filer UI/Admin GUI not exposed, releases pinned behind head, and our own WORM retention test suite in CI (put-retention COMPLIANCE → version-delete attempt must fail).
+SeaweedFS remains the self-hosted primary behind the current S3-specific storage implementation (`console-platform-storage`), hardened: Filer UI/Admin GUI not exposed, releases pinned behind head, and our own WORM retention test suite in CI (put-retention COMPLIANCE → version-delete attempt must fail).
 
 ADR-0024 generalizes the replica rule: every evidence object must reach a retention-locked copy in an independent failure domain through a provider-neutral object-storage capability contract. The current S3 adapter serves SeaweedFS, OCI Object Storage, and other proven S3-compatible endpoints; it is not itself the provider-neutral contract. Native GCS, Azure Blob, and other non-S3 services require separate context adapters that preserve the same object, integrity, retention, and recovery behavior without leaking provider types into the core. The first `on-prem` self-host reference must provide the SeaweedFS implementation and an independent physical site or equivalent failure domain. No managed object store is mandatory across contexts.
 

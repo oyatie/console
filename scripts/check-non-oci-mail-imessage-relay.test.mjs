@@ -6,8 +6,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 const scriptPath = new URL("./check-non-oci-mail-imessage-relay.mjs", import.meta.url).pathname;
-const deploymentPath = new URL("../deploy/apps/maintenance/components/imessage-relay/deployment.yaml", import.meta.url).pathname;
-const networkPolicyPath = new URL("../deploy/apps/maintenance/components/imessage-relay/networkpolicy.yaml", import.meta.url).pathname;
+const deploymentPath = new URL("../deploy/apps/console/components/imessage-relay/deployment.yaml", import.meta.url).pathname;
+const networkPolicyPath = new URL("../deploy/apps/console/components/imessage-relay/networkpolicy.yaml", import.meta.url).pathname;
 const BLOCKER = "blocked_missing_non_oci_talos_or_bridge_credentials";
 const BLOCKER_SUMMARY = "BLOCKED_PENDING_NON_OCI_TALOS_CREDENTIALS";
 
@@ -126,7 +126,7 @@ test("relay component is stateless by default and fails closed on caller and bri
   const deployment = readFileSync(deploymentPath, "utf8");
   const networkPolicy = readFileSync(networkPolicyPath, "utf8");
 
-  assert.doesNotMatch(deployment, /DATABASE_URL|IMESSAGE_RELAY_DATABASE_URL|mnt-db-rt/);
+  assert.doesNotMatch(deployment, /DATABASE_URL|IMESSAGE_RELAY_DATABASE_URL|console-db-rt/);
   assert.doesNotMatch(networkPolicy, /allow-imessage-relay-egress-postgres|cnpg\.io\/cluster|port: 5432/);
   assert.match(deployment, /name: IMESSAGE_RELAY_RECIPIENT_SOURCE\s+value: static/);
   const allowedRecipientsEntry = deployment.match(
@@ -155,5 +155,5 @@ test("relay image must be replaced by a non-OCI overlay immutable digest", () =>
   const deployment = readFileSync(deploymentPath, "utf8");
 
   assert.match(deployment, /image: .+@sha256:[0-9a-f]{64}/);
-  assert.doesNotMatch(deployment, /^\s*image:\s*mnt-imessage-relay\s*$/m);
+  assert.doesNotMatch(deployment, /^\s*image:\s*console-imessage-relay\s*$/m);
 });

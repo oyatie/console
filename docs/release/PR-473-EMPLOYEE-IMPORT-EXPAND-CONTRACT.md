@@ -39,10 +39,10 @@ the legacy runtime path.
 The f6ff236 employee upsert carries no command token, run identifier, or other
 trustworthy database marker. Its immediate endpoint also has no staged import
 run or audit envelope. PostgreSQL therefore cannot distinguish an authentic
-f6ff236 balance upsert from another `mnt_rt` balance upsert without either
+f6ff236 balance upsert from another `console_rt` balance upsert without either
 breaking rollback or trusting caller-controlled data.
 
-For the expand window, `mnt_rt` consequently retains its pre-0166 ability to
+For the expand window, `console_rt` consequently retains its pre-0166 ability to
 write the three employee leave-balance columns. This is known compatibility
 exposure, not completed command-only enforcement. The migration keeps new
 home-branch authority command-only and narrows the legacy APPLIED/audit bridge
@@ -70,7 +70,7 @@ leaves both unchanged.
 
 ## Contract release gate
 
-A later, separately numbered migration must remove the legacy `mnt_rt`
+A later, separately numbered migration must remove the legacy `console_rt`
 employee-balance, APPLIED-transition, and `data_import.apply` bridges. That
 migration may ship only after all of the following are evidenced:
 
@@ -80,7 +80,7 @@ migration may ship only after all of the following are evidenced:
 3. Staged imports created by old binaries are drained or explicitly superseded.
 4. Upgrade and rollback exercises prove no supported binary uses the raw-table
    employee-import path.
-5. The contract migration has real `mnt_rt` negative tests proving the legacy
+5. The contract migration has real `console_rt` negative tests proving the legacy
    balance, APPLIED, and audit paths are closed while `leave_api` imports pass.
 
 Until that numbered contract migration lands and its rollout gates pass, no
@@ -116,7 +116,7 @@ contains populated upgrade regressions for both supported f6ff236 modes:
 - `exact_charge_create_accepts_resolved_and_review_required_shapes`
 - `exact_charge_create_atomically_rejects_mismatched_reason_and_evidence_shapes`
 
-The tests run against PostgreSQL with the real `mnt_rt` role and the exact 0166
+The tests run against PostgreSQL with the real `console_rt` role and the exact 0166
 migration text. They prove compatibility, exactly-one same-transaction audit
 correlation, immutable-ledger payload binding, the two valid exact-charge create
 shapes, atomic rejection of mixed reason/evidence shapes, and bounded synthetic

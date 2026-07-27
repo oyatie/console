@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-comms-adapter-smtp",
+    name = "console-comms-adapter-smtp",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-smtp", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_adapter_smtp",
+    crate = "console_comms_adapter_smtp",
     edition = "2024",
     crate_root = "backend/crates/comms/adapter-smtp/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/adapter-smtp"},
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/comms/domain:mnt-comms-domain",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/comms/domain:console-comms-domain",
         "//third-party/rust:hickory-resolver",
         "//third-party/rust:ipnet",
         "//third-party/rust:lettre",
@@ -30,18 +30,18 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-comms-adapter-smtp-unit",
+    name = "console-comms-adapter-smtp-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-smtp", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_adapter_smtp",
+    crate = "console_comms_adapter_smtp",
     edition = "2024",
     crate_root = "backend/crates/comms/adapter-smtp/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/adapter-smtp"},
     labels = ["owner.backend.crates.comms.adapter-smtp", "domain.comms", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/comms/domain:mnt-comms-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/comms/domain:console-comms-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:hickory-resolver",
         "//third-party/rust:ipnet",
         "//third-party/rust:lettre",

@@ -17,11 +17,11 @@ describe("iOS UI backend launcher", () => {
       authDir: "/auth",
       port: "49183",
       coldstartOtp: otp,
-      baseEnv: { MNT_IOS_COLDSTART_OTP: otp, E2E_RP_ID: "stale.example", KEEP: "yes" },
+      baseEnv: { CONSOLE_IOS_COLDSTART_OTP: otp, E2E_RP_ID: "stale.example", KEEP: "yes" },
     });
     assert.equal(executable, "/repo/e2e/harness/boot-backend.sh");
     assert.equal(env.KEEP, "yes");
-    assert.equal(env.MNT_IOS_COLDSTART_OTP, undefined);
+    assert.equal(env.CONSOLE_IOS_COLDSTART_OTP, undefined);
     assert.deepEqual(
       Object.fromEntries(Object.entries(env).filter(([name]) => name.startsWith("E2E_"))),
       {
@@ -44,7 +44,7 @@ describe("iOS UI backend launcher", () => {
   });
 
   it("executes the owned backend script with no credential argument and exact environment", () => {
-    const sandbox = mkdtempSync(join(tmpdir(), "mnt-ios-backend-launcher-"));
+    const sandbox = mkdtempSync(join(tmpdir(), "console-ios-backend-launcher-"));
     try {
       const root = join(sandbox, "repo");
       const authDir = join(sandbox, "auth");
@@ -52,10 +52,10 @@ describe("iOS UI backend launcher", () => {
       const capture = join(sandbox, "capture");
       mkdirSync(dirname(backend), { recursive: true });
       mkdirSync(authDir);
-      writeFileSync(backend, `#!/usr/bin/env bash\nset -euo pipefail\nprintf '%s\\n' "$#" "$E2E_AUTH_DIR" "$E2E_HTTP_ADDR" "$E2E_PORT_CONFLICT_MODE" "$E2E_COLDSTART_OTP" "$E2E_RP_ORIGIN" "$E2E_RP_ID" "\${MNT_IOS_COLDSTART_OTP-unset}" > "$CAPTURE_FILE"\n`);
+      writeFileSync(backend, `#!/usr/bin/env bash\nset -euo pipefail\nprintf '%s\\n' "$#" "$E2E_AUTH_DIR" "$E2E_HTTP_ADDR" "$E2E_PORT_CONFLICT_MODE" "$E2E_COLDSTART_OTP" "$E2E_RP_ORIGIN" "$E2E_RP_ID" "\${CONSOLE_IOS_COLDSTART_OTP-unset}" > "$CAPTURE_FILE"\n`);
       chmodSync(backend, 0o700);
       execFileSync(process.execPath, [script, root, authDir, "49183"], {
-        env: { ...process.env, CAPTURE_FILE: capture, MNT_IOS_COLDSTART_OTP: otp },
+        env: { ...process.env, CAPTURE_FILE: capture, CONSOLE_IOS_COLDSTART_OTP: otp },
       });
       assert.deepEqual(readFileSync(capture, "utf8").trimEnd().split("\n"), [
         "0",
@@ -73,7 +73,7 @@ describe("iOS UI backend launcher", () => {
   });
 
   it("propagates the owned backend script exit status", () => {
-    const sandbox = mkdtempSync(join(tmpdir(), "mnt-ios-backend-launcher-exit-"));
+    const sandbox = mkdtempSync(join(tmpdir(), "console-ios-backend-launcher-exit-"));
     try {
       const root = join(sandbox, "repo");
       const authDir = join(sandbox, "auth");
@@ -83,7 +83,7 @@ describe("iOS UI backend launcher", () => {
       writeFileSync(backend, "#!/usr/bin/env bash\nexit 23\n");
       chmodSync(backend, 0o700);
       const result = spawnSync(process.execPath, [script, root, authDir, "49183"], {
-        env: { ...process.env, MNT_IOS_COLDSTART_OTP: otp },
+        env: { ...process.env, CONSOLE_IOS_COLDSTART_OTP: otp },
       });
       assert.equal(result.status, 23);
     } finally {

@@ -4,12 +4,12 @@
 --   * A Group is NOT a tenant and never arms `app.current_org`.
 --   * `groups` is global identity metadata only (id/slug/name/status).
 --   * `group_memberships` and `group_role_grants` are owner-only authorization
---     tables. Runtime `mnt_rt` has NO raw SELECT on them; it only gets narrow
+--     tables. Runtime `console_rt` has NO raw SELECT on them; it only gets narrow
 --     SECURITY DEFINER resolvers that restore row_security before returning.
 --   * Consolidated reads still run as N per-member `with_org_conn` calls later;
 --     this migration only provides the identity/member resolver inputs.
 
--- mnt-gate: global-table groups (rationale: group identity metadata only; no tenant data or auth grants)
+-- console-gate: global-table groups (rationale: group identity metadata only; no tenant data or auth grants)
 CREATE TABLE groups (
     id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     slug       TEXT        NOT NULL UNIQUE
@@ -27,7 +27,7 @@ ALTER TABLE organizations
     ADD COLUMN group_id UUID NULL REFERENCES groups(id) ON DELETE RESTRICT;
 CREATE INDEX idx_organizations_group ON organizations (group_id) WHERE group_id IS NOT NULL;
 
--- mnt-gate: owner-only-table group_memberships (rationale: cross-tenant membership authorization; runtime resolves through group_member_org_ids only)
+-- console-gate: owner-only-table group_memberships (rationale: cross-tenant membership authorization; runtime resolves through group_member_org_ids only)
 CREATE TABLE group_memberships (
     group_id   UUID        NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
     org_id     UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -36,7 +36,7 @@ CREATE TABLE group_memberships (
     UNIQUE (org_id)
 );
 
--- mnt-gate: owner-only-table group_role_grants (rationale: cross-tenant group-role authorization; runtime resolves own grants only)
+-- console-gate: owner-only-table group_role_grants (rationale: cross-tenant group-role authorization; runtime resolves own grants only)
 CREATE TABLE group_role_grants (
     id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     group_id   UUID        NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
@@ -49,12 +49,12 @@ CREATE TABLE group_role_grants (
 );
 CREATE INDEX idx_group_role_grants_user ON group_role_grants (user_id);
 
--- Migration 0031 set future-table default privileges to mnt_rt. Revoke those
+-- Migration 0031 set future-table default privileges to console_rt. Revoke those
 -- inherited grants on the owner-only authorization tables, then grant only the
 -- safe identity columns from `groups`.
-REVOKE ALL ON groups, group_memberships, group_role_grants FROM mnt_rt;
+REVOKE ALL ON groups, group_memberships, group_role_grants FROM console_rt;
 REVOKE ALL ON groups, group_memberships, group_role_grants FROM PUBLIC;
-GRANT SELECT (id, slug, name, status) ON groups TO mnt_rt;
+GRANT SELECT (id, slug, name, status) ON groups TO console_rt;
 
 -- rls-arming: ok identity-only SECURITY DEFINER resolver
 CREATE OR REPLACE FUNCTION group_member_org_ids(p_group UUID, p_actor UUID)
@@ -93,7 +93,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION group_member_org_ids(UUID, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION group_member_org_ids(UUID, UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION group_member_org_ids(UUID, UUID) TO console_rt;
 
 -- rls-arming: ok identity-only SECURITY DEFINER resolver
 CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)
@@ -123,4 +123,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION group_role_grants_for_user(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION group_role_grants_for_user(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION group_role_grants_for_user(UUID) TO console_rt;

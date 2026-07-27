@@ -2,7 +2,7 @@
 //! fixes the business decisions so all transports share the same gates.
 #![cfg_attr(test, allow(clippy::unwrap_used))]
 
-use mnt_attendance_domain::{
+use console_attendance_domain::{
     AttendanceDateRange, AttendanceDomainError, ExceptionKind, ResolutionAction, SubstitutionWindow,
 };
 use serde::{Deserialize, Serialize};

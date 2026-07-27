@@ -6,7 +6,7 @@
 //!
 //! Feature-floor note: the `org_change_read/draft/approve/apply` feature keys
 //! are registered in `feature_catalog` (migration 0189) but the shared
-//! `mnt_platform_authz::Feature` enum is integrator-owned (see the lane's
+//! `console_platform_authz::Feature` enum is integrator-owned (see the lane's
 //! integration-manifest.json). Until the enum gains the variants, custom-role
 //! grants for these keys cannot exist (`Feature::from_str` skips unknown keys
 //! fail-closed), so the built-in role floors below are the complete authorized
@@ -20,14 +20,14 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use mnt_kernel_core::{ErrorKind, KernelError};
-use mnt_orgchange_adapter_postgres::{
+use console_kernel_core::{ErrorKind, KernelError};
+use console_orgchange_adapter_postgres::{
     CreateOrgChange, DraftPatch, ListFilter, PgOrgChangeError, PgOrgChangeStore,
 };
-use mnt_orgchange_domain::{OrgChangeKind, OrgChangeStatus, OrgChangeTarget, OrgProposalOp};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Principal, Role};
-use mnt_platform_request_context::RequestContextError;
+use console_orgchange_domain::{OrgChangeKind, OrgChangeStatus, OrgChangeTarget, OrgProposalOp};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Principal, Role};
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use time::Date;
@@ -84,7 +84,7 @@ pub fn router(state: OrgChangeRestState) -> Router {
         .route("/api/v1/org-changes/{id}/cancel", post(cancel))
         .route("/api/v1/org-entities", get(org_entities))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(r, verifier, pool)
+    console_platform_request_context::with_request_context(r, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -464,7 +464,7 @@ async fn principal(s: &OrgChangeRestState, h: &HeaderMap) -> Result<Principal, R
             "JWT verification is not configured",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, s.store.pool(), h)
+    console_platform_request_context::resolve_principal(verifier, s.store.pool(), h)
         .await
         .map_err(|e| match e {
             RequestContextError::MissingBearer

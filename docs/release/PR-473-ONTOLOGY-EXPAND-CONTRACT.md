@@ -40,7 +40,7 @@ sidecar advance for legacy stage/transition transactions.
 
 ## Explicit residual security window
 
-For the expand window, `mnt_rt` retains narrowly guarded `INSERT`/`UPDATE`
+For the expand window, `console_rt` retains narrowly guarded `INSERT`/`UPDATE`
 privileges on the legacy ontology tables. This is compatibility exposure, not
 completed command-only enforcement. The database verifies tenant context,
 active actor, exact allowed mutation shape, same-transaction row identity,
@@ -49,13 +49,13 @@ exactly one correlated audit fact, and atomic CAS-sidecar advancement.
 The bridge does **not** prove which HTTP handler authorized the old write. A
 pre-0165 SQL transaction carries no unforgeable command credential or endpoint
 identity, so PostgreSQL cannot reconstruct that fact without breaking the
-supported rollback. New commands use the dedicated `mnt_ontology_cmd` login
+supported rollback. New commands use the dedicated `console_ontology_cmd` login
 and writer-owned `SECURITY DEFINER` entrypoints; the legacy runtime cannot call
 those entrypoints or impersonate their owner.
 
 ## Contract release gate
 
-A later, separately numbered migration must remove the legacy `mnt_rt`
+A later, separately numbered migration must remove the legacy `console_rt`
 ontology DML grants, compatibility triggers, and legacy-audit bridge. That
 migration may ship only after all of the following are evidenced:
 
@@ -65,7 +65,7 @@ migration may ship only after all of the following are evidenced:
 3. All pre-0165 replicas and jobs are drained, and a readback proves none remain.
 4. Mixed-version upgrade and rollback exercises prove the expand window before
    the rollback floor is raised.
-5. The contract migration has real-`mnt_rt` negative tests proving parent,
+5. The contract migration has real-`console_rt` negative tests proving parent,
    child, and protected-audit legacy writes are closed.
 6. Positive tests prove all supported create, stage, transition, and built-in
    install operations still pass through `ontology_api` with audit and CAS
@@ -101,7 +101,7 @@ contains the populated upgrade and compatibility regressions:
 - `migration_0165_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts`
 
 The tests run the exact 0165 migration against PostgreSQL with the real
-`mnt_rt`, `mnt_ontology_cmd`, migration-owner, and capability-owner role
+`console_rt`, `console_ontology_cmd`, migration-owner, and capability-owner role
 topology. They execute the retained binary's SQL shapes and prove that missing
 or duplicate same-transaction audit evidence rolls the write and CAS sidecar
 back atomically, and exercise the populated migration under explicit timeout

@@ -144,8 +144,8 @@ CREATE TRIGGER trg_org_change_events_no_delete
     FOR EACH ROW EXECUTE FUNCTION governance_append_only_record();
 
 -- No hard delete anywhere; events additionally never UPDATE.
-GRANT SELECT, INSERT, UPDATE ON org_change_requests TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON org_change_approval_steps TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON org_change_settlement_items TO mnt_rt;
-GRANT SELECT, INSERT ON org_change_events TO mnt_rt;
-REVOKE UPDATE, DELETE ON org_change_events FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON org_change_requests TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON org_change_approval_steps TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON org_change_settlement_items TO console_rt;
+GRANT SELECT, INSERT ON org_change_events TO console_rt;
+REVOKE UPDATE, DELETE ON org_change_events FROM console_rt;

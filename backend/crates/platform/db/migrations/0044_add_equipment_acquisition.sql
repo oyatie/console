@@ -22,7 +22,7 @@
 -- are all plain BIGINT; acquisition adds an explicit >= 0 guard since it is a
 -- newly user-entered amount).
 
--- mnt-gate: audited-table registry_equipment
+-- console-gate: audited-table registry_equipment
 ALTER TABLE registry_equipment
     ADD COLUMN acquisition_cost_won BIGINT
         CHECK (acquisition_cost_won IS NULL OR acquisition_cost_won >= 0),

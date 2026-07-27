@@ -4,9 +4,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -16,8 +16,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool: PgPool) {
@@ -27,7 +27,7 @@ async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool:
         .await;
 
     assert_eq!(
-        mnt_facilities_rest::poll_scheduled_hvac(&pool)
+        console_facilities_rest::poll_scheduled_hvac(&pool)
             .await
             .unwrap(),
         1
@@ -155,13 +155,13 @@ async fn scheduler_is_idempotent_and_preserves_overdue_sla_truth(pool: PgPool) {
     let obligation = fixture.obligation(overdue).await;
 
     assert_eq!(
-        mnt_facilities_rest::poll_scheduled_hvac(&pool)
+        console_facilities_rest::poll_scheduled_hvac(&pool)
             .await
             .unwrap(),
         1
     );
     assert_eq!(
-        mnt_facilities_rest::poll_scheduled_hvac(&pool)
+        console_facilities_rest::poll_scheduled_hvac(&pool)
             .await
             .unwrap(),
         0
@@ -243,7 +243,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
     fixture
         .obligation(OffsetDateTime::now_utc() - Duration::minutes(1))
         .await;
-    mnt_facilities_rest::poll_scheduled_hvac(&pool)
+    console_facilities_rest::poll_scheduled_hvac(&pool)
         .await
         .unwrap();
     let case_id = fixture.only_case().await;
@@ -461,11 +461,11 @@ impl Fixture {
     }
     fn router(&self) -> axum::Router {
         let config = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-            ("MNT_JWT_ISSUER", ISSUER.to_owned()),
-            ("MNT_JWT_AUDIENCE", AUDIENCE.to_owned()),
-            ("MNT_JWT_PUBLIC_KEY_PEM", self.public.clone()),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.to_owned()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", self.public.clone()),
         ])
         .unwrap();
         build_router(

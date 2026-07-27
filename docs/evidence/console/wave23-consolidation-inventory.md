@@ -64,17 +64,17 @@ exists but is NOT mounted** (dangling codex partial). `recruiting` and
 
 | Lane | Spine state | Migration | Decision |
 |------|-------------|-----------|----------|
-| **payroll** | base `mnt_payroll_rest` mounted (418L, no run-lifecycle); `PayrollRunManage` authz ABSENT; test absent | `0186` byte-identical (bare) | **MERGE** lane — brings run lifecycle + authz + test. No migration conflict. |
+| **payroll** | base `console_payroll_rest` mounted (418L, no run-lifecycle); `PayrollRunManage` authz ABSENT; test absent | `0186` byte-identical (bare) | **MERGE** lane — brings run lifecycle + authz + test. No migration conflict. |
 | **recruiting** | crate ABSENT; not mounted | `0187` byte-identical (bare) | **MERGE** lane — new `recruiting` crate + mount + test. No migration conflict. |
 | **org** | `orgchange` crate ABSENT | lane `0189_create_org_change` collides w/ spine `0189_employee_day_eligibility` | **MERGE** + renumber lane migration → next free. |
 | **evaluation** | `evaluation` crate present but UNMOUNTED (codex partial); crate diverged | lane `0190_create_evaluation` DIFFERS from spine `0190` (add/add) | **MERGE lane's mount+test**; reconcile crate + migration. Trickiest — spine crate is dangling, lane wires it. |
 | **inventory** | mounted + live (`INVENTORY_ROUTE_PATHS`); crate diverged from lane | `0191` byte-identical | **KEEP SPINE.** Lane backend = unmounted alternative. Do NOT merge (would fight live train). |
 | **attendance** | mounted + live (`ATTENDANCE_ROUTE_PATHS`); codex body | `0188` DIFFERS | **KEEP SPINE.** Lane backend + `console/attendance` body = unmounted alternative (policy c). |
-| **maintenance** | `mnt_workorder_rest` mounted (base); settlement routes absent | lane `0193_workorder_maintenance_console` collides w/ spine `0193_maintenance_gaps` | **MERGE** lane's workorder settlement additions + renumber migration. |
-| **field** | `mnt_support_rest` mounted (base); field routes absent | lane `0194_field_console_support_extensions` collides w/ spine `0194_harden_maintenance` | **MERGE** + renumber. Authz: field read gate = `work_order_read_all`. |
-| **docs** | `mnt_docs_rest` mounted (`EVIDENCE_ROUTE_PATHS`); retention absent | lane `0195_evidence_retention` collides w/ spine `0195_docs_gaps` | **MERGE** lane's retention additions + renumber. |
-| **notif** | `mnt_notifications_rest` mounted (base); routing/toggle/agg absent | lane `0196_notification_policies_and_object_agg` collides w/ spine `0196_platform_force` | **MERGE** lane's additions + renumber. |
-| **board** | `mnt_notices_rest` mounted (base); scoped-audience absent | lane `0197_notice_audience_and_category` — 0197 is FREE | **MERGE** — no renumber needed (0197 free). |
+| **maintenance** | `console_workorder_rest` mounted (base); settlement routes absent | lane `0193_workorder_maintenance_console` collides w/ spine `0193_maintenance_gaps` | **MERGE** lane's workorder settlement additions + renumber migration. |
+| **field** | `console_support_rest` mounted (base); field routes absent | lane `0194_field_console_support_extensions` collides w/ spine `0194_harden_maintenance` | **MERGE** + renumber. Authz: field read gate = `work_order_read_all`. |
+| **docs** | `console_docs_rest` mounted (`EVIDENCE_ROUTE_PATHS`); retention absent | lane `0195_evidence_retention` collides w/ spine `0195_docs_gaps` | **MERGE** lane's retention additions + renumber. |
+| **notif** | `console_notifications_rest` mounted (base); routing/toggle/agg absent | lane `0196_notification_policies_and_object_agg` collides w/ spine `0196_platform_force` | **MERGE** lane's additions + renumber. |
+| **board** | `console_notices_rest` mounted (base); scoped-audience absent | lane `0197_notice_audience_and_category` — 0197 is FREE | **MERGE** — no renumber needed (0197 free). |
 | **dispatch** | spec + `dispatch_pipeline_api` test + `0192` landed by codex | n/a (lane backend = manifest/docs only) | **Merge evidence docs only.** Consume spine-landed spec, not lane fragment. |
 
 ### Migration renumber plan (post-merge fixups, next-free block from 0197)

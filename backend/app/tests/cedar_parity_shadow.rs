@@ -1,5 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Cedar/PBAC enrollment wave 2 — parity shadow DB tests (mnt_rt, FORCE RLS).
+//! Cedar/PBAC enrollment wave 2 — parity shadow DB tests (console_rt, FORCE RLS).
 //!
 //! These live under `backend/app/tests/` (not inline in a `rest/` crate) for the
 //! same reason as `cedar_shadow_role_manage.rs`: the `audit-coverage` CI gate
@@ -10,20 +10,20 @@
 //! never returns a decision to the caller (legacy already enforced), and here we
 //! prove it (1) is dark with the flag absent, (2) records a real Cedar-vs-legacy
 //! divergence the report surfaces, (3) records agreements, and (4) stays
-//! org-scoped under FORCE RLS as the real `mnt_rt` runtime role — never a
+//! org-scoped under FORCE RLS as the real `console_rt` runtime role — never a
 //! BYPASSRLS superuser.
 
 use std::collections::BTreeSet;
 
-use mnt_app::cedar_parity::{
+use console_app::cedar_parity::{
     CEDAR_PBAC_PARITY_AUDIT_ACTION, CEDAR_PBAC_SHADOW_OBJECT_RESOLVE_FLAG, OBJECT_RESOLVE_DOMAIN,
     ParityObservation, aggregate, observe_parity,
 };
-use mnt_kernel_core::{BranchScope, OrgId, UserId};
-use mnt_platform_authz::{
+use console_kernel_core::{BranchScope, OrgId, UserId};
+use console_platform_authz::{
     AuthorizationResource, DecisionEffect, Feature, Principal, Role, SubjectFreshness,
 };
-use mnt_platform_request_context::CURRENT_ORG;
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -37,7 +37,7 @@ async fn disable_row_security(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>) {
         .unwrap();
 }
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -45,7 +45,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -291,9 +291,9 @@ async fn agreement_is_recorded_and_site_reports_clean(pool: PgPool) {
     assert!(report.per_site[&org.to_string()].clean);
 }
 
-/// mnt_rt + FORCE RLS: the parity observation lands ONLY under the armed tenant.
+/// console_rt + FORCE RLS: the parity observation lands ONLY under the armed tenant.
 /// Under org A's GUC the write is scoped to A; org B (flag also on) records
-/// nothing, and A's row is invisible to a B-armed mnt_rt reader.
+/// nothing, and A's row is invisible to a B-armed console_rt reader.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn parity_observation_stays_org_scoped_as_runtime_role(owner_pool: PgPool) {
     let org_a = *OrgId::knl().as_uuid();
@@ -335,7 +335,7 @@ async fn parity_observation_stays_org_scoped_as_runtime_role(owner_pool: PgPool)
         "no parity row may land under the other tenant B"
     );
 
-    // A B-armed mnt_rt reader cannot see A's parity row (FORCE RLS isolation).
+    // A B-armed console_rt reader cannot see A's parity row (FORCE RLS isolation).
     {
         let mut tx = rt_pool.begin().await.unwrap();
         sqlx::query("SELECT set_config('app.current_org', $1, true)")

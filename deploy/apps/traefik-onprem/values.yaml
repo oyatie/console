@@ -16,10 +16,10 @@ providers:
 service:
   enabled: true
   annotations:
-    metallb.universe.tf/address-pool: maintenance-onprem-ingress
+    metallb.universe.tf/address-pool: console-onprem-ingress
   labels:
-    maintenance.nousresearch.com/context: onprem
-    maintenance.nousresearch.com/vip-provider: metallb
+    console.nousresearch.com/context: onprem
+    console.nousresearch.com/vip-provider: metallb
   spec:
     type: LoadBalancer
     externalTrafficPolicy: Local

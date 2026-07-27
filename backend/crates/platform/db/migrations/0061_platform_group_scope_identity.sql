@@ -49,7 +49,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_list_organizations() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_list_organizations() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_list_organizations() TO console_rt;
 
 DROP FUNCTION IF EXISTS platform_get_organization(UUID);
 CREATE FUNCTION platform_get_organization(p_id UUID)
@@ -94,7 +94,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_get_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_get_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_get_organization(UUID) TO console_rt;
 
 DROP FUNCTION IF EXISTS platform_org_health();
 CREATE FUNCTION platform_org_health()
@@ -180,4 +180,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_org_health() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_org_health() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_org_health() TO console_rt;

@@ -2,7 +2,7 @@
 //! Runtime-role proof for the org-hierarchy P0 SECURITY DEFINER resolvers.
 //!
 //! The group membership and group-role tables are cross-tenant authorization
-//! metadata. They must stay owner-only: production `mnt_rt` may call narrow
+//! metadata. They must stay owner-only: production `console_rt` may call narrow
 //! identity resolvers, but it must not read the raw tables.
 
 use sqlx::{PgPool, Row};
@@ -13,7 +13,7 @@ const ORG_B: Uuid = Uuid::from_u128(0xB002_B002_B002_B002_B002_B002_B002_B002);
 const GROUP: Uuid = Uuid::from_u128(0x9002_9002_9002_9002_9002_9002_9002_9002);
 const GROUP_ADMIN: Uuid = Uuid::from_u128(0x1002_1002_1002_1002_1002_1002_1002_1002);
 const OUTSIDER: Uuid = Uuid::from_u128(0x2002_2002_2002_2002_2002_2002_2002_2002);
-const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE mnt_rt";
+const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE console_rt";
 
 async fn seed_group(pool: &PgPool) {
     let mut tx = pool.begin().await.unwrap();
@@ -138,11 +138,11 @@ async fn runtime_role_can_resolve_own_grants_but_not_read_raw_group_auth_tables(
     let memberships_err = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM group_memberships")
         .fetch_one(&mut *tx)
         .await
-        .expect_err("mnt_rt must not read owner-only group_memberships")
+        .expect_err("console_rt must not read owner-only group_memberships")
         .to_string();
     assert!(
         memberships_err.contains("permission denied"),
-        "raw group_memberships read as mnt_rt must be denied, got: {memberships_err}"
+        "raw group_memberships read as console_rt must be denied, got: {memberships_err}"
     );
     let _ = tx.rollback().await;
 
@@ -154,10 +154,10 @@ async fn runtime_role_can_resolve_own_grants_but_not_read_raw_group_auth_tables(
     let grants_err = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM group_role_grants")
         .fetch_one(&mut *tx)
         .await
-        .expect_err("mnt_rt must not read owner-only group_role_grants")
+        .expect_err("console_rt must not read owner-only group_role_grants")
         .to_string();
     assert!(
         grants_err.contains("permission denied"),
-        "raw group_role_grants read as mnt_rt must be denied, got: {grants_err}"
+        "raw group_role_grants read as console_rt must be denied, got: {grants_err}"
     );
 }

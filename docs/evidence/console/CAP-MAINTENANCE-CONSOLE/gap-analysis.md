@@ -19,7 +19,7 @@ read-only `web/src/console/screens/registry.ts` + `web/src/console/shell/nav.ts`
 | Related-order traversal | `around_work_order_id` filter (same equipment OR site OR customer, org+branch-scope guarded) |
 | Asset history (downstream) | `GET /api/v1/equipment/{id}/timeline-graph` (registry crate — lifecycle ribbon incl. work_order_count); `idx_work_orders_equipment` exists |
 | Detail layers | `GET /api/v1/work-orders/{id}`: approval_line (with names/comments), status_history (actor/action/from→to/at), evidence (stage, WORM status), site_contact, assignments |
-| Authz | Feature-gated deny-by-default (`WorkOrderReadAll`, `WorkOrderCreate`, `WorkOrderStart`, `WorkReportSubmit`, `CompletionReview`, `PriorityManage`, `AssigneeManage`, `TargetManage`, `DailyPlanRequest/Review`, `EvidenceAttach`, `OrgWideQueueTriage`), branch scope, RLS as `mnt_rt`, audit `with_audit` on every mutation |
+| Authz | Feature-gated deny-by-default (`WorkOrderReadAll`, `WorkOrderCreate`, `WorkOrderStart`, `WorkReportSubmit`, `CompletionReview`, `PriorityManage`, `AssigneeManage`, `TargetManage`, `DailyPlanRequest/Review`, `EvidenceAttach`, `OrgWideQueueTriage`), branch scope, RLS as `console_rt`, audit `with_audit` on every mutation |
 | Unified inbox | `GET /api/approval-items` fan-in (`ActionInboxWorkOrderPort`) |
 
 ## 2. Gaps (design contract → additive closure; owning crate per item)
@@ -47,7 +47,7 @@ read-only `web/src/console/screens/registry.ts` + `web/src/console/shell/nav.ts`
 ## 4. Sequencing for stages 2–3
 
 1. Stage 2 (backend): G2 DDL+wiring → G1 filter → G4 lens aggregates → G3 settlement (largest; own routes) —
-   each package-scoped `cargo build/test -p`, sqlx tests as `mnt_rt` (RLS memory), `cargo fmt`, clippy -D.
+   each package-scoped `cargo build/test -p`, sqlx tests as `console_rt` (RLS memory), `cargo fmt`, clippy -D.
 2. Stage 3 (frontend): module skeleton (authz/capabilities/api/i18n) → list+lens stat bar+lanes → detail
    (stepper projection, links, actions incl. assign/start/report/approve/reject fail-closed comment) →
    settlement panel → tests. Registry/nav/openapi/ko.ts via manifest only.

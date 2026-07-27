@@ -15,16 +15,16 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
-use mnt_ontology_domain::{
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
+use console_ontology_domain::{
     ActionTypeId, FieldKind, InstanceId, InstanceLifecycleState, InstanceLinkId,
     InstanceRevisionId, LinkTypeId, ObjectTypeId, validate_instance_transition,
 };
-use mnt_platform_authz::cedar_pbac::residual::{
+use console_platform_authz::cedar_pbac::residual::{
     LoweringTarget, ObjectPolicy, SqlValue, SubjectAttrs, lower,
 };
-use mnt_platform_db::{with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{Postgres, Row, Transaction};
@@ -429,7 +429,7 @@ impl PgInstanceStore {
         with_org_conn::<_, Vec<InstanceState>, PgOntologyError>(&self.pool, org, |tx| {
             Box::pin(async move {
                 match backing_kind_tx(tx, object_type_id).await? {
-                    mnt_ontology_domain::BackingKind::Instance => {
+                    console_ontology_domain::BackingKind::Instance => {
                         let rows = sqlx::query(
                             r#"
                             SELECT
@@ -449,7 +449,7 @@ impl PgInstanceStore {
                         .await?;
                         rows.iter().map(instance_state_from_row).collect()
                     }
-                    mnt_ontology_domain::BackingKind::Projected => {
+                    console_ontology_domain::BackingKind::Projected => {
                         list_projected_rows_tx(tx, object_type_id).await
                     }
                 }
@@ -469,7 +469,7 @@ impl PgInstanceStore {
     /// is the tenant floor the residual can only narrow, never widen. Fail-closed —
     /// no applicable permit, or any untranslatable term, yields `WHERE FALSE`
     /// (zero rows), and `forbid` policies exclude rows a permit would otherwise show
-    /// (see [`mnt_platform_authz::cedar_pbac::residual::lower`]).
+    /// (see [`console_platform_authz::cedar_pbac::residual::lower`]).
     pub async fn list_instances_filtered(
         &self,
         object_type_id: ObjectTypeId,
@@ -930,14 +930,14 @@ async fn require_instance_backed_object_type(
 async fn backing_kind_tx(
     tx: &mut Transaction<'_, Postgres>,
     object_type_id: ObjectTypeId,
-) -> Result<mnt_ontology_domain::BackingKind, PgOntologyError> {
+) -> Result<console_ontology_domain::BackingKind, PgOntologyError> {
     let kind: Option<String> =
         sqlx::query_scalar("SELECT backing_kind FROM ont_object_types WHERE id = $1")
             .bind(*object_type_id.as_uuid())
             .fetch_optional(tx.as_mut())
             .await?;
     match kind {
-        Some(kind) => Ok(mnt_ontology_domain::BackingKind::from_db_str(&kind)?),
+        Some(kind) => Ok(console_ontology_domain::BackingKind::from_db_str(&kind)?),
         None => Err(KernelError::not_found("object type was not found").into()),
     }
 }

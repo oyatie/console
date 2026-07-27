@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Mounted `GET /api/v1/me/workbench` integration coverage over PostgreSQL.
 //!
-//! The request runs through the public router on a real non-owner `mnt_rt`
+//! The request runs through the public router on a real non-owner `console_rt`
 //! connection pool. It proves the composition boundary uses each native source
 //! under the authenticated caller's tenant and branch scope; it does not use
 //! reader doubles or test-only production hooks.
@@ -10,9 +10,9 @@ use std::sync::atomic::{AtomicU16, Ordering};
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, SupportTicketId, UserId, WorkOrderId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, SupportTicketId, UserId, WorkOrderId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -23,8 +23,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const PATH: &str = "/api/v1/me/workbench";
 const RANGE_FROM: &str = "2026-07-01T00:00:00Z";
 const RANGE_TO: &str = "2026-07-02T00:00:00Z";
@@ -242,7 +242,7 @@ async fn mounted_workbench_marks_todos_unavailable_when_runtime_role_loses_selec
     // This is a real source failure at the runtime boundary, not an injected
     // reader double: native todo storage receives SQLSTATE insufficient_privilege
     // while action and calendar retain their independently granted access.
-    sqlx::query("REVOKE SELECT ON TABLE todos FROM mnt_rt")
+    sqlx::query("REVOKE SELECT ON TABLE todos FROM console_rt")
         .execute(&pool)
         .await
         .unwrap();
@@ -345,7 +345,7 @@ async fn mounted_workbench_all_source_failures_use_the_standard_error_body(pool:
     // the action inbox reaches support after its empty workflow and dispatch
     // pages, while todo and calendar read their respective durable tables.
     sqlx::query(
-        "REVOKE SELECT ON TABLE support_tickets, todos, collaboration_calendar_events FROM mnt_rt",
+        "REVOKE SELECT ON TABLE support_tickets, todos, collaboration_calendar_events FROM console_rt",
     )
     .execute(&pool)
     .await
@@ -658,7 +658,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -667,13 +667,13 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

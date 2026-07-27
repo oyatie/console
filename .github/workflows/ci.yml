@@ -217,7 +217,7 @@ jobs:
           workspaces: backend
 
       - name: Support domain unit target
-        run: tools/buck2 test //backend/crates/support/domain:mnt-support-domain-unit
+        run: tools/buck2 test //backend/crates/support/domain:console-support-domain-unit
 
   postgres-domain-reachability:
     name: Dispatch and attendance — disposable PostgreSQL reachability
@@ -310,11 +310,11 @@ jobs:
     # Serial integration execution avoids cluster-global role mutation races.
     #
     # NOTE: the "full workspace" this number was originally sized for no longer
-    # runs here. Migration 0196 admits only `mnt_buck_admin` (with
-    # `mnt.sqlx_test_bootstrap` armed) for applying migrations, so the workspace
+    # runs here. Migration 0196 admits only `console_buck_admin` (with
+    # `console.sqlx_test_bootstrap` armed) for applying migrations, so the workspace
     # run was dropped rather than re-identified. The topology step below now
     # provisions that role, so restoring the sweep is a matter of pointing it at
-    # $MNT_BUCK_ADMIN_DATABASE_URL -- see H-8 in
+    # $CONSOLE_BUCK_ADMIN_DATABASE_URL -- see H-8 in
     # docs/program/false-green-gate-holes.md. Deliberately not done here: it
     # will surface a genuine backlog and belongs in its own change.
     #
@@ -327,18 +327,18 @@ jobs:
       postgres:
         image: postgres:18.4
         env:
-          POSTGRES_DB: mnt_ci
+          POSTGRES_DB: console_ci
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
           - "5432:5432"
         options: >-
-          --health-cmd "pg_isready -U postgres -d mnt_ci"
+          --health-cmd "pg_isready -U postgres -d console_ci"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/mnt_ci
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_ci
       # Job-level so every step (including the gate binaries, which didn't
       # previously set it themselves) compiles query! macros against the
       # committed .sqlx cache instead of an unmigrated DB. Cheap insurance;
@@ -388,28 +388,28 @@ jobs:
       - name: clippy -D warnings
         run: SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
       - name: Layer-boundary gate
-        run: cargo run -p mnt-gate-layer-boundary
+        run: cargo run -p console-gate-layer-boundary
 
       - name: Audit-coverage gate
-        run: cargo run -p mnt-gate-audit-coverage
+        run: cargo run -p console-gate-audit-coverage
 
       - name: Migration-safety gate
-        run: cargo run -p mnt-gate-migration-safety
+        run: cargo run -p console-gate-migration-safety
 
       - name: Tenant-isolation gate
-        run: cargo run -p mnt-gate-tenant-isolation
+        run: cargo run -p console-gate-tenant-isolation
 
       - name: PII-no-logs gate
-        run: cargo run -p mnt-gate-pii-no-logs
+        run: cargo run -p console-gate-pii-no-logs
 
       - name: RLS-arming gate
-        run: cargo run -p mnt-gate-rls-arming
+        run: cargo run -p console-gate-rls-arming
 
       - name: Dev-auth-absence gate
-        run: cargo run -p mnt-gate-dev-auth-absence
+        run: cargo run -p console-gate-dev-auth-absence
 
       - name: IaC tier-discipline gate
-        run: cargo run -p mnt-gate-iac-tier
+        run: cargo run -p console-gate-iac-tier
       # Migration 0165 fails closed unless the portable seven-role topology
       # already exists. Reconcile it before any database test applies the
       # migration, using the distinct service administrator only for this
@@ -427,31 +427,31 @@ jobs:
           PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           docker run --rm --network host \
             -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
-            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci \
             -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
-            -e MNT_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
-            -e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
-            -e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
-            -e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
-            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
+            -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
+            -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
+            -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
             --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             /usr/local/bin/postgres-reconcile-topology
 
           # The Apalis adapter contract intentionally mutates only its own
-          # dedicated database while proving direct mnt_app/mnt_rt logins. The
+          # dedicated database while proving direct console_app/console_rt logins. The
           # job-level DATABASE_URL stays on the cluster administrator for the
           # boot smoke; it can no longer serve migration-applying tests, which
-          # migration 0196 restricts to the mnt_buck_admin harness identity.
+          # migration 0196 restricts to the console_buck_admin harness identity.
           docker run --rm --network host \
             -e PGPASSWORD=postgres \
             --entrypoint psql \
             postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            -c "DROP DATABASE IF EXISTS mnt_apalis_contract WITH (FORCE)" \
-            -c "CREATE DATABASE mnt_apalis_contract OWNER mnt_app"
+            -c "DROP DATABASE IF EXISTS console_apalis_contract WITH (FORCE)" \
+            -c "CREATE DATABASE console_apalis_contract OWNER console_app"
 
           # Migration 0196 restricts migration application to a superuser named
-          # exactly `mnt_buck_admin` with `mnt.sqlx_test_bootstrap` armed (and a
+          # exactly `console_buck_admin` with `console.sqlx_test_bootstrap` armed (and a
           # test database it owns). The `postgres` service account therefore
           # cannot apply a single migration, which silently breaks every direct
           # `cargo test` that relies on `#[sqlx::test]`. Provision that identity
@@ -459,7 +459,7 @@ jobs:
           # mode-0600 file, never argv.
           BUCK_ADMIN_PASSWORD="$(openssl rand -hex 32)"
           umask 077
-          printf "CREATE ROLE mnt_buck_admin SUPERUSER LOGIN PASSWORD '%s';\n" \
+          printf "CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '%s';\n" \
             "$BUCK_ADMIN_PASSWORD" > "$RUNNER_TEMP/buck-admin.sql"
           docker run --rm --network host \
             -e PGPASSWORD=postgres \
@@ -473,10 +473,10 @@ jobs:
           echo "::add-mask::$RT_PASSWORD"
           echo "::add-mask::$BUCK_ADMIN_PASSWORD"
           {
-            echo "MNT_BUCK_ADMIN_DATABASE_URL=postgres://mnt_buck_admin:${BUCK_ADMIN_PASSWORD}@localhost:5432/mnt_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
-            echo "MNT_APALIS_OWNER_DATABASE_URL=postgres://mnt_app:${APP_PASSWORD}@localhost:5432/mnt_apalis_contract"
-            echo "MNT_APALIS_RUNTIME_DATABASE_URL=postgres://mnt_rt:${RT_PASSWORD}@localhost:5432/mnt_apalis_contract"
-            echo "MNT_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/mnt_apalis_contract"
+            echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+            echo "CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:${RT_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"
           } >> "$GITHUB_ENV"
 
       - name: PR 473 migration operational gate
@@ -489,13 +489,13 @@ jobs:
         # re-check online against a schema-less DB ("audit_events does not exist").
         # The wrapper isolates the 11 migration regressions for exact one-test
         # runtime-result validation. It does NOT preserve a full workspace run --
-        # migration 0196 restricts migration application to the mnt_buck_admin
+        # migration 0196 restricts migration application to the console_buck_admin
         # harness identity, so the service DB cannot host one (H-8 in
         # docs/program/false-green-gate-holes.md). Every test binary remains
         # serial because topology upgrade tests mutate cluster-global roles.
         run: npm run check:pr473-migration-operational
 
-      # Boot smoke: the real mnt-app binary, migrate then serve mode, against
+      # Boot smoke: the real console-app binary, migrate then serve mode, against
       # this job's fresh service DB — catches route-panic-at-boot regressions
       # (e.g. a bad router/state wiring) that unit/integration tests never
       # exercise because they never call `serve()`. Mirrors the minimal env
@@ -514,43 +514,43 @@ jobs:
           PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           docker run --rm --network host \
             -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
-            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci \
             -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
-            -e MNT_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
-            -e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
-            -e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
-            -e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
-            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
+            -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
+            -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
+            -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
             --entrypoint bash postgres:18.4 /usr/local/bin/postgres-reconcile-topology
 
-          OWNER_DATABASE_URL="postgres://mnt_app:${APP_PASSWORD}@localhost:5432/mnt_ci"
-          RUNTIME_DATABASE_URL="postgres://mnt_rt:${RT_PASSWORD}@localhost:5432/mnt_ci"
-          LEAVE_COMMAND_DATABASE_URL="postgres://mnt_leave_cmd:${LEAVE_COMMAND_PASSWORD}@localhost:5432/mnt_ci"
-          ONTOLOGY_COMMAND_DATABASE_URL="postgres://mnt_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@localhost:5432/mnt_ci"
-          PLATFORM_FORCE_COMMAND_DATABASE_URL="postgres://mnt_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@localhost:5432/mnt_ci"
+          OWNER_DATABASE_URL="postgres://console_app:${APP_PASSWORD}@localhost:5432/console_ci"
+          RUNTIME_DATABASE_URL="postgres://console_rt:${RT_PASSWORD}@localhost:5432/console_ci"
+          LEAVE_COMMAND_DATABASE_URL="postgres://console_leave_cmd:${LEAVE_COMMAND_PASSWORD}@localhost:5432/console_ci"
+          ONTOLOGY_COMMAND_DATABASE_URL="postgres://console_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@localhost:5432/console_ci"
+          PLATFORM_FORCE_COMMAND_DATABASE_URL="postgres://console_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@localhost:5432/console_ci"
           export DATABASE_URL="$OWNER_DATABASE_URL"
 
-          MNT_APP_ROLE=migrate SQLX_OFFLINE=true cargo run -q -p mnt-app
+          CONSOLE_APP_ROLE=migrate SQLX_OFFLINE=true cargo run -q -p console-app
           SQLX_OFFLINE=true cargo test --locked \
-            -p mnt-gate-tenant-isolation \
+            -p console-gate-tenant-isolation \
             --test owner_only_acl_postgres18 -- \
             --include-ignored --test-threads=1
 
-          MNT_APP_ROLE=api \
+          CONSOLE_APP_ROLE=api \
           DATABASE_URL="$RUNTIME_DATABASE_URL" \
           LEAVE_COMMAND_DATABASE_URL="$LEAVE_COMMAND_DATABASE_URL" \
           ONTOLOGY_COMMAND_DATABASE_URL="$ONTOLOGY_COMMAND_DATABASE_URL" \
           PLATFORM_FORCE_COMMAND_DATABASE_URL="$PLATFORM_FORCE_COMMAND_DATABASE_URL" \
-          MNT_HTTP_ADDR=127.0.0.1:8092 \
-          MNT_JWT_ISSUER=ci-boot-smoke \
-          MNT_JWT_AUDIENCE=ci-boot-smoke \
-          MNT_JWT_PRIVATE_KEY_PEM="$(cat /tmp/smoke-priv.pem)" \
-          MNT_JWT_PUBLIC_KEY_PEM="$(cat /tmp/smoke-pub.pem)" \
-          MNT_WEBAUTHN_RP_ID=localhost \
-          MNT_WEBAUTHN_RP_ORIGIN=http://localhost \
-          MNT_COOKIE_SECURE=false \
+          CONSOLE_HTTP_ADDR=127.0.0.1:8092 \
+          CONSOLE_JWT_ISSUER=ci-boot-smoke \
+          CONSOLE_JWT_AUDIENCE=ci-boot-smoke \
+          CONSOLE_JWT_PRIVATE_KEY_PEM="$(cat /tmp/smoke-priv.pem)" \
+          CONSOLE_JWT_PUBLIC_KEY_PEM="$(cat /tmp/smoke-pub.pem)" \
+          CONSOLE_WEBAUTHN_RP_ID=localhost \
+          CONSOLE_WEBAUTHN_RP_ORIGIN=http://localhost \
+          CONSOLE_COOKIE_SECURE=false \
           SQLX_OFFLINE=true \
-          cargo run -q -p mnt-app &
+          cargo run -q -p console-app &
           BOOT_PID=$!
 
           ready=0
@@ -566,7 +566,7 @@ jobs:
           wait "$BOOT_PID" 2>/dev/null || true
 
           if [ "$ready" != "1" ]; then
-            echo "::error::mnt-app never became ready in boot smoke"
+            echo "::error::console-app never became ready in boot smoke"
             exit 1
           fi
 
@@ -576,8 +576,8 @@ jobs:
         # feature-sensitive auth-rest and provisioning binaries run through
         # generator-owned Buck targets and the disposable role-topology harness;
         # direct Cargo would bypass that contract.
-        # That harness uses the migration-0196-authorized `mnt_buck_admin`
-        # identity with `mnt.sqlx_test_bootstrap` armed, so the suites reach
+        # That harness uses the migration-0196-authorized `console_buck_admin`
+        # identity with `console.sqlx_test_bootstrap` armed, so the suites reach
         # their assertions instead of failing during migration application.
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
@@ -586,11 +586,11 @@ jobs:
             //tools/buck:auth-rest-dev-auth-group-admin-postgres \
             //tools/buck:provisioning-dev-principal-upsert-race-postgres
 
-      - name: Buck2 mnt-app unit suite
+      - name: Buck2 console-app unit suite
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/app:mnt-app-unit
+        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit
 
-      - name: Buck2 mnt-app inline PostgreSQL suites
+      - name: Buck2 console-app inline PostgreSQL suites
         working-directory: .
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
@@ -648,7 +648,7 @@ jobs:
         run: node scripts/dev-up.mjs bootstrap
 
       - name: Confirm /readyz reachable
-        run: curl -fsS "http://127.0.0.1:${MNT_DEV_HTTP_PORT:-8090}/readyz"
+        run: curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"
 
       - name: dev-up down
         if: always()
@@ -662,7 +662,7 @@ jobs:
 
       - name: dev-up bootstrap --features dev-auth (backend + Vite dev server)
         env:
-          MNT_DEV_AUTH_E2E: "1"
+          CONSOLE_DEV_AUTH_E2E: "1"
         run: node scripts/dev-up.mjs bootstrap
 
       - name: Dev-mode e2e — role switcher against the real dev-auth stack
@@ -672,7 +672,7 @@ jobs:
         # there (see playwright.config.ts). Both tiers are already running
         # from the previous step.
         env:
-          MNT_DEV_AUTH_E2E: "1"
+          CONSOLE_DEV_AUTH_E2E: "1"
         run: npx playwright test --project=dev-auth
 
       - name: Upload dev-auth e2e report
@@ -880,19 +880,19 @@ jobs:
       postgres:
         image: postgres:18.4
         env:
-          POSTGRES_DB: mnt_contract
+          POSTGRES_DB: console_contract
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
           - "5432:5432"
         options: >-
-          --health-cmd "pg_isready -U postgres -d mnt_contract"
+          --health-cmd "pg_isready -U postgres -d console_contract"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/mnt_contract
-      # This job builds mnt-app before comparing the app-served OpenAPI and
+      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract
+      # This job builds console-app before comparing the app-served OpenAPI and
       # running the generated-client round-trip. Match the backend job's lean
       # Cargo artifacts so the standard runner does not exhaust disk on cache
       # misses.
@@ -938,9 +938,9 @@ jobs:
         run: |
           set -euo pipefail
           # check:openapi-app is the sole Buck2 producer for this handoff.
-          mnt_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/mnt-app"
-          test -x "${mnt_app_bin}"
-          printf 'MNT_APP_BIN=%s\n' "${mnt_app_bin}" >> "${GITHUB_ENV}"
+          console_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"
+          test -x "${console_app_bin}"
+          printf 'CONSOLE_APP_BIN=%s\n' "${console_app_bin}" >> "${GITHUB_ENV}"
 
       - name: Employee import replay contract
         if: ${{ !cancelled() }}
@@ -983,9 +983,9 @@ jobs:
         if: ${{ !cancelled() }}
         # Generic CI has no production kubeconfig, so the live readback runs in
         # warning mode here. Real deployment validation must set
-        # MNT_NETWORKPOLICY_PREFLIGHT=require against the target cluster.
+        # CONSOLE_NETWORKPOLICY_PREFLIGHT=require against the target cluster.
         env:
-          MNT_NETWORKPOLICY_PREFLIGHT: warn
+          CONSOLE_NETWORKPOLICY_PREFLIGHT: warn
         run: npm run check:k8s
 
       - name: Production hardening contract
@@ -1133,7 +1133,7 @@ jobs:
       E2E_PG_SUPERUSER_PASSWORD: android-${{ github.run_id }}-${{ github.run_attempt }}-admin
       E2E_PG_HOST: localhost
       E2E_PG_PORT: "5432"
-      E2E_DB_NAME: mnt_android_${{ github.run_id }}_${{ github.run_attempt }}
+      E2E_DB_NAME: console_android_${{ github.run_id }}_${{ github.run_attempt }}
       E2E_HTTP_ADDR: 127.0.0.1:8080
 
     steps:
@@ -1196,7 +1196,7 @@ jobs:
 
       - name: Build exact candidate backend
         working-directory: backend
-        run: SQLX_OFFLINE=true cargo build --locked -q -p mnt-app
+        run: SQLX_OFFLINE=true cargo build --locked -q -p console-app
 
       - name: Run hermetic post-login E2E on Gradle Managed Device
         # Candidate source, PostgreSQL, database fixtures, backend, OTP, session,
@@ -1207,7 +1207,7 @@ jobs:
           session_assets_dir="${RUNNER_TEMP}/android-e2e-session-assets"
           session_file="${session_assets_dir}/field-e2e-session.properties"
           export E2E_AUTH_DIR="${RUNNER_TEMP}/android-e2e-auth"
-          export MNT_APP_BIN="${GITHUB_WORKSPACE}/backend/target/debug/mnt-app"
+          export CONSOLE_APP_BIN="${GITHUB_WORKSPACE}/backend/target/debug/console-app"
 
           cleanup_android_e2e() {
             if [ -s "${E2E_AUTH_DIR}/backend.pid" ]; then
@@ -1223,11 +1223,11 @@ jobs:
 
           printf '::add-mask::%s\n' "$E2E_PG_SUPERUSER_PASSWORD"
           for role_password_var in \
-            E2E_MNT_APP_POSTGRES_PASSWORD \
-            E2E_MNT_RT_POSTGRES_PASSWORD \
-            E2E_MNT_LEAVE_COMMAND_POSTGRES_PASSWORD \
-            E2E_MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD \
-            E2E_MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
+            E2E_CONSOLE_APP_POSTGRES_PASSWORD \
+            E2E_CONSOLE_RT_POSTGRES_PASSWORD \
+            E2E_CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD \
+            E2E_CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD \
+            E2E_CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
           do
             role_password="$(openssl rand -hex 32)"
             printf '::add-mask::%s\n' "$role_password"
@@ -1240,10 +1240,10 @@ jobs:
           otp_hash="$(printf '%s' "$bootstrap_otp" | sha256sum | awk '{print $1}')"
 
           bash e2e/harness/db.sh
-          PGPASSWORD="$E2E_MNT_APP_POSTGRES_PASSWORD" psql \
+          PGPASSWORD="$E2E_CONSOLE_APP_POSTGRES_PASSWORD" psql \
             --host "$E2E_PG_HOST" \
             --port "$E2E_PG_PORT" \
-            --username mnt_app \
+            --username console_app \
             --dbname "$E2E_DB_NAME" \
             --set ON_ERROR_STOP=1 \
             --set "otp_hash=$otp_hash" \
@@ -1369,7 +1369,7 @@ jobs:
       - name: Behavior runner
         if: ${{ !cancelled() }}
         working-directory: ios
-        run: swift run MaintenanceFieldCoreBehaviorTests
+        run: swift run ConsoleCoreBehaviorTests
 
   browser-e2e:
     name: Browser E2E — Playwright (all user stories)
@@ -1396,7 +1396,7 @@ jobs:
     env:
       CI: "true"
       # Keep the E2E Rust build lean on the standard GitHub runner; this job
-      # only needs the mnt-app binary, not debug symbols.
+      # only needs the console-app binary, not debug symbols.
       CARGO_INCREMENTAL: "0"
       CARGO_PROFILE_DEV_DEBUG: "0"
       # Point the harness (e2e/harness/*.sh) at the service as the postgres superuser.
@@ -1444,23 +1444,23 @@ jobs:
           .venv-e2e/bin/python -m pip install -r e2e/requirements.txt
           echo "$PWD/.venv-e2e/bin" >> "$GITHUB_PATH"
 
-      - name: Build backend binary (mnt-app) for the harness
+      - name: Build backend binary (console-app) for the harness
         working-directory: backend
         # SQLX_OFFLINE so the query! macros compile against the committed .sqlx cache
-        # (same contract as the backend job). The harness then runs target/debug/mnt-app
+        # (same contract as the backend job). The harness then runs target/debug/console-app
         # for the migrate + api roles.
-        run: SQLX_OFFLINE=true cargo build -q -p mnt-app
+        run: SQLX_OFFLINE=true cargo build -q -p console-app
 
       - name: Install Playwright Chromium + OS deps
         run: npx playwright install --with-deps chromium
 
       - name: Run browser E2E suite
-        # e2e/run.sh: gen-keys -> db (drop+migrate+seed mnt_e2e) -> boot backend
+        # e2e/run.sh: gen-keys -> db (drop+migrate+seed console_e2e) -> boot backend
         # (api role, /readyz) -> playwright (builds + previews web on :5173, proxies
         # /api) -> teardown. Every user-story spec across all roles, real WebAuthn
         # via the CDP virtual authenticator.
         env:
-          MNT_APP_BIN: ${{ github.workspace }}/backend/target/debug/mnt-app
+          CONSOLE_APP_BIN: ${{ github.workspace }}/backend/target/debug/console-app
         run: bash e2e/run.sh
 
       - name: Upload Playwright report + traces

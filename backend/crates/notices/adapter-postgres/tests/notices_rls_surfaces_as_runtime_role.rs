@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS gate for the notice board, proven as the genuine non-owner
-//! runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — not the
+//! runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — not the
 //! default `#[sqlx::test]` BYPASSRLS superuser pool. Proves: draft visibility
 //! is publish-tier-gated, publish snapshots the effective audience (org-wide
 //! or branch-scoped via `user_branches`) + issues an NT- code + fans out one
@@ -8,16 +8,16 @@
 //! 수령확인 progress/receipts are correct, and cross-org isolation holds
 //! throughout — including for `notice_audience_branches`.
 
-use mnt_kernel_core::{BranchId, NoticeId, OrgId, TraceContext, UserId};
-use mnt_notices_adapter_postgres::PgNoticeStore;
-use mnt_notices_application::{
+use console_kernel_core::{BranchId, NoticeId, OrgId, TraceContext, UserId};
+use console_notices_adapter_postgres::PgNoticeStore;
+use console_notices_application::{
     AcknowledgeNoticeCommand, CreateDraftNoticeCommand, GetNoticeQuery, ListNoticeReceiptsQuery,
     ListNoticesQuery, NoticeAudienceInput, NoticeProgressQuery, PublishNoticeCommand,
     UpdateDraftNoticeCommand,
 };
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_notifications_application::{ListNotificationsQuery, UnreadNotificationCountQuery};
-use mnt_platform_db::{DbError, with_org_conn};
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_notifications_application::{ListNotificationsQuery, UnreadNotificationCountQuery};
+use console_platform_db::{DbError, with_org_conn};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -28,14 +28,14 @@ const OTHER_ORG: Uuid = Uuid::from_u128(0x7303_7303_7303_7303_7303_7303_7303_730
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON notices TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO mnt_rt",
-        "GRANT SELECT ON object_types TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON notices TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO console_rt",
+        "GRANT SELECT ON object_types TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -44,7 +44,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -157,7 +157,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
         PgNoticeStore::new(rt_pool.clone()).with_notification_sink(Arc::new(notifications.clone()));
 
     // Create a draft.
-    let created = mnt_platform_request_context::scope_org(knl, async {
+    let created = console_platform_request_context::scope_org(knl, async {
         store.create_draft(draft(author)).await
     })
     .await
@@ -173,7 +173,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
 
     // (a) draft visibility is publish-tier-gated: a non-manager get() is
     // NotFound, never a silent leak of unpublished content.
-    let hidden = mnt_platform_request_context::scope_org(knl, async {
+    let hidden = console_platform_request_context::scope_org(knl, async {
         store
             .get(
                 GetNoticeQuery {
@@ -187,7 +187,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     .await;
     assert!(hidden.is_err(), "a non-manager must not see a draft");
 
-    let visible_to_author = mnt_platform_request_context::scope_org(knl, async {
+    let visible_to_author = console_platform_request_context::scope_org(knl, async {
         store
             .get(
                 GetNoticeQuery {
@@ -203,7 +203,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     assert_eq!(visible_to_author.id, created.id);
 
     // A draft never appears in a non-manager's list.
-    let public_list = mnt_platform_request_context::scope_org(knl, async {
+    let public_list = console_platform_request_context::scope_org(knl, async {
         store
             .list(ListNoticesQuery {
                 include_drafts: false,
@@ -221,7 +221,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
 
     // (b) publish: issues an NT- code, snapshots every active org member into
     // notice_receipts, and fans out one notification per recipient.
-    let published = mnt_platform_request_context::scope_org(knl, async {
+    let published = console_platform_request_context::scope_org(knl, async {
         store.publish(publish(created.id, author)).await
     })
     .await
@@ -236,7 +236,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     assert_eq!((progress.total, progress.acknowledged), (3, 0));
 
     // Publishing twice is a Conflict, not a silent duplicate code/receipt set.
-    let republish = mnt_platform_request_context::scope_org(knl, async {
+    let republish = console_platform_request_context::scope_org(knl, async {
         store.publish(publish(created.id, author)).await
     })
     .await;
@@ -246,7 +246,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     );
 
     // A published notice is frozen: draft edits are rejected.
-    let frozen = mnt_platform_request_context::scope_org(knl, async {
+    let frozen = console_platform_request_context::scope_org(knl, async {
         store
             .update_draft(UpdateDraftNoticeCommand {
                 notice_id: created.id,
@@ -264,7 +264,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     assert!(frozen.is_err(), "a published notice must not be editable");
 
     // Now visible in the public list, with the caller's own receipt state.
-    let public_list_after = mnt_platform_request_context::scope_org(knl, async {
+    let public_list_after = console_platform_request_context::scope_org(knl, async {
         store
             .list(ListNoticesQuery {
                 include_drafts: false,
@@ -289,7 +289,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     // Every active org member (author + A + B) got a notification pointing at
     // the notice.
     for recipient in [author, recipient_a, recipient_b] {
-        let unread = mnt_platform_request_context::scope_org(knl, async {
+        let unread = console_platform_request_context::scope_org(knl, async {
             notifications
                 .unread_count(UnreadNotificationCountQuery { recipient })
                 .await
@@ -297,7 +297,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
         .await
         .expect("unread count");
         assert_eq!(unread, 1, "recipient must have exactly one notification");
-        let list = mnt_platform_request_context::scope_org(knl, async {
+        let list = console_platform_request_context::scope_org(knl, async {
             notifications
                 .list(ListNotificationsQuery {
                     recipient,
@@ -313,7 +313,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     }
 
     // (c) 수령확인 progress starts at 0/3.
-    let progress_before = mnt_platform_request_context::scope_org(knl, async {
+    let progress_before = console_platform_request_context::scope_org(knl, async {
         store
             .progress(NoticeProgressQuery {
                 notice_id: created.id,
@@ -327,14 +327,14 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
 
     // Recipient A acknowledges; progress becomes 1/3. A cross-user
     // acknowledge attempt (someone who was never snapshotted) is NotFound.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.acknowledge(ack(created.id, recipient_a)).await
     })
     .await
     .expect("A acknowledges");
 
     let stranger = UserId::new();
-    let stranger_ack = mnt_platform_request_context::scope_org(knl, async {
+    let stranger_ack = console_platform_request_context::scope_org(knl, async {
         store.acknowledge(ack(created.id, stranger)).await
     })
     .await;
@@ -343,7 +343,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
         "a non-recipient acknowledging must fail, not silently succeed"
     );
 
-    let progress_after = mnt_platform_request_context::scope_org(knl, async {
+    let progress_after = console_platform_request_context::scope_org(knl, async {
         store
             .progress(NoticeProgressQuery {
                 notice_id: created.id,
@@ -356,7 +356,7 @@ async fn draft_visibility_publish_and_progress_as_runtime_role(owner_pool: PgPoo
     assert_eq!(progress_after.acknowledged, 1);
 
     // (d) cross-tenant: under another org's GUC, the notice is invisible.
-    let cross_tenant_list = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant_list = console_platform_request_context::scope_org(other, async {
         store
             .list(ListNoticesQuery {
                 include_drafts: true,
@@ -397,7 +397,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
 
     // Draft targeted at branch B first, then re-targeted to branch A by a
     // draft edit (audience replaced whole) — drafts are mutable.
-    let created = mnt_platform_request_context::scope_org(knl, async {
+    let created = console_platform_request_context::scope_org(knl, async {
         store
             .create_draft(CreateDraftNoticeCommand {
                 author,
@@ -420,7 +420,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     assert_eq!(created.audience_branches[0].id, branch_b);
     assert_eq!(created.audience_branches[0].name, "부산지사");
 
-    let retargeted = mnt_platform_request_context::scope_org(knl, async {
+    let retargeted = console_platform_request_context::scope_org(knl, async {
         store
             .update_draft(UpdateDraftNoticeCommand {
                 notice_id: created.id,
@@ -444,7 +444,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     assert_eq!(retargeted.category, "training", "unchanged fields survive");
 
     // An audience branch belonging to another org is fail-closed validation.
-    let foreign_branch = mnt_platform_request_context::scope_org(knl, async {
+    let foreign_branch = console_platform_request_context::scope_org(knl, async {
         store
             .update_draft(UpdateDraftNoticeCommand {
                 notice_id: created.id,
@@ -469,7 +469,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
 
     // Publishing to an empty effective audience is rejected before any state
     // changes — the notice stays a draft.
-    let empty_draft = mnt_platform_request_context::scope_org(knl, async {
+    let empty_draft = console_platform_request_context::scope_org(knl, async {
         store
             .create_draft(CreateDraftNoticeCommand {
                 author,
@@ -487,7 +487,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     })
     .await
     .expect("create empty-audience draft");
-    let empty_publish = mnt_platform_request_context::scope_org(knl, async {
+    let empty_publish = console_platform_request_context::scope_org(knl, async {
         store.publish(publish(empty_draft.id, author)).await
     })
     .await;
@@ -495,7 +495,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
         empty_publish.is_err(),
         "publishing to an empty audience must fail closed"
     );
-    let still_draft = mnt_platform_request_context::scope_org(knl, async {
+    let still_draft = console_platform_request_context::scope_org(knl, async {
         store
             .get(
                 GetNoticeQuery {
@@ -523,7 +523,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     );
 
     // Publish to branch A only: exactly its 2 members are snapshotted.
-    let published = mnt_platform_request_context::scope_org(knl, async {
+    let published = console_platform_request_context::scope_org(knl, async {
         store.publish(publish(created.id, author)).await
     })
     .await
@@ -532,7 +532,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     assert_eq!((progress.total, progress.acknowledged), (2, 0));
 
     // The branch-B member was never snapshotted: ack fails, no receipt row.
-    let outsider_ack = mnt_platform_request_context::scope_org(knl, async {
+    let outsider_ack = console_platform_request_context::scope_org(knl, async {
         store.acknowledge(ack(created.id, member_b)).await
     })
     .await;
@@ -541,14 +541,14 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
         "a member outside the audience must not be able to acknowledge"
     );
 
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.acknowledge(ack(created.id, member_a1)).await
     })
     .await
     .expect("audience member acknowledges");
 
     // Receipts drill: 2 rows total, 1 outstanding, names hydrated.
-    let all_receipts = mnt_platform_request_context::scope_org(knl, async {
+    let all_receipts = console_platform_request_context::scope_org(knl, async {
         store
             .list_receipts(ListNoticeReceiptsQuery {
                 notice_id: created.id,
@@ -569,7 +569,7 @@ async fn branch_scoped_audience_publish_and_receipts_as_runtime_role(owner_pool:
     assert_eq!(all_receipts.items[0].recipient_user_id, member_a1);
     assert!(!all_receipts.items[1].display_name.is_empty());
 
-    let outstanding = mnt_platform_request_context::scope_org(knl, async {
+    let outstanding = console_platform_request_context::scope_org(knl, async {
         store
             .list_receipts(ListNoticeReceiptsQuery {
                 notice_id: created.id,

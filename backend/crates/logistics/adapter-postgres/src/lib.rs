@@ -3,11 +3,11 @@
 //! All mutations use `with_audits`: stock reservations, state changes, history,
 //! and the audit chain commit together.  Quantities are integer operational
 //! units; the database is the final no-negative-stock guard.
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};

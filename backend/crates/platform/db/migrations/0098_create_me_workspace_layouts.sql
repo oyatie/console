@@ -1,5 +1,5 @@
 -- Provenance: originated in a parallel session's worktree (commit e6764cdb);
--- adopted here and AC-verified (org-scoped RLS as mnt_rt, 64KiB + object
+-- adopted here and AC-verified (org-scoped RLS as console_rt, 64KiB + object
 -- CHECK, audited PUT, handler-bound user rows, boundary tests) as part of the
 -- UI-M1b slice.
 --
@@ -46,14 +46,14 @@ CREATE POLICY org_isolation ON me_workspace_layouts
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON me_workspace_layouts TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON me_workspace_layouts TO console_rt;
 -- Migration 0031's ALTER DEFAULT PRIVILEGES auto-grants FULL DML (incl. DELETE)
--- to mnt_rt on every table mnt_app creates, so the SELECT/INSERT/UPDATE grant
+-- to console_rt on every table console_app creates, so the SELECT/INSERT/UPDATE grant
 -- above is not sufficient. A workspace layout is per-user personal state; the
 -- runtime role upserts it but must never DELETE it out from under RLS (mirrors
--- 0095/0096). The owner (mnt_app) retains DELETE so DEFINER tenant/user-removal
+-- 0095/0096). The owner (console_app) retains DELETE so DEFINER tenant/user-removal
 -- functions can still cascade.
-REVOKE DELETE ON me_workspace_layouts FROM mnt_rt;
+REVOKE DELETE ON me_workspace_layouts FROM console_rt;
 
 -- Keep updated_at honest on every upsert without permitting DELETE of state.
 CREATE OR REPLACE FUNCTION me_workspace_layouts_touch_updated_at()

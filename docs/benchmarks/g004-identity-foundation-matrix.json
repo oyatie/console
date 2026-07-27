@@ -191,7 +191,7 @@
         "poll_token_hash",
         "approve_token_hash",
         "phone must prove possession of an existing passkey",
-        "GRANT SELECT, INSERT, UPDATE ON auth_device_login_handoffs TO mnt_rt"
+        "GRANT SELECT, INSERT, UPDATE ON auth_device_login_handoffs TO console_rt"
       ]
     },
     {
@@ -220,7 +220,7 @@
       "file": "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql",
       "contract": "Runtime role and immutable org-id triggers prevent cross-org mutation drift.",
       "requiredSnippets": [
-        "mnt_rt",
+        "console_rt",
         "enforce_org_id_immutable",
         "GRANT SELECT, INSERT, UPDATE, DELETE"
       ]

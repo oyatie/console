@@ -36,7 +36,7 @@
     {
       "commit": "fix(auth): repair legacy token-mint call sites for actor_home_org param",
       "files": ["backend/crates/platform/auth/src/jwt.rs"],
-      "why": "spine commit b0d31a8 left issue_access_token_with_group_roles / issue_scoped_access_token passing 6 of 7 args — nothing depending on mnt-platform-auth compiled; non-delegated mints pass None + two #[allow(clippy::too_many_arguments)]",
+      "why": "spine commit b0d31a8 left issue_access_token_with_group_roles / issue_scoped_access_token passing 6 of 7 args — nothing depending on console-platform-auth compiled; non-delegated mints pass None + two #[allow(clippy::too_many_arguments)]",
       "integrator": "DROP this commit if the spine lands its own fix"
     },
     {
@@ -48,7 +48,7 @@
     {
       "commit": "fix(logistics): hex-encode fingerprint without LowerHex on digest output",
       "files": ["backend/crates/logistics/adapter-postgres/src/lib.rs"],
-      "why": "sha2/hybrid-array resolution dropped LowerHex on digest output; format!(\"{:x}\") fails E0277 and blocks every mnt-app build",
+      "why": "sha2/hybrid-array resolution dropped LowerHex on digest output; format!(\"{:x}\") fails E0277 and blocks every console-app build",
       "integrator": "DROP if the logistics lane fixes it themselves"
     },
     {
@@ -59,11 +59,11 @@
     }
   ],
   "blockedVerification": {
-    "backend/app/tests/notif_routing_api.rs": "written and committed but CANNOT RUN in this worktree: mnt-production-rest (4 errors incl. missing PlanSummary.plan_digest value) and mnt-facilities-rest (3 errors) are mid-flight broken by their own active lanes, so mnt-app does not build; per hot-check discipline this lane did not touch those crates. Run once the spine heals."
+    "backend/app/tests/notif_routing_api.rs": "written and committed but CANNOT RUN in this worktree: console-production-rest (4 errors incl. missing PlanSummary.plan_digest value) and console-facilities-rest (3 errors) are mid-flight broken by their own active lanes, so console-app does not build; per hot-check discipline this lane did not touch those crates. Run once the spine heals."
   },
   "verified": {
-    "clippy": "cargo clippy --all-targets -D warnings green: mnt-platform-auth, mnt-notifications-{domain,application,adapter-postgres,rest}, mnt-platform-realtime",
-    "tests": "green against dev Postgres scratch DBs: adapter 8/8 (mnt_rt runtime-role RLS suite incl. 3 new routing tests), rest 2/2 (real router + ES256 JWT), domain 5/5"
+    "clippy": "cargo clippy --all-targets -D warnings green: console-platform-auth, console-notifications-{domain,application,adapter-postgres,rest}, console-platform-realtime",
+    "tests": "green against dev Postgres scratch DBs: adapter 8/8 (console_rt runtime-role RLS suite incl. 3 new routing tests), rest 2/2 (real router + ES256 JWT), domain 5/5"
   },
   "ownershipRootOutputs": [
     "docs/evidence/console/CAP-NOTIF-CONSOLE/design-spec.md",

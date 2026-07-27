@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Writes a local XcodeGen spec that points MaintenanceFieldApp at a CI-shaped
+// Writes a local XcodeGen spec that points ConsoleApp at a CI-shaped
 // Info.plist, mirroring what the hosted job does inline.
 //
 // The production Info.plist must stay free of App Transport Security exceptions
@@ -9,12 +9,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const NEEDLE = "INFOPLIST_FILE: Sources/MaintenanceFieldApp/Info.plist";
+const NEEDLE = "INFOPLIST_FILE: Sources/ConsoleApp/Info.plist";
 
 export function specWithPlist(source, plistPath) {
   const occurrences = source.split(NEEDLE).length - 1;
   if (occurrences !== 1) {
-    throw new Error(`expected exactly one MaintenanceFieldApp INFOPLIST_FILE setting, found ${occurrences}`);
+    throw new Error(`expected exactly one ConsoleApp INFOPLIST_FILE setting, found ${occurrences}`);
   }
   return source.replace(NEEDLE, `INFOPLIST_FILE: ${plistPath}`);
 }

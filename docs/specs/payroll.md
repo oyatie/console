@@ -32,7 +32,7 @@ No commercial payroll feed or blog-derived rate is allowed as a calculation sour
 
 ### Included
 
-- Pure Rust domain crate `mnt-payroll-domain`.
+- Pure Rust domain crate `console-payroll-domain`.
 - Effective-dated 2026 rate records for employee-side deductions:
   - 국민연금 employee share: 4.75% of capped 기준소득월액 in 2026.
   - 건강보험 employee share: 3.595% of 보수월액 in 2026.
@@ -84,7 +84,7 @@ Production payroll calculations are disabled unless all are true:
 This contract keeps payroll useful for import/staging and receipt workflows while preventing a false
 "payroll is live" claim.
 
-- **Domain ownership:** payroll calculations live in `mnt-payroll-domain`; general HR pages may show
+- **Domain ownership:** payroll calculations live in `console-payroll-domain`; general HR pages may show
   employment/lifecycle facts but must not own wage, bank, resident-registration, tax, insurance, or
   severance amounts.
 - **Protected staging:** HR workbooks may preserve payroll/severance fields in the raw import ledger,

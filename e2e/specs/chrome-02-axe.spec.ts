@@ -45,7 +45,7 @@ async function expectNoAxeViolations(
 /**
  * UI-M1a authenticated chrome axe guard.
  *
- * Runs only under the `dev-auth` Playwright project (`MNT_DEV_AUTH_E2E=1`).
+ * Runs only under the `dev-auth` Playwright project (`CONSOLE_DEV_AUTH_E2E=1`).
  * The default preview-only `chromium` project ignores this file so public-route
  * storefront checks remain runnable without the authenticated backend stack.
  */

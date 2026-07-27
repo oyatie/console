@@ -1,12 +1,12 @@
 [package]
-name = "mnt-ontology-domain"
+name = "console-ontology-domain"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core.workspace = true
+console-kernel-core.workspace = true
 serde.workspace = true
 uuid.workspace = true
 

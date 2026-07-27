@@ -1,9 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + auth gate for the mox delivery webhook (slice 1).
 //!
-//! Exercised as the genuine non-owner runtime role `mnt_rt` (NOBYPASSRLS, FORCE
+//! Exercised as the genuine non-owner runtime role `console_rt` (NOBYPASSRLS, FORCE
 //! RLS) — the only faithful exercise of the cross-tenant account lookup (a
-//! SECURITY DEFINER function GRANTed to mnt_rt) plus the org-armed inbound
+//! SECURITY DEFINER function GRANTed to console_rt) plus the org-armed inbound
 //! UPSERT. The default `#[sqlx::test]` pool is a BYPASSRLS superuser and would
 //! green-light a broken arming path.
 //!
@@ -22,17 +22,17 @@
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
 use base64::Engine as _;
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_application::{AccountUpsert, EmailAccountId, MailStore, account_config_audit_event};
-use mnt_comms_credential_cipher::{
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_application::{AccountUpsert, EmailAccountId, MailStore, account_config_audit_event};
+use console_comms_credential_cipher::{
     Aad, CredentialCipher, EnvelopeCredentialCipher, SealedCredential,
 };
-use mnt_comms_domain::MailSecurity;
-use mnt_comms_rest::{CommsRestState, MAIL_MOX_WEBHOOK_PATH, router};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_request_context::CURRENT_ORG;
-use mnt_platform_test_support::runtime_role_pool;
+use console_comms_domain::MailSecurity;
+use console_comms_rest::{CommsRestState, MAIL_MOX_WEBHOOK_PATH, router};
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_db::{DbError, with_audit};
+use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::runtime_role_pool;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use time::OffsetDateTime;
@@ -279,7 +279,7 @@ async fn known_recipient_ingests_and_is_idempotent(pool: PgPool) {
     let cipher = test_cipher();
     seed_org(&pool, OrgId::knl()).await;
     let actor = seed_active_user(&pool, OrgId::knl()).await;
-    // Seed + serve + ingest all as the genuine runtime role (mnt_rt).
+    // Seed + serve + ingest all as the genuine runtime role (console_rt).
     let rt = runtime_role_pool(&pool).await;
     seed_account(&PgMailStore::new(rt.clone()), &cipher, OrgId::knl(), actor).await;
     let state = CommsRestState::new(PgMailStore::new(rt), None, None)
@@ -339,7 +339,7 @@ async fn dual_org_match_is_quarantined_and_audited(pool: PgPool) {
     seed_org(&pool, org_b).await;
     let actor_a = seed_active_user(&pool, org_a).await;
     let actor_b = seed_active_user(&pool, org_b).await;
-    // Seed + serve as the genuine runtime role (mnt_rt) — same as the
+    // Seed + serve as the genuine runtime role (console_rt) — same as the
     // single-match happy path above.
     let rt = runtime_role_pool(&pool).await;
     seed_account(&PgMailStore::new(rt.clone()), &cipher, org_a, actor_a).await;

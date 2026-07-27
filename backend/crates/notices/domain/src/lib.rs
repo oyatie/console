@@ -6,7 +6,7 @@
 //! recipients and issues its canonical NT- code (outer layers own both).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{BranchId, KernelError};
+use console_kernel_core::{BranchId, KernelError};
 use serde::{Deserialize, Serialize};
 
 const TITLE_MAX: usize = 300;
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn audience_enforces_branch_ids_iff_branches_scope() {
-        use mnt_kernel_core::BranchId;
+        use console_kernel_core::BranchId;
         assert_eq!(
             NoticeAudience::new("org", vec![]).unwrap(),
             NoticeAudience::Org

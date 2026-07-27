@@ -56,7 +56,7 @@
 //! other lead period in this module; each computed window is written into the
 //! push's audit snapshot so the arithmetic is inspectable after the fact.
 
-use mnt_kernel_core::{Date, KernelError};
+use console_kernel_core::{Date, KernelError};
 use serde::{Deserialize, Serialize};
 use time::{Duration, Month};
 
@@ -430,7 +430,7 @@ mod tests {
             2,
         )
         .unwrap_err();
-        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Conflict);
+        assert_eq!(error.kind, console_kernel_core::ErrorKind::Conflict);
     }
 
     #[test]
@@ -511,7 +511,7 @@ mod tests {
         let mut context = ctx(PromotionTrack::Annual, period_end, date!(2026 - 12 - 20));
         assert_eq!(
             validate_refusal(&context).unwrap_err().kind,
-            mnt_kernel_core::ErrorKind::Conflict
+            console_kernel_core::ErrorKind::Conflict
         );
         context.second_round_served_on = Some(date!(2026 - 10 - 31));
         assert_eq!(validate_refusal(&context).unwrap(), 2);

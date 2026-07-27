@@ -13,7 +13,7 @@
 -- column is NOT NULL DEFAULT 'USED' and the (zero-or-more) existing rows backfill
 -- to 'USED' via that default.
 
--- mnt-gate: audited-table sales_listings
+-- console-gate: audited-table sales_listings
 ALTER TABLE sales_listings
     ADD COLUMN condition TEXT NOT NULL DEFAULT 'USED'
                          CHECK (condition IN ('USED', 'NEW'));

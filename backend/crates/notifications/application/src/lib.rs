@@ -12,10 +12,10 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, NotificationId, Timestamp, TraceContext, UserId,
 };
-use mnt_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
+use console_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
 use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------------------

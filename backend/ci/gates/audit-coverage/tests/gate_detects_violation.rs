@@ -1,10 +1,10 @@
-use mnt_gate_audit_coverage::{ViolationKind, allowed_audit_exclusions, check_source_tree};
+use console_gate_audit_coverage::{ViolationKind, allowed_audit_exclusions, check_source_tree};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 fn temp_workspace(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let dir =
-        std::env::temp_dir().join(format!("mnt-audit-gate-test-{name}-{}", std::process::id()));
+        std::env::temp_dir().join(format!("console-audit-gate-test-{name}-{}", std::process::id()));
     if dir.exists() {
         fs::remove_dir_all(&dir)?;
     }
@@ -49,7 +49,7 @@ fn gate_fails_state_changing_handler_without_audit() -> Result<(), Box<dyn std::
     write_file(
         &ws.join("crates/workorder/rest/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
+// console-gate: state-changing-handler
 pub async fn approve_work_order(pool: &PgPool, id: WorkOrderId) {
     sqlx::query!("UPDATE work_orders SET status = 'APPROVED' WHERE id = $1", id)
         .execute(pool)
@@ -173,7 +173,7 @@ fn gate_does_not_accept_audit_words_in_comments() -> Result<(), Box<dyn std::err
     write_file(
         &ws.join("crates/workorder/rest/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
+// console-gate: state-changing-handler
 pub async fn approve_work_order(pool: &PgPool, id: WorkOrderId) {
     // TODO: add with_audit and AuditEvent later.
     sqlx::query!("UPDATE work_orders SET status = 'APPROVED' WHERE id = $1", id)
@@ -205,7 +205,7 @@ fn gate_passes_state_changing_handler_with_audit() -> Result<(), Box<dyn std::er
     write_file(
         &ws.join("crates/workorder/rest/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
+// console-gate: state-changing-handler
 pub async fn approve_work_order(pool: &PgPool) {
     let event = AuditEvent::new(
         Some(actor),
@@ -240,8 +240,8 @@ fn gate_allows_exactly_one_location_ping_exemption() -> Result<(), Box<dyn std::
     write_file(
         &ws.join("crates/compliance/adapter-postgres/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
-// mnt-gate: audit-exempt location_ping_ingestion
+// console-gate: state-changing-handler
+// console-gate: audit-exempt location_ping_ingestion
 pub async fn record_location_ping(pool: &PgPool, ping: LocationPing) {
     sqlx::query!("INSERT INTO location_pings (user_id, lat, lon) VALUES ($1, $2, $3)")
         .execute(pool)
@@ -274,8 +274,8 @@ fn gate_rejects_location_exemption_on_a_different_handler() -> Result<(), Box<dy
     write_file(
         &ws.join("crates/workorder/rest/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
-// mnt-gate: audit-exempt location_ping_ingestion
+// console-gate: state-changing-handler
+// console-gate: audit-exempt location_ping_ingestion
 pub async fn approve_work_order(pool: &PgPool, id: WorkOrderId) {
     sqlx::query!("UPDATE work_orders SET status = 'APPROVED' WHERE id = $1", id)
         .execute(pool)
@@ -315,8 +315,8 @@ fn gate_rejects_location_exemption_on_wrong_function_in_bound_file()
     write_file(
         &ws.join("crates/compliance/adapter-postgres/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
-// mnt-gate: audit-exempt location_ping_ingestion
+// console-gate: state-changing-handler
+// console-gate: audit-exempt location_ping_ingestion
 pub async fn delete_location_ping(pool: &PgPool, id: PingId) {
     sqlx::query!("DELETE FROM location_pings WHERE id = $1", id)
         .execute(pool)
@@ -347,8 +347,8 @@ fn gate_rejects_unknown_audit_exemption() -> Result<(), Box<dyn std::error::Erro
     write_file(
         &ws.join("crates/workorder/rest/src/lib.rs"),
         r#"
-// mnt-gate: state-changing-handler
-// mnt-gate: audit-exempt temporary_backfill
+// console-gate: state-changing-handler
+// console-gate: audit-exempt temporary_backfill
 pub async fn backfill_work_order(pool: &PgPool) {
     sqlx::query!("UPDATE work_orders SET status = 'APPROVED'")
         .execute(pool)

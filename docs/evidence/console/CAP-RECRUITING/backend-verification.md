@@ -47,7 +47,7 @@ Also repaired while verifying: pre-existing rustfmt drift in
 |---|---|
 | FORCE RLS + org policy on every new table | PASS — migration 0187: ENABLE+FORCE ROW LEVEL SECURITY and `org_isolation` USING/WITH CHECK on `app.current_org` for all 4 tables; `enforce_org_id_immutable` triggers on the 3 mutable tables; stage events append-only via trigger raising on UPDATE/DELETE; grants have no DELETE anywhere and no UPDATE on stage events. |
 | Store arms the tenant GUC on every path | PASS — every read uses `with_org_conn`, every mutation `with_audits`; both bind `app.current_org` before the closure runs (`platform/db/src/audit_tx.rs`), org always from `current_org()` request context, never caller input. |
-| Integration test truly runs as `mnt_rt` | PASS — `role_pool(...,"SET ROLE mnt_rt")` after_connect on the app pool, plus a second `mnt_leave_cmd` pool for the isolated home-branch command capability; per-test migrated scratch DB via `#[sqlx::test(migrations=...)]`. |
+| Integration test truly runs as `console_rt` | PASS — `role_pool(...,"SET ROLE console_rt")` after_connect on the app pool, plus a second `console_leave_cmd` pool for the isolated home-branch command capability; per-test migrated scratch DB via `#[sqlx::test(migrations=...)]`. |
 | Count-leak-free tenant isolation | PASS — other-org SUPER_ADMIN: posting/applicant GET → 404, list → 200 with 0 items, cross-org mutation → 404 (not 403). Asserted in `recruiting_denies_without_leakage_and_conceals_other_tenants`. |
 | Deny-by-default authz | PASS — every handler resolves the principal then `authorize_org_wide` with `RecruitingRead`/`RecruitingManage` (read accepts the wider manage grant); matrix rows `[D,D,D,A,A,A]` / `[D,D,D,A,D,A]` mirror the HR directory pair per contract; exhaustive 82-feature matrix test in `platform/authz/tests/policy.rs`; MEMBER read → 403, EXECUTIVE manage → 403 asserted. Hire additionally gates `EmployeeDirectoryManage` (dual gate). |
 | Audit event per mutation + readback proof | PASS — every mutation path emits a `recruiting.*` audit inside the same `with_audits` transaction; test reads back `recruiting.applicant.{create,advance,assess,hire,view}`, exactly one `recruiting.posting.publish` (with check-vector snapshot), exactly one `employee.create` for the hire, and one `employee.home_branch_set` from the command capability. Applicant PII detail read audits `recruiting.applicant.view` in the transaction serving the read. |
@@ -69,7 +69,7 @@ rustfmt normalization of the pilot story test; `a016978f`/`13e8680d` facilities/
 production rest compile fixes; `f71811be` duplicate migration 0170 → 0181) plus the
 `6824c5af` hr repair, which correctly moves the 0166 home-branch command boundary into
 the shared `create_employee_core` (root-cause fix at the single write path; both
-callers fail closed without `mnt_leave_cmd` and assign the first routing branch
+callers fail closed without `console_leave_cmd` and assign the first routing branch
 post-commit, race-convergent). `hr_people_create_api` proves the People path green;
 the recruiting story proves the hire path ends with the branch assigned and exactly
 one `employee.home_branch_set` audit. This stage added the auth-rest fmt repair to the
@@ -78,11 +78,11 @@ same bucket. All of these must be flagged to their owning lanes at consolidation
 ## Gate evidence (this stage's runs, after the fix)
 
 - `cargo fmt --all --check` — clean (whole workspace).
-- `cargo clippy -p mnt-recruiting-{domain,application,adapter-postgres,rest} -p mnt-app --all-targets -- -D warnings` — clean.
-- `cargo test -p mnt-recruiting-domain` 4/4 · `-p mnt-recruiting-application` 4/4.
-- `cargo test -p mnt-platform-authz` 84/84 (38+5+2+39; exhaustive 82-feature matrix + DB-backed scope tests).
-- `cargo test -p mnt-app --lib` 163/163.
-- `cargo test -p mnt-app --test recruiting_pipeline_api --test hr_people_create_api --test openapi_drift` — 2/2 + 1/1 + 5/5 as `mnt_rt` (+`mnt_leave_cmd`) against per-test migrated scratch DBs on the live dev Postgres.
+- `cargo clippy -p console-recruiting-{domain,application,adapter-postgres,rest} -p console-app --all-targets -- -D warnings` — clean.
+- `cargo test -p console-recruiting-domain` 4/4 · `-p console-recruiting-application` 4/4.
+- `cargo test -p console-platform-authz` 84/84 (38+5+2+39; exhaustive 82-feature matrix + DB-backed scope tests).
+- `cargo test -p console-app --lib` 163/163.
+- `cargo test -p console-app --test recruiting_pipeline_api --test hr_people_create_api --test openapi_drift` — 2/2 + 1/1 + 5/5 as `console_rt` (+`console_leave_cmd`) against per-test migrated scratch DBs on the live dev Postgres.
 - `docs/evidence/console/CAP-RECRUITING/manifests/openapi-fragment.yaml` — parses (19 paths, 21 operations, 41 schemas incl. the new `RecruitApplicantSummary`, every operation `tags: [recruiting]`).
 
 ## Residual open items (unchanged from the build report, re-validated as honest)
@@ -96,7 +96,7 @@ same bucket. All of these must be flagged to their owning lanes at consolidation
 3. Hire dual-gate negative permutation (`RecruitingManage` without
    `EmployeeDirectoryManage`) remains untestable from built-in roles (both matrices
    match on the org-wide tiers); needs an org-wide custom-role grant fixture.
-4. Full `cargo test -p mnt-app` (all integration binaries) not run end-to-end in this
+4. Full `cargo test -p console-app` (all integration binaries) not run end-to-end in this
    worktree; surfaces this lane never touched may carry pre-existing failures.
 5. No BUCK files for the new crates (buck2 migration is a separate worktree).
 6. Named scope deferrals per gap-analysis §4 stand: candidate self-service apply,

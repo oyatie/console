@@ -8,7 +8,7 @@
 //! lead from staff — a customer-facing revenue defect. The fix resolves the
 //! storefront tenant from configuration (the same org staff read under).
 //!
-//! This test proves, as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! This test proves, as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the default `#[sqlx::test]` BYPASSRLS superuser
 //! pool, which would see every row and green-light a cross-org submit:
 //!   (a) a public inquiry submitted under the RESOLVED storefront org is visible
@@ -19,10 +19,10 @@
 //! Crucially the storefront org here is a NON-`knl()` tenant, so the test would
 //! reproduce the original bug if the submit still pinned `OrgId::knl()`.
 
-use mnt_kernel_core::{CustomerInquiryId, OrgId, TraceContext};
-use mnt_sales_adapter_postgres::PgSalesStore;
-use mnt_sales_application::{InquiryInboxQuery, SubmitInquiryCommand};
-use mnt_sales_domain::InquiryTopic;
+use console_kernel_core::{CustomerInquiryId, OrgId, TraceContext};
+use console_sales_adapter_postgres::PgSalesStore;
+use console_sales_application::{InquiryInboxQuery, SubmitInquiryCommand};
+use console_sales_domain::InquiryTopic;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -32,19 +32,19 @@ use uuid::Uuid;
 /// a random-looking id (not `0x…a1`) is the whole point: it reproduces #19.21 if
 /// the public submit were still hardcoded to `OrgId::knl()`.
 const STOREFRONT_ORG: Uuid = Uuid::from_u128(0x5101_5101_5101_5101_5101_5101_5101_5101);
-/// A second, different tenant to prove cross-tenant invisibility under `mnt_rt`.
+/// A second, different tenant to prove cross-tenant invisibility under `console_rt`.
 const OTHER_ORG: Uuid = Uuid::from_u128(0x9999_9999_9999_9999_9999_9999_9999_9999);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role under FORCE RLS (BYPASSRLS does not apply).
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     // Static GRANT literals (no interpolation) to satisfy the dynamic-SQL audit
-    // lint; the production default-privilege auto-grant gives these to mnt_rt,
+    // lint; the production default-privilege auto-grant gives these to console_rt,
     // but the #[sqlx::test] harness migrates as a different superuser.
     for grant in [
-        "GRANT SELECT, INSERT ON customer_inquiries TO mnt_rt",
-        "GRANT SELECT, INSERT ON sales_listings TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+        "GRANT SELECT, INSERT ON customer_inquiries TO console_rt",
+        "GRANT SELECT, INSERT ON sales_listings TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -53,7 +53,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -82,9 +82,9 @@ fn inbox() -> InquiryInboxQuery {
     }
 }
 
-/// Submit one inquiry of `topic` under `org`'s armed GUC as `mnt_rt`.
+/// Submit one inquiry of `topic` under `org`'s armed GUC as `console_rt`.
 async fn submit(store: &PgSalesStore, org: OrgId, topic: InquiryTopic, name: &str) {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         store
             .submit_inquiry(SubmitInquiryCommand {
                 inquiry_id: CustomerInquiryId::new(),
@@ -100,7 +100,7 @@ async fn submit(store: &PgSalesStore, org: OrgId, topic: InquiryTopic, name: &st
             .await
     })
     .await
-    .expect("public inquiry submit must succeed under the resolved storefront org as mnt_rt");
+    .expect("public inquiry submit must succeed under the resolved storefront org as console_rt");
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -121,11 +121,11 @@ async fn public_inquiry_is_visible_to_staff_in_same_org_as_runtime_role(owner_po
     // Staff read under the SAME org see BOTH leads (round-trip), including the
     // rental one — rental inquiries land in the same customer_inquiries surface
     // the 판매문의 관리 inbox reads.
-    let staff_view = mnt_platform_request_context::scope_org(storefront, async {
+    let staff_view = console_platform_request_context::scope_org(storefront, async {
         store.list_inquiries(inbox()).await
     })
     .await
-    .expect("staff inbox read must surface the storefront-org leads as mnt_rt");
+    .expect("staff inbox read must surface the storefront-org leads as console_rt");
     assert_eq!(
         staff_view.total, 2,
         "both the sale and rental leads are visible to staff in the storefront org"
@@ -141,7 +141,7 @@ async fn public_inquiry_is_visible_to_staff_in_same_org_as_runtime_role(owner_po
     );
 
     // (b) Cross-tenant: under a DIFFERENT org's GUC the leads are INVISIBLE.
-    let cross = mnt_platform_request_context::scope_org(other, async {
+    let cross = console_platform_request_context::scope_org(other, async {
         store.list_inquiries(inbox()).await
     })
     .await

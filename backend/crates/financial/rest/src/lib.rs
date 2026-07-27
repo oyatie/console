@@ -7,8 +7,8 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_financial_adapter_postgres::{PgFinancialError, PgFinancialStore};
-use mnt_financial_application::{
+use console_financial_adapter_postgres::{PgFinancialError, PgFinancialStore};
+use console_financial_application::{
     AppendCostLedgerEntryCommand, ConfirmPurchaseAttachmentUploadCommand, CostLedgerSource,
     CreatePurchaseRequestCommand, CreateRentalQuoteCommand, ExecutePurchaseCommand,
     FinancialConfigSnapshot, ListPurchaseRequestsQuery, PrepareExpenditureCommand,
@@ -16,15 +16,15 @@ use mnt_financial_application::{
     PurchaseRestartCommand, PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand,
     financial_audit_event,
 };
-use mnt_financial_domain::{MoneyInput, PurchaseStatus, RentalQuoteInput, compute_rental_quote};
-use mnt_kernel_core::{
+use console_financial_domain::{MoneyInput, PurchaseStatus, RentalQuoteInput, compute_rental_quote};
+use console_kernel_core::{
     BranchId, EquipmentId, ErrorKind, EvidenceId, KernelError, PurchaseRequestId, QuoteId,
     TraceContext, WorkOrderId,
 };
-use mnt_platform_auth::{AuthError, JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_storage::{
+use console_platform_auth::{AuthError, JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_db::{DbError, with_audit};
+use console_platform_storage::{
     PresignGetRequest, PresignPutRequest, PresignedUpload, S3ObjectStore, SeaweedS3Storage,
 };
 use serde::de::DeserializeOwned;
@@ -193,7 +193,7 @@ pub fn router(state: FinancialRestState) -> Router {
             post(execute_purchase),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -721,7 +721,7 @@ async fn presign_purchase_attachment(
         .as_ref()
         .ok_or_else(|| RestError::unavailable("purchase attachment storage is not configured"))?;
     let org =
-        mnt_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
+        console_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
     let storage_key = purchase_attachment_s3_key(org, &body.file_name);
     let role = body
         .role
@@ -1103,7 +1103,7 @@ async fn execute_purchase(
     Ok(Json(purchase))
 }
 
-fn purchase_attachment_s3_key(org: mnt_kernel_core::OrgId, file_name: &str) -> String {
+fn purchase_attachment_s3_key(org: console_kernel_core::OrgId, file_name: &str) -> String {
     let safe_name: String = file_name
         .chars()
         .map(|ch| {
@@ -1322,7 +1322,7 @@ async fn record_financial_step_up_failure(
     failure_reason: &'static str,
 ) -> Result<(), RestError> {
     let org =
-        mnt_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
+        console_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
     let event = financial_step_up_failure_event(
         principal.user_id,
         branch_id,
@@ -1343,14 +1343,14 @@ async fn record_financial_step_up_failure(
 }
 
 fn financial_step_up_failure_event(
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     branch_id: BranchId,
     purchase_request_id: PurchaseRequestId,
     action: FinancialStepUpAction,
     failure: FinancialStepUpFailure,
     trace: TraceContext,
     occurred_at: time::OffsetDateTime,
-) -> Result<mnt_kernel_core::AuditEvent, RestError> {
+) -> Result<console_kernel_core::AuditEvent, RestError> {
     Ok(financial_audit_event(
         "purchase.step_up.denied",
         actor,
@@ -1376,7 +1376,7 @@ async fn authorize_for_purchase(
     headers: &HeaderMap,
     purchase_request_id: PurchaseRequestId,
     action: Action,
-) -> Result<(mnt_financial_application::PurchaseRequestSummary, Principal), RestError> {
+) -> Result<(console_financial_application::PurchaseRequestSummary, Principal), RestError> {
     let (purchase, principal) =
         authorize_for_purchase_read(state, headers, purchase_request_id).await?;
     authorize(&principal, action, purchase.branch_id).map_err(RestError::from_kernel)?;
@@ -1387,7 +1387,7 @@ async fn authorize_for_purchase_read(
     state: &FinancialRestState,
     headers: &HeaderMap,
     purchase_request_id: PurchaseRequestId,
-) -> Result<(mnt_financial_application::PurchaseRequestSummary, Principal), RestError> {
+) -> Result<(console_financial_application::PurchaseRequestSummary, Principal), RestError> {
     let principal = principal_from_headers(state, headers).await?;
     let purchase = state
         .store
@@ -1429,40 +1429,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for financial API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for financial API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::internal(message)
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => {
+        console_platform_request_context::RequestContextError::MissingOrg => {
             RestError::internal("no tenant context is bound to the current request")
         }
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -1685,7 +1685,7 @@ mod tests {
 
     #[test]
     fn denied_step_up_audit_event_contains_no_assertion_material() {
-        let actor = mnt_kernel_core::UserId::new();
+        let actor = console_kernel_core::UserId::new();
         let branch = BranchId::new();
         let purchase_request_id = PurchaseRequestId::new();
         let event = financial_step_up_failure_event(

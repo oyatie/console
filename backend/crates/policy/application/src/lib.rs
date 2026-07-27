@@ -9,10 +9,10 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, OrgId, Timestamp, TraceContext, UserId,
 };
-use mnt_policy_domain::{
+use console_policy_domain::{
     CedarActionSelector, CedarCondition, CedarPolicyBlocks, CedarPolicyCatalogRow,
     CedarPolicyDraft, CedarPolicyEffect, CedarPolicyReviewStatus, CedarPolicySource,
     CedarPolicyStatus, CedarPrincipalSelector, CedarResourceSelector, CedarValidationError,
@@ -384,8 +384,8 @@ fn validate_optional_filter_key(field: &str, value: Option<&str>) -> Result<(), 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::{OrgId, TraceContext, UserId};
-    use mnt_policy_domain::{
+    use console_kernel_core::{OrgId, TraceContext, UserId};
+    use console_policy_domain::{
         CedarActionSelector, CedarPolicyEffect, CedarPrincipalKind, CedarPrincipalSelector,
         CedarResourceScope, CedarResourceSelector,
     };

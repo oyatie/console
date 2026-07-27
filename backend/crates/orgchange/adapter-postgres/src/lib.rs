@@ -12,21 +12,21 @@
 //! the op SQL itself inside the single apply transaction, re-implementing the
 //! SAME referential guards identity/registry enforce (active branches / active
 //! users / non-terminal equipment); the DB constraints remain the second net.
-use mnt_governance_domain::{Dependent, OnDelete, assess_impact};
-use mnt_kernel_core::{
+use console_governance_domain::{Dependent, OnDelete, assess_impact};
+use console_kernel_core::{
     AuditAction, AuditClassification, AuditEvent, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_orgchange_domain::{
+use console_orgchange_domain::{
     ApprovalRoleKey, ApprovalStepView, OrgChangeDetail, OrgChangeEventView, OrgChangeKind,
     OrgChangePage, OrgChangeStatus, OrgChangeSummary, OrgChangeTarget, OrgEntitySummary,
     OrgProposalOp, PreflightBlocker, PreflightReport, PreflightWarning, SettlementItemView,
     SettlementKey, StepDecision, TargetKind, validate_proposal,
 };
-use mnt_platform_db::{
+use console_platform_db::{
     DbError, PeriodLockDomain, assert_period_open, with_audit, with_audits, with_org_conn,
 };
-use mnt_platform_request_context::current_org;
+use console_platform_request_context::current_org;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction, postgres::PgRow};
@@ -733,7 +733,7 @@ const fn freeze_domain_label(domain: PeriodLockDomain) -> &'static str {
 /// scope and attribution it would rewrite is already sealed.
 ///
 /// This is the platform period-lock mechanism (migration 0107,
-/// `mnt_platform_db::period_lock`), not a second freeze concept: the lookup
+/// `console_platform_db::period_lock`), not a second freeze concept: the lookup
 /// runs in the caller's already-armed transaction, so RLS confines it to the
 /// caller's own tenant and the refusal rolls the whole apply back.
 async fn assert_change_window_open(
@@ -1968,7 +1968,7 @@ impl PgOrgChangeStore {
         .await?;
         let mut by_org = std::collections::BTreeMap::new();
         for group_id in group_ids {
-            for member in mnt_platform_group::group_member_orgs(&self.pool, group_id, actor).await?
+            for member in console_platform_group::group_member_orgs(&self.pool, group_id, actor).await?
             {
                 by_org.insert(
                     *member.org_id.as_uuid(),

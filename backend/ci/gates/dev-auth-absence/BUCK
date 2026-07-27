@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-dev-auth-absence-lib",
+    name = "console-gate-dev-auth-absence-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/dev-auth-absence", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_dev_auth_absence",
+    crate = "console_gate_dev_auth_absence",
     edition = "2024",
     crate_root = "backend/ci/gates/dev-auth-absence/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -22,23 +22,23 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-dev-auth-absence",
+    name = "console-gate-dev-auth-absence",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/dev-auth-absence", ["src/main.rs"]),
-    crate = "mnt_gate_dev_auth_absence",
+    crate = "console_gate_dev_auth_absence",
     edition = "2024",
     crate_root = "backend/ci/gates/dev-auth-absence/src/main.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/dev-auth-absence"},
     deps = [
         "//third-party/rust:serde_json",
-        ":mnt-gate-dev-auth-absence-lib",
+        ":console-gate-dev-auth-absence-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-dev-auth-absence-unit",
+    name = "console-gate-dev-auth-absence-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/dev-auth-absence", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_dev_auth_absence",
+    crate = "console_gate_dev_auth_absence",
     edition = "2024",
     crate_root = "backend/ci/gates/dev-auth-absence/src/lib.rs",
     visibility = ["PUBLIC"],

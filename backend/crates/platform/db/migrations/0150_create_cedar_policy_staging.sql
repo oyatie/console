@@ -4,7 +4,7 @@
 -- Draft saves are reviewable artifacts only: they do not bump legacy
 -- policy_versions and cannot create live/shadow enforcement rows.
 
--- mnt-gate: audited-table cedar_policy_catalog_entries
+-- console-gate: audited-table cedar_policy_catalog_entries
 CREATE TABLE cedar_policy_catalog_entries (
     id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                   UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -46,7 +46,7 @@ CREATE TABLE cedar_policy_catalog_entries (
     )
 );
 
--- mnt-gate: audited-table cedar_policy_drafts
+-- console-gate: audited-table cedar_policy_drafts
 CREATE TABLE cedar_policy_drafts (
     id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                   UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -114,7 +114,7 @@ $$;
 
 -- The runtime role may READ catalog entries. This slice has no promotion lane,
 -- so it deliberately cannot write catalog rows with shadow/enforced behavior.
-GRANT SELECT ON cedar_policy_catalog_entries TO mnt_rt;
-REVOKE INSERT, UPDATE, DELETE ON cedar_policy_catalog_entries FROM mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON cedar_policy_drafts TO mnt_rt;
-REVOKE DELETE ON cedar_policy_drafts FROM mnt_rt;
+GRANT SELECT ON cedar_policy_catalog_entries TO console_rt;
+REVOKE INSERT, UPDATE, DELETE ON cedar_policy_catalog_entries FROM console_rt;
+GRANT SELECT, INSERT, UPDATE ON cedar_policy_drafts TO console_rt;
+REVOKE DELETE ON cedar_policy_drafts FROM console_rt;

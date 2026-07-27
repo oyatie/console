@@ -38,7 +38,7 @@ The substrate that turns "many agents" from collision into throughput:
   This single refactor is the biggest parallelism unlock.
 - **Shared kit + kernels (borrow from oyatie, customize here):** the Object-View kit (every screen is a
   config over one scaffold), the kernel libs (tax/invoice-total, quota/fairness, sla-obs, lifecycle FSMs),
-  the mnt_rt test harness + gates. Built/borrowed once → every lane reuses.
+  the console_rt test harness + gates. Built/borrowed once → every lane reuses.
 - **AGENTS-OPERATING-CONTRACT (borrow):** a written contract for how parallel agents claim slices, respect
   boundaries, run the trifecta, and hand off — so the fleet self-coordinates.
 - **Deploy-blocking CI + the trifecta gate:** so parallel merges can't silently break each other.

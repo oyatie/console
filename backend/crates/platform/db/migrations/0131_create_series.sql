@@ -20,7 +20,7 @@ ON CONFLICT (kind) DO NOTHING;
 -- ---------------------------------------------------------------------------
 -- series — the series object (tenant data).
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table series
+-- console-gate: audited-table series
 CREATE TABLE series (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -44,12 +44,12 @@ CREATE POLICY org_isolation ON series
 -- Series are created and read; a series is archived (via lifecycle), never hard
 -- deleted, so no DELETE grant. INSERT for create; no UPDATE (label edits are a
 -- future revision-flow concern, out of scope here).
-GRANT SELECT, INSERT ON series TO mnt_rt;
+GRANT SELECT, INSERT ON series TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- series_instances — membership: which (kind, id) objects belong to a series.
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table series_instances
+-- console-gate: audited-table series_instances
 CREATE TABLE series_instances (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -79,4 +79,4 @@ CREATE POLICY org_isolation ON series_instances
 
 -- Instances are attached (INSERT) and read; detach is a future concern (kept as
 -- append-only membership for now), so no DELETE/UPDATE grant.
-GRANT SELECT, INSERT ON series_instances TO mnt_rt;
+GRANT SELECT, INSERT ON series_instances TO console_rt;

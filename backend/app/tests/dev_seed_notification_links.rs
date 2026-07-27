@@ -6,7 +6,7 @@
 //! seed can reach the dev-auth e2e that renders those notifications.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_notifications_domain::NotificationLink;
+use console_notifications_domain::NotificationLink;
 
 const DEV_SEED: &str = include_str!("../../../scripts/dev-seed.sql");
 

@@ -245,7 +245,7 @@ DO $$ DECLARE t TEXT; BEGIN FOREACH t IN ARRAY ARRAY['equipment_3r_units','equip
  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
  EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
  EXECUTE format('CREATE POLICY org_isolation ON %I USING (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid) WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)', t);
- EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO mnt_rt', t);
+ EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO console_rt', t);
  EXECUTE format('CREATE TRIGGER trg_%s_org_immutable BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()', t, t);
 END LOOP; END $$;
 -- Field access must stay per-table: PL/pgSQL resolves OLD.<field> for the
@@ -273,23 +273,23 @@ CREATE TRIGGER trg_equipment_3r_history_no_update BEFORE UPDATE OR DELETE ON equ
 ## 6. Build-stage obligations (backend)
 
 - Crates: `backend/crates/equipment/{domain,application,adapter-postgres,rest}` — packages
-  `mnt-equipment-domain/-application/-adapter-postgres/-rest` + BUCK files; workspace-member
+  `console-equipment-domain/-application/-adapter-postgres/-rest` + BUCK files; workspace-member
   registration in the root `Cargo.toml`.
 - Rest crate exports `EQUIPMENT_3R_ROUTE_PATHS: &[&str]` (all 14 paths with `{param}` syntax) and
   `router(state) -> Router` wrapped in `with_request_context`.
 - Every mutation in `with_audits` returning `(json, Vec<AuditEvent>)`; history row per transition
   in the same transaction; `FOR UPDATE` + status-guarded UPDATE with `rows_affected` check.
-- Tests `backend/app/tests/equipment_3r_api.rs` (mnt_rt pool, real JWT, oneshot router), minimum:
+- Tests `backend/app/tests/equipment_3r_api.rs` (console_rt pool, real JWT, oneshot router), minimum:
   1. Full lifecycle happy path quote→…→assessment(REPAIR)→completion with audit/history count asserts
      and `financeGlPosting: null` assert.
   2. Idempotent quote replay (`replayed: true`) + changed-fingerprint 409.
   3. PBAC denial (ungranted user 403), branch-scope widening 403, four-eyes approval 403.
   4. Concurrent approval of two quotes on one unit → exactly one 200, one 409 (`tokio::join!`).
-  5. Cross-org concealment: second-org actor gets 404 for first-org unit/case (RLS as mnt_rt).
+  5. Cross-org concealment: second-org actor gets 404 for first-org unit/case (RLS as console_rt).
   6. RESALE branch: assessment(RESALE)→completion → unit SOLD; new quote on SOLD unit → 409.
 - Verification commands (subagent can run cargo): `cargo build -p` each crate, `cargo fmt`,
-  `cargo clippy -p <crates> -- -D warnings`, `cargo test -p mnt-equipment-domain`, and the
-  app-level sqlx tests against a scratch DB (`MNT_POSTGRES_DB` convention; never dev-up down/up).
+  `cargo clippy -p <crates> -- -D warnings`, `cargo test -p console-equipment-domain`, and the
+  app-level sqlx tests against a scratch DB (`CONSOLE_POSTGRES_DB` convention; never dev-up down/up).
 - Integrator manifests to emit under `docs/evidence/console/CAP-EQUIPMENT-3R-PILOT/`:
   `openapi-manifest.json` (14 operations, `tags: [equipment-3r]`, DTO schemas above),
   `authz-manifest.json` (8 Feature variants + `feature_catalog` keys),

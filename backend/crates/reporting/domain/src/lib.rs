@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use mnt_kernel_core::{BranchId, RegionId, Timestamp, UserId};
+use console_kernel_core::{BranchId, RegionId, Timestamp, UserId};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -28,14 +28,14 @@ pub struct AnalyticsPeriod {
 
 impl AnalyticsPeriod {
     /// Creates a non-empty `[start, end)` period whose endpoints are UTC.
-    pub fn new(start: Timestamp, end: Timestamp) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn new(start: Timestamp, end: Timestamp) -> Result<Self, console_kernel_core::KernelError> {
         if start.offset() != time::UtcOffset::UTC || end.offset() != time::UtcOffset::UTC {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics period endpoints must be UTC",
             ));
         }
         if start >= end {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics period must be non-empty and half-open",
             ));
         }
@@ -58,10 +58,10 @@ impl AnalyticsPeriod {
     }
 
     /// Validates a whole UTC calendar month, ending at the next month's start.
-    pub fn monthly(start: Timestamp, end: Timestamp) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn monthly(start: Timestamp, end: Timestamp) -> Result<Self, console_kernel_core::KernelError> {
         let period = Self::new(start, end)?;
         if start.day() != 1 || start.time() != time::Time::MIDNIGHT {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "labor cost period must start at UTC month boundary",
             ));
         }
@@ -70,11 +70,11 @@ impl AnalyticsPeriod {
         } else {
             time::Date::from_calendar_date(start.year(), start.month().next(), 1)
         }
-        .map_err(|_| mnt_kernel_core::KernelError::validation("invalid monthly analytics period"))?
+        .map_err(|_| console_kernel_core::KernelError::validation("invalid monthly analytics period"))?
         .with_time(time::Time::MIDNIGHT)
         .assume_utc();
         if end != next_month {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "labor cost period must end at the next UTC month boundary",
             ));
         }
@@ -86,10 +86,10 @@ impl AnalyticsPeriod {
 pub struct AnalyticsDefinitionVersion(String);
 
 impl AnalyticsDefinitionVersion {
-    pub fn new(value: impl Into<String>) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn new(value: impl Into<String>) -> Result<Self, console_kernel_core::KernelError> {
         let value = value.into();
         if value.trim().is_empty() {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics definition version cannot be empty",
             ));
         }
@@ -115,10 +115,10 @@ pub enum AnalyticsSourceDomain {
 pub struct AnalyticsFactQueryIdentity(String);
 
 impl AnalyticsFactQueryIdentity {
-    pub fn new(value: impl Into<String>) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn new(value: impl Into<String>) -> Result<Self, console_kernel_core::KernelError> {
         let value = value.into();
         if value.trim().is_empty() {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics fact query identity cannot be empty",
             ));
         }
@@ -143,10 +143,10 @@ impl AnalyticsEvidence {
         href: impl Into<String>,
         fact_query_identity: AnalyticsFactQueryIdentity,
         source_domain: AnalyticsSourceDomain,
-    ) -> Result<Self, mnt_kernel_core::KernelError> {
+    ) -> Result<Self, console_kernel_core::KernelError> {
         let href = href.into();
         if href.trim().is_empty() {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics evidence href cannot be empty",
             ));
         }
@@ -177,9 +177,9 @@ pub struct RatioEvidence {
     denominator: u64,
 }
 impl RatioEvidence {
-    pub fn new(numerator: u64, denominator: u64) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn new(numerator: u64, denominator: u64) -> Result<Self, console_kernel_core::KernelError> {
         if denominator == 0 {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics denominator must be non-zero",
             ));
         }
@@ -213,9 +213,9 @@ pub struct DurationEvidence {
 
 impl DurationEvidence {
     /// Creates duration evidence for one or more matched attendance pairs.
-    pub fn new(total_seconds: u64, pair_count: u64) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn new(total_seconds: u64, pair_count: u64) -> Result<Self, console_kernel_core::KernelError> {
         if pair_count == 0 {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "duration evidence requires at least one attendance pair",
             ));
         }
@@ -226,18 +226,18 @@ impl DurationEvidence {
     }
 
     /// Combines disjoint duration evidence without losing seconds or pairs.
-    pub fn checked_add(self, other: Self) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn checked_add(self, other: Self) -> Result<Self, console_kernel_core::KernelError> {
         let total_seconds = self
             .total_seconds
             .checked_add(other.total_seconds)
             .ok_or_else(|| {
-                mnt_kernel_core::KernelError::validation("duration evidence seconds overflow")
+                console_kernel_core::KernelError::validation("duration evidence seconds overflow")
             })?;
         let pair_count = self
             .pair_count
             .checked_add(other.pair_count)
             .ok_or_else(|| {
-                mnt_kernel_core::KernelError::validation("duration evidence pair count overflow")
+                console_kernel_core::KernelError::validation("duration evidence pair count overflow")
             })?;
         Self::new(total_seconds, pair_count)
     }
@@ -276,10 +276,10 @@ impl MetricUnavailable {
     pub fn new(
         reason: impl Into<String>,
         source_domain: AnalyticsSourceDomain,
-    ) -> Result<Self, mnt_kernel_core::KernelError> {
+    ) -> Result<Self, console_kernel_core::KernelError> {
         let reason = reason.into();
         if reason.trim().is_empty() {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics unavailable reason cannot be empty",
             ));
         }
@@ -386,9 +386,9 @@ impl DashboardAnalytics {
         completion_rate: AnalyticsMetric<RatioEvidence>,
         trend: Vec<TrendSlot<SumEvidence>>,
         observed_at: Timestamp,
-    ) -> Result<Self, mnt_kernel_core::KernelError> {
+    ) -> Result<Self, console_kernel_core::KernelError> {
         if observed_at.offset() != time::UtcOffset::UTC {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics observed_at must be UTC",
             ));
         }
@@ -460,10 +460,10 @@ impl LaborCostAnalytics {
         gross_payroll: MetricUnavailable,
         trend: Vec<TrendSlot<DurationEvidence>>,
         observed_at: Timestamp,
-    ) -> Result<Self, mnt_kernel_core::KernelError> {
+    ) -> Result<Self, console_kernel_core::KernelError> {
         AnalyticsPeriod::monthly(period.start(), period.end())?;
         if observed_at.offset() != time::UtcOffset::UTC {
-            return Err(mnt_kernel_core::KernelError::validation(
+            return Err(console_kernel_core::KernelError::validation(
                 "analytics observed_at must be UTC",
             ));
         }
@@ -1084,11 +1084,11 @@ impl WorkDiaryStatus {
         }
     }
 
-    pub fn from_db_str(value: &str) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn from_db_str(value: &str) -> Result<Self, console_kernel_core::KernelError> {
         match value {
             "DRAFT" => Ok(Self::Draft),
             "CONFIRMED" => Ok(Self::Confirmed),
-            other => Err(mnt_kernel_core::KernelError::validation(format!(
+            other => Err(console_kernel_core::KernelError::validation(format!(
                 "unknown work diary status {other:?}"
             ))),
         }

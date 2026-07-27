@@ -88,7 +88,7 @@ platform :android do
     UI.user_error!("Expected Android release AAB was not produced at #{android_aab_path}") unless File.exist?(android_aab_path)
 
     upload_to_play_store(
-      package_name: ENV.fetch("ANDROID_PACKAGE_NAME", "com.maintenance.field"),
+      package_name: ENV.fetch("ANDROID_PACKAGE_NAME", "com.console.app"),
       track: "internal",
       aab: android_aab_path,
       json_key: ENV.fetch("PLAY_JSON_KEY_PATH"),

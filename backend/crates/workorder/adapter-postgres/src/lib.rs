@@ -3,13 +3,13 @@
 
 use std::sync::Arc;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, CustomerId, DailyPlanId, EquipmentId, ErrorKind, KernelError, SiteId,
     UserId, VendorId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_workorder_application::{
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
+use console_workorder_application::{
     ActionInboxPosition, ActionInboxWorkOrderFuture, ActionInboxWorkOrderPort,
     AssignedActionInboxWorkOrder, AssignedActionInboxWorkOrderPage, CreateDailyPlanCommand,
     CreateOutsourceWorkCommand, CreateSettlementCommand, CreateWorkOrderCommand,
@@ -24,7 +24,7 @@ use mnt_workorder_application::{
     WorkOrderStartCommand, WorkOrderSummary, daily_plan_audit_event, settlement_audit_event,
     work_order_audit_event,
 };
-use mnt_workorder_domain::{
+use console_workorder_domain::{
     ApprovalRole, AssignmentRole, MaintenanceCause, MaintenanceType, PriorityLevel,
     SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES, SettlementLineKind, SettlementStatus, TransitionActor,
     TransitionGuardContext, WorkOrderAssignment, WorkOrderAssignments, WorkOrderStatus,
@@ -1134,7 +1134,7 @@ impl PgWorkOrderStore {
 
     /// The approval-queue list of daily work plans (#19.17). Branch-scoped to the
     /// caller and armed via `with_org_conn(current_org())`, so it surfaces only
-    /// the tenant's plans as `mnt_rt`. Carries NO status filter — DRAFT/REQUESTED
+    /// the tenant's plans as `console_rt`. Carries NO status filter — DRAFT/REQUESTED
     /// plans MUST appear to the approver — and is ordered newest-plan-first.
     pub async fn list_daily_plans(
         &self,
@@ -1927,7 +1927,7 @@ fn push_action_inbox_branch_scope(
 impl ActionInboxWorkOrderPort for PgWorkOrderStore {
     fn list_assigned_action_inbox_page(
         &self,
-        org: mnt_kernel_core::OrgId,
+        org: console_kernel_core::OrgId,
         branch_scope: BranchScope,
         mechanic: UserId,
         as_of: time::OffsetDateTime,
@@ -2064,8 +2064,8 @@ struct DailyPlanTransition {
     actor: UserId,
     plan_id: DailyPlanId,
     action: &'static str,
-    trace: mnt_kernel_core::TraceContext,
-    occurred_at: mnt_kernel_core::Timestamp,
+    trace: console_kernel_core::TraceContext,
+    occurred_at: console_kernel_core::Timestamp,
     expected: DailyPlanStatus,
     next: DailyPlanStatus,
     memo: Option<String>,
@@ -2452,7 +2452,7 @@ async fn insert_status_history(
     action: &str,
     from_status: Option<WorkOrderStatus>,
     to_status: WorkOrderStatus,
-    occurred_at: mnt_kernel_core::Timestamp,
+    occurred_at: console_kernel_core::Timestamp,
     org_uuid: uuid::Uuid,
 ) -> Result<(), PgWorkOrderError> {
     sqlx::query(
@@ -2483,7 +2483,7 @@ async fn append_equipment_maintenance_history(
     tx: &mut Transaction<'_, Postgres>,
     work_order_id: WorkOrderId,
     equipment_id: EquipmentId,
-    completed_at: mnt_kernel_core::Timestamp,
+    completed_at: console_kernel_core::Timestamp,
     org_uuid: uuid::Uuid,
 ) -> Result<(), PgWorkOrderError> {
     sqlx::query_scalar::<_, uuid::Uuid>(
@@ -2505,7 +2505,7 @@ async fn update_status(
     actor: UserId,
     action: &str,
     to_status: WorkOrderStatus,
-    occurred_at: mnt_kernel_core::Timestamp,
+    occurred_at: console_kernel_core::Timestamp,
     org_uuid: uuid::Uuid,
 ) -> Result<WorkOrderSummary, PgWorkOrderError> {
     sqlx::query(
@@ -2542,7 +2542,7 @@ async fn insert_approval_step(
     role: ApprovalRole,
     approver_id: Option<UserId>,
     status: &str,
-    requested_at: Option<mnt_kernel_core::Timestamp>,
+    requested_at: Option<console_kernel_core::Timestamp>,
     org_uuid: uuid::Uuid,
 ) -> Result<(), PgWorkOrderError> {
     sqlx::query(

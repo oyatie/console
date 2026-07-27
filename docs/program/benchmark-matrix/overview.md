@@ -250,7 +250,7 @@ Columns: **Us** = our console. **Fnd** = Foundry. **Slk** = Slack. **Tms** = Tea
 
 ### Row 12 — Mobile
 
-- **Us:** Native field app exists (Android `com.maintenance.field`); console overview is web-responsive;
+- **Us:** Native field app exists (Android `com.console.app`); console overview is web-responsive;
   no dedicated overview mobile widget appears in the current console tree. `[code: android/app/build.gradle.kts;
   web/src/console/screens/overview]`
 - **Fnd:** Workshop **mobile** modules + app launcher + mobile nav-bar widget. `[V]`

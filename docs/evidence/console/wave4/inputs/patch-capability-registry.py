@@ -313,7 +313,7 @@ def main():
                     ("id", "CAP-SALES-CRM-N2"),
                     ("persona_scenario", "Sales owner advancing a deal"),
                     ("action_workflow", "stage advance is refused server-side without the stage's required evidence"),
-                    ("measurable_assertion", "CAP-SALES-CRM: stage advance fails closed as mnt_rt when per-stage evidence is absent"),
+                    ("measurable_assertion", "CAP-SALES-CRM: stage advance fails closed as console_rt when per-stage evidence is absent"),
                     ("required_receipts", "docs/evidence/console/CAP-SALES-CRM/native-2.json"),
                     ("status", "HOLD"),
                 ]),

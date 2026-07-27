@@ -14,7 +14,7 @@ Creates a timestamped backup from a running Compose project:
   - SeaweedFS /data volume tarball and file manifest
 
 Options:
-  --project NAME         Compose project name (default: mnt-prod)
+  --project NAME         Compose project name (default: console-prod)
   --compose-file PATH    Compose file, repeatable (default: ops/compose.yml)
   --backup-root PATH     Backup root (default: ops/backup/artifacts)
   --timestamp VALUE      UTC-ish backup id (default: current YYYYMMDDTHHMMSSZ)
@@ -31,7 +31,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 cd "${repo_root}"
 
-compose_project="${COMPOSE_PROJECT_NAME:-mnt-prod}"
+compose_project="${COMPOSE_PROJECT_NAME:-console-prod}"
 backup_root="${BACKUP_ROOT:-ops/backup/artifacts}"
 timestamp="${BACKUP_TIMESTAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 retention_daily="${RETENTION_DAILY:-14}"
@@ -209,7 +209,7 @@ postgres_exec 'pg_isready -h 127.0.0.1 -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
 postgres_exec 'PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump -h 127.0.0.1 -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc' >"${backup_dir}/postgres.dump"
 postgres_exec 'PGPASSWORD="${POSTGRES_PASSWORD}" pg_dumpall -h 127.0.0.1 -U "${POSTGRES_USER}" --globals-only' >"${backup_dir}/postgres-globals.sql"
 postgres_exec '
-  tmp_dir="$(mktemp -d /tmp/mnt-pitr-base.XXXXXX)"
+  tmp_dir="$(mktemp -d /tmp/console-pitr-base.XXXXXX)"
   cleanup() { rm -rf "${tmp_dir}"; }
   trap cleanup EXIT
   PGPASSWORD="${POSTGRES_PASSWORD}" pg_basebackup \

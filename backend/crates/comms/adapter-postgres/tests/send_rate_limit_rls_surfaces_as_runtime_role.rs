@@ -3,7 +3,7 @@
 //!
 //! Mirrors `mail_account_rls_surfaces_as_runtime_role.rs`: we SEED orgs/users as
 //! the owner (raw inserts, row_security off) and exercise the counter as the
-//! genuine non-owner runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS)
+//! genuine non-owner runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS)
 //! under the armed `app.current_org` GUC. The default `#[sqlx::test]` pool is a
 //! BYPASSRLS superuser and would green-light a leaking/broken counter.
 //!
@@ -18,10 +18,10 @@
 //!   * FAIL-CLOSED: with no GUC armed, the UPSERT is rejected (never silently
 //!     writes an unscoped row).
 
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_application::{MailStore, SEND_RATE_PER_MINUTE};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_application::{MailStore, SEND_RATE_PER_MINUTE};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -36,7 +36,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -124,7 +124,7 @@ async fn counter_increments_and_cap_blocks_after_limit(owner_pool: PgPool) {
         let attempts = CURRENT_ORG
             .scope(org, store.increment_send_rate(actor, ENDPOINT, window))
             .await
-            .expect("increment_send_rate as mnt_rt under the armed GUC");
+            .expect("increment_send_rate as console_rt under the armed GUC");
         assert_eq!(attempts, i, "the counter must increment by exactly one");
         if attempts > SEND_RATE_PER_MINUTE && blocked_at.is_none() {
             blocked_at = Some(i);

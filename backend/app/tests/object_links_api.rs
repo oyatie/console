@@ -3,15 +3,15 @@
 //!
 //! The round-trip test drives the real router (create/list/delete, duplicate
 //! rejection, unknown-kind rejection, audit emission). The isolation test runs
-//! as the genuine non-owner `mnt_rt` role (NOBYPASSRLS, FORCE RLS) — NOT the
+//! as the genuine non-owner `console_rt` role (NOBYPASSRLS, FORCE RLS) — NOT the
 //! default `#[sqlx::test]` BYPASSRLS superuser, which would see every row and
 //! green-light a broken tenant filter — to prove org B cannot see org A's link.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -22,8 +22,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1e);
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -208,11 +208,11 @@ async fn rls_cross_org_isolation_as_runtime_role(owner_pool: PgPool) {
 
     let rt_pool = runtime_role_pool(&owner_pool).await;
 
-    // As mnt_rt under org B's GUC: A's link is invisible (FORCE RLS).
+    // As console_rt under org B's GUC: A's link is invisible (FORCE RLS).
     let seen_by_other = count_links_scoped(&rt_pool, OTHER_ORG).await;
     assert_eq!(seen_by_other, 0, "org B must not see org A's link");
 
-    // As mnt_rt under org A's GUC: the link is visible.
+    // As console_rt under org A's GUC: the link is visible.
     let seen_by_owner = count_links_scoped(&rt_pool, knl).await;
     assert_eq!(seen_by_owner, 1, "org A sees its own link");
 }
@@ -533,7 +533,7 @@ async fn request(pool: &PgPool, public_key_pem: &str, req: Request<Body>) -> (St
 }
 
 async fn count_links_scoped(rt_pool: &PgPool, org: Uuid) -> i64 {
-    mnt_platform_db::with_org_conn::<_, i64, mnt_platform_db::DbError>(
+    console_platform_db::with_org_conn::<_, i64, console_platform_db::DbError>(
         rt_pool,
         OrgId::from_uuid(org),
         move |tx| {
@@ -550,8 +550,8 @@ async fn count_links_scoped(rt_pool: &PgPool, org: Uuid) -> i64 {
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, DELETE ON object_links TO mnt_rt",
-        "GRANT SELECT ON object_types TO mnt_rt",
+        "GRANT SELECT, INSERT, DELETE ON object_links TO console_rt",
+        "GRANT SELECT ON object_types TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -560,7 +560,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -636,13 +636,13 @@ fn issue_token_with_roles(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

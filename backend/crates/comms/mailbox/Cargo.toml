@@ -1,5 +1,5 @@
 [package]
-name = "mnt-comms-mailbox"
+name = "console-comms-mailbox"
 version = "0.1.0"
 description = "Standalone corporate mailbox core: hosted-domain/mailbox value objects and a no-open-relay SMTP session state machine for future MX/JMAP/IMAP hosting."
 edition.workspace = true

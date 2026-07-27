@@ -16,7 +16,7 @@ from pathlib import Path, PurePosixPath
 ENGINEERING_GATE_PATH = "docs/release/PR-473-EXPAND-CONTRACT.gate.json"
 AUTHORIZATION_PATH = "docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json"
 CANONICAL_EVIDENCE_PATH = "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json"
-PROD_OVERLAY_PATH = "deploy/apps/maintenance/overlays/prod/kustomization.yaml"
+PROD_OVERLAY_PATH = "deploy/apps/console/overlays/prod/kustomization.yaml"
 MAIN_REF = "refs/heads/main"
 ROLLBACK_FLOOR = "f6ff236b9770c79301a3d07da6afb56be1e27bbf"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")

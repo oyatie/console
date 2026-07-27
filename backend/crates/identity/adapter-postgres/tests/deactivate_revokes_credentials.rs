@@ -5,7 +5,7 @@
 //! A deactivated user who keeps an enrolled passkey or a live refresh-token
 //! family is still a hole: the passkey authenticates and the family rotates until
 //! natural expiry. This test runs the REAL `PgOrgStore::deactivate_user` as the
-//! genuine non-owner `mnt_rt` role (FORCE RLS applies, exactly like prod) and
+//! genuine non-owner `console_rt` role (FORCE RLS applies, exactly like prod) and
 //! proves that after deactivation:
 //!   * the user's WebAuthn credential rows are GONE (passkeys can't authenticate),
 //!   * every refresh-token family + token is revoked (refresh fails closed,
@@ -13,17 +13,17 @@
 //!     `FamilyRevoked`), and
 //!   * each sub-action is audited.
 
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_identity_application::DeactivateUserCommand;
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_identity_adapter_postgres::PgOrgStore;
+use console_identity_application::DeactivateUserCommand;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -31,7 +31,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -146,12 +146,12 @@ async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: Pg
         1
     );
 
-    // ... and a live refresh-token family (their session), minted as mnt_rt.
+    // ... and a live refresh-token family (their session), minted as console_rt.
     let now = OffsetDateTime::now_utc();
     let family = RefreshTokenStore
         .issue_family(&rt_pool, user_id, knl, now, Duration::days(30))
         .await
-        .expect("issue_family must pass RLS as mnt_rt");
+        .expect("issue_family must pass RLS as console_rt");
 
     // Deactivate via the REAL adapter, with the org task-local armed exactly as
     // the request-context middleware arms it on the authenticated route.
@@ -167,7 +167,7 @@ async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: Pg
             }),
         )
         .await
-        .expect("deactivate_user must succeed as mnt_rt");
+        .expect("deactivate_user must succeed as console_rt");
     assert!(!summary.is_active, "the user is soft-deactivated");
 
     // 1) Every passkey is gone: a deactivated user can no longer authenticate.

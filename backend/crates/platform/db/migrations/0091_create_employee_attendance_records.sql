@@ -5,7 +5,7 @@
 -- from geofence crossings for work orders, while these rows are explicit payroll
 -- readiness inputs linked to a trusted users.employee_id mapping.
 
--- mnt-gate: audited-table employee_attendance_records
+-- console-gate: audited-table employee_attendance_records
 CREATE TABLE employee_attendance_records (
     id              UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -56,7 +56,7 @@ CREATE TRIGGER trg_employee_attendance_records_append_only
     BEFORE UPDATE OR DELETE ON employee_attendance_records
     FOR EACH ROW EXECUTE FUNCTION forbid_employee_attendance_records_mutation();
 
--- mnt-gate: audited-table payroll_attendance_material_refs
+-- console-gate: audited-table payroll_attendance_material_refs
 CREATE TABLE payroll_attendance_material_refs (
     id                   UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -100,7 +100,7 @@ CREATE TRIGGER trg_payroll_attendance_material_refs_append_only
     BEFORE UPDATE OR DELETE ON payroll_attendance_material_refs
     FOR EACH ROW EXECUTE FUNCTION forbid_payroll_attendance_material_refs_mutation();
 
-GRANT SELECT, INSERT ON employee_attendance_records TO mnt_rt;
-GRANT SELECT, INSERT ON payroll_attendance_material_refs TO mnt_rt;
-REVOKE UPDATE, DELETE ON employee_attendance_records FROM mnt_rt;
-REVOKE UPDATE, DELETE ON payroll_attendance_material_refs FROM mnt_rt;
+GRANT SELECT, INSERT ON employee_attendance_records TO console_rt;
+GRANT SELECT, INSERT ON payroll_attendance_material_refs TO console_rt;
+REVOKE UPDATE, DELETE ON employee_attendance_records FROM console_rt;
+REVOKE UPDATE, DELETE ON payroll_attendance_material_refs FROM console_rt;

@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the §1b owned instance store, exercised as the genuine
-//! non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
+//! non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
 //! faithful exercise of the org_isolation policy. The default `#[sqlx::test]`
 //! pool is a BYPASSRLS superuser that would green-light a broken policy.
 //!
@@ -19,13 +19,13 @@
 //! migration-number collision has been reconciled, so no deduplicated copy is
 //! needed.
 
-use mnt_ontology_adapter_postgres::instances::{
+use console_ontology_adapter_postgres::instances::{
     CreateInstance, PgInstanceStore, StageRevision, verify_chain,
 };
-use mnt_ontology_adapter_postgres::{CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput};
-use mnt_ontology_domain::{BackingKind, InstanceLifecycleState, LinkCardinality, ObjectTypeId};
+use console_ontology_adapter_postgres::{CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput};
+use console_ontology_domain::{BackingKind, InstanceLifecycleState, LinkCardinality, ObjectTypeId};
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
+use console_kernel_core::{OrgId, TraceContext, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -39,7 +39,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -54,7 +54,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -94,7 +94,7 @@ async fn seed_object_type(
     actor: UserId,
     key: &str,
 ) -> ObjectTypeId {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
         let draft = CreateObjectTypeDraft {
@@ -113,7 +113,7 @@ async fn seed_object_type(
                 required: true,
                 in_property_policy: false,
             }],
-            links: vec![mnt_ontology_adapter_postgres::LinkTypeInput {
+            links: vec![console_ontology_adapter_postgres::LinkTypeInput {
                 stable_key: "linked_to".to_owned(),
                 title: "연결".to_owned(),
                 reverse_title: None,
@@ -159,7 +159,7 @@ async fn create_read_current_and_as_of_history(owner_pool: PgPool) {
     let t1 = datetime!(2026-07-09 12:00 UTC);
     let t2 = datetime!(2026-07-10 12:00 UTC);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInstanceStore::new(rt.clone());
 
         // (a) create v1 (priority hi) effective at t1.
@@ -254,7 +254,7 @@ async fn cross_tenant_instance_is_invisible_and_fails_closed(owner_pool: PgPool)
     let type_b = seed_object_type(&owner_pool, org_b, actor_b, "wo.b").await;
     let at = datetime!(2026-07-09 12:00 UTC);
 
-    let a_instance = mnt_platform_request_context::scope_org(org_a, async {
+    let a_instance = console_platform_request_context::scope_org(org_a, async {
         let store = PgInstanceStore::new(rt.clone());
         store
             .create_instance(
@@ -270,7 +270,7 @@ async fn cross_tenant_instance_is_invisible_and_fails_closed(owner_pool: PgPool)
     })
     .await;
 
-    let b_instance = mnt_platform_request_context::scope_org(org_b, async {
+    let b_instance = console_platform_request_context::scope_org(org_b, async {
         let store = PgInstanceStore::new(rt.clone());
         store
             .create_instance(
@@ -287,7 +287,7 @@ async fn cross_tenant_instance_is_invisible_and_fails_closed(owner_pool: PgPool)
     .await;
 
     // (c) Under org-A's GUC, B's instance is invisible; A's own is visible.
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         let store = PgInstanceStore::new(rt.clone());
         assert!(
             store.get_current(a_instance).await.is_ok(),
@@ -295,7 +295,7 @@ async fn cross_tenant_instance_is_invisible_and_fails_closed(owner_pool: PgPool)
         );
         assert!(
             store.get_current(b_instance).await.is_err(),
-            "B's instance must be invisible under org-A's GUC as mnt_rt"
+            "B's instance must be invisible under org-A's GUC as console_rt"
         );
         let list = store.list_instances(type_a).await.unwrap();
         assert_eq!(list.len(), 1);
@@ -339,9 +339,9 @@ async fn traversal_returns_linked_nodes(owner_pool: PgPool) {
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    let link_type = mnt_ontology_domain::LinkTypeId::from_uuid(link_type_uuid);
+    let link_type = console_ontology_domain::LinkTypeId::from_uuid(link_type_uuid);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInstanceStore::new(rt.clone());
         let a = store
             .create_instance(

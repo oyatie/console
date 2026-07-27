@@ -1,6 +1,6 @@
-//! Gate: `mnt-app`'s `dev-auth` cargo feature (the local role-switch endpoint,
-//! `mnt-platform-auth-rest`'s `POST /api/v1/dev-auth/session`) must never be
-//! reachable from `mnt-app`'s DEFAULT feature set — that default set is exactly
+//! Gate: `console-app`'s `dev-auth` cargo feature (the local role-switch endpoint,
+//! `console-platform-auth-rest`'s `POST /api/v1/dev-auth/session`) must never be
+//! reachable from `console-app`'s DEFAULT feature set — that default set is exactly
 //! what every release image builds with (no `--features` flag), so "not in
 //! default" IS "not in the shipped binary".
 //!
@@ -22,7 +22,7 @@ use std::path::Path;
 
 use serde_json::Value;
 
-const TARGET_PACKAGE: &str = "mnt-app";
+const TARGET_PACKAGE: &str = "console-app";
 const TARGET_FEATURE: &str = "dev-auth";
 
 #[derive(Debug)]
@@ -38,7 +38,7 @@ impl GateResult {
 }
 
 /// Run `cargo metadata --no-deps` from `workspace_dir` (CI runs this from
-/// `backend/`, same as every other `mnt-gate-*`) and return the raw JSON.
+/// `backend/`, same as every other `console-gate-*`) and return the raw JSON.
 pub fn load_metadata(workspace_dir: &Path) -> Result<Value, String> {
     let output = std::process::Command::new("cargo")
         .args(["metadata", "--format-version", "1", "--no-deps"])
@@ -81,7 +81,7 @@ pub fn check(metadata: &Value) -> Result<GateResult, String> {
     if !features.contains_key(TARGET_FEATURE) {
         violations.push(format!(
             "`{TARGET_PACKAGE}` no longer defines a `{TARGET_FEATURE}` feature — \
-             expected `{TARGET_FEATURE} = [\"mnt-platform-auth-rest/{TARGET_FEATURE}\"]`; \
+             expected `{TARGET_FEATURE} = [\"console-platform-auth-rest/{TARGET_FEATURE}\"]`; \
              has it been renamed or removed without updating this gate?"
         ));
     }
@@ -123,8 +123,8 @@ mod tests {
     fn metadata_with_features(features: Value) -> Value {
         json!({
             "packages": [
-                { "name": "mnt-app", "features": features },
-                { "name": "mnt-platform-auth-rest", "features": { "dev-auth": [] } },
+                { "name": "console-app", "features": features },
+                { "name": "console-platform-auth-rest", "features": { "dev-auth": [] } },
             ]
         })
     }
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn passes_when_dev_auth_is_not_in_default() {
         let metadata = metadata_with_features(json!({
-            "dev-auth": ["mnt-platform-auth-rest/dev-auth"],
+            "dev-auth": ["console-platform-auth-rest/dev-auth"],
         }));
         let result = check(&metadata).unwrap();
         assert!(result.passed(), "{:?}", result.violations);
@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn passes_when_default_only_enables_unrelated_features() {
         let metadata = metadata_with_features(json!({
-            "dev-auth": ["mnt-platform-auth-rest/dev-auth"],
+            "dev-auth": ["console-platform-auth-rest/dev-auth"],
             "default": ["metrics"],
             "metrics": [],
         }));
@@ -152,7 +152,7 @@ mod tests {
     #[test]
     fn fails_when_dev_auth_is_directly_in_default() {
         let metadata = metadata_with_features(json!({
-            "dev-auth": ["mnt-platform-auth-rest/dev-auth"],
+            "dev-auth": ["console-platform-auth-rest/dev-auth"],
             "default": ["dev-auth"],
         }));
         let result = check(&metadata).unwrap();
@@ -162,7 +162,7 @@ mod tests {
     #[test]
     fn fails_when_dev_auth_is_transitively_in_default() {
         let metadata = metadata_with_features(json!({
-            "dev-auth": ["mnt-platform-auth-rest/dev-auth"],
+            "dev-auth": ["console-platform-auth-rest/dev-auth"],
             "default": ["convenience"],
             "convenience": ["dev-auth"],
         }));
@@ -180,9 +180,9 @@ mod tests {
     #[test]
     fn a_same_named_feature_on_a_dependency_does_not_count() {
         // `some-crate/dev-auth` enables a DIFFERENT crate's `dev-auth`
-        // feature, not mnt-app's own — must not be treated as a graph edge.
+        // feature, not console-app's own — must not be treated as a graph edge.
         let metadata = metadata_with_features(json!({
-            "dev-auth": ["mnt-platform-auth-rest/dev-auth"],
+            "dev-auth": ["console-platform-auth-rest/dev-auth"],
             "default": ["some-crate/dev-auth"],
         }));
         let result = check(&metadata).unwrap();

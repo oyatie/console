@@ -1,17 +1,17 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-AUTO slice 2 E2E — condition/branch node runtime against the REAL engine
-//! on a genuine `PgWorkflowRuntimeStore`, driven as the non-owner `mnt_rt` role
+//! on a genuine `PgWorkflowRuntimeStore`, driven as the non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) with `app.current_org` armed.
 //!
 //! Proves the branch walk: a `condition` node's predicate over the run context
 //! selects the outgoing `when` edge; each outcome drives a DIFFERENT path; and
 //! the untaken (dead) branch NEVER executes — no node run row is written for it.
-//! Cross-org isolation of the produced runs is asserted as `mnt_rt`.
+//! Cross-org isolation of the produced runs is asserted as `console_rt`.
 
-use mnt_kernel_core::{OrgId, TraceContext};
-use mnt_workflow_domain::TriggerType;
-use mnt_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_kernel_core::{OrgId, TraceContext};
+use console_workflow_domain::TriggerType;
+use console_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use serde_json::{Value, json};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
@@ -27,7 +27,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(6)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -172,7 +172,7 @@ async fn condition_true_branch_parks_and_dead_branch_never_runs(owner_pool: PgPo
         .unwrap();
     assert!(matches!(
         outcome,
-        TriggeredStart::Started { run_status, .. } if run_status == mnt_workflow_domain::RunStatus::Waiting
+        TriggeredStart::Started { run_status, .. } if run_status == console_workflow_domain::RunStatus::Waiting
     ));
 
     let keys = node_keys(&rt_pool, org, run_id).await;
@@ -206,7 +206,7 @@ async fn condition_false_branch_runs_to_terminal_success(owner_pool: PgPool) {
         .unwrap();
     assert!(matches!(
         outcome,
-        TriggeredStart::Started { run_status, .. } if run_status == mnt_workflow_domain::RunStatus::Succeeded
+        TriggeredStart::Started { run_status, .. } if run_status == console_workflow_domain::RunStatus::Succeeded
     ));
 
     let keys = node_keys(&rt_pool, org, run_id).await;

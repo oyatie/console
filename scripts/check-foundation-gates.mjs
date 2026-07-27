@@ -95,7 +95,7 @@ function compareInventory(label, documented, actual, docsPath, sourcePath) {
 
 function extractCiBackendGatePackages(ciText) {
   return uniqueSorted(
-    [...ciText.matchAll(/\bcargo\s+run(?:\s+-q)?\s+-p\s+(mnt-gate-[a-z0-9-]+)/g)].map(
+    [...ciText.matchAll(/\bcargo\s+run(?:\s+-q)?\s+-p\s+(console-gate-[a-z0-9-]+)/g)].map(
       ([, gatePackage]) => gatePackage,
     ),
   );
@@ -165,8 +165,8 @@ function requireCiGateDocsDriftInventory() {
   requireNoMissingPackageScripts("web-console CI package scripts", webScripts, webPackage, webPackagePath, (script) => `web:${script}`);
 
   compareInventory(
-    "docs/CI-GATES.md backend mnt-gate binaries run by CI",
-    markdownCodeListUnderHeading(docsPath, "Backend mnt-gate binaries run by CI"),
+    "docs/CI-GATES.md backend console-gate binaries run by CI",
+    markdownCodeListUnderHeading(docsPath, "Backend console-gate binaries run by CI"),
     backendGatePackages,
     docsPath,
     ciPath,
@@ -205,7 +205,7 @@ for (const staleGoal of ["G011", "G012", "G013", "G014", "G015", "G016", "G017",
 }
 
 // Policy/audit/passkey baseline. Explicit required gates plus any additional
-// mnt-gate binary CI runs, so a newly wired gate cannot ship without its crate.
+// console-gate binary CI runs, so a newly wired gate cannot ship without its crate.
 for (const gate of [
   "layer-boundary",
   "audit-coverage",
@@ -217,7 +217,7 @@ for (const gate of [
   requireFile(`backend/ci/gates/${gate}/Cargo.toml`, `backend ${gate} gate`);
 }
 for (const gatePackage of extractCiBackendGatePackages(read(".github/workflows/ci.yml"))) {
-  const gate = gatePackage.replace(/^mnt-gate-/, "");
+  const gate = gatePackage.replace(/^console-gate-/, "");
   requireFile(`backend/ci/gates/${gate}/Cargo.toml`, `backend ${gate} gate (CI-run)`);
 }
 requireIncludes("backend/openapi/openapi.yaml", "Sensitive actions require a fresh passkey step-up assertion", "object action passkey step-up contract");
@@ -238,9 +238,9 @@ for (const ciNeedle of [
   "cargo fmt --all -- --check",
   "cargo clippy --all-targets -- -D warnings",
   "SQLX_OFFLINE=true cargo test",
-  "cargo run -p mnt-gate-audit-coverage",
-  "cargo run -p mnt-gate-pii-no-logs",
-  "cargo run -p mnt-gate-rls-arming",
+  "cargo run -p console-gate-audit-coverage",
+  "cargo run -p console-gate-pii-no-logs",
+  "cargo run -p console-gate-rls-arming",
   "git diff --exit-code -- clients/ts clients/kotlin",
   "npm run check:openapi-app",
   "npm run test:contract",

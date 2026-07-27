@@ -87,18 +87,18 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 )
 OPENAPI_DRIFT_EXTERNAL.update({
     "//clients:kotlin-dispatch-queue-status": (
-        "clients/kotlin/src/main/kotlin/com/maintenance/api/client/model/"
+        "clients/kotlin/src/main/kotlin/com/console/api/client/model/"
         "DispatchQueueStatus.kt"
     ),
     "//clients:kotlin-p1-dispatches-api": (
-        "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/"
+        "clients/kotlin/src/main/kotlin/com/console/api/client/api/"
         "P1DispatchesApi.kt"
     ),
     "//clients:swift-client": (
-        "clients/swift/Sources/MaintenanceAPIClient/Generated/Client.swift"
+        "clients/swift/Sources/ConsoleAPIClient/Generated/Client.swift"
     ),
     "//clients:swift-types": (
-        "clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift"
+        "clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift"
     ),
     "//clients:ts-schema": "clients/ts/src/schema.d.ts",
 })
@@ -106,7 +106,7 @@ OPENAPI_DRIFT_EXTERNAL.update({
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
-    "mnt-app": {
+    "console-app": {
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
@@ -129,14 +129,14 @@ RESOURCE_CONFIG = {
             },
         },
     },
-    "mnt-platform-authz": {
+    "console-platform-authz": {
         "external": {
             "//docs/specs:cedar-pbac-map":
                 "docs/specs/cedar-pbac-coexistence-map.json",
         },
         "itest_srcs": ["tests/fixtures/**"],
     },
-    "mnt-reporting-adapter-postgres": {
+    "console-reporting-adapter-postgres": {
         "external": {
             "//docs/reference:daily-progress":
                 "docs/reference/일일업무진행현황_0605.xlsx",
@@ -144,7 +144,7 @@ RESOURCE_CONFIG = {
                 "docs/reference/업무일지_26.05.27.xlsx",
         },
     },
-    "mnt-platform-excel": {
+    "console-platform-excel": {
         "itest_external": {
             "//docs/reference:daily-progress":
                 "docs/reference/일일업무진행현황_0605.xlsx",
@@ -152,13 +152,13 @@ RESOURCE_CONFIG = {
                 "docs/reference/업무일지_26.05.27.xlsx",
         },
     },
-    "mnt-registry-adapter-postgres": {
+    "console-registry-adapter-postgres": {
         "itest_external": {
             "//docs/reference:master-list":
                 "docs/reference/master-list_251120.xlsx",
         },
     },
-    "mnt-registry-rest": {
+    "console-registry-rest": {
         "itest_external": {
             "//docs/reference:master-list":
                 "docs/reference/master-list_251120.xlsx",
@@ -176,7 +176,7 @@ TEST_MARKERS = ("#[test]", "#[tokio::test", "#[sqlx::test", "#[rstest")
 # the generated face in the same reviewed diff. Every generated target is
 # enumerated explicitly; missing or stale metadata fails generation.
 TEST_RESOURCE_REQUIREMENTS = {
-    'mnt-app': {
+    'console-app': {
         'unit': 'none',
         'integration': {
             'tests/action_inbox_api.rs': 'postgres',
@@ -244,7 +244,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/workorder_api.rs': 'postgres',
         },
     },
-    'mnt-attendance-adapter-postgres': {
+    'console-attendance-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/cancel_substitution.rs': 'postgres',
@@ -252,233 +252,233 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/self_service.rs': 'postgres',
         },
     },
-    'mnt-attendance-application': {
+    'console-attendance-application': {
         'unit': 'none',
         'integration': {
             'tests/attendance_policy.rs': 'none',
         },
     },
-    'mnt-attendance-domain': {
+    'console-attendance-domain': {
         'unit': 'none',
         'integration': {
             'tests/range_and_history.rs': 'none',
         },
     },
-    'mnt-attendance-rest': {
+    'console-attendance-rest': {
         'unit': 'none',
     },
-    'mnt-equipment-domain': {
+    'console-equipment-domain': {
         'unit': 'none',
     },
-    'mnt-evaluation-application': {
+    'console-evaluation-application': {
         'unit': 'none',
     },
-    'mnt-evaluation-adapter-postgres': {
+    'console-evaluation-adapter-postgres': {
         'unit': 'none',
     },
-    'mnt-evaluation-domain': {
+    'console-evaluation-domain': {
         'unit': 'none',
     },
-    'mnt-gate-audit-coverage': {
+    'console-gate-audit-coverage': {
         'integration': {
             'tests/gate_detects_violation.rs': 'postgres',
         },
     },
-    'mnt-gate-dev-auth-absence': {
+    'console-gate-dev-auth-absence': {
         'unit': 'none',
     },
-    'mnt-gate-iac-tier': {
+    'console-gate-iac-tier': {
         'unit': 'none',
     },
-    'mnt-gate-layer-boundary': {
+    'console-gate-layer-boundary': {
         'unit': 'none',
         'integration': {
             'tests/gate_detects_violation.rs': 'none',
         },
     },
-    'mnt-gate-migration-safety': {
+    'console-gate-migration-safety': {
         'integration': {
             'tests/gate_detects_violation.rs': 'none',
         },
     },
-    'mnt-gate-pii-no-logs': {
+    'console-gate-pii-no-logs': {
         'integration': {
             'tests/gate_detects_violation.rs': 'none',
         },
     },
-    'mnt-gate-rls-arming': {
+    'console-gate-rls-arming': {
         'unit': 'postgres',
     },
-    'mnt-gate-tenant-isolation': {
+    'console-gate-tenant-isolation': {
         'unit': 'postgres',
         'integration': {
             'tests/owner_only_acl_postgres18.rs': 'postgres',
         },
     },
-    'mnt-gate-vendor-lockin': {
+    'console-gate-vendor-lockin': {
         'unit': 'none',
         'integration': {
             'tests/gate_detects_violation.rs': 'none',
         },
     },
-    'mnt-action-inbox-application': {
+    'console-action-inbox-application': {
         'unit': 'none',
     },
-    'mnt-analytics-quant-service': {
+    'console-analytics-quant-service': {
         'unit': 'none',
     },
-    'mnt-benefit-adapter-postgres': {
+    'console-benefit-adapter-postgres': {
         'integration': {
             'tests/catalog_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-benefit-application': {
+    'console-benefit-application': {
         'unit': 'none',
     },
-    'mnt-benefit-domain': {
+    'console-benefit-domain': {
         'unit': 'none',
     },
-    'mnt-benefit-rest': {
+    'console-benefit-rest': {
         'unit': 'none',
     },
-    'mnt-comms-adapter-imap': {
+    'console-comms-adapter-imap': {
         'unit': 'none',
     },
-    'mnt-comms-adapter-mox': {
+    'console-comms-adapter-mox': {
         'unit': 'none',
     },
-    'mnt-comms-adapter-postgres': {
+    'console-comms-adapter-postgres': {
         'integration': {
             'tests/mail_account_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/mail_sync_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/send_rate_limit_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-comms-adapter-smtp': {
+    'console-comms-adapter-smtp': {
         'unit': 'none',
     },
-    'mnt-comms-application': {
+    'console-comms-application': {
         'unit': 'none',
     },
-    'mnt-comms-credential-cipher': {
+    'console-comms-credential-cipher': {
         'unit': 'none',
     },
-    'mnt-comms-domain': {
+    'console-comms-domain': {
         'unit': 'none',
     },
-    'mnt-comms-mailbox': {
+    'console-comms-mailbox': {
         'unit': 'none',
     },
-    'mnt-comms-rest': {
+    'console-comms-rest': {
         'unit': 'none',
         'integration': {
             'tests/mox_webhook.rs': 'postgres',
             'tests/readiness.rs': 'postgres',
         },
     },
-    'mnt-compliance-adapter-postgres': {
+    'console-compliance-adapter-postgres': {
         'integration': {
             'tests/location_consent_status_rls_as_runtime_role.rs': 'postgres',
             'tests/location_store.rs': 'postgres',
         },
     },
-    'mnt-compliance-domain': {
+    'console-compliance-domain': {
         'unit': 'none',
         'integration': {
             'tests/location_consent_fsm.rs': 'none',
             'tests/location_ping_policy.rs': 'none',
         },
     },
-    'mnt-integrity': {
+    'console-integrity': {
         'unit': 'none',
     },
-    'mnt-compliance-rest': {
+    'console-compliance-rest': {
         'unit': 'none',
     },
-    'mnt-consulting-rest': {
+    'console-consulting-rest': {
         'unit': 'none',
         'integration': {
             'tests/audit_atomicity.rs': 'postgres',
         },
     },
-    'mnt-dispatch-application': {
+    'console-dispatch-application': {
         'unit': 'none',
     },
-    'mnt-dispatch-adapter-postgres': {
+    'console-dispatch-adapter-postgres': {
         'integration': {
             'tests/p1_dispatch.rs': 'postgres',
         },
     },
-    'mnt-dispatch-domain': {
+    'console-dispatch-domain': {
         'unit': 'none',
     },
-    'mnt-dispatch-rest': {
+    'console-dispatch-rest': {
         'unit': 'none',
     },
-    'mnt-dispatch-worker': {
+    'console-dispatch-worker': {
         'integration': {
             'tests/timer_delivery.rs': 'postgres',
         },
     },
-    'mnt-docs-adapter-postgres': {
+    'console-docs-adapter-postgres': {
         'unit': 'none',
     },
-    'mnt-docs-application': {
+    'console-docs-application': {
         'unit': 'none',
     },
-    'mnt-docs-domain': {
+    'console-docs-domain': {
         'unit': 'none',
     },
-    'mnt-docs-rest': {
+    'console-docs-rest': {
         'unit': 'none',
         'integration': {
             'tests/evidence_rest_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-erp-domain': {
+    'console-erp-domain': {
         'unit': 'none',
     },
-    'mnt-facilities-rest': {
+    'console-facilities-rest': {
         'unit': 'none',
     },
-    'mnt-finance-gl-adapter-postgres': {
+    'console-finance-gl-adapter-postgres': {
         'integration': {
             'tests/voucher_rls_and_fsm_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-finance-gl-domain': {
+    'console-finance-gl-domain': {
         'unit': 'none',
     },
-    'mnt-financial-adapter-postgres': {
+    'console-financial-adapter-postgres': {
         'integration': {
             'tests/lifecycle_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/period_lock_blocks_ledger_as_runtime_role.rs': 'postgres',
             'tests/use_cases.rs': 'postgres',
         },
     },
-    'mnt-financial-domain': {
+    'console-financial-domain': {
         'unit': 'none',
         'integration': {
             'tests/quote_and_residual.rs': 'none',
         },
     },
-    'mnt-financial-rest': {
+    'console-financial-rest': {
         'unit': 'none',
         'integration': {
             'tests/purchase_request_list.rs': 'postgres',
         },
     },
-    'mnt-governance-adapter-postgres': {
+    'console-governance-adapter-postgres': {
         'integration': {
             'tests/approvals_create_as_runtime_role.rs': 'postgres',
             'tests/four_eyes_bind_consume.rs': 'postgres',
             'tests/governance_rls_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-governance-domain': {
+    'console-governance-domain': {
         'unit': 'none',
     },
-    'mnt-identity-adapter-postgres': {
+    'console-identity-adapter-postgres': {
         'integration': {
             'tests/deactivate_revokes_credentials.rs': 'postgres',
             'tests/me_workspace_layouts_rls.rs': 'postgres',
@@ -486,84 +486,84 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/subject_authz_versions_freshness_rls.rs': 'postgres',
         },
     },
-    'mnt-identity-application': {
+    'console-identity-application': {
         'unit': 'none',
     },
-    'mnt-identity-domain': {
+    'console-identity-domain': {
         'unit': 'none',
     },
-    'mnt-identity-rest': {
+    'console-identity-rest': {
         'unit': 'postgres',
         'integration': {
             'tests/org_setup.rs': 'postgres',
         },
     },
-    'mnt-inbox-adapter-postgres': {
+    'console-inbox-adapter-postgres': {
         'integration': {
             'tests/inbox_docs_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-inbox-application': {
+    'console-inbox-application': {
         'unit': 'none',
     },
-    'mnt-inbox-domain': {
+    'console-inbox-domain': {
         'unit': 'none',
     },
-    'mnt-inbox-rest': {
+    'console-inbox-rest': {
         'integration': {
             'tests/api.rs': 'postgres',
         },
     },
-    'mnt-inventory-adapter-postgres': {
+    'console-inventory-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/consume_idempotency_concurrency.rs': 'postgres',
         },
     },
-    'mnt-inventory-rest': {
+    'console-inventory-rest': {
         'unit': 'none',
     },
-    'mnt-inspection-adapter-postgres': {
+    'console-inspection-adapter-postgres': {
         'integration': {
             'tests/lifecycle.rs': 'postgres',
             'tests/schedule_window_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-inventory-domain': {
+    'console-inventory-domain': {
         'unit': 'none',
     },
-    'mnt-kernel-core': {
+    'console-kernel-core': {
         'unit': 'none',
     },
-    'mnt-leave-adapter-postgres': {
+    'console-leave-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/leave_migration_expand_contract.rs': 'postgres',
             'tests/leave_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-leave-domain': {
+    'console-leave-domain': {
         'unit': 'none',
     },
-    'mnt-leave-rest': {
+    'console-leave-rest': {
         'unit': 'none',
         'integration': {
             'tests/leave_http_personas.rs': 'postgres',
         },
     },
-    'mnt-logistics-domain': {
+    'console-logistics-domain': {
         'unit': 'none',
     },
-    'mnt-messenger-adapter-postgres': {
+    'console-messenger-adapter-postgres': {
         'integration': {
             'tests/parity_tables_rls_as_runtime_role.rs': 'postgres',
             'tests/use_cases.rs': 'postgres',
         },
     },
-    'mnt-messenger-application': {
+    'console-messenger-application': {
         'unit': 'none',
     },
-    'mnt-messenger-domain': {
+    'console-messenger-domain': {
         'integration': {
             'tests/mentions.rs': 'none',
             'tests/object_code_refs.rs': 'none',
@@ -571,38 +571,38 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/thread_kind.rs': 'none',
         },
     },
-    'mnt-messenger-rest': {
+    'console-messenger-rest': {
         'integration': {
             'tests/api.rs': 'postgres',
         },
     },
-    'mnt-notices-adapter-postgres': {
+    'console-notices-adapter-postgres': {
         'integration': {
             'tests/notices_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-notices-domain': {
+    'console-notices-domain': {
         'unit': 'none',
     },
-    'mnt-notices-rest': {
+    'console-notices-rest': {
         'integration': {
             'tests/api.rs': 'postgres',
         },
     },
-    'mnt-notifications-adapter-postgres': {
+    'console-notifications-adapter-postgres': {
         'integration': {
             'tests/notifications_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-notifications-domain': {
+    'console-notifications-domain': {
         'unit': 'none',
     },
-    'mnt-notifications-rest': {
+    'console-notifications-rest': {
         'integration': {
             'tests/api.rs': 'postgres',
         },
     },
-    'mnt-ontology-adapter-postgres': {
+    'console-ontology-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/builtin_catalog_additive_upgrade_as_runtime_role.rs': 'postgres',
@@ -617,13 +617,13 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/registry_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-ontology-application': {
+    'console-ontology-application': {
         'unit': 'none',
     },
-    'mnt-ontology-domain': {
+    'console-ontology-domain': {
         'unit': 'none',
     },
-    'mnt-ontology-rest': {
+    'console-ontology-rest': {
         'unit': 'none',
         'integration': {
             'tests/action_execute_as_runtime_role.rs': 'postgres',
@@ -633,33 +633,33 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/publish_auto_create_action_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-orgchange-domain': {
+    'console-orgchange-domain': {
         'unit': 'none',
     },
-    'mnt-payroll-adapter-postgres': {
+    'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
             'tests/payroll_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-payroll-domain': {
+    'console-payroll-domain': {
         'unit': 'none',
     },
-    'mnt-payroll-rest': {
+    'console-payroll-rest': {
         'unit': 'none',
         'integration': {
             'tests/api.rs': 'postgres',
             'tests/run_lifecycle_api.rs': 'postgres',
         },
     },
-    'mnt-platform-audit-chain': {
+    'console-platform-audit-chain': {
         'unit': 'none',
         'integration': {
             'tests/audit_chain_rls.rs': 'postgres',
         },
     },
-    'mnt-platform-auth': {
+    'console-platform-auth': {
         'unit': 'none',
         'integration': {
             'tests/jwt_es256.rs': 'none',
@@ -670,7 +670,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/well_known.rs': 'none',
         },
     },
-    'mnt-platform-auth-rest': {
+    'console-platform-auth-rest': {
         'unit': 'postgres',
         'integration': {
             'tests/dev_auth_absence.rs': 'postgres',
@@ -678,7 +678,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/group_admin_tenant_context.rs': 'postgres',
         },
     },
-    'mnt-platform-authz': {
+    'console-platform-authz': {
         'unit': 'none',
         'integration': {
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
@@ -686,14 +686,14 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/policy.rs': 'postgres',
         },
     },
-    'mnt-platform-authz-rest': {
+    'console-platform-authz-rest': {
         'unit': 'none',
         'integration': {
             'tests/cedar_authoring_rls_as_runtime_role.rs': 'postgres',
             'tests/decision_feed_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-platform-db': {
+    'console-platform-db': {
         'unit': 'postgres',
         'integration': {
             'tests/attendance_console_migration_contract.rs': 'postgres',
@@ -706,26 +706,26 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/rls_rollout_isolation.rs': 'postgres',
         },
     },
-    'mnt-platform-email': {
+    'console-platform-email': {
         'unit': 'none',
     },
-    'mnt-platform-excel': {
+    'console-platform-excel': {
         'integration': {
             'tests/template_fidelity.rs': 'none',
             'tests/template_fill_engine.rs': 'none',
         },
     },
-    'mnt-platform-group': {
+    'console-platform-group': {
         'unit': 'postgres',
     },
-    'mnt-platform-jobs': {
+    'console-platform-jobs': {
         'unit': 'postgres',
         'integration': {
             'tests/apalis_adapter.rs': 'postgres',
             'tests/apalis_schema_contract.rs': 'postgres',
         },
     },
-    'mnt-platform-rest': {
+    'console-platform-rest': {
         'integration': {
             'tests/onboard_seeds_config_objects.rs': 'postgres',
             'tests/ops_dashboard.rs': 'postgres',
@@ -734,7 +734,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/view_as.rs': 'postgres',
         },
     },
-    'mnt-platform-provisioning': {
+    'console-platform-provisioning': {
         'integration': {
             'tests/bootstrap_passkey.rs': 'postgres',
             'tests/bootstrap_passkey_replay.rs': 'postgres',
@@ -744,10 +744,10 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/self_enroll_handoff_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-platform-push': {
+    'console-platform-push': {
         'unit': 'none',
     },
-    'mnt-platform-realtime': {
+    'console-platform-realtime': {
         'unit': 'none',
         'integration': {
             'tests/hub.rs': 'none',
@@ -755,34 +755,34 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/postgres_bridge.rs': 'postgres',
         },
     },
-    'mnt-platform-request-context': {
+    'console-platform-request-context': {
         'unit': 'none',
     },
-    'mnt-platform-storage': {
+    'console-platform-storage': {
         'unit': 'postgres',
         'integration': {
             'tests/evidence_processing_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/seaweedfs_worm.rs': 'none',
         },
     },
-    'mnt-policy-adapter-postgres': {
+    'console-policy-adapter-postgres': {
         'integration': {
             'tests/draft_storage.rs': 'postgres',
         },
     },
-    'mnt-policy-application': {
+    'console-policy-application': {
         'unit': 'none',
     },
-    'mnt-policy-domain': {
+    'console-policy-domain': {
         'unit': 'none',
     },
-    'mnt-production-rest': {
+    'console-production-rest': {
         'unit': 'none',
         'integration': {
             'tests/production_lifecycle_http.rs': 'postgres',
         },
     },
-    'mnt-registry-adapter-postgres': {
+    'console-registry-adapter-postgres': {
         'integration': {
             'tests/create_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/equipment_list_rls_as_runtime_role.rs': 'postgres',
@@ -793,23 +793,23 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/site_address_postal_roundtrip_rls_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-registry-domain': {
+    'console-registry-domain': {
         'integration': {
             'tests/equipment.rs': 'none',
         },
     },
-    'mnt-registry-rest': {
+    'console-registry-rest': {
         'integration': {
             'tests/equipment_admin.rs': 'postgres',
         },
     },
-    'mnt-recruiting-application': {
+    'console-recruiting-application': {
         'unit': 'none',
     },
-    'mnt-recruiting-domain': {
+    'console-recruiting-domain': {
         'unit': 'none',
     },
-    'mnt-reporting-adapter-postgres': {
+    'console-reporting-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/excel_exports.rs': 'postgres',
@@ -818,22 +818,22 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/work_diary_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-reporting-application': {
+    'console-reporting-application': {
         'unit': 'none',
     },
-    'mnt-reporting-domain': {
+    'console-reporting-domain': {
         'unit': 'none',
     },
-    'mnt-sales-adapter-postgres': {
+    'console-sales-adapter-postgres': {
         'integration': {
             'tests/inquiry_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/sales_store.rs': 'postgres',
         },
     },
-    'mnt-sales-domain': {
+    'console-sales-domain': {
         'unit': 'none',
     },
-    'mnt-support-adapter-postgres': {
+    'console-support-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/assignee_name_join_rls_surfaces_as_runtime_role.rs': 'postgres',
@@ -841,51 +841,51 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/support_tickets.rs': 'postgres',
         },
     },
-    'mnt-support-application': {
+    'console-support-application': {
         'unit': 'none',
     },
-    'mnt-support-domain': {
+    'console-support-domain': {
         'unit': 'none',
     },
-    'mnt-support-rest': {
+    'console-support-rest': {
         'unit': 'postgres',
         'integration': {
             'tests/authz.rs': 'postgres',
             'tests/intake.rs': 'postgres',
         },
     },
-    'mnt-todos-adapter-postgres': {
+    'console-todos-adapter-postgres': {
         'integration': {
             'tests/todos_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
-    'mnt-todos-domain': {
+    'console-todos-domain': {
         'unit': 'none',
     },
-    'mnt-workflow-runtime-adapter-postgres': {
+    'console-workflow-runtime-adapter-postgres': {
         'unit': 'none',
         'integration': {
             'tests/notification_bridge.rs': 'postgres',
             'tests/payroll_drain_period_lock.rs': 'postgres',
         },
     },
-    'mnt-workflow-domain': {
+    'console-workflow-domain': {
         'unit': 'none',
     },
-    'mnt-workflow-runtime': {
+    'console-workflow-runtime': {
         'unit': 'none',
     },
-    'mnt-workorder-adapter-postgres': {
+    'console-workorder-adapter-postgres': {
         'integration': {
             'tests/m2_flag_off_parity.rs': 'postgres',
             'tests/rls_read_surfaces_as_runtime_role.rs': 'postgres',
             'tests/use_cases.rs': 'postgres',
         },
     },
-    'mnt-workorder-application': {
+    'console-workorder-application': {
         'unit': 'none',
     },
-    'mnt-workorder-domain': {
+    'console-workorder-domain': {
         'integration': {
             'tests/approval_and_assignment.rs': 'none',
             'tests/serde_roundtrips.rs': 'none',
@@ -893,7 +893,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/workorder_fsm.rs': 'none',
         },
     },
-    'mnt-workorder-rest': {
+    'console-workorder-rest': {
         'unit': 'none',
         'integration': {
             'tests/mobile_evidence.rs': 'postgres',
@@ -909,7 +909,7 @@ RESOURCE_LABELS = frozenset({"resource.none", "resource.postgres"})
 # hermetic unit target. Each declared variant is compiled with its inert Cargo
 # feature and emitted as a separately schedulable integration target.
 INLINE_TEST_VARIANTS = {
-    "mnt-app": ({
+    "console-app": ({
         "name": "itest-inline-postgres",
         "feature": "test-postgres",
         "resource": "postgres",
@@ -917,7 +917,7 @@ INLINE_TEST_VARIANTS = {
     # Cargo's dev-auth suite includes the auth-rest crate's inline PostgreSQL
     # tests. Emit that feature graph explicitly so CI can run it through the
     # disposable PostgreSQL harness instead of a direct Cargo invocation.
-    "mnt-platform-auth-rest": ({
+    "console-platform-auth-rest": ({
         "name": "itest-dev-auth-postgres",
         "feature": "dev-auth",
         "resource": "postgres",
@@ -925,10 +925,10 @@ INLINE_TEST_VARIANTS = {
 }
 
 INTEGRATION_TEST_FEATURES = {
-    "mnt-app": {
+    "console-app": {
         "tests/dev_auth_persona_guard_feature.rs": ("dev-auth",),
     },
-    "mnt-platform-auth-rest": {
+    "console-platform-auth-rest": {
         "tests/dev_auth_session.rs": ("dev-auth",),
         "tests/group_admin_tenant_context.rs": ("dev-auth",),
     },
@@ -939,12 +939,12 @@ INTEGRATION_TEST_FEATURES = {
 # graph explicit for the app feature integration test and auth-rest session
 # test.
 FEATURE_LIBRARY_VARIANTS = {
-    "mnt-platform-auth-rest": {"dev-auth": {"deps": {}}},
-    "mnt-app": {
+    "console-platform-auth-rest": {"dev-auth": {"deps": {}}},
+    "console-app": {
         "dev-auth": {
             "deps": {
-                "//backend/crates/platform/auth-rest:mnt-platform-auth-rest":
-                    "//backend/crates/platform/auth-rest:mnt-platform-auth-rest-dev-auth",
+                "//backend/crates/platform/auth-rest:console-platform-auth-rest":
+                    "//backend/crates/platform/auth-rest:console-platform-auth-rest-dev-auth",
             },
         },
     },

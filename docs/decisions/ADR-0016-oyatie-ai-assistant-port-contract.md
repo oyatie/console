@@ -20,10 +20,10 @@ ready. The seam covers two work-order use cases: symptom plus equipment model
 to procedure checklist, and work-order context to report draft.
 
 ADR-0001 says ports live in application-layer crates. The current workspace has
-`mnt-workorder-application`, but no inspection application crate yet.
+`console-workorder-application`, but no inspection application crate yet.
 
 ## Decision
-Define `AiAssistantPort` in `mnt-workorder-application`.
+Define `AiAssistantPort` in `console-workorder-application`.
 
 The port exposes:
 - `diagnose(symptom, equipment_model) -> ProcedureChecklist`

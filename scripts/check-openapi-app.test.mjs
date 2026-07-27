@@ -14,15 +14,15 @@ const contractRoundtrip = readFileSync(
 describe("OpenAPI app Buck2 gate", () => {
   it("builds the reusable app artifact with Buck2 and runs that artifact", () => {
     assert.match(openApiGate, /tools\/buck2/);
-    assert.match(openApiGate, /"--out",\s*"\.tmp\/buck2\/api-contract\/mnt-app"/);
-    assert.match(openApiGate, /"\/\/backend\/app:mnt-app"/);
+    assert.match(openApiGate, /"--out",\s*"\.tmp\/buck2\/api-contract\/console-app"/);
+    assert.match(openApiGate, /"\/\/backend\/app:console-app"/);
     assert.match(openApiGate, /spawn\(appBinary, \[\]/);
     assert.doesNotMatch(openApiGate, /\bcargo\b/i);
   });
 
   it("keeps the Buck2 artifact as the contract roundtrip default", () => {
-    assert.match(contractRoundtrip, /resolve\(root, "\.tmp\/buck2\/api-contract\/mnt-app"\)/);
-    assert.doesNotMatch(contractRoundtrip, /backend\/target\/debug\/mnt-app/);
+    assert.match(contractRoundtrip, /resolve\(root, "\.tmp\/buck2\/api-contract\/console-app"\)/);
+    assert.doesNotMatch(contractRoundtrip, /backend\/target\/debug\/console-app/);
   });
 
   it("keeps the strict topology expectation in PostgreSQL rolname order", () => {

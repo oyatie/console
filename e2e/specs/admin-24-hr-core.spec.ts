@@ -24,7 +24,7 @@ test.beforeEach(() => {
         '00000000-0000-0000-0000-000000aa2401',
         '00000000-0000-0000-0000-000000aa2402'
       );
-    SELECT set_config('role', 'mnt_rt', true);
+    SELECT set_config('role', 'console_rt', true);
     INSERT INTO employees (
       id, org_id, company, name, source_filename, source_sheet, source_row,
       source_key, raw_row, source_metadata, employee_number, org_unit, job,

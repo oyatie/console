@@ -82,4 +82,4 @@ CREATE TRIGGER trg_employee_lifecycle_events_no_delete
     BEFORE DELETE ON employee_lifecycle_events
     FOR EACH ROW EXECUTE FUNCTION employee_lifecycle_events_append_only();
 
-GRANT SELECT, INSERT ON employee_lifecycle_events TO mnt_rt;
+GRANT SELECT, INSERT ON employee_lifecycle_events TO console_rt;

@@ -1,11 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::seed::{BUILTIN_CATALOG_VERSION, builtin_catalog_manifest};
-use mnt_ontology_adapter_postgres::{
+use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::seed::{BUILTIN_CATALOG_VERSION, builtin_catalog_manifest};
+use console_ontology_adapter_postgres::{
     CreateObjectTypeDraft, ObjectTypeSummary, PgOntologyError, PgOntologyStore, PropertyDefInput,
 };
-use mnt_ontology_domain::{BackingKind, SchemaLifecycleState};
+use console_ontology_domain::{BackingKind, SchemaLifecycleState};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use time::macros::datetime;
@@ -20,9 +20,9 @@ async fn role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
         .after_connect(move |conn, _meta| {
             Box::pin(async move {
                 match role {
-                    "mnt_rt" => sqlx::query("SET ROLE mnt_rt").execute(conn).await?,
-                    "mnt_ontology_cmd" => {
-                        sqlx::query("SET ROLE mnt_ontology_cmd")
+                    "console_rt" => sqlx::query("SET ROLE console_rt").execute(conn).await?,
+                    "console_ontology_cmd" => {
+                        sqlx::query("SET ROLE console_ontology_cmd")
                             .execute(conn)
                             .await?
                     }
@@ -37,11 +37,11 @@ async fn role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    role_pool(owner_pool, "mnt_rt").await
+    role_pool(owner_pool, "console_rt").await
 }
 
 async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
-    role_pool(owner_pool, "mnt_ontology_cmd").await
+    role_pool(owner_pool, "console_ontology_cmd").await
 }
 
 async fn seed_org_and_user(owner_pool: &PgPool, org: Uuid, tag: &str) -> UserId {
@@ -158,7 +158,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     let cmd_pool = command_role_pool(&owner_pool).await;
     let key = "cas.shared_key";
 
-    let a_v1 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_v1 = console_platform_request_context::scope_org(org_a, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor_a,
@@ -168,7 +168,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
         .await
     })
     .await;
-    let b_v1 = mnt_platform_request_context::scope_org(org_b, async {
+    let b_v1 = console_platform_request_context::scope_org(org_b, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor_b,
@@ -186,7 +186,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     assert!(a_v1.key_write_etag.ends_with('"'));
     assert!(!a_v1.key_write_etag.starts_with("W/"));
 
-    let stale_cross_tenant = mnt_platform_request_context::scope_org(org_a, async {
+    let stale_cross_tenant = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .stage_revision(
@@ -206,7 +206,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
             if current.revision == 1 && current.etag == a_v1.key_write_etag
     ));
 
-    let a_review_v1 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_review_v1 = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
@@ -246,7 +246,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     .execute(&owner_pool)
     .await
     .unwrap();
-    let a_published_v1 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_published_v1 = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
@@ -264,7 +264,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     .await;
     assert_eq!(a_published_v1.key_write_revision, 3);
 
-    let a_v2 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_v2 = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .stage_revision(
@@ -282,7 +282,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     assert_eq!(a_v2.schema_version, 2);
     assert_eq!(a_v2.key_write_revision, 4);
 
-    let a_review_v2 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_review_v2 = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
@@ -321,7 +321,7 @@ async fn key_revision_is_tenant_scoped_and_advances_once_for_stage_and_publish(o
     .execute(&owner_pool)
     .await
     .unwrap();
-    let a_published_v2 = mnt_platform_request_context::scope_org(org_a, async {
+    let a_published_v2 = console_platform_request_context::scope_org(org_a, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
@@ -378,7 +378,7 @@ async fn same_base_stage_has_one_winner_and_one_zero_mutation_precondition_loser
     let actor = seed_org_and_user(&owner_pool, *org.as_uuid(), "race").await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let cmd_pool = command_role_pool(&owner_pool).await;
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor,
@@ -392,7 +392,7 @@ async fn same_base_stage_has_one_winner_and_one_zero_mutation_precondition_loser
 
     let first_pool = rt_pool.clone();
     let first_cmd_pool = cmd_pool.clone();
-    let first = tokio::spawn(mnt_platform_request_context::scope_org(org, async move {
+    let first = tokio::spawn(console_platform_request_context::scope_org(org, async move {
         PgOntologyStore::new(first_pool)
             .with_command_pool(first_cmd_pool)
             .stage_revision(
@@ -407,7 +407,7 @@ async fn same_base_stage_has_one_winner_and_one_zero_mutation_precondition_loser
     }));
     let second_pool = rt_pool.clone();
     let second_cmd_pool = cmd_pool.clone();
-    let second = tokio::spawn(mnt_platform_request_context::scope_org(org, async move {
+    let second = tokio::spawn(console_platform_request_context::scope_org(org, async move {
         PgOntologyStore::new(second_pool)
             .with_command_pool(second_cmd_pool)
             .stage_revision(
@@ -450,7 +450,7 @@ async fn statement_failure_after_cas_rolls_back_revision_content_and_audit(owner
     let actor = seed_org_and_user(&owner_pool, *org.as_uuid(), "rollback").await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let cmd_pool = command_role_pool(&owner_pool).await;
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor,
@@ -481,7 +481,7 @@ async fn statement_failure_after_cas_rolls_back_revision_content_and_audit(owner
     .await
     .unwrap();
 
-    let failure = mnt_platform_request_context::scope_org(org, async {
+    let failure = console_platform_request_context::scope_org(org, async {
         PgOntologyStore::new(rt_pool)
             .with_command_pool(cmd_pool.clone())
             .stage_revision(
@@ -519,7 +519,7 @@ async fn statement_failure_after_cas_rolls_back_revision_content_and_audit(owner
 #[test]
 fn stale_write_is_not_a_generic_conflict() {
     let error = PgOntologyError::PreconditionFailed {
-        current: mnt_ontology_adapter_postgres::ObjectTypeWriteVersion {
+        current: console_ontology_adapter_postgres::ObjectTypeWriteVersion {
             etag: "\"ont-object-type-key:00000000000000000000000000000001:r9\"".to_owned(),
             revision: 9,
         },
@@ -536,7 +536,7 @@ async fn runtime_role_cannot_forge_or_delete_key_validator(owner_pool: PgPool) {
     let actor = seed_org_and_user(&owner_pool, *org.as_uuid(), "privileges").await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let cmd_pool = command_role_pool(&owner_pool).await;
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor,
@@ -567,7 +567,7 @@ async fn runtime_role_cannot_forge_or_delete_key_validator(owner_pool: PgPool) {
     .await;
     assert!(
         forge.is_err(),
-        "mnt_rt must not supply server-owned validator or revision columns"
+        "console_rt must not supply server-owned validator or revision columns"
     );
     drop(forge_conn);
 
@@ -591,7 +591,7 @@ async fn runtime_role_cannot_forge_or_delete_key_validator(owner_pool: PgPool) {
     .bind(*org.as_uuid())
     .execute(&mut *delete_conn)
     .await;
-    assert!(delete.is_err(), "mnt_rt must not delete key validators");
+    assert!(delete.is_err(), "console_rt must not delete key validators");
     drop(delete_conn);
 
     let preserved = sqlx::query(
@@ -625,7 +625,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let cmd_pool = command_role_pool(&owner_pool).await;
 
-    let unavailable = mnt_platform_request_context::scope_org(org, async {
+    let unavailable = console_platform_request_context::scope_org(org, async {
         PgOntologyStore::new(rt_pool.clone())
             .create_object_type(
                 actor,
@@ -685,7 +685,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
     .unwrap();
     assert_eq!(incomplete_mutations, 0);
 
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         create(
             &PgOntologyStore::new(rt_pool.clone()).with_command_pool(cmd_pool.clone()),
             actor,
@@ -716,7 +716,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
             .bind(*org.as_uuid())
             .execute(&mut *conn)
             .await
-            .expect_err("mnt_rt direct parent, token, and child DML must be denied");
+            .expect_err("console_rt direct parent, token, and child DML must be denied");
         assert_eq!(
             error
                 .as_database_error()
@@ -740,7 +740,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
         ("ont_analytics", &["INSERT"][..]),
     ] {
         for privilege in ["INSERT", "UPDATE", "DELETE", "TRUNCATE"] {
-            let granted: bool = sqlx::query_scalar("SELECT has_table_privilege('mnt_rt', $1, $2)")
+            let granted: bool = sqlx::query_scalar("SELECT has_table_privilege('console_rt', $1, $2)")
                 .bind(table)
                 .bind(privilege)
                 .fetch_one(&owner_pool)
@@ -749,7 +749,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
             assert_eq!(
                 granted,
                 retained.contains(&privilege),
-                "mnt_rt {table}/{privilege} must match the narrow blue/green compatibility ACL"
+                "console_rt {table}/{privilege} must match the narrow blue/green compatibility ACL"
             );
         }
     }
@@ -775,7 +775,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
         .bind(*org.as_uuid())
         .execute(&mut *audit_forge)
         .await
-        .expect_err("mnt_rt must not forge protected ontology audit actions");
+        .expect_err("console_rt must not forge protected ontology audit actions");
         let forge_database_error = forge_error.as_database_error().unwrap();
         assert_eq!(forge_database_error.code().as_deref(), Some("42501"));
         assert_eq!(
@@ -799,7 +799,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
             .bind(trace.span_id())
             .execute(&mut *forbidden)
             .await
-            .expect_err("general mnt_rt must not execute ontology commands");
+            .expect_err("general console_rt must not execute ontology commands");
     assert_eq!(
         runtime_execute
             .as_database_error()
@@ -863,13 +863,13 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
         "create plus one successful raw stage; stale call audits nothing"
     );
 
-    let reviewed = mnt_platform_request_context::scope_org(org, async {
+    let reviewed = console_platform_request_context::scope_org(org, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
                 actor,
                 created.id,
-                mnt_ontology_adapter_postgres::ObjectTypeWritePrecondition {
+                console_ontology_adapter_postgres::ObjectTypeWritePrecondition {
                     validator_id: created.write_precondition().validator_id,
                     revision: 2,
                 },
@@ -882,7 +882,7 @@ async fn runtime_role_has_one_validated_audited_object_type_write_surface(owner_
             .unwrap()
     })
     .await;
-    let publish_without_approval = mnt_platform_request_context::scope_org(org, async {
+    let publish_without_approval = console_platform_request_context::scope_org(org, async {
         PgOntologyStore::new(rt_pool.clone())
             .with_command_pool(cmd_pool.clone())
             .transition_lifecycle(
@@ -992,7 +992,7 @@ async fn builtin_catalog_install_is_allowlisted_atomic_idempotent_and_race_safe(
     );
     drop(runtime_install);
 
-    let installed = mnt_platform_request_context::scope_org(install_org, async {
+    let installed = console_platform_request_context::scope_org(install_org, async {
         store
             .install_builtin_catalog(
                 install_actor,
@@ -1009,7 +1009,7 @@ async fn builtin_catalog_install_is_allowlisted_atomic_idempotent_and_race_safe(
     assert_eq!(installed.object_type_count, 27);
     let installed_snapshot = ontology_bootstrap_snapshot(&owner_pool, install_org_uuid).await;
 
-    let retry = mnt_platform_request_context::scope_org(install_org, async {
+    let retry = console_platform_request_context::scope_org(install_org, async {
         store
             .install_builtin_catalog(
                 install_actor,
@@ -1059,7 +1059,7 @@ async fn builtin_catalog_install_is_allowlisted_atomic_idempotent_and_race_safe(
 
     let mut drifted_manifest = manifest.clone();
     drifted_manifest["object_types"][0]["title"] = serde_json::json!("altered");
-    let drift_error = mnt_platform_request_context::scope_org(drift_org, async {
+    let drift_error = console_platform_request_context::scope_org(drift_org, async {
         store
             .install_builtin_catalog(
                 drift_actor,
@@ -1097,7 +1097,7 @@ async fn builtin_catalog_install_is_allowlisted_atomic_idempotent_and_race_safe(
     .execute(&owner_pool)
     .await
     .unwrap();
-    let physical_error = mnt_platform_request_context::scope_org(physical_org, async {
+    let physical_error = console_platform_request_context::scope_org(physical_org, async {
         store
             .install_builtin_catalog(
                 physical_actor,
@@ -1122,12 +1122,12 @@ async fn builtin_catalog_install_is_allowlisted_atomic_idempotent_and_race_safe(
         "physical link IDs must leave no object, child, marker, or audit residue"
     );
 
-    mnt_platform_request_context::scope_org(nonempty_org, async {
+    console_platform_request_context::scope_org(nonempty_org, async {
         create(&store, nonempty_actor, "cas.preexisting", "Preexisting").await
     })
     .await;
     let nonempty_baseline = ontology_bootstrap_mutation_count(&owner_pool, nonempty_org_uuid).await;
-    let nonempty_error = mnt_platform_request_context::scope_org(nonempty_org, async {
+    let nonempty_error = console_platform_request_context::scope_org(nonempty_org, async {
         store
             .install_builtin_catalog(
                 nonempty_actor,

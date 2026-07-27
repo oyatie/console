@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the bulk-authorize + decision-feed gaps, exercised as the
-//! genuine non-owner role `mnt_rt` under an armed org.
+//! genuine non-owner role `console_rt` under an armed org.
 //!
 //! Proves:
 //!   * bulk authorize evaluates every check over the same fail-closed evaluator —
@@ -12,10 +12,10 @@
 //! ship path). The earlier concurrent-lane migration-number collision has been
 //! reconciled, so no deduplicated copy is needed.
 
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_authz::cedar_pbac::authoring::{SimEffect, SimResource, SimSubject};
-use mnt_platform_authz_rest::{DecisionLogEntry, PgCedarPolicyStore};
-use mnt_platform_request_context::scope_org;
+use console_kernel_core::{OrgId, UserId};
+use console_platform_authz::cedar_pbac::authoring::{SimEffect, SimResource, SimSubject};
+use console_platform_authz_rest::{DecisionLogEntry, PgCedarPolicyStore};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -29,7 +29,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -91,9 +91,9 @@ async fn bulk_authorize_denies_by_omission(pool: PgPool) {
     let outcome = scope_org(OrgId::from_uuid(ORG_A), async {
         let policies = store.load_enforced_policies().await.unwrap();
         // Two checks, nothing enforced ⇒ every one denies.
-        mnt_platform_authz::cedar_pbac::authoring::simulate(
+        console_platform_authz::cedar_pbac::authoring::simulate(
             &policies,
-            &mnt_platform_authz::cedar_pbac::authoring::SimRequest {
+            &console_platform_authz::cedar_pbac::authoring::SimRequest {
                 subject: subject(ORG_A, "alice"),
                 action: "view".to_owned(),
                 resource: row(ORG_A, "wo-1"),

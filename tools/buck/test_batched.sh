@@ -15,11 +15,11 @@ fi
 
 # Product verification is repository-pinned.  The override is only a test seam
 # for this shell harness; CI and developers use tools/buck2 by default.
-buck_bin="${MNT_BUCK_TEST_BATCHED_BUCK:-${repo_root}/tools/buck2}"
+buck_bin="${CONSOLE_BUCK_TEST_BATCHED_BUCK:-${repo_root}/tools/buck2}"
 safe_user="${USER:-user}"
 safe_user="${safe_user//[^[:alnum:]_.-]/_}"
 repo_hash="$(printf '%s' "${repo_root}" | cksum | awk '{print $1}')"
-isolation_name="${MNT_BUCK_TEST_BATCHED_ISOLATION_DIR:-mnt-buck-hermetic-${safe_user}-${repo_hash}}"
+isolation_name="${CONSOLE_BUCK_TEST_BATCHED_ISOLATION_DIR:-console-buck-hermetic-${safe_user}-${repo_hash}}"
 if [[ ! "${isolation_name}" =~ ^[[:alnum:]_.-]+$ ]]; then
   echo "buck-batched: isolation name must contain only letters, digits, dot, underscore, or dash" >&2
   exit 2

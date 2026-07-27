@@ -1,15 +1,15 @@
 [package]
-name = "mnt-platform-audit-chain"
+name = "console-platform-audit-chain"
 version = "0.1.0"
-description = "L20 tamper-evident audit chain: a per-org append-only cryptographically-sealed hash chain over audit_events, a seal worker, and verify_org_chain. Reads audit_events, writes the disjoint audit_chain_seals table as mnt_rt under RLS (charter §2-§5)."
+description = "L20 tamper-evident audit chain: a per-org append-only cryptographically-sealed hash chain over audit_events, a seal worker, and verify_org_chain. Reads audit_events, writes the disjoint audit_chain_seals table as console_rt under RLS (charter §2-§5)."
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-db = { workspace = true }
 # `catch_unwind` panic-isolation for the per-org seal in the worker tick, mirroring
 # the cedar shadow lane. Already resolved in-tree (workspace dep, Cargo.lock 0.3.32).
 futures = { workspace = true }
@@ -37,7 +37,7 @@ tracing = { workspace = true }
 ring = "0.17"
 
 [dev-dependencies]
-mnt-platform-request-context = { workspace = true }
+console-platform-request-context = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [lints]

@@ -21,21 +21,21 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, CustomerInquiryId, EquipmentId, ErrorKind, KernelError, OrgId,
     SalesListingId, TraceContext, validate_bounded_text,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
-use mnt_platform_request_context::TrustedClientIp;
-use mnt_platform_storage::SeaweedS3Storage;
-use mnt_sales_adapter_postgres::{PgSalesError, PgSalesStore};
-use mnt_sales_application::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_request_context::TrustedClientIp;
+use console_platform_storage::SeaweedS3Storage;
+use console_sales_adapter_postgres::{PgSalesError, PgSalesStore};
+use console_sales_application::{
     CatalogQuery, CreateListingCommand, CustomerInquiryPage, DeleteListingCommand,
     InquiryInboxQuery, ListingInput, SalesListingPage, SalesListingView, SubmitInquiryCommand,
     UpdateInquiryStatusCommand, UpdateListingCommand, UpdateListingFields,
 };
-use mnt_sales_domain::{
+use console_sales_domain::{
     InquiryStatus, InquiryTopic, ListingCondition, ListingKind, ListingStatus, ListingType,
 };
 use serde::{Deserialize, Serialize};
@@ -185,7 +185,7 @@ pub fn router(state: SalesRestState) -> Router {
         .route(SALES_INQUIRIES_PATH, get(list_inquiries))
         .route(SALES_INQUIRY_PATH_TEMPLATE, patch(update_inquiry_status))
         .with_state(state.clone());
-    let authed = mnt_platform_request_context::with_request_context(authed, verifier, pool);
+    let authed = console_platform_request_context::with_request_context(authed, verifier, pool);
 
     // Public storefront routes — no JWT required, but still need a tenant
     // context for the store. The storefront tenant is resolved at app boot
@@ -207,7 +207,7 @@ pub fn router(state: SalesRestState) -> Router {
         .with_state(state)
         .layer(axum::middleware::from_fn(
             move |req: axum::extract::Request, next: axum::middleware::Next| async move {
-                mnt_platform_request_context::scope_org(storefront_org, next.run(req)).await
+                console_platform_request_context::scope_org(storefront_org, next.run(req)).await
             },
         ));
 
@@ -940,40 +940,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for sales API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for sales API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
+        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
             KernelError::internal("no tenant context is bound to the current request"),
         ),
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }

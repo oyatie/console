@@ -8,4 +8,4 @@ ERP is split into bounded contexts that share accounting postings rather than on
 4. **Inventory** owns item master, stock movements, average/FIFO cost policy, work-order consumption, and cost-ledger events. It emits inventory/COGS postings.
 5. **E-tax relay** owns NTS/HomeTax/registered-ERP protocol feasibility, XML/signature envelope, certificate custody, issue/query/void status, and retry/outbox. It may not issue anything until official protocol and credentials are verified.
 
-First slice deliverable: `mnt-erp-domain` pure kernel + tests. DB/API/UI follow after the domain contract and 세무사-reviewed golden cases are stable.
+First slice deliverable: `console-erp-domain` pure kernel + tests. DB/API/UI follow after the domain contract and 세무사-reviewed golden cases are stable.

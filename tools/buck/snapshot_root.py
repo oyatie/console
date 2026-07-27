@@ -29,8 +29,8 @@ def cleanup(repo: Path, path: Path, configured: str | None = None) -> None:
 def main() -> int:
     p=argparse.ArgumentParser(); p.add_argument('--repo',required=True,type=Path); p.add_argument('--cleanup',type=Path); args=p.parse_args()
     try:
-        if args.cleanup: cleanup(args.repo,args.cleanup,os.environ.get('MNT_BUCK_PREFLIGHT_SCRATCH_ROOT'))
-        else: print(create(args.repo,os.environ.get('MNT_BUCK_PREFLIGHT_SCRATCH_ROOT')))
+        if args.cleanup: cleanup(args.repo,args.cleanup,os.environ.get('CONSOLE_BUCK_PREFLIGHT_SCRATCH_ROOT'))
+        else: print(create(args.repo,os.environ.get('CONSOLE_BUCK_PREFLIGHT_SCRATCH_ROOT')))
     except (OSError, SnapshotRootError) as e: print(f'buck-preflight-snapshot: {e}',file=sys.stderr); return 1
     return 0
 if __name__=='__main__': raise SystemExit(main())

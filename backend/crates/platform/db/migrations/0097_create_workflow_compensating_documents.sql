@@ -5,7 +5,7 @@
 -- original finalized run, with the same tenant isolation and durability posture
 -- as the workflow runtime spine.
 
--- mnt-gate: audited-table workflow_compensating_documents
+-- console-gate: audited-table workflow_compensating_documents
 CREATE TABLE workflow_compensating_documents (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -34,8 +34,8 @@ CREATE POLICY org_isolation ON workflow_compensating_documents
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON workflow_compensating_documents TO mnt_rt;
-REVOKE DELETE ON workflow_compensating_documents FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_compensating_documents TO console_rt;
+REVOKE DELETE ON workflow_compensating_documents FROM console_rt;
 
 CREATE TRIGGER trg_workflow_compensating_documents_org_immutable
     BEFORE UPDATE ON workflow_compensating_documents

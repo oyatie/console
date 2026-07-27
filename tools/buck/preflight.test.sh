@@ -7,7 +7,7 @@ harness="${repo_root}/tools/buck/preflight.sh"
 playbook="${repo_root}/docs/program/console-buck2-scale-playbook.md"
 roadmap="${repo_root}/docs/program/console-enterprise-roadmap.md"
 ledger="${repo_root}/docs/program/console-program-ledger.md"
-scratch="$(mktemp -d "${TMPDIR:-/tmp}/mnt-buck-preflight-test.XXXXXX")"
+scratch="$(mktemp -d "${TMPDIR:-/tmp}/console-buck-preflight-test.XXXXXX")"
 trap 'rm -rf "${scratch}"' EXIT
 mkdir -p "${scratch}/bin" "${scratch}/archive"
 log="${scratch}/calls.log"
@@ -110,8 +110,8 @@ real_python="$(command -v python3)"
 real_git="$(command -v git)"
 before="$(git -C "${repo_root}" status --porcelain)"
 PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" "${harness}"
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" "${harness}"
 after="$(git -C "${repo_root}" status --porcelain)"
 test "${before}" = "${after}"
 grep -Fq 'BUCK_ISOLATION_DIR=preflight-lock --version' "${log}"
@@ -140,8 +140,8 @@ fi
 # registry faces as an implicit omission.
 rm -rf "${snapshot}/baseline"
 PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" "${harness}" --full-generated-faces
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" "${harness}" --full-generated-faces
 grep -Fq -- '--tier all' "${log}"
 test "$(grep -Fc 'GIT_ARCHIVE=' "${log}")" -eq 2
 test "$(grep -Fc 'SNAPSHOT_NODE_DEPS=' "${log}")" -eq 2
@@ -150,8 +150,8 @@ test ! -e "${snapshot}.tar"
 
 rm -rf "${snapshot}/baseline"
 if PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_GENERATED_FACE_GATE_FAIL=1 "${harness}"; then
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_GENERATED_FACE_GATE_FAIL=1 "${harness}"; then
   echo "expected a registered generated-face gate failure to fail preflight" >&2
   exit 1
 fi
@@ -163,8 +163,8 @@ test ! -e "${snapshot}.tar"
 # for the required immutable candidate baseline.
 rm -rf "${snapshot}/baseline"
 if PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_STALE_CANDIDATE_DIRTY_CALLER=1 "${harness}"; then
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_STALE_CANDIDATE_DIRTY_CALLER=1 "${harness}"; then
   echo "expected stale candidate output to fail despite a fresh dirty caller output" >&2
   exit 1
 fi
@@ -173,8 +173,8 @@ test ! -e "${snapshot}.tar"
 
 rm -rf "${snapshot}/baseline"
 if PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_SNAPSHOT_NODE_DEPS_FAIL=1 "${harness}"; then
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_SNAPSHOT_NODE_DEPS_FAIL=1 "${harness}"; then
   echo "expected missing or inconsistent snapshot dependencies to fail preflight" >&2
   exit 1
 fi
@@ -184,8 +184,8 @@ test ! -e "${snapshot}.tar"
 # A signal while the generated-face child is active must still clean both the
 # archive and both extracted trees through the preflight EXIT trap.
 if PATH="${scratch}/bin:${PATH}" REAL_PYTHON3="${real_python}" REAL_GIT="${real_git}" HARNESS_LOG="${log}" FAKE_SNAPSHOT_ROOT="${scratch}/archive" \
-  MNT_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
-  MNT_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_GENERATED_FACE_GATE_SIGNAL_PARENT=1 "${harness}"; then
+  CONSOLE_BUCK_PREFLIGHT_BUCK="${scratch}/buck" \
+  CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR="preflight-lock" FAKE_GENERATED_FACE_GATE_SIGNAL_PARENT=1 "${harness}"; then
   echo "expected an interrupted generated-face gate to fail preflight" >&2
   exit 1
 fi

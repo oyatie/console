@@ -1,5 +1,5 @@
 [package]
-name = "mnt-benefit-rest"
+name = "console-benefit-rest"
 version = "0.1.0"
 description = "REST API for tenant-scoped benefit catalog rows."
 edition.workspace = true
@@ -9,13 +9,13 @@ publish.workspace = true
 
 [dependencies]
 axum = { workspace = true }
-mnt-benefit-adapter-postgres = { workspace = true }
-mnt-benefit-application = { workspace = true }
-mnt-benefit-domain = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-auth = { path = "../../platform/auth" }
-mnt-platform-authz = { path = "../../platform/authz" }
-mnt-platform-request-context = { workspace = true }
+console-benefit-adapter-postgres = { workspace = true }
+console-benefit-application = { workspace = true }
+console-benefit-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-auth = { path = "../../platform/auth" }
+console-platform-authz = { path = "../../platform/authz" }
+console-platform-request-context = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }

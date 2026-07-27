@@ -2,11 +2,11 @@
 
 use std::io::Cursor;
 
-use mnt_kernel_core::{BranchId, BranchScope, OrgId, TraceContext, UserId};
-use mnt_platform_excel::umya_spreadsheet::{self, Workbook, Worksheet};
-use mnt_platform_test_support::{seed_branch, seed_user};
-use mnt_reporting_adapter_postgres::PgReportingRepository;
-use mnt_reporting_application::{
+use console_kernel_core::{BranchId, BranchScope, OrgId, TraceContext, UserId};
+use console_platform_excel::umya_spreadsheet::{self, Workbook, Worksheet};
+use console_platform_test_support::{seed_branch, seed_user};
+use console_reporting_adapter_postgres::PgReportingRepository;
+use console_reporting_application::{
     ReportingExportPort, ReportingExportQuery, WorkDiaryActionEntry, WorkDiaryBody,
     WorkDiaryConfirmCommand, WorkDiaryDraftPort, WorkDiaryQuery, WorkDiaryUpdateCommand,
 };
@@ -18,7 +18,7 @@ const EXPORT_START: OffsetDateTime = datetime!(2026-06-12 00:00 UTC);
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn daily_status_export_maps_live_work_orders_to_template_sections(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_export_dataset(&pool).await;
         let repo = PgReportingRepository::new(pool.clone());
 
@@ -93,7 +93,7 @@ async fn daily_status_export_maps_live_work_orders_to_template_sections(pool: Pg
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn work_diary_draft_can_be_generated_edited_confirmed_and_exported(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_export_dataset(&pool).await;
         let repo = PgReportingRepository::new(pool.clone());
 
@@ -187,7 +187,7 @@ async fn work_diary_draft_can_be_generated_edited_confirmed_and_exported(pool: P
 async fn company_scope_export_log_persists_null_branch_id_with_authoritative_scope_key(
     pool: PgPool,
 ) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         // Seed a minimal branch so we can create the actor user; the export itself
         // is company-wide (BranchScope::All) and does not filter to this branch.
         let region_id: uuid::Uuid =

@@ -13,7 +13,7 @@
 //!
 //! # Graceful missing key
 //!
-//! The master KEK ([`mnt_comms_credential_cipher`]) is OPTIONAL at boot. When it
+//! The master KEK ([`console_comms_credential_cipher`]) is OPTIONAL at boot. When it
 //! is absent the router still mounts (so the paths exist for the OpenAPI gate):
 //! read-only mailbox endpoints degrade to a clean no-account/empty state, while
 //! credential-using endpoints fail closed with `503 email_not_configured`.
@@ -29,22 +29,22 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post};
 use axum::{Json, Router};
-use mnt_comms_adapter_imap::AsyncImapClient;
-use mnt_comms_adapter_mox::{Incoming, MoxWebapiSender};
-use mnt_comms_adapter_postgres::{PgMailNotifier, PgMailStore};
-use mnt_comms_adapter_smtp::LettreMailSender;
-use mnt_comms_application::{
+use console_comms_adapter_imap::AsyncImapClient;
+use console_comms_adapter_mox::{Incoming, MoxWebapiSender};
+use console_comms_adapter_postgres::{PgMailNotifier, PgMailStore};
+use console_comms_adapter_smtp::LettreMailSender;
+use console_comms_application::{
     AccountService, AccountView, AddressLookup, ConfigureAccountCommand, EmailMessageId,
     FolderView, ImapFolder, InboundUpsert, MailAttachmentStore, MailFuture, MailNotifier,
     MailReadStore, MailServiceError, MessageView, SendKind, SendMessageCommand, SendResult,
     SendService, SmtpSender, SmtpTransportConfig, StoredAccount, SyncService, TestConnectionResult,
     ThreadDetail, ThreadQuery, ThreadView,
 };
-use mnt_comms_credential_cipher::EnvelopeCredentialCipher;
-use mnt_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
+use console_comms_credential_cipher::EnvelopeCredentialCipher;
+use console_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 use subtle::ConstantTimeEq;
@@ -122,11 +122,11 @@ pub type SharedAttachmentStore = Arc<dyn MailAttachmentStore>;
 #[derive(Debug, Default, Clone)]
 struct NoopMailNotifier;
 
-impl mnt_comms_application::MailNotifier for NoopMailNotifier {
+impl console_comms_application::MailNotifier for NoopMailNotifier {
     fn notify_posted(
         &self,
-        _account_id: mnt_comms_application::EmailAccountId,
-    ) -> mnt_comms_application::MailFuture<'_, ()> {
+        _account_id: console_comms_application::EmailAccountId,
+    ) -> console_comms_application::MailFuture<'_, ()> {
         Box::pin(async {})
     }
 }
@@ -136,7 +136,7 @@ pub struct CommsRestState {
     store: PgMailStore,
     sender: MailSender,
     imap: AsyncImapClient,
-    /// The master-key cipher. `None` when `MNT_MAIL_MASTER_KEY` is absent —
+    /// The master-key cipher. `None` when `CONSOLE_MAIL_MASTER_KEY` is absent —
     /// credential-using endpoints are then unavailable (503) but the app still boots.
     cipher: Option<Arc<EnvelopeCredentialCipher>>,
     /// The object store for inbound attachment presigned GETs. `None` when
@@ -217,7 +217,7 @@ pub fn router(state: CommsRestState) -> Router {
         .route(MAIL_MESSAGE_PATH, get(get_message))
         .route(MAIL_ATTACHMENT_DOWNLOAD_PATH, get(download_attachment))
         .with_state(state.clone());
-    let authed = mnt_platform_request_context::with_request_context(authed, verifier, pool);
+    let authed = console_platform_request_context::with_request_context(authed, verifier, pool);
     // The mox delivery webhook is machine-to-machine (mox → us), authenticated by
     // its own shared secret — NOT a tenant JWT. It is merged OUTSIDE the
     // request-context layer so the layer's mandatory-bearer check never rejects it.
@@ -600,7 +600,7 @@ async fn set_thread_read_state(
         .filter(|message| message.direction == "IN" && !message.seen)
         .count() as i64;
     let after_unread_count = if body.seen { 0 } else { inbound_count };
-    let audit = mnt_comms_application::thread_read_state_audit_event(
+    let audit = console_comms_application::thread_read_state_audit_event(
         principal.user_id,
         thread_id,
         before_unread_count,
@@ -806,8 +806,8 @@ async fn read_account(
     state: &CommsRestState,
     org: OrgId,
 ) -> Result<Option<StoredAccount>, RestError> {
-    use mnt_comms_application::MailStore;
-    use mnt_platform_request_context::CURRENT_ORG;
+    use console_comms_application::MailStore;
+    use console_platform_request_context::CURRENT_ORG;
     CURRENT_ORG
         .scope(org, state.store.get_account())
         .await
@@ -826,14 +826,14 @@ impl MailAttachmentStore for NoopAttachmentStore {
         _key: String,
         _content_type: String,
         _bytes: Vec<u8>,
-    ) -> mnt_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<(), MailServiceError>> {
         Box::pin(async { Ok(()) })
     }
 
     fn presign_get<'a>(
         &'a self,
         _key: &'a str,
-    ) -> mnt_comms_application::MailFuture<'a, Result<String, MailServiceError>> {
+    ) -> console_comms_application::MailFuture<'a, Result<String, MailServiceError>> {
         Box::pin(async {
             Err(MailServiceError::Transport {
                 code: "presign_unavailable",
@@ -854,12 +854,12 @@ fn keep_existing_if_blank(value: Option<String>) -> Option<SecretString> {
 
 fn decode_attachment(
     dto: AttachmentDto,
-) -> Result<mnt_comms_application::OutboundAttachment, RestError> {
+) -> Result<console_comms_application::OutboundAttachment, RestError> {
     use base64::Engine as _;
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(dto.content_base64.trim())
         .map_err(|_| RestError::bad_request("attachment content is not valid base64"))?;
-    Ok(mnt_comms_application::OutboundAttachment {
+    Ok(console_comms_application::OutboundAttachment {
         filename: dto.filename,
         content_type: dto.content_type,
         bytes,
@@ -908,38 +908,38 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the mail API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for the mail API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::forbidden("token tier is not valid for this route")
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::internal(message)
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => {
+        console_platform_request_context::RequestContextError::MissingOrg => {
             RestError::internal("no tenant context is bound to the current request")
         }
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }

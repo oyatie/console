@@ -33,7 +33,7 @@ One migration, `backend/crates/platform/db/migrations/0204_ontology_catalog_addi
 No new tables, no Rust API change, no OpenAPI/client change.
 
 **`ont_builtin_catalog_installs` becomes an append-only per-tenant history.**
-Primary key moves from `(org_id)` to `(org_id, catalog_version)`. `mnt_ontology_writer`
+Primary key moves from `(org_id)` to `(org_id, catalog_version)`. `console_ontology_writer`
 keeps its 0165 `SELECT, INSERT` and still has **no UPDATE**: an upgrade appends a
 row, it never rewrites the tenant's install record. Nothing in the repo FKs to
 this table.
@@ -103,15 +103,15 @@ Untouched: `web/**`, `backend/openapi/openapi.yaml`, `clients/**`,
 ## 4. Proof
 
 Harness: a disposable PostgreSQL 18.4 container mirroring
-`tools/buck/test_needs_postgres.sh` — `mnt_buck_admin` superuser with the
+`tools/buck/test_needs_postgres.sh` — `console_buck_admin` superuser with the
 `mnt.sqlx_test_bootstrap=buck-sqlx-superuser-v1` startup marker (required by
 migration 0196) and the full seven-role topology from
-`ops/postgres-reconcile-topology.sh`. The shared `mnt-dev` stack was never
+`ops/postgres-reconcile-topology.sh`. The shared `console-dev` stack was never
 brought down; nothing was run against it.
 
 New test file:
 `backend/crates/ontology/adapter-postgres/tests/builtin_catalog_additive_upgrade_as_runtime_role.rs`
-(5 tests). Every tenant-visible read goes through a pooled **`mnt_rt`**
+(5 tests). Every tenant-visible read goes through a pooled **`console_rt`**
 connection with `app.current_org` armed — FORCE RLS is actually exercised, not
 bypassed by the owner.
 
@@ -153,8 +153,8 @@ all red before" would be the claim to distrust.
 | Test | Claim |
 |---|---|
 | `shipped_catalog_digest_matches_its_migration_allowlist_row` | the manifest Rust builds today hashes to exactly the row a migration pinned for `BUILTIN_CATALOG_VERSION`; on failure it prints the `decode('<hex>','hex')` literal a new allowlist migration needs |
-| `additive_upgrade_adds_only_new_keys_and_is_idempotent_as_runtime_role` | seed at `2026-07-19.1` (27 types) then upgrade to a 28-type version. Every one of the 27 pre-existing keys is **byte-identical** afterwards, compared as `mnt_rt` over a fingerprint that includes row ids, `schema_version`, `lifecycle_state`, `created_at`/`updated_at`, the key-revision sidecar (`validator_id`, `revision`), and every property / link / action / analytic row. The new type is published at v1, its logical link resolves to **this tenant's `customer` type installed by the earlier version**, zero cross-tenant links. Audits: 28 `builtin_install` rows (exactly one for the new key), 1 `builtin_catalog.install`, 1 `builtin_catalog.upgrade` whose `installed_keys` is `["catalog_upgrade_probe"]` and `retained_keys` has 27 entries. Then re-applying the upgrade **and** re-applying the older version both return `installed=false` and leave every registry row, marker and audit unchanged |
-| `upgraded_catalog_installs_whole_on_a_fresh_tenant_and_stays_isolated_as_runtime_role` | a tenant with no catalog receives all 28 whole; a tenant that took only `2026-07-19.1` sees 27 and cannot see the new key; as `mnt_rt` each tenant's fingerprint contains only its own `org_id`; no `ont_link_types` row anywhere targets another tenant's type |
+| `additive_upgrade_adds_only_new_keys_and_is_idempotent_as_runtime_role` | seed at `2026-07-19.1` (27 types) then upgrade to a 28-type version. Every one of the 27 pre-existing keys is **byte-identical** afterwards, compared as `console_rt` over a fingerprint that includes row ids, `schema_version`, `lifecycle_state`, `created_at`/`updated_at`, the key-revision sidecar (`validator_id`, `revision`), and every property / link / action / analytic row. The new type is published at v1, its logical link resolves to **this tenant's `customer` type installed by the earlier version**, zero cross-tenant links. Audits: 28 `builtin_install` rows (exactly one for the new key), 1 `builtin_catalog.install`, 1 `builtin_catalog.upgrade` whose `installed_keys` is `["catalog_upgrade_probe"]` and `retained_keys` has 27 entries. Then re-applying the upgrade **and** re-applying the older version both return `installed=false` and leave every registry row, marker and audit unchanged |
+| `upgraded_catalog_installs_whole_on_a_fresh_tenant_and_stays_isolated_as_runtime_role` | a tenant with no catalog receives all 28 whole; a tenant that took only `2026-07-19.1` sees 27 and cannot see the new key; as `console_rt` each tenant's fingerprint contains only its own `org_id`; no `ont_link_types` row anywhere targets another tenant's type |
 | `retained_key_contradicting_the_projection_contract_fails_closed_as_runtime_role` | a third version that redeclares an already-installed `instance` key as `projected` raises `ontology_builtin.existing_key_projection_conflict` and leaves **zero** residue — registry fingerprint, marker history and audit footprint all identical to before the attempt |
 | `edit_only_catalog_version_is_recorded_and_changes_nothing_else_as_runtime_role` (added in stage 2) | a version that adds **no** key — it only edits an existing type's title — returns `installed=true`, appends its marker, and changes nothing else: the registry fingerprint over all 27 keys is unchanged, no new `builtin_install` audit row exists, and the single `builtin_catalog.upgrade` row says so with `installed_keys = []` and 27 `retained_keys`. This pins §5.5's sharpest limitation instead of leaving it as prose, and it is the only transaction in which the marker append and its audit row are the entire state change — the case that motivates auditing the append at all |
 
@@ -162,23 +162,23 @@ all red before" would be the claim to distrust.
 
 | Command | Result |
 |---|---|
-| `cargo test -p mnt-ontology-adapter-postgres --test builtin_catalog_additive_upgrade_as_runtime_role -- --test-threads=1` | **4 passed, 0 failed** |
-| `cargo test -p mnt-ontology-adapter-postgres --test key_write_cas_as_runtime_role` (x3) | **7 passed** each — the security-reviewed installer contract, unchanged |
-| `cargo test -p mnt-ontology-adapter-postgres --test key_revision_migration_upgrade -- --test-threads=1` (x3) | **3 passed** each |
+| `cargo test -p console-ontology-adapter-postgres --test builtin_catalog_additive_upgrade_as_runtime_role -- --test-threads=1` | **4 passed, 0 failed** |
+| `cargo test -p console-ontology-adapter-postgres --test key_write_cas_as_runtime_role` (x3) | **7 passed** each — the security-reviewed installer contract, unchanged |
+| `cargo test -p console-ontology-adapter-postgres --test key_revision_migration_upgrade -- --test-threads=1` (x3) | **3 passed** each |
 | `--test c_chain / config_object_types / niche_config_object_types / projected_instances_read / instances_rls_surfaces / instances_residual_filter / registry_rls_surfaces` | **2 / 2 / 2 / 2 / 3 / 2 / 16 passed**, 0 failed |
-| `cargo test -p mnt-ontology-adapter-postgres` (lib unit) | **4 passed** |
-| `cargo test -p mnt-ontology-rest --test action_execute / ont_gaps / projected_dispatch / publish_auto_create_action` | **9 / 5 / 5 / 2 passed**, 0 failed |
-| `cargo test -p mnt-platform-rest --test onboard_seeds_config_objects` | **1 passed** |
-| `cargo fmt --check -p mnt-ontology-adapter-postgres` | clean |
-| `cargo clippy -p mnt-ontology-adapter-postgres --all-targets -- -D warnings` | clean |
-| `cargo run -p mnt-gate-tenant-isolation` | **PASSED** |
-| `cargo run -p mnt-gate-audit-coverage` | **PASSED** |
-| `cargo run -p mnt-gate-rls-arming` | **PASSED** |
-| `cargo run -p mnt-gate-migration-safety` | **FAILED — contiguity only, no duplicate**, see §5.1 |
+| `cargo test -p console-ontology-adapter-postgres` (lib unit) | **4 passed** |
+| `cargo test -p console-ontology-rest --test action_execute / ont_gaps / projected_dispatch / publish_auto_create_action` | **9 / 5 / 5 / 2 passed**, 0 failed |
+| `cargo test -p console-platform-rest --test onboard_seeds_config_objects` | **1 passed** |
+| `cargo fmt --check -p console-ontology-adapter-postgres` | clean |
+| `cargo clippy -p console-ontology-adapter-postgres --all-targets -- -D warnings` | clean |
+| `cargo run -p console-gate-tenant-isolation` | **PASSED** |
+| `cargo run -p console-gate-audit-coverage` | **PASSED** |
+| `cargo run -p console-gate-rls-arming` | **PASSED** |
+| `cargo run -p console-gate-migration-safety` | **FAILED — contiguity only, no duplicate**, see §5.1 |
 
 ## 5. Honest residuals
 
-### 5.1 `mnt-gate-migration-safety` — no duplicate; 9 contiguity gaps, none actionable here
+### 5.1 `console-gate-migration-safety` — no duplicate; 9 contiguity gaps, none actionable here
 
 After the renumber the gate reports **no `DuplicateMigrationVersion`** — the
 0203 collision with the merged
@@ -186,7 +186,7 @@ After the renumber the gate reports **no `DuplicateMigrationVersion`** — the
 contiguity:
 
 ```
-mnt-gate-migration-safety: FAILED - 9 violation(s):
+console-gate-migration-safety: FAILED - 9 violation(s):
   [NonContiguousMigrationVersion] missing migration version 0201 before 0202
   [NonContiguousMigrationVersion] missing migration version 0203 before 0204
   ... 0204, 0205, 0206, 0207, 0208, 0209, 0210 before 0204
@@ -211,20 +211,20 @@ contiguity gap behind it.
 ### 5.2 `tools/buck/gen_first_party.py` — resolved elsewhere; this lane's target verified
 
 Reported by this lane: the generator aborted on **14 pre-existing unregistered
-test targets** from other lanes (mnt-app `board_ack_api`,
+test targets** from other lanes (console-app `board_ack_api`,
 `evaluation_cycle_api`, `field_visit_api`, `maintenance_chain_api`,
 `notif_routing_api`, `org_change_api`, `recruiting_pipeline_api`;
-`mnt-orgchange-domain` unit; `mnt-payroll-adapter-postgres`
-`payroll_lifecycle_rls_as_runtime_role` + unit; `mnt-payroll-rest`
-`run_lifecycle_api`; `mnt-recruiting-application` unit;
-`mnt-recruiting-domain` unit; `mnt-workorder-domain` `settlement_fsm`).
+`console-orgchange-domain` unit; `console-payroll-adapter-postgres`
+`payroll_lifecycle_rls_as_runtime_role` + unit; `console-payroll-rest`
+`run_lifecycle_api`; `console-recruiting-application` unit;
+`console-recruiting-domain` unit; `console-workorder-domain` `settlement_fsm`).
 
 **All 14 were fixed by intervening spine commits, not by a dedicated lane.**
 The `hf-buck-preflight` lane (`claude/hf-buck-preflight-20260725` @ `b84c2598`)
 measured this at `74eeb648`, the spine tip before its own first commit: of the
 14 above, 14 were already declared and none were outstanding. That lane
 declared **zero** of the 14. Its own contribution was a genuine 15th —
-`mnt-platform-db` `tests/lifecycle_maker_checker.rs`, introduced by the
+`console-platform-db` `tests/lifecycle_maker_checker.rs`, introduced by the
 four-eyes merge *after* the CI run this section was written from — plus a
 post-merge regen of `backend/crates/leave/domain/BUCK`. Net effect:
 `gen_first_party.py` exits 0 and `tools/buck/preflight.sh` exits 0 (was 1).
@@ -242,7 +242,7 @@ declaration and it is correct. Until this branch takes the spine (or that
 lane's branch) its local copy of the table has only L-A1's entry, so the
 generator still raises here — expected, not a new break.
 
-### 5.3 `mnt-ontology-rest --test object_type_cas_as_runtime_role` is red on this branch
+### 5.3 `console-ontology-rest --test object_type_cas_as_runtime_role` is red on this branch
 
 `blocker_queue_is_tenant_scoped_cascades_and_attachment_effects_are_write_checked`
 and `instance_list_composes_enforced_permit_forbid_and_tenant_scope` fail with
@@ -252,8 +252,8 @@ without 0204** — pre-existing, not this lane's. Reported to the integrator
 
 ### 5.4 `key_revision_migration_upgrade.rs` is racy under one shared PostgreSQL
 
-It rewrites **cluster-global** role attributes (`ALTER ROLE mnt_app ...`,
-`REVOKE mnt_ontology_writer FROM ...`) to reduce the schema to its pre-0165
+It rewrites **cluster-global** role attributes (`ALTER ROLE console_app ...`,
+`REVOKE console_ontology_writer FROM ...`) to reduce the schema to its pre-0165
 shape, so two cargo test binaries hitting the same server can clobber each
 other. Reproduced **without** 0204 (2 of 3 baseline runs red). Green 3/3 when
 run alone. Buck gives every target its own disposable PostgreSQL plus
@@ -299,10 +299,10 @@ Raised in stage-2 verification; **recommendation, not a defect fix**, and left
 for the integrator to schedule.
 
 `ontology_api.protected_audit_writer_guard` (0165:297) makes four ontology audit
-actions unforgeable by `mnt_rt` — including `ontology.object_type.builtin_install`,
+actions unforgeable by `console_rt` — including `ontology.object_type.builtin_install`,
 which this same installer emits in the same transaction. The two names 0204 adds
 (`ontology.builtin_catalog.install` / `.upgrade`) are **not** in that array, and
-`mnt_rt` holds `INSERT` on `audit_events` (0031:85), so it can write a row
+`console_rt` holds `INSERT` on `audit_events` (0031:85), so it can write a row
 claiming a tenant was upgraded to a version and digest it never received.
 
 Why it was not fixed here:
@@ -310,7 +310,7 @@ Why it was not fixed here:
 - **It is not a regression.** Before 0204 the marker append was audited by
   nothing at all, so 0204 strictly adds evidence. Every audit action in the
   repository outside those four (and 0166's leave set) is equally forgeable by
-  `mnt_rt`; holding this one action to a bar no sibling meets would be
+  `console_rt`; holding this one action to a bar no sibling meets would be
   inconsistent, not safer.
 - **The migration is already merged on the spine at 0204** and editing it in
   place would change an applied migration's sqlx checksum for anyone who has run
@@ -319,8 +319,8 @@ Why it was not fixed here:
 
 The fix, when scheduled, is small and does not restate the 60-line guard: a
 second `BEFORE INSERT` trigger on `audit_events` rejecting those two actions
-unless `ontology_api.invoker_role() = 'mnt_ontology_cmd'`, mirroring the existing
-guard's `SECURITY DEFINER` / `mnt_ontology_writer` shape. The asymmetry worth
+unless `ontology_api.invoker_role() = 'console_ontology_cmd'`, mirroring the existing
+guard's `SECURITY DEFINER` / `console_ontology_writer` shape. The asymmetry worth
 recording is that an auditor reading the chain cannot tell that the per-type
 rows are trustworthy and the catalog-level rows beside them are not.
 
@@ -336,7 +336,7 @@ To land a new built-in type on top of this:
 2. Bump `BUILTIN_CATALOG_VERSION` (`seed.rs:68`). Do **not** edit a draft
    without bumping — the digest chain will reject every install.
 3. Get the new digest: run
-   `cargo test -p mnt-ontology-adapter-postgres --test builtin_catalog_additive_upgrade_as_runtime_role -- --exact shipped_catalog_digest_matches_its_migration_allowlist_row`.
+   `cargo test -p console-ontology-adapter-postgres --test builtin_catalog_additive_upgrade_as_runtime_role -- --exact shipped_catalog_digest_matches_its_migration_allowlist_row`.
    It fails and prints the exact literal for step 4. **After writing the
    migration in step 4, touch a crate source before re-running** — see §4.1's
    method note: cargo does not track `.sql` files, so the re-run can otherwise
@@ -372,7 +372,7 @@ So after L-X7 ships the `deal` type and bumps the version:
 **L-X7 must therefore also deliver the trigger**, and it is the piece most
 likely to be missed because every test in this suite drives the installer
 directly. Whatever shape it takes — an audited admin route, a startup
-reconcile, or a one-shot job — it needs the ordinary bar: `mnt_ontology_cmd`
+reconcile, or a one-shot job — it needs the ordinary bar: `console_ontology_cmd`
 credentials, `scope_org` per tenant, deny-by-default authz, an audit row, and
 proof against a tenant seeded at the *older* version. The installer itself is
 already idempotent and safe to call repeatedly (§2.2), so the trigger does not
@@ -383,8 +383,8 @@ need its own guard rails.
 ## 7. Stage-2 adversarial verification (fresh eyes, 2026-07-25)
 
 Verified against the code, not the stage-1 report, on a **second** disposable
-PostgreSQL 18.4 container built the same way (`mnt_buck_admin` +
-`mnt.sqlx_test_bootstrap`, seven-role topology). The shared `mnt-dev` stack was
+PostgreSQL 18.4 container built the same way (`console_buck_admin` +
+`mnt.sqlx_test_bootstrap`, seven-role topology). The shared `console-dev` stack was
 read once, read-only, to confirm `_sqlx_migrations` tops out at 0196 — it was
 never written to and never restarted.
 
@@ -396,8 +396,8 @@ never written to and never restarted.
 | The test genuinely fails without the fix | **Confirmed by re-running it.** 3 of 5 red with `0211_*.sql` removed, all 5 green restored, error byte-identical to §4.1. The other two pass either way — now stated in §4.1 rather than implied. |
 | `empty_org_required` still guards a first install | **Confirmed.** `key_write_cas_as_runtime_role`'s race test still observes the installer blocking on the org advisory lock and then rejecting the now-non-empty org, with 0 markers and 0 install audits. 7/7 green. |
 | The pre-existing keys are untouched | **Confirmed** by the fingerprint comparison, which includes row ids, `created_at`/`updated_at` and the key-revision sidecar — an upgrade that recreated or restaged anything would move them. |
-| RLS is exercised as `mnt_rt`, not bypassed | **Confirmed.** Every tenant-visible read in the suite goes through `role_pool("mnt_rt")` with `app.current_org` armed via `set_config`. Owner-pool reads are used only for the marker/audit footprint, which `mnt_rt` cannot see by design. |
-| No new table, so no new RLS surface | **Confirmed.** The only DDL is the `ont_builtin_catalog_installs` primary-key change; its FORCE RLS policy, org-immutable trigger and 0165 grants are untouched, and `mnt_ontology_writer` still has no `UPDATE`. No object in the repo FKs to that table (grepped). |
+| RLS is exercised as `console_rt`, not bypassed | **Confirmed.** Every tenant-visible read in the suite goes through `role_pool("console_rt")` with `app.current_org` armed via `set_config`. Owner-pool reads are used only for the marker/audit footprint, which `console_rt` cannot see by design. |
+| No new table, so no new RLS surface | **Confirmed.** The only DDL is the `ont_builtin_catalog_installs` primary-key change; its FORCE RLS policy, org-immutable trigger and 0165 grants are untouched, and `console_ontology_writer` still has no `UPDATE`. No object in the repo FKs to that table (grepped). |
 | The hand-written BUCK target matches generator output | **Confirmed first-hand**, not taken from another lane's word: running `tools/buck/gen_first_party.py` on the spine regenerated 166 BUCK files and left `git status --short` empty. |
 | `seed.rs`'s corrected `create_action` doc claim | **Confirmed.** `create_action` has 13 call sites, all of them seed drafts; `transition_lifecycle` only calls `ontology_api.transition_object_type`. The old comment was wrong and the new one is right. |
 | No stub / TODO / placeholder / dead control introduced | **Confirmed** by sweeping every added line in the lane diff. |
@@ -437,11 +437,11 @@ Forced recompiles between migration add/remove, per §4.1's method note.
 | `--test key_write_cas_as_runtime_role` | **7 passed** |
 | `--test key_revision_migration_upgrade -- --test-threads=1` | **3 passed** |
 | `--test c_chain / config_object_types / niche_config_object_types / projected_instances_read / instances_residual_filter / registry_rls_surfaces / instances_rls_surfaces` | **2 / 2 / 2 / 2 / 2 / 16 / 3 passed**, 0 failed |
-| `cargo test -p mnt-ontology-adapter-postgres --lib` | **4 passed** |
-| `-p mnt-ontology-rest --test action_execute / ont_gaps / projected_dispatch / publish_auto_create_action` | **9 / 5 / 5 / 2 passed**, 0 failed |
-| `-p mnt-ontology-rest --test object_type_cas_as_runtime_role` | **4 passed, 2 failed** — reproduced identically with `0211_*.sql` removed; pre-existing (§5.3) |
-| `-p mnt-platform-rest --test onboard_seeds_config_objects` | **1 passed** |
-| `cargo fmt --check -p mnt-ontology-adapter-postgres` | clean |
-| `cargo clippy -p mnt-ontology-adapter-postgres --all-targets -- -D warnings` | clean |
-| `cargo run -p mnt-gate-tenant-isolation` / `-audit-coverage` / `-rls-arming` | **PASSED** each |
-| `cargo run -p mnt-gate-migration-safety` | **FAILED — contiguity only** (§5.1): 0201 plus 0203-0210, all of which exist on the spine or are assigned to sibling lanes. No `DuplicateMigrationVersion`. |
+| `cargo test -p console-ontology-adapter-postgres --lib` | **4 passed** |
+| `-p console-ontology-rest --test action_execute / ont_gaps / projected_dispatch / publish_auto_create_action` | **9 / 5 / 5 / 2 passed**, 0 failed |
+| `-p console-ontology-rest --test object_type_cas_as_runtime_role` | **4 passed, 2 failed** — reproduced identically with `0211_*.sql` removed; pre-existing (§5.3) |
+| `-p console-platform-rest --test onboard_seeds_config_objects` | **1 passed** |
+| `cargo fmt --check -p console-ontology-adapter-postgres` | clean |
+| `cargo clippy -p console-ontology-adapter-postgres --all-targets -- -D warnings` | clean |
+| `cargo run -p console-gate-tenant-isolation` / `-audit-coverage` / `-rls-arming` | **PASSED** each |
+| `cargo run -p console-gate-migration-safety` | **FAILED — contiguity only** (§5.1): 0201 plus 0203-0210, all of which exist on the spine or are assigned to sibling lanes. No `DuplicateMigrationVersion`. |

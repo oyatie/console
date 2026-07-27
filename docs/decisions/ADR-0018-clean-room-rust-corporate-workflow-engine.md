@@ -110,7 +110,7 @@ The engine model is:
    - Cedar/PBAC cutover for workflow guards is governed by
      `docs/decisions/ADR-0021-cedar-pbac-authorization-strangler.md` and
      `docs/specs/cedar-pbac-cutover.md`: Cedar may decide workflow capabilities/actions after explicit
-     coexistence-map enrollment, while `mnt_rt`/RLS remains the row boundary and legacy guards remain live
+     coexistence-map enrollment, while `console_rt`/RLS remains the row boundary and legacy guards remain live
      until promoted.
    - Sensitive actions require fresh passkey step-up: approval/signature, role/policy change,
      payroll/HR/legal, asset ownership, financial/payment, and cross-org transfer decisions.

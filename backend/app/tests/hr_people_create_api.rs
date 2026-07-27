@@ -1,11 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Real `mnt_rt` coverage for People & Workforce employee creation.
+//! Real `console_rt` coverage for People & Workforce employee creation.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -16,8 +16,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const EMPLOYEES_PATH: &str = "/api/v1/employees";
 const HR_READINESS_SUMMARY_PATH: &str = "/api/v1/hr/readiness-summary";
 
@@ -650,11 +650,11 @@ fn bearer(keys: &Keys, org: OrgId, user: UserId, roles: &[&str]) -> String {
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    scoped_role_pool(owner_pool, "mnt_rt").await
+    scoped_role_pool(owner_pool, "console_rt").await
 }
 
 async fn leave_command_role_pool(owner_pool: &PgPool) -> PgPool {
-    scoped_role_pool(owner_pool, "mnt_leave_cmd").await
+    scoped_role_pool(owner_pool, "console_leave_cmd").await
 }
 
 async fn scoped_role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
@@ -664,8 +664,8 @@ async fn scoped_role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
         .after_connect(move |conn, _| {
             Box::pin(async move {
                 match role {
-                    "mnt_rt" => sqlx::query("SET ROLE mnt_rt").execute(conn).await?,
-                    "mnt_leave_cmd" => sqlx::query("SET ROLE mnt_leave_cmd").execute(conn).await?,
+                    "console_rt" => sqlx::query("SET ROLE console_rt").execute(conn).await?,
+                    "console_leave_cmd" => sqlx::query("SET ROLE console_leave_cmd").execute(conn).await?,
                     _ => unreachable!("test role is fixed by its helper"),
                 };
                 Ok(())
@@ -680,13 +680,13 @@ fn app_state(
     runtime_pool: PgPool,
     leave_command_pool: PgPool,
     public_key_pem: String,
-) -> Result<AppState, mnt_app::AppError> {
+) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
         .map(|state| state.with_leave_command_database(leave_command_pool))

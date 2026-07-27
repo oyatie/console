@@ -6,7 +6,7 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     ApprovalId, AssignmentId, BranchId, KernelError, Timestamp, Transition, TransitionError,
     UserId, WorkOrderId,
 };

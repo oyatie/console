@@ -4,11 +4,11 @@
 //! Period locks are the enforcement substrate for UI-M7 month-close and UI-M8
 //! 마감: locking `(domain, period)` makes every date-stamping payroll/financial
 //! write inside the window fail closed (the guard lives in
-//! `mnt_platform_db::period_lock` and is called from the domain write paths).
+//! `console_platform_db::period_lock` and is called from the domain write paths).
 //! Lock/unlock/list are authority-gated (`Feature::PeriodLockManage`,
 //! org-wide) and audited, following how the payroll admin endpoints gate.
 //!
-//! The lifecycle endpoints drive `mnt_platform_db::lifecycle`: a validated
+//! The lifecycle endpoints drive `console_platform_db::lifecycle`: a validated
 //! per-object-type FSM (seeded `document` chain), an append-only transition
 //! log, and legal-hold/retention dispose gates.
 
@@ -17,10 +17,10 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{
+use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{
     DbError, PeriodLockDomain, lifecycle as lifecycle_db, with_audit, with_org_conn,
 };
 use serde::{Deserialize, Serialize};
@@ -76,7 +76,7 @@ pub fn router(state: LifecycleState) -> Router {
         )
         .route(LIFECYCLE_HOLD_PATH_TEMPLATE, post(set_lifecycle_hold))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ===========================================================================

@@ -39,15 +39,15 @@ test("employee import replay accounting is required in OpenAPI and every typed c
   assert.match(tsReport, /            skipped: number;\n/);
 
   const kotlinCompany = read(
-    "clients/kotlin/src/main/kotlin/com/maintenance/api/client/model/EmployeeImportCompanySummary.kt",
+    "clients/kotlin/src/main/kotlin/com/console/api/client/model/EmployeeImportCompanySummary.kt",
   );
   const kotlinReport = read(
-    "clients/kotlin/src/main/kotlin/com/maintenance/api/client/model/EmployeeImportReport.kt",
+    "clients/kotlin/src/main/kotlin/com/console/api/client/model/EmployeeImportReport.kt",
   );
   assert.match(kotlinCompany, /val skipped: kotlin\.Int/);
   assert.match(kotlinReport, /val skipped: kotlin\.Int/);
 
-  const swift = read("clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift");
+  const swift = read("clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift");
   const swiftCompany = between(
     swift,
     "        public struct EmployeeImportCompanySummary:",

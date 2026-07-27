@@ -10,7 +10,7 @@
 // `createLeaveRequest` contract, so `api.POST` is compile-checked against the
 // generated `LeaveCreateRequest` body + `LeaveRequestView` response — no cast.
 // Fail-closed: any non-2xx (no `data`) yields { ok: false }.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 import type { LeaveRequestView } from "../../api/types";

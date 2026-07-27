@@ -23,7 +23,7 @@ const script = join(
   "check-production-authority-blocked.mjs",
 );
 const paths = [
-  "deploy/argocd/apps/maintenance.yaml",
+  "deploy/argocd/apps/console.yaml",
   "deploy/argocd/project.yaml",
   "deploy/argocd/root.yaml",
   "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json",

@@ -14,7 +14,7 @@
 -- and API starts go through POST /api/v1/workflow-runs, schedules through
 -- workflow_schedules (0106). Bindings cover the event-shaped sources only.
 
--- mnt-gate: audited-table workflow_trigger_bindings
+-- console-gate: audited-table workflow_trigger_bindings
 CREATE TABLE workflow_trigger_bindings (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -57,4 +57,4 @@ CREATE POLICY org_isolation ON workflow_trigger_bindings
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON workflow_trigger_bindings TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_trigger_bindings TO console_rt;

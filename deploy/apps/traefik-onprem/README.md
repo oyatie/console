@@ -16,7 +16,7 @@ because `deploy/argocd/root.yaml` only watches `deploy/argocd/apps/`.
   Traefik chart plus this repo's `values.yaml`.
 - `values.yaml` keeps the chart as a multi-replica `Deployment`, enables a real
   `Service` of `type: LoadBalancer`, requests the MetalLB
-  `maintenance-onprem-ingress` pool, enables `publishedService`, and spreads two
+  `console-onprem-ingress` pool, enables `publishedService`, and spreads two
   replicas across distinct nodes with pod anti-affinity/topology spread.
 
 The current OCI app under `deploy/argocd/apps/traefik.yaml` remains the live path

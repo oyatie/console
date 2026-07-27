@@ -357,10 +357,10 @@ Inflow provenance is a link to the source event (a `customer_inquiry`, a renewal
 manual entry), never a free-text "source" string.
 
 Full DoD: RLS `FORCE` with `org_isolation` matching `0043:49-51`, **every assertion
-executed as `mnt_rt`** (bootstrap with `mnt_buck_admin` + the `mnt.sqlx_test_bootstrap`
+executed as `console_rt`** (bootstrap with `console_buck_admin` + the `mnt.sqlx_test_bootstrap`
 GUC), deny-by-default PBAC, audit row **in the same transaction** as every mutation,
 canonical envelope `{error:{code,message}}` with 422/409, first-outcome idempotent
-replay, one story-level app integration test as `mnt_rt`, `manifests/buck-app-test.json`,
+replay, one story-level app integration test as `console_rt`, `manifests/buck-app-test.json`,
 `buck2 test //backend/crates/sales/...` green, and the four unconditional CI gates
 (`rls-arming`, `tenant-isolation`, `audit-coverage`, `dev-auth-absence`).
 
@@ -381,7 +381,7 @@ transition without conforming evidence is **refused (422), not warned**. Every t
 writes a `deal_stage_transitions` row and an audit row in the same tx. `If-Match` /
 `expected_revision` → **412** on a stale write; same idempotency key + matching
 fingerprint → the **first outcome**, no second write and no second audit row; same key +
-different fingerprint → **409**. Both branches tested as `mnt_rt`.
+different fingerprint → **409**. Both branches tested as `console_rt`.
 
 This lane also fixes the inquiry FSM it supersedes: `NEXT_STATUS` is deleted from the
 frontend and the NEW→CONTACTED→CLOSED transition becomes a server-owned action with the
@@ -593,7 +593,7 @@ deps: L-X2, L-X10 · slot — · PVL n · size M
   a **chip**, not colour, and informational chips are not focusable. Only action-driving
   copy survives. Benchmark against Palantir / Teams / Slack.
 - **AA is a check, not a claim**:
-  `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/chrome-02-axe.spec.ts`
+  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/chrome-02-axe.spec.ts`
   over the surface, committed. Explicitly: 1.4.10 reflow · 2.4.7 focus visible · 1.4.11
   non-text contrast · 2.5.8 target size ≥44px · Korean accessible name on every icon-only
   control.
@@ -632,7 +632,7 @@ Required, all committed under `docs/evidence/console/CAP-SALES-CRM/`:
 4. **Buck2-only Rust build/test completion evidence** — `buck2 test` output, not cargo.
    Cargo is dependency metadata.
 5. **Independent review satisfied** (§6.1-8) — a different agent, correctness +
-   RLS-as-`mnt_rt` + codex cross-model + browser/a11y. Never self-approved.
+   RLS-as-`console_rt` + codex cross-model + browser/a11y. Never self-approved.
 6. **CI + immutable image authorization + deployment + live readback + rollback
    verified** — ops observation, not a plan.
 7. **Truth-ledger admission** (§6.1-7): signed commits, the canonical receipt at
@@ -755,15 +755,15 @@ agent**; the integrator queues no manifest without a GO verdict.
 
 **Backend lanes additionally (§6.2)** — `cargo fmt` + `cargo clippy -D warnings` clean
 (compile-verify in a **spawned subagent**; local cargo is hook-disabled in the main
-session only) · **RLS `FORCE`, every assertion executed as `mnt_rt`** (bootstrap
-`mnt_buck_admin` + `mnt.sqlx_test_bootstrap`; a superuser `BYPASSRLS` pass proves
+session only) · **RLS `FORCE`, every assertion executed as `console_rt`** (bootstrap
+`console_buck_admin` + `mnt.sqlx_test_bootstrap`; a superuser `BYPASSRLS` pass proves
 nothing) · **deny-by-default PBAC + an audit row in the SAME transaction** as every
 mutation · canonical envelope `{error:{code,message}}`, **422** validation / **409**
 conflict, with **one negative test driving a DB CHECK violation to 422, never 500** ·
 **idempotency: same key + matching fingerprint returns the FIRST outcome** — identical
 status and body, no second write, no second audit row; same key + different fingerprint
-→ 409; **both branches tested as `mnt_rt`** · one **story-level** app integration test as
-`mnt_rt` (emit `manifests/buck-app-test.json`; do not edit `backend/app/BUCK`) ·
+→ 409; **both branches tested as `console_rt`** · one **story-level** app integration test as
+`console_rt` (emit `manifests/buck-app-test.json`; do not edit `backend/app/BUCK`) ·
 **`buck2 test //backend/crates/<owned>/...` green — Buck2 is the completion evidence** ·
 **unconditional CI gates** for any lane adding a migration, table or route: `rls-arming`,
 `tenant-isolation`, `audit-coverage`, `dev-auth-absence` (as applicable:
@@ -1003,7 +1003,7 @@ absent CRM ontology surface. Every test in the suite drives the installer
 directly, so CI cannot see this.
 
 L-X7 therefore delivers the **existing-tenant upgrade trigger** as part of its
-scope, not as a follow-up: `mnt_ontology_cmd` credentials, `scope_org` per
+scope, not as a follow-up: `console_ontology_cmd` credentials, `scope_org` per
 tenant, deny-by-default authz, an audit row, and a test against a tenant seeded
 at the OLDER version. The installer is already idempotent, so the trigger needs
 no guard rails of its own.

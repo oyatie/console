@@ -55,8 +55,8 @@ jobs:
             shards: "accessibility-largest accessibility-dark dynamic-type-large dynamic-type-ax5"
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
-      MNT_IOS_BATCH_NAME: ${{ matrix.batch }}
-      MNT_IOS_SHARD_BATCH: ${{ matrix.shards }}
+      CONSOLE_IOS_BATCH_NAME: ${{ matrix.batch }}
+      CONSOLE_IOS_SHARD_BATCH: ${{ matrix.shards }}
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -68,12 +68,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          D="$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${MNT_IOS_BATCH_NAME}"
+          D="$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${CONSOLE_IOS_BATCH_NAME}"
           install -d -m 700 "$D" "$D/auth" "$D/raw-xcresults" "$D/artifacts"
-          printf '%s\n' "$MNT_IOS_BATCH_NAME" > "$D/artifacts/batch-name.txt"
-          read -r -a shard_manifest <<< "$MNT_IOS_SHARD_BATCH"
+          printf '%s\n' "$CONSOLE_IOS_BATCH_NAME" > "$D/artifacts/batch-name.txt"
+          read -r -a shard_manifest <<< "$CONSOLE_IOS_SHARD_BATCH"
           printf '%s\n' "${shard_manifest[@]}" > "$D/artifacts/shard-manifest.txt"
-          printf '%s\n' "MNT_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home" "RUSTUP_HOME=$D/rustup-home" "CARGO_TARGET_DIR=$D/cargo-target" >> "$GITHUB_ENV"
+          printf '%s\n' "CONSOLE_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home" "RUSTUP_HOME=$D/rustup-home" "CARGO_TARGET_DIR=$D/cargo-target" >> "$GITHUB_ENV"
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with: {toolchain: "1.97.1"}
@@ -89,7 +89,7 @@ jobs:
           xcrun xcresulttool get test-results summary --help
           xcrun xcresulttool get test-results tests --help
           umask 077
-          TOOLS="$MNT_IOS_JOB_ROOT/tools"
+          TOOLS="$CONSOLE_IOS_JOB_ROOT/tools"
           ZIP="$TOOLS/xcodegen.zip"; DIST="$TOOLS/xcodegen-dist"
           install -d -m 700 "$TOOLS" "$DIST"
           /usr/bin/curl --proto '=https' --tlsv1.2 --fail --location --retry 5 --retry-all-errors --connect-timeout 15 --output "$ZIP" https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
@@ -114,10 +114,10 @@ jobs:
           readonly BASH_ENV ENV NODE_OPTIONS NODE_PATH DYLD_INSERT_LIBRARIES DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH LD_PRELOAD
           case "$RUNNER_ARCH" in X64) NODE_ARCH=x64 ;; ARM64) NODE_ARCH=arm64 ;; *) echo "unsupported runner architecture: $RUNNER_ARCH" >&2; exit 1 ;; esac
           readonly RUNNER_TOOL_CACHE RUNNER_ARCH NODE_ARCH
-          readonly MNT_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"
-          test -x "$MNT_IOS_NODE_BIN"; test ! -L "$MNT_IOS_NODE_BIN"; test "$("$MNT_IOS_NODE_BIN" --version)" = v24.16.0
-          (cd "$GITHUB_WORKSPACE" && "$MNT_IOS_NODE_BIN" --test scripts/boot-backend-port-conflict.test.mjs scripts/boot-ios-ui-backend.test.mjs scripts/check-ios-ui-test-fail-closed.test.mjs scripts/verify-xcresult-test-results.test.mjs && "$MNT_IOS_NODE_BIN" scripts/check-ios-ui-test-fail-closed.mjs)
-          ROOT="$GITHUB_WORKSPACE"; D="$MNT_IOS_JOB_ROOT"; AUTH_DIR="$D/auth"; PGDATA="$D/postgres-data"; PG_PREFIX="$D/postgres-18.4"; DERIVED="$D/derived-data"; RAW_RESULTS="$D/raw-xcresults"; ARTIFACTS="$D/artifacts"; PROJECT="$PWD/MaintenanceField.xcodeproj"; CI_PLIST="$D/Info.ci.plist"; CI_PROJECT_SPEC="$PWD/project.ci.yml"; STATE="$D/state"; UUID=""; BACKEND_PID_FILE="$AUTH_DIR/backend.pid"; BACKEND_COMMAND_FILE="$AUTH_DIR/backend.command"; SECRETS_FILE="$AUTH_DIR/artifact-secret-values"; SESSION_MINTED_MARKER="$AUTH_DIR/session-material-minted"
+          readonly CONSOLE_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"
+          test -x "$CONSOLE_IOS_NODE_BIN"; test ! -L "$CONSOLE_IOS_NODE_BIN"; test "$("$CONSOLE_IOS_NODE_BIN" --version)" = v24.16.0
+          (cd "$GITHUB_WORKSPACE" && "$CONSOLE_IOS_NODE_BIN" --test scripts/boot-backend-port-conflict.test.mjs scripts/boot-ios-ui-backend.test.mjs scripts/check-ios-ui-test-fail-closed.test.mjs scripts/verify-xcresult-test-results.test.mjs && "$CONSOLE_IOS_NODE_BIN" scripts/check-ios-ui-test-fail-closed.mjs)
+          ROOT="$GITHUB_WORKSPACE"; D="$CONSOLE_IOS_JOB_ROOT"; AUTH_DIR="$D/auth"; PGDATA="$D/postgres-data"; PG_PREFIX="$D/postgres-18.4"; DERIVED="$D/derived-data"; RAW_RESULTS="$D/raw-xcresults"; ARTIFACTS="$D/artifacts"; PROJECT="$PWD/Console.xcodeproj"; CI_PLIST="$D/Info.ci.plist"; CI_PROJECT_SPEC="$PWD/project.ci.yml"; STATE="$D/state"; UUID=""; BACKEND_PID_FILE="$AUTH_DIR/backend.pid"; BACKEND_COMMAND_FILE="$AUTH_DIR/backend.command"; SECRETS_FILE="$AUTH_DIR/artifact-secret-values"; SESSION_MINTED_MARKER="$AUTH_DIR/session-material-minted"
           install -d -m 700 "$D" "$AUTH_DIR" "$PGDATA" "$RAW_RESULTS" "$ARTIFACTS"; umask 077; test ! -e "$PROJECT"
           : > "$SECRETS_FILE"; chmod 600 "$SECRETS_FILE"
           TIMINGS="$ARTIFACTS/pipeline-timings.tsv"; ACTIVE_PHASE="$ARTIFACTS/active-phase.txt"; TIMING_ACTIVE=0
@@ -174,7 +174,7 @@ jobs:
           trap 'exit 143' TERM
           port() { python3 -c "import socket; s=socket.socket(); s.bind(('127.0.0.1', 0)); print(s.getsockname()[1]); s.close()"; }; secret() { openssl rand -hex 32; }
           PP="$(port)"; BP="$(port)"; while [[ "$PP" == "$BP" ]]; do BP="$(port)"; done
-          PG_SUPERUSER=mnt_ci_admin; UP="$(secret)"; AP="$(secret)"; RP="$(secret)"; LP="$(secret)"; OP="$(secret)"; COLDSTART_OTP="$(secret)"; URL="http://127.0.0.1:$BP"
+          PG_SUPERUSER=console_ci_admin; UP="$(secret)"; AP="$(secret)"; RP="$(secret)"; LP="$(secret)"; OP="$(secret)"; COLDSTART_OTP="$(secret)"; URL="http://127.0.0.1:$BP"
           echo "::add-mask::$UP"; echo "::add-mask::$AP"; echo "::add-mask::$RP"; echo "::add-mask::$LP"; echo "::add-mask::$OP"; echo "::add-mask::$COLDSTART_OTP"
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           timing_start postgres-18.4-build-and-start
@@ -185,47 +185,47 @@ jobs:
           PWFILE="$D/postgres-superuser.pw"; printf %s "$UP" > "$PWFILE"; chmod 600 "$PWFILE"; "$PG_PREFIX/bin/initdb" -D "$PGDATA" -U "$PG_SUPERUSER" --pwfile="$PWFILE" --auth-host=scram-sha-256 --auth-local=scram-sha-256; rm -f "$PWFILE"; "$PG_PREFIX/bin/pg_ctl" -D "$PGDATA" -o "-h 127.0.0.1 -p $PP" -w start
           PGPASSWORD="$UP" "$PG_PREFIX/bin/psql" -h 127.0.0.1 -p "$PP" -U "$PG_SUPERUSER" -d postgres -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION pgcrypto;' -c 'CREATE EXTENSION pg_trgm;' -c 'DROP EXTENSION pg_trgm;' -c 'DROP EXTENSION pgcrypto;'
           timing_finish passed
-          export PATH="$PG_PREFIX/bin:$PATH" E2E_PG_HOST=127.0.0.1 E2E_PG_PORT="$PP" E2E_PG_SUPERUSER="$PG_SUPERUSER" E2E_PG_SUPERUSER_PASSWORD="$UP" E2E_DB_NAME=mnt_ios_ui E2E_MNT_APP_POSTGRES_PASSWORD="$AP" E2E_MNT_RT_POSTGRES_PASSWORD="$RP" E2E_MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LP" E2E_MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$OP"
+          export PATH="$PG_PREFIX/bin:$PATH" E2E_PG_HOST=127.0.0.1 E2E_PG_PORT="$PP" E2E_PG_SUPERUSER="$PG_SUPERUSER" E2E_PG_SUPERUSER_PASSWORD="$UP" E2E_DB_NAME=console_ios_ui E2E_CONSOLE_APP_POSTGRES_PASSWORD="$AP" E2E_CONSOLE_RT_POSTGRES_PASSWORD="$RP" E2E_CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LP" E2E_CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$OP"
           # E2E validates behavior, not release optimization. A cold locked dev
           # build is ~15x faster than release on this exact candidate; stripping
           # debug info keeps the ephemeral artifact bounded without weakening
           # exact-SHA compilation or backend process-identity proof.
           timing_start rust-debug-build
-          (cd "$ROOT/backend" && cargo build --locked -p mnt-app)
+          (cd "$ROOT/backend" && cargo build --locked -p console-app)
           timing_finish passed
-          export MNT_APP_BIN="$CARGO_TARGET_DIR/debug/mnt-app"
+          export CONSOLE_APP_BIN="$CARGO_TARGET_DIR/debug/console-app"
           timing_start database-and-backend-bootstrap
           "$ROOT/e2e/harness/db.sh"
-          MNT_IOS_COLDSTART_OTP="$COLDSTART_OTP" "$MNT_IOS_NODE_BIN" "$ROOT/scripts/boot-ios-ui-backend.mjs" "$ROOT" "$AUTH_DIR" "$BP"
-          BACKEND_PID="$(cat "$BACKEND_PID_FILE")"; kill -0 "$BACKEND_PID"; ps -p "$BACKEND_PID" -o command= > "$BACKEND_COMMAND_FILE"; chmod 600 "$BACKEND_COMMAND_FILE"; grep -F -- "$MNT_APP_BIN" "$BACKEND_COMMAND_FILE" >/dev/null
+          CONSOLE_IOS_COLDSTART_OTP="$COLDSTART_OTP" "$CONSOLE_IOS_NODE_BIN" "$ROOT/scripts/boot-ios-ui-backend.mjs" "$ROOT" "$AUTH_DIR" "$BP"
+          BACKEND_PID="$(cat "$BACKEND_PID_FILE")"; kill -0 "$BACKEND_PID"; ps -p "$BACKEND_PID" -o command= > "$BACKEND_COMMAND_FILE"; chmod 600 "$BACKEND_COMMAND_FILE"; grep -F -- "$CONSOLE_APP_BIN" "$BACKEND_COMMAND_FILE" >/dev/null
           timing_finish passed
           timing_start xcode-project-and-test-build
-          if /usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity' Sources/MaintenanceFieldApp/Info.plist >/dev/null 2>&1; then echo 'production Info.plist must remain ATS-free' >&2; exit 1; fi
-          cp Sources/MaintenanceFieldApp/Info.plist "$CI_PLIST"; /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity dict' "$CI_PLIST"; /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity:NSAllowsLocalNetworking bool true' "$CI_PLIST"; plutil -lint "$CI_PLIST"
+          if /usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity' Sources/ConsoleApp/Info.plist >/dev/null 2>&1; then echo 'production Info.plist must remain ATS-free' >&2; exit 1; fi
+          cp Sources/ConsoleApp/Info.plist "$CI_PLIST"; /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity dict' "$CI_PLIST"; /usr/libexec/PlistBuddy -c 'Add :NSAppTransportSecurity:NSAllowsLocalNetworking bool true' "$CI_PLIST"; plutil -lint "$CI_PLIST"
           python3 - "$CI_PLIST" "$CI_PROJECT_SPEC" <<'PY'
           from pathlib import Path
           import sys
           source = Path("project.yml").read_text()
-          needle = "INFOPLIST_FILE: Sources/MaintenanceFieldApp/Info.plist"
+          needle = "INFOPLIST_FILE: Sources/ConsoleApp/Info.plist"
           if source.count(needle) != 1:
-              raise SystemExit("expected exactly one MaintenanceFieldApp INFOPLIST_FILE setting")
+              raise SystemExit("expected exactly one ConsoleApp INFOPLIST_FILE setting")
           Path(sys.argv[2]).write_text(source.replace(needle, f"INFOPLIST_FILE: {sys.argv[1]}"))
           PY
-          chmod 600 "$CI_PROJECT_SPEC"; xcodegen generate --spec "$CI_PROJECT_SPEC"; xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile -project MaintenanceField.xcodeproj -scheme MaintenanceFieldApp
+          chmod 600 "$CI_PROJECT_SPEC"; xcodegen generate --spec "$CI_PROJECT_SPEC"; xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile -project Console.xcodeproj -scheme ConsoleApp
           SIM_RUNTIME=com.apple.CoreSimulator.SimRuntime.iOS-26-5
           xcrun simctl list runtimes -j | python3 -c 'import json,sys; target=sys.argv[1]; assert any(x.get("isAvailable") and x.get("identifier") == target for x in json.load(sys.stdin)["runtimes"])' "$SIM_RUNTIME"
           SIM_DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
           xcrun simctl list devicetypes -j | python3 -c 'import json,sys; target=sys.argv[1]; assert any(x.get("identifier") == target for x in json.load(sys.stdin)["devicetypes"])' "$SIM_DEVICE_TYPE"
-          UUID="$(xcrun simctl create "Maintenance CI ${MNT_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "$SIM_DEVICE_TYPE" "$SIM_RUNTIME")"; write_state; xcrun simctl boot "$UUID"; xcrun simctl bootstatus "$UUID" -b
-          xcodebuild build-for-testing -onlyUsePackageVersionsFromResolvedFile -project MaintenanceField.xcodeproj -scheme MaintenanceFieldApp -destination "platform=iOS Simulator,id=$UUID" -derivedDataPath "$DERIVED"
-          BUILT_PLIST="$(find "$DERIVED/Build/Products" -path '*MaintenanceFieldApp.app/Info.plist' -print -quit)"; test -n "$BUILT_PLIST"; # Built.app/Info.plist receives CI-only NSAllowsLocalNetworking
+          UUID="$(xcrun simctl create "Maintenance CI ${CONSOLE_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "$SIM_DEVICE_TYPE" "$SIM_RUNTIME")"; write_state; xcrun simctl boot "$UUID"; xcrun simctl bootstatus "$UUID" -b
+          xcodebuild build-for-testing -onlyUsePackageVersionsFromResolvedFile -project Console.xcodeproj -scheme ConsoleApp -destination "platform=iOS Simulator,id=$UUID" -derivedDataPath "$DERIVED"
+          BUILT_PLIST="$(find "$DERIVED/Build/Products" -path '*ConsoleApp.app/Info.plist' -print -quit)"; test -n "$BUILT_PLIST"; # Built.app/Info.plist receives CI-only NSAllowsLocalNetworking
           /usr/libexec/PlistBuddy -c 'Print :UILaunchScreen' "$BUILT_PLIST" >/dev/null
           test "$(/usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity:NSAllowsLocalNetworking' "$BUILT_PLIST")" = true
-          if /usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity' Sources/MaintenanceFieldApp/Info.plist >/dev/null 2>&1; then echo 'production Info.plist must remain ATS-free' >&2; exit 1; fi
-          BUILT_APP="$(find "$DERIVED/Build/Products" -type d -name 'MaintenanceFieldApp.app' -print -quit)"; test -n "$BUILT_APP"
-          SEEDER_APP="$(find "$DERIVED/Build/Products" -type d -name 'MaintenanceFieldUITestSeeder.app' -print -quit)"; test -n "$SEEDER_APP"
-          UITEST_RUNNER_APP="$(find "$DERIVED/Build/Products" -type d -name 'MaintenanceFieldUITests-Runner.app' -print -quit)"; test -n "$UITEST_RUNNER_APP"
-          UITEST_BUNDLE="$UITEST_RUNNER_APP/PlugIns/MaintenanceFieldUITests.xctest"; test -d "$UITEST_BUNDLE"
+          if /usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity' Sources/ConsoleApp/Info.plist >/dev/null 2>&1; then echo 'production Info.plist must remain ATS-free' >&2; exit 1; fi
+          BUILT_APP="$(find "$DERIVED/Build/Products" -type d -name 'ConsoleApp.app' -print -quit)"; test -n "$BUILT_APP"
+          SEEDER_APP="$(find "$DERIVED/Build/Products" -type d -name 'ConsoleUITestSeeder.app' -print -quit)"; test -n "$SEEDER_APP"
+          UITEST_RUNNER_APP="$(find "$DERIVED/Build/Products" -type d -name 'ConsoleUITests-Runner.app' -print -quit)"; test -n "$UITEST_RUNNER_APP"
+          UITEST_BUNDLE="$UITEST_RUNNER_APP/PlugIns/ConsoleUITests.xctest"; test -d "$UITEST_BUNDLE"
           # Simulator entitlement authority is the signed executable's Mach-O
           # __TEXT,__entitlements section. Do not infer it from an xcent file or
           # alter the Xcode-created Runner after build-for-testing.
@@ -270,7 +270,7 @@ jobs:
           if not isinstance(groups, list) or len(groups) != 1 or not isinstance(groups[0], str):
               raise SystemExit("expected exactly one keychain-access-groups value")
           group = groups[0]
-          suffix = "com.maintenance.field.shared"
+          suffix = "com.console.app.shared"
           if group != suffix and not group.endswith("." + suffix):
               raise SystemExit("unexpected keychain-access-group suffix")
           print(group)
@@ -280,14 +280,14 @@ jobs:
           /usr/bin/codesign --verify --deep --strict "$SEEDER_APP"
           /usr/bin/codesign --verify --deep --strict "$UITEST_RUNNER_APP"
           /usr/bin/codesign --verify --strict "$UITEST_BUNDLE"
-          APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/MaintenanceFieldApp")"
-          SEEDER_KEYCHAIN_GROUP="$(mach_o_keychain_group "$SEEDER_APP/MaintenanceFieldUITestSeeder")"
+          APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/ConsoleApp")"
+          SEEDER_KEYCHAIN_GROUP="$(mach_o_keychain_group "$SEEDER_APP/ConsoleUITestSeeder")"
           test "$APP_KEYCHAIN_GROUP" = "$SEEDER_KEYCHAIN_GROUP"
           XCTESTRUN="$(find "$DERIVED/Build/Products" -name '*.xctestrun' -print -quit)"
           test -n "$XCTESTRUN"
           chmod 600 "$XCTESTRUN"
           timing_finish passed
-          export MNT_UITEST_BASE_URL="$URL" MNT_UITEST_WORK_ORDER_ID_DETAIL=00000000-0000-0000-0000-000000f00004 MNT_UITEST_WORK_ORDER_ID_START=00000000-0000-0000-0000-000000f00003 MNT_UITEST_WORK_ORDER_ID_REPORT=00000000-0000-0000-0000-000000f00004 MNT_UITEST_WORK_ORDER_ID_REPORT_SUCCESS=00000000-0000-0000-0000-000000f00005 MNT_UITEST_WORK_ORDER_ID_ADMIN_APPROVE=00000000-0000-0000-0000-000000f00007 MNT_UITEST_WORK_ORDER_ID_ADMIN_REJECT=00000000-0000-0000-0000-000000f00008 MNT_UITEST_WORK_ORDER_ID_CAMERA=00000000-0000-0000-0000-000000f00004 MNT_UITEST_MESSENGER_THREAD_ID=00000000-0000-0000-0000-000000c10001 MNT_UITEST_MESSENGER_INITIAL_MESSAGE_ID=00000000-0000-0000-0000-000000c20001
+          export CONSOLE_UITEST_BASE_URL="$URL" CONSOLE_UITEST_WORK_ORDER_ID_DETAIL=00000000-0000-0000-0000-000000f00004 CONSOLE_UITEST_WORK_ORDER_ID_START=00000000-0000-0000-0000-000000f00003 CONSOLE_UITEST_WORK_ORDER_ID_REPORT=00000000-0000-0000-0000-000000f00004 CONSOLE_UITEST_WORK_ORDER_ID_REPORT_SUCCESS=00000000-0000-0000-0000-000000f00005 CONSOLE_UITEST_WORK_ORDER_ID_ADMIN_APPROVE=00000000-0000-0000-0000-000000f00007 CONSOLE_UITEST_WORK_ORDER_ID_ADMIN_REJECT=00000000-0000-0000-0000-000000f00008 CONSOLE_UITEST_WORK_ORDER_ID_CAMERA=00000000-0000-0000-0000-000000f00004 CONSOLE_UITEST_MESSENGER_THREAD_ID=00000000-0000-0000-0000-000000c10001 CONSOLE_UITEST_MESSENGER_INITIAL_MESSAGE_ID=00000000-0000-0000-0000-000000c20001
           configure_shard() {
             local shard_name="$1"
             SHARD_FIXTURE_PROFILE=full
@@ -298,92 +298,92 @@ jobs:
             case "$shard_name" in
               authenticated-shell)
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/FieldCriticalPathUITests/testAuthenticatedLaunchShowsTodayTabInKorean)
+                SHARD_SELECTORS=(ConsoleUITests/ConsoleCriticalPathUITests/testAuthenticatedLaunchShowsTodayTabInKorean)
                 ;;
               preflight-session)
                 SHARD_TIMEOUT_SECONDS=60
-                SHARD_SELECTORS=(MaintenanceFieldUITests/PreflightUITests/testWorkflowMintedSessionAndLocalBackendAreConfigured)
+                SHARD_SELECTORS=(ConsoleUITests/PreflightUITests/testWorkflowMintedSessionAndLocalBackendAreConfigured)
                 ;;
               preflight-fixtures)
                 SHARD_TIMEOUT_SECONDS=30
-                SHARD_SELECTORS=(MaintenanceFieldUITests/PreflightUITests/testDeterministicWorkOrderFixturesAreConfigured)
+                SHARD_SELECTORS=(ConsoleUITests/PreflightUITests/testDeterministicWorkOrderFixturesAreConfigured)
                 ;;
               preflight-restore)
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/PreflightUITests/testSeederRestoresThenClearsRealSession)
+                SHARD_SELECTORS=(ConsoleUITests/PreflightUITests/testSeederRestoresThenClearsRealSession)
                 ;;
               login-validation)
                 SHARD_TIMEOUT_SECONDS=90
-                SHARD_SELECTORS=(MaintenanceFieldUITests/LoginValidationUITests)
+                SHARD_SELECTORS=(ConsoleUITests/LoginValidationUITests)
                 ;;
               accessibility-id-parity)
                 SHARD_TIMEOUT_SECONDS=45
-                SHARD_SELECTORS=(MaintenanceFieldUITests/FieldAccessibilityIDParityTests)
+                SHARD_SELECTORS=(ConsoleUITests/ConsoleAccessibilityIDParityTests)
                 ;;
               critical-today)
                 SHARD_TIMEOUT_SECONDS=240
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testDispatchListRendersDeterministicMechanicWorkOrder
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testFullFixtureRowsRemainReachableAboveTabBar
+                  ConsoleUITests/ConsoleCriticalPathUITests/testDispatchListRendersDeterministicMechanicWorkOrder
+                  ConsoleUITests/ConsoleCriticalPathUITests/testFullFixtureRowsRemainReachableAboveTabBar
                 )
                 ;;
               critical-report)
                 SHARD_TIMEOUT_SECONDS=360
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testOpenWorkOrderDetailAndAdvance
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testReportFormValidationSurfacesRealRequiredCopy
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testReportSubmissionPersistsVisibleTerminalOutcome
+                  ConsoleUITests/ConsoleCriticalPathUITests/testOpenWorkOrderDetailAndAdvance
+                  ConsoleUITests/ConsoleCriticalPathUITests/testReportFormValidationSurfacesRealRequiredCopy
+                  ConsoleUITests/ConsoleCriticalPathUITests/testReportSubmissionPersistsVisibleTerminalOutcome
                 )
                 ;;
               critical-location)
                 SHARD_TIMEOUT_SECONDS=240
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/FieldCriticalPathUITests/testLocationConsentTransitionsPersistThroughTheRealBackend
+                  ConsoleUITests/ConsoleCriticalPathUITests/testLocationConsentTransitionsPersistThroughTheRealBackend
                 )
                 ;;
               messenger-render)
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/MessengerUITests/testExactSeededMessengerThreadAndMessageRender)
+                SHARD_SELECTORS=(ConsoleUITests/MessengerUITests/testExactSeededMessengerThreadAndMessageRender)
                 ;;
               messenger-mutation)
                 SHARD_TIMEOUT_SECONDS=240
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/MessengerUITests/testMessengerSendSurvivesBackendRefresh
-                  MaintenanceFieldUITests/MessengerUITests/testMessengerSearchUnmatchedQueryShowsRealNoResults
+                  ConsoleUITests/MessengerUITests/testMessengerSendSurvivesBackendRefresh
+                  ConsoleUITests/MessengerUITests/testMessengerSearchUnmatchedQueryShowsRealNoResults
                 )
                 ;;
               camera-capture)
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/CameraCaptureUITests)
+                SHARD_SELECTORS=(ConsoleUITests/CameraCaptureUITests)
                 ;;
               audit-dynamic-today)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/AccessibilityAuditUITests/testTodayScreenPassesDynamicTypeAudit)
+                SHARD_SELECTORS=(ConsoleUITests/AccessibilityAuditUITests/testTodayScreenPassesDynamicTypeAudit)
                 ;;
               audit-dynamic-detail)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/AccessibilityAuditUITests/testWorkOrderDetailPassesDynamicTypeAudit)
+                SHARD_SELECTORS=(ConsoleUITests/AccessibilityAuditUITests/testWorkOrderDetailPassesDynamicTypeAudit)
                 ;;
               audit-dynamic-messenger)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=210
-                SHARD_SELECTORS=(MaintenanceFieldUITests/AccessibilityAuditUITests/testMessengerScreenPassesDynamicTypeAudit)
+                SHARD_SELECTORS=(ConsoleUITests/AccessibilityAuditUITests/testMessengerScreenPassesDynamicTypeAudit)
                 ;;
               audit-dynamic-login)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=120
-                SHARD_SELECTORS=(MaintenanceFieldUITests/AccessibilityAuditUITests/testLoginScreenPassesDynamicTypeAudit)
+                SHARD_SELECTORS=(ConsoleUITests/AccessibilityAuditUITests/testLoginScreenPassesDynamicTypeAudit)
                 ;;
               accessibility-standard)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=360
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditStandard
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testWorkOrderDetailPassesNonDynamicAuditStandard
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditStandard
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testLoginScreenPassesNonDynamicAuditStandard
+                  ConsoleUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditStandard
+                  ConsoleUITests/AccessibilityAuditUITests/testWorkOrderDetailPassesNonDynamicAuditStandard
+                  ConsoleUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditStandard
+                  ConsoleUITests/AccessibilityAuditUITests/testLoginScreenPassesNonDynamicAuditStandard
                 )
                 ;;
               accessibility-largest)
@@ -391,8 +391,8 @@ jobs:
                 SHARD_CONTENT_SIZE=accessibility-extra-extra-extra-large
                 SHARD_TIMEOUT_SECONDS=240
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditLargestDynamicType
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditLargestDynamicType
+                  ConsoleUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditLargestDynamicType
+                  ConsoleUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditLargestDynamicType
                 )
                 ;;
               accessibility-dark)
@@ -400,20 +400,20 @@ jobs:
                 SHARD_APPEARANCE=dark
                 SHARD_TIMEOUT_SECONDS=240
                 SHARD_SELECTORS=(
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditDarkMode
-                  MaintenanceFieldUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditDarkMode
+                  ConsoleUITests/AccessibilityAuditUITests/testTodayScreenPassesNonDynamicAuditDarkMode
+                  ConsoleUITests/AccessibilityAuditUITests/testMessengerScreenPassesNonDynamicAuditDarkMode
                 )
                 ;;
               dynamic-type-large)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_TIMEOUT_SECONDS=150
-                SHARD_SELECTORS=(MaintenanceFieldUITests/DynamicTypeRuntimeUITests/testLargeDynamicTypeRuntimeContract)
+                SHARD_SELECTORS=(ConsoleUITests/DynamicTypeRuntimeUITests/testLargeDynamicTypeRuntimeContract)
                 ;;
               dynamic-type-ax5)
                 SHARD_FIXTURE_PROFILE=accessibility-audit-one-row
                 SHARD_CONTENT_SIZE=accessibility-extra-extra-extra-large
                 SHARD_TIMEOUT_SECONDS=210
-                SHARD_SELECTORS=(MaintenanceFieldUITests/DynamicTypeRuntimeUITests/testAccessibilityExtraExtraExtraLargeRuntimeContract)
+                SHARD_SELECTORS=(ConsoleUITests/DynamicTypeRuntimeUITests/testAccessibilityExtraExtraExtraLargeRuntimeContract)
                 ;;
               *) return 1 ;;
             esac
@@ -421,26 +421,26 @@ jobs:
           }
           mint_shard_session() {
             local fixture_profile="$1" otp hash
-            unset MNT_UITEST_ACCESS_TOKEN MNT_UITEST_REFRESH_TOKEN
+            unset CONSOLE_UITEST_ACCESS_TOKEN CONSOLE_UITEST_REFRESH_TOKEN
             rm -f "$AUTH_DIR/otp.json" "$AUTH_DIR/tokens.json"
             otp="$(secret)" || return 1
             echo "::add-mask::$otp"
             hash="$(printf %s "$otp" | shasum -a 256 | awk '{print $1}')" || return 1
-            PGPASSWORD="$AP" psql -h 127.0.0.1 -p "$PP" -U mnt_app -d mnt_ios_ui -v ON_ERROR_STOP=1 -v "otp_hash=$hash" -v "fixture_profile=$fixture_profile" -f "$ROOT/e2e/harness/seed-mobile-ci.sql" || return 1
+            PGPASSWORD="$AP" psql -h 127.0.0.1 -p "$PP" -U console_app -d console_ios_ui -v ON_ERROR_STOP=1 -v "otp_hash=$hash" -v "fixture_profile=$fixture_profile" -f "$ROOT/e2e/harness/seed-mobile-ci.sql" || return 1
             python3 - "$otp" > "$AUTH_DIR/otp.json" <<'PY'
           import json,sys; print(json.dumps({"otp": sys.argv[1]}))
           PY
             curl --fail --silent --show-error -X POST "$URL/api/v1/auth/otp/redeem" -H 'content-type: application/json' -H 'x-maintenance-client: mobile' --data-binary @- < "$AUTH_DIR/otp.json" > "$AUTH_DIR/tokens.json" || { rm -f "$AUTH_DIR/otp.json" "$AUTH_DIR/tokens.json"; return 1; }
             rm -f "$AUTH_DIR/otp.json"
-            MNT_UITEST_ACCESS_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["access_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
-            MNT_UITEST_REFRESH_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["refresh_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
-            export MNT_UITEST_ACCESS_TOKEN MNT_UITEST_REFRESH_TOKEN
-            echo "::add-mask::$MNT_UITEST_ACCESS_TOKEN"
-            echo "::add-mask::$MNT_UITEST_REFRESH_TOKEN"
-            printf '%s\n' "$otp" "$MNT_UITEST_ACCESS_TOKEN" "$MNT_UITEST_REFRESH_TOKEN" >> "$SECRETS_FILE" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
+            CONSOLE_UITEST_ACCESS_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["access_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
+            CONSOLE_UITEST_REFRESH_TOKEN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["refresh_token"])' "$AUTH_DIR/tokens.json")" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
+            export CONSOLE_UITEST_ACCESS_TOKEN CONSOLE_UITEST_REFRESH_TOKEN
+            echo "::add-mask::$CONSOLE_UITEST_ACCESS_TOKEN"
+            echo "::add-mask::$CONSOLE_UITEST_REFRESH_TOKEN"
+            printf '%s\n' "$otp" "$CONSOLE_UITEST_ACCESS_TOKEN" "$CONSOLE_UITEST_REFRESH_TOKEN" >> "$SECRETS_FILE" || { rm -f "$AUTH_DIR/tokens.json"; return 1; }
             : > "$SESSION_MINTED_MARKER"
             rm -f "$AUTH_DIR/tokens.json"
-            (cd "$ROOT" && python3 scripts/patch-ios-xctestrun.py "$XCTESTRUN" --target MaintenanceFieldUITests --ui-target-app-path '__TESTROOT__/Debug-iphonesimulator/MaintenanceFieldApp.app' --env MNT_UITEST_BASE_URL --env MNT_UITEST_ACCESS_TOKEN --env MNT_UITEST_REFRESH_TOKEN --env MNT_UITEST_WORK_ORDER_ID_DETAIL --env MNT_UITEST_WORK_ORDER_ID_START --env MNT_UITEST_WORK_ORDER_ID_REPORT --env MNT_UITEST_WORK_ORDER_ID_REPORT_SUCCESS --env MNT_UITEST_WORK_ORDER_ID_ADMIN_APPROVE --env MNT_UITEST_WORK_ORDER_ID_ADMIN_REJECT --env MNT_UITEST_WORK_ORDER_ID_CAMERA --env MNT_UITEST_MESSENGER_THREAD_ID --env MNT_UITEST_MESSENGER_INITIAL_MESSAGE_ID) || return 1
+            (cd "$ROOT" && python3 scripts/patch-ios-xctestrun.py "$XCTESTRUN" --target ConsoleUITests --ui-target-app-path '__TESTROOT__/Debug-iphonesimulator/ConsoleApp.app' --env CONSOLE_UITEST_BASE_URL --env CONSOLE_UITEST_ACCESS_TOKEN --env CONSOLE_UITEST_REFRESH_TOKEN --env CONSOLE_UITEST_WORK_ORDER_ID_DETAIL --env CONSOLE_UITEST_WORK_ORDER_ID_START --env CONSOLE_UITEST_WORK_ORDER_ID_REPORT --env CONSOLE_UITEST_WORK_ORDER_ID_REPORT_SUCCESS --env CONSOLE_UITEST_WORK_ORDER_ID_ADMIN_APPROVE --env CONSOLE_UITEST_WORK_ORDER_ID_ADMIN_REJECT --env CONSOLE_UITEST_WORK_ORDER_ID_CAMERA --env CONSOLE_UITEST_MESSENGER_THREAD_ID --env CONSOLE_UITEST_MESSENGER_INITIAL_MESSAGE_ID) || return 1
           }
           set_simulator_presentation() {
             local expected_appearance="$1" expected_content_size="$2" actual_appearance actual_content_size
@@ -493,9 +493,9 @@ jobs:
             fi
             return "$status"
           }
-          read -r -a SHARD_MANIFEST <<< "$MNT_IOS_SHARD_BATCH"
+          read -r -a SHARD_MANIFEST <<< "$CONSOLE_IOS_SHARD_BATCH"
           ((${#SHARD_MANIFEST[@]} > 0))
-          printf '%s\n' "$MNT_IOS_BATCH_NAME" > "$ARTIFACTS/batch-name.txt"
+          printf '%s\n' "$CONSOLE_IOS_BATCH_NAME" > "$ARTIFACTS/batch-name.txt"
           printf '%s\n' "${SHARD_MANIFEST[@]}" > "$ARTIFACTS/shard-manifest.txt"
           TEST_STATUS=0
           for shard_name in "${SHARD_MANIFEST[@]}"; do
@@ -561,7 +561,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          D="${MNT_IOS_JOB_ROOT:-$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${MNT_IOS_BATCH_NAME}}"; UPLOAD_DIR="$D/artifacts"; RAW_RESULTS="$D/raw-xcresults"; SECRETS_FILE="$D/auth/artifact-secret-values"; SESSION_MINTED_MARKER="$D/auth/session-material-minted"
+          D="${CONSOLE_IOS_JOB_ROOT:-$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${CONSOLE_IOS_BATCH_NAME}}"; UPLOAD_DIR="$D/artifacts"; RAW_RESULTS="$D/raw-xcresults"; SECRETS_FILE="$D/auth/artifact-secret-values"; SESSION_MINTED_MARKER="$D/auth/session-material-minted"
           [[ -d "$UPLOAD_DIR" ]] || exit 0
           # xctestrun receives renewable session material. xcresult bundles can
           # retain that runner environment in compressed diagnostics, so they
@@ -600,7 +600,7 @@ jobs:
         shell: bash
         run: |
           set -u
-          D="${MNT_IOS_JOB_ROOT:-$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${MNT_IOS_BATCH_NAME}}"; STATE="$D/state"; failed=0
+          D="${CONSOLE_IOS_JOB_ROOT:-$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${CONSOLE_IOS_BATCH_NAME}}"; STATE="$D/state"; failed=0
           if [[ -s "$STATE" ]]; then
             # shellcheck source=/dev/null
             . "$STATE"

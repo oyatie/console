@@ -1,5 +1,5 @@
 [package]
-name = "mnt-reporting-rest"
+name = "console-reporting-rest"
 version = "0.1.0"
 description = "REST API for KPI reporting."
 edition.workspace = true
@@ -10,14 +10,14 @@ publish.workspace = true
 [dependencies]
 axum = { workspace = true }
 http = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-auth = { path = "../../platform/auth" }
-mnt-platform-authz = { path = "../../platform/authz" }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
-mnt-reporting-adapter-postgres = { workspace = true }
-mnt-reporting-application = { workspace = true }
-mnt-reporting-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-auth = { path = "../../platform/auth" }
+console-platform-authz = { path = "../../platform/authz" }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
+console-reporting-adapter-postgres = { workspace = true }
+console-reporting-application = { workspace = true }
+console-reporting-domain = { workspace = true }
 serde = { workspace = true }
 sqlx = { workspace = true }
 time = { workspace = true }

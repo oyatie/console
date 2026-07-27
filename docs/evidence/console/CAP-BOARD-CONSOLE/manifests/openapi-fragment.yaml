@@ -23,7 +23,7 @@
 #
 # Until merged, backend/app/tests/openapi_drift.rs
 # `openapi_yaml_covers_configured_route_inventory` is expectedly RED in this
-# lane's worktree: mnt_notices_rest::NOTICES_ROUTE_PATHS already advertises
+# lane's worktree: console_notices_rest::NOTICES_ROUTE_PATHS already advertises
 # /api/v1/notices/{id}/receipts (truthful route inventory), which openapi.yaml
 # does not know yet.
 

@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Real-router proof for the self-service/managed leave boundary.
 //!
-//! Requests use signed JWTs and a genuine `mnt_rt` pool. This locks three
+//! Requests use signed JWTs and a genuine `console_rt` pool. This locks three
 //! invariants at the transport boundary: self reads never require directory
 //! authority, managed reads remain denied to a member, and client-supplied
 //! employee/branch identifiers cannot influence filing.
@@ -10,13 +10,13 @@ use std::sync::Arc;
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_inbox_adapter_postgres::PgInboxStore;
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_leave_adapter_postgres::PgLeaveStore;
-use mnt_leave_domain::{PromotionTrack, first_round_window};
-use mnt_leave_rest::{LeaveRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_test_support::{grant_mnt_rt, runtime_role_pool};
+use console_inbox_adapter_postgres::PgInboxStore;
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_leave_adapter_postgres::PgLeaveStore;
+use console_leave_domain::{PromotionTrack, first_round_window};
+use console_leave_rest::{LeaveRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_test_support::{grant_console_rt, runtime_role_pool};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -27,8 +27,8 @@ use time::{Duration, OffsetDateTime, UtcOffset};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit(
@@ -39,17 +39,17 @@ async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit
     let member = UserId::new();
     let employee = Uuid::new_v4();
     seed_subject(&owner_pool, org, branch, member, employee).await;
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT, INSERT, UPDATE ON leave_requests TO mnt_rt",
-            "GRANT SELECT, INSERT ON leave_charge_resolutions TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-            "GRANT SELECT, UPDATE ON employees TO mnt_rt",
-            "GRANT SELECT ON users TO mnt_rt",
-            "GRANT SELECT ON user_branches TO mnt_rt",
-            "GRANT SELECT ON branches TO mnt_rt",
-            "GRANT SELECT ON organizations TO mnt_rt",
+            "GRANT SELECT, INSERT, UPDATE ON leave_requests TO console_rt",
+            "GRANT SELECT, INSERT ON leave_charge_resolutions TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
+            "GRANT SELECT, UPDATE ON employees TO console_rt",
+            "GRANT SELECT ON users TO console_rt",
+            "GRANT SELECT ON user_branches TO console_rt",
+            "GRANT SELECT ON branches TO console_rt",
+            "GRANT SELECT ON organizations TO console_rt",
         ],
     )
     .await;
@@ -168,14 +168,14 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
     let employee = Uuid::new_v4();
     seed_subject(&owner_pool, org, branch, requester, employee).await;
     seed_branch_admin(&owner_pool, org, branch, decider).await;
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT ON leave_requests TO mnt_rt",
-            "GRANT SELECT ON users TO mnt_rt",
-            "GRANT SELECT ON user_branches TO mnt_rt",
-            "GRANT SELECT ON branches TO mnt_rt",
-            "GRANT SELECT ON organizations TO mnt_rt",
+            "GRANT SELECT ON leave_requests TO console_rt",
+            "GRANT SELECT ON users TO console_rt",
+            "GRANT SELECT ON user_branches TO console_rt",
+            "GRANT SELECT ON branches TO console_rt",
+            "GRANT SELECT ON organizations TO console_rt",
         ],
     )
     .await;
@@ -332,15 +332,15 @@ async fn statutory_push_requires_its_statutory_inputs_over_http(owner_pool: PgPo
     let admin = UserId::new();
     seed_subject(&owner_pool, org, branch, target, employee).await;
     seed_branch_admin(&owner_pool, org, branch, admin).await;
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-            "GRANT SELECT ON employees TO mnt_rt",
-            "GRANT SELECT ON users TO mnt_rt",
-            "GRANT SELECT ON user_branches TO mnt_rt",
-            "GRANT SELECT ON branches TO mnt_rt",
-            "GRANT SELECT ON organizations TO mnt_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
+            "GRANT SELECT ON employees TO console_rt",
+            "GRANT SELECT ON users TO console_rt",
+            "GRANT SELECT ON user_branches TO console_rt",
+            "GRANT SELECT ON branches TO console_rt",
+            "GRANT SELECT ON organizations TO console_rt",
         ],
     )
     .await;
@@ -556,7 +556,7 @@ async fn leave_command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_leave_cmd")
+                sqlx::query("SET ROLE console_leave_cmd")
                     .execute(connection)
                     .await?;
                 Ok(())
@@ -573,7 +573,7 @@ async fn leave_definer_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_leave_definer")
+                sqlx::query("SET ROLE console_leave_definer")
                     .execute(connection)
                     .await?;
                 Ok(())

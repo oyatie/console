@@ -7,19 +7,19 @@ Usage: ops/dr/cnpg-restore-drill.sh [options]
 
 Drills the PRODUCTION CloudNativePG -> Barman Cloud -> OCI recovery path. Spins a
 throwaway namespace, copies the OCI credentials and a read-only recovery
-ObjectStore into it, bootstraps a fresh Cluster from the mnt-backups object store
+ObjectStore into it, bootstraps a fresh Cluster from the console-backups object store
 via bootstrap.recovery (CNPG 1.29 + Barman Cloud Plugin 0.13), verifies the
 database promotes out of recovery and the schema/row counts are present, then
-deletes the namespace. The live mnt-db cluster and mnt-backups ObjectStore are
+deletes the namespace. The live console-db cluster and console-backups ObjectStore are
 never modified.
 
 Options:
-  --namespace NAME       Scratch namespace (default: mnt-dr-<UTC timestamp>)
+  --namespace NAME       Scratch namespace (default: console-dr-<UTC timestamp>)
   --source-namespace NS  Namespace of the live cluster (default: maintenance)
-  --source-cluster NAME  Live cluster name = bucket folder (default: mnt-db)
-  --object-store NAME    Live ObjectStore name (default: mnt-backups)
+  --source-cluster NAME  Live cluster name = bucket folder (default: console-db)
+  --object-store NAME    Live ObjectStore name (default: console-backups)
   --creds-secret NAME    OCI creds secret name (default: oci-objectstore-creds)
-  --database NAME        Database to verify (default: maintenance)
+  --database NAME        Database to verify (default: console)
   --pg-image REF         Postgres image for the recovery cluster
                          (default: read from the live cluster, fallback
                           ghcr.io/cloudnative-pg/postgresql:18.4)
@@ -36,12 +36,12 @@ Environment overrides:
 USAGE
 }
 
-scratch_namespace="${SCRATCH_NAMESPACE:-mnt-dr-$(date -u +%Y%m%dT%H%M%SZ)}"
+scratch_namespace="${SCRATCH_NAMESPACE:-console-dr-$(date -u +%Y%m%dT%H%M%SZ)}"
 source_namespace="${SOURCE_NAMESPACE:-maintenance}"
-source_cluster="${SOURCE_CLUSTER:-mnt-db}"
-object_store="${OBJECT_STORE:-mnt-backups}"
+source_cluster="${SOURCE_CLUSTER:-console-db}"
+object_store="${OBJECT_STORE:-console-backups}"
 creds_secret="${CREDS_SECRET:-oci-objectstore-creds}"
-database="${DATABASE:-maintenance}"
+database="${DATABASE:-console}"
 pg_image="${PG_IMAGE:-}"
 storage_size="${STORAGE_SIZE:-}"
 target_time="${TARGET_TIME:-}"

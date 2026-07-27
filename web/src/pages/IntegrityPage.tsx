@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 

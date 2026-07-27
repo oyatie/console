@@ -25,7 +25,7 @@ const E2E_DB_URL =
   process.env.E2E_DATABASE_URL ??
   `postgres://${process.env.E2E_PG_SUPERUSER ?? process.env.USER ?? "postgres"}@${
     process.env.E2E_PG_HOST ?? "localhost"
-  }:${process.env.E2E_PG_PORT ?? "5432"}/${process.env.E2E_DB_NAME ?? "mnt_e2e"}`;
+  }:${process.env.E2E_PG_PORT ?? "5432"}/${process.env.E2E_DB_NAME ?? "console_e2e"}`;
 
 /** The five seeded tenant roles (e2e/harness/seed.sql). */
 export type TenantRole =
@@ -172,7 +172,7 @@ async function seedDeviceId(page: Page): Promise<void> {
 }
 
 /** The HttpOnly refresh cookie the backend sets in the web transport. */
-const REFRESH_COOKIE_NAME = "mnt_refresh";
+const REFRESH_COOKIE_NAME = "console_refresh";
 
 /**
  * Block until the freshly-enrolled session is fully established and durable, so a
@@ -182,7 +182,7 @@ const REFRESH_COOKIE_NAME = "mnt_refresh";
  * `navigate("/overview")` (web/src/pages/OnboardingPage.tsx) the instant the
  * passkey is registered. The URL flips to /overview immediately, but at that
  * point the session lives in an in-memory access token plus an HttpOnly
- * `mnt_refresh` cookie the redeem/enroll exchange is still committing. A spec
+ * `console_refresh` cookie the redeem/enroll exchange is still committing. A spec
  * that returns here and then `page.goto(...)` (a FULL document reload) drops the
  * in-memory token and forces AuthProvider's boot silent-refresh
  * (web/src/context/auth.tsx) to rebuild the session from that cookie — so the
@@ -243,7 +243,7 @@ export async function performRoleLogin(
 /**
  * One-shot login for a role: seeds a unique device id, attaches a throwaway
  * virtual authenticator, runs the ceremony, then detaches it. Leaves the page
- * authenticated (in-memory access token + HttpOnly mnt_refresh cookie). Used
+ * authenticated (in-memory access token + HttpOnly console_refresh cookie). Used
  * both directly by specs and to capture a reusable storageState.
  */
 export async function loginAs(page: Page, role: TenantRole): Promise<void> {
@@ -289,7 +289,7 @@ export async function loginWithRetainedPasskey(
 
 /**
  * Capture a Playwright storageState for a role by running the real ceremony once
- * in a throwaway context, then persisting the cookies (the HttpOnly mnt_refresh
+ * in a throwaway context, then persisting the cookies (the HttpOnly console_refresh
  * cookie is what the app's boot silent-refresh restores the session from). The
  * path is cached per worker; specs that load it skip the ceremony entirely and
  * the app re-hydrates the session on first navigation.

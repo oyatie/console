@@ -3,13 +3,13 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
-use mnt_platform_auth::{
+use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
+use console_platform_auth::{
     JwtVerifier, MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope,
     MobilePasskeyStepUpVerificationError, PasskeyService,
 };
-use mnt_platform_authz::{Feature, PermissionLevel, Principal, permission_for};
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_authz::{Feature, PermissionLevel, Principal, permission_for};
+use console_platform_db::{DbError, with_audit, with_org_conn};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -69,7 +69,7 @@ pub fn router(state: CollaborationState) -> Router {
         .route(POLL_VOTE_PATH_TEMPLATE, post(vote_poll))
         .route(MOBILE_POLL_VOTE_PATH_TEMPLATE, post(vote_mobile_poll))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -1281,10 +1281,10 @@ async fn ensure_options_belong_to_poll(
 }
 
 struct CalendarLifecycleEvent {
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     event_id: Uuid,
     action: &'static str,
-    actor: Option<mnt_kernel_core::UserId>,
+    actor: Option<console_kernel_core::UserId>,
     summary: &'static str,
     before_snap: Option<Value>,
     after_snap: Option<Value>,
@@ -1315,10 +1315,10 @@ async fn insert_calendar_lifecycle_event(
 }
 
 struct PollLifecycleEvent {
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     poll_id: Uuid,
     action: &'static str,
-    actor: Option<mnt_kernel_core::UserId>,
+    actor: Option<console_kernel_core::UserId>,
     summary: &'static str,
     before_snap: Option<Value>,
     after_snap: Option<Value>,

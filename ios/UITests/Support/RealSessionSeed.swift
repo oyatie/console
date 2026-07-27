@@ -40,13 +40,13 @@ enum RealSessionSeed {
     /// The helper is a repository-owned app target, deliberately separate from
     /// the UI-test runner. Its identifier is a test-only sibling of the real
     /// app's bundle identifier, not a workflow-provided value.
-    static let seederBundleIdentifier = "com.maintenance.field.UITestSeeder"
+    static let seederBundleIdentifier = "com.console.app.UITestSeeder"
 
     private enum EnvironmentKey {
-        static let action = "MNT_UITEST_SEED_ACTION"
-        static let nonce = "MNT_UITEST_SEED_NONCE"
-        static let accessToken = "MNT_UITEST_ACCESS_TOKEN"
-        static let refreshToken = "MNT_UITEST_REFRESH_TOKEN"
+        static let action = "CONSOLE_UITEST_SEED_ACTION"
+        static let nonce = "CONSOLE_UITEST_SEED_NONCE"
+        static let accessToken = "CONSOLE_UITEST_ACCESS_TOKEN"
+        static let refreshToken = "CONSOLE_UITEST_REFRESH_TOKEN"
     }
 
     private enum Action: String {

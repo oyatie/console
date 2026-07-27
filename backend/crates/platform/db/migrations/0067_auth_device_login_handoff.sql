@@ -47,4 +47,4 @@ CREATE INDEX idx_auth_device_login_handoffs_user
 
 -- Global pre-auth transient table: no org_id/RLS because the desktop poll starts
 -- before a tenant is known. Grant exactly the verbs the runtime uses; no DELETE.
-GRANT SELECT, INSERT, UPDATE ON auth_device_login_handoffs TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON auth_device_login_handoffs TO console_rt;

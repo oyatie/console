@@ -4,27 +4,27 @@ import { describe, it } from "node:test";
 import { evaluateIosUiTestFailClosedChecks } from "./check-ios-ui-test-fail-closed.mjs";
 
 const validLauncher = readFileSync(new URL("./boot-ios-ui-backend.mjs", import.meta.url), "utf8");
-const validBoot = '          MNT_IOS_COLDSTART_OTP="$COLDSTART_OTP" "$MNT_IOS_NODE_BIN" "$ROOT/scripts/boot-ios-ui-backend.mjs" "$ROOT" "$AUTH_DIR" "$BP"';
+const validBoot = '          CONSOLE_IOS_COLDSTART_OTP="$COLDSTART_OTP" "$CONSOLE_IOS_NODE_BIN" "$ROOT/scripts/boot-ios-ui-backend.mjs" "$ROOT" "$AUTH_DIR" "$BP"';
 const validWorkflow = readFileSync(new URL("../.github/workflows/ios-ui-tests.yml", import.meta.url), "utf8");
 const validFiles = {
   ".github/workflows/ios-ui-tests.yml": validWorkflow,
   "scripts/boot-ios-ui-backend.mjs": validLauncher,
-  "ios/Sources/MaintenanceFieldApp/Info.plist": readFileSync(new URL("../ios/Sources/MaintenanceFieldApp/Info.plist", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldApp/FieldApp.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldApp/FieldApp.swift", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldCore/PersistenceStores.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldCore/PersistenceStores.swift", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldApp/FieldViews.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldApp/FieldViews.swift", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift", import.meta.url), "utf8"),
-  "ios/UITests/Support/FieldUITestCase.swift": readFileSync(new URL("../ios/UITests/Support/FieldUITestCase.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleApp/Info.plist": readFileSync(new URL("../ios/Sources/ConsoleApp/Info.plist", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleApp/ConsoleApp.swift": readFileSync(new URL("../ios/Sources/ConsoleApp/ConsoleApp.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleCore/PersistenceStores.swift": readFileSync(new URL("../ios/Sources/ConsoleCore/PersistenceStores.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift": readFileSync(new URL("../ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleApp/ConsoleViews.swift": readFileSync(new URL("../ios/Sources/ConsoleApp/ConsoleViews.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleApp/CameraCaptureView.swift": readFileSync(new URL("../ios/Sources/ConsoleApp/CameraCaptureView.swift", import.meta.url), "utf8"),
+  "ios/UITests/Support/ConsoleUITestCase.swift": readFileSync(new URL("../ios/UITests/Support/ConsoleUITestCase.swift", import.meta.url), "utf8"),
   "ios/UITests/AccessibilityAuditUITests.swift": readFileSync(new URL("../ios/UITests/AccessibilityAuditUITests.swift", import.meta.url), "utf8"),
   "ios/UITests/DynamicTypeRuntimeUITests.swift": readFileSync(new URL("../ios/UITests/DynamicTypeRuntimeUITests.swift", import.meta.url), "utf8"),
   "ios/UITests/Support/RealSessionSeed.swift": readFileSync(new URL("../ios/UITests/Support/RealSessionSeed.swift", import.meta.url), "utf8"),
-  "ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift": readFileSync(new URL("../ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift", import.meta.url), "utf8"),
+  "ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift": readFileSync(new URL("../ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift", import.meta.url), "utf8"),
   "ios/Config/App.xcconfig": readFileSync(new URL("../ios/Config/App.xcconfig", import.meta.url), "utf8"),
-  "ios/Config/MaintenanceFieldApp.entitlements": readFileSync(new URL("../ios/Config/MaintenanceFieldApp.entitlements", import.meta.url), "utf8"),
-  "ios/Config/MaintenanceFieldUITestSeeder.entitlements": readFileSync(new URL("../ios/Config/MaintenanceFieldUITestSeeder.entitlements", import.meta.url), "utf8"),
+  "ios/Config/ConsoleApp.entitlements": readFileSync(new URL("../ios/Config/ConsoleApp.entitlements", import.meta.url), "utf8"),
+  "ios/Config/ConsoleUITestSeeder.entitlements": readFileSync(new URL("../ios/Config/ConsoleUITestSeeder.entitlements", import.meta.url), "utf8"),
   "ios/project.yml": readFileSync(new URL("../ios/project.yml", import.meta.url), "utf8"),
-  "ios/UITests/FieldCriticalPathUITests.swift": readFileSync(new URL("../ios/UITests/FieldCriticalPathUITests.swift", import.meta.url), "utf8"),
+  "ios/UITests/ConsoleCriticalPathUITests.swift": readFileSync(new URL("../ios/UITests/ConsoleCriticalPathUITests.swift", import.meta.url), "utf8"),
   "ios/UITests/MessengerUITests.swift": readFileSync(new URL("../ios/UITests/MessengerUITests.swift", import.meta.url), "utf8"),
   "ios/UITests/CameraCaptureUITests.swift": readFileSync(new URL("../ios/UITests/CameraCaptureUITests.swift", import.meta.url), "utf8"),
   "ios/UITests/PreflightUITests.swift": readFileSync(new URL("../ios/UITests/PreflightUITests.swift", import.meta.url), "utf8"),
@@ -60,7 +60,7 @@ const moveReportFeedbackAfterCamera = (source) => {
   assert.ok(feedbackStart >= 0 && feedbackEnd > feedbackStart, "report feedback block must exist");
   const feedback = source.slice(feedbackStart, feedbackEnd);
   const withoutFeedback = source.slice(0, feedbackStart) + source.slice(feedbackEnd);
-  const camera = withoutFeedback.indexOf("FieldAccessibilityID.detailCaptureEvidenceButton");
+  const camera = withoutFeedback.indexOf("ConsoleAccessibilityID.detailCaptureEvidenceButton");
   const cameraSectionEnd = withoutFeedback.indexOf("\n                    }", camera);
   assert.ok(camera >= 0 && cameraSectionEnd > camera, "camera section must exist");
   return withoutFeedback.slice(0, cameraSectionEnd) + `\n\n${feedback}` + withoutFeedback.slice(cameraSectionEnd);
@@ -69,18 +69,18 @@ const moveReportFeedbackAfterCamera = (source) => {
 describe("iOS hermetic UI CI contract", () => {
   it("accepts the hosted, sharded hermetic workflow", () => assert.deepEqual(evaluate().failures, []));
   it("rejects public self-hosted or configurable runner exposure", () => {
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("runs-on: macos-26", "runs-on: ${{ vars.MNT_IOS_CI_RUNNER }}") }), "untrusted PR code");
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("runs-on: macos-26", "runs-on: ${{ vars.CONSOLE_IOS_CI_RUNNER }}") }), "untrusted PR code");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("runs-on: macos-26", "runs-on: [self-hosted, macos]") }), "untrusted PR code");
   });
   it("rejects non-exact checkout or cross-batch resource and artifact collisions", () => {
     const isolationGate = "batch-unique job-root";
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("ref: ${{ github.sha }}", "ref: main") }), isolationGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      'D="$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${MNT_IOS_BATCH_NAME}"',
+      'D="$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${CONSOLE_IOS_BATCH_NAME}"',
       'D="$RUNNER_TEMP/ios-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"',
     ) }), isolationGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      '"Maintenance CI ${MNT_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"',
+      '"Maintenance CI ${CONSOLE_IOS_BATCH_NAME}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"',
       '"Maintenance CI ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"',
     ) }), isolationGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('name: "ios-ui-test-results-${{ matrix.batch }}"', "name: ios-ui-test-results") }), isolationGate);
@@ -134,12 +134,12 @@ describe("iOS hermetic UI CI contract", () => {
       'shards: "messenger-render messenger-mutation audit-dynamic-today audit-dynamic-detail"',
     ) }), coldStartGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      "SHARD_SELECTORS=(MaintenanceFieldUITests/PreflightUITests/testSeederRestoresThenClearsRealSession)",
-      "SHARD_SELECTORS=(MaintenanceFieldUITests/XCTestPrewarmUITests/testRunnerAndHostLaunch)",
+      "SHARD_SELECTORS=(ConsoleUITests/PreflightUITests/testSeederRestoresThenClearsRealSession)",
+      "SHARD_SELECTORS=(ConsoleUITests/XCTestPrewarmUITests/testRunnerAndHostLaunch)",
     ) }), coldStartGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      "MaintenanceFieldUITests/MessengerUITests/testMessengerSendSurvivesBackendRefresh",
-      "MaintenanceFieldUITests/MessengerUITests/testExactSeededMessengerThreadAndMessageRender",
+      "ConsoleUITests/MessengerUITests/testMessengerSendSurvivesBackendRefresh",
+      "ConsoleUITests/MessengerUITests/testExactSeededMessengerThreadAndMessageRender",
     ) }), coldStartGate);
   });
   it("rejects toolchain and job-root drift", () => {
@@ -182,8 +182,8 @@ describe("iOS hermetic UI CI contract", () => {
   it("rejects any target or xcconfig that falls back from Swift 6 language mode", () => {
     expectsFailure(evaluate({ "ios/project.yml": mutateFile(
       validFiles["ios/project.yml"],
-      '        GENERATE_INFOPLIST_FILE: "YES"\n        INFOPLIST_KEY_CFBundleDisplayName: "MaintenanceFieldUITests"',
-      '        SWIFT_VERSION: "5.0"\n        GENERATE_INFOPLIST_FILE: "YES"\n        INFOPLIST_KEY_CFBundleDisplayName: "MaintenanceFieldUITests"',
+      '        GENERATE_INFOPLIST_FILE: "YES"\n        INFOPLIST_KEY_CFBundleDisplayName: "ConsoleUITests"',
+      '        SWIFT_VERSION: "5.0"\n        GENERATE_INFOPLIST_FILE: "YES"\n        INFOPLIST_KEY_CFBundleDisplayName: "ConsoleUITests"',
     ) }), "Swift 6 language mode");
     expectsFailure(evaluate({ "ios/Config/App.xcconfig": mutateFile(
       validFiles["ios/Config/App.xcconfig"],
@@ -192,9 +192,9 @@ describe("iOS hermetic UI CI contract", () => {
     ) }), "Swift 6 language mode");
   });
   it("rejects release-optimized or unstripped backend builds in behavioral E2E", () => {
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('CARGO_PROFILE_DEV_DEBUG: "0", ', "") }), "stripped-debug mnt-app");
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("cargo build --locked -p mnt-app", "cargo build --locked --release -p mnt-app") }), "stripped-debug mnt-app");
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("$CARGO_TARGET_DIR/debug/mnt-app", "$CARGO_TARGET_DIR/release/mnt-app") }), "stripped-debug mnt-app");
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('CARGO_PROFILE_DEV_DEBUG: "0", ', "") }), "stripped-debug console-app");
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("cargo build --locked -p console-app", "cargo build --locked --release -p console-app") }), "stripped-debug console-app");
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow("$CARGO_TARGET_DIR/debug/console-app", "$CARGO_TARGET_DIR/release/console-app") }), "stripped-debug console-app");
   });
   it("rejects missing pipeline phase or shard timing evidence", () => {
     const timingGate = "durable phase and per-shard timings";
@@ -233,26 +233,26 @@ describe("iOS hermetic UI CI contract", () => {
     expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": validLauncher.replace("http://localhost:", "http://127.0.0.1:") }), "WebAuthn");
     expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": validLauncher.replace('E2E_RP_ID: "localhost"', 'E2E_RP_ID: "localhost.evil"') }), "WebAuthn");
     expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": validLauncher.replace("shell: false", "shell: true") }), "WebAuthn");
-    expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": validLauncher.replace("delete env.MNT_IOS_COLDSTART_OTP;", "") }), "WebAuthn");
+    expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": validLauncher.replace("delete env.CONSOLE_IOS_COLDSTART_OTP;", "") }), "WebAuthn");
     expectsFailure(evaluate({ "scripts/boot-ios-ui-backend.mjs": "" }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, `${validBoot}\n          ${validBoot.trim()}`) }), "WebAuthn");
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, '          MNT_IOS_COLDSTART_OTP="$COLDSTART_OTP" node "$ROOT/scripts/not-the-launcher.mjs" "$ROOT" "$AUTH_DIR" "$BP"') }), "WebAuthn");
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, '          CONSOLE_IOS_COLDSTART_OTP="$COLDSTART_OTP" node "$ROOT/scripts/not-the-launcher.mjs" "$ROOT" "$AUTH_DIR" "$BP"') }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, '          E2E_AUTH_DIR="$AUTH_DIR" E2E_HTTP_ADDR="127.0.0.1:$BP" E2E_RP_ORIGIN="$URL" E2E_RP_ID=127.0.0.1 "$ROOT/e2e/harness/boot-backend.sh"') }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, `          cat <<'EOF'\n${validBoot}\n          EOF\n          E2E_AUTH_DIR="$AUTH_DIR" E2E_HTTP_ADDR="127.0.0.1:$BP" E2E_RP_ORIGIN="$URL" E2E_RP_ID=127.0.0.1 "$ROOT/e2e/harness/boot-backend.sh"`) }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, `          cat <<'EOF'\n${validBoot}\n          EOF`) }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, `          PAYLOAD='\n${validBoot}\n          '\n          node "$ROOT/scripts/alternate-backend-launcher.mjs"`) }), "WebAuthn");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(validBoot, `${validBoot}\n          node "$ROOT/scripts/alternate-backend-launcher.mjs"`) }), "WebAuthn");
     const shadowedNode = validWorkflow
-      .replace(validBoot, validBoot.replace('"$MNT_IOS_NODE_BIN"', "node"))
+      .replace(validBoot, validBoot.replace('"$CONSOLE_IOS_NODE_BIN"', "node"))
       .replace('          "$ROOT/e2e/harness/db.sh"', `          node() { command node "$ROOT/scripts/alternate-backend-launcher.mjs"; }\n          "$ROOT/e2e/harness/db.sh"`);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": shadowedNode }), "WebAuthn");
     const pathShadowedNode = validWorkflow
-      .replace(validBoot, validBoot.replace('"$MNT_IOS_NODE_BIN"', "/usr/bin/env node"))
+      .replace(validBoot, validBoot.replace('"$CONSOLE_IOS_NODE_BIN"', "/usr/bin/env node"))
       .replace('          "$ROOT/e2e/harness/db.sh"', `          PATH="$ROOT/scripts/shadow:$PATH"\n          "$ROOT/e2e/harness/db.sh"`);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": pathShadowedNode }), "WebAuthn");
     const reassignedTrustedNode = mutateWorkflow(
-      '          readonly MNT_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"',
-      '          readonly MNT_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"\n          MNT_IOS_NODE_BIN="$GITHUB_WORKSPACE/scripts/shadow-node"',
+      '          readonly CONSOLE_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"',
+      '          readonly CONSOLE_IOS_NODE_BIN="$RUNNER_TOOL_CACHE/node/24.16.0/$NODE_ARCH/bin/node"\n          CONSOLE_IOS_NODE_BIN="$GITHUB_WORKSPACE/scripts/shadow-node"',
     );
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": reassignedTrustedNode }), "bind Node");
     const capturePathPoisonedNode = mutateWorkflow(
@@ -261,13 +261,13 @@ describe("iOS hermetic UI CI contract", () => {
     );
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": capturePathPoisonedNode }), "bind Node");
     const githubEnvironmentPoisonedNode = mutateWorkflow(
-      '"MNT_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home"',
-      '"MNT_IOS_NODE_BIN=$GITHUB_WORKSPACE/scripts/shadow-node" "MNT_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home"',
+      '"CONSOLE_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home"',
+      '"CONSOLE_IOS_NODE_BIN=$GITHUB_WORKSPACE/scripts/shadow-node" "CONSOLE_IOS_JOB_ROOT=$D" "CARGO_HOME=$D/cargo-home"',
     );
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": githubEnvironmentPoisonedNode }), "bind Node");
     const postPidAlternateLauncher = mutateWorkflow(
       '          BACKEND_PID="$(cat "$BACKEND_PID_FILE")"',
-      '          BACKEND_PID="$(cat "$BACKEND_PID_FILE")"\n          "$MNT_IOS_NODE_BIN" "$ROOT/scripts/alternate-backend-launcher.mjs"',
+      '          BACKEND_PID="$(cat "$BACKEND_PID_FILE")"\n          "$CONSOLE_IOS_NODE_BIN" "$ROOT/scripts/alternate-backend-launcher.mjs"',
     );
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": postPidAlternateLauncher }), "WebAuthn");
     const postPidAlternateShellLauncher = mutateWorkflow(
@@ -320,19 +320,19 @@ describe("iOS hermetic UI CI contract", () => {
   });
   it("rejects missing, mismatched, or wrongly wired app/seeder keychain configuration", () => {
     expectsFailure(evaluate({
-      "ios/Config/MaintenanceFieldUITestSeeder.entitlements": validFiles["ios/Config/MaintenanceFieldUITestSeeder.entitlements"].replace("com.maintenance.field.shared", "com.maintenance.field.wrong"),
+      "ios/Config/ConsoleUITestSeeder.entitlements": validFiles["ios/Config/ConsoleUITestSeeder.entitlements"].replace("com.console.app.shared", "com.console.app.wrong"),
     }), "identically signed default keychain access group");
     expectsFailure(evaluate({
-      "ios/Config/MaintenanceFieldUITestSeeder.entitlements": validFiles["ios/Config/MaintenanceFieldUITestSeeder.entitlements"].replace("<key>keychain-access-groups</key>", "<key>missing-keychain-access-groups</key>"),
+      "ios/Config/ConsoleUITestSeeder.entitlements": validFiles["ios/Config/ConsoleUITestSeeder.entitlements"].replace("<key>keychain-access-groups</key>", "<key>missing-keychain-access-groups</key>"),
     }), "identically signed default keychain access group");
     expectsFailure(evaluate({
-      "ios/project.yml": validFiles["ios/project.yml"].replace("Sources/MaintenanceFieldUITestSeeder", "Sources/MissingSeeder"),
+      "ios/project.yml": validFiles["ios/project.yml"].replace("Sources/ConsoleUITestSeeder", "Sources/MissingSeeder"),
     }), "identically signed default keychain access group");
     expectsFailure(evaluate({
-      "ios/project.yml": validFiles["ios/project.yml"].replace("- target: MaintenanceFieldUITestSeeder", "- target: MissingSeeder"),
+      "ios/project.yml": validFiles["ios/project.yml"].replace("- target: ConsoleUITestSeeder", "- target: MissingSeeder"),
     }), "identically signed default keychain access group");
     expectsFailure(evaluate({
-      "ios/project.yml": validFiles["ios/project.yml"].replace("CODE_SIGN_ENTITLEMENTS: Config/MaintenanceFieldUITestSeeder.entitlements", "CODE_SIGN_ENTITLEMENTS: Config/Missing.entitlements"),
+      "ios/project.yml": validFiles["ios/project.yml"].replace("CODE_SIGN_ENTITLEMENTS: Config/ConsoleUITestSeeder.entitlements", "CODE_SIGN_ENTITLEMENTS: Config/Missing.entitlements"),
     }), "identically signed default keychain access group");
     expectsFailure(evaluate({
       "ios/Config/App.xcconfig": validFiles["ios/Config/App.xcconfig"].replace("CODE_SIGNING_ALLOWED = YES", "CODE_SIGNING_ALLOWED = NO"),
@@ -343,32 +343,32 @@ describe("iOS hermetic UI CI contract", () => {
       "ios/UITests/Support/RealSessionSeed.swift": `${validFiles["ios/UITests/Support/RealSessionSeed.swift"]}\nimport Security\nlet forbidden = kSecAttrAccessGroup`,
     }), "system-granted default group");
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift": validFiles["ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift"].replace("KeychainAccessGroup.resolveShared", "MissingAccessGroup.resolveShared"),
+      "ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift": validFiles["ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift"].replace("KeychainAccessGroup.resolveShared", "MissingAccessGroup.resolveShared"),
     }), "system-granted default group");
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldCore/PersistenceStores.swift": validFiles["ios/Sources/MaintenanceFieldCore/PersistenceStores.swift"].replace(
+      "ios/Sources/ConsoleCore/PersistenceStores.swift": validFiles["ios/Sources/ConsoleCore/PersistenceStores.swift"].replace(
         "        let add: [String: Any] = [\n            kSecClass as String: kSecClassGenericPassword,\n            kSecAttrService as String: service,\n            kSecAttrAccount as String: account,",
         "        let add: [String: Any] = [\n            kSecClass as String: kSecClassGenericPassword,\n            kSecAttrService as String: service,\n            kSecAttrAccount as String: account,\n            kSecAttrAccessGroup as String: \"forbidden\",",
       ),
     }), "system-granted default group");
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldCore/PersistenceStores.swift": validFiles["ios/Sources/MaintenanceFieldCore/PersistenceStores.swift"].replace(
+      "ios/Sources/ConsoleCore/PersistenceStores.swift": validFiles["ios/Sources/ConsoleCore/PersistenceStores.swift"].replace(
         "guard let result = try? probe.addProbe",
         "guard let result = try! probe.addProbe",
       ),
     }), "system-granted default group");
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldCore/PersistenceStores.swift": mutateFile(
-        validFiles["ios/Sources/MaintenanceFieldCore/PersistenceStores.swift"],
+      "ios/Sources/ConsoleCore/PersistenceStores.swift": mutateFile(
+        validFiles["ios/Sources/ConsoleCore/PersistenceStores.swift"],
         "try probe.deleteProbe",
         "try! probe.deleteProbe",
       ),
     }), "system-granted default group");
   });
   it("rejects UI automation that can launch outside the main actor", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
     const fakeFieldContract = `@MainActor
-class FieldUITestCase: XCTestCase {
+class ConsoleUITestCase: XCTestCase {
   override func setUpWithError() throws {
     try super.setUpWithError()
     try RealSessionSeed.seed(tokens)
@@ -379,13 +379,13 @@ class FieldUITestCase: XCTestCase {
   }
 }`;
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("@MainActor\nclass FieldUITestCase", "class FieldUITestCase"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "class ConsoleUITestCase"),
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("setUpWithError() throws", "setUp() async throws"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("setUpWithError() throws", "setUp() async throws"),
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("tearDownWithError() throws", "tearDown() async throws"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("tearDownWithError() throws", "tearDown() async throws"),
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
       "ios/UITests/Support/RealSessionSeed.swift": validFiles["ios/UITests/Support/RealSessionSeed.swift"].replace("@MainActor\nenum RealSessionSeed", "enum RealSessionSeed"),
@@ -397,19 +397,19 @@ class FieldUITestCase: XCTestCase {
       "ios/UITests/LoginValidationUITests.swift": validFiles["ios/UITests/LoginValidationUITests.swift"].replace("@MainActor\n", ""),
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": `/* ${fakeFieldContract} */\n${fieldCase.replace("@MainActor\nclass FieldUITestCase", "class FieldUITestCase")}`,
+      "ios/UITests/Support/ConsoleUITestCase.swift": `/* ${fakeFieldContract} */\n${fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "class ConsoleUITestCase")}`,
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": `let fake = """\n${fakeFieldContract}\n"""\n${fieldCase.replace("@MainActor\nclass FieldUITestCase", "class FieldUITestCase")}`,
+      "ios/UITests/Support/ConsoleUITestCase.swift": `let fake = """\n${fakeFieldContract}\n"""\n${fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "class ConsoleUITestCase")}`,
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": `let fake = """\n\\\"""\n${fakeFieldContract}\n"""\n${fieldCase.replace("@MainActor\nclass FieldUITestCase", "class FieldUITestCase")}`,
+      "ios/UITests/Support/ConsoleUITestCase.swift": `let fake = """\n\\\"""\n${fakeFieldContract}\n"""\n${fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "class ConsoleUITestCase")}`,
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": `let fake = #"""\n\\#"""#\n${fakeFieldContract}\n"""#\n${fieldCase.replace("@MainActor\nclass FieldUITestCase", "class FieldUITestCase")}`,
+      "ios/UITests/Support/ConsoleUITestCase.swift": `let fake = #"""\n\\#"""#\n${fakeFieldContract}\n"""#\n${fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "class ConsoleUITestCase")}`,
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("@MainActor\nclass FieldUITestCase", "// @MainActor\nclass FieldUITestCase"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("@MainActor\nclass ConsoleUITestCase", "// @MainActor\nclass ConsoleUITestCase"),
     }), "confine XCUIApplication");
     expectsFailure(evaluate({
       "ios/UITests/Support/RealSessionSeed.swift": validFiles["ios/UITests/Support/RealSessionSeed.swift"].replace("@MainActor\nenum RealSessionSeed", "// @MainActor\nenum RealSessionSeed"),
@@ -435,7 +435,7 @@ class FieldUITestCase: XCTestCase {
       "true",
     ) }), "preserve the Xcode-created Simulator Runner");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      'APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/MaintenanceFieldApp")"',
+      'APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/ConsoleApp")"',
       'APP_KEYCHAIN_GROUP="missing"',
     ) }), "preserve the Xcode-created Simulator Runner");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
@@ -451,8 +451,8 @@ class FieldUITestCase: XCTestCase {
       '_, _, segment, _, _, _, _, _, nsects, _ = struct.unpack_from("<II16sQQQQiiII", executable, offset)',
     ) }), "preserve the Xcode-created Simulator Runner");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      "--env MNT_UITEST_BASE_URL",
-      "--env MNT_IOS_KEYCHAIN_GROUP --env MNT_UITEST_BASE_URL",
+      "--env CONSOLE_UITEST_BASE_URL",
+      "--env CONSOLE_IOS_KEYCHAIN_GROUP --env CONSOLE_UITEST_BASE_URL",
     ) }), "preserve the Xcode-created Simulator Runner");
   });
   it("rejects xctestrun, ATS, and fail-slow xcresult regression", () => {
@@ -460,11 +460,11 @@ class FieldUITestCase: XCTestCase {
     const xctestrunGate = "inject the UI host path and renewable session material only per functional shard";
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
       'chmod 600 "$XCTESTRUN"',
-      'chmod 600 "$XCTESTRUN"\n          (cd "$ROOT" && python3 scripts/patch-ios-xctestrun.py "$XCTESTRUN" --target MaintenanceFieldUITests --ui-target-app-path \'__TESTROOT__/Debug-iphonesimulator/MaintenanceFieldApp.app\')',
+      'chmod 600 "$XCTESTRUN"\n          (cd "$ROOT" && python3 scripts/patch-ios-xctestrun.py "$XCTESTRUN" --target ConsoleUITests --ui-target-app-path \'__TESTROOT__/Debug-iphonesimulator/ConsoleApp.app\')',
     ) }), xctestrunGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(
-      "--ui-target-app-path '__TESTROOT__/Debug-iphonesimulator/MaintenanceFieldApp.app' --env MNT_UITEST_BASE_URL",
-      "--env MNT_UITEST_BASE_URL",
+      "--ui-target-app-path '__TESTROOT__/Debug-iphonesimulator/ConsoleApp.app' --env CONSOLE_UITEST_BASE_URL",
+      "--env CONSOLE_UITEST_BASE_URL",
     ) }), xctestrunGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('chmod 600 "$XCTESTRUN"', "") }), "mode-0600");
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('CI_PLIST="$D/Info.ci.plist"', 'CI_PLIST="$RUNNER_TEMP/Info.plist"') }), "CI-only job-root");
@@ -479,8 +479,8 @@ class FieldUITestCase: XCTestCase {
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow(`timing_finish setup-failed
               continue`, `timing_finish setup-failed
               :`) }), failSlow);
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('read -r -a SHARD_MANIFEST <<< "$MNT_IOS_SHARD_BATCH"', "SHARD_MANIFEST=(preflight)") }), failSlow);
-    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('printf \'%s\\n\' "$MNT_IOS_BATCH_NAME" > "$ARTIFACTS/batch-name.txt"', "true") }), failSlow);
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('read -r -a SHARD_MANIFEST <<< "$CONSOLE_IOS_SHARD_BATCH"', "SHARD_MANIFEST=(preflight)") }), failSlow);
+    expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('printf \'%s\\n\' "$CONSOLE_IOS_BATCH_NAME" > "$ARTIFACTS/batch-name.txt"', "true") }), failSlow);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('if ! clean_runtime; then', 'if clean_runtime; then') }), failSlow);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('exit "$TEST_STATUS"', 'exit 0') }), failSlow);
   });
@@ -541,56 +541,56 @@ class FieldUITestCase: XCTestCase {
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflowAll("backend PID identity changed; refusing cross-process cleanup", "backend cleanup ignored identity") }), "identity-aware backend");
   });
   it("rejects fail-open support and accessibility parity drift", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
     const auditTests = validFiles["ios/UITests/AccessibilityAuditUITests.swift"];
     const runtimeTests = validFiles["ios/UITests/DynamicTypeRuntimeUITests.swift"];
     const strictGate = "strict accessibility auditing";
     const presentationGate = "precondition supported Simulator appearance";
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": "throw XCTSkip()" }), "must not include skip-testing");
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "continueAfterFailure = true", "") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "issue.auditType == .dynamicType", "issue.auditType != .dynamicType") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "Dynamic Type font sizes are partially unsupported", "unexpected diagnostic") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "User will not be able to change the font size of this SwiftUI.AccessibilityNode", "unexpected detailed diagnostic") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "issue.auditType == .dynamicType,", "issue.auditType != .dynamicType,") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, `XCTAssertEqual(
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": "throw XCTSkip()" }), "must not include skip-testing");
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "continueAfterFailure = true", "") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "issue.auditType == .dynamicType", "issue.auditType != .dynamicType") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "Dynamic Type font sizes are partially unsupported", "unexpected diagnostic") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "User will not be able to change the font size of this SwiftUI.AccessibilityNode", "unexpected detailed diagnostic") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "issue.auditType == .dynamicType,", "issue.auditType != .dynamicType,") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, `XCTAssertEqual(
             observed.sorted(),
             expectedCompatibilityIssues.sorted(),`, "true") }), strictGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType))", "try app.performAccessibilityAudit(for: .all)") }), strictGate);
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType))", "try app.performAccessibilityAudit(for: .all)") }), strictGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('xcrun simctl ui "$UUID" appearance "$expected_appearance"', "true") }), presentationGate);
     expectsFailure(evaluate({ ".github/workflows/ios-ui-tests.yml": mutateWorkflow('actual_content_size="$(xcrun simctl ui "$UUID" content_size)"', 'actual_content_size="$expected_content_size"') }), presentationGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": `${fieldCase}
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": `${fieldCase}
 app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryL"]` }), presentationGate);
-    expectsFailure(evaluate({ "ios/UITests/Support/FieldUITestCase.swift": `${fieldCase}
+    expectsFailure(evaluate({ "ios/UITests/Support/ConsoleUITestCase.swift": `${fieldCase}
 XCUIDevice.shared.appearance = .dark` }), presentationGate);
     expectsFailure(evaluate({ "ios/UITests/AccessibilityAuditUITests.swift": mutateFile(auditTests, "testTodayScreenPassesDynamicTypeAudit", "testTodayScreenPassesNonDynamicAuditStandard") }), presentationGate);
     expectsFailure(evaluate({ "ios/UITests/AccessibilityAuditUITests.swift": mutateFile(auditTests, "AID.locationConsentGrantButton", "AID.todayRefreshButton") }), strictGate);
     expectsFailure(evaluate({ "ios/UITests/DynamicTypeRuntimeUITests.swift": mutateFile(runtimeTests, "sameHorizontalBand(body.frame, timestamp.frame)", "body.frame.intersects(timestamp.frame)") }), presentationGate);
     expectsFailure(evaluate({ "ios/UITests/DynamicTypeRuntimeUITests.swift": mutateFile(runtimeTests, "XCTAssertGreaterThan(timestamp.frame.minY, body.frame.maxY", "XCTAssertLessThan(timestamp.frame.minY, body.frame.maxY") }), presentationGate);
     expectsFailure(evaluate({ "ios/UITests/DynamicTypeRuntimeUITests.swift": mutateFile(runtimeTests, "XCTAssertGreaterThanOrEqual(app.buttons[AID.locationConsentGrantButton].frame.height, 44)", "XCTAssertGreaterThanOrEqual(app.buttons[AID.locationConsentGrantButton].frame.height, 1)") }), presentationGate);
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift": `public enum FieldAccessibilityID { public static let onlyProduction = "x" }` }), "mirror every FieldAccessibilityID");
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "if dynamicTypeSize.isAccessibilitySize == false", "if dynamicTypeSize.isAccessibilitySize") }), "Today must retain inline location consent outside accessibility Dynamic Type");
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "FieldAccessibilityID.todayLocationConsentButton", "FieldAccessibilityID.todayRefreshButton") }), "Today must retain inline location consent outside accessibility Dynamic Type");
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": `${fieldViews}
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift": `public enum ConsoleAccessibilityID { public static let onlyProduction = "x" }` }), "mirror every ConsoleAccessibilityID");
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "if dynamicTypeSize.isAccessibilitySize == false", "if dynamicTypeSize.isAccessibilitySize") }), "Today must retain inline location consent outside accessibility Dynamic Type");
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "ConsoleAccessibilityID.todayLocationConsentButton", "ConsoleAccessibilityID.todayRefreshButton") }), "Today must retain inline location consent outside accessibility Dynamic Type");
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": `${fieldViews}
 Text("fixed").font(.system(size: 17))` }), presentationGate);
   });
   it("rejects a tab whose NavigationStack is not wrapped by the unobscured content host", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "TabBarContentLayoutGuideHost(content: content)", "content") }), "every authenticated iOS tab must use the direct UIKit content-layout-guide host");
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "TabBarContentLayoutGuideHost(content: content)", "content") }), "every authenticated iOS tab must use the direct UIKit content-layout-guide host");
   });
   it("rejects tab content without formal UIHostingController containment", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "addChild(hostingController)", "// containment removed") }), "every authenticated iOS tab must use the direct UIKit content-layout-guide host");
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "addChild(hostingController)", "// containment removed") }), "every authenticated iOS tab must use the direct UIKit content-layout-guide host");
   });
   it("rejects a tab host without direct guide constraints or lifecycle teardown", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const guideGate = "every authenticated iOS tab must use the direct UIKit content-layout-guide host";
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "hostingController.view.bottomAnchor.constraint(equalTo: guide.bottomAnchor)", "hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor)") }), guideGate);
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "NSLayoutConstraint.activate(contentLayoutConstraints)", "// activation removed") }), guideGate);
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "hostingController.removeFromParent()", "// teardown removed") }), guideGate);
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "hostingController.view.bottomAnchor.constraint(equalTo: guide.bottomAnchor)", "hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor)") }), guideGate);
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "NSLayoutConstraint.activate(contentLayoutConstraints)", "// activation removed") }), guideGate);
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "hostingController.removeFromParent()", "// teardown removed") }), guideGate);
   });
   it("rejects private tab hierarchy workarounds and fixed bottom clearance", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     for (const forbidden of [
       "tabBarController.selectedViewController = self",
       "let privateHierarchy = view.subviews",
@@ -598,22 +598,22 @@ Text("fixed").font(.system(size: 17))` }), presentationGate);
       "view.frame = CGRect(x: 0, y: 0, width: 1, height: 84)",
       "view.traitOverrides.horizontalSizeClass = .compact",
     ]) {
-      expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": `${fieldViews}
+      expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": `${fieldViews}
 ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content-layout-guide host");
     }
   });
   it("rejects suppressing or unsanitized accessibility audit issue handlers", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
     const strictGate = "strict accessibility auditing";
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "return false\n            }\n        } catch",
         "return true\n            }\n        } catch",
       ),
     }), strictGate);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "identifier=\\(identifier.debugDescription)",
         "identifier=\\(element?.label.debugDescription ?? \"none\")",
@@ -621,7 +621,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), strictGate);
     const normalDynamicIdentifier = "messenger.threadRow.123e4567-e89b-12d3-a456-426614174000";
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         '"<redacted>"',
         `identifier ?? "${normalDynamicIdentifier}"`,
@@ -632,10 +632,10 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), strictGate);
   });
   it("rejects Messenger section headers that are not scalable semantic in-row content", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const headerGate = "scalable semantic in-row headers";
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `Section {
                 Text("messenger_threads")`,
@@ -645,7 +645,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), headerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `Text("messenger_threads")
                     .font(.headline)
@@ -655,16 +655,16 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), headerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".accessibilityAddTraits(.isHeader)", ""),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".accessibilityAddTraits(.isHeader)", ""),
     }), headerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".listRowBackground(Color.clear)", ""),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".listRowBackground(Color.clear)", ""),
     }), headerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".listRowSeparator(.hidden)", ""),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".listRowSeparator(.hidden)", ""),
     }), headerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `Text("messenger_threads")
                     .font(.headline)`,
@@ -675,10 +675,10 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), headerGate);
   });
   it("rejects a Messenger composer placeholder with native attenuation or duplicate accessibility", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const composerGate = "primary-foreground semantic placeholder without native placeholder opacity";
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `ZStack(alignment: .leading) {
                     if viewModel.messengerDraft.isEmpty {
@@ -697,7 +697,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), composerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `Text("messenger_composer")
                             .foregroundStyle(.primary)
@@ -708,7 +708,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), composerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `Text("messenger_composer")
                             .foregroundStyle(.primary)
@@ -718,21 +718,21 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), composerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "if viewModel.messengerDraft.isEmpty {",
         "if viewModel.messengerDraft.isEmpty == false {",
       ),
     }), composerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `.accessibilityHidden(true)\n                            .allowsHitTesting(false)`,
         `.accessibilityHidden(true)\n                            .allowsHitTesting(true)`,
       ),
     }), composerGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `.accessibilityHidden(true)\n                            .allowsHitTesting(false)`,
         `.accessibilityHidden(true)`,
@@ -740,22 +740,22 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), composerGate);
   });
   it("rejects a Messenger composer that is not a persistent gated sibling of the List", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const messengerTests = validFiles["ios/UITests/MessengerUITests.swift"];
     const persistentGate = "selected-thread-gated opaque VStack sibling of the List";
 
     // The send action returns to a row inside the lazy List — the exact defect.
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "VStack(spacing: 0) {\n        List {",
-        "VStack(spacing: 0) {\n        List {\n            Button(\"x\") {}\n                .accessibilityIdentifier(FieldAccessibilityID.messengerSendButton)",
+        "VStack(spacing: 0) {\n        List {\n            Button(\"x\") {}\n                .accessibilityIdentifier(ConsoleAccessibilityID.messengerSendButton)",
       ),
     }), persistentGate);
 
     // Selected-thread gate removed: the bar would render with no thread open.
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "if viewModel.messengerState.selectedThreadID != nil {\n                messengerComposerBar\n            }",
         "messengerComposerBar",
@@ -764,7 +764,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
 
     // The List is no longer wrapped, so the bar is not a sibling of it.
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "VStack(spacing: 0) {\n        List {",
         "Group {\n        List {",
@@ -773,9 +773,9 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
 
     // The opaque surface keeping the primary action readable is removed.
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
-        ".background(Color.opaqueFieldNavigationBackground)",
+        ".background(Color.opaqueConsoleNavigationBackground)",
         ".background(Color.clear)",
       ),
     }), persistentGate);
@@ -783,7 +783,7 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     // The List's modifiers drift onto the VStack: safeAreaInset(edge: .top)
     // stops insetting a scroll view and silently becomes layout padding.
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "        .safeAreaInset(edge: .top, spacing: 0) {\n            if dynamicTypeSize == .accessibility5 {\n                Color.clear\n                    .frame(height: 56)\n                    .accessibilityHidden(true)\n            }\n        }\n            if viewModel.messengerState.selectedThreadID != nil {\n                messengerComposerBar\n            }",
         "            if viewModel.messengerState.selectedThreadID != nil {\n                messengerComposerBar\n            }\n        .safeAreaInset(edge: .top, spacing: 0) {\n            if dynamicTypeSize == .accessibility5 {\n                Color.clear\n                    .frame(height: 56)\n                    .accessibilityHidden(true)\n            }\n        }",
@@ -800,42 +800,42 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), persistentGate);
   });
   it("rejects Messenger AX5 content suppression, missing vertical geometry, and translucent navigation chrome", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const runtimeTests = validFiles["ios/UITests/DynamicTypeRuntimeUITests.swift"];
     const ax5Gate = "complete adaptive thread content and an opaque visible navigation surface";
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "struct MessengerThreadRow: View {\n    let thread: MessengerThread\n    let isSelected: Bool\n    @Environment(\\.dynamicTypeSize) private var dynamicTypeSize\n\n    var body: some View {\n        if dynamicTypeSize.isAccessibilitySize {", "struct MessengerThreadRow: View {\n    let thread: MessengerThread\n    let isSelected: Bool\n    @Environment(\\.dynamicTypeSize) private var dynamicTypeSize\n\n    var body: some View {\n        if dynamicTypeSize.isAccessibilitySize == false {"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "struct MessengerThreadRow: View {\n    let thread: MessengerThread\n    let isSelected: Bool\n    @Environment(\\.dynamicTypeSize) private var dynamicTypeSize\n\n    var body: some View {\n        if dynamicTypeSize.isAccessibilitySize {", "struct MessengerThreadRow: View {\n    let thread: MessengerThread\n    let isSelected: Bool\n    @Environment(\\.dynamicTypeSize) private var dynamicTypeSize\n\n    var body: some View {\n        if dynamicTypeSize.isAccessibilitySize == false {"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".toolbarBackground(Color.opaqueFieldNavigationBackground, for: .navigationBar)", ".toolbarBackground(Color.clear, for: .navigationBar)"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".toolbarBackground(Color.opaqueConsoleNavigationBackground, for: .navigationBar)", ".toolbarBackground(Color.clear, for: .navigationBar)"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".toolbarBackground(.visible, for: .navigationBar)", ".toolbarBackground(.automatic, for: .navigationBar)"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".toolbarBackground(.visible, for: .navigationBar)", ".toolbarBackground(.automatic, for: .navigationBar)"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".messengerNavigationBarBackground()", ".inlineNavigationTitle()"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".messengerNavigationBarBackground()", ".inlineNavigationTitle()"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
-        "#if os(iOS)\n        self\n            .toolbarBackground(Color.opaqueFieldNavigationBackground",
-        "#if os(macOS)\n        self\n            .toolbarBackground(Color.opaqueFieldNavigationBackground",
+        "#if os(iOS)\n        self\n            .toolbarBackground(Color.opaqueConsoleNavigationBackground",
+        "#if os(macOS)\n        self\n            .toolbarBackground(Color.opaqueConsoleNavigationBackground",
       ),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".font(.headline)\n                FieldChip(key: thread.kind.fieldLabelKey)", ".font(.headline)\n                    .lineLimit(1)\n                FieldChip(key: thread.kind.fieldLabelKey)"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".font(.headline)\n                ConsoleChip(key: thread.kind.fieldLabelKey)", ".font(.headline)\n                    .lineLimit(1)\n                ConsoleChip(key: thread.kind.fieldLabelKey)"),
     }), ax5Gate);
     expectsFailure(evaluate({
       "ios/UITests/DynamicTypeRuntimeUITests.swift": mutateFile(runtimeTests, "member.frame.minY", "member.frame.maxY"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".frame(height: 56)", ".frame(height: 0)"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".frame(height: 56)", ".frame(height: 0)"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "if dynamicTypeSize == .accessibility5 {", "if dynamicTypeSize == .accessibility4 {"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "if dynamicTypeSize == .accessibility5 {", "if dynamicTypeSize == .accessibility4 {"),
     }), ax5Gate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, "if dynamicTypeSize == .accessibility5 {", "if dynamicTypeSize != .accessibility5 {"),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, "if dynamicTypeSize == .accessibility5 {", "if dynamicTypeSize != .accessibility5 {"),
     }), ax5Gate);
     expectsFailure(evaluate({
       "ios/UITests/DynamicTypeRuntimeUITests.swift": mutateFile(runtimeTests, "thread.frame.minY", "thread.frame.maxY"),
@@ -845,24 +845,24 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), ax5Gate);
   });
   it("rejects translucent or implicit-foreground status capsules", () => {
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const contrastGate = "contrast-stable adaptive backgrounds";
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
-        ".background(Color.opaqueFieldCapsuleBackground, in: Capsule())",
+        ".background(Color.opaqueConsoleCapsuleBackground, in: Capsule())",
         ".background(.thinMaterial, in: Capsule())",
       ),
     }), contrastGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         "Color(uiColor: .systemGray5)",
         "Color(uiColor: .tertiarySystemFill)",
       ),
     }), contrastGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
         `.font(.caption)
                     .foregroundStyle(.primary)
@@ -872,16 +872,16 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), contrastGate);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(
         fieldViews,
-        `.background(Color.opaqueFieldDetailBackground)
+        `.background(Color.opaqueConsoleDetailBackground)
                 .tint(.primary)`,
-        `.background(Color.opaqueFieldDetailBackground)`,
+        `.background(Color.opaqueConsoleDetailBackground)`,
       ),
     }), contrastGate);
   });
   it("rejects a preflight that proves only an authenticated shell", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
     expectsFailure(evaluate({
       "ios/UITests/PreflightUITests.swift": validFiles["ios/UITests/PreflightUITests.swift"].replace(
         "scrollToWorkOrderRow(in: restoredApp, id: detailWorkOrderID, timeout: 20) != nil",
@@ -889,64 +889,64 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("dragStart.press(forDuration: 0.1, thenDragTo: dragEnd)", ""),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("dragStart.press(forDuration: 0.1, thenDragTo: dragEnd)", ""),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("let topSentinel = app.staticTexts[KO.locationConsentTitle]", "let topSentinel = app.staticTexts[KO.todayTitle]"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("let topSentinel = app.staticTexts[KO.locationConsentTitle]", "let topSentinel = app.staticTexts[KO.todayTitle]"),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "if workOrderRowActivationPoint(in: app, row: row, list: list) != nil {\n            return row\n        }",
         "if row.waitForExistence(timeout: 0.5), row.isHittable {\n            return row\n        }",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "if tabBar.exists {",
         "if false {",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "let tabChromeTop = tabBar.frame.minY - tabBar.frame.height",
         "let tabChromeTop = tabBar.frame.minY",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "guard viewport.contains(center) else { return nil }",
         "guard viewport.intersects(row.frame) else { return nil }",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)",
         "withNormalizedOffset: CGVector(dx: 0.5, dy: 0.28)",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "timeout: TimeInterval = 60,\n    maxSwipes: Int = 48",
         "timeout: TimeInterval = 30,\n    maxSwipes: Int = 24",
       ),
     }), "decodes and renders the exact deterministic Today work order");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("back.isHittable", "detail.isHittable"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("back.isHittable", "detail.isHittable"),
     }), "actionable back control");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "activationPoint.tap()",
         "row.tap()",
       ),
     }), "actionable back control");
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "fixtureKey: String,\n        timeout: TimeInterval = 60",
         "fixtureKey: String,\n        timeout: TimeInterval = 30",
@@ -954,66 +954,66 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), "actionable back control");
   });
   it("rejects full-fixture Today traversal or tab-bar geometry drift", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
-    const criticalPath = validFiles["ios/UITests/FieldCriticalPathUITests.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
+    const criticalPath = validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"];
     const geometryGate = "traverse all five deterministic Today rows";
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "tabBar.frame.minY + 1", "list.frame.maxY + 1"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "tabBar.frame.minY + 1", "list.frame.maxY + 1"),
     }), geometryGate);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(fieldCase, "tabBar.frame.minY - 1", "tabBar.frame.minY - tabBar.frame.height"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(fieldCase, "tabBar.frame.minY - 1", "tabBar.frame.minY - tabBar.frame.height"),
     }), geometryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(criticalPath, "UITestFixture.reportSuccessWorkOrderID", "UITestFixture.reportWorkOrderID"),
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(criticalPath, "UITestFixture.reportSuccessWorkOrderID", "UITestFixture.reportWorkOrderID"),
     }), geometryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(criticalPath, "UITestFixture.adminRejectWorkOrderID", "UITestFixture.adminApproveWorkOrderID"),
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(criticalPath, "UITestFixture.adminRejectWorkOrderID", "UITestFixture.adminApproveWorkOrderID"),
     }), geometryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(criticalPath, "workOrderRowActivationPoint(in: app, row: row, list: list)", "row.isHittable"),
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(criticalPath, "workOrderRowActivationPoint(in: app, row: row, list: list)", "row.isHittable"),
     }), geometryGate);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": `${fieldCase}\nprint("TODAY_DIAGNOSTIC")`,
+      "ios/UITests/Support/ConsoleUITestCase.swift": `${fieldCase}\nprint("TODAY_DIAGNOSTIC")`,
     }), geometryGate);
   });
   it("rejects lazy detail scrolling that can time out early or target the wrong surface", () => {
     const lazyScroll = "deadline-bounded exact-element scroll";
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
-    const fieldViews = validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
+    const fieldViews = validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"];
     const auditTests = validFiles["ios/UITests/AccessibilityAuditUITests.swift"];
     const messengerTests = validFiles["ios/UITests/MessengerUITests.swift"];
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replaceAll("let deadline = Date().addingTimeInterval(timeout)", "let deadline = Date()"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replaceAll("let deadline = Date().addingTimeInterval(timeout)", "let deadline = Date()"),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("guard container.waitForExistence", "guard element.waitForExistence"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("guard container.waitForExistence", "guard element.waitForExistence"),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace("container.swipeDown()", "container.swipeUp()"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace("container.swipeDown()", "container.swipeUp()"),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replaceAll("dragStart.press(forDuration: 0.1, thenDragTo: dragEnd)", "container.swipeUp()"),
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replaceAll("dragStart.press(forDuration: 0.1, thenDragTo: dragEnd)", "container.swipeUp()"),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "let origin = container.coordinate(withNormalizedOffset: .zero)",
         "let origin = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "CGVector(dx: trailingGutterX, dy: container.frame.height * 0.50)",
         "CGVector(dx: container.frame.width * 0.5, dy: container.frame.height * 0.50)",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "let trailingGutterX = max(container.frame.width * 0.9, 8)",
         "let trailingGutterX = 8",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "let trailingGutterX = max(container.frame.width * 0.9, 8)",
         "let trailingGutterX = 8",
       ),
@@ -1033,33 +1033,33 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "if element.exists, element.isHittable {\n            return element\n        }",
         "if element.waitForExistence(timeout: 0.5), element.isHittable {\n            return element\n        }",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": mutateFile(fieldViews, ".scrollDismissesKeyboard(.immediately)", ""),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": mutateFile(fieldViews, ".scrollDismissesKeyboard(.immediately)", ""),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "in: app.descendants(matching: .any)[AID.detailView]",
         "in: app.collectionViews[AID.detailView]",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": fieldCase.replace(
+      "ios/UITests/Support/ConsoleUITestCase.swift": fieldCase.replace(
         "topSentinel: app.staticTexts[KO.locationConsentTitle]",
         "topSentinel: app.buttons[AID.detailBackButton]",
       ),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": validFiles["ios/UITests/FieldCriticalPathUITests.swift"].replace("scrollToDetailElement(app.buttons[AID.detailStartWorkButton])", "app.buttons[AID.detailStartWorkButton]"),
+      "ios/UITests/ConsoleCriticalPathUITests.swift": validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"].replace("scrollToDetailElement(app.buttons[AID.detailStartWorkButton])", "app.buttons[AID.detailStartWorkButton]"),
     }), lazyScroll);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": validFiles["ios/UITests/FieldCriticalPathUITests.swift"].replace("scrollToDetailElement(app.buttons[AID.detailSubmitReportButton])", "app.buttons[AID.detailSubmitReportButton]"),
+      "ios/UITests/ConsoleCriticalPathUITests.swift": validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"].replace("scrollToDetailElement(app.buttons[AID.detailSubmitReportButton])", "app.buttons[AID.detailSubmitReportButton]"),
     }), lazyScroll);
     expectsFailure(evaluate({
       "ios/UITests/CameraCaptureUITests.swift": validFiles["ios/UITests/CameraCaptureUITests.swift"].replace("scrollToDetailElement(app.buttons[AID.detailCaptureEvidenceButton])", "app.buttons[AID.detailCaptureEvidenceButton]"),
@@ -1067,17 +1067,17 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
   });
   it("rejects report feedback placed after the unrelated camera controls", () => {
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/FieldViews.swift": moveReportFeedbackAfterCamera(validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"]),
+      "ios/Sources/ConsoleApp/ConsoleViews.swift": moveReportFeedbackAfterCamera(validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"]),
     }), "live report response feedback adjacent to submit-report controls");
   });
   it("rejects messenger rows that share a cross-section message identifier", () => {
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"].replace("messengerSearchResultRow", "messengerMessageRow") }), "section-scoped dynamic accessibility IDs");
-    expectsFailure(evaluate({ "ios/Sources/MaintenanceFieldApp/FieldViews.swift": validFiles["ios/Sources/MaintenanceFieldApp/FieldViews.swift"].replace("messengerMessageRow", "messengerSearchResultRow") }), "section-scoped dynamic accessibility IDs");
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"].replace("messengerSearchResultRow", "messengerMessageRow") }), "section-scoped dynamic accessibility IDs");
+    expectsFailure(evaluate({ "ios/Sources/ConsoleApp/ConsoleViews.swift": validFiles["ios/Sources/ConsoleApp/ConsoleViews.swift"].replace("messengerMessageRow", "messengerSearchResultRow") }), "section-scoped dynamic accessibility IDs");
   });
   it("rejects camera authorization state that cannot refresh after returning from Settings", () => {
     expectsFailure(evaluate({
-      "ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift": mutateFile(
-        validFiles["ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift"],
+      "ios/Sources/ConsoleApp/CameraCaptureView.swift": mutateFile(
+        validFiles["ios/Sources/ConsoleApp/CameraCaptureView.swift"],
         "@Environment(\\.scenePhase) private var scenePhase",
         "",
       ),
@@ -1085,8 +1085,8 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
   });
 
   it("rejects local-state-only critical-path evidence", () => {
-    expectsFailure(evaluate({ "ios/UITests/FieldCriticalPathUITests.swift": validFiles["ios/UITests/FieldCriticalPathUITests.swift"].replace("AID.detailStatus", "KO.inProgress") }), "scoped mutations");
-    expectsFailure(evaluate({ "ios/UITests/FieldCriticalPathUITests.swift": validFiles["ios/UITests/FieldCriticalPathUITests.swift"].replaceAll("app.terminate()", "") }), "scoped mutations");
+    expectsFailure(evaluate({ "ios/UITests/ConsoleCriticalPathUITests.swift": validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"].replace("AID.detailStatus", "KO.inProgress") }), "scoped mutations");
+    expectsFailure(evaluate({ "ios/UITests/ConsoleCriticalPathUITests.swift": validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"].replaceAll("app.terminate()", "") }), "scoped mutations");
     expectsFailure(evaluate({ "ios/UITests/MessengerUITests.swift": validFiles["ios/UITests/MessengerUITests.swift"].replace("app.terminate()", "") }), "scoped mutations");
     expectsFailure(evaluate({ "ios/UITests/CameraCaptureUITests.swift": "if previewIsUsable { return }\ncancel.tap()" }), "scoped mutations");
     expectsFailure(evaluate({
@@ -1098,45 +1098,45 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     expectsFailure(evaluate({ "ios/UITests/LoginValidationUITests.swift": "XCTAssertTrue(loginError.exists)" }), "scoped mutations");
   });
   it("rejects globally or copy-scoped report terminal evidence", () => {
-    const criticalPath = validFiles["ios/UITests/FieldCriticalPathUITests.swift"];
+    const criticalPath = validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"];
     const reportEvidenceGate = "detail-owned accessibility identifiers";
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "detail.descendants(matching: .any)[AID.detailMessage]",
         "detail.staticTexts[KO.reportSuccessMessage]",
       ),
     }), reportEvidenceGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "detail.descendants(matching: .any)[AID.detailStatus]",
         "detail.staticTexts[KO.reportSubmitted]",
       ),
     }), reportEvidenceGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "detailMessage,\n            in: detail,",
         "detailMessage,\n            in: app,",
       ),
     }), reportEvidenceGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "topSentinel: detail.buttons[AID.detailSubmitReportButton],",
         "topSentinel: detail.staticTexts[KO.locationConsentTitle],",
       ),
     }), reportEvidenceGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "resolvedMessage.label,\n            KO.reportSuccessMessage,",
         "resolvedMessage.exists,\n            true,",
       ),
     }), reportEvidenceGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "resolvedStatus.label,\n            KO.reportSubmitted,",
         "resolvedStatus.exists,\n            true,",
@@ -1144,46 +1144,46 @@ ${forbidden}` }), "every authenticated iOS tab must use the direct UIKit content
     }), reportEvidenceGate);
   });
   it("rejects cached or globally scoped location-consent elements across SwiftUI state replacement", () => {
-    const fieldCase = validFiles["ios/UITests/Support/FieldUITestCase.swift"];
-    const criticalPath = validFiles["ios/UITests/FieldCriticalPathUITests.swift"];
+    const fieldCase = validFiles["ios/UITests/Support/ConsoleUITestCase.swift"];
+    const criticalPath = validFiles["ios/UITests/ConsoleCriticalPathUITests.swift"];
     const freshQueryGate = "reacquire dynamic SwiftUI elements";
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "while Date() < deadline {\n            let detail = app.descendants(matching: .any)[AID.detailView]",
         "while Date() < deadline {\n            let detail = app",
       ),
     }), freshQueryGate);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "let element = detail.descendants(matching: .any)[identifier]",
         "let element = cachedElement",
       ),
     }), freshQueryGate);
     expectsFailure(evaluate({
-      "ios/UITests/Support/FieldUITestCase.swift": mutateFile(
+      "ios/UITests/Support/ConsoleUITestCase.swift": mutateFile(
         fieldCase,
         "return app.descendants(matching: .any)[AID.detailView].buttons[identifier]",
         "return app.buttons[identifier]",
       ),
     }), freshQueryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "detailButton(AID.locationConsentGrantButton).tap()",
         "let grant = detailButton(AID.locationConsentGrantButton)\n        grant.tap()",
       ),
     }), freshQueryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "detailButton(AID.locationConsentGrantButton).tap()",
         "app.buttons[AID.locationConsentGrantButton].tap()",
       ),
     }), freshQueryGate);
     expectsFailure(evaluate({
-      "ios/UITests/FieldCriticalPathUITests.swift": mutateFile(
+      "ios/UITests/ConsoleCriticalPathUITests.swift": mutateFile(
         criticalPath,
         "waitForLabel(AID.locationConsentCollectionValue, containing: KO.yes)",
         "waitForLabel(cachedCollectionValue, containing: KO.yes)",

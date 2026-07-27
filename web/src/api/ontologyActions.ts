@@ -7,7 +7,7 @@
 // (crates/ontology/rest PreflightOutcome/ExecuteOutcome and
 // crates/governance/domain GateChainOutcome). Parsing here is fail-closed:
 // anything malformed reads as a denied gate chain, never a silent allow.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "./client";
 

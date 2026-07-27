@@ -1,7 +1,7 @@
 # W3 POLISH-SWEEP — §4-25 closed-loop findings register (round 2)
 
-**Method:** booted a real, isolated dev stack (scratch Postgres DB `mnt_w3polish`,
-`mnt-app` built with `--features dev-auth` on port 18090, `vite` on port 15183 —
+**Method:** booted a real, isolated dev stack (scratch Postgres DB `console_w3polish`,
+`console-app` built with `--features dev-auth` on port 18090, `vite` on port 15183 —
 own DB/ports, no collision with other lanes), signed in as `SUPER_ADMIN` through
 the real `RoleSwitcher` UI (`/api/v1/dev-auth/session`, a genuine signed
 session — not a stub), completed the real passkey-onboarding consent gate, and

@@ -47,7 +47,7 @@ conflict/invalid-transition→409, internal→500; DB details never leaked).
   `authorize(WorkOrderReadAll, representative_branch)` — the field read gate
   mirrors the shell nav gate (`OPERATIONAL_ROLES x work_order_read_all`), so the
   open-signup MEMBER tier is denied server-side (403), not just nav-hidden;
-  rows confined to `BranchScope` (+ Postgres RLS as `mnt_rt`). Deny-by-omission:
+  rows confined to `BranchScope` (+ Postgres RLS as `console_rt`). Deny-by-omission:
   out-of-scope sites never appear in rows, counts, or totals.
 - Query: `q?` (site/customer substring), `customer_id?`, `sla?` (`OK|AT_RISK|BREACHED`),
   `limit?` (clamp 1..=100), `cursor?` (keyset by `(site_name, site_id)`).
@@ -194,7 +194,7 @@ integration — openapi/migration collision protocol). Full text:
 -- support_tickets already carries org_id + FORCE RLS org_isolation (0032/0035),
 -- so the new columns inherit the row policy; no new policy on that table.
 
--- mnt-gate: audited-table support_tickets
+-- console-gate: audited-table support_tickets
 ALTER TABLE support_tickets
     ADD COLUMN site_id       UUID REFERENCES registry_sites(id)     ON DELETE RESTRICT,
     ADD COLUMN customer_id   UUID REFERENCES registry_customers(id) ON DELETE RESTRICT,
@@ -214,10 +214,10 @@ CREATE INDEX idx_support_tickets_site
 -- Customer acceptance: append-only closure evidence per ticket.
 -- Full tenant table born post-multi-tenant: org_id + FORCE RLS + immutable-org
 -- trigger + composite (id, org_id) key inline (0042 pattern), and explicit
--- mnt_rt grants (0058 lesson: RLS is meaningless if the runtime role has no
--- table privilege — verify as mnt_rt, not superuser).
+-- console_rt grants (0058 lesson: RLS is meaningless if the runtime role has no
+-- table privilege — verify as console_rt, not superuser).
 
--- mnt-gate: audited-table support_ticket_acceptances
+-- console-gate: audited-table support_ticket_acceptances
 CREATE TABLE support_ticket_acceptances (
     id                  UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -246,8 +246,8 @@ CREATE INDEX idx_support_ticket_acceptances_ticket
     ON support_ticket_acceptances (ticket_id, occurred_at DESC);
 
 -- Append-only evidence: runtime role may read and insert, never mutate/erase.
-GRANT SELECT, INSERT ON support_ticket_acceptances TO mnt_rt;
-REVOKE UPDATE, DELETE ON support_ticket_acceptances FROM mnt_rt;
+GRANT SELECT, INSERT ON support_ticket_acceptances TO console_rt;
+REVOKE UPDATE, DELETE ON support_ticket_acceptances FROM console_rt;
 ```
 
 ## 7. Audit events (append-only, existing support_audit_event builder)

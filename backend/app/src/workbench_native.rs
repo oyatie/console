@@ -4,9 +4,9 @@
 //! narrows the verified principal to the aggregate's effective branch scope,
 //! then delegates to the action-inbox, todo, and collaboration-calendar owners.
 
-use mnt_kernel_core::{BranchScope, ErrorKind};
-use mnt_platform_authz::Principal;
-use mnt_todos_adapter_postgres::PgTodoStore;
+use console_kernel_core::{BranchScope, ErrorKind};
+use console_platform_authz::Principal;
+use console_todos_adapter_postgres::PgTodoStore;
 use sqlx::PgPool;
 
 use crate::workbench::{

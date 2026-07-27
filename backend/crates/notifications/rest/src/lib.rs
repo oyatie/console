@@ -11,18 +11,18 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{ErrorKind, KernelError, NotificationId, TraceContext};
-use mnt_notifications_adapter_postgres::{PgNotificationError, PgNotificationStore};
-use mnt_notifications_application::{
+use console_kernel_core::{ErrorKind, KernelError, NotificationId, TraceContext};
+use console_notifications_adapter_postgres::{PgNotificationError, PgNotificationStore};
+use console_notifications_application::{
     DeleteNotificationPolicyCommand, ListNotificationObjectGroupsQuery,
     ListNotificationPoliciesQuery, ListNotificationsQuery, MarkAllNotificationsReadCommand,
     MarkNotificationReadCommand, MarkNotificationUnreadCommand, NotificationCountsSummaryQuery,
     NotificationPolicyList, UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
 };
-use mnt_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::Principal;
-use mnt_platform_request_context::RequestContextError;
+use console_notifications_domain::{NotificationLink, NotificationPolicyId, NotificationPolicyScope};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::Principal;
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 
 pub const ME_NOTIFICATIONS_PATH: &str = "/api/v1/me/notifications";
@@ -83,7 +83,7 @@ pub fn router(state: NotificationRestState) -> Router {
         )
         .route(ME_NOTIFICATION_POLICY_PATH_TEMPLATE, delete(delete_policy))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -388,7 +388,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for notifications API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }

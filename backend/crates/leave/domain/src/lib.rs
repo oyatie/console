@@ -20,7 +20,7 @@ pub use promotion::{
     validate_designated_dates, validate_promotion, validate_refusal,
 };
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 const REASON_MAX: usize = 500;
@@ -314,7 +314,7 @@ pub enum NonWorkBasis {
 /// Immutable, per-date evidence used to derive an exact charge.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LeaveDateCharge {
-    pub date: mnt_kernel_core::Date,
+    pub date: console_kernel_core::Date,
     pub obligation: WorkObligation,
     pub units: LeaveUnits,
 }
@@ -607,8 +607,8 @@ pub fn validate_push(
 #[derive(Debug, Clone, PartialEq)]
 pub struct NewLeaveRequest {
     pub leave_type: LeaveType,
-    pub start_date: mnt_kernel_core::Date,
-    pub end_date: mnt_kernel_core::Date,
+    pub start_date: console_kernel_core::Date,
+    pub end_date: console_kernel_core::Date,
     pub reason: String,
     pub partial_day_period: Option<PartialDayPeriod>,
 }
@@ -616,8 +616,8 @@ pub struct NewLeaveRequest {
 impl NewLeaveRequest {
     pub fn new(
         leave_type: LeaveType,
-        start_date: mnt_kernel_core::Date,
-        end_date: mnt_kernel_core::Date,
+        start_date: console_kernel_core::Date,
+        end_date: console_kernel_core::Date,
         reason: &str,
         partial_day_period: Option<PartialDayPeriod>,
     ) -> Result<Self, KernelError> {
@@ -696,7 +696,7 @@ fn bounded(value: &str, field: &str, max: usize) -> Result<String, KernelError> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::Date;
+    use console_kernel_core::Date;
     use time::Month;
 
     fn d(y: i32, m: u8, day: u8) -> Date {

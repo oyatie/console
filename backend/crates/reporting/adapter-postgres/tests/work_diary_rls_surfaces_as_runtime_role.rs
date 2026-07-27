@@ -5,14 +5,14 @@
 //! excel_exports.rs) drives the same update/confirm path but on the plain
 //! `#[sqlx::test]` pool — a BYPASSRLS superuser that ignores `app.current_org`
 //! entirely, so it cannot tell an armed GUC from an unarmed one. This test
-//! proves the same path AS the genuine non-owner runtime role `mnt_rt`
+//! proves the same path AS the genuine non-owner runtime role `console_rt`
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS): SEED as the owner, GENERATE/UPDATE/
-//! CONFIRM as `mnt_rt` under the armed GUC.
+//! CONFIRM as `console_rt` under the armed GUC.
 
-use mnt_kernel_core::{BranchScope, OrgId, TraceContext};
-use mnt_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
-use mnt_reporting_adapter_postgres::PgReportingRepository;
-use mnt_reporting_application::{
+use console_kernel_core::{BranchScope, OrgId, TraceContext};
+use console_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
+use console_reporting_adapter_postgres::PgReportingRepository;
+use console_reporting_application::{
     WorkDiaryConfirmCommand, WorkDiaryDraftPort, WorkDiaryQuery, WorkDiaryUpdateCommand,
 };
 use sqlx::PgPool;
@@ -22,7 +22,7 @@ const DIARY_DATE: time::Date = date!(2026 - 06 - 12);
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn work_diary_update_and_confirm_succeed_as_runtime_role(owner_pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let branch = seed_branch(&owner_pool, "Region", "Branch").await;
         let actor = seed_user(&owner_pool, "Admin", "ADMIN", branch).await;
 
@@ -39,7 +39,7 @@ async fn work_diary_update_and_confirm_succeed_as_runtime_role(owner_pool: PgPoo
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await
-            .expect("generate must succeed as mnt_rt under the armed GUC");
+            .expect("generate must succeed as console_rt under the armed GUC");
         assert_eq!(generated.status.as_str(), "DRAFT");
 
         let updated = repo
@@ -52,7 +52,7 @@ async fn work_diary_update_and_confirm_succeed_as_runtime_role(owner_pool: PgPoo
                 occurred_at: OffsetDateTime::now_utc() + Duration::seconds(1),
             })
             .await
-            .expect("update must succeed as mnt_rt under the armed GUC — an unarmed GUC would RLS-deny the UPDATE and this would fail closed as `work diary draft was not editable`");
+            .expect("update must succeed as console_rt under the armed GUC — an unarmed GUC would RLS-deny the UPDATE and this would fail closed as `work diary draft was not editable`");
         assert_eq!(updated.status.as_str(), "DRAFT");
 
         let confirmed = repo
@@ -64,7 +64,7 @@ async fn work_diary_update_and_confirm_succeed_as_runtime_role(owner_pool: PgPoo
                 occurred_at: OffsetDateTime::now_utc() + Duration::seconds(2),
             })
             .await
-            .expect("confirm must succeed as mnt_rt under the armed GUC — an unarmed GUC would RLS-deny the UPDATE and this would fail closed as `work diary is already confirmed`/not-found");
+            .expect("confirm must succeed as console_rt under the armed GUC — an unarmed GUC would RLS-deny the UPDATE and this would fail closed as `work diary is already confirmed`/not-found");
         assert_eq!(confirmed.status.as_str(), "CONFIRMED");
     })
     .await;

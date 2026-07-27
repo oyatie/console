@@ -6,8 +6,8 @@
 -- of last_activity_at (see rest layer messenger_presence_status), so staleness
 -- is explicit: "online" only means "acted within the freshness window". This
 -- deliberately prefers a durable read model over the in-process WS connection
--- set in mnt-platform-realtime, which is per-replica and lost on restart.
--- mnt-gate: audited-table messenger_presence
+-- set in console-platform-realtime, which is per-replica and lost on restart.
+-- console-gate: audited-table messenger_presence
 CREATE TABLE messenger_presence (
     user_id          UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     org_id           UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -21,7 +21,7 @@ ALTER TABLE messenger_presence FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON messenger_presence
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON messenger_presence TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON messenger_presence TO console_rt;
 
 -- Per-thread personal mute (DESIGN §3.9.0 whitelist ①, direct-save personal
 -- setting). One row per (thread, user) means muted; absence means unmuted, so
@@ -29,7 +29,7 @@ GRANT SELECT, INSERT, UPDATE ON messenger_presence TO mnt_rt;
 -- message; it only (a) suppresses THIS user's mention-notification fan-out and
 -- (b) is excluded from their unread badge total (surfaced as ThreadSummary.muted
 -- so the client drops it from the tab count).
--- mnt-gate: audited-table messenger_thread_mutes
+-- console-gate: audited-table messenger_thread_mutes
 CREATE TABLE messenger_thread_mutes (
     thread_id UUID        NOT NULL REFERENCES messenger_threads(id) ON DELETE CASCADE,
     user_id   UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -43,4 +43,4 @@ ALTER TABLE messenger_thread_mutes FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON messenger_thread_mutes
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, DELETE ON messenger_thread_mutes TO mnt_rt;
+GRANT SELECT, INSERT, DELETE ON messenger_thread_mutes TO console_rt;

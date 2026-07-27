@@ -3,16 +3,16 @@
 //! Runtime-role HTTP coverage for the production planning lifecycle.
 //!
 //! Fixtures are seeded as the migration owner, while every HTTP request uses
-//! the non-owner `mnt_rt` role. This ensures the real request-context/RLS path
+//! the non-owner `console_rt` role. This ensures the real request-context/RLS path
 //! is exercised rather than a BYPASSRLS pool or direct SQL substitute.
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
 use base64::Engine as _;
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_production_rest::{
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_test_support::runtime_role_pool;
+use console_production_rest::{
     PRODUCTION_CAPACITY_SLOTS_PATH, PRODUCTION_PLAN_PATH, PRODUCTION_PLANS_PATH,
     PRODUCTION_SOURCE_INGRESS_PATH, PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH,
     PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH, PRODUCTION_SOURCE_SYSTEMS_PATH, ProductionRestState,
@@ -27,8 +27,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const SERVICE_PRINCIPAL_HMAC_KEY: [u8; 32] = [42; 32];
 
 struct Keys {

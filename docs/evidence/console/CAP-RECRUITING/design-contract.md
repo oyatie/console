@@ -113,7 +113,7 @@ Acceptance → employee creation goes **through the owning HR use-case**:
 ## 4. DDL — provisional migration `0187_create_recruiting.sql`
 
 > 0180 is the highest committed migration; renumber to the next free number right before push.
-> House style per 0063/0172: org RLS (`app.current_org`), FORCE RLS, `mnt_rt` grants,
+> House style per 0063/0172: org RLS (`app.current_org`), FORCE RLS, `console_rt` grants,
 > composite same-org FKs, timestamptz defaults.
 
 ```sql
@@ -227,7 +227,7 @@ CREATE INDEX recruit_stage_events_org_applicant_idx ON recruit_stage_events (org
 --   CREATE POLICY org_isolation ON t
 --     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
 --     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
---   GRANT SELECT, INSERT, UPDATE ON t TO mnt_rt;           -- no DELETE (archive-not-delete)
+--   GRANT SELECT, INSERT, UPDATE ON t TO console_rt;           -- no DELETE (archive-not-delete)
 --   (recruit_stage_events: GRANT SELECT, INSERT only — append-only.)
 ```
 

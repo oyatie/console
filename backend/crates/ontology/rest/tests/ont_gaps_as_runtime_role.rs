@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the Phase-C ontology gap endpoints, exercised as the
-//! genuine non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
+//! genuine non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
 //! only faithful exercise of RLS org-isolation.
 //!
 //! Proves:
@@ -19,19 +19,19 @@
 
 use std::collections::BTreeSet;
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::ConfigureTransitionCommand;
-use mnt_governance_domain::{LifecycleState, TransitionRequirements};
-use mnt_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, InstanceState, PgInstanceStore};
-use mnt_ontology_adapter_postgres::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::ConfigureTransitionCommand;
+use console_governance_domain::{LifecycleState, TransitionRequirements};
+use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::instances::{CreateInstance, InstanceState, PgInstanceStore};
+use console_ontology_adapter_postgres::{
     ActingKind, CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput,
 };
-use mnt_ontology_domain::{BackingKind, InstanceLifecycleState, ObjectTypeId};
-use mnt_ontology_rest::{ActionError, LifecycleCommand, OntologyRestState};
-use mnt_platform_authz::{Principal, Role};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{
+use console_ontology_domain::{BackingKind, InstanceLifecycleState, ObjectTypeId};
+use console_ontology_rest::{ActionError, LifecycleCommand, OntologyRestState};
+use console_platform_authz::{Principal, Role};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{
     runtime_role_pool, seed_bound_workflow_and_policy, seed_org_and_super_admin,
 };
 use serde_json::json;
@@ -58,7 +58,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())

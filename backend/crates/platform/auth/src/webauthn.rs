@@ -1,5 +1,5 @@
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_db::insert_audit_event;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_db::insert_audit_event;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
@@ -854,7 +854,7 @@ impl PasskeyService {
 
         // Resolve the credential's tenant from its credential id FIRST, then arm
         // the GUC, THEN do the RLS-gated read/update. `auth_webauthn_credentials`
-        // is FORCE RLS (migration 0035), so as the non-owner `mnt_rt` role a
+        // is FORCE RLS (migration 0035), so as the non-owner `console_rt` role a
         // lookup-by-credential-id returns ZERO rows until `app.current_org` is set
         // — but the org is what we need to set it. The narrow SECURITY DEFINER
         // resolver `platform_resolve_credential_org` (migration 0038) returns only
@@ -1071,7 +1071,7 @@ async fn load_mobile_step_up_binding_tx(
 /// Resolve a webauthn credential's tenant from its credential id, via the narrow
 /// SECURITY DEFINER resolver `platform_resolve_credential_org` (migration 0038).
 ///
-/// `auth_webauthn_credentials` is FORCE RLS, so the app's non-owner `mnt_rt` role
+/// `auth_webauthn_credentials` is FORCE RLS, so the app's non-owner `console_rt` role
 /// cannot read a credential row by credential id until `app.current_org` is armed
 /// — but the org is exactly what we need to arm it. This resolver returns ONLY the
 /// org_id, breaking that chicken-and-egg without widening any read surface.
@@ -1094,7 +1094,7 @@ async fn load_user_passkeys(
     user_id: Uuid,
 ) -> Result<Vec<Passkey>, AuthError> {
     // `auth_webauthn_credentials` is FORCE RLS; arm the tenant GUC for this
-    // transaction so the non-owner `mnt_rt` role sees the user's existing
+    // transaction so the non-owner `console_rt` role sees the user's existing
     // passkeys. The org is the authenticated request's verified tenant.
     let mut tx = pool.begin().await?;
     sqlx::query("SELECT set_config('app.current_org', $1, true)")

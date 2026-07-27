@@ -40,12 +40,12 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_storage::{PresignGetRequest, S3ObjectStore, SeaweedS3Storage};
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_storage::{PresignGetRequest, S3ObjectStore, SeaweedS3Storage};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -96,8 +96,8 @@ const ALLOWED_FILE_TYPES: &[&str] = &["docx", "xlsx", "pptx"];
 // Config + state
 // ===========================================================================
 
-/// Office integration config. Present only when all of `MNT_OFFICE_JWT_SECRET`,
-/// `MNT_OFFICE_CALLBACK_BASE_URL`, and `MNT_OFFICE_DOCSERVER_URL` are set.
+/// Office integration config. Present only when all of `CONSOLE_OFFICE_JWT_SECRET`,
+/// `CONSOLE_OFFICE_CALLBACK_BASE_URL`, and `CONSOLE_OFFICE_DOCSERVER_URL` are set.
 #[derive(Debug, Clone)]
 pub struct OfficeConfig {
     /// Shared HS256 secret — identical to the DocumentServer JWT secret. Signs
@@ -116,9 +116,9 @@ pub struct OfficeConfig {
 pub fn office_config_from_vars(
     get: impl Fn(&str) -> Option<String>,
 ) -> Result<Option<OfficeConfig>, String> {
-    let secret = get("MNT_OFFICE_JWT_SECRET").filter(|s| !s.trim().is_empty());
-    let callback_base_url = get("MNT_OFFICE_CALLBACK_BASE_URL").filter(|s| !s.trim().is_empty());
-    let docserver_url = get("MNT_OFFICE_DOCSERVER_URL").filter(|s| !s.trim().is_empty());
+    let secret = get("CONSOLE_OFFICE_JWT_SECRET").filter(|s| !s.trim().is_empty());
+    let callback_base_url = get("CONSOLE_OFFICE_CALLBACK_BASE_URL").filter(|s| !s.trim().is_empty());
+    let docserver_url = get("CONSOLE_OFFICE_DOCSERVER_URL").filter(|s| !s.trim().is_empty());
     match (secret, callback_base_url, docserver_url) {
         (Some(jwt_secret), Some(callback_base_url), Some(docserver_url)) => {
             // Validate the docserver URL up front so the SSRF host allowlist has
@@ -126,7 +126,7 @@ pub fn office_config_from_vars(
             url::Url::parse(&docserver_url)
                 .ok()
                 .and_then(|u| u.host_str().map(str::to_owned))
-                .ok_or_else(|| "MNT_OFFICE_DOCSERVER_URL must be an absolute URL".to_owned())?;
+                .ok_or_else(|| "CONSOLE_OFFICE_DOCSERVER_URL must be an absolute URL".to_owned())?;
             Ok(Some(OfficeConfig {
                 jwt_secret,
                 callback_base_url: callback_base_url.trim_end_matches('/').to_owned(),
@@ -135,8 +135,8 @@ pub fn office_config_from_vars(
         }
         (None, None, None) => Ok(None),
         _ => Err(
-            "office editor needs all of MNT_OFFICE_JWT_SECRET, MNT_OFFICE_CALLBACK_BASE_URL, \
-             MNT_OFFICE_DOCSERVER_URL, or none"
+            "office editor needs all of CONSOLE_OFFICE_JWT_SECRET, CONSOLE_OFFICE_CALLBACK_BASE_URL, \
+             CONSOLE_OFFICE_DOCSERVER_URL, or none"
                 .to_owned(),
         ),
     }
@@ -145,7 +145,7 @@ pub fn office_config_from_vars(
 #[derive(Clone)]
 pub struct OfficeState {
     pool: PgPool,
-    jwt_verifier: Option<mnt_platform_auth::JwtVerifier>,
+    jwt_verifier: Option<console_platform_auth::JwtVerifier>,
     config: Option<OfficeConfig>,
     blobs: Option<Arc<dyn OfficeBlobStore>>,
 }
@@ -154,7 +154,7 @@ impl OfficeState {
     #[must_use]
     pub fn new(
         pool: PgPool,
-        jwt_verifier: Option<mnt_platform_auth::JwtVerifier>,
+        jwt_verifier: Option<console_platform_auth::JwtVerifier>,
         config: Option<OfficeConfig>,
         blobs: Option<Arc<dyn OfficeBlobStore>>,
     ) -> Self {
@@ -204,7 +204,7 @@ pub fn router(state: OfficeState) -> Router {
         .route(OFFICE_VERSIONS_PATH, get(list_versions_handler))
         .route(OFFICE_RESTORE_PATH, post(restore_handler))
         .with_state(state.clone());
-    let authed = mnt_platform_request_context::with_request_context(authed, verifier, pool);
+    let authed = console_platform_request_context::with_request_context(authed, verifier, pool);
 
     // The DocumentServer force-save callback is a MACHINE request with no user
     // token, so it must NOT go through the principal middleware (which is

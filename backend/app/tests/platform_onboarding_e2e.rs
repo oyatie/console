@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! End-to-end proof of the PLATFORM tier + tenant onboarding, running as the
-//! genuine NON-OWNER runtime role `mnt_rt` (so RLS is actually enforced, exactly
+//! genuine NON-OWNER runtime role `console_rt` (so RLS is actually enforced, exactly
 //! as in production).
 //!
 //! Assertions (definition of done):
@@ -8,15 +8,15 @@
 //!      creating the org + its first SUPER_ADMIN + a one-time OTP.
 //!   2. TENANT ISOLATION: a JWT scoped to acme reading /api/v1/users sees ONLY
 //!      acme's users (never KNL's), and a KNL-scoped JWT sees only KNL's — under
-//!      `mnt_rt`, so RLS is the gate.
+//!      `console_rt`, so RLS is the gate.
 //!   3. A TENANT token is REJECTED on /api/platform/* (403).
 //!   4. A PLATFORM token is REJECTED on a tenant /api/v1/* route (403).
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -26,8 +26,8 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Keys {
     private_pem: String,
@@ -58,7 +58,7 @@ async fn platform_onboards_tenant_and_rls_isolates(super_pool: PgPool) {
     seed_tenant(&super_pool, knl, "knl", knl_admin).await;
 
     // The app pool connects as the non-owner runtime role, so RLS is enforced.
-    let runtime_pool = mnt_rt_pool(&super_pool).await;
+    let runtime_pool = console_rt_pool(&super_pool).await;
     let service = build_router(app_state(runtime_pool.clone(), keys.public_pem.clone()));
 
     // --- (1) PLATFORM token onboards a NEW tenant "acme" -----------------------
@@ -98,7 +98,7 @@ async fn platform_onboards_tenant_and_rls_isolates(super_pool: PgPool) {
     );
     let acme_org = OrgId::from_uuid(acme_id.parse().unwrap());
 
-    // --- (2) TENANT ISOLATION under mnt_rt -------------------------------------
+    // --- (2) TENANT ISOLATION under console_rt -------------------------------------
     // The acme admin token reads /api/v1/users → sees ONLY acme's admin, never KNL.
     let acme_admin = UserId::from_uuid(acme_admin_id.parse().unwrap());
     let acme_token = issue_token(
@@ -247,7 +247,7 @@ async fn read_users(service: &axum::Router, token: &str) -> Vec<Value> {
     assert_eq!(
         response.status(),
         StatusCode::OK,
-        "authenticated tenant read should succeed under mnt_rt"
+        "authenticated tenant read should succeed under console_rt"
     );
     let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
@@ -259,7 +259,7 @@ async fn read_users(service: &axum::Router, token: &str) -> Vec<Value> {
         .expect("response should contain a user array")
 }
 
-async fn mnt_rt_pool(super_pool: &PgPool) -> PgPool {
+async fn console_rt_pool(super_pool: &PgPool) -> PgPool {
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set for sqlx::test");
     let db_name: String = sqlx::query_scalar("SELECT current_database()")
         .fetch_one(super_pool)
@@ -274,13 +274,13 @@ async fn mnt_rt_pool(super_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
         .connect(&test_url)
         .await
-        .expect("failed to build mnt_rt runtime pool")
+        .expect("failed to build console_rt runtime pool")
 }
 
 async fn seed_tenant(pool: &PgPool, org: OrgId, slug: &str, admin_id: UserId) {
@@ -325,11 +325,11 @@ async fn seed_platform_admin(pool: &PgPool, admin_id: UserId) {
 
 fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()

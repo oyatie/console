@@ -86,7 +86,7 @@ function replaceInGeneratedFile(path, replacements) {
 function patchKnownGeneratorGaps(directory) {
   const apiClientPath = resolve(
     directory,
-    "src/main/kotlin/com/maintenance/api/client/infrastructure/ApiClient.kt",
+    "src/main/kotlin/com/console/api/client/infrastructure/ApiClient.kt",
   );
   replaceInGeneratedFile(apiClientPath, [
     [
@@ -138,7 +138,7 @@ function patchKnownGeneratorGaps(directory) {
     ],
   ]);
 
-  const apiDir = resolve(directory, "src/main/kotlin/com/maintenance/api/client/api");
+  const apiDir = resolve(directory, "src/main/kotlin/com/console/api/client/api");
   for (const entry of readdirSync(apiDir, { withFileTypes: true })) {
     if (!entry.isFile() || extname(entry.name) !== ".kt") {
       continue;
@@ -178,7 +178,7 @@ function patchKnownGeneratorGaps(directory) {
   // the duplicate constructor invocation.
   const modelDir = resolve(
     directory,
-    "src/main/kotlin/com/maintenance/api/client/model",
+    "src/main/kotlin/com/console/api/client/model",
   );
   for (const entry of readdirSync(modelDir, { withFileTypes: true })) {
     if (!entry.isFile() || extname(entry.name) !== ".kt") {
@@ -336,7 +336,7 @@ try {
   // how the 22.8k-line monolith (and its kotlinc GC-overhead OOM) arose. Fail closed
   // so an untagged route can never regenerate the monolith unnoticed; this runs in CI
   // through the api-drift regeneration, not just locally.
-  if (existsSync(resolve(stagingDir, "src/main/kotlin/com/maintenance/api/client/api/DefaultApi.kt"))) {
+  if (existsSync(resolve(stagingDir, "src/main/kotlin/com/console/api/client/api/DefaultApi.kt"))) {
     throw new Error(
       "Kotlin generation produced DefaultApi.kt: an openapi.yaml operation is missing a `tags:` entry.\n" +
         "Every operation must be tagged (domain = its /api/v1/<segment> path) so the client stays split per-domain.\n" +

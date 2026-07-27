@@ -243,7 +243,7 @@ Further new charters (below the top 10): benefit/inventory REST + bodies (crates
 - **규제 PII / 다중 관할 (Jurisdiction/Consent/DSR objects)** — compliance multi-jurisdiction.
 - **forecast product / advanced quant (§18 Monte-Carlo/EVT)** — the narrow deterministic projection endpoint exists; the broader P4 forecast product remains deferred.
 - **메일 mox 백엔드 개조** (custom Rust stack kept instead) + **access-grant TTL 토큰 (break-glass)**.
-- **Tier-2 rebrand** (repo/crates mnt-*→console-*), **buck2 adoption**, **bare-metal portability** (infra, not parity).
+- **Tier-2 rebrand** (repo/crates console-*→console-*), **buck2 adoption**, **bare-metal portability** (infra, not parity).
 
 ---
 

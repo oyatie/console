@@ -2,8 +2,8 @@
 
 use std::time::Duration as StdDuration;
 
-use mnt_kernel_core::{FixedClock, Timestamp};
-use mnt_platform_jobs::{
+use console_kernel_core::{FixedClock, Timestamp};
+use console_platform_jobs::{
     ApalisPostgresJobQueue, DEFAULT_APALIS_WORKER_RETENTION, JobQueue, JobRequest, SkewedClock,
     connect_apalis_runtime_pool, migrate_and_reconcile_apalis_postgres, prune_stale_apalis_workers,
     soak::{self, APALIS_POSTGRES_VERSION, APALIS_VERSION},
@@ -24,7 +24,7 @@ fn skewed_clock_drives_schedule_after() {
     let clock = FixedClock(base);
     let skewed = SkewedClock::new(&clock, time::Duration::milliseconds(-750));
 
-    let scheduled = mnt_platform_jobs::schedule_after(&skewed, StdDuration::from_millis(1_750))
+    let scheduled = console_platform_jobs::schedule_after(&skewed, StdDuration::from_millis(1_750))
         .expect("skewed schedule should be valid");
 
     assert_eq!(scheduled, time::macros::datetime!(2026-06-12 09:00:01 UTC));
@@ -32,20 +32,20 @@ fn skewed_clock_drives_schedule_after() {
 
 #[tokio::test]
 async fn apalis_adapter_dedupes_repeated_idempotency_keys() {
-    let owner_database_url = std::env::var("MNT_APALIS_OWNER_DATABASE_URL")
-        .expect("MNT_APALIS_OWNER_DATABASE_URL is required for apalis adapter test");
-    let runtime_database_url = std::env::var("MNT_APALIS_RUNTIME_DATABASE_URL")
-        .expect("MNT_APALIS_RUNTIME_DATABASE_URL is required for apalis adapter test");
+    let owner_database_url = std::env::var("CONSOLE_APALIS_OWNER_DATABASE_URL")
+        .expect("CONSOLE_APALIS_OWNER_DATABASE_URL is required for apalis adapter test");
+    let runtime_database_url = std::env::var("CONSOLE_APALIS_RUNTIME_DATABASE_URL")
+        .expect("CONSOLE_APALIS_RUNTIME_DATABASE_URL is required for apalis adapter test");
     let mut owner_connection = sqlx::PgConnection::connect(&owner_database_url)
         .await
         .expect("connect migration owner");
     migrate_and_reconcile_apalis_postgres(&mut owner_connection)
         .await
         .expect("migrate and reconcile Apalis as owner");
-    let queue_name = format!("mnt.t110.adapter-test.{}", uuid::Uuid::new_v4());
+    let queue_name = format!("console.t110.adapter-test.{}", uuid::Uuid::new_v4());
     let queue = ApalisPostgresJobQueue::connect(&runtime_database_url, &queue_name)
         .await
-        .expect("validate and connect Apalis queue as mnt_rt");
+        .expect("validate and connect Apalis queue as console_rt");
     let workspace_pool = sqlx::PgPool::connect(&owner_database_url)
         .await
         .expect("connect workspace sqlx pool");
@@ -87,18 +87,18 @@ async fn apalis_adapter_dedupes_repeated_idempotency_keys() {
 
 #[tokio::test]
 async fn apalis_worker_retention_prunes_only_stale_unreferenced_workers() {
-    let owner_database_url = std::env::var("MNT_APALIS_OWNER_DATABASE_URL")
-        .expect("MNT_APALIS_OWNER_DATABASE_URL is required for apalis adapter test");
-    let runtime_database_url = std::env::var("MNT_APALIS_RUNTIME_DATABASE_URL")
-        .expect("MNT_APALIS_RUNTIME_DATABASE_URL is required for apalis adapter test");
+    let owner_database_url = std::env::var("CONSOLE_APALIS_OWNER_DATABASE_URL")
+        .expect("CONSOLE_APALIS_OWNER_DATABASE_URL is required for apalis adapter test");
+    let runtime_database_url = std::env::var("CONSOLE_APALIS_RUNTIME_DATABASE_URL")
+        .expect("CONSOLE_APALIS_RUNTIME_DATABASE_URL is required for apalis adapter test");
     let mut owner_connection = sqlx::PgConnection::connect(&owner_database_url)
         .await
         .expect("connect migration owner");
     migrate_and_reconcile_apalis_postgres(&mut owner_connection)
         .await
         .expect("migrate and reconcile Apalis as owner");
-    let queue_name = format!("mnt.t110.retention-test.{}", uuid::Uuid::new_v4());
-    let other_queue_name = format!("mnt.t110.retention-other.{}", uuid::Uuid::new_v4());
+    let queue_name = format!("console.t110.retention-test.{}", uuid::Uuid::new_v4());
+    let other_queue_name = format!("console.t110.retention-other.{}", uuid::Uuid::new_v4());
     let current_worker = format!("retention-current-{}", uuid::Uuid::new_v4());
     let stale_worker = format!("retention-stale-{}", uuid::Uuid::new_v4());
     let recent_worker = format!("retention-recent-{}", uuid::Uuid::new_v4());
@@ -108,7 +108,7 @@ async fn apalis_worker_retention_prunes_only_stale_unreferenced_workers() {
 
     let _queue = ApalisPostgresJobQueue::connect(&runtime_database_url, &queue_name)
         .await
-        .expect("validate and connect Apalis queue as mnt_rt");
+        .expect("validate and connect Apalis queue as console_rt");
     let apalis_pool = connect_apalis_runtime_pool(&runtime_database_url)
         .await
         .expect("connect hardened apalis sqlx runtime pool");

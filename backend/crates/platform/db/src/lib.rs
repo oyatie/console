@@ -1,9 +1,9 @@
-//! `mnt-platform-db` — Postgres schema migrations and the `with_audit`
+//! `console-platform-db` — Postgres schema migrations and the `with_audit`
 //! transactional helper.
 //!
 //! # Layering
 //! This crate sits in the `platform` layer and is allowed to depend on
-//! `mnt-kernel-core` (pure types) and `sqlx`. Domain and application crates
+//! `console-kernel-core` (pure types) and `sqlx`. Domain and application crates
 //! depend on this crate for the `with_audit` building block.
 //!
 //! # Append-only invariant
@@ -16,7 +16,7 @@
 //! committed `.sqlx/` offline cache. After schema changes run:
 //!
 //! ```sh
-//! DATABASE_URL=postgres://localhost/mnt_dev \
+//! DATABASE_URL=postgres://localhost/console_dev \
 //!     cargo sqlx prepare --workspace
 //! ```
 //!

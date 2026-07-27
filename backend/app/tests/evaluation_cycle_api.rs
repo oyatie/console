@@ -4,7 +4,7 @@
 //!
 //! The first test exercises `build_router` so route composition and JWT
 //! authentication cannot regress. The workflow story below mounts the same
-//! evaluation router against an `mnt_rt` pool to exercise FORCE RLS
+//! evaluation router against an `console_rt` pool to exercise FORCE RLS
 //! (NOSUPERUSER, NOBYPASSRLS), never the BYPASSRLS superuser the default
 //! `#[sqlx::test]` pool connects as. Seed helpers live here rather than in the
 //! rest crate so the audit-coverage gate does not misread them as unaudited
@@ -12,11 +12,11 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_evaluation_adapter_postgres::PgEvaluationStore;
-use mnt_evaluation_rest::EvaluationRestState;
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_evaluation_adapter_postgres::PgEvaluationStore;
+use console_evaluation_rest::EvaluationRestState;
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -27,8 +27,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const CYCLES: &str = "/api/v1/evaluation/cycles";
 const SUBJECTS: &str = "/api/v1/evaluation/subjects";
 const ORG_B: Uuid = Uuid::from_u128(0xeb00_0000_0000_0000_0000_0000_0000_00b2);
@@ -1238,12 +1238,12 @@ impl Fixture {
     }
 
     /// The evaluation router mounted exactly as the app will mount it, but
-    /// backed by a pool whose every connection runs as `mnt_rt`.
+    /// backed by a pool whose every connection runs as `console_rt`.
     async fn router(&self, owner: &PgPool) -> axum::Router {
         let rt = runtime_role_pool(owner).await;
         let verifier =
             JwtVerifier::from_es256_public_pem(jwt_settings(), self.public_pem.as_bytes()).unwrap();
-        mnt_evaluation_rest::router(EvaluationRestState::new(
+        console_evaluation_rest::router(EvaluationRestState::new(
             PgEvaluationStore::new(rt),
             Some(verifier),
         ))
@@ -1263,7 +1263,7 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -1272,13 +1272,13 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

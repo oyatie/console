@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createConsoleApiClient } from "../../../api/client";
 import { AuthContext, type AuthContextValue } from "../../../context/auth";
 import { ko } from "../../../i18n/ko";
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { PurchaseRequestsWorkspace } from "./PurchaseRequestsWorkspace";
 
 const branchId = "00000000-0000-4000-8000-000000000001";

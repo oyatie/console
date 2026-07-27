@@ -44,7 +44,7 @@ ALTER TABLE employee_create_idempotency FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON employee_create_idempotency
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON employee_create_idempotency TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON employee_create_idempotency TO console_rt;
 
 ALTER TABLE employee_employment_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employee_employment_profiles FORCE ROW LEVEL SECURITY;
@@ -85,4 +85,4 @@ CREATE TRIGGER trg_console_employee_number_unique
     BEFORE INSERT ON employees
     FOR EACH ROW EXECUTE FUNCTION console_employee_number_unique();
 
-GRANT SELECT, INSERT ON employee_employment_profiles TO mnt_rt;
+GRANT SELECT, INSERT ON employee_employment_profiles TO console_rt;

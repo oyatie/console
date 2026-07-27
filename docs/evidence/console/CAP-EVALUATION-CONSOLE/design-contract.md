@@ -295,17 +295,17 @@ END $$;
 
 -- No DELETE on lifecycle objects (archive-not-delete); goals/evidence are
 -- replace-set editable while their parent is still draft-stage.
-GRANT SELECT, INSERT, UPDATE         ON evaluation_cycles         TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_subjects       TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_goals          TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_reviews        TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_evidence_links TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE         ON evaluation_code_counters  TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_cycles         TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_subjects       TO console_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_goals          TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_reviews        TO console_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON evaluation_evidence_links TO console_rt;
+GRANT SELECT, INSERT, UPDATE         ON evaluation_code_counters  TO console_rt;
 ```
 
 Note: `evaluation_code_counters` deliberately lacks an org RLS bypass — the
 finalize transaction runs under `app.current_org`, so the counter row is only
-visible/lockable inside the owning tenant. `mnt_rt` RLS tests must cover: (a)
+visible/lockable inside the owning tenant. `console_rt` RLS tests must cover: (a)
 cross-org invisibility of cycles/subjects/ledger, (b) unarmed-GUC fail-closed
 reads, (c) the counter upsert under RLS.
 
@@ -313,16 +313,16 @@ reads, (c) the counter upsert under RLS.
 
 Backend lane (dark landing — no `build_router`, no openapi touch):
 1. Migration 0190 exactly as §6 (renumber only if the integrator reassigns slots).
-2. Crates `mnt-evaluation-{domain,application,adapter-postgres,rest}` mirroring
+2. Crates `console-evaluation-{domain,application,adapter-postgres,rest}` mirroring
    sales; rest exports `EVALUATION_ROUTE_PATHS` + `pub fn router(EvaluationRestState) -> Router`.
 3. `platform/authz`: three Feature variants (§2) with doc comments, `as_str`,
    parse, matrix rows + matrix tests updated.
 4. `backend/app/tests/evaluation_cycle_api.rs`: mounts the evaluation router
-   directly (scratch DB via `MNT_POSTGRES_DB`), walks STORY-EVALUATION-001
+   directly (scratch DB via `CONSOLE_POSTGRES_DB`), walks STORY-EVALUATION-001
    end-to-end (create→subjects→goals→open→self+manager reviews with evidence→
    start-calibration→calibrate (four-eyes assert)→finalize→ledger read + audit
    rows assert), plus deny cases (403 feature, 404 omission, 409 FSM/SoD).
-5. `cargo fmt` + `clippy -D warnings` + package-scoped tests as mnt_rt.
+5. `cargo fmt` + `clippy -D warnings` + package-scoped tests as console_rt.
 
 Frontend lane (owns `web/src/console/evaluation/**` only):
 1. Production-exemplar file set; screen key `evaluation`; strings in

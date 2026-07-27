@@ -46,7 +46,7 @@ test.describe("G007 collaboration/mail/calendar/poll/mobile lifecycle contract",
     expect(collaborationMatrix.requiredBackendTests).toContain("backend/crates/messenger/rest/tests/api.rs");
     expect(collaborationMatrix.requiredBackendTests).toContain("backend/crates/comms/adapter-postgres/tests/mail_sync_rls_surfaces_as_runtime_role.rs");
     expect(collaborationMatrix.requiredMobileTests).toContain("ios/UITests/MessengerUITests.swift");
-    expect(collaborationMatrix.requiredMobileTests).toContain("android/app/src/test/kotlin/com/maintenance/field/data/collaboration/MobileOperationsRepositoryTest.kt");
+    expect(collaborationMatrix.requiredMobileTests).toContain("android/app/src/test/kotlin/com/console/app/data/collaboration/MobileOperationsRepositoryTest.kt");
 
     const assertions = collaborationMatrix.safetyAssertions.join("\n");
     expect(assertions).toContain("Messenger Enter sends only plain Enter");

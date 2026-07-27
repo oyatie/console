@@ -1,4 +1,4 @@
-use mnt_kernel_core::{BranchId, UserId, WorkOrderId};
+use console_kernel_core::{BranchId, UserId, WorkOrderId};
 use sqlx::PgPool;
 use time::macros::datetime;
 

@@ -2,7 +2,7 @@
 //!
 //! No I/O, no async, no sqlx. Everything here is callable from any layer.
 
-use mnt_kernel_core::{KernelError, OrgId, Timestamp, UserId};
+use console_kernel_core::{KernelError, OrgId, Timestamp, UserId};
 use uuid::Uuid;
 
 // ---------------------------------------------------------------------------
@@ -162,7 +162,7 @@ pub struct TriageFindingCommand {
     /// Optional memo (max 2000 chars). Required for DISMISSED and ESCALATED.
     pub memo: Option<String>,
     pub occurred_at: Timestamp,
-    pub trace: mnt_kernel_core::TraceContext,
+    pub trace: console_kernel_core::TraceContext,
 }
 
 /// Validate a triage memo: required for DISMISSED/ESCALATED, optional for REVIEWED.
@@ -231,7 +231,7 @@ pub fn run_price_outlier_detector(
     amount_won: i64,
     peers: &[i64],
 ) -> PriceOutlierOutput {
-    use mnt_kernel_core::compute_price_intel;
+    use console_kernel_core::compute_price_intel;
 
     let result = compute_price_intel(amount_won, peers);
     let is_sparse = result.is_sparse();

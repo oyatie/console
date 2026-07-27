@@ -9,17 +9,17 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-workflow-runtime",
+    name = "console-workflow-runtime",
     mapped_srcs = repo_mapped_srcs("backend/crates/workflow/runtime", glob(["src/**/*.rs"])),
-    crate = "mnt_workflow_runtime",
+    crate = "console_workflow_runtime",
     edition = "2024",
     crate_root = "backend/crates/workflow/runtime/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/workflow/runtime"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/workflow/domain:mnt-workflow-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/workflow/domain:console-workflow-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -28,18 +28,18 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-workflow-runtime-unit",
+    name = "console-workflow-runtime-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/workflow/runtime", glob(["src/**/*.rs"])),
-    crate = "mnt_workflow_runtime",
+    crate = "console_workflow_runtime",
     edition = "2024",
     crate_root = "backend/crates/workflow/runtime/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/workflow/runtime"},
     labels = ["owner.backend.crates.workflow.runtime", "domain.workflow", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/workflow/domain:mnt-workflow-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/workflow/domain:console-workflow-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

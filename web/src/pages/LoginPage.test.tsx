@@ -100,9 +100,9 @@ function phoneQrHandoffResponse(otp = "Abcd1234") {
     otp,
     expires_at: "2026-06-14T00:05:00Z",
     enroll_url:
-      `https://console.knllogistic.com/login#otp=${otp}&desktop_approve=mnt_dla_` +
+      `https://console.knllogistic.com/login#otp=${otp}&desktop_approve=console_dla_` +
       "d".repeat(64),
-    poll_token: `mnt_dlp_${"e".repeat(64)}`,
+    poll_token: `console_dlp_${"e".repeat(64)}`,
   };
 }
 
@@ -141,8 +141,8 @@ describe("LoginPage sign-in", () => {
   it("starts a desktop QR login and accepts the desktop token after phone approval", async () => {
     const user = userEvent.setup();
     const acceptTokens = vi.fn();
-    const pollToken = `mnt_dlp_${"a".repeat(64)}`;
-    const approveToken = `mnt_dla_${"b".repeat(64)}`;
+    const pollToken = `console_dlp_${"a".repeat(64)}`;
+    const approveToken = `console_dla_${"b".repeat(64)}`;
     let pollCalls = 0;
     server.use(
       http.post("*/api/v1/auth/device-login/start", () =>
@@ -217,7 +217,7 @@ describe("LoginPage sign-in", () => {
   it("approves a desktop QR login on the phone without accepting a phone session", async () => {
     const user = userEvent.setup();
     const acceptTokens = vi.fn();
-    const approveToken = `mnt_dla_${"c".repeat(64)}`;
+    const approveToken = `console_dla_${"c".repeat(64)}`;
     const approved = vi.fn();
 
     class FakeAssertionResponse {
@@ -531,7 +531,7 @@ describe("OnboardingPage enrollment", () => {
   it("does not leave setup blocked when desktop QR approval expires after enrollment", async () => {
     const user = userEvent.setup();
     const clearPasskeySetup = vi.fn();
-    const approveToken = `mnt_dla_${"f".repeat(64)}`;
+    const approveToken = `console_dla_${"f".repeat(64)}`;
     const approveSession = vi.fn();
     window.sessionStorage.setItem("mnt.desktop_approve", approveToken);
     usePrivacyConsentHandlers(true);
@@ -805,9 +805,9 @@ describe("OnboardingPage enrollment", () => {
           otp: "Abcd1234",
           expires_at: "2026-06-14T00:05:00Z",
           enroll_url:
-            "https://console.knllogistic.com/login#otp=Abcd1234&desktop_approve=mnt_dla_" +
+            "https://console.knllogistic.com/login#otp=Abcd1234&desktop_approve=console_dla_" +
             "d".repeat(64),
-          poll_token: `mnt_dlp_${"e".repeat(64)}`,
+          poll_token: `console_dlp_${"e".repeat(64)}`,
         });
       }),
       http.post("*/api/v1/auth/device-login/poll", () =>
@@ -841,7 +841,7 @@ describe("OnboardingPage enrollment", () => {
       expect(handoffCalls).toBe(1);
     });
     expect(link.getAttribute("href")).toBe(
-      "https://console.knllogistic.com/login#otp=Abcd1234&desktop_approve=mnt_dla_" +
+      "https://console.knllogistic.com/login#otp=Abcd1234&desktop_approve=console_dla_" +
         "d".repeat(64),
     );
     await waitFor(() => {
@@ -913,8 +913,8 @@ describe("LoginPage provider-owned acceptance lease fencing", () => {
       http.post("*/api/v1/auth/device-login/start", () => {
         events.push("device-start-request");
         return HttpResponse.json({
-          poll_token: `mnt_dlp_${"a".repeat(64)}`,
-          approve_url: `https://console.knllogistic.com/login#desktop_approve=mnt_dla_${"b".repeat(64)}`,
+          poll_token: `console_dlp_${"a".repeat(64)}`,
+          approve_url: `https://console.knllogistic.com/login#desktop_approve=console_dla_${"b".repeat(64)}`,
           expires_at: "2099-01-01T00:00:00Z",
         });
       }),

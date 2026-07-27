@@ -3,22 +3,22 @@
 //! (issue #19.4 — the 고객 현장관리 form reported address/postal_code vanishing
 //! after a save).
 //!
-//! Proves, as the genuine non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS,
+//! Proves, as the genuine non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS,
 //! FORCE RLS) under org A's armed `app.current_org`, that address + postal_code:
 //!   (a) PERSIST on create_site,
 //!   (b) PERSIST on a subsequent update_site (PATCH) that changes them,
 //!   (c) ROUND-TRIP on the by-location read (`equipment_by_location`) the
 //!       SiteGeographyPanel seeds its form from.
 //!
-//! Why `mnt_rt`: the default `#[sqlx::test]` pool connects as a BYPASSRLS
+//! Why `console_rt`: the default `#[sqlx::test]` pool connects as a BYPASSRLS
 //! superuser, which would green-light a read/write that is actually broken under
 //! the production tenant policy. We SEED as the owner (raw inserts) and exercise
-//! create/update/read as `mnt_rt`.
+//! create/update/read as `console_rt`.
 
-use mnt_kernel_core::{BranchId, BranchScope, CustomerId, OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
-use mnt_registry_adapter_postgres::PgRegistryStore;
-use mnt_registry_application::{
+use console_kernel_core::{BranchId, BranchScope, CustomerId, OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
+use console_registry_adapter_postgres::PgRegistryStore;
+use console_registry_application::{
     CreateSiteCommand, EquipmentByLocationQuery, UpdateSiteCommand, UpdateSiteFields,
 };
 use sqlx::PgPool;
@@ -26,7 +26,7 @@ use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use uuid::Uuid;
 
-/// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`
+/// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`
 /// (NOBYPASSRLS, subject to FORCE RLS), exactly like production.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -34,7 +34,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -154,7 +154,7 @@ async fn site_address_postal_code_and_coordinates_round_trip_as_runtime_role(own
                 occurred_at: occurred_at(),
             })
             .await
-            .expect("create_site must succeed as mnt_rt under org-A's armed GUC");
+            .expect("create_site must succeed as console_rt under org-A's armed GUC");
         assert_eq!(
             site.address.as_deref(),
             Some("경기도 안산시 단원구 1로 1"),
@@ -185,7 +185,7 @@ async fn site_address_postal_code_and_coordinates_round_trip_as_runtime_role(own
                 occurred_at: occurred_at(),
             })
             .await
-            .expect("update_site must succeed as mnt_rt under org-A's armed GUC");
+            .expect("update_site must succeed as console_rt under org-A's armed GUC");
 
         // (c) Read the site back via the by-location aggregation the panel seeds
         // its form from, and confirm the UPDATED address + postal_code +
@@ -195,7 +195,7 @@ async fn site_address_postal_code_and_coordinates_round_trip_as_runtime_role(own
                 branch_scope: BranchScope::All,
             })
             .await
-            .expect("equipment_by_location must succeed as mnt_rt under org-A's armed GUC")
+            .expect("equipment_by_location must succeed as console_rt under org-A's armed GUC")
             .into_iter()
             .find(|g| g.site_id == site.id)
             .expect("the created site must be returned by the by-location read");
@@ -216,7 +216,7 @@ async fn site_address_postal_code_and_coordinates_round_trip_as_runtime_role(own
                 occurred_at: occurred_at(),
             })
             .await
-            .expect("coordinate clear must succeed as mnt_rt under org-A's armed GUC");
+            .expect("coordinate clear must succeed as console_rt under org-A's armed GUC");
 
         let cleared_group = store
             .equipment_by_location(EquipmentByLocationQuery {

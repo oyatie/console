@@ -5,8 +5,8 @@
 //! holds with the `INSERT ... ON CONFLICT (phone) DO UPDATE` rewrite.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_provisioning::{DevPrincipalProvisioner, DevPrincipalRequest};
+use console_kernel_core::OrgId;
+use console_platform_provisioning::{DevPrincipalProvisioner, DevPrincipalRequest};
 use sqlx::PgPool;
 use time::OffsetDateTime;
 

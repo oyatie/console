@@ -21,8 +21,8 @@ use std::pin::Pin;
 use std::str::FromStr;
 
 pub use crate::credential_cipher::{Aad, CipherError, CredentialCipher, SealedCredential};
-use mnt_comms_domain::{MailSecurity, MessageAddress};
-use mnt_kernel_core::{
+use console_comms_domain::{MailSecurity, MessageAddress};
+use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, OrgId, Timestamp, TraceContext, UserId,
 };
 use secrecy::{ExposeSecret, SecretString};
@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 // The webmail credential-cipher capability is an APPLICATION-layer port: both
 // the application services and the Postgres adapter depend on the abstraction,
 // while the concrete envelope-AEAD implementation lives in the
-// `mnt-comms-credential-cipher` crate (an outer/infra crate that depends on this
+// `console-comms-credential-cipher` crate (an outer/infra crate that depends on this
 // one and implements the trait). Defining the trait + its value types here keeps
 // the dependency direction clean (application does not depend on an adapter) and
 // is why the orphan-rule blanket impls for `&C` / `Arc<C>` live alongside it.
@@ -113,7 +113,7 @@ pub mod credential_cipher {
     }
 
     /// Envelope credential cipher port. A single implementation
-    /// (`EnvelopeCredentialCipher`, in `mnt-comms-credential-cipher`) backs it;
+    /// (`EnvelopeCredentialCipher`, in `console-comms-credential-cipher`) backs it;
     /// the trait exists so application/adapter layers depend on the capability,
     /// not the concrete cipher.
     pub trait CredentialCipher: Send + Sync {
@@ -263,8 +263,8 @@ pub enum MailServiceError {
 
 impl MailServiceError {
     #[must_use]
-    pub fn kind(&self) -> mnt_kernel_core::ErrorKind {
-        use mnt_kernel_core::ErrorKind;
+    pub fn kind(&self) -> console_kernel_core::ErrorKind {
+        use console_kernel_core::ErrorKind;
         match self {
             Self::Domain(err) => err.kind,
             Self::NotConfigured => ErrorKind::Validation,
@@ -1238,7 +1238,7 @@ pub struct ImapFolder {
     /// The server-side mailbox path (e.g. `INBOX`, `[Gmail]/Sent Mail`).
     pub imap_path: String,
     /// The classified role (Inbox/Sent/…); `Custom` for anything unrecognized.
-    pub role: mnt_comms_domain::FolderRole,
+    pub role: console_comms_domain::FolderRole,
     /// A human display name (the last path segment, server-decoded).
     pub name: String,
 }
@@ -1378,7 +1378,7 @@ pub trait ImapSession: Send {
 
 /// The IMAP client port: connect + authenticate to an account's mailbox over a
 /// TLS-pinned, SSRF-guarded transport, returning an [`ImapSession`]. The single
-/// implementation (`AsyncImapClient`, in `mnt-comms-adapter-imap`) performs the
+/// implementation (`AsyncImapClient`, in `console-comms-adapter-imap`) performs the
 /// resolve-once/pin-IP/denylist guard and the rustls handshake; the engine
 /// speaks only to this trait so it is testable against a fake client.
 pub trait ImapClient: Send + Sync {
@@ -1401,7 +1401,7 @@ pub trait ImapClient: Send + Sync {
 /// Object-storage port for inbound attachments. Mirrors the evidence
 /// presign/storage pattern: the engine uploads decrypted attachment bytes under
 /// an ORG-PREFIXED key, and the REST layer hands the UI a short-lived presigned
-/// GET. Implemented by an adapter over `mnt-platform-storage`'s `S3ObjectStore`.
+/// GET. Implemented by an adapter over `console-platform-storage`'s `S3ObjectStore`.
 pub trait MailAttachmentStore: Send + Sync {
     /// Upload `bytes` under an org-prefixed key and return that key. The key
     /// shape is `orgs/{org}/mail/{account}/{message}/{n}-{filename}` — every
@@ -2086,7 +2086,7 @@ where
         message: FetchedMessage,
     ) -> Result<bool, MailServiceError> {
         let message_id = EmailMessageId::new();
-        let normalized = mnt_comms_domain::normalize_subject(&message.subject);
+        let normalized = console_comms_domain::normalize_subject(&message.subject);
 
         // Upload attachments under org-prefixed keys BEFORE the UPSERT so the
         // recorded rows always reference an object that exists.
@@ -2402,8 +2402,8 @@ mod tests {
         // subject after the Korean prefix is stripped.
         let original = fetched(20, "견적 문의");
         let reply = fetched(21, "회신: 견적 문의");
-        let orig_norm = mnt_comms_domain::normalize_subject(&original.subject);
-        let reply_norm = mnt_comms_domain::normalize_subject(&reply.subject);
+        let orig_norm = console_comms_domain::normalize_subject(&original.subject);
+        let reply_norm = console_comms_domain::normalize_subject(&reply.subject);
         assert_eq!(
             thread_grouping_key(&original, &orig_norm),
             thread_grouping_key(&reply, &reply_norm),
@@ -2482,7 +2482,7 @@ mod tests {
             Box::pin(async {
                 Ok(vec![ImapFolder {
                     imap_path: "INBOX".to_owned(),
-                    role: mnt_comms_domain::FolderRole::Inbox,
+                    role: console_comms_domain::FolderRole::Inbox,
                     name: "Inbox".to_owned(),
                 }])
             })

@@ -1,5 +1,5 @@
 [package]
-name = "mnt-gate-vendor-lockin"
+name = "console-gate-vendor-lockin"
 version = "0.1.0"
 description = "CI gate: verifies managed-cloud dependency seams have vendor lock-in phase-out registry entries."
 edition.workspace = true
@@ -8,11 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "mnt-gate-vendor-lockin"
+name = "console-gate-vendor-lockin"
 path = "src/main.rs"
 
 [lib]
-name = "mnt_gate_vendor_lockin"
+name = "console_gate_vendor_lockin"
 path = "src/lib.rs"
 
 [dependencies]

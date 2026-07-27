@@ -9,30 +9,30 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-equipment-domain",
+    name = "console-equipment-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/equipment/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_equipment_domain",
+    crate = "console_equipment_domain",
     edition = "2024",
     crate_root = "backend/crates/equipment/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/equipment/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-equipment-domain-unit",
+    name = "console-equipment-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/equipment/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_equipment_domain",
+    crate = "console_equipment_domain",
     edition = "2024",
     crate_root = "backend/crates/equipment/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/equipment/domain"},
     labels = ["owner.backend.crates.equipment.domain", "domain.equipment", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )

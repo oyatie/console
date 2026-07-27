@@ -9,7 +9,7 @@
 -- pattern of the other platform org escapes (platform_create_organization /
 -- platform_set_organization_status, 0036): a SECURITY DEFINER function owned by
 -- the table owner that briefly disables row_security CONFINED TO ITS OWN BODY and
--- restores it before returning. `mnt_rt` is SELECT-only on `organizations` and
+-- restores it before returning. `console_rt` is SELECT-only on `organizations` and
 -- FORCE-RLS-scoped on every tenant table, so it could never run this cascade
 -- itself; the app calls this function and audits the result.
 --
@@ -39,7 +39,7 @@
 --      The append-only trigger would abort that UPDATE. Rather than DISABLE the
 --      trigger (a global weakening; ALTER TABLE is non-transaction-local DDL) or
 --      use session_replication_role = replica (which requires SUPERUSER — the
---      DEFINER owner `mnt_app` is NOT a superuser under CNPG, so that path would
+--      DEFINER owner `console_app` is NOT a superuser under CNPG, so that path would
 --      pass in a superuser sqlx::test and FAIL in production), we make the trigger
 --      REMOVAL-AWARE: it permits an UPDATE that changes ONLY org_id/actor/branch_id
 --      when the transaction-local GUC `app.audit_rehome = 'on'` is armed — settable
@@ -125,7 +125,7 @@ BEGIN
 
     -- Run the entire guard + cascade with RLS off, confined to this function body
     -- and restored before EVERY return path (a successful return that forgot to
-    -- restore would poison the caller's mnt_rt transaction — see 0036).
+    -- restore would poison the caller's console_rt transaction — see 0036).
     SET LOCAL row_security = off;
 
     SELECT EXISTS (SELECT 1 FROM organizations WHERE id = p_id) INTO org_exists;
@@ -217,4 +217,4 @@ $$;
 -- still cannot UPDATE audit_events directly (the trigger rejects it without the
 -- DEFINER-only GUC). PUBLIC gets no execute.
 REVOKE ALL ON FUNCTION platform_remove_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_remove_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_remove_organization(UUID) TO console_rt;

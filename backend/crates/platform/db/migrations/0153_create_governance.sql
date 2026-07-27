@@ -131,10 +131,10 @@ CREATE TRIGGER trg_gov_approvals_no_delete
 
 -- Runtime role: config table is mutable; record tables are append-only. No hard
 -- DELETE anywhere in the engine.
-GRANT SELECT, INSERT, UPDATE ON gov_lifecycle_transitions TO mnt_rt;
-GRANT SELECT, INSERT         ON gov_overrides             TO mnt_rt;
-GRANT SELECT, INSERT         ON gov_approvals             TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON gov_lifecycle_transitions TO console_rt;
+GRANT SELECT, INSERT         ON gov_overrides             TO console_rt;
+GRANT SELECT, INSERT         ON gov_approvals             TO console_rt;
 
-REVOKE DELETE         ON gov_lifecycle_transitions FROM mnt_rt;
-REVOKE UPDATE, DELETE ON gov_overrides             FROM mnt_rt;
-REVOKE UPDATE, DELETE ON gov_approvals             FROM mnt_rt;
+REVOKE DELETE         ON gov_lifecycle_transitions FROM console_rt;
+REVOKE UPDATE, DELETE ON gov_overrides             FROM console_rt;
+REVOKE UPDATE, DELETE ON gov_approvals             FROM console_rt;

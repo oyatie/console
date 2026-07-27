@@ -100,9 +100,9 @@ test('delivery-unit Buck authority cannot diverge from declared verification tar
   const bad = structuredClone(registry);
   const equipment = bad.capabilities.find((capability) => capability.id === 'CAP-EQUIPMENT-3R-PILOT');
   equipment.delivery_unit.buck2_targets = [
-    '//backend/crates/equipment/domain:mnt-equipment-domain-unit',
-    '//backend/crates/equipment/rest:mnt-equipment-rest',
-    '//backend/app:mnt-app-itest-equipment_3r_api',
+    '//backend/crates/equipment/domain:console-equipment-domain-unit',
+    '//backend/crates/equipment/rest:console-equipment-rest',
+    '//backend/app:console-app-itest-equipment_3r_api',
   ];
   assert.throws(
     () => validateConsoleTruthLedger(bad, jurisdiction, { expectedCandidateSha: registry.candidate.sha }),

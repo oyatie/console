@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Settlement FSM legal-edge coverage (design-contract §3.2).
 
-use mnt_kernel_core::ErrorKind;
-use mnt_workorder_domain::{
+use console_kernel_core::ErrorKind;
+use console_workorder_domain::{
     SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES, SETTLEMENT_TRANSITIONS, SettlementStatus,
     WorkOrderStatus, validate_settlement_transition,
 };

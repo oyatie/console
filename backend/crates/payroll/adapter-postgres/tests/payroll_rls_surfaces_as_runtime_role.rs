@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS gate for the payroll draft-run/line staging adapter.
 //!
-//! Proven as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the `#[sqlx::test]` BYPASSRLS superuser pool,
 //! which sees every row and would green-light a broken org filter.
 //!
@@ -16,9 +16,9 @@
 //!  * a proposed payroll approver from a DIFFERENT org is rejected by the
 //!    read-only tenant prerequisite before any future approval write exists.
 
-use mnt_kernel_core::{ErrorKind, OrgId, UserId};
-use mnt_payroll_adapter_postgres::PgPayrollStore;
-use mnt_platform_test_support::runtime_role_pool;
+use console_kernel_core::{ErrorKind, OrgId, UserId};
+use console_payroll_adapter_postgres::PgPayrollStore;
+use console_platform_test_support::runtime_role_pool;
 use sqlx::PgPool;
 use time::macros::date;
 use uuid::Uuid;
@@ -126,7 +126,7 @@ async fn runs_and_lines_are_org_isolated(pool: PgPool) {
     let store = PgPayrollStore::new(rt_pool);
 
     // Org A's GUC sees only org A's run, never org B's.
-    let page_a = mnt_platform_request_context::scope_org(OrgId::from_uuid(org_a), async {
+    let page_a = console_platform_request_context::scope_org(OrgId::from_uuid(org_a), async {
         store.list_runs(None, None).await
     })
     .await
@@ -135,7 +135,7 @@ async fn runs_and_lines_are_org_isolated(pool: PgPool) {
     assert_eq!(page_a.items[0].id, run_a);
 
     // Org B's GUC sees only its own run.
-    let page_b = mnt_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
+    let page_b = console_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
         store.list_runs(None, None).await
     })
     .await
@@ -145,7 +145,7 @@ async fn runs_and_lines_are_org_isolated(pool: PgPool) {
 
     // Direct id lookup of org A's run under org B's GUC is a miss, not a leak.
     let cross_org_detail =
-        mnt_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
+        console_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
             store.get_run(run_a, None, None).await
         })
         .await
@@ -156,7 +156,7 @@ async fn runs_and_lines_are_org_isolated(pool: PgPool) {
     );
 
     // The correct org's GUC reads the run plus its one line.
-    let detail = mnt_platform_request_context::scope_org(OrgId::from_uuid(org_a), async {
+    let detail = console_platform_request_context::scope_org(OrgId::from_uuid(org_a), async {
         store.get_run(run_a, None, None).await
     })
     .await
@@ -194,7 +194,7 @@ async fn my_lines_are_employee_scoped_never_a_coworkers(pool: PgPool) {
     let org_id = OrgId::from_uuid(org);
 
     // Alice resolves to her own employee id and sees ONLY her own line.
-    let alice_employee = mnt_platform_request_context::scope_org(org_id, async {
+    let alice_employee = console_platform_request_context::scope_org(org_id, async {
         store.linked_employee_id(alice_user).await
     })
     .await
@@ -202,7 +202,7 @@ async fn my_lines_are_employee_scoped_never_a_coworkers(pool: PgPool) {
     .expect("alice is linked to an employee");
     assert_eq!(alice_employee, alice);
 
-    let alice_lines = mnt_platform_request_context::scope_org(org_id, async {
+    let alice_lines = console_platform_request_context::scope_org(org_id, async {
         store.list_my_lines(alice_employee, None, None).await
     })
     .await
@@ -213,7 +213,7 @@ async fn my_lines_are_employee_scoped_never_a_coworkers(pool: PgPool) {
     // An account with no employee link resolves to `None` (the REST layer
     // turns this into an empty page, never a 403 — mirrors
     // `hr.rs::load_optional_linked_employee_id`).
-    let admin_employee = mnt_platform_request_context::scope_org(org_id, async {
+    let admin_employee = console_platform_request_context::scope_org(org_id, async {
         store.linked_employee_id(admin_user).await
     })
     .await
@@ -222,7 +222,7 @@ async fn my_lines_are_employee_scoped_never_a_coworkers(pool: PgPool) {
 
     // Asking for Bob's own lines under Bob's id still returns only Bob's row
     // — proves the scoping is by employee_id, not "first row in the run".
-    let bob_lines = mnt_platform_request_context::scope_org(org_id, async {
+    let bob_lines = console_platform_request_context::scope_org(org_id, async {
         store.list_my_lines(bob, None, None).await
     })
     .await
@@ -251,7 +251,7 @@ async fn my_lines_for_a_foreign_org_employee_id_yields_nothing(pool: PgPool) {
 
     // Org A's employee id, looked up under org B's GUC: RLS must yield zero
     // rows, never org A's line.
-    let leaked = mnt_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
+    let leaked = console_platform_request_context::scope_org(OrgId::from_uuid(org_b), async {
         store.list_my_lines(emp_a, None, None).await
     })
     .await
@@ -275,13 +275,13 @@ async fn foreign_org_approver_is_rejected_under_runtime_rls(pool: PgPool) {
     let store = PgPayrollStore::new(runtime_role_pool(&pool).await);
     let org_a_id = OrgId::from_uuid(org_a);
 
-    mnt_platform_request_context::scope_org(org_a_id, async {
+    console_platform_request_context::scope_org(org_a_id, async {
         store.assert_approver_belongs_to_current_org(user_a).await
     })
     .await
     .unwrap();
 
-    let error = mnt_platform_request_context::scope_org(org_a_id, async {
+    let error = console_platform_request_context::scope_org(org_a_id, async {
         store.assert_approver_belongs_to_current_org(user_b).await
     })
     .await

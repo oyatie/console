@@ -1,6 +1,6 @@
 -- 0054_comms_split_imap_dek.sql
 -- B-mail-2 follow-up to 0053. The committed credential cipher
--- (mnt-comms-credential-cipher) seals EACH secret under its OWN fresh per-row
+-- (console-comms-credential-cipher) seals EACH secret under its OWN fresh per-row
 -- data key (DEK), so the SMTP and IMAP passwords each carry an INDEPENDENT
 -- wrapped DEK + nonce. 0053 provisioned a single `dek_wrapped`/`dek_nonce`
 -- column-pair, which can only hold one of the two wraps. Add the dedicated IMAP

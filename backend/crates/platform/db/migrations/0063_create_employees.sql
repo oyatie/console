@@ -23,4 +23,4 @@ CREATE POLICY org_isolation ON employees
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON employees TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON employees TO console_rt;

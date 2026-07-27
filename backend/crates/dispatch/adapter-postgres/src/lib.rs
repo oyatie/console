@@ -1,7 +1,7 @@
 //! Postgres adapter for the P1 emergency dispatch engine.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_dispatch_application::{
+use console_dispatch_application::{
     ActionInboxDispatchOffer, DispatchCandidatePage, DispatchCandidateSummary, DispatchQueueCursor,
     DispatchQueueDispatch, DispatchQueueItem, DispatchQueuePage, DispatchQueueStats,
     ExpireP1DispatchCommand, ForceAssignP1DispatchCommand, IncidentLocationInput,
@@ -9,18 +9,18 @@ use mnt_dispatch_application::{
     P1DispatchSummary, RespondP1DispatchCommand, StartP1DispatchCommand, dispatch_audit_event,
     resolution_after_snapshot, response_after_snapshot, start_after_snapshot,
 };
-use mnt_dispatch_domain::{
+use console_dispatch_domain::{
     CandidateScore, DispatchCandidate, DispatchResponseKind, DispatchStatus, DispatchTimerConfig,
     GeoPoint, P1Dispatch, TechnicianLoad, score_candidate,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId,
     P1DispatchAlertId, P1DispatchId, TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, insert_audit_event, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_workorder_application::work_order_audit_event;
-use mnt_workorder_domain::{
+use console_platform_db::{DbError, insert_audit_event, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
+use console_workorder_application::work_order_audit_event;
+use console_workorder_domain::{
     ApprovalRole, AssignmentRole, PriorityLevel, TransitionGuardContext, WorkOrderStatus,
     validate_status_transition,
 };

@@ -5,7 +5,7 @@ import { test, expect, type Page } from "@playwright/test";
 /**
  * CONSOLE-01 — fail-closed route exposure for the mounted carbon-copy console.
  *
- * Runs under the `dev-auth` Playwright project (MNT_DEV_AUTH_E2E=1) against the
+ * Runs under the `dev-auth` Playwright project (CONSOLE_DEV_AUTH_E2E=1) against the
  * real backend, like chrome-0x. It uses the dev-auth role switcher (not the
  * WebAuthn/psql role fixture) because this CI job owns only the dev-auth stack.
  * The production exposure manifest is intentionally empty. Proves `/console`
@@ -17,8 +17,8 @@ const TENANT_ORG_ID = "00000000-0000-0000-0000-0000000000a1";
 const TENANT_REGION_ID = "00000000-0000-0000-0000-0000000000b1";
 const TENANT_BRANCH_ID = "00000000-0000-0000-0000-0000000000c1";
 const DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_URL ??
-  "postgres://mnt_rt:mnt-dev-runtime-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_URL ??
+  "postgres://console_rt:console-dev-runtime-change-me@127.0.0.1:55432/console_dev";
 
 type DevRoleLabel = "관리자" | "정비사";
 

@@ -12,7 +12,7 @@
 -- and REVOKE alone is bypassed by the table owner, so the trigger is the real
 -- guarantee. No hard delete anywhere (§9.8) — dispose is a terminal soft state.
 
--- mnt-gate: audited-table ont_instances
+-- console-gate: audited-table ont_instances
 CREATE TABLE ont_instances (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -33,7 +33,7 @@ CREATE TABLE ont_instances (
 CREATE INDEX idx_ont_instances_list
     ON ont_instances (org_id, object_type_id, lifecycle_state);
 
--- mnt-gate: audited-table ont_instance_revisions
+-- console-gate: audited-table ont_instance_revisions
 CREATE TABLE ont_instance_revisions (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -62,7 +62,7 @@ CREATE INDEX idx_ont_instance_revisions_asof
 CREATE INDEX idx_ont_instance_revisions_attrs
     ON ont_instance_revisions USING GIN (attributes);
 
--- mnt-gate: audited-table ont_links
+-- console-gate: audited-table ont_links
 CREATE TABLE ont_links (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -160,15 +160,15 @@ CREATE TRIGGER trg_ont_instance_revisions_no_delete
     FOR EACH ROW EXECUTE FUNCTION ont_instance_revisions_append_only();
 
 -- Runtime-role grants (mirrors 0105: the #[sqlx::test] harness runs migrations as
--- a superuser, so grant mnt_rt explicitly; production auto-grants via 0031).
+-- a superuser, so grant console_rt explicitly; production auto-grants via 0031).
 --
 -- Instance head: SELECT + INSERT + UPDATE (head pointer + lifecycle FSM), never DELETE.
-GRANT SELECT, INSERT, UPDATE ON ont_instances TO mnt_rt;
-REVOKE DELETE ON ont_instances FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON ont_instances TO console_rt;
+REVOKE DELETE ON ont_instances FROM console_rt;
 -- Revisions: SELECT + INSERT + UPDATE, but the trigger constrains UPDATE to the
 -- single valid_to close (fixity columns immutable); never DELETE.
-GRANT SELECT, INSERT, UPDATE ON ont_instance_revisions TO mnt_rt;
-REVOKE DELETE ON ont_instance_revisions FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON ont_instance_revisions TO console_rt;
+REVOKE DELETE ON ont_instance_revisions FROM console_rt;
 -- Links: SELECT + INSERT + UPDATE (soft-close via valid_to), never DELETE.
-GRANT SELECT, INSERT, UPDATE ON ont_links TO mnt_rt;
-REVOKE DELETE ON ont_links FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON ont_links TO console_rt;
+REVOKE DELETE ON ont_links FROM console_rt;

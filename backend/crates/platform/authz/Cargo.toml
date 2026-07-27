@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-authz"
+name = "console-platform-authz"
 version = "0.1.0"
 description = "Branch-scoped authorization policy engine and repository filter helpers."
 edition.workspace = true
@@ -8,7 +8,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
+console-kernel-core = { workspace = true }
 sqlx = { workspace = true }
 serde = { workspace = true }
 uuid = { workspace = true }

@@ -1,5 +1,5 @@
 [package]
-name = "mnt-messenger-application"
+name = "console-messenger-application"
 version = "0.1.0"
 description = "Messenger use-case commands, summaries, and ports."
 edition.workspace = true
@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-messenger-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-messenger-domain = { workspace = true }
 serde = { workspace = true }
 time = { workspace = true }
 uuid = { workspace = true }

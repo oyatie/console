@@ -2,9 +2,9 @@
 
 use std::sync::{Arc, Mutex};
 
-use mnt_kernel_core::{BranchId, ErrorKind, OrgId, TraceContext, UserId, WorkOrderId};
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_application::{
+use console_kernel_core::{BranchId, ErrorKind, OrgId, TraceContext, UserId, WorkOrderId};
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_application::{
     AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateWorkOrderCommand,
     DailyPlanItemInput, DailyPlanStatus, ReviewDailyPlanCommand, ReviewTargetChangeCommand,
     SendDailyPlanForReviewCommand, SubmitReportCommand, TargetChangeDecision,
@@ -12,7 +12,7 @@ use mnt_workorder_application::{
     WorkOrderApprovalCommand, WorkOrderAssignmentCommand, WorkOrderCreatedEvent,
     WorkOrderCreatedFuture, WorkOrderCreatedListener, WorkOrderStartCommand,
 };
-use mnt_workorder_domain::{
+use console_workorder_domain::{
     AssignmentRole, AttachmentStage, PriorityLevel, WorkOrderStatus, WorkResultType,
 };
 use sqlx::{PgPool, Row};
@@ -20,7 +20,7 @@ use time::{Duration, OffsetDateTime, macros::date};
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn lifecycle_mutations_persist_state_and_audit_in_order(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let created = store
@@ -176,7 +176,7 @@ async fn lifecycle_mutations_persist_state_and_audit_in_order(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn update_intake_edits_work_order_narrative_and_audits(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let created = store
@@ -234,7 +234,7 @@ async fn update_intake_edits_work_order_narrative_and_audits(pool: PgPool) {
 async fn final_completion_ignores_legacy_flag_and_blocks_unverified_completion_evidence(
     pool: PgPool,
 ) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let created = create_reported_work_order(&store, &seeded).await;
@@ -297,7 +297,7 @@ async fn final_completion_ignores_legacy_flag_and_blocks_unverified_completion_e
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn request_numbers_are_race_safe_and_sequential_per_day(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let now = OffsetDateTime::now_utc();
@@ -348,7 +348,7 @@ async fn request_numbers_are_race_safe_and_sequential_per_day(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_work_order_emits_post_commit_created_event(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let listener = Arc::new(RecordingCreatedListener::new(pool.clone()));
         let store = PgWorkOrderStore::new(pool.clone()).with_created_listener(listener.clone());
@@ -380,7 +380,7 @@ async fn create_work_order_emits_post_commit_created_event(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn target_change_daily_plan_and_outsource_flows_are_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let work_order = create_assigned_work_order(&store, &seeded).await;
@@ -515,7 +515,7 @@ struct SeededContext {
 async fn create_assigned_work_order(
     store: &PgWorkOrderStore,
     seeded: &SeededContext,
-) -> mnt_workorder_application::WorkOrderSummary {
+) -> console_workorder_application::WorkOrderSummary {
     let created = store
         .create_work_order(CreateWorkOrderCommand {
             maintenance_type: None,
@@ -552,7 +552,7 @@ async fn create_assigned_work_order(
 async fn create_reported_work_order(
     store: &PgWorkOrderStore,
     seeded: &SeededContext,
-) -> mnt_workorder_application::WorkOrderSummary {
+) -> console_workorder_application::WorkOrderSummary {
     let assigned = create_assigned_work_order(store, seeded).await;
     store
         .start_work(WorkOrderStartCommand {
@@ -818,7 +818,7 @@ async fn seed_equipment_for_org(pool: &PgPool, org_id: OrgId, branch_id: BranchI
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn final_completion_appends_one_immutable_equipment_history_snapshot(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_operational_context(&pool).await;
         let store = PgWorkOrderStore::new(pool.clone());
         let created = create_reported_work_order(&store, &seeded).await;
@@ -918,10 +918,10 @@ async fn final_completion_appends_one_immutable_equipment_history_snapshot(pool:
             .await;
         assert!(delete.is_err(), "maintenance history must be append-only");
 
-        // mnt_rt may read its tenant history, but cannot construct a parent-only
+        // console_rt may read its tenant history, but cannot construct a parent-only
         // or partial snapshot: the SECURITY DEFINER append operation owns all writes.
         let mut runtime_conn = pool.acquire().await.unwrap();
-        sqlx::query("SET ROLE mnt_rt").execute(&mut *runtime_conn).await.unwrap();
+        sqlx::query("SET ROLE console_rt").execute(&mut *runtime_conn).await.unwrap();
         sqlx::query("SELECT set_config('app.current_org', $1, false)")
             .bind(OrgId::knl().to_string())
             .execute(&mut *runtime_conn).await.unwrap();
@@ -947,7 +947,7 @@ async fn final_completion_appends_one_immutable_equipment_history_snapshot(pool:
         .bind(history_id)
         .execute(&mut *runtime_conn)
         .await
-        .expect_err("mnt_rt must not delete immutable child history even with the bypass GUC armed");
+        .expect_err("console_rt must not delete immutable child history even with the bypass GUC armed");
         assert_eq!(
             child_first_delete
                 .as_database_error()
@@ -1002,7 +1002,7 @@ async fn complete_work_order_with_history(
     seeded: &SeededContext,
 ) -> (WorkOrderId, uuid::Uuid) {
     let store = PgWorkOrderStore::new(pool.clone());
-    let (work_order_id, history_id) = mnt_platform_request_context::scope_org(org_id, async {
+    let (work_order_id, history_id) = console_platform_request_context::scope_org(org_id, async {
         let created = create_reported_work_order(&store, seeded).await;
         store
             .approve_work_order(WorkOrderApprovalCommand {

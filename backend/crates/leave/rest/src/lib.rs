@@ -19,23 +19,23 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchScope, Date, ErrorKind, KernelError, LeaveRequestId, Timestamp, TraceContext, UserId,
 };
-use mnt_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
-use mnt_leave_application::{
+use console_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
+use console_leave_application::{
     CreateLeaveRequestCommand, DecideLeaveRequestCommand, LeaveRequestPage, LeaveRequestView,
     ListLeaveRequestsQuery, ListSelfLeaveRequestsQuery, ResolveLeaveChargeCommand,
     SelfLeaveBalanceView, StatutoryPushCommand,
 };
-use mnt_leave_domain::{
+use console_leave_domain::{
     LeaveDateCharge, LeaveDecision, LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest,
     NonWorkBasis, PartialDayPeriod, PromotionKind, PromotionTrack, SourceRevisionRef,
     WorkObligation,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_request_context::RequestContextError;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -108,7 +108,7 @@ pub fn router(state: LeaveRestState) -> Router {
         .route(LEAVE_PROMOTIONS_PATH, post(push_promotion))
         .route(LEAVE_REFUSAL_NOTICES_PATH, post(push_refusal))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -365,7 +365,7 @@ async fn perform_decide(
     // confined by branch_scope in the store; SoD is enforced there too.
     require_manage(&principal)?;
     let decision = LeaveDecision::parse(decision).map_err(RestError::from_kernel)?;
-    let comment = mnt_leave_domain::validate_decision_comment(decision, comment)
+    let comment = console_leave_domain::validate_decision_comment(decision, comment)
         .map_err(RestError::from_kernel)?;
     let expected_version = expected_version
         .map(validate_expected_request_version)
@@ -693,7 +693,7 @@ async fn statutory_push(
     authorize(
         &principal,
         Action::new(Feature::EmployeeDirectoryManage),
-        mnt_kernel_core::BranchId::from_uuid(body.branch_id),
+        console_kernel_core::BranchId::from_uuid(body.branch_id),
     )
     .map_err(RestError::from_kernel)?;
     state
@@ -879,7 +879,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the leave API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -913,8 +913,8 @@ fn rest_error_from_request_context(err: RequestContextError) -> RestError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::{BranchId, OrgId};
-    use mnt_platform_authz::Role;
+    use console_kernel_core::{BranchId, OrgId};
+    use console_platform_authz::Role;
     use std::collections::BTreeSet;
 
     fn principal(role: Role, branch: BranchId) -> Principal {

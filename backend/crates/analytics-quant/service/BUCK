@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-analytics-quant-service",
+    name = "console-analytics-quant-service",
     mapped_srcs = repo_mapped_srcs("backend/crates/analytics-quant/service", glob(["src/**/*.rs"])),
-    crate = "mnt_analytics_quant_service",
+    crate = "console_analytics_quant_service",
     edition = "2024",
     crate_root = "backend/crates/analytics-quant/service/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -23,9 +23,9 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-analytics-quant-service-unit",
+    name = "console-analytics-quant-service-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/analytics-quant/service", glob(["src/**/*.rs"])),
-    crate = "mnt_analytics_quant_service",
+    crate = "console_analytics_quant_service",
     edition = "2024",
     crate_root = "backend/crates/analytics-quant/service/src/lib.rs",
     visibility = ["PUBLIC"],

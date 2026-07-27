@@ -79,6 +79,6 @@ ALTER TABLE production_source_ingress_claims ENABLE ROW LEVEL SECURITY;
 ALTER TABLE production_source_ingress_claims FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON production_source_ingress_claims USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid) WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON production_source_systems, production_source_ingress_claims TO mnt_rt;
-GRANT INSERT, UPDATE ON production_demand_contracts, production_capacity_slots TO mnt_rt;
-REVOKE DELETE ON production_source_systems, production_source_ingress_claims, production_demand_contracts, production_capacity_slots FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON production_source_systems, production_source_ingress_claims TO console_rt;
+GRANT INSERT, UPDATE ON production_demand_contracts, production_capacity_slots TO console_rt;
+REVOKE DELETE ON production_source_systems, production_source_ingress_claims, production_demand_contracts, production_capacity_slots FROM console_rt;

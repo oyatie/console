@@ -19,7 +19,7 @@ retirement. It is pre-1.0 minor-release material, not a patch-level change.
 ## Context
 
 `coss-rn/` shipped as a standalone public-site React Native application from
-v0.1.12. It was not part of MaintenanceField's native field-app parity scope:
+v0.1.12. It was not part of Console's native field-app parity scope:
 ADR-0009 and the parity checklist explicitly separated that public-site surface
 from the Swift and Kotlin technician applications.
 
@@ -41,7 +41,7 @@ ADR-0012's four-deliverable monorepo boundary.
    workspace declarations must resolve to a present directory with a
    `package.json`; the automated CI gate fails closed otherwise.
 3. Historical COSS RN assets, tests, hosts, and release evidence are invalid
-   evidence for MaintenanceField parity, current release readiness, or current
+   evidence for Console parity, current release readiness, or current
    public-site availability.
 4. Publish this retirement in the next pre-1.0 **minor** release. A release
    candidate must describe the removed public-site surface and must not classify
@@ -55,7 +55,7 @@ ADR-0012's four-deliverable monorepo boundary.
   product decision.
 - npm installation and workspace tooling become internally consistent and
   reject future orphaned workspace entries before CI can report success.
-- MaintenanceField's iOS/Android parity remains governed by ADR-0009 without
+- Console's iOS/Android parity remains governed by ADR-0009 without
   inheriting COSS RN tests, strings, or screenshots as evidence.
 
 ## Alternatives considered

@@ -3,7 +3,7 @@
 //! This layer is PURE (domain + kernel only, no sqlx / axum / tokio — enforced by
 //! the layer-boundary gate). The DB orchestration of the execute path (resolve the
 //! action → run the §16 gate chain → writeback inside one audited tx) lives in
-//! `mnt-ontology-rest`, which can touch the stores and Cedar. Here we own the
+//! `console-ontology-rest`, which can touch the stores and Cedar. Here we own the
 //! deterministic, unit-testable pieces of that path:
 //!
 //!  * [`parse_control_points`] — the action's `control_points` JSONB → a §16
@@ -17,15 +17,15 @@
 //!    attribute bag the instance-revision dispatch persists.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_governance_domain::GateChainConfig;
-use mnt_kernel_core::KernelError;
+use console_governance_domain::GateChainConfig;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Which dispatch a resolved action performs — mirrors
-/// [`mnt_ontology_domain::ActionDispatch`] but re-exported here so the rest layer
+/// [`console_ontology_domain::ActionDispatch`] but re-exported here so the rest layer
 /// can branch without importing the domain enum by another name.
-pub use mnt_ontology_domain::ActionDispatch;
+pub use console_ontology_domain::ActionDispatch;
 
 // ===========================================================================
 // §16 control-point config parsing.

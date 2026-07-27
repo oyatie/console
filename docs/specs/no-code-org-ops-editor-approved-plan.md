@@ -240,7 +240,7 @@ Every generated no-code object/action must produce a deterministic authorization
 ### 7.1 Runtime invariants
 
 - Default deny on missing attributes, unknown resource/action, stale bundle, unsupported condition, missing purpose, unresolvable relationship, or PDP adapter failure.
-- RLS remains the isolation floor. Cedar/PBAC never substitutes for `with_org_conn`, `with_audit`, `app.current_org`, `mnt_rt` NOBYPASSRLS, or FORCE RLS.
+- RLS remains the isolation floor. Cedar/PBAC never substitutes for `with_org_conn`, `with_audit`, `app.current_org`, `console_rt` NOBYPASSRLS, or FORCE RLS.
 - Runtime decisions evaluate capabilities, relationships, assignments, object attributes, action purpose, policy/ruleset version, and context — not role strings alone.
 - Forbid wins for terminated/suspended users, stale policy versions, missing passkey step-up, out-of-scope target org, self-approval violations, and sensitivity-purpose mismatch.
 - Simulation uses the same evaluator path as runtime, with hypothetical entities and draft bundle overlays.
@@ -360,7 +360,7 @@ Non-goal: full UI or DB implementation of every object in one PR.
 ### Lane 2 — Setup Draft and CRUD-first shell
 
 Goal: create the first product shell where admins can create, edit, validate, simulate, publish, rollback, and audit setup drafts over the core primitives.  
-Expected proof: mnt_rt create/read/update/archive/simulate/publish tests for the selected narrow object subset; browser setup checklist story.  
+Expected proof: console_rt create/read/update/archive/simulate/publish tests for the selected narrow object subset; browser setup checklist story.  
 Non-goal: import-first setup.
 
 ### Lane 3 — Group/HQ management and real-Org scope selector
@@ -444,6 +444,6 @@ No active implementation card should be reframed silently. Each affected card ne
 - This document is the coherent synthesized plan artifact. It is not a merge-ready implementation design and not authorization to begin all PR lanes at once.
 - Future PR lanes should be small, reviewed independently, and sequenced so shared roots such as authz, RLS, audit, migrations, generated clients, Work Hub, and browser E2E do not race.
 - Any user-facing lane must include browser/user-story evidence or a precise non-UI N/A rationale.
-- Any tenant read/write lane must include real `mnt_rt` proof with `app.current_org` armed to a real Org and cross-tenant invisibility/fail-closed behavior.
+- Any tenant read/write lane must include real `console_rt` proof with `app.current_org` armed to a real Org and cross-tenant invisibility/fail-closed behavior.
 - Any policy/ruleset/assignment/authz lane must include audit, revoke, rollback/supersede, observability, and cache/session invalidation expectations where applicable.
 - No lane may propose Oyatie changes from this maintenance-plan work.

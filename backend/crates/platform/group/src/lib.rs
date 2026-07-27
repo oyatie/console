@@ -8,8 +8,8 @@
 
 use std::{future::Future, pin::Pin};
 
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_db::{DbError, with_org_conn};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_db::{DbError, with_org_conn};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 
@@ -163,7 +163,7 @@ mod tests {
     #[tokio::test]
     async fn empty_member_set_fails_closed_without_pool_checkout() {
         let pool = PgPoolOptions::new()
-            .connect_lazy("postgres://mnt_rt:unused@127.0.0.1/unused")
+            .connect_lazy("postgres://console_rt:unused@127.0.0.1/unused")
             .unwrap();
 
         let rows: Vec<ConsolidatedRow<()>> =
@@ -287,7 +287,7 @@ mod tests {
             .max_connections(2)
             .after_connect(|conn, _meta| {
                 Box::pin(async move {
-                    sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                    sqlx::query("SET ROLE console_rt").execute(conn).await?;
                     Ok(())
                 })
             })

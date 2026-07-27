@@ -86,4 +86,4 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_org_health() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_org_health() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_org_health() TO console_rt;

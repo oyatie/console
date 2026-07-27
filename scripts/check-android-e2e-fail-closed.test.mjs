@@ -17,7 +17,7 @@ jobs:
           ANDROID_SDK_ROOT: \${{ runner.temp }}/android-sdk
       - run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          cargo build --locked -p mnt-app
+          cargo build --locked -p console-app
       - run: |
           bootstrap_otp=$(openssl rand -hex 24)
           otp_hash=$(printf '%s' "$bootstrap_otp" | sha256sum | awk '{print $1}')
@@ -30,9 +30,9 @@ jobs:
           chmod 600 "$RUNNER_TEMP/android-e2e-session-assets/field-e2e-session.properties"
       - run: ./gradlew fieldApi34DebugAndroidTest
       - run: |
-          test -f android/app/build/test-results/connected/TEST-com.maintenance.field.WorkOrderFlowTest.xml
-          grep -q 'WorkOrderFlowTest' android/app/build/test-results/connected/TEST-com.maintenance.field.WorkOrderFlowTest.xml
-          if grep -Eq 'skipped|failures="[1-9]|errors="[1-9]' android/app/build/test-results/connected/TEST-com.maintenance.field.WorkOrderFlowTest.xml; then exit 1; fi
+          test -f android/app/build/test-results/connected/TEST-com.console.app.WorkOrderFlowTest.xml
+          grep -q 'WorkOrderFlowTest' android/app/build/test-results/connected/TEST-com.console.app.WorkOrderFlowTest.xml
+          if grep -Eq 'skipped|failures="[1-9]|errors="[1-9]' android/app/build/test-results/connected/TEST-com.console.app.WorkOrderFlowTest.xml; then exit 1; fi
       - if: always()
         run: |
           auth_dir="\${RUNNER_TEMP}/android-e2e-auth"
@@ -50,7 +50,7 @@ const validFiles = {
   "android/app/src/debug/res/xml/network_security_config.xml": '<network-security-config><base-config cleartextTrafficPermitted="false"/><domain-config cleartextTrafficPermitted="true"><domain>10.0.2.2</domain></domain-config></network-security-config>',
   "android/app/src/main/AndroidManifest.xml": '<application />',
   "android/app/build.gradle.kts": 'debug { API_BASE_URL = "http://10.0.2.2:8080" } release { API_BASE_URL = "https://api.example.com" }',
-  "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": `
+  "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": `
     val fixture = "Required field-e2e-session.properties fixture is missing or unreadable."
     val id = "00000000-0000-0000-0000-000000f00003"
     apiGateway.listTodayWorkOrders()
@@ -166,9 +166,9 @@ describe("Android hermetic E2E CI contract", () => {
       'kill -0 "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true',
       'kill -s 0 "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true',
       'kill --signal=0 "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true',
-      'pkill -0 mnt-app || true',
-      'pkill -s 0 mnt-app || true',
-      'pkill --signal=0 mnt-app || true',
+      'pkill -0 console-app || true',
+      'pkill -s 0 console-app || true',
+      'pkill --signal=0 console-app || true',
     ]) {
       expectsFailure(evaluate(validWorkflow.replace(
         'kill "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true',
@@ -195,7 +195,7 @@ describe("Android hermetic E2E CI contract", () => {
   it("rejects termination commands that do not target the owned backend PID", () => {
     for (const unownedTermination of [
       "kill -TERM 12345 || true",
-      "pkill -TERM -f mnt-app || true",
+      "pkill -TERM -f console-app || true",
     ]) {
       expectsFailure(evaluate(validWorkflow.replace(
         'kill "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true',
@@ -235,27 +235,27 @@ describe("Android hermetic E2E CI contract", () => {
 
   it("rejects a WorkOrderFlowTest that can skip or omits the protected API assertion", () => {
     expectsFailure(evaluate(validWorkflow, {
-      "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": "Assume.assumeTrue(false)",
+      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": "Assume.assumeTrue(false)",
     }), "assert the seeded work order through a protected API call");
   });
 
   it("rejects a WorkOrderFlowTest that omits the authenticated Compose UI assertion", () => {
     expectsFailure(evaluate(validWorkflow, {
-      "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt"]
+      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt"]
         .replace('onNodeWithText(seededWorkOrder.requestNo).assertIsDisplayed()', ''),
     }), "render it in authenticated Compose UI");
   });
 
   it("rejects a WorkOrderFlowTest that does not prove the login UI is absent", () => {
     expectsFailure(evaluate(validWorkflow, {
-      "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt"]
+      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt"]
         .replace('onAllNodesWithText("패스키 로그인").assertCountEquals(0)', ''),
     }), "render it in authenticated Compose UI");
   });
 
   it("rejects the ambiguous single-node Today selector exposed by the full app tree", () => {
     expectsFailure(evaluate(validWorkflow, {
-      "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt"]
+      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": validFiles["android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt"]
         .replace('onNode(hasText("오늘 작업") and hasNoClickAction()).assertIsDisplayed()', 'onNodeWithText("오늘 작업").assertIsDisplayed()'),
     }), "render it in authenticated Compose UI");
   });

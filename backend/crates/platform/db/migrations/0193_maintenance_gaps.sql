@@ -13,7 +13,7 @@
 ALTER TABLE equipment_cost_ledger
     ADD CONSTRAINT equipment_cost_ledger_id_org_key UNIQUE (id, org_id);
 
--- mnt-gate: audited-table equipment_maintenance_history
+-- console-gate: audited-table equipment_maintenance_history
 CREATE TABLE equipment_maintenance_history (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -208,9 +208,9 @@ CREATE POLICY org_isolation ON equipment_maintenance_history_costs
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT ON equipment_maintenance_history TO mnt_rt;
-GRANT SELECT, INSERT ON equipment_maintenance_history_evidence TO mnt_rt;
-GRANT SELECT, INSERT ON equipment_maintenance_history_costs TO mnt_rt;
+GRANT SELECT, INSERT ON equipment_maintenance_history TO console_rt;
+GRANT SELECT, INSERT ON equipment_maintenance_history_evidence TO console_rt;
+GRANT SELECT, INSERT ON equipment_maintenance_history_costs TO console_rt;
 
 
 -- Only the archived-tenant force-removal procedure may bypass append-only deletion.
@@ -387,7 +387,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION platform_force_remove_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO console_rt;
 
 -- Runtime callers cannot build a partial snapshot: this single, org-fenced
 -- operation inserts the parent and its complete immutable reference sets.
@@ -411,6 +411,6 @@ BEGIN
   WHERE l.org_id=p_org_id AND l.work_order_id=p_work_order_id AND l.equipment_id=p_equipment_id;
   RETURN v_history_id;
 END; $$;
-REVOKE INSERT ON equipment_maintenance_history, equipment_maintenance_history_evidence, equipment_maintenance_history_costs FROM mnt_rt;
+REVOKE INSERT ON equipment_maintenance_history, equipment_maintenance_history_evidence, equipment_maintenance_history_costs FROM console_rt;
 REVOKE ALL ON FUNCTION append_equipment_maintenance_history(UUID, UUID, UUID, TIMESTAMPTZ) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION append_equipment_maintenance_history(UUID, UUID, UUID, TIMESTAMPTZ) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION append_equipment_maintenance_history(UUID, UUID, UUID, TIMESTAMPTZ) TO console_rt;

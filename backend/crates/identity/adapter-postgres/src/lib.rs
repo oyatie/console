@@ -8,7 +8,7 @@
 
 use std::collections::BTreeSet;
 
-use mnt_identity_application::{
+use console_identity_application::{
     ActivateUserCommand, BranchSummary, CreateBranchCommand,
     CreatePolicyAssignmentPreviewReceiptCommand, CreatePolicyRoleCommand, CreateRegionCommand,
     CreateUserCommand, DeactivateBranchCommand, DeactivateRegionCommand, DeactivateUserCommand,
@@ -22,14 +22,14 @@ use mnt_identity_application::{
     policy_role_assignment_audit_event, policy_role_audit_event, region_audit_event,
     user_audit_event,
 };
-use mnt_identity_domain::{
+use console_identity_domain::{
     Team, normalize_optional_phone, validate_display_name, validate_org_name,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, KernelError, RegionId, TraceContext, UserId,
 };
-use mnt_platform_db::{DbError, insert_audit_event, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, insert_audit_event, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 
 const DEFAULT_USER_LIMIT: i64 = 50;
@@ -424,7 +424,7 @@ impl PgOrgStore {
         user_id: UserId,
         layout: serde_json::Value,
         trace: TraceContext,
-        occurred_at: mnt_kernel_core::Timestamp,
+        occurred_at: console_kernel_core::Timestamp,
     ) -> Result<serde_json::Value, PgOrgError> {
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
@@ -977,7 +977,7 @@ impl PgOrgStore {
     }
 
     /// Resolve a per-tenant runtime feature flag via the `org_runtime_flag_enabled`
-    /// SQL resolver (migration 0095) under the armed `mnt_rt` GUC. An absent row
+    /// SQL resolver (migration 0095) under the armed `console_rt` GUC. An absent row
     /// resolves to `false` (the dark default). Used by the Cedar/PBAC role_manage
     /// shadow lane's dark switch; a `false` result keeps the tenant fully on the
     /// legacy path (no shadow observation runs).
@@ -1390,7 +1390,7 @@ impl PgOrgStore {
     }
 
     /// List a user's custom-role assignments. ACTIVE assigned roles are
-    /// resolved into runtime grants by mnt-platform-authz; DRAFT/RETIRED roles
+    /// resolved into runtime grants by console-platform-authz; DRAFT/RETIRED roles
     /// remain inert governance data.
     pub async fn list_policy_role_assignments(
         &self,

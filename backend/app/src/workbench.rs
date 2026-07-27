@@ -15,9 +15,9 @@ use axum::http::{StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{BranchId, BranchScope};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::Principal;
+use console_kernel_core::{BranchId, BranchScope};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::Principal;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime, Time, macros::offset};
@@ -79,7 +79,7 @@ pub fn router(state: WorkbenchState) -> Router {
     let router = Router::new()
         .route(ME_WORKBENCH_PATH, get(get_my_workbench))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 async fn get_my_workbench(
@@ -749,7 +749,7 @@ mod tests {
     use super::*;
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{OrgId, UserId};
+    use console_kernel_core::{OrgId, UserId};
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]

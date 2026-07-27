@@ -34,7 +34,7 @@ and `docs/program/console-program-ledger.md`.
   its code is inserted through the compose token grammar). This is the module's signature.
 - **Create-todo from a message** (`createTodo` with `scopes`/`links` = TodoRef object links) — turns a
   message into tracked work linked to objects.
-- Backend: evidenced mutation-audit builders and FORCE-RLS tables exercised under `mnt_rt`; live authorization remains the legacy server boundary. Universal route coverage is not claimed.
+- Backend: evidenced mutation-audit builders and FORCE-RLS tables exercised under `console_rt`; live authorization remains the legacy server boundary. Universal route coverage is not claimed.
 
 **Mail** — `web/src/console/mail/` (MailScreen 437, MailComposer, MailReadPane, MailGovernance),
 backend custom Rust stack `backend/crates/comms/*` (adapter-imap / adapter-smtp / adapter-mox /
@@ -170,7 +170,7 @@ Legend: **Ours** = built unless marked (gap). Cells: how the vendor does it, [V]
 
 ### R9 — Audit / retention / legal hold / eDiscovery
 
-- **Ours**: evidenced message/mail mutation-audit seams, FORCE-RLS tables exercised under `mnt_rt`, and
+- **Ours**: evidenced message/mail mutation-audit seams, FORCE-RLS tables exercised under `console_rt`, and
   credential-redacting audit builders; universal route coverage is not established. **Retention/legal-hold surface = partial** (mail litigation-hold
   reason exists; no org-wide hold/eDiscovery export yet). [evidence: `crates/comms` audit builders, ledger]
 - **Foundry**: full changelog/lineage on objects; comments carry object security. [I from Foundry governance model]
@@ -199,7 +199,7 @@ Legend: **Ours** = built unless marked (gap). Cells: how the vendor does it, [V]
 
 ### R11 — Mobile
 
-- **Ours**: native field app (Android `com.maintenance.field`) covers work-order flow + messaging-adjacent; console mail/messenger are web-responsive. [evidence: memory native-app-identifiers; android/ tree]
+- **Ours**: native field app (Android `com.console.app`) covers work-order flow + messaging-adjacent; console mail/messenger are web-responsive. [evidence: memory native-app-identifiers; android/ tree]
 - **Foundry**: mobile app for object views + notifications. [I]
 - **Slack**: first-class iOS/Android. [I]
 - **Teams**: first-class mobile incl. calls. [I]

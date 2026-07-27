@@ -7,7 +7,7 @@
 //! If the closure returns `Err`, the transaction is rolled back and NEITHER
 //! the mutation nor the audit row persists — atomicity is the hard contract.
 
-use mnt_kernel_core::{AuditEvent, OrgId, UserId};
+use console_kernel_core::{AuditEvent, OrgId, UserId};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 
 use crate::error::DbError;
@@ -337,7 +337,7 @@ pub async fn read_subject_authz_freshness(
 
 #[cfg(test)]
 mod tests {
-    use mnt_kernel_core::{
+    use console_kernel_core::{
         AuditAction, AuditClassification, AuditEvent, AuditRequestContext, BranchId, OrgId,
         TraceContext, UserId,
     };
@@ -484,14 +484,14 @@ mod tests {
         let after_snap = serde_json::json!({"is_active": false});
 
         let event = AuditEvent::new(
-            Some(mnt_kernel_core::UserId::from_uuid(user_id)),
+            Some(console_kernel_core::UserId::from_uuid(user_id)),
             AuditAction::new("user.deactivate").unwrap(),
             "users",
             user_id.to_string(),
             TraceContext::generate(),
             OffsetDateTime::now_utc(),
         )
-        .with_branch(mnt_kernel_core::BranchId::from_uuid(branch_id))
+        .with_branch(console_kernel_core::BranchId::from_uuid(branch_id))
         .with_snapshots(Some(before_snap.clone()), Some(after_snap.clone()))
         .with_request_context(AuditRequestContext {
             ip: Some("203.0.113.9".to_owned()),
@@ -687,7 +687,7 @@ mod tests {
             TraceContext::generate(),
             OffsetDateTime::now_utc(),
         )
-        .with_branch(mnt_kernel_core::BranchId::from_uuid(branch_id));
+        .with_branch(console_kernel_core::BranchId::from_uuid(branch_id));
         let insert_event_id = *event_for_insert.id.as_uuid();
 
         with_audit::<_, (), DbError>(&pool, event_for_insert, |_tx| {
@@ -762,7 +762,7 @@ mod tests {
             TraceContext::generate(),
             OffsetDateTime::now_utc(),
         )
-        .with_branch(mnt_kernel_core::BranchId::from_uuid(branch_id));
+        .with_branch(console_kernel_core::BranchId::from_uuid(branch_id));
         let insert_event_id = *event.id.as_uuid();
 
         with_audit::<_, (), DbError>(&pool, event, |_tx| Box::pin(async move { Ok(()) }))

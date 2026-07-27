@@ -1,5 +1,5 @@
 [package]
-name = "mnt-registry-adapter-postgres"
+name = "console-registry-adapter-postgres"
 version = "0.1.0"
 description = "Postgres adapter and master-list importer for the equipment registry."
 edition.workspace = true
@@ -9,11 +9,11 @@ publish.workspace = true
 
 [dependencies]
 calamine = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
-mnt-registry-application = { workspace = true }
-mnt-registry-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
+console-registry-application = { workspace = true }
+console-registry-domain = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }

@@ -5,7 +5,7 @@
 //! storage layer stays clean-architecture compliant.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde_json::Value;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]

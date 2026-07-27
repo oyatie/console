@@ -2,7 +2,7 @@
 //!
 //! Two guard call sites exist: every business-mutating node transition, and every
 //! waiting-task completion. Both build an [`AuthorizationRequest`] from SERVER
-//! data only and run it through the real `mnt_platform_authz` boundary.
+//! data only and run it through the real `console_platform_authz` boundary.
 //!
 //! ## M2 posture: `LegacyOnly`, observe-and-record
 //! The coexistence-map entry is pinned to [`DualEngineMode::LegacyOnly`]. Cedar is
@@ -15,8 +15,8 @@
 
 use std::str::FromStr;
 
-use mnt_kernel_core::{BranchId, KernelError, OrgId};
-use mnt_platform_authz::{
+use console_kernel_core::{BranchId, KernelError, OrgId};
+use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationDecision, AuthorizationRequest,
     AuthorizationResource, CedarEvaluation, CoexistenceMapEntry, DualEngineMode, Feature,
     Principal, RlsScopeProof, evaluate_cedar_pbac_boundary, observe_cedar_pbac_decision,
@@ -58,7 +58,7 @@ pub fn workflow_coexistence_entry(
 /// * `resource` — `branch(org, branch_id, resource_type).with_resource_id(object_id)`
 ///   from `workflow_runs.object_type/object_id`.
 /// * the RLS scope proof witnesses that the DB reads used to build this request
-///   ran under the armed `mnt_rt`/`app.current_org` scope for `org`; the boundary
+///   ran under the armed `console_rt`/`app.current_org` scope for `org`; the boundary
 ///   rejects any org mismatch between principal, resource, and proof.
 pub fn build_guard_request(
     principal: &Principal,
@@ -114,8 +114,8 @@ pub fn guard(request: &AuthorizationRequest, entry: &CoexistenceMapEntry) -> Gua
 mod tests {
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{BranchScope, UserId};
-    use mnt_platform_authz::{DecisionEngine, DecisionReason, Role};
+    use console_kernel_core::{BranchScope, UserId};
+    use console_platform_authz::{DecisionEngine, DecisionReason, Role};
 
     use super::*;
 

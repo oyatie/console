@@ -14,18 +14,18 @@
 
 use std::sync::Arc;
 
-use mnt_kernel_core::{BranchId, ErrorKind, KernelError, NoticeId, UserId};
-use mnt_notices_application::{
+use console_kernel_core::{BranchId, ErrorKind, KernelError, NoticeId, UserId};
+use console_notices_application::{
     AcknowledgeNoticeCommand, CreateDraftNoticeCommand, GetNoticeQuery, ListNoticeReceiptsQuery,
     ListNoticesQuery, NoticeAudienceBranch, NoticeProgress, NoticeProgressQuery, NoticeReceipt,
     NoticeReceiptPage, NoticeReceiptState, NoticeSummary, PublishNoticeCommand,
     UpdateDraftNoticeCommand, notice_audit_event,
 };
-use mnt_notices_domain::{NewNotice, NoticeAudience, NoticeBody, NoticeCategory, NoticeTitle};
-use mnt_notifications_application::{EmitNotificationCommand, NotificationSink};
-use mnt_notifications_domain::NotificationLink;
-use mnt_platform_db::{DbError, issue_code, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_notices_domain::{NewNotice, NoticeAudience, NoticeBody, NoticeCategory, NoticeTitle};
+use console_notifications_application::{EmitNotificationCommand, NotificationSink};
+use console_notifications_domain::NotificationLink;
+use console_platform_db::{DbError, issue_code, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 

@@ -9,7 +9,7 @@ import { FinancialPage } from "../../pages/FinancialPage";
 import { createConsoleApiClient } from "../../api/client";
 import { AuthContext } from "../../context/auth";
 import type { AuthContextValue, AuthSession } from "../../context/auth";
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { branchId } from "../../test/fixtures";
 
 const server = setupServer();

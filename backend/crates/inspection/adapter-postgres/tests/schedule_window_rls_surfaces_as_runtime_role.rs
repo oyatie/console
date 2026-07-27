@@ -7,32 +7,32 @@
 //! today+30)`, so a schedule whose `due_date` falls OUTSIDE that window (a
 //! backfilled past-due date, or one further out than 30 days) is invisible even
 //! though it was created. This test proves, AS the genuine non-owner runtime
-//! role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS):
+//! role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS):
 //!   * a `due_date` BEFORE the window and one AFTER it both return `total == 0`
 //!     under the default `[today, today+30)` window — reproducing the bug;
 //!   * a corrected window that spans those dates returns BOTH rows;
 //!   * cross-tenant isolation: a second org's schedule is INVISIBLE under KNL's
 //!     armed GUC, even with a wide window.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser, which sees every row regardless of `app.current_org`. We
-//! SEED as the owner and CREATE/LIST as `mnt_rt` under the armed GUC.
+//! SEED as the owner and CREATE/LIST as `console_rt` under the armed GUC.
 
-use mnt_inspection_adapter_postgres::PgInspectionStore;
-use mnt_inspection_application::{CreateInspectionScheduleCommand, ListInspectionSchedulesQuery};
-use mnt_inspection_domain::InspectionCycle;
-use mnt_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
+use console_inspection_adapter_postgres::PgInspectionStore;
+use console_inspection_application::{CreateInspectionScheduleCommand, ListInspectionSchedulesQuery};
+use console_inspection_domain::InspectionCycle;
+use console_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_T2: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 const MAX_LIMIT: i64 = 200;
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -40,7 +40,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -159,7 +159,7 @@ async fn seed_equipment(owner_pool: &PgPool, org: Uuid, branch: BranchId) -> Equ
     EquipmentId::from_uuid(id)
 }
 
-/// Create one schedule with the given `due_date` AS `mnt_rt` under the armed GUC,
+/// Create one schedule with the given `due_date` AS `console_rt` under the armed GUC,
 /// exactly as the create handler does.
 async fn create_schedule_as_rt(
     rt_pool: &PgPool,
@@ -169,7 +169,7 @@ async fn create_schedule_as_rt(
     mechanic: UserId,
     due_date: time::Date,
 ) {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInspectionStore::new(rt_pool.clone());
         store
             .create_schedule(CreateInspectionScheduleCommand {
@@ -185,12 +185,12 @@ async fn create_schedule_as_rt(
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await
-            .expect("create_schedule must succeed as mnt_rt under the armed GUC");
+            .expect("create_schedule must succeed as console_rt under the armed GUC");
     })
     .await;
 }
 
-/// List schedules in `[due_start, due_end)` AS `mnt_rt`, returning the unpaged
+/// List schedules in `[due_start, due_end)` AS `console_rt`, returning the unpaged
 /// total for that window.
 async fn list_total_as_rt(
     rt_pool: &PgPool,
@@ -199,7 +199,7 @@ async fn list_total_as_rt(
     due_start: time::Date,
     due_end: time::Date,
 ) -> i64 {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInspectionStore::new(rt_pool.clone());
         store
             .list_due_schedules(ListInspectionSchedulesQuery {
@@ -210,7 +210,7 @@ async fn list_total_as_rt(
                 offset: 0,
             })
             .await
-            .expect("list_due_schedules must succeed as mnt_rt under the armed GUC")
+            .expect("list_due_schedules must succeed as console_rt under the armed GUC")
             .total
     })
     .await
@@ -272,7 +272,7 @@ async fn schedule_window_hides_then_surfaces_as_runtime_role(owner_pool: PgPool)
     .await;
     assert_eq!(
         wide, 2,
-        "a window spanning the due dates must surface both created schedules as mnt_rt"
+        "a window spanning the due dates must surface both created schedules as console_rt"
     );
 }
 

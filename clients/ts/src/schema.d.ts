@@ -47,7 +47,7 @@ export interface paths {
         };
         /**
          * Apple App Site Association (native passkeys)
-         * @description Public, unauthenticated association document Apple fetches over the RP origin to authorize the native iOS app's passkeys. The `webcredentials.apps` list is sourced from `MNT_IOS_APP_IDS`; an unconfigured deployment serves a valid empty document. Served as `application/json` (no file extension, per Apple's requirement).
+         * @description Public, unauthenticated association document Apple fetches over the RP origin to authorize the native iOS app's passkeys. The `webcredentials.apps` list is sourced from `CONSOLE_IOS_APP_IDS`; an unconfigured deployment serves a valid empty document. Served as `application/json` (no file extension, per Apple's requirement).
          */
         get: operations["appleAppSiteAssociation"];
         put?: never;
@@ -67,7 +67,7 @@ export interface paths {
         };
         /**
          * Android Digital Asset Links (native passkeys)
-         * @description Public, unauthenticated Digital Asset Links document Android fetches to authorize the native app's passkeys for the RP domain. The package and signing-cert fingerprints come from `MNT_ANDROID_PACKAGE` / `MNT_ANDROID_CERT_SHA256`; an unconfigured deployment serves an empty JSON array. Served as `application/json`.
+         * @description Public, unauthenticated Digital Asset Links document Android fetches to authorize the native app's passkeys for the RP domain. The package and signing-cert fingerprints come from `CONSOLE_ANDROID_PACKAGE` / `CONSOLE_ANDROID_CERT_SHA256`; an unconfigured deployment serves an empty JSON array. Served as `application/json`.
          */
         get: operations["androidAssetLinks"];
         put?: never;
@@ -2100,7 +2100,7 @@ export interface paths {
         put?: never;
         /**
          * Poll a desktop QR login handoff
-         * @description Desktop-only polling endpoint. Pending/expired responses carry no tokens. Once a phone has approved the paired approve token, this endpoint consumes the poll token exactly once and returns a normal token pair; in web cookie transport the refresh token is set as `mnt_refresh` and is omitted from the JSON body.
+         * @description Desktop-only polling endpoint. Pending/expired responses carry no tokens. Once a phone has approved the paired approve token, this endpoint consumes the poll token exactly once and returns a normal token pair; in web cookie transport the refresh token is set as `console_refresh` and is omitted from the JSON body.
          */
         post: operations["pollDeviceLogin"];
         delete?: never;
@@ -13132,7 +13132,7 @@ export interface components {
         };
         OtpRedeemResponse: {
             access_token: string;
-            /** @description The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where the token is set as an HttpOnly `mnt_refresh` cookie and must never reach web JS. */
+            /** @description The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS. */
             refresh_token?: string | null;
             token_type: string;
             refresh_expires_at: components["schemas"]["Timestamp"];
@@ -13242,14 +13242,14 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        /** @description Refresh/logout request body. `refresh_token` is OPTIONAL because the web transport carries the token in the HttpOnly `mnt_refresh` cookie (sent automatically by the browser) and the body is empty; mobile clients send the token here. */
+        /** @description Refresh/logout request body. `refresh_token` is OPTIONAL because the web transport carries the token in the HttpOnly `console_refresh` cookie (sent automatically by the browser) and the body is empty; mobile clients send the token here. */
         RefreshTokenRequest: {
             refresh_token?: string | null;
         };
         LogoutRequest: components["schemas"]["RefreshTokenRequest"];
         TokenPairResponse: {
             access_token: string;
-            /** @description The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where the token is set as an HttpOnly `mnt_refresh` cookie and must never reach web JS. */
+            /** @description The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS. */
             refresh_token?: string | null;
             /** @enum {string} */
             token_type: "Bearer";
@@ -18577,7 +18577,7 @@ export interface components {
                 "application/json": components["schemas"]["ErrorBody"];
             };
         };
-        /** @description Webmail is not configured on this server (the master key MNT_MAIL_MASTER_KEY is absent), or JWT verification is not configured. The app is otherwise healthy. */
+        /** @description Webmail is not configured on this server (the master key CONSOLE_MAIL_MASTER_KEY is absent), or JWT verification is not configured. The app is otherwise healthy. */
         MailUnavailable: {
             headers: {
                 [name: string]: unknown;

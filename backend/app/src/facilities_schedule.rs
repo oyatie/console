@@ -26,7 +26,7 @@ pub fn spawn(pool: sqlx::PgPool) -> FacilitiesScheduleHandle {
                 changed = shutdown_rx.changed() => {
                     if changed.is_err() || *shutdown_rx.borrow() { break; }
                 }
-                _ = ticker.tick() => match mnt_facilities_rest::poll_scheduled_hvac(&pool).await {
+                _ = ticker.tick() => match console_facilities_rest::poll_scheduled_hvac(&pool).await {
                     Ok(0) => {},
                     Ok(created) => tracing::info!(created, "facilities scheduled HVAC occurrences materialized"),
                     Err(error) => tracing::warn!(%error, "facilities scheduled HVAC occurrence poll failed"),

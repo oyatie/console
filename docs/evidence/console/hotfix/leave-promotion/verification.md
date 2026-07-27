@@ -56,20 +56,20 @@ not a tautology.
 ## 3. The blocker the build stage reported is closed
 
 The build stage reported `partial` because the runtime-role test had never executed (Docker
-disk full; `mnt_buck_admin` credential unavailable). The verifier resolved this without
+disk full; `console_buck_admin` credential unavailable). The verifier resolved this without
 touching the shared dev stack: a disposable Postgres carrying the Buck harness identity,
 provisioned exactly as `tools/buck/test_needs_postgres.sh` does it.
 
 ```
-docker run -d --rm --name mnt-verify-pg-leavepromo -p 127.0.0.1::5432 \
-  --env-file <(POSTGRES_USER=mnt_buck_admin …) postgres:18.4@sha256:65f70a15…
+docker run -d --rm --name console-verify-pg-leavepromo -p 127.0.0.1::5432 \
+  --env-file <(POSTGRES_USER=console_buck_admin …) postgres:18.4@sha256:65f70a15…
 docker exec … bash /topology.sh        → seven application roles reconciled and verified
-DATABASE_URL=postgres://mnt_buck_admin:…@127.0.0.1:<port>/mnt_buck_test_leavepromo\
+DATABASE_URL=postgres://console_buck_admin:…@127.0.0.1:<port>/console_buck_test_leavepromo\
   ?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1
 ```
 
-`dev-up down/up` was never run; the shared `mnt-dev-*` stack was not touched. Migration
-0196's superuser bootstrap gate is satisfied by the container's own `mnt_buck_admin`, so no
+`dev-up down/up` was never run; the shared `console-dev-*` stack was not touched. Migration
+0196's superuser bootstrap gate is satisfied by the container's own `console_buck_admin`, so no
 credential had to be obtained or guessed.
 
 ## 4. Defects found by verification, and fixed
@@ -98,7 +98,7 @@ error messages already use: `근로기준법 제61조제1항제1호`, not `제61
 The lane changed both §61 request bodies (removed `unused_days`; added required `track` and
 `leave_period_end`; added `designated_dates`) and rewired `push_refusal`, but every proof
 sat **below** REST. `crates/leave/rest/tests/leave_http_personas.rs` — a real-router
-harness with signed JWTs and a genuine `mnt_rt` pool — already existed and covered none of
+harness with signed JWTs and a genuine `console_rt` pool — already existed and covered none of
 it.
 
 Added `statutory_push_requires_its_statutory_inputs_over_http`:
@@ -118,7 +118,7 @@ would pass this week and fail next.
 
 | Bar | Finding |
 |---|---|
-| RLS as `mnt_rt` | No new tables. Both new reads (`find_promotion`'s `leave_promotions ⋈ inbox_docs` join, `trim_scale(leave_remaining)`) run inside `with_org_conn`, so `app.current_org` is armed; `inbox_docs` RLS is org-scoped (0119), so the join does not silently return empty for a non-recipient admin. Both statutory tests assert as `mnt_rt`. |
+| RLS as `console_rt` | No new tables. Both new reads (`find_promotion`'s `leave_promotions ⋈ inbox_docs` join, `trim_scale(leave_remaining)`) run inside `with_org_conn`, so `app.current_org` is armed; `inbox_docs` RLS is org-scoped (0119), so the join does not silently return empty for a non-recipient admin. Both statutory tests assert as `console_rt`. |
 | Deny-by-default | Every new branch fails closed: no round 1 → 409; no round 2 → 409; no roster figure → 409; a different 연차 사용기간 → 409; outside a window → 422; round 1 carrying dates → 422; round 2 with none → 422. Verified by reading each arm and by the runtime-role assertions. |
 | Audit | `leave_promotion.push` audit event now carries `unused_days` and a `statutory_basis` snapshot (track, period end, served-on, computed window or deadline, designated dates), so the arithmetic is re-derivable from the trail alone. |
 | Canonical envelope | Unchanged `RestError::from_kernel`; `Validation → 422 "validation"`, `Conflict → 409 "conflict"`. Now asserted over HTTP. |
@@ -131,14 +131,14 @@ would pass this week and fail next.
 ## 6. Gate set, re-run at the verification tip
 
 ```
-cargo fmt --check -p mnt-leave-domain -p mnt-leave-application \
-                  -p mnt-leave-adapter-postgres -p mnt-leave-rest        → clean
+cargo fmt --check -p console-leave-domain -p console-leave-application \
+                  -p console-leave-adapter-postgres -p console-leave-rest        → clean
 cargo clippy      (same four crates, --all-targets)                      → 0 warnings
-cargo test -p mnt-leave-domain                                           → 20 passed
-cargo test -p mnt-leave-application                                      → 0 tests
-cargo test -p mnt-leave-rest --test leave_http_personas                  → 3 passed (1 new)
-cargo test -p mnt-leave-adapter-postgres --lib                           → 7 passed
-cargo test -p mnt-leave-adapter-postgres --test leave_rls_surfaces_as_runtime_role
+cargo test -p console-leave-domain                                           → 20 passed
+cargo test -p console-leave-application                                      → 0 tests
+cargo test -p console-leave-rest --test leave_http_personas                  → 3 passed (1 new)
+cargo test -p console-leave-adapter-postgres --lib                           → 7 passed
+cargo test -p console-leave-adapter-postgres --test leave_rls_surfaces_as_runtime_role
                                                                          → 12 passed, 1 failed
 ```
 

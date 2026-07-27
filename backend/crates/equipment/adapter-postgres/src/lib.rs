@@ -6,16 +6,16 @@
 //! is a conflict, never a silent no-op.  Transition authorization runs inside
 //! the transaction against the branch read from the locked row, via the
 //! caller-supplied `authorize` closure.
-use mnt_equipment_application::{
+use console_equipment_application::{
     AssessReturn, CompleteDisposition, DecideApproval, DispatchCase, HandoverCase, InspectCase,
     QuoteCase, RegisterUnit,
 };
-use mnt_equipment_domain::{Availability, CaseState, DispositionKind, DispositionState};
-use mnt_kernel_core::{
+use console_equipment_domain::{Availability, CaseState, DispositionKind, DispositionState};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::postgres::PgRow;
@@ -1164,8 +1164,8 @@ fn idem(key: &str) -> Result<(), PgEquipment3rError> {
 /// case fails to transition instead of returning 404.
 ///
 /// The equipment adapter issues this SQL directly rather than calling
-/// `mnt-docs-adapter-postgres`, because adapter → adapter is an illegal layer
-/// edge (`mnt-gate-layer-boundary`).
+/// `console-docs-adapter-postgres`, because adapter → adapter is an illegal layer
+/// edge (`console-gate-layer-boundary`).
 async fn bind_handover_custody(
     tx: &mut Transaction<'_, Postgres>,
     org: OrgId,

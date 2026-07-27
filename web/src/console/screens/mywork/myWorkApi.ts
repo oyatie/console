@@ -2,7 +2,7 @@
 // items, same REAL endpoint the overview uses) and their private todo list
 // (/api/v1/me/todos, full CRUD). All person-scoped server-side from the JWT.
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../../api/client";
 import type { ActionInboxResponse } from "../overview/overviewModel";

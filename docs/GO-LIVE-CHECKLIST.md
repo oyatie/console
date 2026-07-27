@@ -28,12 +28,12 @@ Deployment-context shorthand used below:
 
 - [x] **All CI gates green on `main`.** fmt, `clippy --all-targets -D warnings`,
   `cargo test --workspace` (170 suites / 302 tests / 0 failed), the four
-  `mnt-gate-*` binaries (layer-boundary, audit-coverage, migration-safety,
+  `console-gate-*` binaries (layer-boundary, audit-coverage, migration-safety,
   pii-no-logs), tri-client drift (ts/kotlin/swift), openapi-app, contract
   round-trip, i18n + parity, iOS build + behavior tests. See
   [CI-GATES.md](CI-GATES.md).
 - [x] **Supply-chain CI shipped** — Eng. `image-release.yml` builds the
-  `mnt-app` + `mnt-web` linux/arm64 images reproducibly for the current
+  `console-app` + `console-web` linux/arm64 images reproducibly for the current
   `oci-guest` A1 target (digest-pinned bases, `SOURCE_DATE_EPOCH`), with SBOM +
   SLSA provenance, a
   **blocking Trivy HIGH/CRITICAL scan before keyless cosign signing**, then
@@ -48,7 +48,7 @@ Deployment-context shorthand used below:
   matrix to the selected node architecture before production traffic moves.
 - [x] **Admission verification audit path** — Eng. The sigstore
   policy-controller audit component lives under
-  `deploy/apps/maintenance/components/admission-audit/` and is checked by
+  `deploy/apps/console/components/admission-audit/` and is checked by
   `npm run check:production-hardening`; hard-fail enforcement waits for ops to
   install the controller CRDs and complete warning burn-in.
 - [x] **Post-launch security remediation pass complete** — Eng. A repo-wide
@@ -115,7 +115,7 @@ Deployment-context shorthand used below:
 - [x] **Deploy automation built + validated for current paths** — Eng. `deploy/`
   is kustomize/kubeconform-clean (30/30, CRDs included), the `oci-guest` Talos
   machine config is `talosctl validate --mode cloud`-valid, all upstream operator
-  refs resolve, and the `mnt-web` image builds + serves. Blue/green Rollouts
+  refs resolve, and the `console-web` image builds + serves. Blue/green Rollouts
   smoke-gate the preview before cutover (automatic rollback on application
   failure); Argo CD self-heals. `on-prem` dark artifacts have separate render,
   scheduling, and failover gates before they become production evidence.
@@ -184,7 +184,7 @@ Deployment-context shorthand used below:
   branch wave gated on its seeded data — 운영 (provisioning is idempotent;
   cold-start passkey bootstrap is ready).
 - [ ] **Cold-start admin OTP set as a deploy-time secret** — 운영. Production must
-  set `MNT_COLDSTART_OTP` to a CSPRNG value (the committed `coss0000` is
+  set `CONSOLE_COLDSTART_OTP` to a CSPRNG value (the committed `coss0000` is
   dev-only and is revoked by migration 0023); it seeds the first SUPER_ADMIN
   sign-in at boot, short-TTL, and must be redeemed-or-revoked immediately. See
   [`deploy/SECRETS.md`](../deploy/SECRETS.md). **Do not expose the API publicly

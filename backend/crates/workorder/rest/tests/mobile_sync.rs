@@ -2,15 +2,15 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_storage::{
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_storage::{
     CopyObjectRequest, EvidenceService, ObjectHead, PresignGetRequest, PresignPutRequest,
     PresignedUpload, RetentionInfo, S3ObjectStore, StorageFuture,
 };
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_rest::{MobileRestState, mobile_router};
+use console_platform_test_support::runtime_role_pool;
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_rest::{MobileRestState, mobile_router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -36,8 +36,8 @@ use mobile_evidence_fixtures::{
     seed_user_with_branch,
 };
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const DEVICE_ID: &str = "test-device-0001";
 
 #[derive(Debug, Clone)]
@@ -175,7 +175,7 @@ async fn harness(pool: PgPool) -> Harness {
 // FIX 1: same request_id + same payload returns the cached (idempotent) response.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn replay_same_payload_returns_cached_response(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let body = json!({
             "sync_id": "sync-1",
@@ -217,7 +217,7 @@ async fn replay_same_payload_returns_cached_response(pool: PgPool) {
 // FIX 1: same request_id with a DIFFERENT payload is rejected (no stale return).
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn replay_different_payload_is_rejected(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let other_wo = uuid::Uuid::new_v4();
         let first = post_sync(
@@ -270,7 +270,7 @@ async fn replay_different_payload_is_rejected(pool: PgPool) {
 // FIX 1: a duplicate request_id within a single batch is rejected.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn duplicate_request_id_in_batch_is_rejected(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let resp = post_sync(
             h.service.clone(),
@@ -319,7 +319,7 @@ async fn duplicate_request_id_in_batch_is_rejected(pool: PgPool) {
 // single principal cannot monopolize a pooled DB connection.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn oversized_sync_batch_is_rejected(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let operations: Vec<Value> = (0..201)
             .map(|i| {
@@ -369,16 +369,16 @@ async fn oversized_sync_batch_is_rejected(pool: PgPool) {
 // response without double-mutating.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn crash_between_mutate_and_complete_reconciles_on_retry(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let store = PgWorkOrderStore::new(h.pool.clone());
 
         // Simulate the committed business mutation: the WO is started.
         store
-            .start_work(mnt_workorder_application::WorkOrderStartCommand {
+            .start_work(console_workorder_application::WorkOrderStartCommand {
                 actor: assigned_mechanic(&h.pool, h.work_order_id).await,
-                work_order_id: mnt_kernel_core::WorkOrderId::from_uuid(h.work_order_id),
-                trace: mnt_kernel_core::TraceContext::generate(),
+                work_order_id: console_kernel_core::WorkOrderId::from_uuid(h.work_order_id),
+                trace: console_kernel_core::TraceContext::generate(),
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await

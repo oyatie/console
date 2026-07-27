@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-reporting-domain",
+    name = "console-reporting-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/reporting/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_reporting_domain",
+    crate = "console_reporting_domain",
     edition = "2024",
     crate_root = "backend/crates/reporting/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/reporting/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
@@ -25,16 +25,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-reporting-domain-unit",
+    name = "console-reporting-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/reporting/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_reporting_domain",
+    crate = "console_reporting_domain",
     edition = "2024",
     crate_root = "backend/crates/reporting/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/reporting/domain"},
     labels = ["owner.backend.crates.reporting.domain", "domain.reporting", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
         "//third-party/rust:uuid",

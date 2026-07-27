@@ -14,7 +14,7 @@ const env = {
 await runCargoTest([
   "test",
   "-p",
-  "mnt-app",
+  "console-app",
   "--lib",
   "collaboration::tests::",
   "--",
@@ -23,7 +23,7 @@ await runCargoTest([
 await runCargoTest([
   "test",
   "-p",
-  "mnt-app",
+  "console-app",
   "--test",
   "openapi_drift",
   "openapi_yaml_covers_mounted_auth_routes",

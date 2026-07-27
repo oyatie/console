@@ -1,23 +1,23 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 //! Authenticated, runtime-role HTTP contract for the payroll run lifecycle
 //! (CAP-PAYROLL-CONSOLE). Crosses the crate's assembled router (the same
-//! `with_request_context` middleware the app mounts) on a genuine `mnt_rt`
+//! `with_request_context` middleware the app mounts) on a genuine `console_rt`
 //! served pool (RLS enforced), with a real ES256 signature chain, through the
 //! full close → calculate → exception → SoD decision → disbursement →
 //! release-gated payslip issuance pipeline; asserts PBAC denial without
 //! leakage, cross-tenant invisibility, and the audit readback.
 //!
 //! NOTE: chartered home was `backend/app/tests/payroll_run_api.rs`, but
-//! `mnt-app` does not compile on this branch (facilities/production rest
+//! `console-app` does not compile on this branch (facilities/production rest
 //! lanes are mid-refactor), so the identical proof runs here against the
 //! crate router the app mounts verbatim.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_payroll_adapter_postgres::PgPayrollStore;
-use mnt_payroll_rest::{PayrollRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_kernel_core::{OrgId, UserId};
+use console_payroll_adapter_postgres::PgPayrollStore;
+use console_payroll_rest::{PayrollRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -30,8 +30,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const SHA256_FIXTURE: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -590,7 +590,7 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -778,7 +778,7 @@ async fn seed_period_lock(pool: &PgPool, org: OrgId) {
 }
 
 /// Register a release-gate record that satisfies
-/// `mnt_payroll_domain::validate_release_gate` on the run's `legal_basis`.
+/// `console_payroll_domain::validate_release_gate` on the run's `legal_basis`.
 async fn register_release_gate(pool: &PgPool, run: Uuid) {
     sqlx::query("UPDATE payroll_draft_runs SET legal_basis = legal_basis || $2 WHERE id = $1")
         .bind(run)

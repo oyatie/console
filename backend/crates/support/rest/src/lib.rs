@@ -20,24 +20,24 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, CustomerId, ErrorKind, KernelError, OrgId, SiteId, SupportTicketId,
     TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
-use mnt_platform_push::{FcmPushMessage, PushNotifier};
-use mnt_platform_request_context::TrustedClientIp;
-use mnt_support_adapter_postgres::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_push::{FcmPushMessage, PushNotifier};
+use console_platform_request_context::TrustedClientIp;
+use console_support_adapter_postgres::{
     MAX_BODY_CHARS, MAX_REQUESTER_CONTACT_CHARS, MAX_REQUESTER_NAME_CHARS, MAX_TITLE_CHARS,
     PgSupportError, PgSupportStore,
 };
-use mnt_support_application::{
+use console_support_application::{
     AddCommentCommand, AssignTicketCommand, CommentAudience, CreateCustomerIntakeCommand,
     CreateInternalTicketCommand, LinkTicketCommand, ListFieldSitesQuery, ListTicketsQuery,
     RecordAcceptanceCommand, TicketNotification, TransitionTicketCommand,
 };
-use mnt_support_domain::{
+use console_support_domain::{
     AcceptanceChannel, AcceptanceKind, FieldSlaState, TicketCategory, TicketOrigin, TicketPriority,
     TicketStatus,
 };
@@ -153,7 +153,7 @@ pub fn router(state: SupportRestState) -> Router {
         .route(FIELD_SITES_PATH, get(list_field_sites))
         .route(FIELD_SITE_PATH_TEMPLATE, get(get_field_site))
         .with_state(state.clone());
-    let authed = mnt_platform_request_context::with_request_context(authed, verifier, pool);
+    let authed = console_platform_request_context::with_request_context(authed, verifier, pool);
     // Unauthenticated intake route — no JWT required, but still needs a tenant
     // context for the store. The public intake org is configured by app boot
     // from `STOREFRONT_ORG_ID`, matching the public storefront tenant instead
@@ -164,7 +164,7 @@ pub fn router(state: SupportRestState) -> Router {
         .with_state(state)
         .layer(axum::middleware::from_fn(
             move |req: axum::extract::Request, next: axum::middleware::Next| async move {
-                mnt_platform_request_context::scope_org(public_intake_org, next.run(req)).await
+                console_platform_request_context::scope_org(public_intake_org, next.run(req)).await
             },
         ));
     authed.merge(intake)
@@ -811,40 +811,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for support API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for support API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
+        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
             KernelError::internal("no tenant context is bound to the current request"),
         ),
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -955,13 +955,13 @@ impl IntoResponse for RestError {
 #[cfg(test)]
 mod tests {
     use axum::http::HeaderMap;
-    use mnt_platform_request_context::TrustedClientIp;
+    use console_platform_request_context::TrustedClientIp;
 
     #[sqlx::test(migrations = "../../platform/db/migrations")]
     async fn rate_limit_trips_at_cap_and_resets_after_window(pool: sqlx::PgPool) {
         use super::{RATE_LIMIT_PER_IP, RATE_LIMIT_WINDOW, rate_limit};
         use axum::http::StatusCode;
-        use mnt_support_adapter_postgres::PgSupportStore;
+        use console_support_adapter_postgres::PgSupportStore;
         use time::OffsetDateTime;
 
         let store = PgSupportStore::new(pool);

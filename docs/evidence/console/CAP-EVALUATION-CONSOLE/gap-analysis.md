@@ -17,11 +17,11 @@ evidence links, calibration, RV- ledger codes, features, audit actions.
 | Need | Existing substrate | Where |
 |---|---|---|
 | Subject identity | `employees` (tenant HR rows, **not auth users**), `employee_employment_profiles` | migrations 0063, 0172; people module reads `/api/v1/employees` |
-| Tenant isolation | RLS `org_isolation` on `app.current_org` GUC, `FORCE ROW LEVEL SECURITY`, grants to `mnt_rt` | 0172 is the copy-exact pattern |
+| Tenant isolation | RLS `org_isolation` on `app.current_org` GUC, `FORCE ROW LEVEL SECURITY`, grants to `console_rt` | 0172 is the copy-exact pattern |
 | Audit | `with_audit(pool, AuditEvent, closure)` — mutation + append-only audit row in one tx; `AuditEvent{actor, action, target_type, target_id, org_id, before, after, trace}` | `platform/db/src/audit_tx.rs`, `kernel/core/src/audit.rs` |
 | Authz | `Feature` enum + role matrix `[MEMBER, MECHANIC, RECEPTIONIST, ADMIN, EXECUTIVE, SUPER_ADMIN]`, `authorize(...)`, snake_case wire names, deny-by-default | `platform/authz/src/lib.rs` |
 | REST conventions | `pub fn router(state: XxxRestState) -> Router`, exported `*_ROUTE_PATHS` consts for the openapi drift test, handler-level bound validation (422 before DB CHECK), `{ "error": { "message } }` body | `sales/rest`, `production/rest` |
-| Crate shape | domain / application / adapter-postgres / rest split with `mnt_rt` RLS tests | `backend/crates/sales/**` (freshest full exemplar) |
+| Crate shape | domain / application / adapter-postgres / rest split with `console_rt` RLS tests | `backend/crates/sales/**` (freshest full exemplar) |
 | Idempotent create | per-org `idempotency_key` + `request_hash` reservation table | 0172 |
 
 ## 3. Substrate gaps and decisions
@@ -48,7 +48,7 @@ evidence links, calibration, RV- ledger codes, features, audit actions.
    openapi drift gate fails if routes register in `build_router` without
    openapi.yaml. Decision: the build lane ships the crate + migration + an app
    integration test (`backend/app/tests/evaluation_cycle_api.rs`) that mounts
-   `mnt_evaluation_rest::router(...)` **directly** against the scratch DB;
+   `console_evaluation_rest::router(...)` **directly** against the scratch DB;
    `build_router` registration + openapi paths + client regeneration are
    deferred to the consolidation integrator via `integration-manifest.json`.
 
@@ -80,7 +80,7 @@ evidence links, calibration, RV- ledger codes, features, audit actions.
   screens branch only on capabilities; `canRead === false` renders the denied
   state without fetching.
 - API module: typed via `components["schemas"][...]` from
-  `@maintenance/api-client-ts`; `requireData` throws `XxxApiError` with the
+  `@console/api-client-ts`; `requireData` throws `XxxApiError` with the
   parsed `error.message`; every call takes an `AbortSignal`.
 - i18n: module-owned `web/src/i18n/evaluation.ts` (like `production.ts`) — no
   inline Hangul in components; `ko.ts` itself is a collision root (not needed

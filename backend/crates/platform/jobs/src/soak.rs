@@ -9,7 +9,7 @@ use std::{
 
 use apalis::prelude::{BoxDynError, Data, WorkerBuilder, WorkerContext};
 use apalis_postgres::{Config, PgPool as ApalisPgPool, PostgresStorage};
-use mnt_kernel_core::{Clock, FixedClock, SystemClock, Timestamp};
+use console_kernel_core::{Clock, FixedClock, SystemClock, Timestamp};
 use sqlx::{Connection as _, Row};
 use tokio::task::JoinHandle;
 
@@ -153,9 +153,9 @@ pub async fn run_soak_gates(
     let mut owner_connection = sqlx::PgConnection::connect(database_url).await?;
     migrate_and_reconcile_apalis_postgres(&mut owner_connection).await?;
 
-    let runtime_database_url = std::env::var("MNT_APALIS_RUNTIME_DATABASE_URL").map_err(|_| {
+    let runtime_database_url = std::env::var("CONSOLE_APALIS_RUNTIME_DATABASE_URL").map_err(|_| {
         JobQueueError::Soak(
-            "MNT_APALIS_RUNTIME_DATABASE_URL is required and must authenticate as mnt_rt"
+            "CONSOLE_APALIS_RUNTIME_DATABASE_URL is required and must authenticate as console_rt"
                 .to_owned(),
         )
     })?;
@@ -346,7 +346,7 @@ async fn run_clock_skew_gate(
         job_count,
         started,
         vec![
-            "scheduled timestamps were derived through mnt_kernel_core::Clock".to_owned(),
+            "scheduled timestamps were derived through console_kernel_core::Clock".to_owned(),
             "half the timers used +750 ms skew and half used -750 ms skew".to_owned(),
         ],
         None,
@@ -780,7 +780,7 @@ impl Scenario {
         let id = format!("t110-{name}-{}", uuid::Uuid::new_v4());
         Self {
             name,
-            queue_name: format!("mnt.t110.{id}"),
+            queue_name: format!("console.t110.{id}"),
             id,
         }
     }

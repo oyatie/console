@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-email",
+    name = "console-platform-email",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/email", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_email",
+    crate = "console_platform_email",
     edition = "2024",
     crate_root = "backend/crates/platform/email/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -24,9 +24,9 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-platform-email-unit",
+    name = "console-platform-email-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/email", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_email",
+    crate = "console_platform_email",
     edition = "2024",
     crate_root = "backend/crates/platform/email/src/lib.rs",
     visibility = ["PUBLIC"],

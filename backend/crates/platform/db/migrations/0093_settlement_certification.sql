@@ -6,7 +6,7 @@
 -- FOUR fields: reviewer_kind, reviewed_on, artifact_sha256, reviewer_reference)
 -- AND that certification is bound to the exact package revision it reviewed via a
 -- deterministic SHA-256 digest. The DB is the only guarantee here: the table-level
--- `GRANT SELECT, INSERT, UPDATE ON employee_exit_settlement_packages TO mnt_rt`
+-- `GRANT SELECT, INSERT, UPDATE ON employee_exit_settlement_packages TO console_rt`
 -- from 0092 is column-unrestricted, so any UPDATE path could otherwise flip status
 -- to CERTIFIED with a null/forged artifact. The CHECKs below make that state
 -- unrepresentable (fail-closed).

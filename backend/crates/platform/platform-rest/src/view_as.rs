@@ -11,7 +11,7 @@
 //! paramount. Three independent guarantees stack:
 //!
 //! 1. **Only the platform tier can START.** [`start_view_as`] runs behind the
-//!    PLATFORM extractor ([`mnt_platform_request_context::with_platform_context`]),
+//!    PLATFORM extractor ([`console_platform_request_context::with_platform_context`]),
 //!    which rejects any tenant token with 403 before the handler runs. The real
 //!    operator id is taken from the VERIFIED platform token (the `PlatformPrincipal`
 //!    in the request extensions), never from the request body — it is unspoofable.
@@ -53,10 +53,10 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtVerifier};
-use mnt_platform_authz::{PlatformPrincipal, Role};
-use mnt_platform_db::{DbError, SubjectAuthzFreshness, read_subject_authz_freshness, with_audit};
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtVerifier};
+use console_platform_authz::{PlatformPrincipal, Role};
+use console_platform_db::{DbError, SubjectAuthzFreshness, read_subject_authz_freshness, with_audit};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
@@ -190,7 +190,7 @@ async fn start_view_as(
     // read-oriented capability) so a future subsetting of platform RBAC can deny
     // troubleshooting view-as without touching code.
     principal
-        .authorize(mnt_platform_authz::PlatformFeature::TenantHealthRead)
+        .authorize(console_platform_authz::PlatformFeature::TenantHealthRead)
         .map_err(|_| PlatformError::forbidden("platform principal cannot view as a tenant"))?;
 
     let issuer = state.view_as_issuer.as_ref().ok_or_else(|| {
@@ -319,7 +319,7 @@ async fn exit_view_as(
     Extension(principal): Extension<PlatformPrincipal>,
 ) -> Result<Response, PlatformError> {
     principal
-        .authorize(mnt_platform_authz::PlatformFeature::TenantHealthRead)
+        .authorize(console_platform_authz::PlatformFeature::TenantHealthRead)
         .map_err(|_| PlatformError::forbidden("platform principal cannot exit view as"))?;
 
     let now = OffsetDateTime::now_utc();
@@ -353,7 +353,7 @@ async fn start_tenant_context(
     Json(body): Json<TenantContextStartRequest>,
 ) -> Result<Response, PlatformError> {
     principal
-        .authorize(mnt_platform_authz::PlatformFeature::TenantManage)
+        .authorize(console_platform_authz::PlatformFeature::TenantManage)
         .map_err(|_| PlatformError::forbidden("platform principal cannot manage a tenant"))?;
 
     let issuer = state.view_as_issuer.as_ref().ok_or_else(|| {
@@ -447,7 +447,7 @@ async fn exit_tenant_context(
     Extension(principal): Extension<PlatformPrincipal>,
 ) -> Result<Response, PlatformError> {
     principal
-        .authorize(mnt_platform_authz::PlatformFeature::TenantManage)
+        .authorize(console_platform_authz::PlatformFeature::TenantManage)
         .map_err(|_| PlatformError::forbidden("platform principal cannot exit tenant context"))?;
 
     let now = OffsetDateTime::now_utc();

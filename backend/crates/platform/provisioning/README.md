@@ -1,4 +1,4 @@
-# mnt-platform-provisioning
+# console-platform-provisioning
 
 Bulk roster provisioning and passkey cold-start for T0.12.
 

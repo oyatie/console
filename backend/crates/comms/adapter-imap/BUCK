@@ -9,17 +9,17 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-comms-adapter-imap",
+    name = "console-comms-adapter-imap",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-imap", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_adapter_imap",
+    crate = "console_comms_adapter_imap",
     edition = "2024",
     crate_root = "backend/crates/comms/adapter-imap/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/adapter-imap"},
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/comms/domain:mnt-comms-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/comms/domain:console-comms-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:async-imap",
         "//third-party/rust:futures",
         "//third-party/rust:hickory-resolver",
@@ -37,18 +37,18 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-comms-adapter-imap-unit",
+    name = "console-comms-adapter-imap-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-imap", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_adapter_imap",
+    crate = "console_comms_adapter_imap",
     edition = "2024",
     crate_root = "backend/crates/comms/adapter-imap/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/adapter-imap"},
     labels = ["owner.backend.crates.comms.adapter-imap", "domain.comms", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/comms/domain:mnt-comms-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/comms/domain:console-comms-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:async-imap",
         "//third-party/rust:futures",
         "//third-party/rust:hickory-resolver",

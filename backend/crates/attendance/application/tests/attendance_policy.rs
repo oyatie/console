@@ -1,10 +1,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_attendance_application::{
+use console_attendance_application::{
     CallerScope, CloseChecks, IdempotencyDecision, SubstitutionCandidateFacts,
     SubstitutionCandidateQuery, ensure_scope, idempotency_decision, require_worker_employee_id,
 };
-use mnt_attendance_domain::SubstitutionWindow;
+use console_attendance_domain::SubstitutionWindow;
 use time::{Date, Month};
 use uuid::Uuid;
 

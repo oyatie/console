@@ -50,7 +50,7 @@ def _patch_target(
     if isinstance(dependent_paths, list):
         normalized: list[Any] = []
         for item in dependent_paths:
-            if isinstance(item, str) and item.endswith("/MaintenanceFieldApp"):
+            if isinstance(item, str) and item.endswith("/ConsoleApp"):
                 normalized.append(ui_target_app_path)
             else:
                 normalized.append(item)

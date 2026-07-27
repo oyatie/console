@@ -4,7 +4,7 @@
 //! and Postgres upserts live in outer crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{BranchId, CustomerId, EquipmentId, KernelError, SiteId};
+use console_kernel_core::{BranchId, CustomerId, EquipmentId, KernelError, SiteId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(try_from = "String", into = "String")]

@@ -1,14 +1,14 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
-//! Authenticated, runtime-role (`mnt_rt`) story for the org-change lifecycle
+//! Authenticated, runtime-role (`console_rt`) story for the org-change lifecycle
 //! engine (STORY-ORG-001): draft → preflight → ordered SoD approval →
 //! effective-dated apply, plus deny-by-omission authorization, cross-tenant
 //! concealment, and audit readback. It crosses the assembled HTTP router.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -24,8 +24,8 @@ use uuid::Uuid;
 /// `clippy::type_complexity` (denied workspace-wide) rejects it inline.
 type RefusalAuditRow = (Option<Uuid>, Option<Uuid>, Option<bool>, Option<String>);
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const CHANGES: &str = "/api/v1/org-changes";
 
 fn today_kst() -> time::Date {
@@ -1342,7 +1342,7 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -1395,14 +1395,14 @@ async fn send(
     )
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
     AppState::new(
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".into()),
-            ("MNT_JWT_ISSUER", ISSUER.into()),
-            ("MNT_JWT_AUDIENCE", AUDIENCE.into()),
-            ("MNT_JWT_PUBLIC_KEY_PEM", public_key),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
+            ("CONSOLE_JWT_ISSUER", ISSUER.into()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.into()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key),
         ])?,
         DatabaseDependency::Postgres(pool),
     )

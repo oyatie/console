@@ -3,7 +3,7 @@
 # This chart is only synced manually in the on-prem context.
 persistence:
   # Do not let the Longhorn chart create its vendor-named `longhorn` default class.
-  # The maintenance-owned contract is `mnt-pg-hot`, defined in manifests/.
+  # The console-owned contract is `console-pg-hot`, defined in manifests/.
   createStorageClass: false
   defaultClass: false
   defaultFsType: ext4

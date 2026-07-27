@@ -2,14 +2,14 @@
 """Run the PR 473 migration regressions once each through the Buck harness.
 
 This gate does NOT run `cargo test --workspace`; the docstring that claimed it
-did outlived the code by many commits.  Migration 0196 requires `mnt_buck_admin`
-plus an armed `mnt.sqlx_test_bootstrap` before any migration may be applied, and
+did outlived the code by many commits.  Migration 0196 requires `console_buck_admin`
+plus an armed `console.sqlx_test_bootstrap` before any migration may be applied, and
 the CI service account (`postgres`) cannot satisfy it -- so a workspace-wide
 cargo run against that database cannot execute a single migration-applying test.
 Only the tests named below are carried here.
 
-Restoring workspace-wide coverage is a matter of running it as `mnt_buck_admin`
-(CI now provisions that role; see `MNT_BUCK_ADMIN_DATABASE_URL` in ci.yml), not
+Restoring workspace-wide coverage is a matter of running it as `console_buck_admin`
+(CI now provisions that role; see `CONSOLE_BUCK_ADMIN_DATABASE_URL` in ci.yml), not
 a change to this file.  See H-8 in docs/program/false-green-gate-holes.md.
 """
 
@@ -43,17 +43,17 @@ PRODUCTION_AUTHORITY = {
 }
 TEST_KEYS = ("domain", "package", "target", "source", "name")
 EXPECTED_TESTS = (
-    ("ontology", "mnt-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage"),
-    ("ontology", "mnt-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_keeps_exact_old_binary_writes_audited_and_cas_consistent"),
-    ("ontology", "mnt-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "migration_0166_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "exact_charge_create_accepts_resolved_and_review_required_shapes"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "exact_charge_create_atomically_rejects_mismatched_reason_and_evidence_shapes"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "immediate_f6ff_employee_import_remains_usable_after_0166"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_f6ff_employee_import_apply_remains_atomic_after_0166"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_f6ff_apply_rejects_missing_duplicate_or_forged_current_tx_audit"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "legacy_leave_mutations_require_exactly_one_same_transaction_audit"),
-    ("leave", "mnt-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_employee_import_rejects_payload_not_equal_to_immutable_ledger"),
+    ("ontology", "console-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage"),
+    ("ontology", "console-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_keeps_exact_old_binary_writes_audited_and_cas_consistent"),
+    ("ontology", "console-ontology-adapter-postgres", "key_revision_migration_upgrade", "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs", "migration_0165_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "migration_0166_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "exact_charge_create_accepts_resolved_and_review_required_shapes"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "exact_charge_create_atomically_rejects_mismatched_reason_and_evidence_shapes"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "immediate_f6ff_employee_import_remains_usable_after_0166"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_f6ff_employee_import_apply_remains_atomic_after_0166"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_f6ff_apply_rejects_missing_duplicate_or_forged_current_tx_audit"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "legacy_leave_mutations_require_exactly_one_same_transaction_audit"),
+    ("leave", "console-leave-adapter-postgres", "leave_migration_expand_contract", "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs", "staged_employee_import_rejects_payload_not_equal_to_immutable_ledger"),
 )
 BUCK_POSTGRES_HARNESS = Path("tools/buck/test_needs_postgres.sh")
 # Generated target labels are the execution boundary for this operational gate.
@@ -79,11 +79,11 @@ RUST_TARGET_BY_SOURCE_AND_BINARY = {
     (
         "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs",
         "key_revision_migration_upgrade",
-    ): "//backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-key_revision_migration_upgrade",
+    ): "//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-key_revision_migration_upgrade",
     (
         "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
         "leave_migration_expand_contract",
-    ): "//backend/crates/leave/adapter-postgres:mnt-leave-adapter-postgres-itest-leave_migration_expand_contract",
+    ): "//backend/crates/leave/adapter-postgres:console-leave-adapter-postgres-itest-leave_migration_expand_contract",
 }
 
 
@@ -278,9 +278,9 @@ def execute(repo_root: Path) -> int:
     # disposable authority.
     for variable in (
         "DATABASE_URL",
-        "MNT_APALIS_OWNER_DATABASE_URL",
-        "MNT_APALIS_RUNTIME_DATABASE_URL",
-        "MNT_APALIS_ADMIN_DATABASE_URL",
+        "CONSOLE_APALIS_OWNER_DATABASE_URL",
+        "CONSOLE_APALIS_RUNTIME_DATABASE_URL",
+        "CONSOLE_APALIS_ADMIN_DATABASE_URL",
     ):
         env.pop(variable, None)
 
@@ -293,7 +293,7 @@ def execute(repo_root: Path) -> int:
                 f"Buck2 disposable PostgreSQL target {target} exited {completed.returncode}"
             )
     for target, name in guarded_test_specs(repo_root, manifest):
-        exact_env = dict(env, MNT_BUCK_NEEDS_POSTGRES_TEST_EXACT=name)
+        exact_env = dict(env, CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=name)
         completed = run(
             [str(harness), target, "--test-executor-stdout=-"],
             cwd=repo_root,

@@ -60,7 +60,7 @@ starting and **plain-merge before every push (rebase is classifier-blocked)**.
 is lens C. Lens-D lanes emit manifests only.
 
 **Enterprise bar — implicit in every DoD, restated once:**
-RLS FORCE and tested as `mnt_rt` (superuser tests are void — a BYPASSRLS pass proves nothing);
+RLS FORCE and tested as `console_rt` (superuser tests are void — a BYPASSRLS pass proves nothing);
 deny-by-default PBAC; audit row in the SAME transaction as every mutation; canonical error envelope
 (`22x` validation vs `409` conflict correctly separated — a 500 for a DB CHECK is a defect);
 idempotency key + canonical fingerprint on every create/decide; story-level app integration test;
@@ -72,8 +72,8 @@ upgrade path.
 **Standard DoD preamble (assumed on every lane; the per-lane `dod` lists only what is lane-specific):**
 1. `cargo fmt` clean; `cargo clippy -p <owned crates> -- -D warnings` clean.
 2. Named `cargo test -p …` commands green.
-3. Named app story test green as `mnt_rt` on the Buck2 PG harness
-   (`mnt_buck_admin` superuser bootstraps, assertions run as `mnt_rt`).
+3. Named app story test green as `console_rt` on the Buck2 PG harness
+   (`console_buck_admin` superuser bootstraps, assertions run as `console_rt`).
 4. `buck2 test //backend/crates/<owned>/...` green.
 5. CI gates: `backend/ci/gates/{rls-arming, migration-safety, audit-coverage, layer-boundary,
    tenant-isolation, pii-no-logs}` as applicable.

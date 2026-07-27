@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-jobs"
+name = "console-platform-jobs"
 version = "0.1.0"
 description = "JobQueue port, apalis-postgres adapter, and M2-gating apalis soak harness."
 edition.workspace = true
@@ -15,7 +15,7 @@ apalis-sqlx = { package = "sqlx", version = "=0.8.6", default-features = false, 
     "postgres",
     "runtime-tokio-rustls",
 ] }
-mnt-kernel-core = { workspace = true }
+console-kernel-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }

@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-excel"
+name = "console-platform-excel"
 version = "0.1.0"
 description = "Excel generation platform adapter — byte-fidelity template fill using umya-spreadsheet."
 edition.workspace = true

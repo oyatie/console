@@ -151,9 +151,9 @@ CREATE TRIGGER trg_consulting_history_no_update BEFORE UPDATE ON consulting_enga
 CREATE TRIGGER trg_consulting_history_no_delete BEFORE DELETE ON consulting_engagement_history
     FOR EACH ROW EXECUTE FUNCTION governance_append_only_record();
 
-GRANT SELECT ON consulting_reference_bindings TO mnt_rt;
-REVOKE INSERT, UPDATE, DELETE ON consulting_reference_bindings FROM mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON consulting_engagements, consulting_diagnostics, consulting_findings, consulting_initiatives, consulting_benefit_observations TO mnt_rt;
-GRANT SELECT, INSERT ON consulting_engagement_history TO mnt_rt;
-REVOKE DELETE ON consulting_engagements, consulting_diagnostics, consulting_findings, consulting_initiatives, consulting_benefit_observations, consulting_engagement_history FROM mnt_rt;
-REVOKE UPDATE ON consulting_engagement_history FROM mnt_rt;
+GRANT SELECT ON consulting_reference_bindings TO console_rt;
+REVOKE INSERT, UPDATE, DELETE ON consulting_reference_bindings FROM console_rt;
+GRANT SELECT, INSERT, UPDATE ON consulting_engagements, consulting_diagnostics, consulting_findings, consulting_initiatives, consulting_benefit_observations TO console_rt;
+GRANT SELECT, INSERT ON consulting_engagement_history TO console_rt;
+REVOKE DELETE ON consulting_engagements, consulting_diagnostics, consulting_findings, consulting_initiatives, consulting_benefit_observations, consulting_engagement_history FROM console_rt;
+REVOKE UPDATE ON consulting_engagement_history FROM console_rt;

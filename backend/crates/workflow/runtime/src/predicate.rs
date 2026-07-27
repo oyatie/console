@@ -16,7 +16,7 @@
 //! unsatisfied (never an error). `in` requires an array `value` and holds when the
 //! field equals any element.
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde_json::Value;
 
 /// Guards against a pathological deeply-nested authored predicate. Admin-authored,

@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";

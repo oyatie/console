@@ -4,16 +4,16 @@
 //! Read-only. These tables are *pre-calculation* readiness/staging data —
 //! `payroll_draft_lines` stores work-day/hour counts and `*_source_present`
 //! booleans, never a computed won amount. The real per-employee deduction
-//! math lives in `mnt_payroll_domain::build_employee_payroll_draft`, which is
+//! math lives in `console_payroll_domain::build_employee_payroll_draft`, which is
 //! a pure in-memory function with no persistence anywhere in this schema.
 //! Callers must not present anything read here as an issued payslip.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod lifecycle;
 
-use mnt_kernel_core::{ErrorKind, KernelError, UserId};
-use mnt_platform_db::{DbError, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_kernel_core::{ErrorKind, KernelError, UserId};
+use console_platform_db::{DbError, with_org_conn};
+use console_platform_request_context::current_org;
 use serde::Serialize;
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use time::{Date, OffsetDateTime};
@@ -181,7 +181,7 @@ impl PgPayrollStore {
     /// with an audited write in one atomic transaction (the REST layer's
     /// "others' reads are audited" requirement) should use
     /// [`list_runs_in_tx`] against an already-armed `tx` instead — e.g.
-    /// inside `mnt_platform_db::with_audits`.
+    /// inside `console_platform_db::with_audits`.
     pub async fn list_runs(
         &self,
         limit: Option<i64>,
@@ -329,7 +329,7 @@ impl PgPayrollStore {
 
 /// Query logic behind [`PgPayrollStore::list_runs`], factored out so a
 /// caller that must combine this read with an audited write in one
-/// transaction (e.g. `mnt_platform_db::with_audits`) can run it against an
+/// transaction (e.g. `console_platform_db::with_audits`) can run it against an
 /// already-armed `tx` instead of opening a second, non-atomic transaction.
 pub async fn list_runs_in_tx(
     tx: &mut Transaction<'_, Postgres>,

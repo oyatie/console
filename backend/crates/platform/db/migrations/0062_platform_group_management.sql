@@ -4,7 +4,7 @@
 --
 -- Security posture stays the same as 0060:
 --   * groups = global identity metadata only.
---   * group_memberships = owner-only auth/topology table; no raw mnt_rt access.
+--   * group_memberships = owner-only auth/topology table; no raw console_rt access.
 --   * platform functions return identity/member summaries only, never tenant rows.
 
 CREATE OR REPLACE FUNCTION platform_list_groups()
@@ -60,7 +60,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_list_groups() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_list_groups() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_list_groups() TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_get_group(p_id UUID)
 RETURNS TABLE (
@@ -115,7 +115,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_get_group(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_get_group(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_get_group(UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_create_group(p_slug TEXT, p_name TEXT)
 RETURNS UUID
@@ -140,7 +140,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_create_group(TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_create_group(TEXT, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_create_group(TEXT, TEXT) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_update_group(
     p_id UUID,
@@ -173,7 +173,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_update_group(UUID, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_update_group(UUID, TEXT, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_update_group(UUID, TEXT, TEXT) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_assign_org_to_group(p_group_id UUID, p_org_id UUID)
 RETURNS UUID
@@ -227,7 +227,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_assign_org_to_group(UUID, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_assign_org_to_group(UUID, UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_assign_org_to_group(UUID, UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_remove_org_from_group(p_group_id UUID, p_org_id UUID)
 RETURNS UUID
@@ -267,4 +267,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_remove_org_from_group(UUID, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_remove_org_from_group(UUID, UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_remove_org_from_group(UUID, UUID) TO console_rt;

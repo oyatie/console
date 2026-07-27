@@ -1,4 +1,4 @@
-import type { components, operations, paths } from "@maintenance/api-client-ts";
+import type { components, operations, paths } from "@console/api-client-ts";
 
 import { canonicalOrgSlug } from "../lib/orgSlug";
 import { getDeviceId } from "./device";
@@ -8,7 +8,7 @@ import type { RefreshAuthority } from "./refresh";
 /**
  * Vendor platform-admin (multi-tenant) API. The `/api/platform/*` surface is
  * described by `backend/openapi/openapi.yaml` and generated into
- * `@maintenance/api-client-ts`; this module keeps the raw fetch transport only
+ * `@console/api-client-ts`; this module keeps the raw fetch transport only
  * so platform calls continue to mirror the console client's auth behavior
  * (bearer header, cookie transport opt-in, X-Device-Id, credentials).
  *
@@ -21,7 +21,7 @@ type PlatformRouteTemplate = Extract<keyof paths, `/api/platform/${string}`>;
 
 // Frontend mirror of the generated platform path keys. The backend route
 // inventory comparison (`scripts/check-platform-contract-drift.mjs`) keeps
-// `mnt-platform-rest` in lockstep with OpenAPI; this `satisfies` check keeps raw
+// `console-platform-rest` in lockstep with OpenAPI; this `satisfies` check keeps raw
 // fetch call sites from naming a platform route that is absent from the generated
 // TypeScript contract.
 const PLATFORM_ROUTES = {

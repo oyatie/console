@@ -4,10 +4,10 @@
 //! HTTP concerns remain in outer crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_financial_domain::{
+use console_financial_domain::{
     AcquisitionBasis, DepreciationMethod, FinancialConfig, MoneyInput, PurchaseStatus, QuoteLine,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, EquipmentId, EvidenceId, KernelError, PurchaseRequestId,
     QuoteId, Timestamp, TraceContext, UserId, WorkOrderId,
 };
@@ -149,13 +149,13 @@ impl PurchaseType {
         }
     }
 
-    pub fn from_db_str(value: &str) -> Result<Self, mnt_kernel_core::KernelError> {
+    pub fn from_db_str(value: &str) -> Result<Self, console_kernel_core::KernelError> {
         match value {
             "REGULAR" => Ok(Self::Regular),
             "ONE_OFF" => Ok(Self::OneOff),
             "OTHER" => Ok(Self::Other),
             "LEGACY_MANUAL" => Ok(Self::LegacyManual),
-            other => Err(mnt_kernel_core::KernelError::validation(format!(
+            other => Err(console_kernel_core::KernelError::validation(format!(
                 "unknown purchase type {other:?}"
             ))),
         }

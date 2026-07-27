@@ -38,7 +38,7 @@ off-node:
   `opentelemetry_otlp` **only** when `config.otlp_endpoint` is set (`if let Some(endpoint) = …`,
   `lib.rs:2111`; parsed from `OTEL_EXPORTER_OTLP_ENDPOINT` at `lib.rs:365`). The prod ConfigMap keeps it
   commented out and notes "the OTel collector MUST be deployed first"
-  (`deploy/apps/maintenance/base/configmap.yaml:62-65`). This exporter ships **traces (spans), not logs** —
+  (`deploy/apps/console/base/configmap.yaml:62-65`). This exporter ships **traces (spans), not logs** —
   logs stay stdout-only. **Direction A flips this exporter ON and points it at the OTel agent → OCI APM
   (§5).**
 - **No log shipper exists.** Grep of `deploy/` for `loki|vector|fluent|promtail|openobserve|opensearch|
@@ -288,7 +288,7 @@ sketch above for clarity.)
 
 **Vault-sourced credentials (reuse the existing discipline, do not invent):**
 - OCI API/auth material for the OTel OCI exporters (Logging + APM data key + Monitoring) and the Service
-  Connector's Object-Storage write, stored in **OCI Vault** (same class as `mnt-app-secrets-bundle` /
+  Connector's Object-Storage write, stored in **OCI Vault** (same class as `console-app-secrets-bundle` /
   `oci-objectstore-creds`), projected as k8s secrets in the `observability` ns **out-of-band via
   `kubectl create secret`** — exactly the pattern `deploy/SECRETS.md` blesses for a 1–2 person team
   ("the pragmatic, honest baseline"; External/Sealed Secrets is the noted future upgrade, not adopted here).
@@ -306,7 +306,7 @@ sketch above for clarity.)
   existing `db_backups`/`evidence` resources. (The **block volume** for Loki is a k8s PVC via the OCI CSI
   storage class, not a Tofu object.)
 - **NetworkPolicy:** if (and only if) the Calico/Canal policy add-on is actually enforcing (the repo notes
-  Talos default flannel does **not** enforce — `deploy/apps/maintenance/base/networkpolicy.yaml` header),
+  Talos default flannel does **not** enforce — `deploy/apps/console/base/networkpolicy.yaml` header),
   add an egress-allow for the `observability` tier to 443 (OCI) + DNS, mirroring `allow-app-egress-https`.
 
 ---
@@ -437,7 +437,7 @@ cluster access + a maintenance window) — the same gate as every other cluster 
 - **R-1 (med, scoped): S3 checksum / chunked-encoding incompatibility — ONLY on the Object-Storage 1-yr
   tail writer.** OCI rejects AWS flexible checksums sent via chunked/trailer encoding — the *exact* failure
   that silently broke CNPG backups, fixed there with `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` /
-  `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required` (`deploy/apps/maintenance/base/database.yaml:20-26`).
+  `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required` (`deploy/apps/console/base/database.yaml:20-26`).
   **This risk is now off the hot path** — Loki writes to a **block-volume PVC**, not Object Storage, and
   OCI Logging is a native managed sink. It can only bite the **180 d→365 d Object-Storage tail**: if that
   tail is written by an S3-SDK client, set the same `when_required` env and make a round-trip a gate; the

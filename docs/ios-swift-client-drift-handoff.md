@@ -27,11 +27,11 @@ Toolchain observed locally:
 
 Code markers verified at that head:
 
-- `clients/swift/Sources/MaintenanceAPIClient/Generated/Types.swift:13080`
+- `clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift:13080`
   models `TokenPairResponse.refreshToken` as `Swift.String?`.
-- `ios/Sources/MaintenanceFieldCore/AuthRepository.swift:59` guards
+- `ios/Sources/ConsoleCore/AuthRepository.swift:59` guards
   `tokens.refreshToken` before persisting or reducing to `.passkeyVerified`.
-- `ios/Sources/MaintenanceFieldCore/APIGateway.swift:103` calls
+- `ios/Sources/ConsoleCore/APIGateway.swift:103` calls
   `client.postApiV1AuthPasskeyLoginStart()` with no request body.
 
 Commands run, all successful:
@@ -42,7 +42,7 @@ git diff --exit-code -- clients/swift
 npm run check:swift
 ( cd ios && swift build )
 ( cd ios && swift test )
-( cd ios && swift run MaintenanceFieldCoreBehaviorTests )
+( cd ios && swift run ConsoleCoreBehaviorTests )
 ```
 
 Result summary:
@@ -51,8 +51,8 @@ Result summary:
 - `npm run check:swift` completed with exit 0.
 - `ios` SwiftPM build completed with exit 0.
 - `ios` SwiftPM tests completed with exit 0.
-- `MaintenanceFieldCoreBehaviorTests` completed with exit 0 and printed
-  `MaintenanceFieldCoreBehaviorTests passed`.
+- `ConsoleCoreBehaviorTests` completed with exit 0 and printed
+  `ConsoleCoreBehaviorTests passed`.
 
 ## XCUITest / accessibility gate
 
@@ -69,7 +69,7 @@ xcrun: error: unable to find utility "simctl", not a developer tool or in PATH
 Therefore the Simulator-bound XCUITest/accessibility suite remains a CI-only gate
 as documented in `.github/workflows/ios-ui-tests.yml`. The latest observed
 `ios-ui-tests.yml` run was successful on `main` at `e7b165a8c7ec`:
-`https://github.com/jason931225/maintenance/actions/runs/28576802389`.
+`https://github.com/jason931225/console/actions/runs/28576802389`.
 Subsequent `main` commits through `4b713e5` did not modify `ios/**`,
 `clients/swift/**`, or `backend/openapi/**`; only generator/package metadata
 changed, and the Swift drift/build commands above were rerun after that change.
@@ -87,8 +87,8 @@ resolved from the asserted credential at finish."* The removed
 `PasskeyLoginStartRequest` schema used to break handwritten native gateways when
 those gateways still sent a body.
 
-Current iOS status: resolved. `MaintenanceAPIGateway.startPasskeyLogin()` takes no
-`userID`, and `GeneratedMaintenanceAPIGateway.startPasskeyLogin()` calls the
+Current iOS status: resolved. `ConsoleAPIGateway.startPasskeyLogin()` takes no
+`userID`, and `GeneratedConsoleAPIGateway.startPasskeyLogin()` calls the
 generated no-body operation. `userID` is still used locally for the login
 challenge reduction.
 
@@ -124,7 +124,7 @@ human-run gate for the auth ceremony itself.
 A real passkey ceremony is **not automatable** in XCUITest, by design:
 
 - The `ASAuthorization*` sheet that `AuthorizationPasskeyCredentialProvider`
-  presents (`ios/Sources/MaintenanceFieldApp/AuthorizationPasskeyCredentialProvider.swift`)
+  presents (`ios/Sources/ConsoleApp/AuthorizationPasskeyCredentialProvider.swift`)
   is rendered and owned by **SpringBoard**, a separate system process. XCUITest
   drives the app under test; it cannot reach into SpringBoard's secure UI.
 - There is **no Apple-provided virtual authenticator** for the Simulator
@@ -145,11 +145,11 @@ Face ID**, a **real iCloud Keychain passkey**, and the **real backend**.
 - The app installed from a signed build whose **bundle id** is registered in the
   Apple Developer portal under Team ID **98Q89GFZWP**, with the **Associated
   Domains** entitlement `webcredentials:knllogistic.com` (the RP id — apex per
-  `deploy/apps/maintenance/base/configmap.yaml` `MNT_WEBAUTHN_RP_ID`).
+  `deploy/apps/console/base/configmap.yaml` `CONSOLE_WEBAUTHN_RP_ID`).
 - The backend reachable at the RP origin **https://console.knllogistic.com**
   (staging or prod) serving the Apple App Site Association document at
   `https://knllogistic.com/.well-known/apple-app-site-association` with this
-  build's app id present in `MNT_IOS_APP_IDS`
+  build's app id present in `CONSOLE_IOS_APP_IDS`
   (`98Q89GFZWP.<bundle-id>`). Until that ConfigMap value is populated the
   ceremony **cannot** succeed — passkeys are inert without the AASA association
   (see `deploy/SECRETS.md`, "Native passkeys are inert until …").
@@ -159,7 +159,7 @@ Face ID**, a **real iCloud Keychain passkey**, and the **real backend**.
 > If the app is launched with `MAINTENANCE_API_BASE_URL` unset it targets
 > production (`https://fsm.knllogistic.com`, which now 301-redirects to
 > `https://console.knllogistic.com`) — see
-> `ios/Sources/MaintenanceFieldApp/AppContainer.swift` `resolveServerURL()`.
+> `ios/Sources/ConsoleApp/AppContainer.swift` `resolveServerURL()`.
 > To smoke against staging, set that environment override on the build.
 
 ### Part A — Passkey CREATE (enrollment)
@@ -183,7 +183,7 @@ the iPhone.
 ### Part B — Passkey ASSERT (native login)
 
 - [ ] Cold-launch the field app (kill from app switcher first, so session restore
-      starts from a signed-out state — `FieldViewModel.restore()` →
+      starts from a signed-out state — `ConsoleViewModel.restore()` →
       `PasskeyAuthRepository.restore()` returns `.signedOut` when the Keychain has
       no session).
 - [ ] On the login screen (Korean title **패스키 로그인**), enter the mechanic's

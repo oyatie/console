@@ -16,7 +16,7 @@ integration is per-fragment and deliberate.
 
 ## Gate being closed
 
-`cargo test -p mnt-app --test openapi_drift` baseline on this branch:
+`cargo test -p console-app --test openapi_drift` baseline on this branch:
 **11 passed, 2 failed**.
 
 | Test | Baseline | Cause |
@@ -48,17 +48,17 @@ in the same commit as their spec paths (as `lib.rs` already instructs for
 
 | Crate | Mounted at | Routes | Census entry |
 |-------|-----------|--------|--------------|
-| `mnt_notifications_rest` | `lib.rs:3138` | 4 undocumented of 9 | already partially documented under tag `me`; no census entry |
-| `mnt_recruiting_rest` (+ app `recruiting_hire`) | `lib.rs:3000`, `:3006` | 18 + 1 hire | none |
-| `mnt_orgchange_rest` | `lib.rs:3207` | 10 | none (explicit `NOTE(CAP-ORG-CONSOLE)` placeholder at `lib.rs:338`) |
+| `console_notifications_rest` | `lib.rs:3138` | 4 undocumented of 9 | already partially documented under tag `me`; no census entry |
+| `console_recruiting_rest` (+ app `recruiting_hire`) | `lib.rs:3000`, `:3006` | 18 + 1 hire | none |
+| `console_orgchange_rest` | `lib.rs:3207` | 10 | none (explicit `NOTE(CAP-ORG-CONSOLE)` placeholder at `lib.rs:338`) |
 
 ### Not integrated: evaluation (dark)
 
-`mnt-evaluation-rest` is a `mnt-app` dependency (`Cargo.toml:168`) but its
+`console-evaluation-rest` is a `console-app` dependency (`Cargo.toml:168`) but its
 router is **not mounted** in `build_router`. Its 15 routes have no runtime
 existence, so documenting them would publish a contract the server does not
 serve. Its fragment states it must be merged "in the SAME change that mounts
-`mnt_evaluation_rest::router`" — that mount is not part of this task.
+`console_evaluation_rest::router`" — that mount is not part of this task.
 
 > **Reported defect, not fixed here:** the *frontend* evaluation screen is
 > live — `nav.ts:116,184` and `registry.ts:36,78` mount `EvaluationScreenBody`.
@@ -134,7 +134,7 @@ wins.
 ## Outcome
 
 `openapi.yaml` went from 434 paths / 490 operations / 824 schemas to
-**488 / 551 / 946**. `cargo test -p mnt-app --test openapi_drift` went from **11 pass / 2 fail** to
+**488 / 551 / 946**. `cargo test -p console-app --test openapi_drift` went from **11 pass / 2 fail** to
 **13 pass / 0 fail**. The target gate
 `openapi_yaml_covers_configured_route_inventory` is GREEN.
 

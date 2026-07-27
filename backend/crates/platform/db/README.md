@@ -1,4 +1,4 @@
-# mnt-platform-db
+# console-platform-db
 
 Postgres schema migrations (SQLx) and the `with_audit` transactional helper.
 
@@ -9,10 +9,10 @@ Postgres schema migrations (SQLx) and the `with_audit` transactional helper.
 brew services start postgresql@16
 
 # Create the development database (first time only)
-createdb mnt_dev
+createdb console_dev
 
 # Run tests (migrations are applied automatically per #[sqlx::test])
-DATABASE_URL=postgres://localhost/mnt_dev cargo test -p mnt-platform-db
+DATABASE_URL=postgres://localhost/console_dev cargo test -p console-platform-db
 ```
 
 ## Offline query cache
@@ -24,7 +24,7 @@ directory in the workspace root is the offline cache used by CI
 **Regenerate after any schema or query change:**
 
 ```sh
-DATABASE_URL=postgres://localhost/mnt_dev cargo sqlx prepare --workspace
+DATABASE_URL=postgres://localhost/console_dev cargo sqlx prepare --workspace
 ```
 
 Then commit the updated `.sqlx/` directory. CI will fail with a clear error

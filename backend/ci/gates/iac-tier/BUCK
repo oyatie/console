@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-iac-tier-lib",
+    name = "console-gate-iac-tier-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/iac-tier", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_iac_tier",
+    crate = "console_gate_iac_tier",
     edition = "2024",
     crate_root = "backend/ci/gates/iac-tier/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -19,22 +19,22 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-iac-tier",
+    name = "console-gate-iac-tier",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/iac-tier", ["src/main.rs"]),
-    crate = "mnt_gate_iac_tier",
+    crate = "console_gate_iac_tier",
     edition = "2024",
     crate_root = "backend/ci/gates/iac-tier/src/main.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/iac-tier"},
     deps = [
-        ":mnt-gate-iac-tier-lib",
+        ":console-gate-iac-tier-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-iac-tier-unit",
+    name = "console-gate-iac-tier-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/iac-tier", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_iac_tier",
+    crate = "console_gate_iac_tier",
     edition = "2024",
     crate_root = "backend/ci/gates/iac-tier/src/lib.rs",
     visibility = ["PUBLIC"],

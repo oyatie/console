@@ -2,7 +2,7 @@
 // OpenAPI client and router adapter; this private leaf owns only the explicit
 // production contract that its screen requires. There is deliberately no raw
 // string-path client escape hatch or fallback transport here.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 export type EmployeeAttendanceRecord =
   components["schemas"]["EmployeeAttendanceRecord"];

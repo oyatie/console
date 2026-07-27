@@ -4,16 +4,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: maintenance-onprem-storage
+  name: console-onprem-storage
   namespace: argocd
   annotations:
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
   description: Dark ADR-0024 on-prem Longhorn replicated block storage stage; manual apply/sync only.
   sourceRepos:
     - https://charts.longhorn.io
-    - https://github.com/jason931225/maintenance.git
+    - https://github.com/jason931225/console.git
   destinations:
     - server: https://kubernetes.default.svc
       namespace: longhorn-system

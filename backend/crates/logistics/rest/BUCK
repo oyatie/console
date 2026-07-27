@@ -9,19 +9,19 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-logistics-rest",
+    name = "console-logistics-rest",
     mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"])),
-    crate = "mnt_logistics_rest",
+    crate = "console_logistics_rest",
     edition = "2024",
     crate_root = "backend/crates/logistics/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/logistics/rest"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/logistics/adapter-postgres:mnt-logistics-adapter-postgres",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/logistics/adapter-postgres:console-logistics-adapter-postgres",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:axum",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",

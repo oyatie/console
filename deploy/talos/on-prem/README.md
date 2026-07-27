@@ -36,7 +36,7 @@ apply-config`, `talosctl bootstrap`, `kubectl apply`, or `clusterctl`.
 ```sh
 python3 deploy/talos/on-prem/render-machineconfigs.py \
   --inventory deploy/talos/on-prem/nodes.example.json \
-  --output-dir /tmp/maintenance-talos-onprem \
+  --output-dir /tmp/console-talos-onprem \
   --validate
 ```
 
@@ -44,11 +44,11 @@ Expected output includes three control-plane machineconfigs and one file per
 worker, for example:
 
 ```text
-controlplane-mnt-cp-1.yaml
-controlplane-mnt-cp-2.yaml
-controlplane-mnt-cp-3.yaml
-worker-mnt-worker-1.yaml
-worker-mnt-worker-2.yaml
+controlplane-console-cp-1.yaml
+controlplane-console-cp-2.yaml
+controlplane-console-cp-3.yaml
+worker-console-worker-1.yaml
+worker-console-worker-2.yaml
 talosconfig
 secrets.yaml
 render-manifest.json
@@ -107,7 +107,7 @@ The CAPI path keeps the same Talos patch boundaries as the local renderer:
   bootstrap data for each worker Machine.
 - Control-plane and worker `Metal3MachineTemplate` objects select only
   `BareMetalHost` inventory with the matching
-  `maintenance.nousresearch.com/onprem-role` label, attach the Talos metal image
+  `console.nousresearch.com/onprem-role` label, attach the Talos metal image
   URL/checksum from inventory, and reference role-specific `Metal3DataTemplate`
   network metadata.
 - `BareMetalHost` objects are rendered from inventory with boot MAC, install disk
@@ -120,7 +120,7 @@ The Talos patch in `cluster.patch.yaml` deliberately sets
 `cluster.network.cni.name=none` so a policy-capable CNI can own the on-prem data
 plane. Production cannot claim namespace or egress isolation while running plain
 Talos/flannel: flannel does not enforce Kubernetes NetworkPolicy, so rendered
-resources such as `deploy/apps/maintenance/base/networkpolicy.yaml` are inert
+resources such as `deploy/apps/console/base/networkpolicy.yaml` are inert
 until Cilium, Calico, or Canal with Calico policy is actually running.
 
 For the ADR-0024 on-prem path, `deploy/apps/cilium/` is the staged CNI contract.

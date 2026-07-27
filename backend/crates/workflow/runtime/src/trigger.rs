@@ -21,8 +21,8 @@
 //! re-drives with an empty guard set. Every write is still fully audited (actor
 //! `None` ⇒ system) through the port's own `with_audit(s)` transactions.
 
-use mnt_kernel_core::{ErrorKind, KernelError};
-use mnt_workflow_domain::{RunStatus, RunTransition, WorkflowRuntimePort};
+use console_kernel_core::{ErrorKind, KernelError};
+use console_workflow_domain::{RunStatus, RunTransition, WorkflowRuntimePort};
 use serde_json::Value;
 
 use crate::engine::{AuditContext, StartRunRequest, run_audit_event, start_run};
@@ -113,7 +113,7 @@ pub async fn start_bound_run<P: WorkflowRuntimePort + ?Sized>(
 #[allow(clippy::too_many_arguments)]
 async fn resume_conflicted_run<P: WorkflowRuntimePort + ?Sized>(
     port: &P,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     idempotency_key: String,
     requested_definition: RequestedDefinition,
     graph: &ExecGraph,
@@ -182,7 +182,7 @@ async fn resume_conflicted_run<P: WorkflowRuntimePort + ?Sized>(
 #[allow(clippy::too_many_arguments)]
 async fn drive_existing_running<P: WorkflowRuntimePort + ?Sized>(
     port: &P,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     run_id: uuid::Uuid,
     graph: &ExecGraph,
     entry: &str,
@@ -214,8 +214,8 @@ mod tests {
     use std::sync::Mutex;
     use std::task::{Context, Poll, Waker};
 
-    use mnt_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
-    use mnt_workflow_domain::{
+    use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
+    use console_workflow_domain::{
         FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
         NodeStepCommit, PortFuture, PostFinalizationRejection, PostFinalizationRejectionCommand,
         RunRecord, TriggerType,
@@ -238,7 +238,7 @@ mod tests {
         fn insert_run<'a>(
             &'a self,
             _run: NewRun,
-            _audit: mnt_kernel_core::AuditEvent,
+            _audit: console_kernel_core::AuditEvent,
         ) -> PortFuture<'a, ()> {
             Box::pin(async { Err(KernelError::conflict("duplicate idempotency key")) })
         }
@@ -262,7 +262,7 @@ mod tests {
             &'a self,
             _org: OrgId,
             transition: RunTransition,
-            _audit: mnt_kernel_core::AuditEvent,
+            _audit: console_kernel_core::AuditEvent,
         ) -> PortFuture<'a, ()> {
             Box::pin(async move {
                 self.transitions.lock().unwrap().push(transition);

@@ -1,6 +1,6 @@
 -- Pre-auth tenant resolvers for the passkey + OTP sign-in paths.
 --
--- THE PROBLEM (launch-blocking): under the prod runtime role `mnt_rt`
+-- THE PROBLEM (launch-blocking): under the prod runtime role `console_rt`
 -- (NOSUPERUSER, NOBYPASSRLS, FORCE RLS), three pre-auth auth paths read/write
 -- FORCE-RLS org-scoped auth tables with the `app.current_org` GUC UNSET, so RLS
 -- returns ZERO rows (reads) or rejects the WITH CHECK (writes) and the path is
@@ -17,13 +17,13 @@
 --
 -- This migration adds the SAME narrow resolver for the two remaining lookups.
 -- Each is SECURITY DEFINER (runs as the function owner — the table owner in every
--- environment: the superuser locally / in sqlx::test, `mnt_app` under CNPG),
+-- environment: the superuser locally / in sqlx::test, `console_app` under CNPG),
 -- pins `search_path` (DEFINER privilege-escalation hardening), and briefly runs
 -- with `row_security = off` so the owner can read the one row across tenants —
 -- restoring `row_security = on` BEFORE returning so the caller's transaction is
 -- never left unscoped (these are called mid-transaction; a non-BYPASSRLS caller
 -- cannot continue with row_security off). Each exposes NOTHING but the tenant id.
--- EXECUTE is granted only to `mnt_rt`; PUBLIC gets none.
+-- EXECUTE is granted only to `console_rt`; PUBLIC gets none.
 
 -- ---------------------------------------------------------------------------
 -- (1) platform_resolve_bootstrap_org(token_hash) -> org_id (or NULL).
@@ -53,7 +53,7 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_resolve_bootstrap_org(BYTEA) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_resolve_bootstrap_org(BYTEA) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_resolve_bootstrap_org(BYTEA) TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- (2) platform_resolve_credential_org(credential_id) -> org_id (or NULL).
@@ -83,20 +83,20 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_resolve_credential_org(TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_resolve_credential_org(TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_resolve_credential_org(TEXT) TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- (3) Runtime-role DML on the GLOBAL pre-auth tables.
 --
 -- `auth_webauthn_ceremonies` (migration 0004) and `auth_rate_limit` (0021) are
 -- deliberately GLOBAL — no org_id, no RLS — because they hold transient pre-auth
--- state written before a tenant is known. But both predate the `mnt_app` DEFAULT
--- PRIVILEGES grant (migration 0031), so the non-owner runtime role `mnt_rt` was
--- never granted DML on them. As `mnt_rt` the passkey ceremonies (start/finish
+-- state written before a tenant is known. But both predate the `console_app` DEFAULT
+-- PRIVILEGES grant (migration 0031), so the non-owner runtime role `console_rt` was
+-- never granted DML on them. As `console_rt` the passkey ceremonies (start/finish
 -- register + login persist/claim a ceremony) and the per-client rate limiter
 -- (every login/redeem/refresh attempt upserts a counter) would otherwise fail
 -- "permission denied". Grant exactly the verbs the app uses: SELECT + INSERT +
 -- UPDATE (the rate-limit upsert UPDATEs on conflict; ceremonies are claimed via
 -- UPDATE). No DELETE is granted — neither table is pruned by the app.
-GRANT SELECT, INSERT, UPDATE ON auth_webauthn_ceremonies TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON auth_rate_limit TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON auth_webauthn_ceremonies TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON auth_rate_limit TO console_rt;

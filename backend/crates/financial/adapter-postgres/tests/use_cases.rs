@@ -3,15 +3,15 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_application::{
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_application::{
     AppendCostLedgerEntryCommand, CostLedgerSource, CreatePurchaseRequestCommand,
     CreateRentalQuoteCommand, ExecutePurchaseCommand, FinancialConfigSnapshot,
     PrepareExpenditureCommand, PurchaseApprovalCommand, PurchaseRequestLineInput,
     PurchaseRestartCommand, PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand,
 };
-use mnt_financial_domain::{DepreciationMethod, PurchaseStatus};
-use mnt_kernel_core::{
+use console_financial_domain::{DepreciationMethod, PurchaseStatus};
+use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, TraceContext, UserId, WorkOrderId,
 };
 use sqlx::PgPool;
@@ -21,7 +21,7 @@ static REQUEST_NO_SEQUENCE: AtomicUsize = AtomicUsize::new(901);
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn quote_ledger_and_purchase_chain_are_audited_and_feed_residuals(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = datetime!(2026-06-12 12:00 UTC);
@@ -198,7 +198,7 @@ async fn quote_ledger_and_purchase_chain_are_audited_and_feed_residuals(pool: Pg
 // negative value for audit.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn negative_residual_quote_persists_with_flooring_disabled(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = datetime!(2026-06-12 12:00 UTC);
@@ -245,7 +245,7 @@ async fn negative_residual_quote_persists_with_flooring_disabled(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn financial_inputs_reject_cross_scope_evidence_and_work_orders(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let other_branch = seed_branch(&pool).await;
         let other_user = seed_user(&pool, "Other Mechanic", "MECHANIC", other_branch).await;
@@ -363,7 +363,7 @@ async fn financial_inputs_reject_cross_scope_evidence_and_work_orders(pool: PgPo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = datetime!(2026-06-12 12:00 UTC);
@@ -382,7 +382,7 @@ async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: 
         let first = tokio::spawn({
             let config = financial_config();
             async move {
-                mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
                     first_store
                         .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
                             actor: admin,
@@ -405,7 +405,7 @@ async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: 
         let second = tokio::spawn({
             let config = financial_config();
             async move {
-                mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
                     second_store
                         .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
                             actor: admin,
@@ -453,7 +453,7 @@ async fn concurrent_cost_ledger_recomputes_from_serialized_equipment_lock(pool: 
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn purchase_execute_rolls_back_if_ledger_update_fails(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = datetime!(2026-06-12 12:00 UTC);
@@ -570,7 +570,7 @@ async fn non_knl_purchase_without_equipment_executes_to_expense_ledger(pool: PgP
     let store = PgFinancialStore::new(pool.clone());
 
     let knl_seeded = seed_financial_context(&pool).await;
-    let knl_rejection = mnt_platform_request_context::scope_org(OrgId::knl(), async {
+    let knl_rejection = console_platform_request_context::scope_org(OrgId::knl(), async {
         store
             .create_purchase_request(CreatePurchaseRequestCommand {
                 actor: knl_seeded.admin,
@@ -599,7 +599,7 @@ async fn non_knl_purchase_without_equipment_executes_to_expense_ledger(pool: PgP
     .unwrap_err();
     assert!(knl_rejection.to_string().contains("equipment is required"));
 
-    mnt_platform_request_context::scope_org(non_knl, async {
+    console_platform_request_context::scope_org(non_knl, async {
         let created = store
             .create_purchase_request(CreatePurchaseRequestCommand {
                 actor: requester,
@@ -707,7 +707,7 @@ async fn non_knl_purchase_without_equipment_executes_to_expense_ledger(pool: PgP
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn purchase_lines_drive_server_total_requester_and_quote_anomaly_gate(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = datetime!(2026-06-30 10:00 UTC);
@@ -1141,7 +1141,7 @@ async fn seed_org_lead_user(pool: &PgPool, role: &str, branch_id: BranchId) -> U
 ///     "본인이 상신/요청한 건은 결재할 수 없습니다".
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn self_approval_blocked_for_normal_admin(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
         let store = PgFinancialStore::new(pool.clone());
         let occurred_at = time::macros::datetime!(2026-06-23 09:00 UTC);
@@ -1192,8 +1192,8 @@ async fn self_approval_blocked_for_normal_admin(pool: PgPool) {
 
         let err = result.expect_err("self-approval must be blocked");
         // KernelError::Validation maps to PgFinancialError::Domain.
-        use mnt_financial_adapter_postgres::PgFinancialError;
-        use mnt_kernel_core::ErrorKind;
+        use console_financial_adapter_postgres::PgFinancialError;
+        use console_kernel_core::ErrorKind;
         match err {
             PgFinancialError::Domain(e) => {
                 assert_eq!(e.kind, ErrorKind::Validation);
@@ -1215,7 +1215,7 @@ async fn self_approval_blocked_for_normal_admin(pool: PgPool) {
 ///     must be written to `governance_findings` recording the exception.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn org_lead_self_approval_allowed_and_writes_finding(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_financial_context(&pool).await;
 
         // Seed the 대표 as an ADMIN with is_org_lead = true.
@@ -1268,7 +1268,7 @@ async fn org_lead_self_approval_allowed_and_writes_finding(pool: PgPool) {
             .await
             .expect("org lead self-approval must be allowed");
 
-        use mnt_financial_domain::PurchaseStatus;
+        use console_financial_domain::PurchaseStatus;
         assert_eq!(
             approved.status,
             PurchaseStatus::AdminApproved,

@@ -5,13 +5,13 @@
 #
 # Given a git sha (default: HEAD), this:
 #   1. Finds + watches that sha's "Image Release" run until it completes.
-#   2. Reads both freshly built @sha256 digests (mnt-app, mnt-web) from the run's
+#   2. Reads both freshly built @sha256 digests (console-app, console-web) from the run's
 #      digest artifacts (the same artifacts the auto-bump job consumes).
-#   3. Bumps deploy/apps/maintenance/overlays/prod/kustomization.yaml via
+#   3. Bumps deploy/apps/console/overlays/prod/kustomization.yaml via
 #      scripts/bump-prod-digests.sh and commits the one-shot authorization
 #      consumption plus any digest change to the current branch.
 #   4. Triggers an Argo refresh, verifies the Argo Application synced the
-#      desired git revision, waits for mnt-app/mnt-web Rollouts and mnt-worker,
+#      desired git revision, waits for console-app/console-web Rollouts and console-worker,
 #      and verifies their pod image digests match the built artifacts.
 #   5. Verifies the public endpoints return HTTP 200.
 #
@@ -71,8 +71,8 @@ SHORT_SHA="${SHA:0:7}"
 WORKFLOW="image-release.yml"
 APP_NAME="maintenance"             # ArgoCD Application name
 NAMESPACE="maintenance"            # cluster namespace for the rollouts
-ROLLOUTS=(mnt-app mnt-web)
-WORKER_DEPLOYMENT="mnt-worker"
+ROLLOUTS=(console-app console-web)
+WORKER_DEPLOYMENT="console-worker"
 ENDPOINTS=(https://console.knllogistic.com https://knllogistic.com)
 ARGO_NS="argocd"
 
@@ -248,18 +248,18 @@ log "[2/5] reading built digests from run ${RUN_ID} artifacts"
 ART_DIR="$(mktemp -d)"
 trap 'rm -rf "${ART_DIR}"' EXIT
 
-gh run download "${RUN_ID}" --name digest-mnt-app --dir "${ART_DIR}/app"
-gh run download "${RUN_ID}" --name digest-mnt-web --dir "${ART_DIR}/web"
+gh run download "${RUN_ID}" --name digest-console-app --dir "${ART_DIR}/app"
+gh run download "${RUN_ID}" --name digest-console-web --dir "${ART_DIR}/web"
 
-APP_DIGEST="$(cat "${ART_DIR}/app/digest-mnt-app.txt")"
-WEB_DIGEST="$(cat "${ART_DIR}/web/digest-mnt-web.txt")"
-log "  mnt-app digest: ${APP_DIGEST}"
-log "  mnt-web digest: ${WEB_DIGEST}"
+APP_DIGEST="$(cat "${ART_DIR}/app/digest-console-app.txt")"
+WEB_DIGEST="$(cat "${ART_DIR}/web/digest-console-web.txt")"
+log "  console-app digest: ${APP_DIGEST}"
+log "  console-web digest: ${WEB_DIGEST}"
 
 # ---------------------------------------------------------------------------
 # 3. Bump the overlay + consume the one-shot authorization in a new commit.
 # ---------------------------------------------------------------------------
-OVERLAY="deploy/apps/maintenance/overlays/prod/kustomization.yaml"
+OVERLAY="deploy/apps/console/overlays/prod/kustomization.yaml"
 log "[3/5] bumping ${OVERLAY}"
 bash "${REPO_ROOT}/scripts/bump-prod-digests.sh" "${APP_DIGEST}" "${WEB_DIGEST}"
 python3 "${REPO_ROOT}/scripts/check-production-promotion-authority.py" reset \
@@ -267,7 +267,7 @@ python3 "${REPO_ROOT}/scripts/check-production-promotion-authority.py" reset \
 
 log "  committing one-shot authorization consumption and optional digest bump to ${BRANCH}"
 git add "${OVERLAY}" docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json
-git commit -m "deploy(prod): auto-bump mnt-app/mnt-web @${SHORT_SHA}"
+git commit -m "deploy(prod): auto-bump console-app/console-web @${SHORT_SHA}"
 python3 "${REPO_ROOT}/scripts/check-production-promotion-authority.py" pre-push \
   --expected-sha "${SHA}"
 git push origin "HEAD:${BRANCH}"
@@ -278,7 +278,7 @@ python3 "${REPO_ROOT}/scripts/check-production-promotion-authority.py" remote \
   --expected-sha "${DEPLOY_REVISION}"
 
 if [[ "${MODE}" == "digest-bump-only" ]]; then
-  log "done: ${SHORT_SHA} desired prod digests updated only (mnt-app=${APP_DIGEST}, mnt-web=${WEB_DIGEST}); deployment, rollout, pod-image, and endpoint verification were NOT run."
+  log "done: ${SHORT_SHA} desired prod digests updated only (console-app=${APP_DIGEST}, console-web=${WEB_DIGEST}); deployment, rollout, pod-image, and endpoint verification were NOT run."
   exit 0
 fi
 
@@ -301,8 +301,8 @@ verify_argo_revision "${DEPLOY_REVISION}"
 
 for rollout in "${ROLLOUTS[@]}"; do
   case "${rollout}" in
-    mnt-app) rollout_digest="${APP_DIGEST}" ;;
-    mnt-web) rollout_digest="${WEB_DIGEST}" ;;
+    console-app) rollout_digest="${APP_DIGEST}" ;;
+    console-web) rollout_digest="${WEB_DIGEST}" ;;
     *) fail "no expected digest configured for rollout ${rollout}" ;;
   esac
   log "  waiting for rollout ${rollout} to be Healthy"
@@ -341,4 +341,4 @@ done
 python3 "${REPO_ROOT}/scripts/check-production-promotion-authority.py" remote \
   --expected-sha "${DEPLOY_REVISION}"
 verify_argo_revision "${DEPLOY_REVISION}"
-log "done: ${SHORT_SHA} deployed and verified (revision=${DEPLOY_REVISION:0:7}, mnt-app=${APP_DIGEST}, mnt-web=${WEB_DIGEST})"
+log "done: ${SHORT_SHA} deployed and verified (revision=${DEPLOY_REVISION:0:7}, console-app=${APP_DIGEST}, console-web=${WEB_DIGEST})"

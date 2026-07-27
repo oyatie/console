@@ -1,12 +1,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_inspection_adapter_postgres::PgInspectionStore;
-use mnt_inspection_application::{
+use console_inspection_adapter_postgres::PgInspectionStore;
+use console_inspection_application::{
     CompleteInspectionRoundCommand, CreateInspectionScheduleCommand, ListInspectionSchedulesQuery,
     ListMyInspectionSchedulesQuery,
 };
-use mnt_inspection_domain::{InspectionCycle, InspectionRoundOutcome};
-use mnt_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
+use console_inspection_domain::{InspectionCycle, InspectionRoundOutcome};
+use console_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime, macros::datetime};
 
@@ -14,7 +14,7 @@ const NOW: OffsetDateTime = datetime!(2026-06-12 09:00 UTC);
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn schedule_lifecycle_requires_prevention_mechanic_and_audits_completion(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool, "수도권", "서울").await;
         let admin = seed_user(&pool, "관리자", "ADMIN", Some("관리"), branch).await;
         let prevention_mechanic = seed_user(&pool, "예방기사", "MECHANIC", Some("예방"), branch).await;
@@ -128,7 +128,7 @@ async fn schedule_lifecycle_requires_prevention_mechanic_and_audits_completion(p
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn due_schedule_listing_respects_branch_scope(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_a = seed_branch(&pool, "수도권", "서울").await;
         let branch_b = seed_branch(&pool, "충청", "천안").await;
         let admin_a = seed_user(&pool, "관리자A", "ADMIN", Some("관리"), branch_a).await;

@@ -7,14 +7,14 @@
 //! never another user's row.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{ErrorKind, KernelError, Timestamp, TodoId, UserId};
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_todos_application::{
+use console_kernel_core::{ErrorKind, KernelError, Timestamp, TodoId, UserId};
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
+use console_todos_application::{
     CreateTodoCommand, DeleteTodoCommand, ListTodosQuery, SetTodoDoneCommand, TodoPage,
     TodoSummary, todo_audit_event,
 };
-use mnt_todos_domain::{TodoRef, TodoText, validated_refs};
+use console_todos_domain::{TodoRef, TodoText, validated_refs};
 use sqlx::{PgPool, Row};
 
 #[derive(Debug, thiserror::Error)]

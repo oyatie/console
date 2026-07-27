@@ -2,25 +2,25 @@
 --
 -- The SaaS-vendor PLATFORM tier sits ABOVE every tenant. Two cross-tenant
 -- operations need a privileged, AUDITED path that the unprivileged runtime role
--- `mnt_rt` cannot otherwise perform under RLS:
+-- `console_rt` cannot otherwise perform under RLS:
 --
---   1. CREATE a new tenant `organizations` row. `mnt_rt` is SELECT-ONLY on
+--   1. CREATE a new tenant `organizations` row. `console_rt` is SELECT-ONLY on
 --      `organizations` (migration 0031) and the table is FORCE RLS with
 --      `WITH CHECK (id = app.current_org)` (0030). A fresh org's id equals no
 --      pre-set GUC, so even a write-granted role could not satisfy the policy
 --      the normal way. We expose a SECURITY DEFINER function (owned by the
 --      migration applier — the table OWNER in every environment: the superuser
---      locally / in sqlx::test, `mnt_app` under CNPG) that generates the id, arms
+--      locally / in sqlx::test, `console_app` under CNPG) that generates the id, arms
 --      the GUC to THAT id transaction-locally, and inserts — so the WITH CHECK
 --      passes for exactly the row being created and nothing else. Because DEFINER
 --      runs as the table owner it can INSERT; because it sets the GUC to the new
 --      id (FORCE RLS still applies to the owner), it can only ever create the
---      single row it just minted. `mnt_rt` is GRANTed EXECUTE so the app can call
+--      single row it just minted. `console_rt` is GRANTed EXECUTE so the app can call
 --      it, but the app still cannot INSERT `organizations` directly.
 --
 --   2. RESOLVE the org of a refresh-token family from the token hash, BEFORE the
 --      tenant GUC is known. `auth_refresh_tokens` is FORCE RLS (0035), so the
---      app's `mnt_rt` lookup-by-hash returns ZERO rows until the GUC is armed —
+--      app's `console_rt` lookup-by-hash returns ZERO rows until the GUC is armed —
 --      but the org IS the thing we need to arm it. A narrow SECURITY DEFINER
 --      resolver returns only the family's `org_id` for a given token hash,
 --      breaking the chicken-and-egg without widening any read surface.
@@ -30,7 +30,7 @@
 
 -- ---------------------------------------------------------------------------
 -- (1) platform_create_organization(slug, name) -> organizations row id.
--- SECURITY DEFINER so it runs as the function owner (`mnt_app`, the table
+-- SECURITY DEFINER so it runs as the function owner (`console_app`, the table
 -- owner). It arms `app.current_org` to the freshly-generated id so the FORCE-RLS
 -- WITH CHECK accepts exactly this row, then inserts. Returns the new id.
 -- ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ $$;
 -- The runtime role may EXECUTE the function (the app's platform path calls it),
 -- but still cannot INSERT `organizations` directly. PUBLIC gets no execute.
 REVOKE ALL ON FUNCTION platform_create_organization(TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_create_organization(TEXT, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_create_organization(TEXT, TEXT) TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- (2) platform_resolve_token_org(token_hash) -> org_id (or NULL).
@@ -83,17 +83,17 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION platform_resolve_token_org(BYTEA) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_resolve_token_org(BYTEA) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_resolve_token_org(BYTEA) TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- (2b) Cross-tenant org reads/writes for the PLATFORM tier. `organizations` is
--- SELECT-only + FORCE RLS for `mnt_rt` and a tenant only ever sees its own row,
+-- SELECT-only + FORCE RLS for `console_rt` and a tenant only ever sees its own row,
 -- so the platform tenant-list / status APIs need these SECURITY DEFINER escapes.
 -- Each runs as the owner with `row_security = off` so it can see/modify across
--- tenants; the app audits every call. EXECUTE is granted only to `mnt_rt`.
+-- tenants; the app audits every call. EXECUTE is granted only to `console_rt`.
 -- ---------------------------------------------------------------------------
 -- IMPORTANT: these DEFINER functions are called MID-TRANSACTION by the app (the
--- app's `mnt_rt` role then runs more statements in the SAME transaction). A bare
+-- app's `console_rt` role then runs more statements in the SAME transaction). A bare
 -- `SET LOCAL row_security = off` would persist past the function and POISON the
 -- caller's transaction (a non-BYPASSRLS role cannot run with row_security off
 -- when RLS applies → "query would be affected by row-level security policy").
@@ -127,7 +127,7 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_list_organizations() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_list_organizations() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_list_organizations() TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_get_organization(p_id UUID)
 RETURNS TABLE (
@@ -154,7 +154,7 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_get_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_get_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_get_organization(UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_set_organization_status(
     p_id UUID,
@@ -181,15 +181,15 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_set_organization_status(UUID, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_set_organization_status(UUID, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_set_organization_status(UUID, TEXT) TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- (3) Re-home the cold-start admin to the PLATFORM tier.
 --
--- The deploy-time global `MNT_COLDSTART_OTP` now bootstraps the PLATFORM admin
+-- The deploy-time global `CONSOLE_COLDSTART_OTP` now bootstraps the PLATFORM admin
 -- (the first account ABOVE all tenants), NOT a KNL tenant admin. The cold-start
 -- admin row was created org-less in 0021 and backfilled to KNL in 0028; move it
--- to the platform sentinel org `...00face` (mnt_kernel_core::OrgId::platform()),
+-- to the platform sentinel org `...00face` (console_kernel_core::OrgId::platform()),
 -- which is deliberately NOT a real tenant. A user whose `org_id` is this sentinel
 -- is the platform admin; login mints a PLATFORM token for it (auth-rest stamps
 -- `platform = true` when the user's org is the sentinel).

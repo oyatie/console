@@ -85,7 +85,7 @@ ALTER TABLE logistics_operational_cost_settlements ENABLE ROW LEVEL SECURITY; AL
 ALTER TABLE logistics_history ENABLE ROW LEVEL SECURITY; ALTER TABLE logistics_history FORCE ROW LEVEL SECURITY;
 DO $$ DECLARE t TEXT; BEGIN FOREACH t IN ARRAY ARRAY['logistics_asns','logistics_receipts','logistics_stock','logistics_fulfillments','logistics_shipments','logistics_pod_evidence','logistics_operational_cost_settlements','logistics_history'] LOOP
  EXECUTE format('CREATE POLICY org_isolation ON %I USING (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid) WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)', t);
- EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO mnt_rt', t); END LOOP; END $$;
+ EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO console_rt', t); END LOOP; END $$;
 CREATE TRIGGER trg_logistics_asns_org_immutable BEFORE UPDATE ON logistics_asns FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 CREATE TRIGGER trg_logistics_receipts_org_immutable BEFORE UPDATE ON logistics_receipts FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 CREATE TRIGGER trg_logistics_fulfillments_org_immutable BEFORE UPDATE ON logistics_fulfillments FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();

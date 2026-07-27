@@ -26,12 +26,12 @@
 
 use std::sync::Arc;
 
-use mnt_inbox_application::{EmitInboxDocCommand, InboxDocSink};
-use mnt_inbox_domain::{InboxDocKind, NewInboxDoc};
-use mnt_kernel_core::{
+use console_inbox_application::{EmitInboxDocCommand, InboxDocSink};
+use console_inbox_domain::{InboxDocKind, NewInboxDoc};
+use console_kernel_core::{
     BranchScope, Date, ErrorKind, KernelError, LeavePromotionId, LeaveRequestId, OrgId, UserId,
 };
-use mnt_leave_application::{
+use console_leave_application::{
     ApSubmission, CreateLeaveRequestCommand, DecideLeaveRequestCommand,
     ImportEmployeeLeaveBalanceCommand, ImportEmployeeLeaveBalanceResult, LeaveBalancePage,
     LeaveBalanceTone, LeaveBalanceView, LeaveChargeResolutionView, LeaveRequestPage,
@@ -39,15 +39,15 @@ use mnt_leave_application::{
     ResolveLeaveChargeCommand, ResolveLeaveChargeQuery, SelfLeaveBalanceView, SelfLeaveFilingState,
     StatutoryPushCommand, StatutoryPushView, WorkCalendarPort, leave_promotion_audit_event,
 };
-use mnt_leave_domain::{
+use console_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveStatus, LeaveType, LeaveUnits,
     PartialDayPeriod, PromotionContext, PromotionKind, PromotionTrack, RecordedLeaveChargeSnapshot,
     SourceRevisionRef, WorkObligation, first_round_window, second_round_deadline,
     validate_designated_dates, validate_push,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
 use time::macros::offset;
@@ -172,7 +172,7 @@ pub struct CreateEmployeeCommand {
     pub idempotency_key: String,
     pub request_hash: String,
     pub actor: UserId,
-    pub trace: mnt_kernel_core::TraceContext,
+    pub trace: console_kernel_core::TraceContext,
 }
 
 /// Result of the atomic People employee-create command.
@@ -197,7 +197,7 @@ impl WorkCalendarPort for ManualReferenceCalendar {
     fn resolve_charge(
         &self,
         _query: ResolveLeaveChargeQuery,
-    ) -> mnt_leave_application::LeaveChargeFuture<'_> {
+    ) -> console_leave_application::LeaveChargeFuture<'_> {
         Box::pin(async {
             LeaveChargeAssessment::review_required(vec![
                 LeaveChargeReviewReason::MissingCalendar,
@@ -243,8 +243,8 @@ impl PgLeaveStore {
         &self.pool
     }
 
-    /// Bind the isolated EXECUTE-only `mnt_leave_cmd` pool used for all leave
-    /// mutations. Read paths continue to use the ordinary `mnt_rt` pool.
+    /// Bind the isolated EXECUTE-only `console_leave_cmd` pool used for all leave
+    /// mutations. Read paths continue to use the ordinary `console_rt` pool.
     #[must_use]
     pub fn with_leave_command_pool(mut self, pool: PgPool) -> Self {
         self.leave_command_pool = Some(pool);
@@ -313,7 +313,7 @@ impl PgLeaveStore {
         home_branch_id: uuid::Uuid,
         expected_updated_at: time::OffsetDateTime,
         actor: UserId,
-        trace: mnt_kernel_core::TraceContext,
+        trace: console_kernel_core::TraceContext,
     ) -> Result<EmployeeHomeBranchUpdate, PgLeaveError> {
         let org = current_org().map_err(KernelError::from)?;
         let row = sqlx::query(
@@ -383,7 +383,7 @@ impl PgLeaveStore {
         rows: &serde_json::Value,
         actor: UserId,
         apply_audit: &serde_json::Value,
-        trace: mnt_kernel_core::TraceContext,
+        trace: console_kernel_core::TraceContext,
     ) -> Result<serde_json::Value, PgLeaveError> {
         let org = current_org().map_err(KernelError::from)?;
         let row = sqlx::query(
@@ -1039,7 +1039,7 @@ impl PgLeaveStore {
     /// receipt-gated document into the target's 개인 수신함 and record the push.
     ///
     /// Every step is judged against 근로기준법 제61조 by
-    /// [`mnt_leave_domain::promotion`] before anything is delivered: round 1
+    /// [`console_leave_domain::promotion`] before anything is delivered: round 1
     /// must fall inside its statutory window, round 2 must follow a recorded
     /// round 1 by more than the worker's 10-day reply period and land on or
     /// before the 2차 통보 기한, and a 노무수령거부 must follow a recorded round-2
@@ -1229,7 +1229,7 @@ impl PgLeaveStore {
             command.trace,
             command.occurred_at,
         )?
-        .with_branch(mnt_kernel_core::BranchId::from_uuid(command.branch_id))
+        .with_branch(console_kernel_core::BranchId::from_uuid(command.branch_id))
         .with_org(org)
         .with_snapshots(
             None,
@@ -1640,7 +1640,7 @@ fn request_from_row(row: &sqlx::postgres::PgRow) -> Result<LeaveRequestView, PgL
             .transpose()?,
         partial_day_period: row
             .try_get::<Option<String>, _>("partial_day_period")?
-            .map(|period| mnt_leave_domain::PartialDayPeriod::parse(&period))
+            .map(|period| console_leave_domain::PartialDayPeriod::parse(&period))
             .transpose()?,
         start_date: row.try_get::<Date, _>("start_date")?,
         end_date: row.try_get::<Date, _>("end_date")?,
@@ -1966,7 +1966,7 @@ mod exact_charge_tests {
 #[cfg(test)]
 mod statutory_notice_tests {
     use super::*;
-    use mnt_kernel_core::{TraceContext, UserId};
+    use console_kernel_core::{TraceContext, UserId};
     use time::macros::{date, datetime};
 
     fn command(kind: PromotionKind, round: i16, designated: Vec<Date>) -> StatutoryPushCommand {

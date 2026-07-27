@@ -4,7 +4,7 @@
 //! and realtime delivery live in outer layers.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{KernelError, UserId};
+use console_kernel_core::{KernelError, UserId};
 use serde::{Deserialize, Serialize};
 
 /// Extract the `UserId`s mentioned in a message body, in first-seen order,

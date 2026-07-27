@@ -2,7 +2,7 @@
 //! RUNTIME proofs that the governed console config objects ride the ONE ontology
 //! engine — seeded through the engine (not raw SQL), and getting revision
 //! staging (§3.9.0) + fixity for free. Exercised as the genuine non-owner
-//! `mnt_rt` role (FORCE RLS), the only faithful RLS exercise.
+//! `console_rt` role (FORCE RLS), the only faithful RLS exercise.
 //!
 //! Proves:
 //!   (a) `seed_governed_config_object_types` publishes support_slo_setting +
@@ -15,15 +15,15 @@
 //!       team-scope deploy is instead gated by a governance approval (L-GOV),
 //!       proven in the governance lane.
 
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
-use mnt_ontology_adapter_postgres::seed::{
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
+use console_ontology_adapter_postgres::seed::{
     CONSOLE_VIEW_KEY, SUPPORT_SLO_SETTING_KEY, seed_governed_config_object_types,
 };
-use mnt_ontology_domain::ObjectTypeId;
+use console_ontology_domain::ObjectTypeId;
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -39,7 +39,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -54,7 +54,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -103,7 +103,7 @@ async fn seed(owner_pool: &PgPool, org: OrgId, actor: UserId) -> (ObjectTypeId, 
             );
             assert_eq!(
                 detail.object_type.lifecycle_state,
-                mnt_ontology_domain::SchemaLifecycleState::Published
+                console_ontology_domain::SchemaLifecycleState::Published
             );
         }
         let slo = published

@@ -6,17 +6,17 @@ use std::sync::{Arc, Mutex};
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_jobs::{BoxFuture, JobId, JobQueue, JobQueueError, JobRequest};
-use mnt_platform_storage::{
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_jobs::{BoxFuture, JobId, JobQueue, JobQueueError, JobRequest};
+use console_platform_storage::{
     CopyObjectRequest, EvidenceService, ObjectHead, PresignGetRequest, PresignPutRequest,
     PresignedUpload, RetentionInfo, S3ObjectStore, StorageError, StorageFuture,
 };
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_rest::{MobileRestState, mobile_router};
+use console_platform_test_support::runtime_role_pool;
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_rest::{MobileRestState, mobile_router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -35,8 +35,8 @@ use mobile_evidence_fixtures::{
     seed_user_with_branch,
 };
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[derive(Debug, Clone)]
 struct StaticObjectStore;
@@ -123,7 +123,7 @@ impl S3ObjectStore for StaticObjectStore {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn evidence_presign_confirm_flow_is_authorized_and_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -251,7 +251,7 @@ async fn evidence_presign_confirm_flow_is_authorized_and_audited(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn evidence_confirm_fails_when_post_replication_media_reload_fails(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -339,7 +339,7 @@ async fn evidence_confirm_fails_when_post_replication_media_reload_fails(pool: P
 // order is rejected with a 409-class error and no evidence/audit rows persist.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn presign_after_evidence_rejected_on_final_completed_work_order(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -579,7 +579,7 @@ impl JobQueue for RecordingQueue {
     fn schedule_at<'a>(
         &'a self,
         request: JobRequest,
-        _scheduled_at: mnt_kernel_core::Timestamp,
+        _scheduled_at: console_kernel_core::Timestamp,
     ) -> BoxFuture<'a, Result<JobId, JobQueueError>> {
         self.enqueue(request)
     }
@@ -587,7 +587,7 @@ impl JobQueue for RecordingQueue {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn evidence_staging_presign_creates_processing_row_and_enqueues_transcode(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key

@@ -13,7 +13,7 @@ import {
  * The full open-signup chain against a real headless Chromium + CDP virtual
  * authenticator: a brand-new visitor signs up with an email, the backend creates
  * a lowest-privilege MEMBER account and "emails" a one-time code (the stub email
- * sender logs it, since MNT_EMAIL_* is unset in e2e), the visitor redeems that
+ * sender logs it, since CONSOLE_EMAIL_* is unset in e2e), the visitor redeems that
  * code, is forced through passkey onboarding, enrolls a discoverable passkey, and
  * lands on the pending MEMBER screen until an admin grants a role.
  *

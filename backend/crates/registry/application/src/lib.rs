@@ -4,11 +4,11 @@
 //! database adapters remain in outer crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, CustomerId, EquipmentId,
     EquipmentSubstitutionId, KernelError, SiteId, Timestamp, TraceContext, UserId, WorkOrderId,
 };
-use mnt_registry_domain::{EquipmentNo, EquipmentStatus, MoneyWon, SubstituteMatchKind, Ton};
+use console_registry_domain::{EquipmentNo, EquipmentStatus, MoneyWon, SubstituteMatchKind, Ton};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 

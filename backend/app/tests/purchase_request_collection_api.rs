@@ -7,9 +7,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -19,8 +19,8 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const PATH: &str = "/api/v1/financial/purchase-requests";
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -218,7 +218,7 @@ async fn purchase_request_collection_is_branch_scoped_requester_safe_and_tenant_
         org_b,
         vec!["SUPER_ADMIN".to_owned()],
     );
-    let service = build_router(app_state(mnt_rt_pool(&owner_pool).await, public_pem));
+    let service = build_router(app_state(console_rt_pool(&owner_pool).await, public_pem));
 
     let requester_page = get(
         service.clone(),
@@ -599,7 +599,7 @@ async fn seed_purchase_attachment(
     .unwrap();
 }
 
-async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
+async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set for sqlx::test");
     let db_name: String = sqlx::query_scalar("SELECT current_database()")
         .fetch_one(owner_pool)
@@ -613,7 +613,7 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|connection, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt").execute(connection).await?;
                 Ok(())
             })
         })
@@ -624,11 +624,11 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
 
 fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()

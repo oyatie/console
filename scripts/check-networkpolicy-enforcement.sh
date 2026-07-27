@@ -15,10 +15,10 @@
 set -euo pipefail
 
 KUBECTL="${KUBECTL:-kubectl}"
-NAMESPACE="${MNT_NETWORKPOLICY_NAMESPACE:-maintenance}"
-MODE="${MNT_NETWORKPOLICY_PREFLIGHT:-warn}"
-EXPECTED_ENFORCER="${MNT_NETWORKPOLICY_EXPECTED_ENFORCER:-auto}"
-CILIUM_NAMESPACE="${MNT_NETWORKPOLICY_CILIUM_NAMESPACE:-kube-system}"
+NAMESPACE="${CONSOLE_NETWORKPOLICY_NAMESPACE:-maintenance}"
+MODE="${CONSOLE_NETWORKPOLICY_PREFLIGHT:-warn}"
+EXPECTED_ENFORCER="${CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER:-auto}"
+CILIUM_NAMESPACE="${CONSOLE_NETWORKPOLICY_CILIUM_NAMESPACE:-kube-system}"
 
 usage() {
   cat <<'USAGE'
@@ -28,18 +28,18 @@ Phase 1 always runs a static kustomize-render proof of the prod overlay.
 Phase 2 reads back live NetworkPolicy enforcement prerequisites.
 
 Environment:
-  MNT_NETWORKPOLICY_PREFLIGHT=warn|require|off
+  CONSOLE_NETWORKPOLICY_PREFLIGHT=warn|require|off
       warn    (default): print a warning and exit 0 when no live cluster/CNI proof
                is available. Suitable for generic CI where manifests still render.
       require: fail when kubectl cannot reach the target cluster, the namespace or
                NetworkPolicies are absent, or no policy-capable CNI is detected.
       off:     skip the live readback entirely (the static render proof still runs).
-  MNT_NETWORKPOLICY_NAMESPACE=maintenance
+  CONSOLE_NETWORKPOLICY_NAMESPACE=maintenance
       Namespace that must contain applied NetworkPolicy objects.
-  MNT_NETWORKPOLICY_EXPECTED_ENFORCER=auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes
+  CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes
       Optional expected CNI/policy enforcer. "auto" accepts any recognized
       NetworkPolicy-capable enforcer and rejects plain flannel-only clusters.
-  MNT_NETWORKPOLICY_CILIUM_NAMESPACE=kube-system
+  CONSOLE_NETWORKPOLICY_CILIUM_NAMESPACE=kube-system
       Namespace that must contain the Cilium DaemonSet/config when the expected
       enforcer is cilium.
   KUBECTL=kubectl
@@ -63,7 +63,7 @@ case "${MODE}" in
     MODE="off"
     ;;
   *)
-    echo "networkpolicy-preflight: invalid MNT_NETWORKPOLICY_PREFLIGHT=${MODE}; expected warn, require, or off" >&2
+    echo "networkpolicy-preflight: invalid CONSOLE_NETWORKPOLICY_PREFLIGHT=${MODE}; expected warn, require, or off" >&2
     exit 2
     ;;
 esac
@@ -72,7 +72,7 @@ case "${EXPECTED_ENFORCER}" in
   auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes)
     ;;
   *)
-    echo "networkpolicy-preflight: invalid MNT_NETWORKPOLICY_EXPECTED_ENFORCER=${EXPECTED_ENFORCER}" >&2
+    echo "networkpolicy-preflight: invalid CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=${EXPECTED_ENFORCER}" >&2
     exit 2
     ;;
 esac
@@ -89,7 +89,7 @@ else
   trap 'rm -f "$RENDER"' EXIT
   failures=0
 
-  kustomize build "$ROOT/deploy/apps/maintenance/overlays/prod" > "$RENDER"
+  kustomize build "$ROOT/deploy/apps/console/overlays/prod" > "$RENDER"
 
   require() {
     local needle="$1"
@@ -114,12 +114,12 @@ else
   }
 
   require 'kind: StatefulSet' 'render includes workload objects'
-  require 'name: mnt-mox' 'render includes mnt-mox resources'
+  require 'name: console-mox' 'render includes console-mox resources'
   require 'name: allow-app-egress-mox' 'app/worker egress to mox is explicitly allowed'
   require 'name: allow-mox-ingress-internal' 'mox ingress is restricted to app/worker and monitoring'
   require 'name: default-deny-egress-mox' 'mox egress is default-denied'
   require 'name: allow-mox-egress-app-webhook' 'mox can reach the internal app webhook only'
-  require 'MNT_MAIL_MOX_BASE_URL: http://mnt-mox.maintenance.svc:1080' 'app config points at the in-cluster mox webapi'
+  require 'CONSOLE_MAIL_MOX_BASE_URL: http://console-mox.console.svc:1080' 'app config points at the in-cluster mox webapi'
   require 'port: 1080' 'webapi port is present for internal service traffic'
   require 'port: 1143' 'IMAP port is present for internal service traffic'
   require 'port: 8010' 'metrics port is present for observability'
@@ -140,9 +140,9 @@ else
 Static NetworkPolicy proof passed. To prove runtime enforcement on a cluster,
 first confirm the CNI enforces NetworkPolicy (plain flannel does not), then run
 operator-owned smoke pods with these labels:
-  allowed:   app=mnt-app    -> http://mnt-mox.maintenance.svc:1080/webapi/v0/
-  denied:    app=mnt-deny   -> same URL must time out/fail
-  webhook:   app=mnt-mox    -> http://mnt-app.maintenance.svc:8080/readyz allowed
+  allowed:   app=console-app    -> http://console-mox.console.svc:1080/webapi/v0/
+  denied:    app=console-deny   -> same URL must time out/fail
+  webhook:   app=console-mox    -> http://console-app.console.svc:8080/readyz allowed
 Keep public MX disabled until that live CNI smoke is recorded in the runbook.
 MSG
 fi
@@ -151,7 +151,7 @@ fi
 # Phase 2: live cluster NetworkPolicy enforcement preflight.
 # ---------------------------------------------------------------------------
 if [[ "${MODE}" == "off" ]]; then
-  echo "networkpolicy-preflight: live readback skipped (MNT_NETWORKPOLICY_PREFLIGHT=off)"
+  echo "networkpolicy-preflight: live readback skipped (CONSOLE_NETWORKPOLICY_PREFLIGHT=off)"
   exit 0
 fi
 

@@ -12,7 +12,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AccessScope, AccessScopeLevel, BranchId, BranchProjection, BranchScope, KernelError, OrgId,
     ServicePrincipalId, UserId,
 };
@@ -1630,7 +1630,7 @@ fn is_safe_ident(raw: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::{ErrorKind, ScopeNodeId};
+    use console_kernel_core::{ErrorKind, ScopeNodeId};
 
     #[test]
     fn attendance_management_features_are_admin_and_super_admin_only() {

@@ -27,43 +27,43 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_governance_adapter_postgres::{
+use console_governance_adapter_postgres::{
     PgGovernanceError, PgGovernanceStore, authority_effect_from_cedar, four_eyes_consume_conn,
 };
-use mnt_governance_domain::{
+use console_governance_domain::{
     AuthorityEffect, GateChainConfig, GateChainOutcome, GateEvidence, LifecycleState,
     evaluate_gate_chain, validate_lifecycle_transition,
 };
-use mnt_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
-use mnt_ontology_adapter_postgres::instances::{
+use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
+use console_ontology_adapter_postgres::instances::{
     CreateInstance, InstanceHead, InstanceState, PgInstanceStore, RevisionSummary, StageRevision,
     TraversalGraph, create_instance_in_tx, stage_revision_in_tx,
 };
-use mnt_ontology_adapter_postgres::{
+use console_ontology_adapter_postgres::{
     ActingRule, ActionTypeSummary, CreateObjectTypeDraft, ObjectTypeSummary,
     ObjectTypeWritePrecondition, ObjectTypeWriteVersion, PgOntologyError, PgOntologyStore,
     ResolvedInstance,
 };
-use mnt_ontology_application::{
+use console_ontology_application::{
     ActionDispatch, apply_edits, egress_evidence, evaluate_submission_criteria, evaluation_context,
     parse_control_points, validate_params,
 };
-use mnt_ontology_domain::{
+use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::cedar_pbac::authoring::DeclaredAttr;
-use mnt_platform_authz::cedar_pbac::authoring::{ConditionOp, ConditionValue, NoCodeBlocks};
-use mnt_platform_authz::cedar_pbac::evaluate_legacy_contract;
-use mnt_platform_authz::cedar_pbac::residual::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::cedar_pbac::authoring::DeclaredAttr;
+use console_platform_authz::cedar_pbac::authoring::{ConditionOp, ConditionValue, NoCodeBlocks};
+use console_platform_authz::cedar_pbac::evaluate_legacy_contract;
+use console_platform_authz::cedar_pbac::residual::{
     ObjectPolicy, Predicate, PredicateValue, ResidualOp, SqlValue, SubjectAttrs,
 };
-use mnt_platform_authz::{
+use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, Feature, Principal, authorize_org_wide,
 };
-use mnt_platform_authz_rest::PgCedarPolicyStore;
-use mnt_platform_db::{DbError, with_audits};
-use mnt_platform_request_context::current_org;
+use console_platform_authz_rest::PgCedarPolicyStore;
+use console_platform_db::{DbError, with_audits};
+use console_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -242,7 +242,7 @@ pub fn router(state: OntologyRestState) -> Router {
         .route(ACTION_PREFLIGHT_PATH, post(action_preflight))
         .route(ACTION_EXECUTE_PATH, post(action_execute))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -476,7 +476,7 @@ fn applicable_object_policies(blocks: &[NoCodeBlocks], stable_key: &str) -> Vec<
 }
 
 fn residual_predicate(
-    condition: &mnt_platform_authz::cedar_pbac::authoring::Condition,
+    condition: &console_platform_authz::cedar_pbac::authoring::Condition,
 ) -> Predicate {
     let op = match condition.op {
         ConditionOp::Eq => ResidualOp::Eq,
@@ -1663,7 +1663,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for ontology API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.registry.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.registry.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -1843,9 +1843,9 @@ impl RestError {
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
-    use mnt_platform_request_context::RequestContextError as E;
+    use console_platform_request_context::RequestContextError as E;
     match err {
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for ontology API")
@@ -2004,7 +2004,7 @@ mod tests {
 
     #[test]
     fn stale_key_precondition_maps_to_412_with_current_etag_and_no_store() {
-        let current = mnt_ontology_adapter_postgres::ObjectTypeWriteVersion {
+        let current = console_ontology_adapter_postgres::ObjectTypeWriteVersion {
             etag: "\"ont-object-type-key:00000000000000000000000000000001:r8\"".to_owned(),
             revision: 8,
         };

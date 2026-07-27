@@ -3,11 +3,11 @@
 //! No I/O lives here — only org-entity value objects (team affiliation) and the
 //! field-validation rules shared by the application and adapter layers. Roles
 //! themselves are governed by the branch-scoped authorization matrix in
-//! `mnt-platform-authz` and are validated at the REST boundary; the domain layer
+//! `console-platform-authz` and are validated at the REST boundary; the domain layer
 //! stays free of that platform dependency to satisfy the layer-boundary gate.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 /// Maximum length (Unicode scalar values) of a user's display name.

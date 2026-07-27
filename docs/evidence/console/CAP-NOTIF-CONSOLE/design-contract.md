@@ -13,7 +13,7 @@ emit ──> unread ──(ack: mark_read | read-all | open-linked-object)──
 orthogonal:  open ──(resolve_by_link, link-equality sweep)──> resolved (resolved_at/by set)
 ```
 - `read_at` = FIRST read timestamp, never cleared by mark_unread (forensic).
-- `resolved` never implies `read` and vice versa. No hard delete (mnt_rt has no DELETE).
+- `resolved` never implies `read` and vice versa. No hard delete (console_rt has no DELETE).
 - Every transition = audit event: `notification.emit | notification.read |
   notification.unread | notification.read_all | notification.resolve`.
 
@@ -33,7 +33,7 @@ Audit actions: `notification.policy_set` / `notification.policy_clear` (target =
 -- Muting suppresses ATTENTION (badge counts, realtime fan-out), never data: rows are
 -- still persisted and listable. `action` is extensible ('mute' now; 'watch' later).
 
--- mnt-gate: audited-table notification_policies
+-- console-gate: audited-table notification_policies
 CREATE TABLE notification_policies (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -67,7 +67,7 @@ CREATE POLICY org_isolation ON notification_policies
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Personal settings: delete = unmute (a real removal, not a governed archive).
-GRANT SELECT, INSERT, UPDATE, DELETE ON notification_policies TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON notification_policies TO console_rt;
 
 -- Backs GROUP BY link (aggregate-by-object read path) and resolve-by-link sweeps.
 CREATE INDEX idx_notifications_recipient_link
@@ -78,12 +78,12 @@ No `notifications` column changes. Aggregation and mute are read-path joins.
 
 ## 3. Backend contract (crate-by-crate)
 
-### `mnt-notifications-domain`
+### `console-notifications-domain`
 - `NotificationPolicyScope` enum `All | Category(NotificationCategory) | Object(NotificationLink)`
   (validated; serializes to `{scope, category?, link?}`).
 - Reuse existing newtypes; no changes to `NotificationLink`.
 
-### `mnt-notifications-application` (new shapes)
+### `console-notifications-application` (new shapes)
 ```rust
 pub struct ListNotificationObjectGroupsQuery { recipient: UserId, unread_only: bool,
     before: Option<String /* opaque cursor */>, limit: i64 }
@@ -108,7 +108,7 @@ pub struct NotificationPolicySummary { id, scope, category: Option<String>,
 - `unread_count` likewise excludes muted (badge truth = attention truth). The raw list is
   never filtered by mute (rows annotated instead); optional `include` param stays out of v1.
 
-### `mnt-notifications-adapter-postgres` (`PgNotificationStore`)
+### `console-notifications-adapter-postgres` (`PgNotificationStore`)
 - `list_object_groups`: `SELECT link, COUNT(*), COUNT(*) FILTER (WHERE unread), max(created_at)…
   GROUP BY link ORDER BY max(created_at) DESC` + per-group latest row (LATERAL) + category
   breakdown (jsonb_agg or second grouped query) + `muted` via LEFT JOIN policies
@@ -125,7 +125,7 @@ pub struct NotificationPolicySummary { id, scope, category: Option<String>,
 - `is_muted(recipient, category, link)` helper shared by emit/list/summary paths (single
   chokepoint — DESIGN §4-19).
 
-### `mnt-notifications-rest` (routes; all `/api/v1/me/*`, principal from JWT)
+### `console-notifications-rest` (routes; all `/api/v1/me/*`, principal from JWT)
 | Method/Path | op id | Req | 200 | Errors |
 |---|---|---|---|---|
 | GET `/api/v1/me/notifications/by-object?unread&before&limit` | listMyNotificationObjectGroups | query | NotificationObjectGroupPage | 401/503 |
@@ -142,8 +142,8 @@ is ungated); cross-user access = 404 indistinguishable-from-absent (deny-by-omis
 - rest/tests: by-object grouping is recipient-scoped over the real router; unread toggle
   cross-user = 404; policy upsert/delete cross-user isolation; muted rows excluded from
   unread-count/summary but present+annotated in list.
-- adapter tests as `mnt_rt` (runtime-role pool, `scope_org`): RLS + grants for
-  `notification_policies` (INSERT/SELECT/UPDATE/DELETE as mnt_rt; cross-org invisible);
+- adapter tests as `console_rt` (runtime-role pool, `scope_org`): RLS + grants for
+  `notification_policies` (INSERT/SELECT/UPDATE/DELETE as console_rt; cross-org invisible);
   emit-skips-notifier-when-muted; resolve sweep unaffected by mute.
 - `cargo build/test -p` each of the four crates + `openapi_drift` after integrator applies spec.
 

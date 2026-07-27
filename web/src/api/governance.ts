@@ -6,7 +6,7 @@
 // serde output (crates/governance/application OverrideSummary /
 // ApprovalSummary / LifecycleTransitionConfig and crates/governance/rest
 // PreflightResponse). Parsing is fail-closed.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "./client";
 import { ApiCallError, parseGateChain, type GateChain } from "./ontologyActions";

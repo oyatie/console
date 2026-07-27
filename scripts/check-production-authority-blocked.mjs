@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PATHS = Object.freeze([
-  "deploy/argocd/apps/maintenance.yaml",
+  "deploy/argocd/apps/console.yaml",
   "deploy/argocd/project.yaml",
   "deploy/argocd/root.yaml",
   "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json",

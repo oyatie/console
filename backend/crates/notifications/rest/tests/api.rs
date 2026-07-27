@@ -7,14 +7,14 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_notifications_application::EmitNotificationCommand;
-use mnt_notifications_domain::NotificationLink;
-use mnt_notifications_rest::{NotificationRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_notifications_application::EmitNotificationCommand;
+use console_notifications_domain::NotificationLink;
+use console_notifications_rest::{NotificationRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -23,12 +23,12 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn notifications_rest_is_recipient_scoped(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -309,7 +309,7 @@ async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {
 /// the canonical envelope; cross-user ids are 404.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn notification_routing_rest_is_recipient_scoped(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key

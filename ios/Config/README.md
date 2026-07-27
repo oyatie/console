@@ -9,14 +9,14 @@ distribution archive, TestFlight upload, or production go-live path is ready.
 
 | File | Purpose |
 | --- | --- |
-| `App.xcconfig` | Build settings for the app target. Hermetic CI uses the repository defaults `com.maintenance.field` and `98Q89GFZWP`; a separately governed release build may override `MNT_IOS_BUNDLE_ID` and `MNT_IOS_TEAM_ID`. |
-| `MaintenanceFieldApp.entitlements` | App entitlements: shared keychain access group + associated domain for passkeys. |
-| `MaintenanceFieldUITestSeeder.entitlements` | CI-only seeder app entitlement: the SAME shared keychain access group as the production app. |
-| `../project.yml` | XcodeGen definition consumed by CI (`xcodegen generate`) to produce `MaintenanceField.xcodeproj` (a build artifact, not committed). |
+| `App.xcconfig` | Build settings for the app target. Hermetic CI uses the repository defaults `com.console.app` and `98Q89GFZWP`; a separately governed release build may override `CONSOLE_IOS_BUNDLE_ID` and `CONSOLE_IOS_TEAM_ID`. |
+| `ConsoleApp.entitlements` | App entitlements: shared keychain access group + associated domain for passkeys. |
+| `ConsoleUITestSeeder.entitlements` | CI-only seeder app entitlement: the SAME shared keychain access group as the production app. |
+| `../project.yml` | XcodeGen definition consumed by CI (`xcodegen generate`) to produce `Console.xcodeproj` (a build artifact, not committed). |
 
 ## Bundle ID and signing status
 
-The configured default bundle ID is `com.maintenance.field`, matching the Android
+The configured default bundle ID is `com.console.app`, matching the Android
 application ID and the shared keychain suffix used by the entitlement files.
 Apple Team ID defaults to `98Q89GFZWP`. These defaults appear in
 `App.xcconfig`, so local and CI project generation resolve a concrete identity
@@ -24,8 +24,8 @@ without repository variables or Apple signing secrets.
 
 That configured default is **not** the same as production readiness: the App ID
 still has to be registered/confirmed in the Apple Developer portal with the
-required capabilities, matched to `MNT_IOS_APP_IDS` in
-`deploy/apps/maintenance/base/configmap.yaml` as `98Q89GFZWP.com.maintenance.field`,
+required capabilities, matched to `CONSOLE_IOS_APP_IDS` in
+`deploy/apps/console/base/configmap.yaml` as `98Q89GFZWP.com.console.app`,
 and paired with distribution certificates/provisioning before TestFlight or
 go-live.
 
@@ -33,8 +33,8 @@ The flow is:
 
 1. The hermetic CI job generates the project with the two repository defaults;
    it does not read identity variables or Apple credentials.
-2. A future signed distribution lane may supply `MNT_IOS_BUNDLE_ID` and
-   `MNT_IOS_TEAM_ID` as explicit Xcode build settings after the registered App ID,
+2. A future signed distribution lane may supply `CONSOLE_IOS_BUNDLE_ID` and
+   `CONSOLE_IOS_TEAM_ID` as explicit Xcode build settings after the registered App ID,
    Team ID, entitlements, and provisioning profile are independently proven.
 3. `App.xcconfig` maps those settings into `PRODUCT_BUNDLE_IDENTIFIER`,
    `DEVELOPMENT_TEAM`, and the keychain access group.
@@ -42,16 +42,16 @@ The flow is:
    be embedded for XCUITest. This validates the CI test wrapper, not App Store
    distribution signing.
 
-> Before TestFlight/go-live, confirm `com.maintenance.field` is the registered
+> Before TestFlight/go-live, confirm `com.console.app` is the registered
 > App ID, set the matching distribution build setting when it differs, verify
-> `98Q89GFZWP.com.maintenance.field` is the `MNT_IOS_APP_IDS` entry, and install
+> `98Q89GFZWP.com.console.app` is the `CONSOLE_IOS_APP_IDS` entry, and install
 > the release signing/App Store Connect secrets documented in
 > `docs/release/SECRETS.md`. No source change is required if the default remains
-> `com.maintenance.field`.
+> `com.console.app`.
 
 ## Why a shared keychain access group
 
-`KeychainSessionTokenStore` (in `MaintenanceFieldCore`) persists the session
+`KeychainSessionTokenStore` (in `ConsoleCore`) persists the session
 token pair as a `kSecClassGenericPassword` item. The separate CI-only seeder
 app writes a **real** session into that item so the production app's normal
 `restore()` path authenticates — with **no fake `AuthRepository`** and **no
@@ -64,7 +64,7 @@ state and surface an error instead of claiming that restorable credentials are g
 
 For the production app to read the CI seeder's Keychain item, both apps must
 declare the **same** `keychain-access-groups` entitlement. That group
-(`$(AppIdentifierPrefix)com.maintenance.field.shared`) is declared in the app
+(`$(AppIdentifierPrefix)com.console.app.shared`) is declared in the app
 and dedicated seeder entitlement files above.
 
 ### Runtime group resolution (app and test agree on ONE value)
@@ -76,10 +76,10 @@ process's first entitled group, then read back and suffix-validate the exact
 `kSecAttrAccessGroup` the system assigned:
 
 - App: `KeychainAccessGroup.resolveShared(suffix:)` (production, in
-  `MaintenanceFieldCore`). `AppContainer.live()` uses it to build the session
+  `ConsoleCore`). `AppContainer.live()` uses it to build the session
   store on the shared group, with a legacy default-group store for one-time
   forward migration so existing installs are not logged out.
-- CI-only seeder app: `MaintenanceFieldUITestSeeder` uses the same probe and
+- CI-only seeder app: `ConsoleUITestSeeder` uses the same probe and
   writes a real session only after the test protocol authorizes it. It is a
   separate product from the production app; it does not add an authentication
   bypass to production code. Hermetic CI verifies the Xcode-signed production
@@ -102,7 +102,7 @@ Xcode project/workspace in the release workflow.
 
 ### Hermetic CI session and networking boundary
 
-The UI workflow injects `MNT_UITEST_BASE_URL`, but its value is a job-local
+The UI workflow injects `CONSOLE_UITEST_BASE_URL`, but its value is a job-local
 loopback URL, not a stored secret or external service address. It runs
 every triggered push/tag or public/untrusted pull-request gate on one
 GitHub-hosted `macos-26` VM. Repository code does not execute on a reusable self-hosted macOS
@@ -150,7 +150,7 @@ secret-scan evidence, or cleanup proof fails XCTest or the workflow. There is no
 
 Plain HTTP is allowed only for the job-local loopback backend through the
 CI-generated Xcode project configuration. The production
-`Sources/MaintenanceFieldApp/Info.plist`, TestFlight archive configuration, and
+`Sources/ConsoleApp/Info.plist`, TestFlight archive configuration, and
 release networking policy remain unchanged. This workflow is test evidence only;
 it does not prove TestFlight packaging, signing, production deployment, or
 shipping readiness.

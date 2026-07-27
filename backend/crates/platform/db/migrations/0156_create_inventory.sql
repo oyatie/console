@@ -9,7 +9,7 @@ INSERT INTO feature_catalog (feature_key) VALUES
     ('inventory_reorder')
 ON CONFLICT (feature_key) DO NOTHING;
 
--- mnt-gate: audited-table inventory_stock_locations
+-- console-gate: audited-table inventory_stock_locations
 CREATE TABLE inventory_stock_locations (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -37,7 +37,7 @@ CREATE INDEX idx_inventory_stock_locations_org_site_status
     ON inventory_stock_locations (org_id, site_id, status)
     WHERE site_id IS NOT NULL;
 
--- mnt-gate: audited-table inventory_items
+-- console-gate: audited-table inventory_items
 CREATE TABLE inventory_items (
     id                      UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                  UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -77,7 +77,7 @@ CREATE INDEX idx_inventory_items_org_site_status
 CREATE INDEX idx_inventory_items_org_low_stock
     ON inventory_items (org_id, branch_id, quantity_on_hand_milli, safety_stock_milli);
 
--- mnt-gate: audited-table inventory_consumption_events
+-- console-gate: audited-table inventory_consumption_events
 CREATE TABLE inventory_consumption_events (
     id                         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                     UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -125,7 +125,7 @@ ALTER TABLE inventory_stock_locations FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_stock_locations
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO console_rt;
 CREATE TRIGGER trg_inventory_stock_locations_org_immutable
     BEFORE UPDATE ON inventory_stock_locations
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
@@ -135,7 +135,7 @@ ALTER TABLE inventory_items FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_items
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE ON inventory_items TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inventory_items TO console_rt;
 CREATE TRIGGER trg_inventory_items_org_immutable
     BEFORE UPDATE ON inventory_items
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
@@ -145,7 +145,7 @@ ALTER TABLE inventory_consumption_events FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON inventory_consumption_events
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT ON inventory_consumption_events TO mnt_rt;
+GRANT SELECT, INSERT ON inventory_consumption_events TO console_rt;
 CREATE TRIGGER trg_inventory_consumption_events_org_immutable
     BEFORE UPDATE ON inventory_consumption_events
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();

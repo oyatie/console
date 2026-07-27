@@ -176,7 +176,7 @@ CREATE TABLE payroll_payslip_deliveries (
 );
 -- + indexes (org_id,run_id[,status]) per table; RLS ENABLE+FORCE + org_isolation policy
 --   (copy the 0074 DO-block verbatim for the four new tables); GRANT SELECT,INSERT,UPDATE
---   TO mnt_rt. Acknowledged-at is read from the inbox doc (no duplicated ack column).
+--   TO console_rt. Acknowledged-at is read from the inbox doc (no duplicated ack column).
 ```
 
 Migration number 0186 is provisional — re-check `ls backend/crates/platform/db/migrations`
@@ -191,7 +191,7 @@ immediately before push (0180 is the latest on this branch; collisions across la
 - Reads of others' data audited via `with_audits` (existing pattern); self payslip reads
   never audited. Mutations: one audit event each, action names in §2, `reason` captured
   where the API takes one, receipts (`close_receipt`, decision) persisted as JSONB.
-- RLS: every new table forced + policied; tests as `mnt_rt` with `app.current_org` armed
+- RLS: every new table forced + policied; tests as `console_rt` with `app.current_org` armed
   (extend `payroll_rls_surfaces_as_runtime_role.rs`); cross-org probes must read 0 rows and
   REST must 404.
 
@@ -213,7 +213,7 @@ Files (mirror `production/` exactly):
   `{canRead, canManage(close/calc/resolve/submit/schedule/attest/issue), canDecide
   (=canManage; SoD enforced server-side), canReadSelf(always true — self payslips)}`.
   Deny state renders title + denied line only, zero fetches.
-- `payrollApi.ts` — typed via `components["schemas"]` from `@maintenance/api-client-ts`,
+- `payrollApi.ts` — typed via `components["schemas"]` from `@console/api-client-ts`,
   `ConsoleApiClient` GET/POST, `requireData` + `PayrollApiError`, AbortSignal on every op.
 - `routeContract.ts` — `PayrollRouteContract {branchId}` + structural fixture.
 - `payroll.css`, `index.ts`, i18n at `web/src/i18n/payroll.ts` (`payrollStrings`, module-

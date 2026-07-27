@@ -102,7 +102,7 @@ struct SeamPattern {
 // Keep this list intentionally scoped to managed-cloud seams with explicit
 // replacement contracts in registry/vendor-lockin-phaseout. Broad IaC tiering
 // (for example every `oci_core_*` network/compute primitive) belongs to
-// mnt-gate-iac-tier; this gate enforces phase-out registry hygiene for seams
+// console-gate-iac-tier; this gate enforces phase-out registry hygiene for seams
 // such as object storage, vault/secrets, and managed logging.
 const MANAGED_CLOUD_SEAMS: &[SeamPattern] = &[
     SeamPattern {

@@ -1,6 +1,6 @@
 # DARK warm-standby app group
 
-Generated roots for clusters labeled `maintenance.io/dr-role=warm-standby` point
+Generated roots for clusters labeled `console.io/dr-role=warm-standby` point
 at this directory after the DARK ApplicationSet is explicitly activated.
 
 It is intentionally empty in the manifest lane so federation can be reviewed

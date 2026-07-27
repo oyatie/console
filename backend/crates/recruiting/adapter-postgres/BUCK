@@ -9,19 +9,19 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-recruiting-adapter-postgres",
+    name = "console-recruiting-adapter-postgres",
     mapped_srcs = repo_mapped_srcs("backend/crates/recruiting/adapter-postgres", glob(["src/**/*.rs"])),
-    crate = "mnt_recruiting_adapter_postgres",
+    crate = "console_recruiting_adapter_postgres",
     edition = "2024",
     crate_root = "backend/crates/recruiting/adapter-postgres/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/recruiting/adapter-postgres"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/recruiting/application:mnt-recruiting-application",
-        "//backend/crates/recruiting/domain:mnt-recruiting-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/recruiting/application:console-recruiting-application",
+        "//backend/crates/recruiting/domain:console-recruiting-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",

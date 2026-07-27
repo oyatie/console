@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-dispatch-domain",
+    name = "console-dispatch-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_dispatch_domain",
+    crate = "console_dispatch_domain",
     edition = "2024",
     crate_root = "backend/crates/dispatch/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:thiserror",
         "//third-party/rust:time",
@@ -25,16 +25,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-dispatch-domain-unit",
+    name = "console-dispatch-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_dispatch_domain",
+    crate = "console_dispatch_domain",
     edition = "2024",
     crate_root = "backend/crates/dispatch/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/domain"},
     labels = ["owner.backend.crates.dispatch.domain", "domain.dispatch", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:thiserror",
         "//third-party/rust:time",

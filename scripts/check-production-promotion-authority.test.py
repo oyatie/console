@@ -14,7 +14,7 @@ SCRIPT = Path(__file__).with_name("check-production-promotion-authority.py")
 ROLLBACK_FLOOR = "f6ff236b9770c79301a3d07da6afb56be1e27bbf"
 AUTH_PATH = "docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json"
 EVIDENCE_PATH = "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json"
-OVERLAY_PATH = "deploy/apps/maintenance/overlays/prod/kustomization.yaml"
+OVERLAY_PATH = "deploy/apps/console/overlays/prod/kustomization.yaml"
 
 
 class PromotionAuthorityTest(unittest.TestCase):
@@ -97,14 +97,14 @@ class PromotionAuthorityTest(unittest.TestCase):
             "candidate_source_sha": self.candidate_sha,
             "observed_running_revision": self.candidate_sha,
             "observed_database_topology": {
-                "cluster_name": "mnt-db",
+                "cluster_name": "console-db",
                 "namespace": "maintenance",
-                "writer_endpoint": "mnt-db-rw.maintenance.svc.cluster.local",
-                "reader_endpoint": "mnt-db-ro.maintenance.svc.cluster.local",
+                "writer_endpoint": "console-db-rw.console.svc.cluster.local",
+                "reader_endpoint": "console-db-ro.console.svc.cluster.local",
                 "instances": [
-                    {"name": "mnt-db-1", "role": "primary", "ready": True, "zone": "zone-a"},
-                    {"name": "mnt-db-2", "role": "replica", "ready": True, "zone": "zone-b"},
-                    {"name": "mnt-db-3", "role": "replica", "ready": True, "zone": "zone-c"},
+                    {"name": "console-db-1", "role": "primary", "ready": True, "zone": "zone-a"},
+                    {"name": "console-db-2", "role": "replica", "ready": True, "zone": "zone-b"},
+                    {"name": "console-db-3", "role": "replica", "ready": True, "zone": "zone-c"},
                 ],
             },
             "capacity_headroom": {

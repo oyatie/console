@@ -5,8 +5,8 @@ import XCTest
 /// mechanic's day-to-day communication surface. Empty/first-row fallbacks are
 /// forbidden because this job owns a deterministic database.
 ///
-/// CI-ONLY (see `FieldCriticalPathUITests` for the why).
-final class MessengerUITests: FieldUITestCase {
+/// CI-ONLY (see `ConsoleCriticalPathUITests` for the why).
+final class MessengerUITests: ConsoleUITestCase {
     private let seededMessageBody = "iOS CI 초기 메시지"
     private let sentMessageBody = "iOS CI 메신저 전송 지속성"
 
@@ -101,7 +101,7 @@ final class MessengerUITests: FieldUITestCase {
 
     /// The composer and send action are a persistent sibling of the List inside
     /// a `VStack` — deliberately NOT a bottom safe-area inset, which
-    /// `hasUnobscuredTabContentHost` forbids in FieldViews.swift because the
+    /// `hasUnobscuredTabContentHost` forbids in ConsoleViews.swift because the
     /// UIKit `contentLayoutGuide` seam owns bottom insets. Being outside the
     /// lazy List they are always materialized, so assert them directly:
     /// scrolling for them would mask a regression that put them back inside the

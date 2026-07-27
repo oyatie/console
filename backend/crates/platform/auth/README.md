@@ -1,4 +1,4 @@
-# mnt-platform-auth
+# console-platform-auth
 
 T0.5 authentication platform crate.
 

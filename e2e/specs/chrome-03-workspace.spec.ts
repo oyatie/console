@@ -12,7 +12,7 @@ const TENANT_BRANCH_ID = "00000000-0000-0000-0000-0000000000c1";
 /**
  * UI-M1b ConsoleShell window-grammar guard.
  *
- * Runs only under the `dev-auth` Playwright project (`MNT_DEV_AUTH_E2E=1`) — it
+ * Runs only under the `dev-auth` Playwright project (`CONSOLE_DEV_AUTH_E2E=1`) — it
  * needs the authenticated ConsoleShell and a seeded backend with at least one
  * pinnable /overview row. The default preview-only `chromium` project ignores
  * this file. CI-only, like chrome-01/02.

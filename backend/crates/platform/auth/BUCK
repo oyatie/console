@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-auth",
+    name = "console-platform-auth",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_auth",
+    crate = "console_platform_auth",
     edition = "2024",
     crate_root = "backend/crates/platform/auth/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:serde",
@@ -35,17 +35,17 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-platform-auth-unit",
+    name = "console-platform-auth-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_auth",
+    crate = "console_platform_auth",
     edition = "2024",
     crate_root = "backend/crates/platform/auth/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -64,7 +64,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-jwt_es256",
+    name = "console-platform-auth-itest-jwt_es256",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/jwt_es256.rs"]),
     crate = "jwt_es256",
     edition = "2024",
@@ -73,8 +73,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -89,12 +89,12 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-jwt_verifier",
+    name = "console-platform-auth-itest-jwt_verifier",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/jwt_verifier.rs"]),
     crate = "jwt_verifier",
     edition = "2024",
@@ -103,8 +103,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -119,12 +119,12 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-refresh_tokens",
+    name = "console-platform-auth-itest-refresh_tokens",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/refresh_tokens.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -135,8 +135,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -151,12 +151,12 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-webauthn_ceremony",
+    name = "console-platform-auth-itest-webauthn_ceremony",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/webauthn_ceremony.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -167,8 +167,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -183,12 +183,12 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-webauthn_ceremony_replay",
+    name = "console-platform-auth-itest-webauthn_ceremony_replay",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/webauthn_ceremony_replay.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -199,8 +199,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -215,12 +215,12 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-auth-itest-well_known",
+    name = "console-platform-auth-itest-well_known",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/auth", ["tests/well_known.rs"]),
     crate = "well_known",
     edition = "2024",
@@ -229,8 +229,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/auth"},
     labels = ["owner.backend.crates.platform.auth", "domain.platform", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -245,6 +245,6 @@ rust_test(
         "//third-party/rust:uuid",
         "//third-party/rust:webauthn-authenticator-rs",
         "//third-party/rust:webauthn-rs",
-        ":mnt-platform-auth",
+        ":console-platform-auth",
     ],
 )

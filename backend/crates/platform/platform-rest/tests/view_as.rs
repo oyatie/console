@@ -12,7 +12,7 @@
 //!   (e) START and EXIT write the audit events with the REAL operator id;
 //!   (f) the minted token's TTL is short (≤30 min).
 //!
-//! Everything DB-backed runs against a pool whose connections `SET ROLE mnt_rt`,
+//! Everything DB-backed runs against a pool whose connections `SET ROLE console_rt`,
 //! so RLS is exercised as the production runtime role (NOBYPASSRLS, FORCE RLS) —
 //! a superuser pool would mask a broken read path (rls-verify-as-runtime-role).
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -23,12 +23,12 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::with_org_conn;
-use mnt_platform_provisioning::PlatformProvisioner;
-use mnt_platform_request_context::{current_org, with_request_context};
-use mnt_platform_rest::{
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::with_org_conn;
+use console_platform_provisioning::PlatformProvisioner;
+use console_platform_request_context::{current_org, with_request_context};
+use console_platform_rest::{
     PLATFORM_TENANT_CONTEXT_EXIT_PATH, PLATFORM_TENANT_CONTEXT_START_PATH,
     PLATFORM_VIEW_AS_EXIT_PATH, PLATFORM_VIEW_AS_START_PATH, PlatformRestState,
     VIEW_AS_READ_ONLY_CODE, router, with_view_as_read_only_gate,
@@ -43,8 +43,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 /// A tenant probe route the read-only gate is exercised against. The GET handler
 /// counts the users RLS lets the request see (so a view_as token armed to the
@@ -55,7 +55,7 @@ const PROBE_USERS_PATH: &str = "/api/v1/view-as-probe/users";
 struct Harness {
     private_pem: String,
     public_pem: String,
-    /// The runtime-role pool every router uses (each connection is `mnt_rt`).
+    /// The runtime-role pool every router uses (each connection is `console_rt`).
     rt_pool: PgPool,
 }
 
@@ -151,14 +151,14 @@ impl Harness {
     }
 }
 
-/// A pool whose every connection runs `SET ROLE mnt_rt` (NOBYPASSRLS, FORCE RLS).
+/// A pool whose every connection runs `SET ROLE console_rt` (NOBYPASSRLS, FORCE RLS).
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
     PgPoolOptions::new()
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -177,12 +177,12 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
 /// tenant middleware.
 async fn probe_count_users(State(pool): State<PgPool>) -> impl IntoResponse {
     let org = current_org().expect("tenant middleware must have armed the org");
-    let count = with_org_conn::<_, i64, mnt_platform_db::DbError>(&pool, org, |tx| {
+    let count = with_org_conn::<_, i64, console_platform_db::DbError>(&pool, org, |tx| {
         Box::pin(async move {
             sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users")
                 .fetch_one(tx.as_mut())
                 .await
-                .map_err(mnt_platform_db::DbError::Sqlx)
+                .map_err(console_platform_db::DbError::Sqlx)
         })
     })
     .await
@@ -787,7 +787,7 @@ async fn tenant_context_exit_audits_and_rejects_tenant_token(owner_pool: PgPool)
 // ===========================================================================
 // Cedar/PBAC freshness hardening: BOTH platform mints (read-only view-as and
 // writable tenant-context) now stamp REAL subject freshness for the token's own
-// (target org, operator) instead of a hardcoded 0, sourced under mnt_rt RLS
+// (target org, operator) instead of a hardcoded 0, sourced under console_rt RLS
 // through the real HTTP handlers. The target org's policy_version is real; the
 // operator has no `users` row in the target tenant, so subject/session are the
 // absent-row 0 baseline (the true DB-current value the guard also reads).

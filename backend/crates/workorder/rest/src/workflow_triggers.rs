@@ -2,7 +2,7 @@
 //! adequacy-audit gap 8).
 //!
 //! The small event registry the audited-mutation commit points publish into.
-//! For a registered event key (`mnt_workflow_domain::REGISTERED_EVENT_KEYS`)
+//! For a registered event key (`console_workflow_domain::REGISTERED_EVENT_KEYS`)
 //! the dispatcher evaluates an ORDERED list of bindings:
 //!
 //!   1. the BUILT-IN work-order-completion binding — the previously hardcoded
@@ -12,7 +12,7 @@
 //!      `work_order.completion` template, driven by its own completion tail;
 //!   2. every ENABLED `workflow_trigger_bindings` row (0105) for the event,
 //!      oldest first — each starts one idempotent run through the shared
-//!      [`mnt_workflow_runtime::start_bound_run`] path (`start_run` →
+//!      [`console_workflow_runtime::start_bound_run`] path (`start_run` →
 //!      synchronous graph drive), exactly like `POST /api/v1/workflow-runs`.
 //!
 //! ## Failure isolation
@@ -28,11 +28,11 @@
 //! `dispatch_event_bindings` into a shared workflow crate rather than copying
 //! it.
 
-use mnt_kernel_core::{BranchId, KernelError, OrgId, TraceContext, UserId, WorkOrderId};
-use mnt_platform_authz::Principal;
-use mnt_platform_request_context::current_org;
-use mnt_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_kernel_core::{BranchId, KernelError, OrgId, TraceContext, UserId, WorkOrderId};
+use console_platform_authz::Principal;
+use console_platform_request_context::current_org;
+use console_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use serde_json::json;
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -42,7 +42,7 @@ use crate::m2_strangler;
 
 /// The event published when the legacy work-order completion (executive
 /// approval → `FINAL_COMPLETED`) has committed. Must stay in
-/// `mnt_workflow_domain::REGISTERED_EVENT_KEYS`.
+/// `console_workflow_domain::REGISTERED_EVENT_KEYS`.
 pub const WORK_ORDER_COMPLETED_EVENT: &str = "work_order.completed";
 
 /// Publish `work_order.completed` for a work order that just reached

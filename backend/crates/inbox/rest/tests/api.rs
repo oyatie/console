@@ -11,17 +11,17 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_inbox_adapter_postgres::PgInboxStore;
-use mnt_inbox_application::EmitInboxDocCommand;
-use mnt_inbox_domain::{InboxDocKind, NewInboxDoc};
-use mnt_inbox_rest::{InboxRestState, router};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{
+use console_inbox_adapter_postgres::PgInboxStore;
+use console_inbox_application::EmitInboxDocCommand;
+use console_inbox_domain::{InboxDocKind, NewInboxDoc};
+use console_inbox_rest::{InboxRestState, router};
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_auth::{
     AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier, PasskeyRegistrationStart,
     PasskeyService, WebauthnSettings,
 };
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -33,14 +33,14 @@ use url::Url;
 use webauthn_authenticator_rs::prelude::{RequestChallengeResponse, WebauthnAuthenticator};
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 fn passkey_service() -> PasskeyService {
     PasskeyService::new(WebauthnSettings {
         rp_id: "example.com".to_owned(),
         rp_origin: Url::parse("https://auth.example.com").unwrap(),
-        rp_name: "MNT Maintenance".to_owned(),
+        rp_name: "Console".to_owned(),
         extra_allowed_origins: vec![],
         ceremony_ttl: Duration::minutes(5),
     })
@@ -112,7 +112,7 @@ async fn inbox_receipt_flow_is_person_scoped_and_passkey_gated(pool: PgPool) {
     seed_user(&pool, user_b, "Employee B").await;
 
     // Seed a legal notice for A via the write port (owner pool, scoped to knl).
-    let doc = mnt_platform_request_context::scope_org(OrgId::knl(), async {
+    let doc = console_platform_request_context::scope_org(OrgId::knl(), async {
         PgInboxStore::new(pool.clone())
             .emit_inbox_doc(legal_notice_to(user_a))
             .await

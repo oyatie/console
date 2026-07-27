@@ -72,7 +72,7 @@ ON CONFLICT (user_id, branch_id) DO NOTHING;
 SELECT set_config(
   'role',
   CASE WHEN to_regprocedure('leave_api.employee_leave_writer_guard()') IS NULL
-    THEN current_user ELSE 'mnt_leave_definer' END,
+    THEN current_user ELSE 'console_leave_definer' END,
   true
 );
 INSERT INTO employees (
@@ -113,7 +113,7 @@ ON CONFLICT (id) DO NOTHING;
 SELECT set_config(
   'role',
   CASE WHEN to_regprocedure('leave_api.protected_request_writer_guard()') IS NULL
-    THEN current_user ELSE 'mnt_leave_definer' END,
+    THEN current_user ELSE 'console_leave_definer' END,
   true
 );
 INSERT INTO leave_requests (id, org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, start_date, end_date, reason, status) VALUES
@@ -366,7 +366,7 @@ ON CONFLICT (id) DO NOTHING;
 -- runtime DML shape. Enter that constrained identity only for protected
 -- definitions; its trigger owns immutable key reservations. The surrounding
 -- local-only fixture remains cluster-admin seeded as documented above.
-SET LOCAL ROLE mnt_rt;
+SET LOCAL ROLE console_rt;
 
 INSERT INTO ont_object_types (id, org_id, stable_key, title, title_property_key, backing_kind, schema_version, lifecycle_state, created_by) VALUES
   ('00000000-0000-0000-0000-000000a70001', '00000000-0000-0000-0000-0000000000a1', 'maintenance_contract', '정비 계약', 'name', 'instance', 1, 'published', '00000000-0000-0000-0000-00000000d001')
@@ -402,7 +402,7 @@ ON CONFLICT (id) DO NOTHING;
 -- r12: deepen the 매니저 tab's 속성 (5 more, real FIELD_KINDS tags) + populate
 -- 액션/분석 (both tables were empty across every seeded object type, so those
 -- two 매니저 subtabs always rendered EmptyChip — not a UI gap, a seed gap).
-SET LOCAL ROLE mnt_rt;
+SET LOCAL ROLE console_rt;
 
 INSERT INTO ont_property_defs (id, org_id, object_type_id, key, title, type, config, required, in_property_policy) VALUES
   ('00000000-0000-0000-0000-000000a80003', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000a70001', 'vendor_name', '거래처명', 'text', '{}'::jsonb, true, false),

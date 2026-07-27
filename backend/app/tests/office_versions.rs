@@ -3,7 +3,7 @@
 //!
 //! Mirrors the comms `*_rls_surfaces_as_runtime_role` tests: we SEED as the
 //! owner (raw inserts, row_security off) and MUTATE/READ as the genuine
-//! non-owner runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
+//! non-owner runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
 //! only faithful exercise of the `org_isolation` policy. The default
 //! `#[sqlx::test]` pool is a BYPASSRLS superuser and would green-light a
 //! broken/leaking path.
@@ -17,13 +17,13 @@
 //! full editor round-trip through `POST /office/sessions` (presign) and the
 //! HTTP `POST /office/callback` (fetch-produced-doc → store). Those exercise the
 //! `OfficeBlobStore` external-IO boundary; the JWT sign/verify + config shape
-//! are covered by the in-module unit tests (`cargo test -p mnt-app office::`).
+//! are covered by the in-module unit tests (`cargo test -p console-app office::`).
 
-use mnt_app::office::{
+use console_app::office::{
     DocumentVersion, NewVersion, issue_session_version, list_versions, record_version,
     restore_version,
 };
-use mnt_kernel_core::{OrgId, UserId};
+use console_kernel_core::{OrgId, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -37,7 +37,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -122,7 +122,7 @@ fn record(
 }
 
 // ===========================================================================
-// The full slice-0 domain lifecycle as `mnt_rt`: v1 → callback v2 (idempotent)
+// The full slice-0 domain lifecycle as `console_rt`: v1 → callback v2 (idempotent)
 // → restore v3, audited, immutable, monotonic.
 // ===========================================================================
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -138,7 +138,7 @@ async fn version_lifecycle_as_runtime_role(owner_pool: PgPool) {
         record(org, Some(actor), "office/a/x/1.docx", "hash1", None),
     )
     .await
-    .expect("record v1 as mnt_rt under the armed GUC");
+    .expect("record v1 as console_rt under the armed GUC");
     assert_eq!(v1.version_no, 1);
     assert_eq!(v1.restored_from, None);
     assert_eq!(
@@ -158,7 +158,7 @@ async fn version_lifecycle_as_runtime_role(owner_pool: PgPool) {
         record(org, None, "office/a/x/2.docx", "hash2", Some("edit-key-1")),
     )
     .await
-    .expect("record v2 (callback) as mnt_rt");
+    .expect("record v2 (callback) as console_rt");
     assert_eq!(v2.version_no, 2);
 
     // Idempotent replay: DocumentServer retries the SAME callback key → the
@@ -185,7 +185,7 @@ async fn version_lifecycle_as_runtime_role(owner_pool: PgPool) {
     // recorded. Restore is a distinct audited action.
     let v3 = restore_version(&rt, org, actor, DOC, 1)
         .await
-        .expect("restore v1 as mnt_rt");
+        .expect("restore v1 as console_rt");
     assert_eq!(v3.version_no, 3);
     assert_eq!(v3.restored_from, Some(1));
     assert_eq!(
@@ -208,7 +208,7 @@ async fn version_lifecycle_as_runtime_role(owner_pool: PgPool) {
 }
 
 // ===========================================================================
-// Cross-tenant DENY: org B never sees org A's versions as `mnt_rt`, and an
+// Cross-tenant DENY: org B never sees org A's versions as `console_rt`, and an
 // unarmed read surfaces nothing.
 // ===========================================================================
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -258,11 +258,11 @@ async fn issue_session_version_records_an_audit_event_as_runtime_role(owner_pool
         record(org, Some(actor), "office/a/x/1.docx", "hash1", None),
     )
     .await
-    .expect("record v1 as mnt_rt");
+    .expect("record v1 as console_rt");
 
     let issued = issue_session_version(&rt, org, actor, DOC)
         .await
-        .expect("issue a session for the latest version as mnt_rt");
+        .expect("issue a session for the latest version as console_rt");
     assert_eq!(issued.id, v1.id, "session must resolve the latest version");
 
     assert_eq!(
@@ -298,14 +298,14 @@ async fn replay_of_old_callback_key_after_later_versions_is_inert(owner_pool: Pg
         record(org, None, "office/a/x/1.docx", "hash1", Some("edit-key-1")),
     )
     .await
-    .expect("record v1 (callback) as mnt_rt");
+    .expect("record v1 (callback) as console_rt");
 
     let v2 = record_version(
         &rt,
         record(org, None, "office/a/x/2.docx", "hash2", Some("edit-key-2")),
     )
     .await
-    .expect("record v2 (callback) as mnt_rt");
+    .expect("record v2 (callback) as console_rt");
 
     let v3 = restore_version(&rt, org, actor, DOC, 1)
         .await

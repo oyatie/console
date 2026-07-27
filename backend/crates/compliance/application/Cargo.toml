@@ -1,5 +1,5 @@
 [package]
-name = "mnt-compliance-application"
+name = "console-compliance-application"
 version = "0.1.0"
 description = "Compliance application use cases and ports."
 edition.workspace = true
@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-compliance-domain = { workspace = true }
-mnt-kernel-core = { workspace = true }
+console-compliance-domain = { workspace = true }
+console-kernel-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }

@@ -9,15 +9,15 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use mnt_equipment_adapter_postgres::{BranchAuthorization, PgEquipment3rError, PgEquipment3rStore};
-use mnt_equipment_application::{
+use console_equipment_adapter_postgres::{BranchAuthorization, PgEquipment3rError, PgEquipment3rStore};
+use console_equipment_application::{
     AssessReturn, CompleteDisposition, DecideApproval, DispatchCase, HandoverCase, InspectCase,
     QuoteCase, RegisterUnit,
 };
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_request_context::RequestContextError;
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_request_context::RequestContextError;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use time::OffsetDateTime;
@@ -90,7 +90,7 @@ pub fn router(state: EquipmentRestState) -> Router {
             post(complete_disposition),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(r, verifier, pool)
+    console_platform_request_context::with_request_context(r, verifier, pool)
 }
 
 #[derive(Deserialize)]
@@ -462,7 +462,7 @@ async fn principal(s: &EquipmentRestState, h: &HeaderMap) -> Result<Principal, R
             "JWT verification is not configured",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, s.store.pool(), h)
+    console_platform_request_context::resolve_principal(verifier, s.store.pool(), h)
         .await
         .map_err(|e| match e {
             RequestContextError::MissingBearer

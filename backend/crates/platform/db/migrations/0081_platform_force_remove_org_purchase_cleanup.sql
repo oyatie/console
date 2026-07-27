@@ -27,9 +27,9 @@
 --      'not_found'), exactly as in 0051, so a bad id can never wipe the platform
 --      tier's own anchor row.
 --
--- Discipline mirrors 0051 EXACTLY: SECURITY DEFINER owned by mnt_app, pinned
+-- Discipline mirrors 0051 EXACTLY: SECURITY DEFINER owned by console_app, pinned
 -- search_path, `SET LOCAL row_security = off` confined to the body and restored
--- before EVERY return path, EXECUTE granted to mnt_rt with PUBLIC revoked. The
+-- before EVERY return path, EXECUTE granted to console_rt with PUBLIC revoked. The
 -- audit trail is preserved the same way — the tenant's immutable audit_events are
 -- RE-HOMED to the platform sentinel (content verbatim; only org_id/actor/branch_id
 -- released) via the DEFINER-only `app.audit_rehome` GUC honored by the
@@ -77,7 +77,7 @@ BEGIN
 
     -- Run the entire gate + cascade with RLS off, confined to this function body
     -- and restored before EVERY return path (a successful return that forgot to
-    -- restore would poison the caller's mnt_rt transaction — see 0036/0051).
+    -- restore would poison the caller's console_rt transaction — see 0036/0051).
     SET LOCAL row_security = off;
 
     -- Existence + status in one read. A missing org is 'not_found'.
@@ -227,4 +227,4 @@ $$;
 -- still cannot UPDATE audit_events directly (the trigger rejects it without the
 -- DEFINER-only GUC). PUBLIC gets no execute.
 REVOKE ALL ON FUNCTION platform_force_remove_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO console_rt;

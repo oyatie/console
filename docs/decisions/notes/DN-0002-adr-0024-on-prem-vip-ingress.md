@@ -22,7 +22,7 @@ Chosen for dark staging. This note does not activate the live OCI ingress path.
 - GitHub issue #8, verified unrelated to Cilium/BGP despite the stale cross-reference in #378.
 - Current live OCI ingress app: `deploy/argocd/apps/traefik.yaml`.
 - Argo CD app-of-apps root: `deploy/argocd/root.yaml`.
-- Current NetworkPolicy/CNI note: `deploy/apps/maintenance/base/networkpolicy.yaml`.
+- Current NetworkPolicy/CNI note: `deploy/apps/console/base/networkpolicy.yaml`.
 - Sibling oyatie substrate sources under `infra/`, especially `infra/talos/cilium-values.yaml`,
   `infra/talos/controlplane.patch.yaml`, `infra/gitops/values.yaml`, and
   `infra/capi/clusters/values-example.yaml`.
@@ -45,12 +45,12 @@ and explicit reserved OCI IP `140.245.68.253` stay intact until a separate cutov
 Downstream implementation should make the site-specific values explicit and impossible to confuse with OCI:
 
 - Namespace: `metallb-system`.
-- Address pool name: `maintenance-onprem-ingress`.
+- Address pool name: `console-onprem-ingress`.
 - VIP/address placeholder: `ON_PREM_INGRESS_VIP` or `ON_PREM_INGRESS_VIP_POOL`, for example
   `10.0.0.240/32` in documentation only. Do not reuse `140.245.68.253`.
-- Layer-2 advertisement name: `maintenance-onprem-l2`.
+- Layer-2 advertisement name: `console-onprem-l2`.
 - Optional L2 scoping placeholders: worker interface/VLAN selectors if the site fabric needs them.
-- Traefik Service annotation/selection should point at the `maintenance-onprem-ingress` pool, with
+- Traefik Service annotation/selection should point at the `console-onprem-ingress` pool, with
   `type: LoadBalancer`, no hostPort, and no `providers.kubernetesIngress.ingressEndpoint.ip` pin to the OCI
   address.
 - Activation docs must record the real VLAN/subnet, reserved VIP, external DNS target, and the failover drill

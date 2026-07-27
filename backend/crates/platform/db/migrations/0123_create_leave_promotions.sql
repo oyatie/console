@@ -16,7 +16,7 @@
 --
 -- Tenant isolation: RLS keyed on `app.current_org`, FORCE-enabled (0118 idiom).
 
--- mnt-gate: audited-table leave_promotions
+-- console-gate: audited-table leave_promotions
 CREATE TABLE leave_promotions (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -58,5 +58,5 @@ CREATE POLICY org_isolation ON leave_promotions
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Statutory notices are legal evidence; the runtime role never hard-deletes.
-GRANT SELECT, INSERT, UPDATE ON leave_promotions TO mnt_rt;
-REVOKE DELETE ON leave_promotions FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON leave_promotions TO console_rt;
+REVOKE DELETE ON leave_promotions FROM console_rt;

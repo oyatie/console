@@ -4,9 +4,9 @@ metadata:
   name: longhorn-system
   labels:
     app.kubernetes.io/name: longhorn-system
-    app.kubernetes.io/part-of: maintenance
-    maintenance.nousresearch.com/context: onprem
-    maintenance.nousresearch.com/dark-stage: "true"
+    app.kubernetes.io/part-of: console
+    console.nousresearch.com/context: onprem
+    console.nousresearch.com/dark-stage: "true"
     # Longhorn manager/engine/CSI workloads need privileged host access.
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged

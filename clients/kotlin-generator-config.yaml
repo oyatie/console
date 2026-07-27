@@ -5,16 +5,16 @@ typeMappings:
 importMappings:
   kotlinx.serialization.json.JsonElement: kotlinx.serialization.json.JsonElement
 additionalProperties:
-  artifactId: maintenance-api-client
+  artifactId: console-api-client
   artifactVersion: 0.1.0
   dateLibrary: java8
   enumPropertyNaming: UPPERCASE
-  groupId: com.maintenance
+  groupId: com.console
   hideGenerationTimestamp: true
   library: jvm-okhttp4
-  packageName: com.maintenance.api.client
-  apiPackage: com.maintenance.api.client.api
-  modelPackage: com.maintenance.api.client.model
+  packageName: com.console.api.client
+  apiPackage: com.console.api.client.api
+  modelPackage: com.console.api.client.model
   serializationLibrary: kotlinx_serialization
   useCoroutines: true
   supportAndroidApiLevel25AndBelow: false

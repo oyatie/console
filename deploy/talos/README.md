@@ -134,7 +134,7 @@ one worker machineconfig per worker inventory entry:
 ```sh
 python3 deploy/talos/on-prem/render-machineconfigs.py \
   --inventory deploy/talos/on-prem/nodes.example.json \
-  --output-dir /tmp/maintenance-talos-onprem \
+  --output-dir /tmp/console-talos-onprem \
   --validate
 ```
 

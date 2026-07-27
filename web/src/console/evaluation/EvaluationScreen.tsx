@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { evaluationStrings as text } from "../../i18n/evaluation";

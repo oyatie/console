@@ -27,7 +27,7 @@ ALTER TABLE notices
     ADD COLUMN audience_scope TEXT NOT NULL DEFAULT 'org'
         CHECK (audience_scope IN ('org', 'branches'));
 
--- mnt-gate: audited-table notice_audience_branches
+-- console-gate: audited-table notice_audience_branches
 CREATE TABLE notice_audience_branches (
     org_id     UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
     notice_id  UUID NOT NULL,
@@ -49,7 +49,7 @@ CREATE POLICY org_isolation ON notice_audience_branches
 -- DELETE granted: audience rows are replaceable while the notice is a draft
 -- (application holds `SELECT … FOR UPDATE` on the notice and rejects mutation
 -- once published); receipts stay the immutable record.
-GRANT SELECT, INSERT, DELETE ON notice_audience_branches TO mnt_rt;
+GRANT SELECT, INSERT, DELETE ON notice_audience_branches TO console_rt;
 ```
 
 Publish snapshot (replaces the current org-wide-only insert; audited as today):
@@ -119,8 +119,8 @@ Korean label map (frontend strings, module-owned file): category — general=안
 - All changes stay inside `backend/crates/notices/*` + the provisional migration; `Feature::NoticeManage` already exists — no authz crate edits.
 - `NewNotice`/domain gains `NoticeCategory` enum + `NoticeAudience` VO (branches non-empty when scoped). Draft update = same validation path; publish keeps FOR UPDATE guard and adds the audience-aware snapshot + empty-audience 422.
 - Summary hydration: one query with LEFT JOIN LATERAL (or grouped subqueries) for `my_receipt` and (manager) `progress` + audience branch names — no N+1; list stays ≤200 rows.
-- `app/src/lib.rs` already mounts the router; new routes live inside `mnt_notices_rest::router` + `NOTICES_ROUTE_PATHS` (app route-inventory picks them up) — verify the app's inventory test still passes.
-- Tests: extend `rest/tests/api.rs` (scoped publish snapshots only branch members; non-member gets 404 on ack + no rail row; PATCH draft 409-after-publish; receipts 403 for plain admin) + RLS-as-mnt_rt for `notice_audience_branches`. sqlx scratch DB via `MNT_POSTGRES_DB`; run via subagent (`cargo test -p mnt-notices-rest -p mnt-notices-adapter-postgres`, fmt + clippy -D warnings).
+- `app/src/lib.rs` already mounts the router; new routes live inside `console_notices_rest::router` + `NOTICES_ROUTE_PATHS` (app route-inventory picks them up) — verify the app's inventory test still passes.
+- Tests: extend `rest/tests/api.rs` (scoped publish snapshots only branch members; non-member gets 404 on ack + no rail row; PATCH draft 409-after-publish; receipts 403 for plain admin) + RLS-as-console_rt for `notice_audience_branches`. sqlx scratch DB via `CONSOLE_POSTGRES_DB`; run via subagent (`cargo test -p console-notices-rest -p console-notices-adapter-postgres`, fmt + clippy -D warnings).
 
 ## 6. Frontend build contract (`/console/board`, ownership root `web/src/console/board/**` + `web/src/i18n/board.ts`)
 

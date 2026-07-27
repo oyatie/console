@@ -16,7 +16,7 @@ hardware or an approved scratch multi-node Talos cluster exists.
 | Role | Count | Scheduling expectation | Notes |
 |---|---:|---|---|
 | Control plane / etcd | 3 | Unschedulable for ordinary workloads | Provides odd-member etcd quorum and Kubernetes control-plane redundancy. Do not set `cluster.allowSchedulingOnControlPlanes: true` for `on-prem`. |
-| Workers | N, minimum 2 for ingress app HA | Schedulable | Run `mnt-app`, `mnt-web`, `mnt-worker`, Traefik, storage, CNPG, and other workload pods subject to the relevant anti-affinity lanes. |
+| Workers | N, minimum 2 for ingress app HA | Schedulable | Run `console-app`, `console-web`, `console-worker`, Traefik, storage, CNPG, and other workload pods subject to the relevant anti-affinity lanes. |
 
 Quorum math for the first on-prem target:
 

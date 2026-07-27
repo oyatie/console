@@ -21,7 +21,7 @@
 -- never from request input. A cross-user read/confirm therefore returns nothing
 -- (or NotFound) — deny-by-omission, never another recipient's row.
 
--- mnt-gate: audited-table inbox_docs
+-- console-gate: audited-table inbox_docs
 CREATE TABLE inbox_docs (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -83,7 +83,7 @@ CREATE POLICY org_isolation ON inbox_docs
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Inbox documents are recipient-owned evidence and are never hard-deleted from
--- the runtime role; receipt confirmation is an UPDATE. mnt_rt gets
+-- the runtime role; receipt confirmation is an UPDATE. console_rt gets
 -- SELECT/INSERT/UPDATE, no DELETE.
-GRANT SELECT, INSERT, UPDATE ON inbox_docs TO mnt_rt;
-REVOKE DELETE ON inbox_docs FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON inbox_docs TO console_rt;
+REVOKE DELETE ON inbox_docs FROM console_rt;

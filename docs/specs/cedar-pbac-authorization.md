@@ -15,7 +15,7 @@ relationship, workflow, approval, and policy template must produce a determinist
 3. a server-side decision request for every CRUD/read/list/write/approve/revoke/simulate operation;
 4. an audit record that explains the policy version, decision path, actor, target, purpose, and revoke impact.
 
-This spec does not weaken the existing hard tenant boundary. Postgres RLS with `app.current_org`, `mnt_rt`
+This spec does not weaken the existing hard tenant boundary. Postgres RLS with `app.current_org`, `console_rt`
 NOBYPASSRLS, and FORCE RLS remain the row-isolation floor. Cedar/PBAC decides whether a principal may take an
 action on an already-scoped resource. It never becomes a substitute for RLS, and it never arms
 `app.current_org` with anything except a real tenant Org id.
@@ -415,7 +415,7 @@ For implementation slices derived from this spec:
 
 - Unit tests: Cedar action/resource registry rejects unknown actions/resources; policy bundle static checks
   fail on missing context or unsupported attributes.
-- `mnt_rt` integration tests: create/read/update/archive round-trips for org-scoped resources; cross-tenant
+- `console_rt` integration tests: create/read/update/archive round-trips for org-scoped resources; cross-tenant
   invisibility; fail-closed unarmed reads; revoke takes effect on next request.
 - Authz tests: allow/deny matrix for each editor primitive in §3, including manager/subordinate, worksite cell,
   group admin, cross-org worker, terminated/suspended user, missing passkey, stale policy version, and
@@ -430,7 +430,7 @@ For implementation slices derived from this spec:
 ## 11. Open decisions
 
 1. **PDP location:** recommended default is in-process Cedar evaluator in `platform/authz` or a sibling
-   `mnt-authz-cedar` crate. A remote PDP is deferred until there is a real operational need and an outage
+   `console-authz-cedar` crate. A remote PDP is deferred until there is a real operational need and an outage
    strategy.
 2. **Field-level policy:** recommended default is resource/action plus sensitivity families first; field-level
    masking for payroll/PII/location can follow once source-of-truth classifications are complete.

@@ -15,22 +15,22 @@ fn main() {
 
 fn run_gate(workspace_dir: &Path) {
     eprintln!(
-        "mnt-gate-migration-safety: checking workspace at {}",
+        "console-gate-migration-safety: checking workspace at {}",
         workspace_dir.display()
     );
 
-    let result = mnt_gate_migration_safety::check_workspace(workspace_dir).unwrap_or_else(|e| {
+    let result = console_gate_migration_safety::check_workspace(workspace_dir).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
     if result.passed() {
-        eprintln!("mnt-gate-migration-safety: PASSED");
+        eprintln!("console-gate-migration-safety: PASSED");
         std::process::exit(0);
     }
 
     eprintln!(
-        "mnt-gate-migration-safety: FAILED - {} violation(s):",
+        "console-gate-migration-safety: FAILED - {} violation(s):",
         result.violations.len()
     );
     for violation in &result.violations {

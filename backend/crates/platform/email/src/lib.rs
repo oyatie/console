@@ -6,7 +6,7 @@
 //! other TLS stack: `reqwest` is built `default-features = false`), so this crate
 //! pulls `lettre` with `tokio1-rustls-tls` and nothing system-native.
 //!
-//! Mirrors the provider-adapter shape of `mnt-platform-push`: a `*Config` with a
+//! Mirrors the provider-adapter shape of `console-platform-push`: a `*Config` with a
 //! `validate()`, an async sender trait, a live adapter, and explicit non-prod
 //! stub/disabled senders for local/e2e safety.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
@@ -233,7 +233,7 @@ impl EmailSender for StubEmailSender {
     ) -> BoxFuture<'a, Result<(), EmailError>> {
         Box::pin(async move {
             tracing::info!(
-                target: "mnt::email",
+                target: "console::email",
                 email_stub_mode = %self.mode,
                 "[NONPROD:{}] OTP for {to}: {code} (ttl {ttl:?})",
                 self.mode
@@ -269,7 +269,7 @@ mod tests {
             username: "ocid1.user.oc1..example".to_owned(),
             password: "secret".to_owned(),
             from_address: "noreply@example.com".to_owned(),
-            from_name: "MNT".to_owned(),
+            from_name: "Console".to_owned(),
         }
     }
 

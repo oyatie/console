@@ -23,7 +23,7 @@ All facts below were re-verified in the worktree; line numbers are from HEAD `c2
 | V1 | `backend/app/src/objects.rs:2571-2630` — both sync tests only constrain **resolvable** kinds ("Non-resolvable registry kinds are intentionally absent because they count 0") | Inserting a row into legacy `object_types` **does not** require touching `RESOLVABLE_KIND_AUTH`. The code-prefix registration lane (L-A6) is therefore fully disjoint from the security-reviewed surface. This is the cheapest cross-lens unblock in the whole lens. |
 | V2 | `backend/crates/ontology/rest/src/lib.rs:1562-1588` — `instance_acting` / `object_type_acting` are live routes over `acting_on_instance` / `acting_on_type` | The **dynamics layer read path already exists for any registered type**. The fidelity register's backend-blocked "no acting automations/policies chips" findings (equipment blocker, inventory/field/directory/maintenance major) are unblocked by *registration alone* — no new endpoint. |
 | V3 | `backend/crates/ontology/adapter-postgres/src/seed.rs:302-308` — `work_order_draft` registers `request_no`, **not** `code`; only 4 instance-backed drafts register a `code` prop (`:421,459,505,535`) | R8 (`resolve_by_code`) is **not** a query widening. Projected types have no declared code column, so the fix needs a per-type code-property designation (parallel to the existing `title_property_key`) → schema change → catalog version bump → hard dependency on L-A1. |
-| V4 | `backend/crates/ontology/*/BUCK` all exist; targets are **one per integration-test file** (`mnt-ontology-adapter-postgres-itest-<name>`) | Any lane adding a `tests/*.rs` file must regenerate `tools/buck/gen_first_party.py` output. The generator rewrites all 147 BUCK files — lanes commit **only their own crate's BUCK hunk** and leave `backend/app/BUCK` (proven stale, spine-delta §4) to the spine. |
+| V4 | `backend/crates/ontology/*/BUCK` all exist; targets are **one per integration-test file** (`console-ontology-adapter-postgres-itest-<name>`) | Any lane adding a `tests/*.rs` file must regenerate `tools/buck/gen_first_party.py` output. The generator rewrites all 147 BUCK files — lanes commit **only their own crate's BUCK hunk** and leave `backend/app/BUCK` (proven stale, spine-delta §4) to the spine. |
 | V5 | Migrations on disk end at `0202`; `0201` is the reserved docs-retention gap | Provisional slots start at **0203**; integrator renumbers at merge. |
 | V6 | `install_builtin_catalog` guards at `0165:1128-1143` re-read and confirmed; `ont_builtin_catalog_allowlist` has **no** version-chain column | The upgrade path must add a migration-owned predecessor column, not accept a caller-supplied "from version" (that would be a privilege escalation). |
 
@@ -83,7 +83,7 @@ L-A8's two code items into L-A1 if the same agent runs both.
 migrations only — never edit a landed one), `docs/program/console-capability-registry.json`,
 `docs/program/console-enterprise-roadmap.md`.
 
-**Enterprise bar (DoD floor, every lane):** RLS FORCE and every assertion executed as `mnt_rt`
+**Enterprise bar (DoD floor, every lane):** RLS FORCE and every assertion executed as `console_rt`
 (superuser `BYPASSRLS` masks a broken read path — project memory); deny-by-default authz; audit row
 on every mutation; canonical error envelope; idempotent retry; a story-level integration test; the
 lane's own crate BUCK hunk regenerated; AA a11y where UI is touched; **no stubs, no TODOs, no
@@ -134,8 +134,8 @@ L-A7 will rewrite, so they must land first.
   validation error naming the field; a draft with `"work_orders"` passes.
 - Unit test: a projected draft with a `backing_table` that IS allowlisted but a `backing_column`
   failing `is_safe_ident` still fails (no regression of the existing guard).
-- `cargo test -p mnt-ontology-adapter-postgres --lib`
-- `buck2 test //backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-unit`
+- `cargo test -p console-ontology-adapter-postgres --lib`
+- `buck2 test //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-unit`
 - `npx tsc --noEmit` green for the web comment edit (no behavior change; no test needed).
 - Diff contains zero changes to `seed.rs` outside lines 100-104.
 
@@ -181,7 +181,7 @@ types are first-class immediately with zero hardcoding") and B-2 are dead until 
   6. `UPDATE ont_builtin_catalog_installs SET catalog_version, manifest_digest`.
   7. `ontology_api.write_audit(..., 'ontology.object_type.builtin_upgrade', ...)` per added key,
      mirroring the install audit at `0165:1174+`.
-- Grants identical to `install_builtin_catalog`; `mnt_rt` stays revoked from the allowlist
+- Grants identical to `install_builtin_catalog`; `console_rt` stays revoked from the allowlist
   (`0165:132`).
 
 *Rust:*
@@ -200,7 +200,7 @@ types are first-class immediately with zero hardcoding") and B-2 are dead until 
 `backend/crates/ontology/rest/**`, `instances.rs`, and — critically — **`BUILTIN_CATALOG_VERSION`
 must stay at `2026-07-19.1`**. This lane builds the machine; the catalog train drives it.
 
-**DoD.** New test file `catalog_upgrade_as_runtime_role.rs`, all assertions as `mnt_rt`, using a
+**DoD.** New test file `catalog_upgrade_as_runtime_role.rs`, all assertions as `console_rt`, using a
 throwaway second manifest version fixture (do not bump the real constant):
 1. fresh org → install path unchanged, 27 types, `ont_builtin_catalog_installs` at `2026-07-19.1`.
 2. org at 27 → upgrade to the fixture version adds exactly the delta keys; every pre-existing type's
@@ -211,14 +211,14 @@ throwaway second manifest version fixture (do not bump the real constant):
 5. allowlist row absent for the target version → 42501; **the raise happens before any write**.
 6. install row at a version that is not the target's `supersedes_version` → 23505.
 7. a runtime-authored (REST-created) type present in the org survives the upgrade untouched.
-8. `mnt_rt` cannot `SELECT` from `ont_builtin_catalog_allowlist` (assert the 0165:132 revoke holds).
+8. `console_rt` cannot `SELECT` from `ont_builtin_catalog_allowlist` (assert the 0165:132 revoke holds).
 9. a new type whose `fk_link` targets an already-installed type resolves correctly (cross-version link).
 10. cross-tenant: org B's install is unaffected by org A's upgrade.
 
-Commands: `cargo test -p mnt-ontology-adapter-postgres --test catalog_upgrade_as_runtime_role` ·
+Commands: `cargo test -p console-ontology-adapter-postgres --test catalog_upgrade_as_runtime_role` ·
 `python3 tools/buck/gen_first_party.py` then commit **only** the
 `backend/crates/ontology/adapter-postgres/BUCK` hunk ·
-`buck2 test //backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-catalog_upgrade_as_runtime_role`.
+`buck2 test //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-catalog_upgrade_as_runtime_role`.
 Evidence: test output + the migration's `EXPLAIN`-free plain SQL review + a note in
 `docs/evidence/console/CAP-ONTOLOGY-ENGINE/` recording that the digest chain stays migration-owned.
 
@@ -333,14 +333,14 @@ landed pattern of `0113`/`0131:16`/`0188:6`:
 lane went out of scope), `backend/app/src/lib.rs`, `web/**`, universal list.
 
 **DoD.**
-- Integration test as `mnt_rt` (app-tier harness: `mnt_buck_admin` bootstrap +
+- Integration test as `console_rt` (app-tier harness: `console_buck_admin` bootstrap +
   `mnt.sqlx_test_bootstrap` GUC, per project memory): `GET /api/v1/object-types` returns every new
   kind with its `code_prefix`, `status`, and `active_count = 0`.
 - Assert prefix uniqueness across the whole `object_types` table (`SELECT code_prefix, count(*) …
   HAVING count(*) > 1` returns zero rows) and CHECK-conformance of every new value.
 - Re-running the migration is a no-op (`ON CONFLICT` proof).
-- `cargo test -p mnt-app --test object_types_registry_as_runtime_role`
-- `cargo test -p mnt-app --lib objects::` — the two sync tests
+- `cargo test -p console-app --test object_types_registry_as_runtime_role`
+- `cargo test -p console-app --lib objects::` — the two sync tests
   (`resolvable_kinds_and_declared_auth_stay_in_sync`, `count_kind_and_resolvable_kinds_stay_in_sync`)
   pass **unchanged**, which is the structural proof the resolvable surface was not widened.
 - Manifest JSON validates and lists exactly the migration's rows.
@@ -366,8 +366,8 @@ design-intent ONT-1 (proposal sandbox → review → active schema v+1) and C-6.
 - Body carries the four-eyes approval reference; header `If-Match` carries `key_write_etag`
   (`ObjectTypeSummary.key_write_etag`). Mismatch → 412 via the existing CAS mapping (see
   `object_type_cas_as_runtime_role.rs`).
-- Runs on `command_pool()`, **not** `mnt_rt`: `adapter-postgres/src/lib.rs:507-509` states "draft
-  publication is never available to mnt_rt". Follow the instance-write precedent for pool selection.
+- Runs on `command_pool()`, **not** `console_rt`: `adapter-postgres/src/lib.rs:507-509` states "draft
+  publication is never available to console_rt". Follow the instance-write precedent for pool selection.
 - Publication **consumes target-bound four-eyes evidence atomically** (same doc comment) — the route
   must pass the approval ref through, never synthesize one.
 - Publishing auto-attaches the generic `create` action in SQL (`0165:1039`, `('create','저장', …)`).
@@ -388,8 +388,8 @@ design-intent ONT-1 (proposal sandbox → review → active schema v+1) and C-6.
 **Must not touch:** `backend/openapi/openapi.yaml`, `clients/**`, `seed.rs`, `backend/app/src/**`,
 `web/**`, universal list.
 
-**DoD.** New test file, every assertion as `mnt_rt` where the caller is a runtime principal:
-1. a `mnt_rt`-pooled caller **cannot** publish (the command-pool boundary holds) — assert the error,
+**DoD.** New test file, every assertion as `console_rt` where the caller is a runtime principal:
+1. a `console_rt`-pooled caller **cannot** publish (the command-pool boundary holds) — assert the error,
    assert the type is still `draft`.
 2. the command-pool path publishes a staged draft; the type's `lifecycle_state` becomes `published`
    and it immediately serves `GET /ontology/instances?type=`.
@@ -402,9 +402,9 @@ design-intent ONT-1 (proposal sandbox → review → active schema v+1) and C-6.
    omission, matching `resolve_code`'s contract at `rest/src/lib.rs:1601`).
 8. canonical error envelope on every failure path.
 
-Commands: `cargo test -p mnt-ontology-rest --test publish_route_as_runtime_role` ·
+Commands: `cargo test -p console-ontology-rest --test publish_route_as_runtime_role` ·
 `python3 tools/buck/gen_first_party.py` + commit only the rest-crate BUCK hunk ·
-`buck2 test //backend/crates/ontology/rest:mnt-ontology-rest-itest-publish_route_as_runtime_role`.
+`buck2 test //backend/crates/ontology/rest:console-ontology-rest-itest-publish_route_as_runtime_role`.
 
 **Size** M · **Risk** medium (four-eyes consumption + pool selection are the security-relevant parts)
 
@@ -450,8 +450,8 @@ spine's to fix. Record the new test target as an owed item in the evidence dir i
 **Must not touch:** `backend/app/src/**`, `backend/crates/ontology/rest/src/**`, `web/**`,
 universal list.
 
-**DoD.** Story-level integration test (`backend/app/tests/…`, `mnt_buck_admin` bootstrap +
-`mnt.sqlx_test_bootstrap` GUC, **every assertion executed as `mnt_rt`**):
+**DoD.** Story-level integration test (`backend/app/tests/…`, `console_buck_admin` bootstrap +
+`mnt.sqlx_test_bootstrap` GUC, **every assertion executed as `console_rt`**):
 1. seed/upgrade → `GET /api/v1/ontology/object-types/equipment` surfaces the `update_status` action
    with its `dispatch_target`.
 2. `POST /api/v1/ontology/actions/preflight` returns the gate chain (authority + self_checklist)
@@ -469,8 +469,8 @@ universal list.
 9. cross-tenant: org B cannot execute against org A's equipment id.
 10. `GET /api/v1/ontology/object-types/equipment/acting` returns 200 (dynamics layer live, V2).
 
-Commands: `cargo test -p mnt-app --test ontology_projected_action_equipment` ·
-`cargo test -p mnt-ontology-adapter-postgres` (catalog digest tests still green) ·
+Commands: `cargo test -p console-app --test ontology_projected_action_equipment` ·
+`cargo test -p console-ontology-adapter-postgres` (catalog digest tests still green) ·
 `buck2 test //backend/crates/ontology/adapter-postgres:...`.
 Evidence: full test output + the computed digest + the allowlist row SQL + the four-eyes deferral note.
 
@@ -528,14 +528,14 @@ scout, §18 wiring is chartered per-target after L-A3 proves the pattern.
 **Must not touch:** `backend/app/src/**`, `backend/crates/ontology/rest/src/**`, `web/**`, any
 domain crate, universal list.
 
-**DoD.** Per registered type, as `mnt_rt`:
+**DoD.** Per registered type, as `console_rt`:
 1. `GET /ontology/object-types` lists it with `backing_kind = projected` and `lifecycle_state = published`.
 2. `GET /ontology/instances?type=<id>` returns **real domain rows** as `InstanceState`, with
    `version = 1` and empty fixity hashes (the documented projected contract, `instances.rs:993-999`).
 3. `GET /ontology/object-types/{key}/acting` returns 200.
 4. every declared `backing_column` exists on the backing table (a schema-drift test that fails loudly
    the day a domain lane renames a column).
-5. cross-tenant: org B's list returns zero rows for org A's data (RLS as `mnt_rt`, not superuser).
+5. cross-tenant: org B's list returns zero rows for org A's data (RLS as `console_rt`, not superuser).
 6. a type whose backing table is *not* in the allowlist is rejected at draft-validate time (proving
    L-A8 item 1 landed) — not at read time.
 7. the catalog upgrade from `2026-07-25.1` to `.2` is exercised end-to-end on a tenant that already
@@ -543,8 +543,8 @@ domain crate, universal list.
 8. skipped domains are enumerated in the lane's evidence note with the reason (no backing table),
    not silently absent.
 
-Commands: `cargo test -p mnt-ontology-adapter-postgres --test wave23_projections_as_runtime_role` ·
-`cargo test -p mnt-ontology-adapter-postgres` (full crate, catalog tests included) ·
+Commands: `cargo test -p console-ontology-adapter-postgres --test wave23_projections_as_runtime_role` ·
+`cargo test -p console-ontology-adapter-postgres` (full crate, catalog tests included) ·
 `python3 tools/buck/gen_first_party.py` + own hunk · `buck2 test //backend/crates/ontology/adapter-postgres:...`.
 
 **Size** L · **Risk** medium — the scope is wide but each type is mechanical; the real risk is a
@@ -602,7 +602,7 @@ not `code` (`seed.rs:302-308`); only four instance-backed drafts register a `cod
 **Must not touch:** `backend/app/src/**`, `web/**`, `backend/crates/ontology/rest/src/lib.rs`
 routing (the `resolve_code` handler at `:1595-1601` is unchanged), universal list.
 
-**DoD.** As `mnt_rt`:
+**DoD.** As `console_rt`:
 1. an existing `WO-…` code on a real `work_orders` row resolves to `{id, type_key: "work_order", title}`.
 2. an instance-backed code still resolves via the original path (no regression) — assert the
    `ont_instances` path is tried first.
@@ -618,8 +618,8 @@ routing (the `resolve_code` handler at `:1595-1601` is unchanged), universal lis
    probe or a bounded `EXPLAIN` review recorded in evidence).
 8. catalog upgrade `.2` → `.3` exercised end-to-end; L-A3's action and L-A7's types survive.
 
-Commands: `cargo test -p mnt-ontology-adapter-postgres --test projected_code_resolution_as_runtime_role` ·
-`cargo test -p mnt-ontology-adapter-postgres` · `buck2 test //backend/crates/ontology/adapter-postgres:...`.
+Commands: `cargo test -p console-ontology-adapter-postgres --test projected_code_resolution_as_runtime_role` ·
+`cargo test -p console-ontology-adapter-postgres` · `buck2 test //backend/crates/ontology/adapter-postgres:...`.
 
 **Size** M · **Risk** medium-high — dynamic SQL over table/column names is the one place in this lens
 where a mistake is a security bug, not a bug. Treat the identifier plumbing as security-reviewed code.
@@ -632,7 +632,7 @@ where a mistake is a security bug, not a bug. Treat the identifier plumbing as s
 mechanical port. The ORU Slice-2 receipt machinery landed 2026-07-23 (`e117d048` → `4e3df210`) and is
 **instance-only**: migration `0177_ontology_action_command_receipts.sql` (PK `(org_id, command_id)`,
 `payload_digest BYTEA(32)`, FORCE RLS `org_isolation`, **immutability trigger on UPDATE/DELETE**,
-`GRANT SELECT, INSERT` to `mnt_rt` only), consumed by the execute path at `rest/src/lib.rs:1058-1202`
+`GRANT SELECT, INSERT` to `console_rt` only), consumed by the execute path at `rest/src/lib.rs:1058-1202`
 (command id required `:1062-1064`, `pg_advisory_xact_lock` `:1074-1078`, replay returns the stored
 receipt `:1083-1094`, different actor → forbidden `:1085-1087`, same id + different digest → 409
 `:1088-1091`, CAS before four-eyes consumption `:1096-1105`, receipt written in the same tx `:1191-1202`).
@@ -704,7 +704,7 @@ whatever the note picks must produce:
 
 **Must not touch:** `backend/app/src/lib.rs`, `seed.rs`, `web/**`, universal list.
 
-**DoD.** As `mnt_rt`:
+**DoD.** As `console_rt`:
 1. replay with the same actor + digest returns the stored receipt **and the domain row is provably
    unwritten a second time** — assert `registry_equipment.updated_at` / version is unchanged.
 2. a handler that returns an error leaves a resolved-failed receipt; a subsequent identical replay
@@ -718,8 +718,8 @@ whatever the note picks must produce:
    or DELETE on a receipt row still raises.
 8. L-A3's story test passes with the flipped `receipt` assertion.
 
-Commands: `cargo test -p mnt-ontology-rest --test projected_receipts_as_runtime_role` ·
-`cargo test -p mnt-app --test ontology_projected_action_equipment` · `buck2 test //backend/crates/ontology/rest:...`.
+Commands: `cargo test -p console-ontology-rest --test projected_receipts_as_runtime_role` ·
+`cargo test -p console-app --test ontology_projected_action_equipment` · `buck2 test //backend/crates/ontology/rest:...`.
 
 **Size** L · **Risk** HIGH — the highest-risk lane in the lens. Do not start before L-A4a is signed off.
 
@@ -734,7 +734,7 @@ Commands: `cargo test -p mnt-ontology-rest --test projected_receipts_as_runtime_
    `ObjectTypeSummary` never grows `code_prefix` and L-A9's `code_property_key` is the only bridge.
    L-A6 is safe to run either way (it is additive and reversible); L-A9 is not — hold L-A9 until
    L-A5a answers question 3.
-3. **`backend/app/BUCK` is stale and divergent at HEAD** (spine-delta §4: 6056 `mnt-` dep lines, zero
+3. **`backend/app/BUCK` is stale and divergent at HEAD** (spine-delta §4: 6056 `console-` dep lines, zero
    matches for `recruiting|orgchange|evaluation`; the Buck app target cannot compile). L-A3's and
    L-A6's app-tier test targets cannot be registered until the spine regenerates it. Both lanes ship
    cargo evidence + an owed-target note; the program must decide whether that satisfies the

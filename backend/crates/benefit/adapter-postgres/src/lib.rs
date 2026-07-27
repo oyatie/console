@@ -5,7 +5,7 @@
 //! same tenant-armed transaction. Client input never supplies org/tenant scope.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_benefit_application::{
+use console_benefit_application::{
     BenefitCatalogConditionView, BenefitCatalogItemPage, BenefitCatalogItemView,
     BenefitCatalogLifecycleBinding, BenefitCatalogScopeDraft, BenefitCatalogTierView,
     BenefitConditionDraft, BenefitTierDraft, CreateBenefitCatalogItemCommand,
@@ -13,17 +13,17 @@ use mnt_benefit_application::{
     ReplaceBenefitTiersCommand, UpdateBenefitCatalogItemCommand, UpdateBenefitCatalogItemFields,
     benefit_catalog_audit_event,
 };
-use mnt_benefit_domain::{
+use console_benefit_domain::{
     BenefitCategory, BenefitCode, BenefitConditionKind, BenefitConditionOperator, BenefitScopeKind,
     MoneyWon, RateBasisPoints, normalize_optional_text, normalize_related_domain,
     normalize_required_text, validate_condition_value, validate_metadata_object,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     BenefitCatalogConditionId, BenefitCatalogItemId, BenefitCatalogTierId, BranchId, BranchScope,
     ErrorKind, KernelError, OrgId, SiteId,
 };
-use mnt_platform_db::{DbError, lifecycle::INITIAL_STATE, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, lifecycle::INITIAL_STATE, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde_json::Value;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction, postgres::PgRow};
 use time::{Date, OffsetDateTime};
@@ -157,7 +157,7 @@ impl PgBenefitCatalogStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_item(
         &self,
         command: CreateBenefitCatalogItemCommand,
@@ -211,7 +211,7 @@ impl PgBenefitCatalogStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_item(
         &self,
         command: UpdateBenefitCatalogItemCommand,
@@ -252,7 +252,7 @@ impl PgBenefitCatalogStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn replace_tiers(
         &self,
         command: ReplaceBenefitTiersCommand,
@@ -311,7 +311,7 @@ impl PgBenefitCatalogStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn replace_conditions(
         &self,
         command: ReplaceBenefitConditionsCommand,
@@ -392,7 +392,7 @@ impl From<NormalizedScope> for BenefitCatalogScopeDraft {
 
 #[derive(Debug, Clone)]
 struct NormalizedCreateInput {
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     branch_scope: BranchScope,
     scope: NormalizedScope,
     category: BenefitCategory,
@@ -412,7 +412,7 @@ struct NormalizedCreateInput {
     metadata: Value,
     tiers: Vec<NormalizedTier>,
     conditions: Vec<NormalizedCondition>,
-    trace: mnt_kernel_core::TraceContext,
+    trace: console_kernel_core::TraceContext,
     occurred_at: OffsetDateTime,
 }
 
@@ -460,11 +460,11 @@ impl TryFrom<CreateBenefitCatalogItemCommand> for NormalizedCreateInput {
 
 #[derive(Debug, Clone)]
 struct NormalizedUpdateInput {
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     branch_scope: BranchScope,
     item_id: BenefitCatalogItemId,
     fields: NormalizedUpdateFields,
-    trace: mnt_kernel_core::TraceContext,
+    trace: console_kernel_core::TraceContext,
     occurred_at: OffsetDateTime,
 }
 
@@ -986,7 +986,7 @@ async fn insert_tiers_tx(
     tx: &mut Transaction<'_, Postgres>,
     org_uuid: Uuid,
     item_id: BenefitCatalogItemId,
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     occurred_at: OffsetDateTime,
     tiers: &[NormalizedTier],
 ) -> Result<(), PgBenefitCatalogError> {
@@ -1024,7 +1024,7 @@ async fn insert_conditions_tx(
     tx: &mut Transaction<'_, Postgres>,
     org_uuid: Uuid,
     item_id: BenefitCatalogItemId,
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     occurred_at: OffsetDateTime,
     conditions: &[NormalizedCondition],
 ) -> Result<(), PgBenefitCatalogError> {
@@ -1275,8 +1275,8 @@ fn base_item_from_row(row: &PgRow) -> Result<BenefitCatalogItemView, PgBenefitCa
         tiers: Vec::new(),
         conditions: Vec::new(),
         lifecycle: BenefitCatalogLifecycleBinding::new(id),
-        created_by: mnt_kernel_core::UserId::from_uuid(row.try_get("created_by")?),
-        updated_by: mnt_kernel_core::UserId::from_uuid(row.try_get("updated_by")?),
+        created_by: console_kernel_core::UserId::from_uuid(row.try_get("created_by")?),
+        updated_by: console_kernel_core::UserId::from_uuid(row.try_get("updated_by")?),
         created_at: row.try_get("created_at")?,
         updated_at: row.try_get("updated_at")?,
     })

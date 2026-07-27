@@ -32,8 +32,8 @@ import {
  *     (holds ExitCaseHqConfirm; user id differs from the HR confirmer).
  *
  * Runs ONLY under the dev-auth Playwright project. Bring up the paired real
- * stack first — `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap` — then
- * run `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`; see
+ * stack first — `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap` — then
+ * run `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`; see
  * playwright.config.ts.
  */
 
@@ -48,8 +48,8 @@ const KNL_ORG_ID = "00000000-0000-0000-0000-0000000000a1";
  * tenant GUC and runs as the runtime role, exactly like the app's own writes.
  */
 const DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_URL ??
-  "postgres://mnt_rt:mnt-dev-runtime-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_URL ??
+  "postgres://console_rt:console-dev-runtime-change-me@127.0.0.1:55432/console_dev";
 
 const employeeId = randomUUID();
 const alertId = randomUUID();

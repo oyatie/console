@@ -5,7 +5,7 @@
 //! SQLx-offline friendly; no `.sqlx` cache entries are required.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_docs_application::{
+use console_docs_application::{
     AppendCustodyEventCommand, ApplyLegalHoldCommand, CreateEvidenceObjectCommand,
     CustodyEventView, DisposeEvidenceObjectCommand, EvidenceCopyView, EvidenceExportView,
     EvidenceObjectCursor, EvidenceObjectDetail, EvidenceObjectPage, EvidenceObjectView,
@@ -14,19 +14,19 @@ use mnt_docs_application::{
     ReleaseLegalHoldCommand, TimestampAuthorityProofInput, TimestampAuthorityProofView,
     evidence_audit_event,
 };
-use mnt_docs_domain::{
+use console_docs_domain::{
     AdmissibilityInputs, AdmissibilityReason, AdmissibilityStatus, CustodyStage, DerivativeKind,
     EvidenceClassification, EvidenceCode, EvidenceCopyEvidentiaryStatus, EvidenceCopyKind,
     EvidenceSourceRef, EvidenceSourceType, EvidenceStorageRef, LegalHoldState, LegalHoldStatus,
     Sha256Digest, TsaProofStatus, WormStorageStatus, evaluate_admissibility,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditEventId, ErrorKind, EvidenceCopyId, EvidenceCustodyEventId, EvidenceExportId, EvidenceId,
     EvidenceLegalHoldId, EvidenceObjectId, EvidenceTsaProofId, KernelError, OrgId, Timestamp,
     UserId,
 };
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 
@@ -181,7 +181,7 @@ impl PgDocsStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_object(
         &self,
         command: CreateEvidenceObjectCommand,
@@ -298,7 +298,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn register_copy(
         &self,
         command: RegisterEvidenceCopyCommand,
@@ -372,7 +372,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn record_tsa_proof(
         &self,
         command: RecordTsaProofCommand,
@@ -449,7 +449,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn append_custody_event(
         &self,
         command: AppendCustodyEventCommand,
@@ -499,7 +499,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn apply_legal_hold(
         &self,
         command: ApplyLegalHoldCommand,
@@ -577,7 +577,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn release_legal_hold(
         &self,
         command: ReleaseLegalHoldCommand,
@@ -662,7 +662,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn dispose_object(
         &self,
         command: DisposeEvidenceObjectCommand,
@@ -740,7 +740,7 @@ impl PgDocsStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn recompute_admissibility(
         &self,
         command: RecomputeAdmissibilityCommand,

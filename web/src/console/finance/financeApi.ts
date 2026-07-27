@@ -5,7 +5,7 @@
 // real mounted route is `/api/v1/finance-gl/vouchers*` with a single
 // `VoucherStatus` enum (DRAFT|BALANCE_CHECKED|APPROVED|POSTED|REVERSED), not the
 // three-field (lifecycle/posting/validation) shape this file used to assume.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { ApiCallError } from "../../api/ontologyActions";

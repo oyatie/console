@@ -19,7 +19,7 @@
 -- character-for-character. requester_name / requester_contact are NULL on the
 -- internal channel, so the checks are written to pass on NULL.
 
--- mnt-gate: audited-table support_tickets
+-- console-gate: audited-table support_tickets
 ALTER TABLE support_tickets
     ADD CONSTRAINT support_tickets_title_max_chars
         CHECK (char_length(title) <= 200),

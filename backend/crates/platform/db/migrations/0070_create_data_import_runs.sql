@@ -80,5 +80,5 @@ CREATE TRIGGER trg_data_import_rows_no_delete
     BEFORE DELETE ON data_import_rows
     FOR EACH ROW EXECUTE FUNCTION data_import_rows_append_only();
 
-GRANT SELECT, INSERT, UPDATE ON data_import_runs TO mnt_rt;
-GRANT SELECT, INSERT ON data_import_rows TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON data_import_runs TO console_rt;
+GRANT SELECT, INSERT ON data_import_rows TO console_rt;

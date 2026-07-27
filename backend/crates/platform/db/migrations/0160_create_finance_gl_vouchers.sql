@@ -18,7 +18,7 @@
 -- Lines are append-only (INSERT/SELECT only, and only while the parent is DRAFT),
 -- so a balanced voucher stays balanced through every later transition.
 
--- mnt-gate: audited-table finance_gl_vouchers
+-- console-gate: audited-table finance_gl_vouchers
 CREATE TABLE finance_gl_vouchers (
     id                        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                    UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -53,7 +53,7 @@ CREATE INDEX idx_finance_gl_vouchers_branch_status
 CREATE INDEX idx_finance_gl_vouchers_source
     ON finance_gl_vouchers (org_id, source_object_type, source_object_id);
 
--- mnt-gate: audited-table finance_gl_voucher_lines
+-- console-gate: audited-table finance_gl_voucher_lines
 CREATE TABLE finance_gl_voucher_lines (
     id            UUID     PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID     NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -158,7 +158,7 @@ CREATE POLICY org_isolation ON finance_gl_voucher_lines
 
 -- Vouchers advance state (UPDATE) but are never hard-deleted; lines are strictly
 -- append-only (no UPDATE, no DELETE).
-GRANT SELECT, INSERT, UPDATE ON finance_gl_vouchers TO mnt_rt;
-REVOKE DELETE ON finance_gl_vouchers FROM mnt_rt;
-GRANT SELECT, INSERT ON finance_gl_voucher_lines TO mnt_rt;
-REVOKE UPDATE, DELETE ON finance_gl_voucher_lines FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON finance_gl_vouchers TO console_rt;
+REVOKE DELETE ON finance_gl_vouchers FROM console_rt;
+GRANT SELECT, INSERT ON finance_gl_voucher_lines TO console_rt;
+REVOKE UPDATE, DELETE ON finance_gl_voucher_lines FROM console_rt;

@@ -32,49 +32,49 @@ async fn restore_pre_0165_schema(pool: &PgPool) {
         DROP TABLE ont_object_type_key_revisions;
 
         -- Recreate the cluster topology that provisioning must establish before
-        -- 0165. mnt_app gets only the two direct SET+INHERIT edges needed by
+        -- 0165. console_app gets only the two direct SET+INHERIT edges needed by
         -- the ontology and leave NOLOGIN ownership boundaries.
-        ALTER ROLE mnt_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION
+        ALTER ROLE console_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION
             PASSWORD 'migration-owner-a165';
-        ALTER ROLE mnt_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
+        ALTER ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
             NOCREATEDB NOCREATEROLE NOREPLICATION;
-        ALTER ROLE mnt_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
+        ALTER ROLE console_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
             NOCREATEDB NOCREATEROLE NOREPLICATION;
-        ALTER ROLE mnt_ontology_cmd LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
+        ALTER ROLE console_ontology_cmd LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
             NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD 'ontology-command-a165';
-        REVOKE mnt_ontology_writer, mnt_leave_definer FROM mnt_rt, mnt_ontology_cmd;
-        REVOKE mnt_rt, mnt_ontology_cmd FROM mnt_app, mnt_ontology_writer, mnt_leave_definer;
-        GRANT mnt_ontology_writer TO mnt_app
+        REVOKE console_ontology_writer, console_leave_definer FROM console_rt, console_ontology_cmd;
+        REVOKE console_rt, console_ontology_cmd FROM console_app, console_ontology_writer, console_leave_definer;
+        GRANT console_ontology_writer TO console_app
             WITH ADMIN FALSE, INHERIT TRUE, SET TRUE;
-        GRANT mnt_leave_definer TO mnt_app
+        GRANT console_leave_definer TO console_app
             WITH ADMIN FALSE, INHERIT TRUE, SET TRUE;
 
         DO $db_owner$
         BEGIN
-            EXECUTE format('ALTER DATABASE %I OWNER TO mnt_app', current_database());
+            EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());
         END
         $db_owner$;
 
-        ALTER TABLE organizations OWNER TO mnt_app;
-        ALTER TABLE users OWNER TO mnt_app;
-        ALTER TABLE audit_events OWNER TO mnt_app;
-        ALTER TABLE gov_approval_requests OWNER TO mnt_app;
-        ALTER TABLE gov_approvals OWNER TO mnt_app;
-        ALTER TABLE gov_approval_consumptions OWNER TO mnt_app;
-        ALTER TABLE ont_object_types OWNER TO mnt_app;
-        ALTER TABLE ont_property_defs OWNER TO mnt_app;
-        ALTER TABLE ont_link_types OWNER TO mnt_app;
-        ALTER TABLE ont_action_types OWNER TO mnt_app;
-        ALTER TABLE ont_analytics OWNER TO mnt_app;
+        ALTER TABLE organizations OWNER TO console_app;
+        ALTER TABLE users OWNER TO console_app;
+        ALTER TABLE audit_events OWNER TO console_app;
+        ALTER TABLE gov_approval_requests OWNER TO console_app;
+        ALTER TABLE gov_approvals OWNER TO console_app;
+        ALTER TABLE gov_approval_consumptions OWNER TO console_app;
+        ALTER TABLE ont_object_types OWNER TO console_app;
+        ALTER TABLE ont_property_defs OWNER TO console_app;
+        ALTER TABLE ont_link_types OWNER TO console_app;
+        ALTER TABLE ont_action_types OWNER TO console_app;
+        ALTER TABLE ont_analytics OWNER TO console_app;
 
         -- Restore the exact broad runtime grants shipped by 0152. Without this,
         -- post-replay revocation assertions could pass because the first 0165
         -- application already removed the privileges.
         REVOKE ALL ON ont_object_types, ont_property_defs, ont_link_types,
-            ont_action_types, ont_analytics FROM PUBLIC, mnt_rt,
-            mnt_ontology_cmd, mnt_ontology_writer;
-        GRANT SELECT, INSERT, UPDATE ON ont_object_types TO mnt_rt;
-        GRANT SELECT, INSERT ON ont_property_defs, ont_link_types, ont_action_types, ont_analytics TO mnt_rt;
+            ont_action_types, ont_analytics FROM PUBLIC, console_rt,
+            console_ontology_cmd, console_ontology_writer;
+        GRANT SELECT, INSERT, UPDATE ON ont_object_types TO console_rt;
+        GRANT SELECT, INSERT ON ont_property_defs, ont_link_types, ont_action_types, ont_analytics TO console_rt;
         "#,
     )
     .execute(pool)
@@ -84,11 +84,11 @@ async fn restore_pre_0165_schema(pool: &PgPool) {
     let pre_0165 = sqlx::query(
         r#"
         SELECT
-            has_table_privilege('mnt_rt', 'ont_object_types', 'INSERT,UPDATE') AS parent_write,
-            has_table_privilege('mnt_rt', 'ont_property_defs', 'INSERT') AS property_write,
-            has_table_privilege('mnt_rt', 'ont_link_types', 'INSERT') AS link_write,
-            has_table_privilege('mnt_rt', 'ont_action_types', 'INSERT') AS action_write,
-            has_table_privilege('mnt_rt', 'ont_analytics', 'INSERT') AS analytic_write
+            has_table_privilege('console_rt', 'ont_object_types', 'INSERT,UPDATE') AS parent_write,
+            has_table_privilege('console_rt', 'ont_property_defs', 'INSERT') AS property_write,
+            has_table_privilege('console_rt', 'ont_link_types', 'INSERT') AS link_write,
+            has_table_privilege('console_rt', 'ont_action_types', 'INSERT') AS action_write,
+            has_table_privilege('console_rt', 'ont_analytics', 'INSERT') AS analytic_write
         "#,
     )
     .fetch_one(pool)
@@ -128,7 +128,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt").execute(connection).await?;
                 Ok(())
             })
         })
@@ -178,7 +178,7 @@ async fn seed_legacy_object_type(
 }
 
 async fn apply_0165_as_migrator(pool: &PgPool) -> (String, String) {
-    let migrator = login_role_pool(pool, "mnt_app", MIGRATOR_PASSWORD).await;
+    let migrator = login_role_pool(pool, "console_app", MIGRATOR_PASSWORD).await;
     let mut migration = migrator.begin().await.unwrap();
     sqlx::query("SET LOCAL lock_timeout = '5s'")
         .execute(&mut *migration)
@@ -217,24 +217,24 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     seed_legacy_object_type(&pool, ORG_A, "ops.asset", 2, "retired").await;
     seed_legacy_object_type(&pool, ORG_B, "ops.work_order", 4, "retired").await;
 
-    let migrator = login_role_pool(&pool, "mnt_app", MIGRATOR_PASSWORD).await;
+    let migrator = login_role_pool(&pool, "console_app", MIGRATOR_PASSWORD).await;
     let migration_identity = sqlx::query("SELECT current_user, session_user")
         .fetch_one(&migrator)
         .await
         .unwrap();
     assert_eq!(
         migration_identity.get::<String, _>("current_user"),
-        "mnt_app"
+        "console_app"
     );
     assert_eq!(
         migration_identity.get::<String, _>("session_user"),
-        "mnt_app",
+        "console_app",
         "0165 must be exercised through a direct non-superuser migrator login"
     );
     sqlx::raw_sql(MIGRATION_0165)
         .execute(&migrator)
         .await
-        .expect("the exact shipped 0165 migration must run as non-superuser mnt_app");
+        .expect("the exact shipped 0165 migration must run as non-superuser console_app");
 
     let sidecars = sqlx::query(
         r#"
@@ -343,18 +343,18 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     let privileges = sqlx::query(
         r#"
         SELECT
-            has_table_privilege('mnt_rt', 'ont_object_type_key_revisions', 'SELECT') AS can_select,
-            has_table_privilege('mnt_rt', 'ont_object_type_key_revisions', 'INSERT') AS can_insert_all,
-            has_table_privilege('mnt_rt', 'ont_object_type_key_revisions', 'UPDATE') AS can_update_all,
-            has_table_privilege('mnt_rt', 'ont_object_type_key_revisions', 'DELETE') AS can_delete,
-            has_table_privilege('mnt_rt', 'ont_object_type_key_revisions', 'TRUNCATE') AS can_truncate,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'org_id', 'INSERT') AS can_insert_org,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'stable_key', 'INSERT') AS can_insert_key,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'validator_id', 'INSERT') AS can_insert_validator,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'revision', 'UPDATE') AS can_update_revision,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'updated_at', 'UPDATE') AS can_update_timestamp,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'org_id', 'UPDATE') AS can_update_org,
-            has_column_privilege('mnt_rt', 'ont_object_type_key_revisions', 'validator_id', 'UPDATE') AS can_update_validator
+            has_table_privilege('console_rt', 'ont_object_type_key_revisions', 'SELECT') AS can_select,
+            has_table_privilege('console_rt', 'ont_object_type_key_revisions', 'INSERT') AS can_insert_all,
+            has_table_privilege('console_rt', 'ont_object_type_key_revisions', 'UPDATE') AS can_update_all,
+            has_table_privilege('console_rt', 'ont_object_type_key_revisions', 'DELETE') AS can_delete,
+            has_table_privilege('console_rt', 'ont_object_type_key_revisions', 'TRUNCATE') AS can_truncate,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'org_id', 'INSERT') AS can_insert_org,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'stable_key', 'INSERT') AS can_insert_key,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'validator_id', 'INSERT') AS can_insert_validator,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'revision', 'UPDATE') AS can_update_revision,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'updated_at', 'UPDATE') AS can_update_timestamp,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'org_id', 'UPDATE') AS can_update_org,
+            has_column_privilege('console_rt', 'ont_object_type_key_revisions', 'validator_id', 'UPDATE') AS can_update_validator
         "#,
     )
     .fetch_one(&pool)
@@ -376,27 +376,27 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     let guarded_boundary = sqlx::query(
         r#"
         SELECT
-            has_table_privilege('mnt_rt', 'ont_object_types', 'INSERT,UPDATE') AS legacy_parent_write,
-            has_table_privilege('mnt_rt', 'ont_property_defs', 'INSERT') AS legacy_property_write,
-            has_table_privilege('mnt_rt', 'ont_link_types', 'INSERT') AS legacy_link_write,
-            has_table_privilege('mnt_rt', 'ont_action_types', 'INSERT') AS legacy_action_write,
-            has_table_privilege('mnt_rt', 'ont_analytics', 'INSERT') AS legacy_analytic_write,
-            has_table_privilege('mnt_rt', 'ont_object_types', 'DELETE,TRUNCATE') AS destructive_parent_write,
-            has_table_privilege('mnt_rt', 'ont_property_defs', 'UPDATE,DELETE,TRUNCATE') AS destructive_property_write,
-            has_table_privilege('mnt_rt', 'ont_link_types', 'UPDATE,DELETE,TRUNCATE') AS destructive_link_write,
-            has_table_privilege('mnt_rt', 'ont_action_types', 'UPDATE,DELETE,TRUNCATE') AS destructive_action_write,
-            has_table_privilege('mnt_rt', 'ont_analytics', 'UPDATE,DELETE,TRUNCATE') AS destructive_analytic_write,
-            has_schema_privilege('mnt_rt', 'ontology_api', 'USAGE') AS runtime_api_usage,
-            has_schema_privilege('mnt_ontology_cmd', 'ontology_api', 'USAGE') AS command_api_usage,
+            has_table_privilege('console_rt', 'ont_object_types', 'INSERT,UPDATE') AS legacy_parent_write,
+            has_table_privilege('console_rt', 'ont_property_defs', 'INSERT') AS legacy_property_write,
+            has_table_privilege('console_rt', 'ont_link_types', 'INSERT') AS legacy_link_write,
+            has_table_privilege('console_rt', 'ont_action_types', 'INSERT') AS legacy_action_write,
+            has_table_privilege('console_rt', 'ont_analytics', 'INSERT') AS legacy_analytic_write,
+            has_table_privilege('console_rt', 'ont_object_types', 'DELETE,TRUNCATE') AS destructive_parent_write,
+            has_table_privilege('console_rt', 'ont_property_defs', 'UPDATE,DELETE,TRUNCATE') AS destructive_property_write,
+            has_table_privilege('console_rt', 'ont_link_types', 'UPDATE,DELETE,TRUNCATE') AS destructive_link_write,
+            has_table_privilege('console_rt', 'ont_action_types', 'UPDATE,DELETE,TRUNCATE') AS destructive_action_write,
+            has_table_privilege('console_rt', 'ont_analytics', 'UPDATE,DELETE,TRUNCATE') AS destructive_analytic_write,
+            has_schema_privilege('console_rt', 'ontology_api', 'USAGE') AS runtime_api_usage,
+            has_schema_privilege('console_ontology_cmd', 'ontology_api', 'USAGE') AS command_api_usage,
             has_schema_privilege('public', 'ontology_api', 'USAGE') AS public_api_usage,
-            has_function_privilege('mnt_rt', 'ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS runtime_can_create,
-            has_function_privilege('mnt_ontology_cmd', 'ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_create,
-            has_function_privilege('mnt_ontology_cmd', 'ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_stage,
-            has_function_privilege('mnt_ontology_cmd', 'ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_transition,
-            has_function_privilege('mnt_ontology_cmd', 'ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_install,
-            has_function_privilege('mnt_ontology_cmd', 'ontology_api.insert_children(UUID, UUID, JSONB, BOOLEAN)', 'EXECUTE') AS command_can_call_helper,
-            has_table_privilege('mnt_ontology_cmd', 'ont_object_types', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS command_parent_table_access,
-            has_table_privilege('mnt_ontology_cmd', 'audit_events', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS command_audit_table_access
+            has_function_privilege('console_rt', 'ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS runtime_can_create,
+            has_function_privilege('console_ontology_cmd', 'ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_create,
+            has_function_privilege('console_ontology_cmd', 'ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_stage,
+            has_function_privilege('console_ontology_cmd', 'ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_transition,
+            has_function_privilege('console_ontology_cmd', 'ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT)', 'EXECUTE') AS command_can_install,
+            has_function_privilege('console_ontology_cmd', 'ontology_api.insert_children(UUID, UUID, JSONB, BOOLEAN)', 'EXECUTE') AS command_can_call_helper,
+            has_table_privilege('console_ontology_cmd', 'ont_object_types', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS command_parent_table_access,
+            has_table_privilege('console_ontology_cmd', 'audit_events', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS command_audit_table_access
         "#,
     )
     .fetch_one(&pool)
@@ -439,7 +439,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     assert!(!guarded_boundary.get::<bool, _>("command_audit_table_access"));
 
     let owner = sqlx::query(
-        "SELECT rolcanlogin, rolsuper, rolbypassrls, rolinherit, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='mnt_ontology_writer'",
+        "SELECT rolcanlogin, rolsuper, rolbypassrls, rolinherit, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='console_ontology_writer'",
     )
     .fetch_one(&pool)
     .await
@@ -460,7 +460,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     }
 
     let command = sqlx::query(
-        "SELECT rolcanlogin, rolsuper, rolbypassrls, rolinherit, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='mnt_ontology_cmd'",
+        "SELECT rolcanlogin, rolsuper, rolbypassrls, rolinherit, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='console_ontology_cmd'",
     )
     .fetch_one(&pool)
     .await
@@ -484,7 +484,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     }
 
     let migrator_role = sqlx::query(
-        "SELECT rolcanlogin, rolinherit, rolsuper, rolbypassrls, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='mnt_app'",
+        "SELECT rolcanlogin, rolinherit, rolsuper, rolbypassrls, rolcreatedb, rolcreaterole, rolreplication FROM pg_roles WHERE rolname='console_app'",
     )
     .fetch_one(&pool)
     .await
@@ -506,32 +506,32 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
         r#"
         SELECT
             COUNT(*) FILTER (
-                WHERE granted.rolname = 'mnt_ontology_writer'
-                  AND member.rolname = 'mnt_app'
+                WHERE granted.rolname = 'console_ontology_writer'
+                  AND member.rolname = 'console_app'
                   AND NOT am.admin_option
                   AND am.inherit_option
                   AND am.set_option
             ) AS exact_ontology_edge,
             COUNT(*) FILTER (
-                WHERE granted.rolname = 'mnt_leave_definer'
-                  AND member.rolname = 'mnt_app'
+                WHERE granted.rolname = 'console_leave_definer'
+                  AND member.rolname = 'console_app'
                   AND NOT am.admin_option
                   AND am.inherit_option
                   AND am.set_option
             ) AS exact_leave_edge,
             COUNT(*) FILTER (
-                WHERE granted.rolname IN ('mnt_ontology_writer', 'mnt_leave_definer')
-                   OR member.rolname IN ('mnt_ontology_writer', 'mnt_leave_definer')
-                   OR granted.rolname IN ('mnt_rt', 'mnt_ontology_cmd')
-                   OR member.rolname IN ('mnt_rt', 'mnt_ontology_cmd')
-                   OR member.rolname = 'mnt_app'
+                WHERE granted.rolname IN ('console_ontology_writer', 'console_leave_definer')
+                   OR member.rolname IN ('console_ontology_writer', 'console_leave_definer')
+                   OR granted.rolname IN ('console_rt', 'console_ontology_cmd')
+                   OR member.rolname IN ('console_rt', 'console_ontology_cmd')
+                   OR member.rolname = 'console_app'
             ) AS topology_edges,
-            pg_has_role('mnt_app', 'mnt_ontology_writer', 'SET') AS migrator_can_set,
-            pg_has_role('mnt_app', 'mnt_ontology_writer', 'USAGE') AS migrator_inherits,
-            pg_has_role('mnt_app', 'mnt_leave_definer', 'SET') AS migrator_can_set_leave,
-            pg_has_role('mnt_app', 'mnt_leave_definer', 'USAGE') AS migrator_inherits_leave,
-            pg_has_role('mnt_rt', 'mnt_ontology_writer', 'SET') AS runtime_can_set,
-            pg_has_role('mnt_ontology_cmd', 'mnt_ontology_writer', 'SET') AS command_can_set
+            pg_has_role('console_app', 'console_ontology_writer', 'SET') AS migrator_can_set,
+            pg_has_role('console_app', 'console_ontology_writer', 'USAGE') AS migrator_inherits,
+            pg_has_role('console_app', 'console_leave_definer', 'SET') AS migrator_can_set_leave,
+            pg_has_role('console_app', 'console_leave_definer', 'USAGE') AS migrator_inherits_leave,
+            pg_has_role('console_rt', 'console_ontology_writer', 'SET') AS runtime_can_set,
+            pg_has_role('console_ontology_cmd', 'console_ontology_writer', 'SET') AS command_can_set
         FROM pg_auth_members am
         JOIN pg_roles granted ON granted.oid = am.roleid
         JOIN pg_roles member ON member.oid = am.member
@@ -572,13 +572,13 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .fetch_one(&pool)
     .await
     .unwrap();
-    assert_eq!(schema_acl.get::<String, _>("owner"), "mnt_ontology_writer");
+    assert_eq!(schema_acl.get::<String, _>("owner"), "console_ontology_writer");
     assert_eq!(
         schema_acl.get::<Vec<String>, _>("acl"),
         vec![
-            "mnt_ontology_cmd:USAGE",
-            "mnt_ontology_writer:CREATE",
-            "mnt_ontology_writer:USAGE",
+            "console_ontology_cmd:USAGE",
+            "console_ontology_writer:CREATE",
+            "console_ontology_writer:USAGE",
         ]
     );
 
@@ -592,9 +592,9 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
                    LEFT JOIN pg_roles grantee ON grantee.oid = acl.grantee
                    WHERE acl.grantee IN (
                        0,
-                       'mnt_rt'::regrole,
-                       'mnt_ontology_cmd'::regrole,
-                       'mnt_ontology_writer'::regrole
+                       'console_rt'::regrole,
+                       'console_ontology_cmd'::regrole,
+                       'console_ontology_writer'::regrole
                    )
                    ORDER BY 1
                ) AS acl
@@ -621,36 +621,36 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
         let name = table.get::<String, _>("relname");
         assert_eq!(
             table.get::<String, _>("owner"),
-            "mnt_app",
+            "console_app",
             "{} must remain migration-owned",
             name
         );
         let expected_acl = match name.as_str() {
             "ont_object_types" => vec![
-                "mnt_ontology_writer:INSERT",
-                "mnt_ontology_writer:SELECT",
-                "mnt_ontology_writer:UPDATE",
-                "mnt_rt:INSERT",
-                "mnt_rt:SELECT",
-                "mnt_rt:UPDATE",
+                "console_ontology_writer:INSERT",
+                "console_ontology_writer:SELECT",
+                "console_ontology_writer:UPDATE",
+                "console_rt:INSERT",
+                "console_rt:SELECT",
+                "console_rt:UPDATE",
             ],
             "ont_object_type_key_revisions" => vec![
-                "mnt_ontology_writer:INSERT",
-                "mnt_ontology_writer:SELECT",
-                "mnt_ontology_writer:UPDATE",
-                "mnt_rt:SELECT",
+                "console_ontology_writer:INSERT",
+                "console_ontology_writer:SELECT",
+                "console_ontology_writer:UPDATE",
+                "console_rt:SELECT",
             ],
-            "ont_builtin_catalog_allowlist" => vec!["mnt_ontology_writer:SELECT"],
+            "ont_builtin_catalog_allowlist" => vec!["console_ontology_writer:SELECT"],
             "ont_property_defs" | "ont_link_types" | "ont_action_types" | "ont_analytics" => vec![
-                "mnt_ontology_writer:INSERT",
-                "mnt_ontology_writer:SELECT",
-                "mnt_rt:INSERT",
-                "mnt_rt:SELECT",
+                "console_ontology_writer:INSERT",
+                "console_ontology_writer:SELECT",
+                "console_rt:INSERT",
+                "console_rt:SELECT",
             ],
             _ => vec![
-                "mnt_ontology_writer:INSERT",
-                "mnt_ontology_writer:SELECT",
-                "mnt_rt:SELECT",
+                "console_ontology_writer:INSERT",
+                "console_ontology_writer:SELECT",
+                "console_rt:SELECT",
             ],
         };
         assert_eq!(
@@ -682,7 +682,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .unwrap();
     assert_eq!(routines.len(), 11);
     for routine in routines {
-        assert_eq!(routine.get::<String, _>("owner"), "mnt_ontology_writer");
+        assert_eq!(routine.get::<String, _>("owner"), "console_ontology_writer");
         let name = routine.get::<String, _>("proname");
         assert!(
             routine.get::<bool, _>("prosecdef") || name == "invoker_role",
@@ -703,9 +703,9 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
                 | "transition_object_type"
                 | "install_builtin_catalog"
         ) {
-            vec!["mnt_ontology_cmd:EXECUTE", "mnt_ontology_writer:EXECUTE"]
+            vec!["console_ontology_cmd:EXECUTE", "console_ontology_writer:EXECUTE"]
         } else {
-            vec!["mnt_ontology_writer:EXECUTE"]
+            vec!["console_ontology_writer:EXECUTE"]
         };
         assert_eq!(acl, expected_acl, "{name} must have the exact execute ACL");
     }
@@ -723,7 +723,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .fetch_all(&mut *transaction)
     .await
     .unwrap();
-    assert_eq!(visible.len(), 2, "mnt_rt sees only the armed tenant's keys");
+    assert_eq!(visible.len(), 2, "console_rt sees only the armed tenant's keys");
     assert!(
         visible
             .iter()
@@ -742,25 +742,25 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .bind(ORG_A)
     .execute(&runtime)
     .await
-    .expect_err("mnt_rt must not have a direct key-revision write path");
+    .expect_err("console_rt must not have a direct key-revision write path");
     assert_eq!(
         database_error_code(&runtime_dml_error).as_deref(),
         Some("42501")
     );
 
-    let command_pool = login_role_pool(&pool, "mnt_ontology_cmd", COMMAND_PASSWORD).await;
+    let command_pool = login_role_pool(&pool, "console_ontology_cmd", COMMAND_PASSWORD).await;
     let command_dml_error = sqlx::query(
         "INSERT INTO ont_object_type_key_revisions (org_id, stable_key) VALUES ($1, 'ops.command_bypass')",
     )
     .bind(ORG_A)
     .execute(&command_pool)
     .await
-    .expect_err("mnt_ontology_cmd must be limited to the audited command routines");
+    .expect_err("console_ontology_cmd must be limited to the audited command routines");
     assert_eq!(
         database_error_code(&command_dml_error).as_deref(),
         Some("42501")
     );
-    let command_set_error = sqlx::query("SET ROLE mnt_ontology_writer")
+    let command_set_error = sqlx::query("SET ROLE console_ontology_writer")
         .execute(&command_pool)
         .await
         .expect_err("the command login must not be able to impersonate the writer");
@@ -771,12 +771,12 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
 
     // A replay reaches both startup's exact application-role preflight and the
     // migration topology assertion before any non-idempotent DDL. Create an
-    // unexpected LOGIN that can SET ROLE to mnt_app transactionally; rollback
+    // unexpected LOGIN that can SET ROLE to console_app transactionally; rollback
     // removes the cluster-global hostile role for sibling tests.
     let mut drift = pool.begin().await.unwrap();
     sqlx::query(
         r#"
-        CREATE ROLE mnt_0165_hostile_login
+        CREATE ROLE console_0165_hostile_login
             LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
         "#,
     )
@@ -784,7 +784,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .await
     .unwrap();
     sqlx::query(
-        "GRANT mnt_app TO mnt_0165_hostile_login WITH ADMIN FALSE, INHERIT FALSE, SET TRUE",
+        "GRANT console_app TO console_0165_hostile_login WITH ADMIN FALSE, INHERIT FALSE, SET TRUE",
     )
     .execute(&mut *drift)
     .await
@@ -799,17 +799,17 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
             JOIN pg_catalog.pg_roles AS member ON member.oid = membership.member
             WHERE (
                 granted.rolname IN (
-                    'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                    'mnt_ontology_writer', 'mnt_ontology_cmd'
+                    'console_app', 'console_rt', 'console_leave_definer', 'console_leave_cmd',
+                    'console_ontology_writer', 'console_ontology_cmd'
                 )
                 OR member.rolname IN (
-                    'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                    'mnt_ontology_writer', 'mnt_ontology_cmd'
+                    'console_app', 'console_rt', 'console_leave_definer', 'console_leave_cmd',
+                    'console_ontology_writer', 'console_ontology_cmd'
                 )
             )
             AND NOT (
-                member.rolname = 'mnt_app'
-                AND granted.rolname IN ('mnt_leave_definer', 'mnt_ontology_writer')
+                member.rolname = 'console_app'
+                AND granted.rolname IN ('console_leave_definer', 'console_ontology_writer')
                 AND NOT membership.admin_option
                 AND membership.inherit_option
                 AND membership.set_option
@@ -822,7 +822,7 @@ async fn migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage(
     .unwrap();
     assert!(
         application_preflight_detects_drift,
-        "the application migration preflight must reject an incoming mnt_app edge"
+        "the application migration preflight must reject an incoming console_app edge"
     );
 
     let drift_error = sqlx::raw_sql(MIGRATION_0165)
@@ -962,7 +962,7 @@ async fn migration_0165_keeps_exact_old_binary_writes_audited_and_cas_consistent
     }
 
     // Exact retained-binary stage shape. The compatibility audit trigger, not
-    // mnt_rt, owns the one-and-only CAS-sidecar advance.
+    // console_rt, owns the one-and-only CAS-sidecar advance.
     let mut stage_tx = runtime.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(LEGACY_ORG.to_string())

@@ -19,11 +19,11 @@ val androidReleaseSigningReady = listOf(
 ).all { it.isPresent }
 
 android {
-    namespace = "com.maintenance.field"
+    namespace = "com.console.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.maintenance.field"
+        applicationId = "com.console.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -112,7 +112,7 @@ ksp {
 }
 
 dependencies {
-    implementation("com.maintenance:maintenance-api-client:0.1.0")
+    implementation("com.console:console-api-client:0.1.0")
 
     implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.activity:activity-compose:1.12.4")

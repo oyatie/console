@@ -2,23 +2,23 @@
 //!
 //! Every read runs through `with_org_conn` and every write through `with_audit`,
 //! so the `app.current_org` GUC is armed and RLS scopes rows to the tenant
-//! (the `mnt-gate-rls-arming` gate forbids bare-pool reads). All SQL is built
+//! (the `console-gate-rls-arming` gate forbids bare-pool reads). All SQL is built
 //! with `QueryBuilder` (runtime), so no `.sqlx` cache entries are needed.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::too_many_lines))]
 
 use std::collections::HashMap;
 
-use mnt_kernel_core::{CustomerInquiryId, EquipmentId, KernelError, SalesListingId};
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_sales_application::{
+use console_kernel_core::{CustomerInquiryId, EquipmentId, KernelError, SalesListingId};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
+use console_sales_application::{
     CatalogQuery, CreateListingCommand, CustomerInquiryPage, CustomerInquiryView,
     DeleteListingCommand, InquiryInboxQuery, ListingMediaView, SalesListingPage, SalesListingView,
     SubmitInquiryCommand, UpdateInquiryStatusCommand, UpdateListingCommand, UpdateListingFields,
     inquiry_status_audit_event, inquiry_submit_audit_event, listing_create_audit_event,
     listing_delete_audit_event, listing_update_audit_event,
 };
-use mnt_sales_domain::{
+use console_sales_domain::{
     InquiryStatus, InquiryTopic, ListingCondition, ListingKind, ListingStatus, ListingType,
 };
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
@@ -214,7 +214,7 @@ impl PgSalesStore {
     // ── Admin listing writes (audited) ────────────────────────────────────────
 
     /// Create a listing. Audited; org-armed so RLS WITH CHECK passes.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_listing(&self, command: CreateListingCommand) -> Result<(), PgSalesError> {
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
@@ -267,7 +267,7 @@ impl PgSalesStore {
     }
 
     /// Update a listing (partial; double-option clears nullable columns).
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_listing(&self, command: UpdateListingCommand) -> Result<(), PgSalesError> {
         if command.fields.is_empty() {
             return Err(KernelError::validation("no listing fields to update").into());
@@ -316,7 +316,7 @@ impl PgSalesStore {
     /// No-op guard: a listing already WITHDRAWN is left untouched and audits
     /// nothing — a repeat/retried delete call must not write an identical
     /// before==after audit event every time.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn delete_listing(&self, command: DeleteListingCommand) -> Result<(), PgSalesError> {
         let org = current_org().map_err(KernelError::from)?;
         let existing = self
@@ -361,7 +361,7 @@ impl PgSalesStore {
 
     /// Record a public inquiry. No actor (public submit); the audit snapshot is
     /// PII-light (topic/listing/status only — never the name/phone/message).
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn submit_inquiry(&self, command: SubmitInquiryCommand) -> Result<(), PgSalesError> {
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
@@ -457,7 +457,7 @@ impl PgSalesStore {
     }
 
     /// Triage an inquiry (NEW → CONTACTED → CLOSED). Audited.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_inquiry_status(
         &self,
         command: UpdateInquiryStatusCommand,
@@ -710,7 +710,7 @@ fn push_opt_i32(
 
 // ── Audit snapshots (sales listings are not PII; inquiries kept PII-light) ────
 
-fn listing_input_snapshot(input: &mnt_sales_application::ListingInput) -> serde_json::Value {
+fn listing_input_snapshot(input: &console_sales_application::ListingInput) -> serde_json::Value {
     serde_json::json!({
         "kind": input.kind.as_db_str(),
         "condition": input.condition.as_db_str(),

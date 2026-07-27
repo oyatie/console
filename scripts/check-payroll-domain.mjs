@@ -5,24 +5,24 @@ const root = resolve(new URL("..", import.meta.url).pathname);
 const backendDir = resolve(root, "backend");
 const targetDir = process.env.CARGO_TARGET_DIR ?? resolve(root, ".tmp/cargo-target-g012");
 
-await runCommand("cargo", ["clippy", "-p", "mnt-payroll-domain", "--all-targets", "--", "-D", "warnings"], {
+await runCommand("cargo", ["clippy", "-p", "console-payroll-domain", "--all-targets", "--", "-D", "warnings"], {
   cwd: backendDir,
   env: {
     ...process.env,
     CARGO_INCREMENTAL: process.env.CARGO_INCREMENTAL ?? "0",
     CARGO_TARGET_DIR: targetDir,
   },
-  label: "cargo clippy -p mnt-payroll-domain --all-targets -- -D warnings",
+  label: "cargo clippy -p console-payroll-domain --all-targets -- -D warnings",
 });
 
-await runCommand("cargo", ["test", "-p", "mnt-payroll-domain"], {
+await runCommand("cargo", ["test", "-p", "console-payroll-domain"], {
   cwd: backendDir,
   env: {
     ...process.env,
     CARGO_INCREMENTAL: process.env.CARGO_INCREMENTAL ?? "0",
     CARGO_TARGET_DIR: targetDir,
   },
-  label: "cargo test -p mnt-payroll-domain",
+  label: "cargo test -p console-payroll-domain",
 });
 
 async function runCommand(command, args, options) {

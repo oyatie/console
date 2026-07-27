@@ -3,8 +3,8 @@
 
 use std::future::Future;
 
-use mnt_kernel_core::{BranchScope, KernelError, Timestamp, TraceContext, UserId};
-pub use mnt_reporting_domain::{
+use console_kernel_core::{BranchScope, KernelError, Timestamp, TraceContext, UserId};
+pub use console_reporting_domain::{
     AnalyticsDefinitionVersion, AnalyticsEvidence, AnalyticsFactQueryIdentity, AnalyticsMetric,
     AnalyticsPeriod, AnalyticsSourceDomain, DailyStatusReport, DailyStatusRow, DashboardAnalytics,
     DashboardAnalyticsScope, DurationEvidence, ExportSourceNote, KpiMetric, KpiReport, KpiRollup,
@@ -944,8 +944,8 @@ mod analytics_contract_tests {
     #[test]
     fn fact_binding_keeps_cross_scope_authorization_distinct() {
         let actor = UserId::new();
-        let branch_a = mnt_kernel_core::BranchId::new();
-        let branch_b = mnt_kernel_core::BranchId::new();
+        let branch_a = console_kernel_core::BranchId::new();
+        let branch_b = console_kernel_core::BranchId::new();
         let identity = AnalyticsFactQueryIdentity::new("dashboard-july-branch").unwrap();
         let issued_for_a = AnalyticsFactBinding::new(
             actor,
@@ -969,8 +969,8 @@ mod analytics_contract_tests {
 
     #[test]
     fn fact_binding_rejects_branch_outside_authorized_scope() {
-        let branch_a = mnt_kernel_core::BranchId::new();
-        let branch_b = mnt_kernel_core::BranchId::new();
+        let branch_a = console_kernel_core::BranchId::new();
+        let branch_b = console_kernel_core::BranchId::new();
         assert!(
             AnalyticsFactBinding::new(
                 UserId::new(),
@@ -1115,8 +1115,8 @@ mod analytics_contract_tests {
     #[test]
     fn dashboard_query_carries_context_and_rejects_unauthorized_branches() {
         let actor = UserId::new();
-        let allowed = mnt_kernel_core::BranchId::new();
-        let denied = mnt_kernel_core::BranchId::new();
+        let allowed = console_kernel_core::BranchId::new();
+        let denied = console_kernel_core::BranchId::new();
         let period = AnalyticsPeriod::new(
             datetime!(2026-07-01 00:00 UTC),
             datetime!(2026-08-01 00:00 UTC),

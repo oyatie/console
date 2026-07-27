@@ -13,24 +13,24 @@
 //! result is the SOLE enforcer; the Cedar shadow lane can NEVER change a live
 //! outcome. These end-to-end tests exercise the real `authorize_org_manage_observed`
 //! wrapper with the dark default, flag-on observation, and — critically — as the
-//! genuine `mnt_rt` runtime role under FORCE RLS, never a BYPASSRLS superuser.
+//! genuine `console_rt` runtime role under FORCE RLS, never a BYPASSRLS superuser.
 
 use std::collections::BTreeSet;
 
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_identity_rest::{
+use console_identity_adapter_postgres::PgOrgStore;
+use console_identity_rest::{
     CEDAR_PBAC_SHADOW_AUDIT_ACTION, CEDAR_PBAC_SHADOW_ROLE_MANAGE_FLAG, IdentityRestState,
     authorize_org_manage_observed,
 };
-use mnt_kernel_core::{BranchScope, OrgId, UserId};
-use mnt_platform_authz::cedar_pbac::engine;
-use mnt_platform_authz::{
+use console_kernel_core::{BranchScope, OrgId, UserId};
+use console_platform_authz::cedar_pbac::engine;
+use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, CedarEvaluation, CoexistenceMapEntry,
     CompiledBundleCacheKey, DecisionEffect, DecisionReason, DualEngineMode, Feature, Principal,
     RlsScopeProof, Role, SubjectFreshness, SubjectFreshnessRequirement,
     evaluate_cedar_pbac_boundary,
 };
-use mnt_platform_request_context::CURRENT_ORG;
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -50,7 +50,7 @@ fn shadow_entry(bundle_key: CompiledBundleCacheKey) -> CoexistenceMapEntry {
     )
 }
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute
 /// as the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS —
 /// never the BYPASSRLS superuser the default `#[sqlx::test]` pool connects as.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -59,7 +59,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -169,7 +169,7 @@ async fn shadow_lane_is_dark_when_flag_absent(pool: PgPool) {
     seed_org(&pool, org_uuid, "A").await;
     let user = seed_user(&pool, org_uuid, "SUPER_ADMIN").await;
 
-    // Code-under-test runs as the real mnt_rt runtime role (NOSUPERUSER,
+    // Code-under-test runs as the real console_rt runtime role (NOSUPERUSER,
     // NOBYPASSRLS) under FORCE RLS — never the BYPASSRLS superuser the default
     // `#[sqlx::test]` pool connects as, which would mask a broken read path.
     // Seeding + audit assertions stay on the owner `pool` (row_security off).
@@ -210,7 +210,7 @@ async fn shadow_deny_does_not_flip_legacy_allow_with_flag_on(pool: PgPool) {
     let user = seed_user(&pool, org_uuid, "SUPER_ADMIN").await;
     enable_shadow_flag(&pool, org_uuid).await;
 
-    // Real mnt_rt: exercises the flag/version READS and the audit WRITE
+    // Real console_rt: exercises the flag/version READS and the audit WRITE
     // (persist_cedar_shadow_audit via with_audit) under FORCE RLS, not superuser.
     let rt_pool = runtime_role_pool(&pool).await;
     let state = IdentityRestState::new(PgOrgStore::new(rt_pool.clone()), None);
@@ -252,7 +252,7 @@ async fn shadow_does_not_grant_when_legacy_denies_with_flag_on(pool: PgPool) {
     let user = seed_user(&pool, org_uuid, "MECHANIC").await;
     enable_shadow_flag(&pool, org_uuid).await;
 
-    // Real mnt_rt: exercises the flag/version READS and the audit WRITE
+    // Real console_rt: exercises the flag/version READS and the audit WRITE
     // (persist_cedar_shadow_audit via with_audit) under FORCE RLS, not superuser.
     let rt_pool = runtime_role_pool(&pool).await;
     let state = IdentityRestState::new(PgOrgStore::new(rt_pool.clone()), None);
@@ -280,7 +280,7 @@ async fn shadow_does_not_grant_when_legacy_denies_with_flag_on(pool: PgPool) {
     );
 }
 
-/// mnt_rt RLS: the shadow lane's reads (flag, versions) and audit write run as
+/// console_rt RLS: the shadow lane's reads (flag, versions) and audit write run as
 /// the real runtime role under an armed `app.current_org`; a tenant sees only
 /// its own flag row; and a cross-org resource yields the boundary's
 /// `RlsBoundaryMismatch` deny (audit-only) rather than reaching Cedar.
@@ -302,7 +302,7 @@ async fn shadow_reads_and_audits_as_runtime_role_and_stay_org_scoped(owner_pool:
         BranchScope::All,
     );
 
-    // (1) The whole lane runs as mnt_rt under org A's GUC: legacy allow stands
+    // (1) The whole lane runs as console_rt under org A's GUC: legacy allow stands
     // and exactly one shadow audit row is written for A (none for B).
     let observed = CURRENT_ORG
         .scope(
@@ -310,11 +310,11 @@ async fn shadow_reads_and_audits_as_runtime_role_and_stay_org_scoped(owner_pool:
             authorize_org_manage_observed(&state, &principal, Feature::RoleManage),
         )
         .await;
-    assert!(observed.is_ok(), "SUPER_ADMIN allow must stand as mnt_rt");
+    assert!(observed.is_ok(), "SUPER_ADMIN allow must stand as console_rt");
     assert_eq!(
         count_shadow_audit_rows(&owner_pool, org_a).await,
         1,
-        "audit write must succeed as mnt_rt under the armed GUC"
+        "audit write must succeed as console_rt under the armed GUC"
     );
     assert_eq!(
         count_shadow_audit_rows(&owner_pool, ORG_B).await,
@@ -322,7 +322,7 @@ async fn shadow_reads_and_audits_as_runtime_role_and_stay_org_scoped(owner_pool:
         "no shadow audit row may land under the other tenant"
     );
 
-    // (2) Under org A's GUC, mnt_rt sees ONLY A's flag row; B's is invisible.
+    // (2) Under org A's GUC, console_rt sees ONLY A's flag row; B's is invisible.
     {
         let mut tx = rt_pool.begin().await.unwrap();
         sqlx::query("SELECT set_config('app.current_org', $1, true)")

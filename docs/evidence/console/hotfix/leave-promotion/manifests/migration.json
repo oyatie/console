@@ -29,6 +29,6 @@
       "rationale": "The current key allows exactly ONE round-1 촉구 per employee for their entire employment. §61 is an annual procedure."
     }
   ],
-  "rls": "unchanged — the table already has ENABLE + FORCE ROW LEVEL SECURITY keyed on app.current_org, and mnt_rt keeps SELECT/INSERT/UPDATE with DELETE revoked.",
+  "rls": "unchanged — the table already has ENABLE + FORCE ROW LEVEL SECURITY keyed on app.current_org, and console_rt keeps SELECT/INSERT/UPDATE with DELETE revoked.",
   "followup_in_code": "Once the columns exist, replace `period_tag`/`ensure_same_period` in backend/crates/leave/adapter-postgres/src/lib.rs with a direct `leave_period_end = $n` predicate on find_promotion, and drop the source_id round-trip."
 }

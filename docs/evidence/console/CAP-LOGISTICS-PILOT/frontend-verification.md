@@ -19,8 +19,8 @@ backend-charter gaps re-confirmed as real (not fixable frontend-side).
 `time::OffsetDateTime` — no `#[serde(with = "time::serde::rfc3339")]` — in
 `backend/crates/logistics/rest/src/lib.rs`. Empirical proof (scratch crate
 pinned to `time =0.3.47` with the workspace feature set, cross-checked with
-`cargo tree -p mnt-logistics-rest -i time -e features` and
-`-p mnt-app`: only `serde` + `serde-well-known` unify; `serde-human-readable`
+`cargo tree -p console-logistics-rest -i time -e features` and
+`-p console-app`: only `serde` + `serde-well-known` unify; `serde-human-readable`
 is absent from both graphs, and in time 0.3.47 `serde-well-known` does NOT
 imply it):
 
@@ -65,7 +65,7 @@ annotation.
   of that intent, discarded on applied success — retry-key-reuse asserted by
   test.
 - Authz feature names: the 7 `logistics_*` strings match
-  `mnt-platform-authz` `Feature::as_str` exactly (lib.rs:433-439).
+  `console-platform-authz` `Feature::as_str` exactly (lib.rs:433-439).
 
 ## Module completion contract (9 points)
 

@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ConsoleApiClient } from "../../api/client";

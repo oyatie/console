@@ -1,12 +1,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
+use console_kernel_core::OrgId;
+use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
-/// A pool that runs as the low-privilege `mnt_rt` role, so FORCE RLS on
+/// A pool that runs as the low-privilege `console_rt` role, so FORCE RLS on
 /// `audit_events` actually applies (an owner/BYPASSRLS pool would mask a
 /// missing-org-stamp break).
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -15,7 +15,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -41,7 +41,7 @@ async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool:
     let ttl = Duration::days(30);
     let absolute_ttl = Duration::days(30);
 
-    // Run the whole flow as `mnt_rt`; `issue_family`/`rotate` arm the org GUC
+    // Run the whole flow as `console_rt`; `issue_family`/`rotate` arm the org GUC
     // themselves, so they pass RLS just like production.
     let first = store
         .issue_family(&rt, user_id, OrgId::knl(), now, ttl)
@@ -58,7 +58,7 @@ async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool:
         .await
         .unwrap();
 
-    // As `mnt_rt`, armed to KNL: the rotate ('auth.refresh') row must be visible.
+    // As `console_rt`, armed to KNL: the rotate ('auth.refresh') row must be visible.
     let mut tx = rt.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(OrgId::knl().as_uuid().to_string())

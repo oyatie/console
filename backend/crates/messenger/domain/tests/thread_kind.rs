@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_messenger_domain::{MessageBody, ThreadKind};
+use console_messenger_domain::{MessageBody, ThreadKind};
 
 #[test]
 fn thread_kind_db_wire_uses_plan_values() {

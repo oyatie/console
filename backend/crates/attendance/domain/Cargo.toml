@@ -1,5 +1,5 @@
 [package]
-name = "mnt-attendance-domain"
+name = "console-attendance-domain"
 version = "0.1.0"
 description = "Pure attendance close, exception, and substitution invariants."
 edition.workspace = true

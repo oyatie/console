@@ -56,7 +56,7 @@ const IGNORED_CONSOLE_PATTERNS: RegExp[] = [
  * 401-as-bug assertion intact for every OTHER endpoint.
  */
 const IGNORED_CONSOLE_URL_PATTERNS: RegExp[] = [
-  // Boot silent-refresh: on a cold page load with no `mnt_refresh` cookie the app
+  // Boot silent-refresh: on a cold page load with no `console_refresh` cookie the app
   // probes `POST /auth/token/refresh`, which the backend answers 401; the app
   // catches it and renders the unauthenticated state. The browser still logs the
   // 401 network response — an expected cold-boot artifact, not an app error.

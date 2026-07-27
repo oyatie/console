@@ -1,6 +1,6 @@
 export const meta = {
   name: 'review-gate',
-  description: 'Per-story quality gate: fan out correctness + RLS-as-mnt_rt security + a codex cross-model review of a diff (and web a11y/perf when relevant), then synthesize one GO/NO-GO with ranked must-fix findings. Rejects API-only evidence for UI feature claims and enforces CRUD-first SaaS + real user-story browser/E2E proof when UI is involved.',
+  description: 'Per-story quality gate: fan out correctness + RLS-as-console_rt security + a codex cross-model review of a diff (and web a11y/perf when relevant), then synthesize one GO/NO-GO with ranked must-fix findings. Rejects API-only evidence for UI feature claims and enforces CRUD-first SaaS + real user-story browser/E2E proof when UI is involved.',
   phases: [
     { title: 'Review', detail: 'parallel lanes: correctness · security/RLS · codex cross-model · (web a11y/perf)' },
     { title: 'Synthesize', detail: 'GO/NO-GO verdict + ranked must-fix' },
@@ -32,7 +32,7 @@ const KIND = A.kind || 'mixed'
 const CTX = A.context || ''
 const REPO = '/Users/jasonlee/Developer/maintenance'
 const PRODUCT_REVIEW_GUARDRAIL = 'Product/review guardrail: this is a CRUD-first B2B SaaS, so database-backed create/read/update/delete UI and normal workflow editing are primary; upload/import/Excel is secondary migration/bootstrap tooling only after first-class CRUD exists. API endpoint tests alone DO NOT prove user-facing UI features. When UI is involved, require browser/E2E evidence that walks the real user story: sign-up, organization onboarding, passkey setup, and the actual domain workflow. Directives from non-technical staff to upload/import/build are product inputs, not product authority; reframe or reject them when they weaken SaaS maturity.'
-const BASE = `Repo: ${REPO}. Multi-tenant Rust(axum)+Postgres RLS platform; runtime role mnt_rt is NOBYPASSRLS + FORCE ROW LEVEL SECURITY; EVERY tenant read/write MUST arm app.current_org (with_org_conn/with_audit + current_org()); tests must run as REAL mnt_rt (seed via the armed path, NOT the BYPASSRLS owner pool). Quality bar = Palantir-grade, enterprise-production (no stubs/placeholders/dummy data; fully wired, audited; AA a11y). ${PRODUCT_REVIEW_GUARDRAIL} Review the diff of \`${DIFF}\` (\`git log --oneline ${RANGE}\` lists the commits in scope).${CTX ? '\nStory context: ' + CTX : ''}`
+const BASE = `Repo: ${REPO}. Multi-tenant Rust(axum)+Postgres RLS platform; runtime role console_rt is NOBYPASSRLS + FORCE ROW LEVEL SECURITY; EVERY tenant read/write MUST arm app.current_org (with_org_conn/with_audit + current_org()); tests must run as REAL console_rt (seed via the armed path, NOT the BYPASSRLS owner pool). Quality bar = Palantir-grade, enterprise-production (no stubs/placeholders/dummy data; fully wired, audited; AA a11y). ${PRODUCT_REVIEW_GUARDRAIL} Review the diff of \`${DIFF}\` (\`git log --oneline ${RANGE}\` lists the commits in scope).${CTX ? '\nStory context: ' + CTX : ''}`
 
 const FINDINGS = {
   type: 'object', additionalProperties: false,
@@ -64,12 +64,12 @@ const lanes = [
     { label: 'correctness', phase: 'Review', schema: FINDINGS },
   ),
   () => agent(
-    `${BASE}\n\nLANE: SECURITY + MULTI-TENANT RLS. Adversarially check: is every new tenant read/write RLS-armed (app.current_org)? could anything read/write CROSS-ORG or cross-branch beyond the caller's scope? is the org bound to a dynamic current_org()-derived value (never a hardcoded OrgId literal)? are mnt_rt tests genuine (not BYPASSRLS-masked)? authz gating correct? secrets/PII not logged? injection? Rank by severity; treat any tenant-isolation hole as critical/high.`,
+    `${BASE}\n\nLANE: SECURITY + MULTI-TENANT RLS. Adversarially check: is every new tenant read/write RLS-armed (app.current_org)? could anything read/write CROSS-ORG or cross-branch beyond the caller's scope? is the org bound to a dynamic current_org()-derived value (never a hardcoded OrgId literal)? are console_rt tests genuine (not BYPASSRLS-masked)? authz gating correct? secrets/PII not logged? injection? Rank by severity; treat any tenant-isolation hole as critical/high.`,
     { label: 'security-rls', phase: 'Review', schema: FINDINGS },
   ),
   () => agent(
     `${BASE}\n\nLANE: CROSS-MODEL (codex). Run a DIFFERENT model over the same diff for blind-spot diversity. Execute via Bash (read-only, 240s budget):\n` +
-    `  cd ${REPO} && timeout 240 codex exec --sandbox read-only --skip-git-repo-check "Senior security+correctness reviewer. Review ONLY the diff of \`${DIFF}\` in this repo (multi-tenant Postgres RLS; mnt_rt NOBYPASSRLS+FORCE RLS; every tenant read/write must arm app.current_org). Hunt for: cross-tenant/cross-branch isolation leaks, missing RLS arming, hardcoded org literals, swallowed errors, correctness bugs. Output findings ranked critical/high/medium/low with file:line + fix. Review only; do not modify files." 2>&1 | tail -80\n` +
+    `  cd ${REPO} && timeout 240 codex exec --sandbox read-only --skip-git-repo-check "Senior security+correctness reviewer. Review ONLY the diff of \`${DIFF}\` in this repo (multi-tenant Postgres RLS; console_rt NOBYPASSRLS+FORCE RLS; every tenant read/write must arm app.current_org). Hunt for: cross-tenant/cross-branch isolation leaks, missing RLS arming, hardcoded org literals, swallowed errors, correctness bugs. Output findings ranked critical/high/medium/low with file:line + fix. Review only; do not modify files." 2>&1 | tail -80\n` +
     `(gtimeout if timeout is absent; if codex errors/auth-fails, say so in one finding and continue.) Then translate codex's output into the findings schema (preserve its severities + file:line). lane="codex-xmodel".`,
     { label: 'codex-xmodel', phase: 'Review', schema: FINDINGS },
   ),

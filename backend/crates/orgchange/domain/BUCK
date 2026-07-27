@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-orgchange-domain",
+    name = "console-orgchange-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_orgchange_domain",
+    crate = "console_orgchange_domain",
     edition = "2024",
     crate_root = "backend/crates/orgchange/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
@@ -25,16 +25,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-orgchange-domain-unit",
+    name = "console-orgchange-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_orgchange_domain",
+    crate = "console_orgchange_domain",
     edition = "2024",
     crate_root = "backend/crates/orgchange/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/domain"},
     labels = ["owner.backend.crates.orgchange.domain", "domain.orgchange", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

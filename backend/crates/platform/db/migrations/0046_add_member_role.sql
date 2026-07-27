@@ -11,7 +11,7 @@
 -- `users_roles_check`. Drop that and re-add the same `roles <@ ARRAY[...]`
 -- containment check with MEMBER appended, keeping every existing role valid.
 --
--- mnt-gate: audited-table users
+-- console-gate: audited-table users
 ALTER TABLE users
     DROP CONSTRAINT users_roles_check,
     ADD CONSTRAINT users_roles_check CHECK (

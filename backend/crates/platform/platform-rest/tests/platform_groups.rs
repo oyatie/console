@@ -1,17 +1,17 @@
 //! Platform group management integration tests.
 //!
 //! Proves the platform console can manage group identity and subsidiary
-//! membership through the runtime `mnt_rt` role without exposing raw
+//! membership through the runtime `console_rt` role without exposing raw
 //! `group_memberships` to application SQL.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Method, Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_provisioning::PlatformProvisioner;
-use mnt_platform_rest::{PLATFORM_GROUPS_PATH, PlatformRestState, router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_provisioning::PlatformProvisioner;
+use console_platform_rest::{PLATFORM_GROUPS_PATH, PlatformRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -22,13 +22,13 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Harness {
     private_pem: String,
     public_pem: String,
-    /// Runtime-role pool the app router uses (every connection is `mnt_rt`).
+    /// Runtime-role pool the app router uses (every connection is `console_rt`).
     rt_pool: PgPool,
 }
 
@@ -104,7 +104,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -333,7 +333,7 @@ async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
         .to_string();
     assert!(
         raw_read_err.contains("permission denied"),
-        "raw group_memberships read as mnt_rt must be denied, got: {raw_read_err}"
+        "raw group_memberships read as console_rt must be denied, got: {raw_read_err}"
     );
 
     let raw_grants_err = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM group_role_grants")
@@ -343,6 +343,6 @@ async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
         .to_string();
     assert!(
         raw_grants_err.contains("permission denied"),
-        "raw group_role_grants read as mnt_rt must be denied, got: {raw_grants_err}"
+        "raw group_role_grants read as console_rt must be denied, got: {raw_grants_err}"
     );
 }

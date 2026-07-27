@@ -4,15 +4,15 @@
 //! `PgFinancialStore::lifecycle_cost_for_equipment` runs every SELECT
 //! (registry_equipment, equipment_cost_ledger SUM-by-source, outsource_works via
 //! work_orders, sales_listings) inside ONE `with_org_conn(current_org()?, ..)`
-//! closure. A *static* gate (`mnt-gate-rls-arming`) proves the wrapping is
+//! closure. A *static* gate (`console-gate-rls-arming`) proves the wrapping is
 //! present in source; this test proves it WORKS AT RUNTIME when the read
-//! executes as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! executes as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser, which sees every row regardless of `app.current_org` and
 //! would green-light a totally broken (or leaking) read. We SEED as the owner
-//! (raw inserts, wrapped writes under `scope_org`) and READ as `mnt_rt`.
+//! (raw inserts, wrapped writes under `scope_org`) and READ as `console_rt`.
 //!
 //! Asserts, with two tenants A and B each holding one asset + ledger entries +
 //! a SOLD listing:
@@ -20,17 +20,17 @@
 //!       maintenance (MANUAL_ADMIN + PURCHASE_EXECUTION) + sale, and NEVER sums
 //!       B's data;
 //!   (b) under org-A's armed GUC, B's asset is NOT FOUND (cross-tenant
-//!       isolation holds under RLS as `mnt_rt`);
+//!       isolation holds under RLS as `console_rt`);
 //!   (c) FAIL-CLOSED: with no GUC armed the read returns not-found (zero rows),
 //!       never a leak.
 
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_application::{
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_application::{
     AppendCostLedgerEntryCommand, CostLedgerSource, CreatePurchaseRequestCommand,
     FinancialConfigSnapshot, PurchaseRequestLineInput, PurchaseSubmitCommand, PurchaseType,
 };
-use mnt_financial_domain::{AcquisitionBasis, DepreciationMethod, PurchaseStatus};
-use mnt_kernel_core::{
+use console_financial_domain::{AcquisitionBasis, DepreciationMethod, PurchaseStatus};
+use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, TraceContext, UserId, WorkOrderId,
 };
 use sqlx::PgPool;
@@ -38,22 +38,22 @@ use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 // ===========================================================================
-// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`.
+// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`.
 // Copied from workorder/adapter-postgres/tests/rls_read_surfaces_as_runtime_role.rs
 // so RLS is ACTUALLY enforced — BYPASSRLS does not apply, FORCE RLS does.
 // ===========================================================================
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    // Production runs migrations as `mnt_app`, so 0031's
-    // `ALTER DEFAULT PRIVILEGES FOR ROLE mnt_app` auto-grants `mnt_rt` SELECT on
-    // every table `mnt_app` later creates (including sales_listings in 0043).
+    // Production runs migrations as `console_app`, so 0031's
+    // `ALTER DEFAULT PRIVILEGES FOR ROLE console_app` auto-grants `console_rt` SELECT on
+    // every table `console_app` later creates (including sales_listings in 0043).
     // The #[sqlx::test] harness runs migrations as a different superuser, so that
     // default-privilege auto-grant never fires for sales_listings; replicate the
     // production grant here so the runtime-role read is exercised faithfully.
-    sqlx::query("GRANT SELECT ON sales_listings TO mnt_rt")
+    sqlx::query("GRANT SELECT ON sales_listings TO console_rt")
         .execute(owner_pool)
         .await
         .unwrap();
@@ -62,7 +62,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -413,7 +413,7 @@ async fn seed_tenant(
     // Ledger writes are wrapped (with_audits + current_org INSERT), so run them
     // under scope_org to arm the GUC exactly as the org middleware would.
     let occurred_at = datetime!(2026-06-12 12:00 UTC);
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgFinancialStore::new(owner_pool.clone());
         store
             .append_cost_ledger_entry(AppendCostLedgerEntryCommand {
@@ -466,12 +466,12 @@ async fn lifecycle_rollup_is_tenant_scoped_as_runtime_role(owner_pool: PgPool) {
     let a = seed_tenant(&owner_pool, org_a, "A", 1).await;
     let _b = seed_tenant(&owner_pool, org_b, "B", 2).await;
 
-    let summary = mnt_platform_request_context::scope_org(org_a, async {
+    let summary = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store.lifecycle_cost_for_equipment(a.equipment_id).await
     })
     .await
-    .expect("org-A lifecycle read must surface A's asset as mnt_rt (GUC armed)");
+    .expect("org-A lifecycle read must surface A's asset as console_rt (GUC armed)");
 
     // Acquisition is explicit (30M), not the vehicle-value fallback.
     assert_eq!(summary.acquisition_cost_won, Some(30_000_000));
@@ -510,7 +510,7 @@ async fn cross_tenant_lifecycle_is_invisible_as_runtime_role(owner_pool: PgPool)
     let _a = seed_tenant(&owner_pool, org_a, "A", 1).await;
     let b = seed_tenant(&owner_pool, org_b, "B", 2).await;
 
-    let cross = mnt_platform_request_context::scope_org(org_a, async {
+    let cross = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store.lifecycle_cost_for_equipment(b.equipment_id).await
     })
@@ -518,7 +518,7 @@ async fn cross_tenant_lifecycle_is_invisible_as_runtime_role(owner_pool: PgPool)
 
     assert!(
         cross.is_err(),
-        "org-B's asset must be INVISIBLE under org-A's GUC as mnt_rt (RLS isolates tenants)"
+        "org-B's asset must be INVISIBLE under org-A's GUC as console_rt (RLS isolates tenants)"
     );
 }
 
@@ -546,7 +546,7 @@ async fn lifecycle_read_fails_closed_without_org_as_runtime_role(owner_pool: PgP
 // vehicle_value NULL — must still produce a TCO, not a 422. The REST handler
 // `get_lifecycle_cost` first resolves the branch (equipment_branch, which used
 // to hard-require vehicle_value and 422'd before the read even ran) and then
-// performs the rollup; BOTH legs must succeed as the runtime role `mnt_rt`.
+// performs the rollup; BOTH legs must succeed as the runtime role `console_rt`.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn acquisition_only_asset_returns_tco_as_runtime_role(owner_pool: PgPool) {
@@ -597,8 +597,8 @@ async fn acquisition_only_asset_returns_tco_as_runtime_role(owner_pool: PgPool) 
     .await
     .unwrap();
 
-    // Read everything the REST handler reads, as mnt_rt under org-A's armed GUC.
-    let (branch, summary) = mnt_platform_request_context::scope_org(org_a, async {
+    // Read everything the REST handler reads, as console_rt under org-A's armed GUC.
+    let (branch, summary) = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         // Leg 1: the branch lookup the handler runs FIRST (was the 422 source).
         let branch = store
@@ -634,10 +634,10 @@ async fn acquisition_only_asset_returns_tco_as_runtime_role(owner_pool: PgPool) 
 }
 
 // ===========================================================================
-// (#19.18) Purchase-request create + submit as the runtime role `mnt_rt`.
+// (#19.18) Purchase-request create + submit as the runtime role `console_rt`.
 //
 // The WORM-replica precondition is DEFERRED from CREATE to SUBMIT. This test
-// proves, as the genuine non-owner `mnt_rt` under the armed GUC:
+// proves, as the genuine non-owner `console_rt` under the armed GUC:
 //   (a) a purchase request CREATES against still-replicating (UNVERIFIED)
 //       REQUEST evidence — the prod-real unblock; before the fix create itself
 //       4xx'd and the web swallowed the reason — and the created row is VISIBLE
@@ -680,18 +680,18 @@ async fn seed_request_evidence(
     evidence_id
 }
 
-/// The grants the production default-privilege auto-grant would give `mnt_rt`
+/// The grants the production default-privilege auto-grant would give `console_rt`
 /// for the purchase-request write path; the `#[sqlx::test]` harness runs
 /// migrations as a different superuser, so replicate them here. Each GRANT is a
 /// static literal (no interpolation) to satisfy the dynamic-SQL audit lint.
 async fn grant_purchase_path_to_runtime_role(owner_pool: &PgPool) {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON evidence_media TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON work_orders TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON registry_equipment TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON financial_purchase_requests TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON financial_purchase_history TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON audit_events TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON evidence_media TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON work_orders TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON registry_equipment TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON financial_purchase_requests TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON financial_purchase_history TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON audit_events TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -762,9 +762,9 @@ async fn purchase_request_create_and_submit_as_runtime_role(owner_pool: PgPool) 
     )
     .await;
 
-    // (a) Create succeeds against PENDING evidence as armed mnt_rt, and the row
+    // (a) Create succeeds against PENDING evidence as armed console_rt, and the row
     //     is visible to a fresh armed read.
-    let created = mnt_platform_request_context::scope_org(org_a, async {
+    let created = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store
             .create_purchase_request(CreatePurchaseRequestCommand {
@@ -786,10 +786,10 @@ async fn purchase_request_create_and_submit_as_runtime_role(owner_pool: PgPool) 
             .await
     })
     .await
-    .expect("create must succeed against PENDING evidence as armed mnt_rt");
+    .expect("create must succeed against PENDING evidence as armed console_rt");
     assert_eq!(created.status, PurchaseStatus::StatementAttached);
 
-    let visible = mnt_platform_request_context::scope_org(org_a, async {
+    let visible = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store.purchase_request(created.id).await
     })
@@ -799,7 +799,7 @@ async fn purchase_request_create_and_submit_as_runtime_role(owner_pool: PgPool) 
     assert_eq!(visible.status, PurchaseStatus::StatementAttached);
 
     // (b) SUBMIT is refused with the surfaced WORM reason while PENDING.
-    let blocked = mnt_platform_request_context::scope_org(org_a, async {
+    let blocked = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store
             .submit_purchase_request(PurchaseSubmitCommand {
@@ -824,7 +824,7 @@ async fn purchase_request_create_and_submit_as_runtime_role(owner_pool: PgPool) 
         .await
         .unwrap();
 
-    let submitted = mnt_platform_request_context::scope_org(org_a, async {
+    let submitted = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store
             .submit_purchase_request(PurchaseSubmitCommand {
@@ -858,7 +858,7 @@ async fn cross_tenant_purchase_request_is_invisible_as_runtime_role(owner_pool: 
         "VERIFIED",
     )
     .await;
-    let b_purchase = mnt_platform_request_context::scope_org(org_b, async {
+    let b_purchase = console_platform_request_context::scope_org(org_b, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store
             .create_purchase_request(CreatePurchaseRequestCommand {
@@ -884,13 +884,13 @@ async fn cross_tenant_purchase_request_is_invisible_as_runtime_role(owner_pool: 
 
     // Under org-A's GUC, B's purchase request is NOT FOUND (RLS isolates tenants).
     seed_org(&owner_pool, *org_a.as_uuid(), "A").await;
-    let cross = mnt_platform_request_context::scope_org(org_a, async {
+    let cross = console_platform_request_context::scope_org(org_a, async {
         let store = PgFinancialStore::new(rt_pool.clone());
         store.purchase_request(b_purchase.id).await
     })
     .await;
     assert!(
         cross.is_err(),
-        "org-B's purchase request must be INVISIBLE under org-A's GUC as mnt_rt"
+        "org-B's purchase request must be INVISIBLE under org-A's GUC as console_rt"
     );
 }

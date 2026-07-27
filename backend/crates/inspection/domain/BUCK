@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-inspection-domain",
+    name = "console-inspection-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/inspection/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_inspection_domain",
+    crate = "console_inspection_domain",
     edition = "2024",
     crate_root = "backend/crates/inspection/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inspection/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )

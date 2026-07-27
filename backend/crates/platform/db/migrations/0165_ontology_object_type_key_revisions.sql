@@ -8,11 +8,11 @@
 -- non-superuser application must run directly as the migration owner.
 DO $$
 DECLARE
-    v_migrator OID := pg_catalog.to_regrole('mnt_app');
-    v_runtime OID := pg_catalog.to_regrole('mnt_rt');
-    v_writer OID := pg_catalog.to_regrole('mnt_ontology_writer');
-    v_leave_writer OID := pg_catalog.to_regrole('mnt_leave_definer');
-    v_command OID := pg_catalog.to_regrole('mnt_ontology_cmd');
+    v_migrator OID := pg_catalog.to_regrole('console_app');
+    v_runtime OID := pg_catalog.to_regrole('console_rt');
+    v_writer OID := pg_catalog.to_regrole('console_ontology_writer');
+    v_leave_writer OID := pg_catalog.to_regrole('console_leave_definer');
+    v_command OID := pg_catalog.to_regrole('console_ontology_cmd');
     v_applier_is_superuser BOOLEAN;
 BEGIN
     IF v_migrator IS NULL OR v_runtime IS NULL OR v_writer IS NULL
@@ -26,10 +26,10 @@ BEGIN
     FROM pg_catalog.pg_roles
     WHERE rolname = CURRENT_USER;
     IF NOT v_applier_is_superuser
-       AND (CURRENT_USER <> 'mnt_app' OR SESSION_USER <> 'mnt_app') THEN
+       AND (CURRENT_USER <> 'console_app' OR SESSION_USER <> 'console_app') THEN
         RAISE EXCEPTION USING
             ERRCODE = '42501',
-            MESSAGE = 'ontology_role_topology.mnt_app_must_apply_directly';
+            MESSAGE = 'ontology_role_topology.console_app_must_apply_directly';
     END IF;
 
     IF EXISTS (
@@ -40,7 +40,7 @@ BEGIN
     ) THEN
         RAISE EXCEPTION USING
             ERRCODE = '42501',
-            MESSAGE = 'ontology_role_topology.mnt_app_not_hardened';
+            MESSAGE = 'ontology_role_topology.console_app_not_hardened';
     END IF;
 
     IF EXISTS (
@@ -65,7 +65,7 @@ BEGIN
             MESSAGE = 'ontology_role_topology.command_not_hardened';
     END IF;
 
-    -- mnt_app receives only the two direct SET+INHERIT edges PostgreSQL requires
+    -- console_app receives only the two direct SET+INHERIT edges PostgreSQL requires
     -- to assign and operate objects owned by the preprovisioned NOLOGIN
     -- capability writers. It cannot administer either role, and no runtime or
     -- command identity participates in any membership edge.
@@ -102,7 +102,7 @@ CREATE TABLE ont_object_type_key_revisions (
 );
 
 -- Legacy keys receive a conservative monotone baseline. The isolated
--- migration-only mnt_app identity is explicitly BYPASSRLS so data migrations
+-- migration-only console_app identity is explicitly BYPASSRLS so data migrations
 -- can upgrade every tenant without manufacturing application tenant context.
 -- New keys start at r1.
 INSERT INTO ont_object_type_key_revisions (
@@ -117,7 +117,7 @@ GROUP BY org_id, stable_key;
 -- writable; runtime can only present a manifest whose canonical JSONB digest was
 -- pinned by a migration.
 -- Platform-global control-plane reference data (owner/capability-only): no
--- direct PUBLIC or mnt_rt access; ontology commands read it through the writer.
+-- direct PUBLIC or console_rt access; ontology commands read it through the writer.
 CREATE TABLE ont_builtin_catalog_allowlist (
     catalog_version TEXT PRIMARY KEY CHECK (btrim(catalog_version) <> ''),
     manifest_digest BYTEA NOT NULL CHECK (octet_length(manifest_digest) = 32),
@@ -128,8 +128,8 @@ VALUES (
     '2026-07-19.1',
     decode('e2b5fdff9a03d4d798344cac2496acab412ffc21e2be84c03e7345a328123247', 'hex')
 );
-ALTER TABLE ont_builtin_catalog_allowlist OWNER TO mnt_app;
-REVOKE ALL ON ont_builtin_catalog_allowlist FROM PUBLIC, mnt_rt;
+ALTER TABLE ont_builtin_catalog_allowlist OWNER TO console_app;
+REVOKE ALL ON ont_builtin_catalog_allowlist FROM PUBLIC, console_rt;
 
 CREATE TABLE ont_builtin_catalog_installs (
     org_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -165,13 +165,13 @@ CREATE TRIGGER trg_ont_object_type_key_revisions_org_immutable
     BEFORE UPDATE ON ont_object_type_key_revisions
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 
--- Cluster-global, non-login capability owner. It is never granted to mnt_rt;
--- mnt_ontology_cmd receives only USAGE on ontology_api and EXECUTE on the four
+-- Cluster-global, non-login capability owner. It is never granted to console_rt;
+-- console_ontology_cmd receives only USAGE on ontology_api and EXECUTE on the four
 -- complete mutation+audit entrypoints below.
-CREATE SCHEMA ontology_api AUTHORIZATION mnt_ontology_writer;
-REVOKE ALL ON SCHEMA ontology_api FROM PUBLIC, mnt_rt;
-GRANT USAGE ON SCHEMA ontology_api TO mnt_ontology_cmd;
-GRANT USAGE ON SCHEMA public TO mnt_ontology_writer;
+CREATE SCHEMA ontology_api AUTHORIZATION console_ontology_writer;
+REVOKE ALL ON SCHEMA ontology_api FROM PUBLIC, console_rt;
+GRANT USAGE ON SCHEMA ontology_api TO console_ontology_cmd;
+GRANT USAGE ON SCHEMA public TO console_ontology_writer;
 
 -- The new binary writes only through ontology_api. During one blue/green
 -- compatibility window, however, the retained pre-0165 ReplicaSet still emits
@@ -190,7 +190,7 @@ GRANT SELECT ON
     ont_action_types,
     ont_analytics,
     ont_builtin_catalog_installs
-TO mnt_rt;
+TO console_rt;
 REVOKE ALL PRIVILEGES ON
     ont_object_types,
     ont_object_type_key_revisions,
@@ -205,19 +205,19 @@ REVOKE ALL PRIVILEGES ON
     gov_approval_requests,
     gov_approvals,
     gov_approval_consumptions
-FROM mnt_ontology_cmd;
-GRANT INSERT, UPDATE ON ont_object_types TO mnt_rt;
-GRANT INSERT ON ont_property_defs, ont_link_types, ont_action_types, ont_analytics TO mnt_rt;
-REVOKE DELETE, TRUNCATE ON ont_object_types FROM mnt_rt, PUBLIC;
+FROM console_ontology_cmd;
+GRANT INSERT, UPDATE ON ont_object_types TO console_rt;
+GRANT INSERT ON ont_property_defs, ont_link_types, ont_action_types, ont_analytics TO console_rt;
+REVOKE DELETE, TRUNCATE ON ont_object_types FROM console_rt, PUBLIC;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON ont_object_type_key_revisions,
-    ont_builtin_catalog_installs FROM mnt_rt, PUBLIC;
+    ont_builtin_catalog_installs FROM console_rt, PUBLIC;
 REVOKE UPDATE, DELETE, TRUNCATE ON ont_property_defs, ont_link_types,
-    ont_action_types, ont_analytics FROM mnt_rt, PUBLIC;
+    ont_action_types, ont_analytics FROM console_rt, PUBLIC;
 
 GRANT SELECT, INSERT, UPDATE ON
     ont_object_types,
     ont_object_type_key_revisions
-TO mnt_ontology_writer;
+TO console_ontology_writer;
 GRANT SELECT, INSERT ON
     ont_property_defs,
     ont_link_types,
@@ -226,11 +226,11 @@ GRANT SELECT, INSERT ON
     audit_events,
     gov_approval_consumptions,
     ont_builtin_catalog_installs
-TO mnt_ontology_writer;
-GRANT SELECT ON users, gov_approval_requests, ont_builtin_catalog_allowlist TO mnt_ontology_writer;
+TO console_ontology_writer;
+GRANT SELECT ON users, gov_approval_requests, ont_builtin_catalog_allowlist TO console_ontology_writer;
 -- PostgreSQL requires UPDATE privilege for SELECT ... FOR UPDATE even though
 -- the transition routine never changes the approval row itself.
-GRANT SELECT, UPDATE ON gov_approvals TO mnt_ontology_writer;
+GRANT SELECT, UPDATE ON gov_approvals TO console_ontology_writer;
 
 -- Ontology success events are proof that a DB-owned command completed. The
 -- general runtime role must not be able to forge those audit facts directly.
@@ -247,7 +247,7 @@ AS $$
         ELSE SESSION_USER::NAME
     END
 $$;
-ALTER FUNCTION ontology_api.invoker_role() OWNER TO mnt_ontology_writer;
+ALTER FUNCTION ontology_api.invoker_role() OWNER TO console_ontology_writer;
 
 -- The old binary must be able to insert a new parent before the new sidecar FK
 -- is checked. It may update only lifecycle_state+updated_at; content updates are
@@ -261,7 +261,7 @@ SET search_path = pg_catalog
 SET row_security = on
 AS $$
 BEGIN
-    IF ontology_api.invoker_role() <> 'mnt_rt'::NAME THEN
+    IF ontology_api.invoker_role() <> 'console_rt'::NAME THEN
         RETURN NEW;
     END IF;
 
@@ -289,7 +289,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION ontology_api.prepare_legacy_object_type_write() OWNER TO mnt_ontology_writer;
+ALTER FUNCTION ontology_api.prepare_legacy_object_type_write() OWNER TO console_ontology_writer;
 CREATE TRIGGER trg_ont_object_types_legacy_write_guard
     BEFORE INSERT OR UPDATE ON public.ont_object_types
     FOR EACH ROW EXECUTE FUNCTION ontology_api.prepare_legacy_object_type_write();
@@ -317,8 +317,8 @@ BEGIN
     -- Direct command credentials cannot INSERT audit_events. When an approved
     -- command reaches this trigger it is nested inside the writer-owned
     -- SECURITY DEFINER routine, while the old compatibility path arrives as
-    -- mnt_rt and must prove a matching parent mutation in this transaction.
-    IF v_invoker = 'mnt_rt'::NAME THEN
+    -- console_rt and must prove a matching parent mutation in this transaction.
+    IF v_invoker = 'console_rt'::NAME THEN
         IF NEW.action = 'ontology.object_type.builtin_install'
            OR NEW.target_type <> 'ont_object_types'
            OR NOT EXISTS (
@@ -351,7 +351,7 @@ BEGIN
                 RAISE EXCEPTION USING ERRCODE = '23503', MESSAGE = 'ontology_legacy.key_revision_missing';
             END IF;
         END IF;
-    ELSIF v_invoker <> 'mnt_ontology_cmd'::NAME THEN
+    ELSIF v_invoker <> 'console_ontology_cmd'::NAME THEN
         RAISE EXCEPTION USING
             ERRCODE = '42501',
             MESSAGE = 'ontology_audit.command_required';
@@ -359,7 +359,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION ontology_api.protected_audit_writer_guard() OWNER TO mnt_ontology_writer;
+ALTER FUNCTION ontology_api.protected_audit_writer_guard() OWNER TO console_ontology_writer;
 CREATE TRIGGER trg_audit_events_ontology_command_only
     BEFORE INSERT ON public.audit_events
     FOR EACH ROW EXECUTE FUNCTION ontology_api.protected_audit_writer_guard();
@@ -425,7 +425,7 @@ BEGIN
         MESSAGE = 'ontology_write.exactly_one_current_transaction_audit_required';
 END;
 $$;
-ALTER FUNCTION ontology_api.require_current_transaction_audit() OWNER TO mnt_ontology_writer;
+ALTER FUNCTION ontology_api.require_current_transaction_audit() OWNER TO console_ontology_writer;
 CREATE CONSTRAINT TRIGGER trg_ont_object_types_current_audit
     AFTER INSERT OR UPDATE ON public.ont_object_types
     DEFERRABLE INITIALLY DEFERRED
@@ -1220,17 +1220,17 @@ END;
 $$;
 
 -- Pin every definer routine to the restricted capability role. Helpers remain
--- private; only the complete mutation+audit entrypoints are executable by mnt_rt.
-ALTER FUNCTION ontology_api.assert_write_context(UUID, UUID, TEXT, TEXT) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.insert_children(UUID, UUID, JSONB, BOOLEAN) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.write_audit(UUID, UUID, TEXT, UUID, JSONB, JSONB, TEXT, TEXT, TIMESTAMPTZ) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT) OWNER TO mnt_ontology_writer;
-ALTER FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT) OWNER TO mnt_ontology_writer;
+-- private; only the complete mutation+audit entrypoints are executable by console_rt.
+ALTER FUNCTION ontology_api.assert_write_context(UUID, UUID, TEXT, TEXT) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.insert_children(UUID, UUID, JSONB, BOOLEAN) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.write_audit(UUID, UUID, TEXT, UUID, JSONB, JSONB, TEXT, TEXT, TIMESTAMPTZ) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT) OWNER TO console_ontology_writer;
+ALTER FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT) OWNER TO console_ontology_writer;
 
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA ontology_api FROM PUBLIC, mnt_rt, mnt_ontology_cmd;
-GRANT EXECUTE ON FUNCTION ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT) TO mnt_ontology_cmd;
-GRANT EXECUTE ON FUNCTION ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT) TO mnt_ontology_cmd;
-GRANT EXECUTE ON FUNCTION ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT) TO mnt_ontology_cmd;
-GRANT EXECUTE ON FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT) TO mnt_ontology_cmd;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA ontology_api FROM PUBLIC, console_rt, console_ontology_cmd;
+GRANT EXECUTE ON FUNCTION ontology_api.create_object_type(UUID, JSONB, UUID, TEXT, TEXT) TO console_ontology_cmd;
+GRANT EXECUTE ON FUNCTION ontology_api.stage_object_type(UUID, TEXT, UUID, BIGINT, JSONB, UUID, TEXT, TEXT) TO console_ontology_cmd;
+GRANT EXECUTE ON FUNCTION ontology_api.transition_object_type(UUID, UUID, UUID, BIGINT, TEXT, UUID, TEXT, TEXT) TO console_ontology_cmd;
+GRANT EXECUTE ON FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT) TO console_ontology_cmd;

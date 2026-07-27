@@ -8,6 +8,6 @@ kind: Kustomization
 resources:
   - clustersecretstore-openbao.yaml
   - clusterrolebinding-external-secrets-auth-delegator.yaml
-  - externalsecret-mnt-secrets.yaml
-  - externalsecret-mnt-db-rt.yaml
+  - externalsecret-console-secrets.yaml
+  - externalsecret-console-db-rt.yaml
   - externalsecret-oci-objectstore-creds.yaml

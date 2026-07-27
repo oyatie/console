@@ -11,7 +11,7 @@
 // deny-by-omission from the server authz projection supplied by LeaveBody.
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { LeaveRequestView, LeaveStatutoryPushView } from "../../api/types";
 import { ko } from "../../i18n/ko";

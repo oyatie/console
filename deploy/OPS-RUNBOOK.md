@@ -16,7 +16,7 @@ bare metal.
 | Property | Live `oci-guest` posture |
 |---|---|
 | Secret store | **OCI Vault** is the recovery source for Talos/kubeconfig/app secret bundles. Kubernetes `Secret` objects are created out of band from that bundle; External Secrets / Sealed Secrets are an upgrade path, not the current live controller. |
-| Object-store endpoint and retention | CNPG/Barman uses OCI Object Storage through the S3-compatible endpoint in `deploy/apps/maintenance/base/database.yaml` (`s3://mnt-db-backups/`), with the `oci-objectstore-creds` customer-secret-key pair. Retention is intentionally indefinite in the manifest today: no `retentionPolicy` means no automatic pruning, so storage growth must be monitored against the Always Free object-storage guardrail. Evidence objects use the same OCI S3-compatible posture until a context-specific endpoint is selected. |
+| Object-store endpoint and retention | CNPG/Barman uses OCI Object Storage through the S3-compatible endpoint in `deploy/apps/console/base/database.yaml` (`s3://mnt-db-backups/`), with the `oci-objectstore-creds` customer-secret-key pair. Retention is intentionally indefinite in the manifest today: no `retentionPolicy` means no automatic pruning, so storage growth must be monitored against the Always Free object-storage guardrail. Evidence objects use the same OCI S3-compatible posture until a context-specific endpoint is selected. |
 | Database/topology HA | One VM.Standard.A1.Flex node, one schedulable Talos control-plane, and CNPG `instances: 1`. The API/web replicas and PDBs improve rollout behavior but do not survive node loss because they share the same node. |
 | Automatic failover | **Not present** for node or database loss in this context. A failed node is a restore-from-backup / rebuild event using Vault plus Barman backup artifacts, not a transparent failover. |
 
@@ -33,13 +33,13 @@ All cluster secrets live in **OCI Vault** (`bitween-default-vault`, compartment
 oci vault secret list --compartment-id <cloud-compartment-ocid> --region ap-chuncheon-1
 oci secrets secret-bundle get --secret-id <id> --query 'data."secret-bundle-content".content' --raw-output | base64 -d
 ```
-Vault secrets: `mnt-talos-secrets` (Talos PKI / secrets.yaml — regenerates a
-matching talosconfig), `mnt-talos-kubeconfig` (tar of talosconfig + kubeconfig),
-`mnt-app-secrets-bundle` (tar of JWT ES256 keypair, mnt_rt DB password, coldstart
+Vault secrets: `console-talos-secrets` (Talos PKI / secrets.yaml — regenerates a
+matching talosconfig), `console-talos-kubeconfig` (tar of talosconfig + kubeconfig),
+`console-app-secrets-bundle` (tar of JWT ES256 keypair, console_rt DB password, coldstart
 OTP, OCI S3 customer-secret-key).
 
 ## 1. Facts (region ap-chuncheon-1, prod compartment)
-- Node: **mnt-fsm-node**, VM.Standard.A1.Flex 4 OCPU/24 GB (the ENTIRE free-tier
+- Node: **console-fsm-node**, VM.Standard.A1.Flex 4 OCPU/24 GB (the ENTIRE free-tier
   A1 allotment — never run a second A1).
 - **Reserved public IP `140.245.68.253`** (stable; DNS points here). Private `10.0.0.227`.
 - k8s `v1.36.1`, Talos `v1.13.4`, single control-plane node (schedules workloads).
@@ -49,7 +49,7 @@ OTP, OCI S3 customer-secret-key).
 
 ## 2. kubectl (works over the public IP)
 ```sh
-export KUBECONFIG=/Users/jasonlee/.config/talos-mnt/_talos/kubeconfig   # or restore from Vault mnt-talos-kubeconfig
+export KUBECONFIG=/Users/jasonlee/.config/talos-mnt/_talos/kubeconfig   # or restore from Vault console-talos-kubeconfig
 kubectl get nodes        # server: https://140.245.68.253:6443
 ```
 Large responses work **only because eth0 is pinned to MTU 1500** (OCI VNICs default
@@ -71,49 +71,49 @@ talosctl config endpoint 127.0.0.1 && talosctl config node 10.0.0.227 && talosct
 ```
 
 ## 4. Database (CloudNativePG, ns `maintenance`)
-- Cluster `mnt-db`, pod `mnt-db-1` (2/2). Owner role `mnt_app` (secret `mnt-db-app`,
-  auto-generated), runtime `mnt_rt` (secret `mnt-db-rt`, you create; RLS-bound).
+- Cluster `console-db`, pod `console-db-1` (2/2). Owner role `console_app` (secret `console-db-app`,
+  auto-generated), runtime `console_rt` (secret `console-db-rt`, you create; RLS-bound).
 ```sh
-kubectl exec -n maintenance mnt-db-1 -c postgres -- psql -U postgres -d maintenance -c '\dt'
+kubectl exec -n console console-db-1 -c postgres -- psql -U postgres -d console -c '\dt'
 ```
-- Migrations run as an Argo **PreSync hook** `mnt-migrate` (mnt-app image, MNT_APP_ROLE=migrate).
+- Migrations run as an Argo **PreSync hook** `console-migrate` (console-app image, CONSOLE_APP_ROLE=migrate).
 - **KNOWN fresh-deploy DB gotchas** (apply in order on a clean cluster; each has a
   proper fix to land so the next rebuild is hands-off):
-  1. **DB-before-migrate deadlock.** migrate (PreSync) needs `mnt-db-app`, but the
-     `mnt-db` Cluster is a regular Sync resource → created *after* the hook. Bootstrap
+  1. **DB-before-migrate deadlock.** migrate (PreSync) needs `console-db-app`, but the
+     `console-db` Cluster is a regular Sync resource → created *after* the hook. Bootstrap
      the DB first: `kubectl apply --server-side -f` the Cluster + ObjectStore from the
      prod render. *Proper fix:* a pre-migrate sync-wave / separate bootstrap app.
   2. **Migration role needs BYPASSRLS.** `organizations`/`users` have FORCE RLS (0030),
-     so 0034's FK validation — run as `mnt_app` (subject to RLS, no `app.current_org`) —
-     sees zero orgs and the FK looks violated. `ALTER ROLE mnt_app BYPASSRLS;` (only the
-     migration role; runtime `mnt_rt` STAYS NOBYPASSRLS = the real tenant boundary).
-     *Proper fix:* CNPG `managed.roles` set `mnt_app` bypassrls.
+     so 0034's FK validation — run as `console_app` (subject to RLS, no `app.current_org`) —
+     sees zero orgs and the FK looks violated. `ALTER ROLE console_app BYPASSRLS;` (only the
+     migration role; runtime `console_rt` STAYS NOBYPASSRLS = the real tenant boundary).
+     *Proper fix:* CNPG `managed.roles` set `console_app` bypassrls.
   3. **0033 backfill order.** It backfills `auth_bootstrap_credentials.org_id` from its
      user, but before the user's own org backfill → the cold-start cred stays NULL →
      0034 NOT-NULL fails:
      `UPDATE auth_bootstrap_credentials c SET org_id=u.org_id FROM users u WHERE u.id=c.user_id AND c.org_id IS NULL;`
      *Proper fix:* reorder 0033 (users first) or give the cred a default-org backfill.
-  4. **mnt-db-rt password must be URL-encoded** in the `uri`. `openssl rand -base64`
+  4. **console-db-rt password must be URL-encoded** in the `uri`. `openssl rand -base64`
      yields `+`/`/`, which break `host:port` parsing → backend crashes
      `Database(Configuration(InvalidPort))`. Percent-encode the password in the uri.
      *Proper fix:* SECRETS.md uses `rand -hex` or percent-encodes.
   5. **Apalis schema ownership is migration-only.** The intended application shape
      now runs the vendor Apalis migrations and reconciles the queue ACL in
-     `MNT_APP_ROLE=migrate` as owner `mnt_app`, on the same validated physical
-     connection as the numbered SQLx migrations. API/worker startup as `mnt_rt`
+     `CONSOLE_APP_ROLE=migrate` as owner `console_app`, on the same validated physical
+     connection as the numbered SQLx migrations. API/worker startup as `console_rt`
      performs read-only schema, ledger/checksum, and ACL validation and fails closed
      on drift; it does not self-create queue objects or require runtime DDL grants.
      This describes the merge candidate, not proof that the live cluster has
      activated or successfully exercised the new boundary. Existing databases
-     may still have `mnt_rt`-owned Apalis objects, the legacy migration ledger,
+     may still have `console_rt`-owned Apalis objects, the legacy migration ledger,
      or the vendor `public.generate_ulid()` helper. Activation remains blocked
      until an administrator inventories those exact objects, rehearses an
      enumerated owner transfer on a restored disposable copy, and proves the
-     migrate-to-runtime transition. Never use broad `REASSIGN OWNED BY mnt_rt`;
+     migrate-to-runtime transition. Never use broad `REASSIGN OWNED BY console_rt`;
      the governed component runbook defines the required evidence boundary.
 - **Restoring from a dev/local dump:** purge dev-auth role-switch personas before pointing
   a release build at it — `DELETE FROM users WHERE phone LIKE 'dev-auth:%';`. The
-  composition root refuses to boot (api/worker) if any remain (`mnt-app`'s
+  composition root refuses to boot (api/worker) if any remain (`console-app`'s
   `assert_no_dev_auth_personas`, compiled out only under `--features dev-auth`).
 
 ### PR 473 governed command topology is not live
@@ -128,8 +128,8 @@ serving resources, or treat a successful render as a live readiness claim.
 
 ## 4.5. Dark mox mail stack (ns `maintenance`)
 
-- Workload: `statefulset/mnt-mox` (single replica) with PVC
-  `mox-data-mnt-mox-0` mounted at `/mox-data`. The image is
+- Workload: `statefulset/console-mox` (single replica) with PVC
+  `mox-data-console-mox-0` mounted at `/mox-data`. The image is
   `r.xmox.nl/mox@sha256:47497222e83679f95049329f12c5d8c4bfd3b809e62d4ffcfd508907e66b06a5`.
   mox must start as root and then drops to UID/GID 10001 from `mox.conf`; the
   container keeps `allowPrivilegeEscalation=false`, grants only the ownership and
@@ -138,36 +138,36 @@ serving resources, or treat a successful render as a live readiness claim.
   and 8010 (Prometheus metrics). There is no Ingress, hostPort, NodePort,
   LoadBalancer, SMTP/25, submission, IMAPS, webmail, or admin interface in the
   dark deployment.
-- App wiring: `mnt-config` sets
-  `MNT_MAIL_MOX_BASE_URL=http://mnt-mox.maintenance.svc:1080`; the app/worker
-  read `MNT_MAIL_MOX_WEBHOOK_SECRET` from `mnt-secrets`. HTTP is intentionally
+- App wiring: `console-config` sets
+  `CONSOLE_MAIL_MOX_BASE_URL=http://console-mox.console.svc:1080`; the app/worker
+  read `CONSOLE_MAIL_MOX_WEBHOOK_SECRET` from `console-secrets`. HTTP is intentionally
   service-local and protected by NetworkPolicy; do not switch it to HTTPS unless
   the backend reqwest rustls feature/test path is updated in the same PR.
-- Initial mox config: on first boot the pod copies `mnt-mox-bootstrap` into the
+- Initial mox config: on first boot the pod copies `console-mox-bootstrap` into the
   PVC and renders `domains.conf` with the webhook Authorization value. On later
   pod starts it refreshes only that `Authorization: Bearer ...` line from
-  `mnt-secrets`, so secret rotation propagates without overwriting other mox
+  `console-secrets`, so secret rotation propagates without overwriting other mox
   config/admin changes on the PVC; validate edits with:
 
   ```sh
-  kubectl exec -n maintenance statefulset/mnt-mox -- /bin/mox -config /mox-data/config/mox.conf config test
+  kubectl exec -n console statefulset/console-mox -- /bin/mox -config /mox-data/config/mox.conf config test
   ```
 
-  Webhook-secret rotation: update `mnt-secrets`, then restart every consumer so
+  Webhook-secret rotation: update `console-secrets`, then restart every consumer so
   mox rewrites the bearer line and the api/worker reload the same new value.
   Keep shell tracing off and verify with config test plus the dark smoke; do not
   print `domains.conf` or secret env values.
 
   ```sh
-  kubectl -n maintenance rollout restart statefulset/mnt-mox
-  kubectl argo rollouts restart mnt-app -n maintenance
-  kubectl -n maintenance rollout restart deployment/mnt-worker
-  kubectl -n maintenance rollout status statefulset/mnt-mox --timeout=300s
-  kubectl argo rollouts status mnt-app -n maintenance --timeout 300s
-  kubectl -n maintenance rollout status deployment/mnt-worker --timeout=300s
-  kubectl exec -n maintenance statefulset/mnt-mox -- \
+  kubectl -n console rollout restart statefulset/console-mox
+  kubectl argo rollouts restart console-app -n console
+  kubectl -n console rollout restart deployment/console-worker
+  kubectl -n console rollout status statefulset/console-mox --timeout=300s
+  kubectl argo rollouts status console-app -n console --timeout 300s
+  kubectl -n console rollout status deployment/console-worker --timeout=300s
+  kubectl exec -n console statefulset/console-mox -- \
     /bin/mox -config /mox-data/config/mox.conf config test
-  # Then run the dark smoke below using the rotated Vault/mnt-secrets values.
+  # Then run the dark smoke below using the rotated Vault/console-secrets values.
   ```
 
 - Bootstrap account password: retrieve the operator-held postmaster/account
@@ -177,11 +177,11 @@ serving resources, or treat a successful render as a live readiness claim.
   ```sh
   set -euo pipefail
   set +x
-  MOX_PASS_SECRET_OCID="${MOX_PASS_SECRET_OCID:?set to the mnt-mox-postmaster-password OCI Vault secret OCID}"
+  MOX_PASS_SECRET_OCID="${MOX_PASS_SECRET_OCID:?set to the console-mox-postmaster-password OCI Vault secret OCID}"
   MOX_PASS="$(oci secrets secret-bundle get --secret-id "$MOX_PASS_SECRET_OCID" \
     --query 'data."secret-bundle-content".content' --raw-output | base64 -d)"
   test -n "$MOX_PASS"
-  printf '%s' "$MOX_PASS" | kubectl exec -i -n maintenance statefulset/mnt-mox -- \
+  printf '%s' "$MOX_PASS" | kubectl exec -i -n console statefulset/console-mox -- \
     /bin/mox -config /mox-data/config/mox.conf setaccountpassword postmaster
   unset MOX_PASS MOX_PASS_SECRET_OCID
   ```
@@ -199,7 +199,7 @@ serving resources, or treat a successful render as a live readiness claim.
 
   ```sh
   scripts/check-networkpolicy-enforcement.sh
-  kustomize build deploy/apps/maintenance/overlays/prod >/tmp/mnt-prod.yaml
+  kustomize build deploy/apps/console/overlays/prod >/tmp/console-prod.yaml
   ```
 
 - Dark smoke without public MX:
@@ -207,34 +207,34 @@ serving resources, or treat a successful render as a live readiness claim.
   ```sh
   set -euo pipefail
   set +x
-  MNT_MOX_PF_PID=""
-  MNT_APP_PF_PID=""
+  CONSOLE_MOX_PF_PID=""
+  CONSOLE_APP_PF_PID=""
   cleanup_mox_e2e() {
-    [ -z "${MNT_MOX_PF_PID:-}" ] || kill "$MNT_MOX_PF_PID" 2>/dev/null || true
-    [ -z "${MNT_APP_PF_PID:-}" ] || kill "$MNT_APP_PF_PID" 2>/dev/null || true
-    unset MOX_PASS WEBHOOK_SECRET MOX_PASS_SECRET_OCID MNT_MOX_PF_PID MNT_APP_PF_PID
+    [ -z "${CONSOLE_MOX_PF_PID:-}" ] || kill "$CONSOLE_MOX_PF_PID" 2>/dev/null || true
+    [ -z "${CONSOLE_APP_PF_PID:-}" ] || kill "$CONSOLE_APP_PF_PID" 2>/dev/null || true
+    unset MOX_PASS WEBHOOK_SECRET MOX_PASS_SECRET_OCID CONSOLE_MOX_PF_PID CONSOLE_APP_PF_PID
   }
   trap cleanup_mox_e2e EXIT
-  MOX_PASS_SECRET_OCID="${MOX_PASS_SECRET_OCID:?set to the mnt-mox-postmaster-password OCI Vault secret OCID}"
+  MOX_PASS_SECRET_OCID="${MOX_PASS_SECRET_OCID:?set to the console-mox-postmaster-password OCI Vault secret OCID}"
   MOX_PASS="$(oci secrets secret-bundle get --secret-id "$MOX_PASS_SECRET_OCID" \
     --query 'data."secret-bundle-content".content' --raw-output | base64 -d)"
-  WEBHOOK_SECRET="$(kubectl -n maintenance get secret mnt-secrets \
-    -o jsonpath='{.data.MNT_MAIL_MOX_WEBHOOK_SECRET}' | base64 -d)"
+  WEBHOOK_SECRET="$(kubectl -n console get secret console-secrets \
+    -o jsonpath='{.data.CONSOLE_MAIL_MOX_WEBHOOK_SECRET}' | base64 -d)"
   test -n "$MOX_PASS"
   test -n "$WEBHOOK_SECRET"
-  kubectl -n maintenance port-forward svc/mnt-mox 1080:1080 >/tmp/mnt-mox-port-forward.log 2>&1 &
-  MNT_MOX_PF_PID=$!
-  kubectl -n maintenance port-forward svc/mnt-app 8090:8080 >/tmp/mnt-app-port-forward.log 2>&1 &
-  MNT_APP_PF_PID=$!
+  kubectl -n console port-forward svc/console-mox 1080:1080 >/tmp/console-mox-port-forward.log 2>&1 &
+  CONSOLE_MOX_PF_PID=$!
+  kubectl -n console port-forward svc/console-app 8090:8080 >/tmp/console-app-port-forward.log 2>&1 &
+  CONSOLE_APP_PF_PID=$!
   for url in http://127.0.0.1:1080/webapi/v0/ http://127.0.0.1:8090/readyz; do
     for i in $(seq 1 30); do curl -fsS "$url" >/dev/null && break || sleep 1; done
     curl -fsS "$url" >/dev/null
   done
-  MNT_MOX_WEBAPI_URL=http://127.0.0.1:1080 \
-  MNT_DEV_BACKEND_URL=http://127.0.0.1:8090 \
-  MNT_MOX_USER=postmaster@knllogistic.com \
-  MNT_MOX_PASS="$MOX_PASS" \
-  MNT_MAIL_MOX_WEBHOOK_SECRET="$WEBHOOK_SECRET" \
+  CONSOLE_MOX_WEBAPI_URL=http://127.0.0.1:1080 \
+  CONSOLE_DEV_BACKEND_URL=http://127.0.0.1:8090 \
+  CONSOLE_MOX_USER=postmaster@knllogistic.com \
+  CONSOLE_MOX_PASS="$MOX_PASS" \
+  CONSOLE_MAIL_MOX_WEBHOOK_SECRET="$WEBHOOK_SECRET" \
   node scripts/mox-e2e.mjs
   ```
 
@@ -257,7 +257,7 @@ serving resources, or treat a successful render as a live readiness claim.
   ENC_ARCHIVE="$ARCHIVE.enc"
   BACKUP_ENC_SECRET_OCID="${BACKUP_ENC_SECRET_OCID:?set to the mox backup encryption passphrase secret OCID}"
   BACKUP_MAC_SECRET_OCID="${BACKUP_MAC_SECRET_OCID:?set to the mox backup HMAC secret OCID}"
-  MNT_MOX_BACKUP_BUCKET="${MNT_MOX_BACKUP_BUCKET:?set to the approved encrypted retention bucket}"
+  CONSOLE_MOX_BACKUP_BUCKET="${CONSOLE_MOX_BACKUP_BUCKET:?set to the approved encrypted retention bucket}"
   BACKUP_ENC_PASS="$(oci secrets secret-bundle get --secret-id "$BACKUP_ENC_SECRET_OCID" \
     --query 'data."secret-bundle-content".content' --raw-output | base64 -d)"
   BACKUP_MAC_KEY="$(oci secrets secret-bundle get --secret-id "$BACKUP_MAC_SECRET_OCID" \
@@ -265,13 +265,13 @@ serving resources, or treat a successful render as a live readiness claim.
   test -n "$BACKUP_ENC_PASS"
   test -n "$BACKUP_MAC_KEY"
 
-  kubectl exec -n maintenance statefulset/mnt-mox -- /bin/sh -ceu '
+  kubectl exec -n console statefulset/console-mox -- /bin/sh -ceu '
     umask 077
     rm -rf "$1"
     mkdir -m 700 "$1"
     /bin/mox -config /mox-data/config/mox.conf backup "$1"
   ' sh "$POD_BACKUP"
-  kubectl cp "maintenance/mnt-mox-0:$POD_BACKUP" "$LOCAL_BACKUP_DIR/mox-backup"
+  kubectl cp "maintenance/console-mox-0:$POD_BACKUP" "$LOCAL_BACKUP_DIR/mox-backup"
   tar -C "$LOCAL_BACKUP_DIR/mox-backup" -czf "$ARCHIVE" .
   openssl enc -aes-256-cbc -pbkdf2 -salt -in "$ARCHIVE" -out "$ENC_ARCHIVE" \
     -pass env:BACKUP_ENC_PASS
@@ -284,13 +284,13 @@ serving resources, or treat a successful render as a live readiness claim.
       dst.write(base64.b64encode(mac).decode() + "\n")
   PY
   (cd "$LOCAL_BACKUP_DIR" && shasum -a 256 "$(basename "$ENC_ARCHIVE")" > "$(basename "$ENC_ARCHIVE").sha256")
-  oci os object put --bucket-name "$MNT_MOX_BACKUP_BUCKET" \
+  oci os object put --bucket-name "$CONSOLE_MOX_BACKUP_BUCKET" \
     --name "mox/$STAMP/$(basename "$ENC_ARCHIVE")" --file "$ENC_ARCHIVE"
-  oci os object put --bucket-name "$MNT_MOX_BACKUP_BUCKET" \
+  oci os object put --bucket-name "$CONSOLE_MOX_BACKUP_BUCKET" \
     --name "mox/$STAMP/$(basename "$ENC_ARCHIVE").sha256" --file "$ENC_ARCHIVE.sha256"
-  oci os object put --bucket-name "$MNT_MOX_BACKUP_BUCKET" \
+  oci os object put --bucket-name "$CONSOLE_MOX_BACKUP_BUCKET" \
     --name "mox/$STAMP/$(basename "$ENC_ARCHIVE").hmac" --file "$ENC_ARCHIVE.hmac"
-  oci os object get --bucket-name "$MNT_MOX_BACKUP_BUCKET" \
+  oci os object get --bucket-name "$CONSOLE_MOX_BACKUP_BUCKET" \
     --name "mox/$STAMP/$(basename "$ENC_ARCHIVE")" --file "$LOCAL_BACKUP_DIR/verify.enc"
   test "$(shasum -a 256 "$LOCAL_BACKUP_DIR/verify.enc" | awk '{print $1}')" = \
     "$(cut -d ' ' -f1 "$ENC_ARCHIVE.sha256")"
@@ -303,10 +303,10 @@ serving resources, or treat a successful render as a live readiness claim.
       dst.write(base64.b64encode(mac).decode() + "\n")
   PY
   cmp -s "$LOCAL_BACKUP_DIR/verify.enc.hmac" "$ENC_ARCHIVE.hmac"
-  kubectl exec -n maintenance statefulset/mnt-mox -- rm -rf "$POD_BACKUP"
+  kubectl exec -n console statefulset/console-mox -- rm -rf "$POD_BACKUP"
   rm -rf "$LOCAL_BACKUP_DIR"
   trap - ERR
-  unset BACKUP_ENC_PASS BACKUP_MAC_KEY BACKUP_ENC_SECRET_OCID BACKUP_MAC_SECRET_OCID MNT_MOX_BACKUP_BUCKET
+  unset BACKUP_ENC_PASS BACKUP_MAC_KEY BACKUP_ENC_SECRET_OCID BACKUP_MAC_SECRET_OCID CONSOLE_MOX_BACKUP_BUCKET
   ```
 
   Restore drill: prove this on a fresh PVC/workload when possible; for an
@@ -315,21 +315,21 @@ serving resources, or treat a successful render as a live readiness claim.
 
   ```sh
   BACKUP=./mox-backup-YYYYMMDDTHHMMSSZ.tgz
-  kubectl -n maintenance scale statefulset/mnt-mox --replicas=0
-  kubectl -n maintenance wait --for=delete pod/mnt-mox-0 --timeout=180s
+  kubectl -n console scale statefulset/console-mox --replicas=0
+  kubectl -n console wait --for=delete pod/console-mox-0 --timeout=180s
   ```
 
   Mount the restore target PVC with a one-shot root pod. For a fresh-PVC drill,
-  create the PVC first and replace `claimName: mox-data-mnt-mox-0` below with
+  create the PVC first and replace `claimName: mox-data-console-mox-0` below with
   that claim instead of the production claim.
 
   ```sh
-  cat >/tmp/mnt-mox-restore-pod.yaml <<'YAML'
+  cat >/tmp/console-mox-restore-pod.yaml <<'YAML'
   apiVersion: v1
   kind: Pod
   metadata:
-    name: mnt-mox-restore
-    namespace: maintenance
+    name: console-mox-restore
+    namespace: console
   spec:
     restartPolicy: Never
     securityContext: { runAsUser: 0, fsGroup: 10001 }
@@ -341,12 +341,12 @@ serving resources, or treat a successful render as a live readiness claim.
           - { name: mox-data, mountPath: /mox-data }
     volumes:
       - name: mox-data
-        persistentVolumeClaim: { claimName: mox-data-mnt-mox-0 }
+        persistentVolumeClaim: { claimName: mox-data-console-mox-0 }
   YAML
-  kubectl apply -f /tmp/mnt-mox-restore-pod.yaml
-  kubectl -n maintenance wait --for=condition=Ready pod/mnt-mox-restore --timeout=120s
-  kubectl -n maintenance cp "$BACKUP" mnt-mox-restore:/tmp/mox-restore.tgz
-  kubectl -n maintenance exec mnt-mox-restore -- /bin/sh -ceu '
+  kubectl apply -f /tmp/console-mox-restore-pod.yaml
+  kubectl -n console wait --for=condition=Ready pod/console-mox-restore --timeout=120s
+  kubectl -n console cp "$BACKUP" console-mox-restore:/tmp/mox-restore.tgz
+  kubectl -n console exec console-mox-restore -- /bin/sh -ceu '
     rm -rf /mox-data/* /mox-data/.[!.]* /mox-data/..?*
     tar -C /mox-data -xzf /tmp/mox-restore.tgz
     chown -R 10001:10001 /mox-data
@@ -355,48 +355,48 @@ serving resources, or treat a successful render as a live readiness claim.
     test -s /mox-data/config/domains.conf
     /bin/mox -config /mox-data/config/mox.conf config test
   '
-  kubectl -n maintenance delete pod/mnt-mox-restore
+  kubectl -n console delete pod/console-mox-restore
   ```
 
   Start mox only after the restored files/config validate, then prove the live
   webapi and dark smoke before removing the old PVC/export copy.
 
   ```sh
-  kubectl -n maintenance scale statefulset/mnt-mox --replicas=1
-  kubectl -n maintenance rollout status statefulset/mnt-mox --timeout=300s
-  kubectl -n maintenance exec statefulset/mnt-mox -- \
+  kubectl -n console scale statefulset/console-mox --replicas=1
+  kubectl -n console rollout status statefulset/console-mox --timeout=300s
+  kubectl -n console exec statefulset/console-mox -- \
     /bin/mox -config /mox-data/config/mox.conf config test
-  kubectl -n maintenance port-forward svc/mnt-mox 1080:1080
+  kubectl -n console port-forward svc/console-mox 1080:1080
   curl -fsS http://127.0.0.1:1080/webapi/v0/ >/dev/null
-  # In a second terminal, port-forward svc/mnt-app 8090:8080 and run the dark smoke:
-  # node scripts/mox-e2e.mjs with MNT_MOX_* and MNT_MAIL_MOX_WEBHOOK_SECRET from Vault/mnt-secrets.
+  # In a second terminal, port-forward svc/console-app 8090:8080 and run the dark smoke:
+  # node scripts/mox-e2e.mjs with CONSOLE_MOX_* and CONSOLE_MAIL_MOX_WEBHOOK_SECRET from Vault/console-secrets.
   ```
 
-- Observability: enable `deploy/apps/maintenance/components/monitoring` only when
-  Prometheus Operator CRDs exist. Scrape `svc/mnt-mox:8010/metrics` and alert on
-  `MntMoxDown`, `MntMoxWebhookFailures`, `MntMoxQueueBacklog`, and
-  `MntMoxPvcSaturation`. Keep mox `LogLevel: info`; never enable `traceauth` or
+- Observability: enable `deploy/apps/console/components/monitoring` only when
+  Prometheus Operator CRDs exist. Scrape `svc/console-mox:8010/metrics` and alert on
+  `ConsoleMoxDown`, `ConsoleMoxWebhookFailures`, `ConsoleMoxQueueBacklog`, and
+  `ConsoleMoxPvcSaturation`. Keep mox `LogLevel: info`; never enable `traceauth` or
   `tracedata` in production because those can expose credentials or full message
   bodies.
 - Rollback: revert the Git commit/config, Argo sync, and remove or disable
-  `MNT_MAIL_MOX_BASE_URL` for both api and worker consumers if app webmail
+  `CONSOLE_MAIL_MOX_BASE_URL` for both api and worker consumers if app webmail
   traffic must stop using mox. Restart both workloads and verify neither still
-  sees the mox base URL before scaling down `mnt-mox`.
+  sees the mox base URL before scaling down `console-mox`.
 
   ```sh
-  kubectl argo rollouts restart mnt-app -n maintenance
-  kubectl -n maintenance rollout restart deployment/mnt-worker
-  kubectl argo rollouts status mnt-app -n maintenance --timeout 300s
-  kubectl -n maintenance rollout status deployment/mnt-worker --timeout=300s
-  APP_POD="$(kubectl -n maintenance get pods -l app=mnt-app -o jsonpath='{.items[0].metadata.name}')"
-  WORKER_POD="$(kubectl -n maintenance get pods -l app=mnt-worker -o jsonpath='{.items[0].metadata.name}')"
+  kubectl argo rollouts restart console-app -n console
+  kubectl -n console rollout restart deployment/console-worker
+  kubectl argo rollouts status console-app -n console --timeout 300s
+  kubectl -n console rollout status deployment/console-worker --timeout=300s
+  APP_POD="$(kubectl -n console get pods -l app=console-app -o jsonpath='{.items[0].metadata.name}')"
+  WORKER_POD="$(kubectl -n console get pods -l app=console-worker -o jsonpath='{.items[0].metadata.name}')"
   test -n "$APP_POD"
   test -n "$WORKER_POD"
-  ! kubectl -n maintenance exec "$APP_POD" -- printenv MNT_MAIL_MOX_BASE_URL
-  ! kubectl -n maintenance exec "$WORKER_POD" -- printenv MNT_MAIL_MOX_BASE_URL
+  ! kubectl -n console exec "$APP_POD" -- printenv CONSOLE_MAIL_MOX_BASE_URL
+  ! kubectl -n console exec "$WORKER_POD" -- printenv CONSOLE_MAIL_MOX_BASE_URL
   ```
 
-  Scale `mnt-mox` to 0 only after a successful backup/export; do not delete the
+  Scale `console-mox` to 0 only after a successful backup/export; do not delete the
   PVC unless the restore path above has been proven.
 - Public MX/operator gate: public SMTP/MX, submission, IMAPS, webapi, or admin UI
   must remain disabled until DNS MX/SPF/DKIM/DMARC/MTA-STS/TLS-RPT, TLS/cert
@@ -415,11 +415,11 @@ serving resources, or treat a successful render as a live readiness claim.
 - Install (if rebuilding): `kubectl apply --server-side --force-conflicts -n argocd -k
   https://github.com/argoproj/argo-cd/manifests/cluster-install?ref=v3.4.3` (server-side
   REQUIRED — the applicationsets CRD exceeds the 256 KB client-side annotation limit).
-- Non-git secrets to create first: see `deploy/SECRETS.md` (`mnt-secrets`,
-  `oci-objectstore-creds`, `mnt-db-rt` in `maintenance`; `cloudflare-api-token` in
-  `cert-manager`). Material is in Vault `mnt-app-secrets-bundle`.
+- Non-git secrets to create first: see `deploy/SECRETS.md` (`console-secrets`,
+  `oci-objectstore-creds`, `console-db-rt` in `maintenance`; `cloudflare-api-token` in
+  `cert-manager`). Material is in Vault `console-app-secrets-bundle`.
 - App images: main build (`gh workflow run image-release.yml --ref main`),
-  digests pinned in `deploy/apps/maintenance/overlays/prod/kustomization.yaml`.
+  digests pinned in `deploy/apps/console/overlays/prod/kustomization.yaml`.
 
 ## 6. Verified deploy versus digest-bump-only
 
@@ -438,13 +438,13 @@ script must reach its final `done: <sha> deployed and verified (...)` line befor
 an operator or release note claims deployment completion. The required signals are:
 
 1. the matching `image-release.yml` run for the commit succeeds;
-2. the `digest-mnt-app` and `digest-mnt-web` artifacts provide fresh `sha256`
+2. the `digest-console-app` and `digest-console-web` artifacts provide fresh `sha256`
    digests;
 3. the prod kustomization pins those digests and the bump commit/revision is the
    desired GitOps revision;
 4. Argo Application `maintenance` reports `Synced` at that revision;
-5. `mnt-app` and `mnt-web` Argo Rollouts become Healthy;
-6. `mnt-worker` Deployment rollout completes;
+5. `console-app` and `console-web` Argo Rollouts become Healthy;
+6. `console-worker` Deployment rollout completes;
 7. each workload template image and each running/ready pod's image ID or image
    reference matches the built digest; and
 8. `https://console.knllogistic.com` and `https://knllogistic.com` return HTTP

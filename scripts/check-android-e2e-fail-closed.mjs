@@ -20,7 +20,7 @@ function jobSteps(job) {
 
 function hasShaVerificationBeforeBuild(job) {
   const shaCheck = job.search(/git\s+rev-parse\s+HEAD[\s\S]{0,240}GITHUB_SHA|GITHUB_SHA[\s\S]{0,240}git\s+rev-parse\s+HEAD/);
-  const build = job.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+mnt-app/);
+  const build = job.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+console-app/);
   return shaCheck !== -1 && build !== -1 && shaCheck < build;
 }
 
@@ -120,7 +120,7 @@ function hasSafeMobileCredentialSeed(files) {
 }
 
 function hasFailClosedAuthenticatedUiAssertion(files) {
-  const test = files["android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt"] ?? "";
+  const test = files["android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt"] ?? "";
   const seededWorkOrderUiAssertions = test.match(/onNodeWithText\(seededWorkOrder\.requestNo\)\.assertIsDisplayed\(\)/g) ?? [];
   return /listTodayWorkOrders\(\)/.test(test)
     && /00000000-0000-0000-0000-000000f00003/.test(test)
@@ -163,7 +163,7 @@ export function evaluateAndroidE2eFailClosedChecks(files) {
     ],
     [
       hasShaVerificationBeforeBuild(job),
-      "android-instrumented must verify git rev-parse HEAD against GITHUB_SHA before building candidate mnt-app",
+      "android-instrumented must verify git rev-parse HEAD against GITHUB_SHA before building candidate console-app",
     ],
     [
       /e2e\/harness\/db\.sh/.test(job) && hasRandomOtp(job),
@@ -237,7 +237,7 @@ function main() {
     "android/app/src/debug/res/xml/network_security_config.xml",
     "android/app/src/main/AndroidManifest.xml",
     "android/app/build.gradle.kts",
-    "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt",
+    "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt",
     "e2e/harness/gen-keys.sh",
     "e2e/harness/boot-backend.sh",
     "e2e/harness/seed-mobile-ci.sql",

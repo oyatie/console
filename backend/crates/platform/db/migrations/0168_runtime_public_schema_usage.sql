@@ -6,14 +6,14 @@
 -- PostgreSQL 15+ no longer grants CREATE on public to PUBLIC by default, but an
 -- upgraded cluster can retain that historical privilege. Remove it globally,
 -- then grant only the traversal privilege required by the application runtime.
-REVOKE CREATE ON SCHEMA public FROM PUBLIC, mnt_rt;
-GRANT USAGE ON SCHEMA public TO mnt_rt;
+REVOKE CREATE ON SCHEMA public FROM PUBLIC, console_rt;
+GRANT USAGE ON SCHEMA public TO console_rt;
 
 DO $$
 BEGIN
-    IF NOT has_schema_privilege('mnt_rt', 'public', 'USAGE')
-       OR has_schema_privilege('mnt_rt', 'public', 'CREATE') THEN
-        RAISE EXCEPTION 'mnt_rt public schema privileges must be USAGE without CREATE';
+    IF NOT has_schema_privilege('console_rt', 'public', 'USAGE')
+       OR has_schema_privilege('console_rt', 'public', 'CREATE') THEN
+        RAISE EXCEPTION 'console_rt public schema privileges must be USAGE without CREATE';
     END IF;
 END
 $$;

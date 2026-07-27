@@ -2,7 +2,7 @@
 //! is absent by design: the adapter derives it from the authenticated request
 //! context.  The adapter validates every field against the design-contract
 //! bounds before any row is written.
-use mnt_kernel_core::BranchId;
+use console_kernel_core::BranchId;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;

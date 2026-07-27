@@ -17,8 +17,8 @@
 -- composite keys (0029/0034); this migration adds NO new policy, trigger, or
 -- column — only the two length CHECKs.
 --
--- mnt-gate: audited-table registry_customers
--- mnt-gate: audited-table registry_sites
+-- console-gate: audited-table registry_customers
+-- console-gate: audited-table registry_sites
 ALTER TABLE registry_customers
     ADD CONSTRAINT registry_customers_name_max_chars
         CHECK (char_length(name) <= 200);

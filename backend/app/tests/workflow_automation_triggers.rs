@@ -17,20 +17,20 @@
 //!    advance); a follow-up poll starts nothing.
 //!
 //! Cron next-fire correctness and garbage rejection are unit-tested in
-//! `mnt_app::workflow_schedules`.
+//! `console_app::workflow_schedules`.
 //!
 //! ## Runtime fidelity (mandatory)
-//! Every runtime write + read runs as the genuine non-owner `mnt_rt` role
+//! Every runtime write + read runs as the genuine non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) with `app.current_org` armed — never
 //! a BYPASSRLS superuser. Only minting the `organizations`/`users` rows
-//! (owner-only surfaces for `mnt_rt`) uses the owner pool; binding/schedule
-//! seeds, the dispatch/poll, and every assertion read execute as `mnt_rt`
+//! (owner-only surfaces for `console_rt`) uses the owner pool; binding/schedule
+//! seeds, the dispatch/poll, and every assertion read execute as `console_rt`
 //! under the armed tenant GUC, exactly as production does.
 
-use mnt_app::workflow_schedules::poll_org;
-use mnt_kernel_core::OrgId;
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
-use mnt_workorder_rest::workflow_triggers::{WORK_ORDER_COMPLETED_EVENT, dispatch_event_bindings};
+use console_app::workflow_schedules::poll_org;
+use console_kernel_core::OrgId;
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_workorder_rest::workflow_triggers::{WORK_ORDER_COMPLETED_EVENT, dispatch_event_bindings};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use time::OffsetDateTime;
@@ -51,7 +51,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -68,7 +68,7 @@ async fn arm_org(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: OrgId) {
         .unwrap();
 }
 
-/// Mint the org + one user via the OWNER pool (`mnt_rt` is SELECT-only there).
+/// Mint the org + one user via the OWNER pool (`console_rt` is SELECT-only there).
 /// The user backs the bindings/schedules `created_by` FK.
 async fn seed_org_and_author(owner_pool: &PgPool, org: OrgId, slug: &str) -> Uuid {
     sqlx::query(
@@ -95,7 +95,7 @@ async fn seed_org_and_author(owner_pool: &PgPool, org: OrgId, slug: &str) -> Uui
 
 /// Seed an ACTIVE `wf.exec.v1` definition with a minimal single-node graph
 /// (one `object_gate` → terminal, so a triggered run drives straight to
-/// SUCCEEDED), as `mnt_rt` under the armed tenant GUC.
+/// SUCCEEDED), as `console_rt` under the armed tenant GUC.
 async fn seed_graph_definition(rt_pool: &PgPool, org: OrgId, key: &str) -> Uuid {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -133,7 +133,7 @@ async fn seed_graph_definition(rt_pool: &PgPool, org: OrgId, key: &str) -> Uuid 
     definition_id
 }
 
-/// Seed a trigger binding as `mnt_rt` under the armed tenant GUC.
+/// Seed a trigger binding as `console_rt` under the armed tenant GUC.
 async fn seed_binding(
     rt_pool: &PgPool,
     org: OrgId,
@@ -162,7 +162,7 @@ async fn seed_binding(
     id
 }
 
-/// Seed a schedule due at `next_run_at`, as `mnt_rt` under the armed GUC.
+/// Seed a schedule due at `next_run_at`, as `console_rt` under the armed GUC.
 async fn seed_schedule(
     rt_pool: &PgPool,
     org: OrgId,
@@ -190,7 +190,7 @@ async fn seed_schedule(
     id
 }
 
-/// Tenant-scoped scalar read as `mnt_rt` under the armed GUC.
+/// Tenant-scoped scalar read as `console_rt` under the armed GUC.
 async fn count(rt_pool: &PgPool, org: OrgId, query: &'static str) -> i64 {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;

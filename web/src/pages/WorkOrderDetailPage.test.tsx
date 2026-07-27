@@ -5,7 +5,7 @@ import { setupServer } from "msw/node";
 import { MemoryRouter } from "react-router";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { AppRouter } from "../AppRouter";
 import { AuthContext } from "../context/auth";
 import type { AuthContextValue, AuthSession } from "../context/auth";

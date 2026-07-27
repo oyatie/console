@@ -14,15 +14,15 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post, put};
 use axum::{Json, Router};
-use mnt_evaluation_adapter_postgres::{PgEvaluationError, PgEvaluationStore, SubjectGate};
-use mnt_evaluation_application::{
+use console_evaluation_adapter_postgres::{PgEvaluationError, PgEvaluationStore, SubjectGate};
+use console_evaluation_application::{
     CreateCycleInput, CycleDetail, CyclePage, CycleQuery, EvidenceInput, GoalInput, LedgerPage,
     PreflightReport, ReviewDraftInput, ReviewView, SubjectDetail, TaskPage,
 };
-use mnt_evaluation_domain::{CycleStage, CycleTransition, Grade, ReviewKind};
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, UserId};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
+use console_evaluation_domain::{CycleStage, CycleTransition, Grade, ReviewKind};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, UserId};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -133,7 +133,7 @@ pub fn router(state: EvaluationRestState) -> Router {
             get(employee_reviews),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(routes, verifier, pool)
+    console_platform_request_context::with_request_context(routes, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -144,9 +144,9 @@ pub fn router(state: EvaluationRestState) -> Router {
 #[serde(deny_unknown_fields)]
 struct CreateCycleRequest {
     name: String,
-    kind: mnt_evaluation_domain::CycleKind,
+    kind: console_evaluation_domain::CycleKind,
     period_label: String,
-    #[serde(with = "mnt_evaluation_application::date_fmt")]
+    #[serde(with = "console_evaluation_application::date_fmt")]
     due_date: time::Date,
 }
 
@@ -169,7 +169,7 @@ struct AddSubjectRequest {
 #[serde(deny_unknown_fields)]
 struct GoalRequest {
     title: String,
-    metric_kind: mnt_evaluation_domain::MetricKind,
+    metric_kind: console_evaluation_domain::MetricKind,
     target_label: String,
     weight_pct: i16,
 }
@@ -183,7 +183,7 @@ struct ReplaceGoalsRequest {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct EvidenceLinkRequest {
-    object_kind: mnt_evaluation_domain::EvidenceKind,
+    object_kind: console_evaluation_domain::EvidenceKind,
     object_ref: String,
     label: String,
 }
@@ -639,38 +639,38 @@ async fn principal_from_headers(
             "JWT verification is not configured for the evaluation API",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(|error| match error {
-            mnt_platform_request_context::RequestContextError::MissingBearer => {
+            console_platform_request_context::RequestContextError::MissingBearer => {
                 RestError::unauthorized("missing or malformed bearer token")
             }
-            mnt_platform_request_context::RequestContextError::InvalidToken => {
+            console_platform_request_context::RequestContextError::InvalidToken => {
                 RestError::unauthorized("invalid bearer token")
             }
-            mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+            console_platform_request_context::RequestContextError::InvalidClaim(message) => {
                 RestError::unauthorized(format!("token claim is invalid: {message}"))
             }
-            mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+            console_platform_request_context::RequestContextError::WrongTokenTier => {
                 RestError::from_kernel(KernelError::forbidden(
                     "token tier is not valid for this route",
                 ))
             }
-            mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+            console_platform_request_context::RequestContextError::AccessScope(error) => {
                 RestError::from_kernel(error)
             }
-            mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+            console_platform_request_context::RequestContextError::VerifierUnavailable => {
                 RestError::new(
                     StatusCode::SERVICE_UNAVAILABLE,
                     "service_unavailable",
                     "JWT verification is not configured for the evaluation API",
                 )
             }
-            mnt_platform_request_context::RequestContextError::BranchScope(message)
-            | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+            console_platform_request_context::RequestContextError::BranchScope(message)
+            | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
                 RestError::from_kernel(KernelError::internal(message))
             }
-            mnt_platform_request_context::RequestContextError::MissingOrg => {
+            console_platform_request_context::RequestContextError::MissingOrg => {
                 RestError::from_kernel(KernelError::internal(
                     "no tenant context is bound to the current request",
                 ))

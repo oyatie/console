@@ -1,4 +1,4 @@
-use mnt_platform_storage::{S3ObjectStore, S3StorageConfig, SeaweedS3Storage};
+use console_platform_storage::{S3ObjectStore, S3StorageConfig, SeaweedS3Storage};
 use std::io;
 use time::{Duration, OffsetDateTime};
 
@@ -6,7 +6,7 @@ use time::{Duration, OffsetDateTime};
 #[ignore = "requires docker-compose SeaweedFS S3 endpoint"]
 async fn seaweedfs_compliance_retention_protects_locked_object_version()
 -> Result<(), Box<dyn std::error::Error>> {
-    let endpoint = std::env::var("MNT_STORAGE_TEST_S3_ENDPOINT")
+    let endpoint = std::env::var("CONSOLE_STORAGE_TEST_S3_ENDPOINT")
         .unwrap_or_else(|_| "http://127.0.0.1:18333".to_owned());
     let bucket = format!("worm-{}", uuid::Uuid::new_v4());
     let key = format!("evidence/{}.txt", uuid::Uuid::new_v4());

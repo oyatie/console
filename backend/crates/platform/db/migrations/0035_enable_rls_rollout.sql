@@ -8,10 +8,10 @@
 -- attach the BEFORE UPDATE trigger here.
 --
 -- audit_events is the deliberate exception (see its block at the end): nullable
--- platform tier, append-only, INSERT/SELECT-only for mnt_rt.
+-- platform tier, append-only, INSERT/SELECT-only for console_rt.
 
--- Helper note: mnt_rt already has DML on these tables via the ALTER DEFAULT
--- PRIVILEGES grant from slice 0031 (owner-created tables auto-grant to mnt_rt),
+-- Helper note: console_rt already has DML on these tables via the ALTER DEFAULT
+-- PRIVILEGES grant from slice 0031 (owner-created tables auto-grant to console_rt),
 -- but we GRANT explicitly per table so the privilege does not depend on the
 -- default-privileges timing.
 
@@ -76,7 +76,7 @@ BEGIN
             t
         );
         EXECUTE format(
-            'GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO mnt_rt', t
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO console_rt', t
         );
         EXECUTE format(
             'CREATE TRIGGER trg_%I_org_immutable BEFORE UPDATE ON %I '
@@ -110,7 +110,7 @@ CREATE POLICY org_isolation ON audit_events
         org_id = NULLIF(current_setting('app.current_org', true), '')::uuid
         OR org_id IS NULL
     );
--- audit_events already had INSERT,SELECT granted to mnt_rt in slice 0031; keep
+-- audit_events already had INSERT,SELECT granted to console_rt in slice 0031; keep
 -- it INSERT/SELECT only (no re-grant needed, stated here for intent).
 
 -- ===========================================================================

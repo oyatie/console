@@ -1,7 +1,7 @@
 name: Image Release
 
-# Builds, scans, signs and publishes the server (mnt-app) and web console
-# (mnt-web) container images to GHCR as MULTI-ARCH manifest lists
+# Builds, scans, signs and publishes the server (console-app) and web console
+# (console-web) container images to GHCR as MULTI-ARCH manifest lists
 # (linux/amd64 + linux/arm64) so the images run on bare-metal amd64 as well as
 # the Oracle Ampere A1 (arm64) cluster. Native-runner build: each arch builds on
 # its own native runner (no QEMU — a Rust build under emulation is punishingly
@@ -17,7 +17,7 @@ name: Image Release
 # cosign-signed + attested after BOTH arches pass the scan, so a vulnerable image
 # is never signed. Hard-fail admission verification is not enabled until ops
 # installs the sigstore policy-controller CRDs/controller; an audit-mode
-# ClusterImagePolicy lives under deploy/apps/maintenance/components/admission-audit.
+# ClusterImagePolicy lives under deploy/apps/console/components/admission-audit.
 
 on:
   workflow_run:
@@ -112,8 +112,8 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - { name: mnt-app, dockerfile: backend/Dockerfile }
-          - { name: mnt-web, dockerfile: web/Dockerfile }
+          - { name: console-app, dockerfile: backend/Dockerfile }
+          - { name: console-web, dockerfile: web/Dockerfile }
         platform:
           - { arch: amd64, runner: ubuntu-24.04, target: linux/amd64 }
           - { arch: arm64, runner: ubuntu-24.04-arm, target: linux/arm64 }
@@ -202,8 +202,8 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - { name: mnt-app }
-          - { name: mnt-web }
+          - { name: console-app }
+          - { name: console-web }
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
 
@@ -346,20 +346,20 @@ jobs:
           if-no-files-found: error
 
   # Plan W3.3(c) / pre-mortem #1: the dev-auth local role-switch endpoint must
-  # be REACHABLE NOWHERE outside a dev build. `mnt-gate-dev-auth-absence`
+  # be REACHABLE NOWHERE outside a dev build. `console-gate-dev-auth-absence`
   # (backend job) proves it at the cargo-metadata feature-graph level, and
   # `dev_auth_absence.rs` proves it at the HTTP level for a plain `cargo test`
   # build — this is the THIRD, primary proof: the exact signed image that
-  # ships. Runs the freshly built+signed `mnt-app` digest for real and asserts
+  # ships. Runs the freshly built+signed `console-app` digest for real and asserts
   # its route table has no `/api/v1/dev-auth/session` at all (404, not a 401/
   # 400 that would mean the route exists but rejected the request).
   release-probe:
-    name: mnt-app image — dev-auth route absence probe
+    name: console-app image — dev-auth route absence probe
     needs: [ci-admission, merge]
     permissions:
       contents: read
       packages: read
-    # The mnt-app manifest list now carries both linux/amd64 and linux/arm64, so
+    # The console-app manifest list now carries both linux/amd64 and linux/arm64, so
     # `docker pull @<list-digest>` resolves the runner's arch on either. Kept on
     # arm64 (the production cluster's arch) so the probe exercises the arch that
     # actually ships to the A1 nodes.
@@ -368,13 +368,13 @@ jobs:
       postgres:
         image: postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20
         env:
-          POSTGRES_DB: mnt_release_probe
+          POSTGRES_DB: console_release_probe
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
           - "5432:5432"
         options: >-
-          --health-cmd "pg_isready -U postgres -d mnt_release_probe"
+          --health-cmd "pg_isready -U postgres -d console_release_probe"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -386,10 +386,10 @@ jobs:
           ref: ${{ needs.ci-admission.outputs.release_sha }}
           persist-credentials: false
 
-      - name: Download mnt-app digest
+      - name: Download console-app digest
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: digest-mnt-app
+          name: digest-console-app
           path: digests
 
       - name: Log in to GHCR
@@ -401,8 +401,8 @@ jobs:
 
       - name: Pull the just-built, just-signed image by digest
         run: |
-          DIGEST="$(cat digests/digest-mnt-app.txt)"
-          IMAGE="ghcr.io/${{ github.repository_owner }}/mnt-app@${DIGEST}"
+          DIGEST="$(cat digests/digest-console-app.txt)"
+          IMAGE="ghcr.io/${{ github.repository_owner }}/console-app@${DIGEST}"
           docker pull "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
@@ -431,46 +431,46 @@ jobs:
           echo "::add-mask::$PLATFORM_FORCE_COMMAND_PASSWORD"
           docker run --rm --network host \
             -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
-            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_release_probe \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_release_probe \
             -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
-            -e MNT_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
-            -e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
-            -e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
-            -e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
-            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
+            -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
+            -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
+            -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
             --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             /usr/local/bin/postgres-reconcile-topology
           {
-            echo "PROBE_OWNER_DATABASE_URL=postgres://mnt_app:${APP_PASSWORD}@127.0.0.1:5432/mnt_release_probe"
-            echo "PROBE_RUNTIME_DATABASE_URL=postgres://mnt_rt:${RT_PASSWORD}@127.0.0.1:5432/mnt_release_probe"
-            echo "PROBE_LEAVE_COMMAND_DATABASE_URL=postgres://mnt_leave_cmd:${LEAVE_COMMAND_PASSWORD}@127.0.0.1:5432/mnt_release_probe"
-            echo "PROBE_ONTOLOGY_COMMAND_DATABASE_URL=postgres://mnt_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@127.0.0.1:5432/mnt_release_probe"
-            echo "PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://mnt_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@127.0.0.1:5432/mnt_release_probe"
+            echo "PROBE_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@127.0.0.1:5432/console_release_probe"
+            echo "PROBE_RUNTIME_DATABASE_URL=postgres://console_rt:${RT_PASSWORD}@127.0.0.1:5432/console_release_probe"
+            echo "PROBE_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:${LEAVE_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
+            echo "PROBE_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
+            echo "PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
           } >> "$GITHUB_ENV"
 
-      - name: Run migrations against the probe database as mnt_app
+      - name: Run migrations against the probe database as console_app
         run: |
           docker run --rm --network host \
-            -e MNT_APP_ROLE=migrate \
+            -e CONSOLE_APP_ROLE=migrate \
             -e DATABASE_URL="$PROBE_OWNER_DATABASE_URL" \
             "$IMAGE"
 
       - name: Boot the release image (the real published image — no dev-auth flag exists to pass)
         run: |
-          docker run -d --network host --name mnt-app-probe \
-            -e MNT_APP_ROLE=api \
+          docker run -d --network host --name console-app-probe \
+            -e CONSOLE_APP_ROLE=api \
             -e DATABASE_URL="$PROBE_RUNTIME_DATABASE_URL" \
             -e LEAVE_COMMAND_DATABASE_URL="$PROBE_LEAVE_COMMAND_DATABASE_URL" \
             -e ONTOLOGY_COMMAND_DATABASE_URL="$PROBE_ONTOLOGY_COMMAND_DATABASE_URL" \
             -e PLATFORM_FORCE_COMMAND_DATABASE_URL="$PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL" \
-            -e MNT_HTTP_ADDR=127.0.0.1:8091 \
-            -e MNT_JWT_ISSUER=release-probe \
-            -e MNT_JWT_AUDIENCE=release-probe \
-            -e MNT_JWT_PRIVATE_KEY_PEM="$PROBE_JWT_PRIVATE_KEY_PEM" \
-            -e MNT_JWT_PUBLIC_KEY_PEM="$PROBE_JWT_PUBLIC_KEY_PEM" \
-            -e MNT_WEBAUTHN_RP_ID=localhost \
-            -e MNT_WEBAUTHN_RP_ORIGIN=http://localhost \
-            -e MNT_COOKIE_SECURE=false \
+            -e CONSOLE_HTTP_ADDR=127.0.0.1:8091 \
+            -e CONSOLE_JWT_ISSUER=release-probe \
+            -e CONSOLE_JWT_AUDIENCE=release-probe \
+            -e CONSOLE_JWT_PRIVATE_KEY_PEM="$PROBE_JWT_PRIVATE_KEY_PEM" \
+            -e CONSOLE_JWT_PUBLIC_KEY_PEM="$PROBE_JWT_PUBLIC_KEY_PEM" \
+            -e CONSOLE_WEBAUTHN_RP_ID=localhost \
+            -e CONSOLE_WEBAUTHN_RP_ORIGIN=http://localhost \
+            -e CONSOLE_COOKIE_SECURE=false \
             "$IMAGE"
 
       - name: Wait for /readyz
@@ -479,8 +479,8 @@ jobs:
             curl -sf http://127.0.0.1:8091/readyz && exit 0
             sleep 2
           done
-          echo "::error::mnt-app never became ready"
-          docker logs mnt-app-probe || true
+          echo "::error::console-app never became ready"
+          docker logs console-app-probe || true
           exit 1
 
       - name: Assert POST /api/v1/dev-auth/session is ABSENT (404) in the shipped image
@@ -489,13 +489,13 @@ jobs:
           echo "status=$status"
           if [ "$status" != "404" ]; then
             echo "::error::dev-auth route answered with $status (expected 404 — not reachable) in the release image"
-            docker logs mnt-app-probe || true
+            docker logs console-app-probe || true
             exit 1
           fi
 
       - name: Stop the probe container
         if: always()
-        run: docker rm -f mnt-app-probe || true
+        run: docker rm -f console-app-probe || true
 
   # Unprotected and read-only: reject an absent/stale/invalid one-shot
   # authorization before GitHub asks a production-environment reviewer to act.
@@ -606,36 +606,36 @@ jobs:
             exit 1
           fi
 
-      - name: Download mnt-app digest
+      - name: Download console-app digest
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: digest-mnt-app
+          name: digest-console-app
           path: digests
-      - name: Download mnt-web digest
+      - name: Download console-web digest
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: digest-mnt-web
+          name: digest-console-web
           path: digests
 
       - name: Bump prod overlay digests
         env:
           AUTHORIZED_SHA: ${{ needs.ci-admission.outputs.release_sha }}
         run: |
-          APP_DIGEST="$(cat digests/digest-mnt-app.txt)"
-          WEB_DIGEST="$(cat digests/digest-mnt-web.txt)"
+          APP_DIGEST="$(cat digests/digest-console-app.txt)"
+          WEB_DIGEST="$(cat digests/digest-console-web.txt)"
           bash scripts/bump-prod-digests.sh "${APP_DIGEST}" "${WEB_DIGEST}"
           python3 scripts/check-production-promotion-authority.py reset \
             --expected-sha "$AUTHORIZED_SHA"
 
       - name: Commit authorization consumption and optional digest bump once
         env:
-          OVERLAY: deploy/apps/maintenance/overlays/prod/kustomization.yaml
+          OVERLAY: deploy/apps/console/overlays/prod/kustomization.yaml
           AUTHORIZED_SHA: ${{ needs.ci-admission.outputs.release_sha }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$OVERLAY" docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json
-          git commit -m "deploy(prod): promote mnt-app/mnt-web @${AUTHORIZED_SHA:0:7}"
+          git commit -m "deploy(prod): promote console-app/console-web @${AUTHORIZED_SHA:0:7}"
           python3 scripts/check-production-promotion-authority.py pre-push \
             --expected-sha "$AUTHORIZED_SHA"
           git push origin "HEAD:main"

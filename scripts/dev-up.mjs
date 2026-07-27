@@ -6,7 +6,7 @@
 // wiring in ops/compose.dev.yml via `-f` layering; ops/compose.dev-deps.yml
 // adds only what those two files don't have yet (Mailpit, a published OTEL
 // port, and the dev-only WAL archive retention helper). The one thing this
-// script changes vs. ops/dev-up.sh: mnt-app runs ON
+// script changes vs. ops/dev-up.sh: console-app runs ON
 // THE HOST from a Buck2-built executable instead of in a container, so every docker-network
 // hostname (postgres, seaweedfs, otel-collector) has to be rewritten to a
 // published localhost port — that relocation is `buildAppEnv()` below.
@@ -17,13 +17,13 @@
 //   up         deps -> migrate -> Buck2-built backend + vite (web), foreground.
 //              Ctrl+C stops backend/vite; deps stay up for a
 //              fast restart. Run `down` separately to stop the deps.
-//   bootstrap  deps -> migrate -> mnt-app in the background -> /readyz probe,
+//   bootstrap  deps -> migrate -> console-app in the background -> /readyz probe,
 //              then exits. No watch loop — this is what CI's smoke job runs.
 //   down       stops the exact Buck2 artifact and Vite process started by `up`/`bootstrap` via
 //              the pid file, then the compose deps.
 //
 // Env flags:
-//   MNT_DEV_OFFICE=1  also start the ONLYOFFICE DocumentServer dep (in-console
+//   CONSOLE_DEV_OFFICE=1  also start the ONLYOFFICE DocumentServer dep (in-console
 //                      office editor). Off by default — the image is ~2GB and
 //                      most dev-up sessions never touch the office editor; the
 //                      backend's office routes gracefully 503 without it.
@@ -54,14 +54,14 @@ const REPO_ROOT = path.resolve(
   "..",
 );
 const BUCK2_BIN = path.join(REPO_ROOT, "tools", "buck2");
-const DEFAULT_APP_TARGET = "//backend/app:mnt-app";
-const DEV_AUTH_APP_TARGET = "//backend/app:mnt-app-dev-auth";
+const DEFAULT_APP_TARGET = "//backend/app:console-app";
+const DEV_AUTH_APP_TARGET = "//backend/app:console-app-dev-auth";
 const SECRETS_DIR = path.join(REPO_ROOT, "ops", ".dev-secrets");
 const STATE_DIR = path.join(REPO_ROOT, ".local-dev", "dev-up");
 const PID_FILE = path.join(STATE_DIR, "pids.json");
 const DOCTOR_CACHE_FILE = path.join(STATE_DIR, "doctor.json");
 
-const COMPOSE_PROJECT = "mnt-dev";
+const COMPOSE_PROJECT = "console-dev";
 const COMPOSE_FILES = [
   "ops/compose.yml",
   "ops/compose.dev.yml",
@@ -69,7 +69,7 @@ const COMPOSE_FILES = [
 ];
 // Opt-in: the ONLYOFFICE DocumentServer image is ~2GB, so it stays out of the
 // routine dev-up path unless explicitly requested.
-const OFFICE_ENABLED = process.env.MNT_DEV_OFFICE === "1";
+const OFFICE_ENABLED = process.env.CONSOLE_DEV_OFFICE === "1";
 const DEPS_SERVICES = [
   "postgres",
   "postgres-wal-archive-pruner",
@@ -83,43 +83,43 @@ const DEPS_SERVICES = [
 // Shared HS256 secret between the host and the DocumentServer container. Dev
 // only; production injects a real per-deploy secret (docs/release/SECRETS.md).
 const OFFICE_JWT_SECRET =
-  process.env.MNT_OFFICE_JWT_SECRET ?? "office-dev-shared-secret";
+  process.env.CONSOLE_OFFICE_JWT_SECRET ?? "office-dev-shared-secret";
 
 // Deliberately NOT the compose files' own defaults (5432/8333/8080): a local
 // dev tool cannot assume it owns the only Postgres/S3/8080 on the machine.
 // ponytail: fixed port block rather than auto-picking free ports — simpler,
 // and `doctor`'s port-free check gives an actionable override path already.
 const PORTS = {
-  postgres: Number(process.env.MNT_POSTGRES_PORT ?? 55432),
-  s3: Number(process.env.MNT_S3_PORT ?? 58333),
-  otel: Number(process.env.MNT_OTEL_PORT ?? 54317),
-  mailpitSmtp: Number(process.env.MNT_MAILPIT_SMTP_PORT ?? 1025),
-  mailpitUi: Number(process.env.MNT_MAILPIT_UI_PORT ?? 8025),
-  moxWebapi: Number(process.env.MNT_MOX_WEBAPI_PORT ?? 1080),
-  moxSubmission: Number(process.env.MNT_MOX_SUBMISSION_PORT ?? 1587),
-  moxImap: Number(process.env.MNT_MOX_IMAP_PORT ?? 1143),
-  office: Number(process.env.MNT_OFFICE_DOCSERVER_PORT ?? 8888),
-  backend: Number(process.env.MNT_DEV_HTTP_PORT ?? 8090),
-  vite: Number(process.env.E2E_WEB_PORT ?? process.env.MNT_DEV_VITE_PORT ?? 5173),
+  postgres: Number(process.env.CONSOLE_POSTGRES_PORT ?? 55432),
+  s3: Number(process.env.CONSOLE_S3_PORT ?? 58333),
+  otel: Number(process.env.CONSOLE_OTEL_PORT ?? 54317),
+  mailpitSmtp: Number(process.env.CONSOLE_MAILPIT_SMTP_PORT ?? 1025),
+  mailpitUi: Number(process.env.CONSOLE_MAILPIT_UI_PORT ?? 8025),
+  moxWebapi: Number(process.env.CONSOLE_MOX_WEBAPI_PORT ?? 1080),
+  moxSubmission: Number(process.env.CONSOLE_MOX_SUBMISSION_PORT ?? 1587),
+  moxImap: Number(process.env.CONSOLE_MOX_IMAP_PORT ?? 1143),
+  office: Number(process.env.CONSOLE_OFFICE_DOCSERVER_PORT ?? 8888),
+  backend: Number(process.env.CONSOLE_DEV_HTTP_PORT ?? 8090),
+  vite: Number(process.env.E2E_WEB_PORT ?? process.env.CONSOLE_DEV_VITE_PORT ?? 5173),
 };
 
-const POSTGRES_DB = process.env.MNT_POSTGRES_DB ?? "mnt_dev";
+const POSTGRES_DB = process.env.CONSOLE_POSTGRES_DB ?? "console_dev";
 const POSTGRES_ADMIN_USER =
-  process.env.MNT_POSTGRES_ADMIN_USER ?? "mnt_cluster_admin";
+  process.env.CONSOLE_POSTGRES_ADMIN_USER ?? "console_cluster_admin";
 const POSTGRES_ADMIN_PASSWORD =
-  process.env.MNT_POSTGRES_ADMIN_PASSWORD ?? "mnt-dev-admin-change-me";
+  process.env.CONSOLE_POSTGRES_ADMIN_PASSWORD ?? "console-dev-admin-change-me";
 const APP_POSTGRES_PASSWORD =
-  process.env.MNT_APP_POSTGRES_PASSWORD ?? "mnt-dev-owner-change-me";
+  process.env.CONSOLE_APP_POSTGRES_PASSWORD ?? "console-dev-owner-change-me";
 const RT_POSTGRES_PASSWORD =
-  process.env.MNT_RT_POSTGRES_PASSWORD ?? "mnt-dev-runtime-change-me";
+  process.env.CONSOLE_RT_POSTGRES_PASSWORD ?? "console-dev-runtime-change-me";
 const LEAVE_COMMAND_POSTGRES_PASSWORD =
-  process.env.MNT_LEAVE_COMMAND_POSTGRES_PASSWORD ?? "mnt-dev-leave-command-change-me";
+  process.env.CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD ?? "console-dev-leave-command-change-me";
 const ONTOLOGY_COMMAND_POSTGRES_PASSWORD =
-  process.env.MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD ??
-  "mnt-dev-ontology-command-change-me";
+  process.env.CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD ??
+  "console-dev-ontology-command-change-me";
 const PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD =
-  process.env.MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD ??
-  "mnt-dev-platform-force-command-change-me";
+  process.env.CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD ??
+  "console-dev-platform-force-command-change-me";
 
 function log(msg) {
   console.log(`dev-up: ${msg}`);
@@ -190,7 +190,7 @@ async function assertPortFree(port, label) {
 }
 
 // `detached: true` makes the child the leader of its own process group,
-// so a plain SIGTERM to its pid can leave grandchildren (mnt-app/vite)
+// so a plain SIGTERM to its pid can leave grandchildren (console-app/vite)
 // orphaned. Signalling the group reaches the whole background stack.
 function readProcessIdentity(pid) {
   if (process.platform === "win32") {
@@ -488,27 +488,27 @@ async function bringUpDeps() {
 
   const composeEnv = {
     ...process.env,
-    MNT_POSTGRES_PORT: String(PORTS.postgres),
-    MNT_POSTGRES_DB: POSTGRES_DB,
-    MNT_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
-    MNT_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
-    MNT_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
-    MNT_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
-    MNT_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
-    MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
-    MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
+    CONSOLE_POSTGRES_PORT: String(PORTS.postgres),
+    CONSOLE_POSTGRES_DB: POSTGRES_DB,
+    CONSOLE_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
+    CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
+    CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
+    CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+    CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
+    CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+    CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
       PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
-    MNT_S3_PORT: String(PORTS.s3),
-    MNT_OTEL_PORT: String(PORTS.otel),
-    MNT_MAILPIT_SMTP_PORT: String(PORTS.mailpitSmtp),
-    MNT_MAILPIT_UI_PORT: String(PORTS.mailpitUi),
-    MNT_OFFICE_DOCSERVER_PORT: String(PORTS.office),
-    MNT_OFFICE_JWT_SECRET: OFFICE_JWT_SECRET,
+    CONSOLE_S3_PORT: String(PORTS.s3),
+    CONSOLE_OTEL_PORT: String(PORTS.otel),
+    CONSOLE_MAILPIT_SMTP_PORT: String(PORTS.mailpitSmtp),
+    CONSOLE_MAILPIT_UI_PORT: String(PORTS.mailpitUi),
+    CONSOLE_OFFICE_DOCSERVER_PORT: String(PORTS.office),
+    CONSOLE_OFFICE_JWT_SECRET: OFFICE_JWT_SECRET,
   };
 
   if (!OFFICE_ENABLED) {
     log(
-      "office editor (ONLYOFFICE DocumentServer, ~2GB) is disabled — set MNT_DEV_OFFICE=1 to enable",
+      "office editor (ONLYOFFICE DocumentServer, ~2GB) is disabled — set CONSOLE_DEV_OFFICE=1 to enable",
     );
   }
 
@@ -530,11 +530,11 @@ async function bringUpDeps() {
 }
 
 function databaseUrl() {
-  return `postgres://mnt_app:${APP_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
+  return `postgres://console_app:${APP_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
 }
 
 function runtimeDatabaseUrl() {
-  return `postgres://mnt_rt:${RT_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
+  return `postgres://console_rt:${RT_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
 }
 
 function commandDatabaseUrl(role, password) {
@@ -573,7 +573,7 @@ function runMigrations(appBinary) {
     env: buildAppEnv("migrate"),
     stdio: "inherit",
   });
-  if (result.error || result.status !== 0) throw new Error("migration run failed (MNT_APP_ROLE=migrate)");
+  if (result.error || result.status !== 0) throw new Error("migration run failed (CONSOLE_APP_ROLE=migrate)");
 }
 
 function reconcileDatabaseTopology(compose) {
@@ -585,15 +585,15 @@ function reconcileDatabaseTopology(compose) {
       // Keep the topology one-shot on the same Compose model used to start
       // Postgres. Falling back to compose.dev.yml's 5432 default makes Compose
       // recreate the dependency that dev-up published on PORTS.postgres.
-      MNT_POSTGRES_PORT: String(PORTS.postgres),
-      MNT_POSTGRES_DB: POSTGRES_DB,
-      MNT_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
-      MNT_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
-      MNT_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
-      MNT_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
-      MNT_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
-      MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
-      MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
+      CONSOLE_POSTGRES_PORT: String(PORTS.postgres),
+      CONSOLE_POSTGRES_DB: POSTGRES_DB,
+      CONSOLE_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
+      CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
+      CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
+      CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+      CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
+      CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+      CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
         PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
     },
     stdio: "inherit",
@@ -639,54 +639,54 @@ function buildAppEnv(role) {
   const { privateKeyPem, publicKeyPem } = ensureDevKeys();
   return {
     ...parentEnv,
-    MNT_APP_ROLE: role,
+    CONSOLE_APP_ROLE: role,
     DATABASE_URL: role === "migrate" ? databaseUrl() : runtimeDatabaseUrl(),
     LEAVE_COMMAND_DATABASE_URL: commandDatabaseUrl(
-      "mnt_leave_cmd",
+      "console_leave_cmd",
       LEAVE_COMMAND_POSTGRES_PASSWORD,
     ),
     ONTOLOGY_COMMAND_DATABASE_URL: commandDatabaseUrl(
-      "mnt_ontology_cmd",
+      "console_ontology_cmd",
       ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
     ),
-    MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
+    CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
       PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
     PLATFORM_FORCE_COMMAND_DATABASE_URL: commandDatabaseUrl(
-      "mnt_platform_force_cmd",
+      "console_platform_force_cmd",
       PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
     ),
-    MNT_HTTP_ADDR: `127.0.0.1:${PORTS.backend}`,
+    CONSOLE_HTTP_ADDR: `127.0.0.1:${PORTS.backend}`,
     // Local dev intentionally uses the OTP-logging stub unless a caller supplies
-    // a complete SMTP relay config via MNT_EMAIL_*.
-    MNT_EMAIL_STUB_MODE: process.env.MNT_EMAIL_STUB_MODE ?? "dev",
+    // a complete SMTP relay config via CONSOLE_EMAIL_*.
+    CONSOLE_EMAIL_STUB_MODE: process.env.CONSOLE_EMAIL_STUB_MODE ?? "dev",
     OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${PORTS.otel}`,
-    OTEL_SERVICE_NAME: "mnt-app-dev",
-    MNT_S3_ENDPOINT_URL: `http://127.0.0.1:${PORTS.s3}`,
-    MNT_S3_REGION: "us-east-1",
-    MNT_S3_ACCESS_KEY_ID: "dev",
-    MNT_S3_SECRET_ACCESS_KEY: "dev",
-    MNT_S3_PRIMARY_BUCKET: "mnt-evidence",
-    MNT_S3_REPLICA_BUCKET: "mnt-evidence-replica",
-    MNT_S3_FORCE_PATH_STYLE: "true",
-    MNT_JWT_PRIVATE_KEY_PEM: privateKeyPem,
-    MNT_JWT_PUBLIC_KEY_PEM: publicKeyPem,
-    MNT_JWT_ISSUER: "mnt-console-dev",
-    MNT_JWT_AUDIENCE: "mnt-console",
-    MNT_WEBAUTHN_RP_ID: "localhost",
-    MNT_WEBAUTHN_RP_ORIGIN: `http://localhost:${PORTS.vite}`,
-    MNT_WEBAUTHN_RP_NAME: "정비 콘솔 (dev)",
-    MNT_COOKIE_SECURE: "false",
-    MNT_COLDSTART_OTP: process.env.MNT_COLDSTART_OTP ?? "coss0000",
+    OTEL_SERVICE_NAME: "console-app-dev",
+    CONSOLE_S3_ENDPOINT_URL: `http://127.0.0.1:${PORTS.s3}`,
+    CONSOLE_S3_REGION: "us-east-1",
+    CONSOLE_S3_ACCESS_KEY_ID: "dev",
+    CONSOLE_S3_SECRET_ACCESS_KEY: "dev",
+    CONSOLE_S3_PRIMARY_BUCKET: "mnt-evidence",
+    CONSOLE_S3_REPLICA_BUCKET: "mnt-evidence-replica",
+    CONSOLE_S3_FORCE_PATH_STYLE: "true",
+    CONSOLE_JWT_PRIVATE_KEY_PEM: privateKeyPem,
+    CONSOLE_JWT_PUBLIC_KEY_PEM: publicKeyPem,
+    CONSOLE_JWT_ISSUER: "console-dev",
+    CONSOLE_JWT_AUDIENCE: "console",
+    CONSOLE_WEBAUTHN_RP_ID: "localhost",
+    CONSOLE_WEBAUTHN_RP_ORIGIN: `http://localhost:${PORTS.vite}`,
+    CONSOLE_WEBAUTHN_RP_NAME: "정비 콘솔 (dev)",
+    CONSOLE_COOKIE_SECURE: "false",
+    CONSOLE_COLDSTART_OTP: process.env.CONSOLE_COLDSTART_OTP ?? "coss0000",
     // mox integration (slice 1): route the webmail send transport at the dev mox
     // server's webapi, and arm the delivery-webhook shared secret. The account's
     // mox login (mox@localhost / moxmoxmox) is set when a mailbox is configured
     // through the REST /account endpoint (see scripts/mox-e2e.mjs).
-    MNT_MAIL_MOX_BASE_URL:
-      process.env.MNT_MAIL_MOX_BASE_URL ?? `http://127.0.0.1:${PORTS.moxWebapi}`,
-    MNT_MAIL_MOX_WEBHOOK_SECRET:
-      process.env.MNT_MAIL_MOX_WEBHOOK_SECRET ?? "mox-dev-webhook-secret-change-me",
-    // In-console office editor (ONLYOFFICE), only when MNT_DEV_OFFICE=1 started
-    // the DocumentServer dep. Omitting all three MNT_OFFICE_* vars otherwise
+    CONSOLE_MAIL_MOX_BASE_URL:
+      process.env.CONSOLE_MAIL_MOX_BASE_URL ?? `http://127.0.0.1:${PORTS.moxWebapi}`,
+    CONSOLE_MAIL_MOX_WEBHOOK_SECRET:
+      process.env.CONSOLE_MAIL_MOX_WEBHOOK_SECRET ?? "mox-dev-webhook-secret-change-me",
+    // In-console office editor (ONLYOFFICE), only when CONSOLE_DEV_OFFICE=1 started
+    // the DocumentServer dep. Omitting all three CONSOLE_OFFICE_* vars otherwise
     // leaves the office routes on their existing graceful-503 path (same as an
     // unconfigured prod deploy) instead of pointing at a container that was
     // never started. The shared JWT secret matches the DocumentServer
@@ -694,9 +694,9 @@ function buildAppEnv(role) {
     // over host.docker.internal at the backend port.
     ...(OFFICE_ENABLED
       ? {
-          MNT_OFFICE_JWT_SECRET: OFFICE_JWT_SECRET,
-          MNT_OFFICE_DOCSERVER_URL: `http://127.0.0.1:${PORTS.office}`,
-          MNT_OFFICE_CALLBACK_BASE_URL: `http://host.docker.internal:${PORTS.backend}`,
+          CONSOLE_OFFICE_JWT_SECRET: OFFICE_JWT_SECRET,
+          CONSOLE_OFFICE_DOCSERVER_URL: `http://127.0.0.1:${PORTS.office}`,
+          CONSOLE_OFFICE_CALLBACK_BASE_URL: `http://host.docker.internal:${PORTS.backend}`,
         }
       : {}),
     RUST_LOG: process.env.RUST_LOG ?? "info,tower_http=info",
@@ -741,7 +741,7 @@ function printUrls() {
   console.log(`  mox webapi:   http://localhost:${PORTS.moxWebapi}/webapi/  (mox@localhost / moxmoxmox, admin moxadmin)`);
   console.log(`  mox IMAP:     127.0.0.1:${PORTS.moxImap}   submission 127.0.0.1:${PORTS.moxSubmission}`);
   console.log("");
-  console.log(`First sign-in one-time code: ${process.env.MNT_COLDSTART_OTP ?? "coss0000"}`);
+  console.log(`First sign-in one-time code: ${process.env.CONSOLE_COLDSTART_OTP ?? "coss0000"}`);
   console.log("");
 }
 
@@ -777,7 +777,7 @@ async function cmdUp() {
   printUrls(); await new Promise(() => {});
 }
 
-// MNT_DEV_AUTH_E2E=1 selects the dedicated Buck2 dev-auth target,
+// CONSOLE_DEV_AUTH_E2E=1 selects the dedicated Buck2 dev-auth target,
 // seeds its personas, and starts Vite for the dev-auth Playwright project.
 // VITE_CONSOLE_DEV_PREVIEW=1 independently starts Vite with the preview flag
 // while retaining the default backend build and unseeded release-parity data.
@@ -931,12 +931,12 @@ async function cmdDown() {
       cwd: REPO_ROOT,
       env: {
         ...process.env,
-        MNT_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
-        MNT_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
-        MNT_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
-        MNT_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
-        MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
-        MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
+        CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
+        CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
+        CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+        CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
+        CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+        CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
           PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
       },
       stdio: "inherit",

@@ -57,7 +57,7 @@ Cilium activation for one context imply the other.
 | Context | Default posture | If you keep flannel | If you adopt Cilium |
 |---|---|---|---|
 | `on-prem` / ADR-0024 | Intended to use this Cilium stage. `deploy/talos/on-prem/cluster.patch.yaml` sets `cluster.network.cni.name=none` and `cluster.proxy.disabled=true` so Cilium owns the dataplane and kube-proxy replacement. | Not acceptable for production NetworkPolicy enforcement unless a different policy-capable CNI such as Calico/Canal is explicitly selected and documented. Plain flannel leaves Maintenance NetworkPolicies inert. | Preferred path. Activate only after real node inventory, Talos configs, API/VIP readiness, rollback target, and NetworkPolicy verification are recorded. |
-| `oci-guest` | Current live single-node OCI/Talos path is separate and should remain stable unless a ticket deliberately changes it. | Lowest-risk option for the current single-node A1 guest. Consequence: do not claim live NetworkPolicy isolation; render checks remain desired-state proof only, and `MNT_NETWORKPOLICY_PREFLIGHT=require` is expected to fail until a policy enforcer is present. | Possible only as a separate OCI maintenance/rebuild lane. Consequence: schedule downtime risk for the single node, change Talos CNI/proxy posture intentionally, preserve OCI rollback artifacts, and do not claim HA just because Cilium is installed. |
+| `oci-guest` | Current live single-node OCI/Talos path is separate and should remain stable unless a ticket deliberately changes it. | Lowest-risk option for the current single-node A1 guest. Consequence: do not claim live NetworkPolicy isolation; render checks remain desired-state proof only, and `CONSOLE_NETWORKPOLICY_PREFLIGHT=require` is expected to fail until a policy enforcer is present. | Possible only as a separate OCI maintenance/rebuild lane. Consequence: schedule downtime risk for the single node, change Talos CNI/proxy posture intentionally, preserve OCI rollback artifacts, and do not claim HA just because Cilium is installed. |
 
 Decision criteria for `oci-guest`:
 
@@ -76,7 +76,7 @@ Decision criteria for `oci-guest`:
 
 This stage is the intended ADR-0024 policy-capable CNI for production
 NetworkPolicy enforcement. The Maintenance policies in
-`deploy/apps/maintenance/base/networkpolicy.yaml` can render before this app is
+`deploy/apps/console/base/networkpolicy.yaml` can render before this app is
 live, but they do not isolate traffic on plain Talos/flannel because flannel does
 not implement NetworkPolicy. If a future activation chooses Calico or Canal
 (flannel dataplane plus Calico policy) instead of Cilium, update this doc and the
@@ -191,38 +191,38 @@ higher-risk maintenance operation.
    is ready, then prove policy enforcement:
 
    ```sh
-   MNT_NETWORKPOLICY_PREFLIGHT=require \
-     MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+   CONSOLE_NETWORKPOLICY_PREFLIGHT=require \
+     CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
      npm run check:k8s:networkpolicy
 
-   MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
-     MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto \
+   CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+     CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
      npm run smoke:k8s:networkpolicy-deny
    ```
 
-   Use `MNT_NETWORKPOLICY_SMOKE_POSTGRES=required` when CNPG is expected to be
+   Use `CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=required` when CNPG is expected to be
    live, and `skip` only for a rehearsal cluster that intentionally has no
    database Service yet. If the site blocks public image pulls or generic public
-   egress, override `MNT_NETWORKPOLICY_SMOKE_CLIENT_IMAGE`,
-   `MNT_NETWORKPOLICY_SMOKE_TARGET_IMAGE`,
-   `MNT_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE`, and
-   `MNT_NETWORKPOLICY_SMOKE_HTTPS_URL` with approved internal mirrors/probes.
+   egress, override `CONSOLE_NETWORKPOLICY_SMOKE_CLIENT_IMAGE`,
+   `CONSOLE_NETWORKPOLICY_SMOKE_TARGET_IMAGE`,
+   `CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE`, and
+   `CONSOLE_NETWORKPOLICY_SMOKE_HTTPS_URL` with approved internal mirrors/probes.
 
    The readback must pass against the target cluster. The smoke transcript must
    show all of these assertions before claiming isolation:
 
    - allowed same-namespace ingress: an unlabeled control pod reaches the
-     temporary `app=mnt-web` target on TCP/8080;
-   - allowed DNS egress: an `app=mnt-app` client resolves
+     temporary `app=console-web` target on TCP/8080;
+   - allowed DNS egress: an `app=console-app` client resolves
      `kubernetes.default.svc.cluster.local` through kube-dns;
    - allowed outbound HTTPS egress: the same app-tier client reaches the
      configured HTTPS probe on TCP/443, matching the existing broad 443 allowance
      for OCI Object Storage, FCM, Solapi, or an approved site proxy;
    - allowed Postgres access when applicable: an app-labelled Postgres client
-     reaches `mnt-db-rw.maintenance.svc.cluster.local:5432`, proving the
+     reaches `console-db-rw.console.svc.cluster.local:5432`, proving the
      `allow-app-egress-postgres` and `allow-postgres-from-app` path;
-   - explicit denied flow: the `app=mnt-app` client fails to reach the temporary
-     `app=mnt-web` target on TCP/8080. On pre-cutover plain flannel, if the
+   - explicit denied flow: the `app=console-app` client fails to reach the temporary
+     `app=console-web` target on TCP/8080. On pre-cutover plain flannel, if the
      preflight were bypassed, this denied connection would normally succeed
      because flannel is not enforcing the app-tier default-deny egress policy.
 
@@ -291,9 +291,9 @@ rollback plan.
 - Cilium readiness output: DaemonSet/Operator rollout, pod placement, node status,
   `cilium-config` policy settings, and `cilium status --wait` when available.
 - NetworkPolicy proof from `npm run check:k8s:networkpolicy` with
-  `MNT_NETWORKPOLICY_PREFLIGHT=require` and from
+  `CONSOLE_NETWORKPOLICY_PREFLIGHT=require` and from
   `npm run smoke:k8s:networkpolicy-deny` showing the allowed control, DNS,
-  HTTPS, and Postgres-if-present paths plus the denied `app=mnt-app` TCP/8080
+  HTTPS, and Postgres-if-present paths plus the denied `app=console-app` TCP/8080
   path.
 - If BGP was enabled later by the VIP lane, the peer/ASN/VIP-pool config, route
   convergence evidence, and rollback/route-withdraw proof from that lane.

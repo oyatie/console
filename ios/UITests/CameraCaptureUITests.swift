@@ -2,7 +2,7 @@ import XCTest
 
 /// Camera-capture UI states reached from the deterministic seeded work order.
 /// CI-only.
-final class CameraCaptureUITests: FieldUITestCase {
+final class CameraCaptureUITests: ConsoleUITestCase {
     func testCaptureSheetPresentsAGracefulRealStateOnSimulator() async throws {
         _ = try await launchApp()
         waitForAuthenticatedShell()

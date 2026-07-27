@@ -1,20 +1,20 @@
 //! Postgres inspection adapter.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_inspection_application::{
+use console_inspection_application::{
     CompleteInspectionRoundCommand, CreateInspectionScheduleCommand, InspectionRoundSummary,
     InspectionSchedulePage, InspectionScheduleSummary, ListInspectionSchedulesQuery,
     ListMyInspectionSchedulesQuery, inspection_audit_event,
 };
-use mnt_inspection_domain::{
+use console_inspection_domain::{
     InspectionRoundOutcome, InspectionScheduleStatus, validate_interval_days,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, EquipmentId, ErrorKind, InspectionRoundId, InspectionScheduleId,
     KernelError, UserId,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 
 /// Hard server-side cap on a single schedule page, so a wide date range can
@@ -565,7 +565,7 @@ fn schedule_from_row(
         equipment_id: EquipmentId::from_uuid(row.try_get("equipment_id")?),
         mechanic_id: UserId::from_uuid(row.try_get("mechanic_id")?),
         mechanic_display_name: row.try_get("mechanic_display_name")?,
-        cycle: mnt_inspection_domain::InspectionCycle::from_db_str(&cycle_raw)?,
+        cycle: console_inspection_domain::InspectionCycle::from_db_str(&cycle_raw)?,
         interval_days: row.try_get("interval_days")?,
         due_date: row.try_get("due_date")?,
         status: InspectionScheduleStatus::from_db_str(&status_raw)?,

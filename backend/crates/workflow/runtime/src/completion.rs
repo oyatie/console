@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use mnt_kernel_core::{BranchId, KernelError, OrgId, UserId};
-use mnt_platform_authz::{AuthorizationAuditEvent, Feature, Principal};
+use console_kernel_core::{BranchId, KernelError, OrgId, UserId};
+use console_platform_authz::{AuthorizationAuditEvent, Feature, Principal};
 
 use crate::authz_guard::{
     WAITING_COMPLETION_DOMAIN, build_guard_request, guard, workflow_coexistence_entry,
@@ -103,8 +103,8 @@ pub fn enforce_finalize_policy(
 mod tests {
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, UserId};
-    use mnt_platform_authz::{DecisionEngine, DecisionReason, Principal, Role};
+    use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, UserId};
+    use console_platform_authz::{DecisionEngine, DecisionReason, Principal, Role};
     use uuid::Uuid;
 
     use super::*;

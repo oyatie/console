@@ -220,8 +220,8 @@ console-only Action; every object shows source + freshness + its AuditEvent stre
   `web/src/i18n/ko.ts` (no inline Hangul; `check-ui-strings` enforces). Typed client `@maintenance/
   api-client-ts` from openapi.
 - Backend: Rust (axum), workspace of bounded-context crates (`domain/application/adapter-*/rest`),
-  sqlx, multi-tenant Postgres 18 with RLS (runtime role `mnt_rt` NOBYPASSRLS + FORCE RLS; owner
-  `mnt_app` runs migrations out-of-band). OpenAPI served via `include_str` (static).
+  sqlx, multi-tenant Postgres 18 with RLS (runtime role `console_rt` NOBYPASSRLS + FORCE RLS; owner
+  `console_app` runs migrations out-of-band). OpenAPI served via `include_str` (static).
 - Infra: OCI/Talos k8s, CNPG Postgres, Argo Rollouts, image-release auto-build+deploy on push;
   secrets in OCI Vault.
 - New external integrations (ask-first): Korean address/geocode (Kakao), 전자세금계산서 relay
@@ -233,8 +233,8 @@ console-only Action; every object shows source + freshness + its AuditEvent stre
   `npm test` (vitest; `--exclude '**/PlatformConsole.test.tsx'` until #31 fixes its OOM) ·
   `npm run gen:api:ts`.
 - Backend: `cd backend && SQLX_OFFLINE=true cargo fmt --all --check` · `cargo clippy --all-targets -- -D
-  warnings` · `DATABASE_URL=postgres://<user>@localhost/mnt_ci cargo test -p <crate>` (username
-  REQUIRED) · gates `cargo run -p mnt-gate-{rls-arming,tenant-isolation,layer-boundary,audit-coverage,
+  warnings` · `DATABASE_URL=postgres://<user>@localhost/console_ci cargo test -p <crate>` (username
+  REQUIRED) · gates `cargo run -p console-gate-{rls-arming,tenant-isolation,layer-boundary,audit-coverage,
   migration-safety}` · `npm run check:openapi-app` · `npm run gen:api:swift`.
 
 ## Project Structure
@@ -253,7 +253,7 @@ New domains add a bounded-context crate + a `web/src/features/<domain>` + object
 
 ## Code Style
 
-Match the surrounding code. Every tenant read/write arms `app.current_org`; tests run as real `mnt_rt`.
+Match the surrounding code. Every tenant read/write arms `app.current_org`; tests run as real `console_rt`.
 ```rust
 // Read: armed, org-scoped, fail-closed under FORCE RLS.
 pub async fn list_payslips(&self, employee_id: EmployeeId) -> Result<Vec<Payslip>, RepoError> {
@@ -272,7 +272,7 @@ links via `ObjectLink` (never render a raw UUID — `safeLabel`); copy in `ko.ts
 ## Testing Strategy
 
 - **TDD**: write the failing test first (the chained `test-driven-development` skill).
-- **Backend**: every tenant flow has a **real `mnt_rt` RLS test** (seed via the ARMED path, not the
+- **Backend**: every tenant flow has a **real `console_rt` RLS test** (seed via the ARMED path, not the
   BYPASSRLS owner pool) proving create→read round-trips, org-scoping, cross-tenant invisibility, and
   fail-closed-unarmed. The `rls-verify-as-runtime-role` rule is mandatory.
 - **Regulated domains**: payroll + accounting get **golden-case tests** against worked examples
@@ -285,7 +285,7 @@ links via `ObjectLink` (never render a raw UUID — `safeLabel`); copy in `ko.ts
 
 ## Boundaries
 
-**Always**: arm `app.current_org` + a real `mnt_rt` test for every tenant read/write · openapi-first
+**Always**: arm `app.current_org` + a real `console_rt` test for every tenant read/write · openapi-first
 for new endpoints + regen clients · incremental (≤~5 files/task) · gates+fmt+clippy+tests green +
 evidence before claiming done · authoring and review are separate passes (code-reviewer / security-
 reviewer; never self-approve) · operational/business mutations go through the audited console API
@@ -305,7 +305,7 @@ weakening tenant isolation.
 
 ## Success Criteria
 
-1. **FSM loop closes** end-to-end as real `mnt_rt`: intake → plan → dispatch → execute(evidence) →
+1. **FSM loop closes** end-to-end as real `console_rt`: intake → plan → dispatch → execute(evidence) →
    approve → close, with nothing "created but invisible" (issue #19 #13/#17/#18/#21/#22 fixed + tested).
 2. **Object-centric**: ≥6 core objects have an Object View reachable via ⌘K + inter-object links; the
    triage home is the post-login landing for operator roles; raw UUIDs never shown.

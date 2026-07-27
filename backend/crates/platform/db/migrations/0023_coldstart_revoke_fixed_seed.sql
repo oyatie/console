@@ -7,7 +7,7 @@
 -- first super-admin session on any fresh deploy.
 --
 -- Cold-start is now seeded at APP BOOT from the deploy-time secret
--- MNT_COLDSTART_OTP (see provisioning::BootstrapCredentialStore::seed_cold_start_credential
+-- CONSOLE_COLDSTART_OTP (see provisioning::BootstrapCredentialStore::seed_cold_start_credential
 -- and the app composition root), never from a committed constant. This migration
 -- closes the old hole on any environment that already ran 0021:
 --

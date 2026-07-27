@@ -19,13 +19,13 @@ This document is the durable `G002-wave-1-shared-contracts-and-hard-gat` contrac
 Required before domain completion claims in G003-G009:
 
 1. Backend mutation boundaries keep the existing CI gates green:
-   - `mnt-gate-layer-boundary`
-   - `mnt-gate-audit-coverage`
-   - `mnt-gate-migration-safety`
-   - `mnt-gate-tenant-isolation`
-   - `mnt-gate-pii-no-logs`
-   - `mnt-gate-rls-arming`
-   - `mnt-gate-dev-auth-absence`
+   - `console-gate-layer-boundary`
+   - `console-gate-audit-coverage`
+   - `console-gate-migration-safety`
+   - `console-gate-tenant-isolation`
+   - `console-gate-pii-no-logs`
+   - `console-gate-rls-arming`
+   - `console-gate-dev-auth-absence`
 2. Sensitive object actions, policy assignment, custom-role changes, account lifecycle transitions, ownership transfers, payroll/HR legal decisions, and any signing-equivalent approval must require fresh passkey step-up and produce append-only audit evidence.
 3. OTP/cold-start setup is only a bootstrap path. It must not grant mature account status until passkey setup and required Korean privacy/service agreements are complete.
 4. Approval feeds and Work Hub feeds must be server-owned, authorization-checked, tenant/RLS-scoped, and group/org/branch aware; browser composition cannot be the security boundary.

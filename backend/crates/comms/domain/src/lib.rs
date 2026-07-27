@@ -13,7 +13,7 @@
 //!     reply/forward prefixes (English + Korean), per account.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 /// Direction of a stored message relative to the tenant's mailbox.

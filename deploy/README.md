@@ -29,17 +29,17 @@ creating the secrets that must not live in git.
 | Traefik | chart 40.3.0 | ingress (hostPort 80/443, no LB cost) |
 | mox | 0.0.15 (digest-pinned) | dark/internal corporate mail webapi + IMAP |
 
-Workloads (`deploy/apps/maintenance`): `mnt-app` (API, blue/green Rollout ×2),
-`mnt-web` (SPA, blue/green Rollout ×2), `mnt-worker` (jobs, rolling Deployment),
-`mnt-mox` (PVC-backed StatefulSet, ClusterIP-only webapi/IMAP/metrics), `mnt-db`
+Workloads (`deploy/apps/console`): `console-app` (API, blue/green Rollout ×2),
+`console-web` (SPA, blue/green Rollout ×2), `console-worker` (jobs, rolling Deployment),
+`console-mox` (PVC-backed StatefulSet, ClusterIP-only webapi/IMAP/metrics), `console-db`
 (CNPG Postgres 18, single instance).
 
 ## Release & rollback model
 
 - **Digest-pinned rollouts:** images are built/signed by CI
   (`.github/workflows/image-release.yml`) and emitted as immutable `sha256`
-  digests. The prod overlay pins the `mnt-app` and `mnt-web` digests; Argo CD
-  syncs that desired state. `mnt-app`/`mnt-web` deploy **blue/green**: the new
+  digests. The prod overlay pins the `console-app` and `console-web` digests; Argo CD
+  syncs that desired state. `console-app`/`console-web` deploy **blue/green**: the new
   ("preview") ReplicaSet comes up alongside the live one, the `smoke-http`
   AnalysisTemplate probes its health endpoint, and only on success is the active
   Service flipped. A failed smoke check → no flip → the old version keeps serving
@@ -47,20 +47,20 @@ Workloads (`deploy/apps/maintenance`): `mnt-app` (API, blue/green Rollout ×2),
 - **Verified deployment claims:** only the default `scripts/deploy.sh <git-sha>`
   path, run to its final `done: ... deployed and verified` message, counts as a
   completed deployment. It verifies the Image Release run and digest artifacts,
-  the Argo Application synced revision, `mnt-app`/`mnt-web` Rollout health,
-  `mnt-worker` Deployment rollout, workload template image digests, running/ready
+  the Argo Application synced revision, `console-app`/`console-web` Rollout health,
+  `console-worker` Deployment rollout, workload template image digests, running/ready
   pods whose `imageID` or image reference matches the built digests, and public
   endpoint HTTP 200s. Missing `kubectl`, missing target-cluster access, an
   unreachable Argo Application, rollout failure, or digest mismatch fails closed.
   `--digest-bump-only` / `--bump-only` updates desired prod digests only and must
   be recorded as an unverified desired-state bump, not as deployed.
-- **Manual instant rollback:** `kubectl argo rollouts undo mnt-app -n maintenance`
+- **Manual instant rollback:** `kubectl argo rollouts undo console-app -n console`
   (the previous ReplicaSet is kept warm for `scaleDownDelaySeconds`). Or revert
   the image tag in git — Argo re-syncs.
-- **Dark mox rollback:** `mnt-mox` is a single PVC-backed StatefulSet, not a
+- **Dark mox rollback:** `console-mox` is a single PVC-backed StatefulSet, not a
   public ingress. Roll back by reverting the manifest/config commit, removing
-  `MNT_MAIL_MOX_BASE_URL` from `mnt-config` if app traffic must stop using mox,
-  and scaling `statefulset/mnt-mox` to 0 only after a `/mox-data` backup/export.
+  `CONSOLE_MAIL_MOX_BASE_URL` from `console-config` if app traffic must stop using mox,
+  and scaling `statefulset/console-mox` to 0 only after a `/mox-data` backup/export.
   Do not delete the PVC unless a restore target has already been verified.
 - **Self-healing:** Argo CD `selfHeal: true` reverts drift; Talos restarts failed
   components; Kubernetes reschedules crashed pods.
@@ -87,25 +87,25 @@ Workloads (`deploy/apps/maintenance`): `mnt-app` (API, blue/green Rollout ×2),
 ### Database migrations (automated, ordered, idempotent)
 
 Schema migrations run **automatically** on every Argo CD sync — no manual
-`sqlx migrate run` step. The `mnt-migrate` Job
-(`apps/maintenance/base/migrate-job.yaml`) runs the **same signed `mnt-app`
-image** in its `migrate` run-mode (`MNT_APP_ROLE=migrate`): it connects as the
-table **OWNER** (`mnt_app`, via the `mnt-db-app` secret `uri`), applies the
+`sqlx migrate run` step. The `console-migrate` Job
+(`apps/maintenance/base/migrate-job.yaml`) runs the **same signed `console-app`
+image** in its `migrate` run-mode (`CONSOLE_APP_ROLE=migrate`): it connects as the
+table **OWNER** (`console_app`, via the `console-db-app` secret `uri`), applies the
 embedded migrations, then exits.
 
 - **Ordering:** the Job is an Argo CD **PreSync hook**
   (`argocd.argoproj.io/hook: PreSync`), so it runs to completion **before** the
-  `mnt-app`/`mnt-worker` Deployments roll. The serving workloads only ever start
+  `console-app`/`console-worker` Deployments roll. The serving workloads only ever start
   against an already-migrated schema. A failed migration fails the sync and
   blocks the rollout.
 - **Idempotent:** sqlx records applied versions + per-file checksums in
   `_sqlx_migrations`; a re-sync re-runs the Job but applies nothing new ("up to
   date"). `hook-delete-policy: BeforeHookCreation` recreates a fresh Job each
   sync and cleans up the prior one.
-- **Owner vs. runtime split preserved:** the Job uses `mnt-db-app` (owner / DDL);
-  the app/worker still connect as the de-owned `mnt_rt` role (`mnt-db-rt`), which
-  cannot run DDL. **Create `mnt-db-rt` first** (the role/RLS de-own cutover) — see
-  [`SECRETS.md`](SECRETS.md) ("owner vs. runtime split"). The owner `mnt-db-app`
+- **Owner vs. runtime split preserved:** the Job uses `console-db-app` (owner / DDL);
+  the app/worker still connect as the de-owned `console_rt` role (`console-db-rt`), which
+  cannot run DDL. **Create `console-db-rt` first** (the role/RLS de-own cutover) — see
+  [`SECRETS.md`](SECRETS.md) ("owner vs. runtime split"). The owner `console-db-app`
   secret is auto-generated by CloudNativePG.
 
 > Prod hand-off: prod was historically migrated via `sqlx migrate run`, so its
@@ -121,7 +121,7 @@ embedded migrations, then exits.
 PR 473 stages a portable six-role database topology as an unreferenced Kustomize
 component. It does not change the live `base`, `prod` overlay, or Argo CD
 Application. The current live contract above remains the two-role
-`mnt_app`/`mnt_rt` topology with the PreSync migration behavior and fresh-deploy
+`console_app`/`console_rt` topology with the PreSync migration behavior and fresh-deploy
 gotchas recorded in [`OPS-RUNBOOK.md`](OPS-RUNBOOK.md).
 
 Start with the component's
@@ -143,7 +143,7 @@ not activation, deployment, migration, readiness, rollback, or claim authority.
 
 - [ ] DNS A-record for the host points at the node's public IP; OCI security
       list allows 80/443 (ingress), 6443 (k8s API), 50000 (Talos API).
-- [ ] `mnt-secrets` + `oci-objectstore-creds` exist in the `maintenance` namespace.
+- [ ] `console-secrets` + `oci-objectstore-creds` exist in the `maintenance` namespace.
 - [ ] NetworkPolicy isolation is proven against the target cluster before it is
       claimed. The NetworkPolicy manifests in
       `apps/maintenance/base/networkpolicy.yaml` render through CI, but a clean
@@ -151,18 +151,18 @@ not activation, deployment, migration, readiness, rollback, or claim authority.
       `kubectl` pointed at the target:
 
       ```sh
-      MNT_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
-      MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
-        MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto \
+      CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
+      CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+        CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
         npm run smoke:k8s:networkpolicy-deny
       ```
 
       Plain Talos/flannel must fail until Cilium, Calico/Canal, or another
       policy-capable enforcer is installed and the `maintenance` NetworkPolicies
       are applied. The smoke creates temporary pods and passes only when an
-      unlabeled control pod can reach the temporary `app=mnt-web` target on
-      TCP/8080, an `app=mnt-app` client can use DNS, outbound HTTPS, and
-      Postgres when the `mnt-db-rw` Service exists, and that same app-tier client
+      unlabeled control pod can reach the temporary `app=console-web` target on
+      TCP/8080, an `app=console-app` client can use DNS, outbound HTTPS, and
+      Postgres when the `console-db-rw` Service exists, and that same app-tier client
       is denied on a non-allowed TCP/8080 flow by the app-tier egress policy.
       Use the on-prem Cilium stage in `apps/cilium/README.md` (or document an
       explicit equivalent) and attach the smoke output before claiming isolation.
@@ -176,22 +176,22 @@ not activation, deployment, migration, readiness, rollback, or claim authority.
       to a cluster-access operator for fresh verification before any completion
       claim.
 - [ ] mox dark-stack secrets are present in OCI Vault and projected to
-      `mnt-secrets` before the first sync: `MNT_MAIL_MOX_WEBHOOK_SECRET` and the
+      `console-secrets` before the first sync: `CONSOLE_MAIL_MOX_WEBHOOK_SECRET` and the
       operator-held bootstrap/account credentials documented in `SECRETS.md`.
 - [ ] OCI buckets `mnt-db-backups` and `mnt-evidence` created in ap-chuncheon-1.
-- [ ] `mnt-mox` has a bound `mox-data-mnt-mox-0` PVC (default local-path unless
+- [ ] `console-mox` has a bound `mox-data-console-mox-0` PVC (default local-path unless
       the operator intentionally selects another storage class) and a recorded
       backup/restore plan for `/mox-data`; CNPG/Barman does not cover it.
 - [ ] Cold-start admin sign-in secured — **see the security note below**.
 - [ ] Issue a staging cert first (`letsencrypt-staging`) to avoid the LE rate
       limit, then switch the Ingress annotation to `letsencrypt-prod`.
-- [ ] Verify a backup completed: `kubectl cnpg backup mnt-db -n maintenance` then
+- [ ] Verify a backup completed: `kubectl cnpg backup console-db -n console` then
       check the `mnt-db-backups` bucket; run a restore drill (see `ops/dr/`).
 - [ ] Confirm blue/green: push a no-op image bump, watch
-      `kubectl argo rollouts get rollout mnt-app -n maintenance --watch`.
+      `kubectl argo rollouts get rollout console-app -n console --watch`.
 - [ ] Confirm dark mox without opening public mail ports: run
       `scripts/check-networkpolicy-enforcement.sh`, then port-forward
-      `svc/mnt-mox` and `svc/mnt-app` and run `scripts/mox-e2e.mjs` with the
+      `svc/console-mox` and `svc/console-app` and run `scripts/mox-e2e.mjs` with the
       OCI Vault secrets. Public MX/submission/IMAPS/webapi/admin exposure is a
       separate operator/founder gate.
 

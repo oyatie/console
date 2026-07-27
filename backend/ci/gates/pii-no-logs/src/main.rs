@@ -15,22 +15,22 @@ fn main() {
 
 fn run_gate(workspace_dir: &Path) {
     eprintln!(
-        "mnt-gate-pii-no-logs: checking workspace at {}",
+        "console-gate-pii-no-logs: checking workspace at {}",
         workspace_dir.display()
     );
 
-    let result = mnt_gate_pii_no_logs::check_workspace(workspace_dir).unwrap_or_else(|e| {
+    let result = console_gate_pii_no_logs::check_workspace(workspace_dir).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
     if result.passed() {
-        eprintln!("mnt-gate-pii-no-logs: PASSED");
+        eprintln!("console-gate-pii-no-logs: PASSED");
         std::process::exit(0);
     }
 
     eprintln!(
-        "mnt-gate-pii-no-logs: FAILED - {} violation(s):",
+        "console-gate-pii-no-logs: FAILED - {} violation(s):",
         result.violations.len()
     );
     for violation in &result.violations {

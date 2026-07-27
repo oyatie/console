@@ -32,14 +32,14 @@ COPY third-party/rust/vendor /workspace/third-party/rust/vendor
 COPY docs/reference /workspace/docs/reference
 COPY docs/specs /workspace/docs/specs
 
-RUN cargo build --locked --release -p mnt-app
+RUN cargo build --locked --release -p console-app
 
 FROM debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716 AS runtime
 
 # ffmpeg is REQUIRED by the worker role: the evidence media pipeline shells out
 # to it to transcode mechanic video to 1080p H.264/AAC MP4 and to recompress /
 # strip-metadata images BEFORE they are stored. All roles ship the same image
-# (single binary, role selected by MNT_APP_ROLE), so ffmpeg is installed once
+# (single binary, role selected by CONSOLE_APP_ROLE), so ffmpeg is installed once
 # here. Image-size impact: debian's `ffmpeg` pulls its codec/AV libraries and
 # adds roughly ~250-300 MB to the previously ~80 MB slim runtime.
 RUN apt-get update \
@@ -47,9 +47,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin mnt
 
-COPY --from=builder /workspace/backend/target/release/mnt-app /usr/local/bin/mnt-app
+COPY --from=builder /workspace/backend/target/release/console-app /usr/local/bin/console-app
 
 USER 10001
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/mnt-app"]
+ENTRYPOINT ["/usr/local/bin/console-app"]

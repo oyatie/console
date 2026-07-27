@@ -1,4 +1,4 @@
-# mnt-registry-adapter-postgres
+# console-registry-adapter-postgres
 
 Postgres registry adapter plus the Excel master-list importer.
 

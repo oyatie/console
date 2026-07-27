@@ -4,11 +4,11 @@ import { test, expect, COLDSTART_OTP, redeemOtp, enrollPasskey } from "../fixtur
  * AUTH-04 — boot silent refresh.
  *
  * After a successful first sign-in + enrollment the session lives only in memory
- * (access token) plus the HttpOnly `mnt_refresh` cookie. A hard page reload drops
+ * (access token) plus the HttpOnly `console_refresh` cookie. A hard page reload drops
  * the in-memory token; the app must silently refresh from the cookie on boot and
  * restore the authenticated session rather than bounce to /login.
  */
-test("AUTH-04 hard reload restores the session via the mnt_refresh cookie", async ({
+test("AUTH-04 hard reload restores the session via the console_refresh cookie", async ({
   page,
 }) => {
   await redeemOtp(page, COLDSTART_OTP);

@@ -6,7 +6,7 @@
 
 use base64::Engine as _;
 use hmac::{Hmac, KeyInit, Mac};
-use mnt_kernel_core::{BranchId, OrgId, ServicePrincipalId};
+use console_kernel_core::{BranchId, OrgId, ServicePrincipalId};
 use sha2::Sha256;
 use subtle::ConstantTimeEq;
 
@@ -68,7 +68,7 @@ pub(crate) fn verifier(
     generation: i32,
 ) -> [u8; 32] {
     let mut mac = HmacSha256::new_from_slice(key).expect("32-byte HMAC keys are valid");
-    mac.update(b"mnt.production.service-principal.v1\0");
+    mac.update(b"console.production.service-principal.v1\0");
     mac.update(org_id.as_uuid().as_bytes());
     mac.update(principal_id.as_uuid().as_bytes());
     mac.update(branch_id.as_uuid().as_bytes());

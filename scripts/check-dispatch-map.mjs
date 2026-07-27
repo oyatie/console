@@ -24,7 +24,7 @@ await runCommand(
   [
     "clippy",
     "-p",
-    "mnt-compliance-adapter-postgres",
+    "console-compliance-adapter-postgres",
     "--all-targets",
     "--",
     "-D",
@@ -34,7 +34,7 @@ await runCommand(
     cwd: backendDir,
     env: cargoEnv,
     label:
-      "cargo clippy -p mnt-compliance-adapter-postgres --all-targets -- -D warnings",
+      "cargo clippy -p console-compliance-adapter-postgres --all-targets -- -D warnings",
   },
 );
 
@@ -43,7 +43,7 @@ await runCommand(
   [
     "test",
     "-p",
-    "mnt-compliance-adapter-postgres",
+    "console-compliance-adapter-postgres",
     "--test",
     "location_store",
     "geofence_arrival_departure_is_audited_and_survives_withdrawal",
@@ -54,7 +54,7 @@ await runCommand(
     cwd: backendDir,
     env: cargoEnv,
     label:
-      "cargo test -p mnt-compliance-adapter-postgres --test location_store geofence_arrival_departure_is_audited_and_survives_withdrawal -- --exact",
+      "cargo test -p console-compliance-adapter-postgres --test location_store geofence_arrival_departure_is_audited_and_survives_withdrawal -- --exact",
   },
 );
 

@@ -27,8 +27,8 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, patch, post, put};
 use axum::{Json, Router};
-use mnt_identity_adapter_postgres::{PgOrgError, PgOrgStore};
-use mnt_identity_application::{
+use console_identity_adapter_postgres::{PgOrgError, PgOrgStore};
+use console_identity_application::{
     ActivateUserCommand, CreateBranchCommand, CreatePolicyAssignmentPreviewReceiptCommand,
     CreatePolicyRoleCommand, CreateRegionCommand, CreateUserCommand, DeactivateBranchCommand,
     DeactivateRegionCommand, DeactivateUserCommand, DirectoryListQuery, MAX_DIRECTORY_PAGE_LIMIT,
@@ -38,21 +38,21 @@ use mnt_identity_application::{
     UpdatePolicyRoleStatusCommand, UpdateRegionCommand, UpdateSelfProfileCommand,
     UpdateUserCommand, UserListQuery, UserSummary,
 };
-use mnt_identity_domain::{Team, normalize_directory_search};
-use mnt_kernel_core::{
+use console_identity_domain::{Team, normalize_directory_search};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, RegionId,
     TraceContext, UserId,
 };
-use mnt_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use mnt_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map};
-use mnt_platform_authz::{
+use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map};
+use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationRequest, AuthorizationResource,
     CoexistenceMapEntry, DecisionEffect, DualEngineMode, Feature, PermissionLevel, Principal,
     RlsScopeProof, Role, SubjectFreshnessRequirement, authorize, evaluate_cedar_pbac_boundary,
     observe_cedar_pbac_decision, permission_for,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::{RequestContextError, current_org};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::{RequestContextError, current_org};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use time::{Duration, OffsetDateTime};
@@ -276,7 +276,7 @@ pub fn router(state: IdentityRestState) -> Router {
     // Per-request tenant context: resolves the Principal and arms `CURRENT_ORG`
     // for every authenticated route on this router, so adapter reads/writes run
     // scoped to the request's tenant.
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -2501,7 +2501,7 @@ mod policy_role_template_tests {
         let branch = BranchId::new();
         let principal = Principal::new(
             UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([Role::Admin]),
             BranchScope::single(branch),
         );
@@ -2529,12 +2529,12 @@ mod policy_role_template_tests {
         let blocked_branch = BranchId::new();
         let principal = Principal::new(
             UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([Role::Member]),
             BranchScope::Branches(BTreeSet::from([allowed_branch, blocked_branch])),
         )
         .with_effective_feature_grants(vec![
-            mnt_platform_authz::EffectiveFeatureGrant::new(
+            console_platform_authz::EffectiveFeatureGrant::new(
                 Feature::WorkOrderCreate,
                 PermissionLevel::Allow,
                 BranchScope::single(allowed_branch),
@@ -2568,13 +2568,13 @@ mod policy_role_template_tests {
         let branch = BranchId::new();
         let admin = Principal::new(
             UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([Role::Admin]),
             BranchScope::single(branch),
         );
         let super_admin = Principal::new(
             UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([Role::SuperAdmin]),
             BranchScope::single(branch),
         );
@@ -3884,7 +3884,7 @@ async fn deactivate_branch(
 /// Scoped to BOTH the caller (`principal.user_id`) AND the request's tenant: the
 /// read runs inside `with_org_conn(.., current_org()?, ..)`, which arms the
 /// `app.current_org` GUC so the FORCE-RLS `auth_webauthn_credentials` rows for
-/// this org become visible to the non-owner `mnt_rt` role. The `WHERE user_id`
+/// this org become visible to the non-owner `console_rt` role. The `WHERE user_id`
 /// filter then narrows to the caller's own credentials. No secret material
 /// (passkey_json / public key / credential_id) ever leaves this handler.
 async fn list_passkeys(
@@ -4090,7 +4090,7 @@ mod directory_query_tests {
             BranchScope::Branches(BTreeSet::from([member_branch, granted_branch])),
         )
         .with_effective_feature_grants(vec![
-            mnt_platform_authz::EffectiveFeatureGrant::new(
+            console_platform_authz::EffectiveFeatureGrant::new(
                 Feature::EmployeeDirectoryRead,
                 PermissionLevel::Allow,
                 BranchScope::Branches(BTreeSet::from([granted_branch, outside_branch])),
@@ -4128,12 +4128,12 @@ mod directory_query_tests {
             BranchScope::Branches(BTreeSet::from([member_a, member_b])),
         )
         .with_effective_feature_grants(vec![
-            mnt_platform_authz::EffectiveFeatureGrant::new(
+            console_platform_authz::EffectiveFeatureGrant::new(
                 Feature::EmployeeDirectoryRead,
                 PermissionLevel::Allow,
                 BranchScope::Branches(BTreeSet::from([member_a, outside])),
             ),
-            mnt_platform_authz::EffectiveFeatureGrant::new(
+            console_platform_authz::EffectiveFeatureGrant::new(
                 Feature::EmployeeDirectoryRead,
                 PermissionLevel::Allow,
                 BranchScope::Branches(BTreeSet::from([member_b, outside])),
@@ -4327,7 +4327,7 @@ async fn try_run_role_manage_cedar_shadow(
     let org = current_org()?;
 
     // DB-current freshness (guard-time) the token snapshot must be at least as
-    // fresh as. Read under the armed `mnt_rt` GUC via the store.
+    // fresh as. Read under the armed `console_rt` GUC via the store.
     let policy_version = state
         .store
         .get_policy_version()
@@ -4566,40 +4566,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for identity API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for identity API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
+        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
             KernelError::internal("no tenant context is bound to the current request"),
         ),
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -4738,12 +4738,12 @@ impl IntoResponse for RestError {
 // authorization result is the SOLE enforcer, and the Cedar shadow lane can NEVER
 // change a live outcome. These tests prove that both at the pure
 // decision-combination level (forced Cedar Error/Deny) and end-to-end through the
-// real `authorize_org_manage_observed` wrapper (dark default + flag-on + mnt_rt
+// real `authorize_org_manage_observed` wrapper (dark default + flag-on + console_rt
 // RLS).
 // ---------------------------------------------------------------------------
 #[cfg(test)]
 mod cedar_shadow_wiring_tests {
-    use mnt_platform_authz::{CedarEvaluation, DecisionReason, SubjectFreshness};
+    use console_platform_authz::{CedarEvaluation, DecisionReason, SubjectFreshness};
 
     use super::*;
 
@@ -4779,7 +4779,7 @@ mod cedar_shadow_wiring_tests {
         .with_rls_scope_proof(RlsScopeProof::runtime_role_guc(org))
     }
 
-    fn shadow_entry(bundle_key: mnt_platform_authz::CompiledBundleCacheKey) -> CoexistenceMapEntry {
+    fn shadow_entry(bundle_key: console_platform_authz::CompiledBundleCacheKey) -> CoexistenceMapEntry {
         CoexistenceMapEntry::new(
             format!("{DOMAIN}.role_manage"),
             DOMAIN,

@@ -2,12 +2,12 @@
 //! event builders for users, regions, and branches.
 //!
 //! Roles travel as canonical DB role strings (`SUPER_ADMIN`, `ADMIN`, …). The
-//! REST boundary parses and authorizes them against the `mnt-platform-authz`
+//! REST boundary parses and authorizes them against the `console-platform-authz`
 //! matrix; this layer stays free of that platform dependency to satisfy the
 //! layer-boundary gate.
 
-use mnt_identity_domain::Team;
-use mnt_kernel_core::{
+use console_identity_domain::Team;
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, KernelError, RegionId, Timestamp, TraceContext, UserId,
 };
 use serde::{Deserialize, Serialize};

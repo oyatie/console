@@ -37,7 +37,7 @@
 -- install rolls back.
 
 -- Install markers become an append-only per-tenant history of applied catalog
--- versions. mnt_ontology_writer keeps SELECT+INSERT and still has no UPDATE:
+-- versions. console_ontology_writer keeps SELECT+INSERT and still has no UPDATE:
 -- an upgrade appends, it does not rewrite the tenant's install record.
 ALTER TABLE ont_builtin_catalog_installs
     DROP CONSTRAINT ont_builtin_catalog_installs_pkey;
@@ -252,8 +252,8 @@ $$;
 -- CREATE OR REPLACE preserves ownership and ACL; re-assert both so the
 -- capability pinning of 0165 is readable at this migration too.
 ALTER FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT)
-    OWNER TO mnt_ontology_writer;
+    OWNER TO console_ontology_writer;
 REVOKE ALL ON FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT)
-    FROM PUBLIC, mnt_rt;
+    FROM PUBLIC, console_rt;
 GRANT EXECUTE ON FUNCTION ontology_api.install_builtin_catalog(UUID, TEXT, JSONB, UUID, TEXT, TEXT)
-    TO mnt_ontology_cmd;
+    TO console_ontology_cmd;

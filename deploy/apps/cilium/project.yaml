@@ -4,15 +4,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: maintenance-onprem-cilium
+  name: console-onprem-cilium
   namespace: argocd
   annotations:
-    maintenance.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/dark-stage: "true"
 spec:
   description: Dark ADR-0024 on-prem Cilium CNI stage; apply manually only after substrate/VIP readiness.
   sourceRepos:
     - https://helm.cilium.io
-    - https://github.com/jason931225/maintenance.git
+    - https://github.com/jason931225/console.git
   destinations:
     - server: https://kubernetes.default.svc
       namespace: kube-system

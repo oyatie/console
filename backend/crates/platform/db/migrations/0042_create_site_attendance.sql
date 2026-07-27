@@ -22,7 +22,7 @@
 -- FORCE RLS org_isolation + the immutable-org trigger + a composite (id, org_id)
 -- key inline (the rollout 0027-0035 retrofitted these onto legacy tables).
 
--- mnt-gate: audited-table site_attendance_events
+-- console-gate: audited-table site_attendance_events
 CREATE TABLE site_attendance_events (
     id            UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,

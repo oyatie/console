@@ -122,7 +122,7 @@ DO $$ DECLARE t TEXT; BEGIN FOREACH t IN ARRAY ARRAY['equipment_3r_units','equip
  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
  EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
  EXECUTE format('CREATE POLICY org_isolation ON %I USING (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid) WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)', t);
- EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO mnt_rt', t);
+ EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I TO console_rt', t);
  EXECUTE format('CREATE TRIGGER trg_%s_org_immutable BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()', t, t);
 END LOOP; END $$;
 -- Field access must stay per-table: PL/pgSQL resolves OLD.<field> for the

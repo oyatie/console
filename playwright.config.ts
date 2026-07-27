@@ -16,30 +16,30 @@ import { defineConfig, devices } from "@playwright/test";
  * (`import.meta.env.DEV`) with the backend compiled `--features dev-auth` — a
  * production build (this file's default project) can never render the
  * switcher, and weakening its DEV-only predicate to make it render there is
- * exactly the wrong fix (mnt-gate-dev-auth-absence + dev_auth_absence.rs
+ * exactly the wrong fix (console-gate-dev-auth-absence + dev_auth_absence.rs
  * already prove the feature is compiled OUT of a default/release build; this
  * spec proves the opposite build actually works). Attendance coverage runs in
  * that same production-faithful Vite development build; it exercises the active
  * `/attendance` route, not the independently gated `/console/*` preview.
- * `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap` starts the backend
- * WITH dev-auth, `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
+ * `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap` starts the backend
+ * WITH dev-auth, `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
  * runs the production-faithful dev-auth suite, and `node scripts/dev-up.mjs
  * down` tears the stack down. Console-preview E2E is intentionally a separate,
  * opt-in project: it requires the exact three-flag selector below and is never
  * part of the required dev-auth job.
  */
 const PORT = Number(
-  process.env.E2E_WEB_PORT ?? process.env.MNT_DEV_VITE_PORT ?? 5173,
+  process.env.E2E_WEB_PORT ?? process.env.CONSOLE_DEV_VITE_PORT ?? 5173,
 );
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 const DEV_AUTH_SPEC =
   /(?:admin-29-console-window|auth-09-dev-role-switcher|chrome-0[123]-(?:mobile-drawer|axe|workspace)|console-01-shell|hr-30-absence-exit-settlement|attendance-31-console-live)\.spec\.ts$/;
 const DEV_AUTH_CONSOLE_PREVIEW_SPEC =
   /evaluation-32-live-user-story\.spec\.ts$/;
-const DEV_AUTH_E2E = process.env.MNT_DEV_AUTH_E2E === "1";
+const DEV_AUTH_E2E = process.env.CONSOLE_DEV_AUTH_E2E === "1";
 const DEV_AUTH_CONSOLE_PREVIEW_E2E =
   DEV_AUTH_E2E &&
-  process.env.MNT_CONSOLE_PREVIEW_E2E === "1" &&
+  process.env.CONSOLE_PREVIEW_E2E === "1" &&
   process.env.VITE_CONSOLE_DEV_PREVIEW === "1";
 const STATIC_PREVIEW_FALLBACK = process.env.E2E_STATIC_PREVIEW_FALLBACK === "1";
 

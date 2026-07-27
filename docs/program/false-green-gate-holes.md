@@ -142,10 +142,10 @@ and the reason reached much further than that one test.
 
 `0196_platform_force_command_and_fk_closure.sql` — which does not exist on
 `main` — guards the force-role topology. Applying migrations now requires a
-superuser named **exactly** `mnt_buck_admin`, with `SESSION_USER = CURRENT_USER`,
+superuser named **exactly** `console_buck_admin`, with `SESSION_USER = CURRENT_USER`,
 `mnt.sqlx_test_bootstrap = 'buck-sqlx-superuser-v1'`, a database matching
 `^_sqlx_test_[A-Za-z0-9_]{52}$`, and ownership by the applier. The
-non-superuser path admits only `mnt_app`, which cannot create test databases.
+non-superuser path admits only `console_app`, which cannot create test databases.
 
 CI's service database runs as `postgres`. Under 0196 it therefore cannot apply
 a single migration, so **every** `#[sqlx::test]` reached through it dies with
@@ -164,15 +164,15 @@ After the removal, CI's Rust test execution is:
 
 | | |
 |---|---|
-| `//backend/crates/support/domain:mnt-support-domain-unit` | one crate's unit tests |
-| `//backend/app:mnt-app-unit` | app `src` tests, `resource.none` half |
+| `//backend/crates/support/domain:console-support-domain-unit` | one crate's unit tests |
+| `//backend/app:console-app-unit` | app `src` tests, `resource.none` half |
 | `//tools/buck:app-inline-postgres` | app `src` tests, `test-postgres` half |
 | `//tools/buck:app-dev-auth-persona-guard-postgres` | 1 of 63 story-test files |
-| `mnt-gate-tenant-isolation --test owner_only_acl_postgres18` | one file |
+| `console-gate-tenant-isolation --test owner_only_acl_postgres18` | one file |
 | the Dev-auth step | 2 packages (only after the fix below) |
 | the PR 473 gate | 4 disposable-PostgreSQL targets + 11 named regressions |
 
-The two `mnt-app` targets share `crate_root = backend/app/src/lib.rs` and
+The two `console-app` targets share `crate_root = backend/app/src/lib.rs` and
 partition on the `test-postgres` feature, so the app crate's **170 inline test
 functions do run**. Measured against that:
 
@@ -186,19 +186,19 @@ So roughly **1,491 domain-crate and ~250 app story test functions execute
 nowhere** on any push or PR, across 156 crates and 148 integration-test files.
 
 **The remedy is cheap, and is now proven.** 0196 does not demand a separate
-container — only the identity. Creating `mnt_buck_admin` as a superuser in the
+container — only the identity. Creating `console_buck_admin` as a superuser in the
 existing CI service and putting
 `options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1` on `DATABASE_URL`
 satisfies the guard: sqlx then creates each `_sqlx_test_*` database owned by
 that role. Verified against the exact suites 0196 had broken —
-`mnt-platform-auth-rest --features dev-auth` went 0-passing to 15/15, and
-`mnt-platform-provisioning --test dev_principal_upsert_race` to 1/1. That fix is
+`console-platform-auth-rest --features dev-auth` went 0-passing to 15/15, and
+`console-platform-provisioning --test dev_principal_upsert_race` to 1/1. That fix is
 in this branch's `ci.yml`.
 
 The same lever restores workspace-wide coverage: `cargo test --workspace` under
 that URL is no longer impossible, merely un-run. It stays a separate charter
 only because switching it on will surface a genuine backlog, not because
-anything blocks it. The two known failures in `mnt-ontology-rest
+anything blocks it. The two known failures in `console-ontology-rest
 object_type_cas_as_runtime_role` have since been fixed — and fixing them
 uncovered H-9, which is what a backlog of un-run tests actually costs.
 
@@ -223,7 +223,7 @@ never run.
 
 `object_type_cas_as_runtime_role` proves that the Cedar normalization-blocker
 queue is tenant-scoped. It seeds one blocker for each of two organizations,
-then reads the table as the real `mnt_rt` role and asserts each tenant sees
+then reads the table as the real `console_rt` role and asserts each tenant sees
 exactly its own row. The reads were wrapped in `scope_org(org, …)`, which reads
 as arming the tenant.
 
@@ -251,7 +251,7 @@ non-owner pool with nothing arming the GUC. Every candidate resolved as either
 the `#[sqlx::test]` owner fixture (superuser, RLS bypassed, so the GUC is not
 what makes the read work) or an adapter call that arms the GUC itself.
 `policy/adapter-postgres/tests/draft_storage.rs` is the pattern done right: it
-runs a store against an `mnt_rt` pool and asserts *both* that org A sees its row
+runs a store against an `console_rt` pool and asserts *both* that org A sees its row
 and that org B does not. So this is one instance, not a class — but the
 assertion asymmetry that hid it is a class.
 

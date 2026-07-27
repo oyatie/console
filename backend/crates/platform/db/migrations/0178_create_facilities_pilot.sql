@@ -93,6 +93,6 @@ DO $$ DECLARE t TEXT; tenant_tables TEXT[] := ARRAY['facilities_spaces','facilit
   EXECUTE format('CREATE TRIGGER trg_%I_org_immutable BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()', t, t);
  END LOOP;
 END $$;
-REVOKE DELETE, UPDATE ON facilities_case_history, facilities_execution_evidence_links, facilities_acceptances, facilities_energy_observations, facilities_cost_observations FROM mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON facilities_spaces, facilities_catalog_services, facilities_assets, facilities_obligations, facilities_cases TO mnt_rt;
-GRANT SELECT, INSERT ON facilities_case_history, facilities_execution_evidence_links, facilities_acceptances, facilities_energy_observations, facilities_cost_observations TO mnt_rt;
+REVOKE DELETE, UPDATE ON facilities_case_history, facilities_execution_evidence_links, facilities_acceptances, facilities_energy_observations, facilities_cost_observations FROM console_rt;
+GRANT SELECT, INSERT, UPDATE ON facilities_spaces, facilities_catalog_services, facilities_assets, facilities_obligations, facilities_cases TO console_rt;
+GRANT SELECT, INSERT ON facilities_case_history, facilities_execution_evidence_links, facilities_acceptances, facilities_energy_observations, facilities_cost_observations TO console_rt;

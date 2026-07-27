@@ -1,5 +1,5 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
-//! Authenticated, runtime-role (`mnt_rt`) story for the field console
+//! Authenticated, runtime-role (`console_rt`) story for the field console
 //! (CAP-FIELD-CONSOLE): customer site intake → link/triage → visit history →
 //! resolution → customer acceptance → SLA rollup. It crosses the assembled
 //! HTTP router (JWT → principal → authz → store → RLS) rather than calling
@@ -7,9 +7,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const TICKETS: &str = "/api/v1/support/tickets";
 const FIELD_SITES: &str = "/api/v1/field/sites";
 
@@ -604,7 +604,7 @@ async fn field_console_isolates_tenants_as_runtime_role(pool: PgPool) {
     let admin_other = seed_user(&pool, other, "ADMIN", branch_other).await;
     let token_other = keys.token(admin_other, other, "ADMIN", vec![branch_other]);
 
-    // RLS as mnt_rt: the sibling tenant's site is invisible in list and detail
+    // RLS as console_rt: the sibling tenant's site is invisible in list and detail
     // even though the JWT branch scope alone would not exclude it.
     let (status, page) = send(&rt, &keys, "GET", FIELD_SITES, &token_other, None, None).await;
     assert_eq!(status, StatusCode::OK, "cross-tenant list: {page}");
@@ -683,7 +683,7 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -754,14 +754,14 @@ async fn dispatch(pool: &PgPool, keys: &Keys, request: Request<Body>) -> (Status
     )
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
     AppState::new(
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".into()),
-            ("MNT_JWT_ISSUER", ISSUER.into()),
-            ("MNT_JWT_AUDIENCE", AUDIENCE.into()),
-            ("MNT_JWT_PUBLIC_KEY_PEM", public_key),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
+            ("CONSOLE_JWT_ISSUER", ISSUER.into()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.into()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key),
         ])?,
         DatabaseDependency::Postgres(pool),
     )

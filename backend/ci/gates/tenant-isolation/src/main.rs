@@ -15,22 +15,22 @@ fn main() {
 
 fn run_gate(workspace_dir: &Path) {
     eprintln!(
-        "mnt-gate-tenant-isolation: checking workspace at {}",
+        "console-gate-tenant-isolation: checking workspace at {}",
         workspace_dir.display()
     );
 
-    let result = mnt_gate_tenant_isolation::check_workspace(workspace_dir).unwrap_or_else(|e| {
+    let result = console_gate_tenant_isolation::check_workspace(workspace_dir).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
     if result.passed() {
-        eprintln!("mnt-gate-tenant-isolation: PASSED");
+        eprintln!("console-gate-tenant-isolation: PASSED");
         std::process::exit(0);
     }
 
     eprintln!(
-        "mnt-gate-tenant-isolation: FAILED - {} violation(s):",
+        "console-gate-tenant-isolation: FAILED - {} violation(s):",
         result.violations.len()
     );
     for violation in &result.violations {

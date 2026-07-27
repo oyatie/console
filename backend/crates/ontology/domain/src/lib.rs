@@ -6,7 +6,7 @@
 //! no serde_json — persistence + wire concerns live in the adapter crate.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 
 /// Defines a UUID-backed ID newtype (local copy of the kernel-core idiom; the
 /// kernel macro is not exported, and this lane keeps its ids self-contained).

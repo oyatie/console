@@ -26,7 +26,7 @@ function makeFixture(t) {
   mkdirSync(templates, { recursive: true });
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(spec, "openapi: 3.0.3\n", "utf8");
-  writeFileSync(config, "artifactId: maintenance-api-client\n", "utf8");
+  writeFileSync(config, "artifactId: console-api-client\n", "utf8");
   writeFileSync(resolve(templates, "ApiClient.mustache"), "template\n", "utf8");
   t.after(() => rmSync(root, { recursive: true, force: true }));
 
@@ -49,7 +49,7 @@ test("copies an exact workspace into Docker instead of bind-mounting the host pa
         ),
       );
       assert.equal(
-        "artifactId: maintenance-api-client\n",
+        "artifactId: console-api-client\n",
         readFileSync(
           resolve(copiedWorkspace, "clients/kotlin-generator-config.yaml"),
           "utf8",

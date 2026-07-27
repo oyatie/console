@@ -10,7 +10,7 @@ human-run gate for the auth ceremony itself.
 A real passkey ceremony is **not automatable** in XCUITest, by design:
 
 - The `ASAuthorization*` sheet that `AuthorizationPasskeyCredentialProvider`
-  presents (`ios/Sources/MaintenanceFieldApp/AuthorizationPasskeyCredentialProvider.swift`)
+  presents (`ios/Sources/ConsoleApp/AuthorizationPasskeyCredentialProvider.swift`)
   is rendered and owned by **SpringBoard**, a separate system process. XCUITest
   drives the app under test; it cannot reach into SpringBoard's secure UI.
 - There is **no Apple-provided virtual authenticator** for the Simulator
@@ -31,11 +31,11 @@ Face ID**, a **real iCloud Keychain passkey**, and the **real backend**.
 - The app installed from a signed build whose **bundle id** is registered in the
   Apple Developer portal under Team ID **98Q89GFZWP**, with the **Associated
   Domains** entitlement `webcredentials:knllogistic.com` (the RP id — apex per
-  `deploy/apps/maintenance/base/configmap.yaml` `MNT_WEBAUTHN_RP_ID`).
+  `deploy/apps/console/base/configmap.yaml` `CONSOLE_WEBAUTHN_RP_ID`).
 - The backend reachable at the RP origin **https://console.knllogistic.com** (staging
   or prod) serving the Apple App Site Association document at
   `https://knllogistic.com/.well-known/apple-app-site-association` with this
-  build's app id present in `MNT_IOS_APP_IDS`
+  build's app id present in `CONSOLE_IOS_APP_IDS`
   (`98Q89GFZWP.<bundle-id>`). Until that ConfigMap value is populated the
   ceremony **cannot** succeed — passkeys are inert without the AASA association
   (see `deploy/SECRETS.md`, "Native passkeys are inert until …").
@@ -45,7 +45,7 @@ Face ID**, a **real iCloud Keychain passkey**, and the **real backend**.
 > If the app is launched with `MAINTENANCE_API_BASE_URL` unset it targets
 > production (`https://fsm.knllogistic.com`, which now 301-redirects to
 > `https://console.knllogistic.com`) — see
-> `ios/Sources/MaintenanceFieldApp/AppContainer.swift` `resolveServerURL()`.
+> `ios/Sources/ConsoleApp/AppContainer.swift` `resolveServerURL()`.
 > To smoke against staging, set that environment override on the build.
 
 ## Part A — Passkey CREATE (enrollment)
@@ -69,7 +69,7 @@ the iPhone.
 ## Part B — Passkey ASSERT (native login)
 
 - [ ] Cold-launch the field app (kill from app switcher first, so session restore
-      starts from a signed-out state — `FieldViewModel.restore()` →
+      starts from a signed-out state — `ConsoleViewModel.restore()` →
       `PasskeyAuthRepository.restore()` returns `.signedOut` when the Keychain has
       no session).
 - [ ] On the login screen (Korean title **패스키 로그인**), enter the mechanic's

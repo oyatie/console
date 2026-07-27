@@ -1,10 +1,10 @@
 -- Multi-tenant phase 1, step 6: de-own the runtime identity + lock org_id.
 --
--- The application must NOT connect as the database owner (`mnt_app`). An owner
+-- The application must NOT connect as the database owner (`console_app`). An owner
 -- is immune to GRANT/REVOKE on its own tables, can DROP POLICY / DISABLE ROW
 -- LEVEL SECURITY, and (without FORCE) bypasses RLS entirely — so a compromised
 -- app connected as the owner could turn the whole tenant boundary off. This
--- migration introduces `mnt_rt`, a least-privilege NON-OWNER role the app
+-- migration introduces `console_rt`, a least-privilege NON-OWNER role the app
 -- connects as, and makes `org_id` immutable so a row can never be moved between
 -- tenants by UPDATE.
 
@@ -24,23 +24,23 @@
 --   2. Idempotent create/alter — only write pg_authid when the role is missing
 --      or an attribute has actually drifted, so repeat applies touch nothing and
 --      cannot conflict even if the lock were unavailable.
-SELECT pg_advisory_xact_lock(hashtext('mnt_rt_role_setup'));
+SELECT pg_advisory_xact_lock(hashtext('console_rt_role_setup'));
 
 -- The advisory lock above is best-effort (a transaction-scoped lock is ineffective
 -- if the migration runner applies statements in autocommit), so the catch below is
 -- the real guard: on a FRESH cluster every parallel sqlx::test DB races to CREATE
--- mnt_rt, and the losers must swallow the pg_authid unique_violation. Whoever wins
+-- console_rt, and the losers must swallow the pg_authid unique_violation. Whoever wins
 -- the CREATE sets the full attribute set, so the losers can safely no-op.
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mnt_rt') THEN
-        CREATE ROLE mnt_rt NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_rt') THEN
+        CREATE ROLE console_rt NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
     ELSIF EXISTS (
         SELECT 1 FROM pg_roles
-        WHERE rolname = 'mnt_rt'
+        WHERE rolname = 'console_rt'
           AND (rolsuper OR rolbypassrls OR rolcreatedb OR rolcreaterole)
     ) THEN
-        ALTER ROLE mnt_rt NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+        ALTER ROLE console_rt NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
     END IF;
 EXCEPTION
     WHEN duplicate_object OR unique_violation THEN NULL;
@@ -64,25 +64,25 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
     registry_equipment,
     work_orders,
     work_order_request_counters
-TO mnt_rt;
+TO console_rt;
 
-GRANT SELECT ON organizations TO mnt_rt;
-REVOKE INSERT, UPDATE, DELETE ON organizations FROM mnt_rt;
+GRANT SELECT ON organizations TO console_rt;
+REVOKE INSERT, UPDATE, DELETE ON organizations FROM console_rt;
 
 -- Future tables created by the owner auto-grant DML to the runtime role, so the
 -- rollout to the remaining ~55 tables does not have to remember a GRANT per
 -- table. (organizations is the one deliberate exception above.)
-ALTER DEFAULT PRIVILEGES FOR ROLE mnt_app IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO mnt_rt;
+ALTER DEFAULT PRIVILEGES FOR ROLE console_app IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO console_rt;
 
 -- --------------------------------------------------------------------------
 -- (1c) audit_events: INSERT + SELECT only — NO update/delete (append-only is
 -- preserved at the grant layer, beneath the trigger from 0003). PUBLIC has no
--- implicit grant here and mnt_rt is a non-owner, so WITHOUT this every audited
+-- implicit grant here and console_rt is a non-owner, so WITHOUT this every audited
 -- write (which INSERTs an audit row in the same tx) would fail permission-
 -- denied. Deliberately omitting UPDATE/DELETE keeps the table append-only.
 -- --------------------------------------------------------------------------
-GRANT INSERT, SELECT ON audit_events TO mnt_rt;
+GRANT INSERT, SELECT ON audit_events TO console_rt;
 
 -- --------------------------------------------------------------------------
 -- (4) org_id is immutable after insert. The RLS WITH CHECK already rejects an

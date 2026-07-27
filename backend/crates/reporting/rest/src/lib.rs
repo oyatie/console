@@ -6,13 +6,13 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, KernelError, RegionId, TraceContext, UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
-use mnt_reporting_adapter_postgres::PgKpiRepository;
-use mnt_reporting_application::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_reporting_adapter_postgres::PgKpiRepository;
+use console_reporting_application::{
     KpiExportQuery, KpiQuery, KpiQueryError, KpiQueryPort, KpiScope, OpsSummaryPort,
     OpsSummaryQuery, Period, ReportingExportError, ReportingExportPort, ReportingExportQuery,
     WorkDiaryBody, WorkDiaryConfirmCommand, WorkDiaryDraft, WorkDiaryDraftPort, WorkDiaryQuery,
@@ -74,7 +74,7 @@ pub fn router(state: KpiRestState) -> Router {
         .route(WORK_DIARY_PATH, get(get_work_diary).put(update_work_diary))
         .route(WORK_DIARY_CONFIRM_PATH, post(confirm_work_diary))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -230,7 +230,7 @@ async fn get_kpis(
 async fn get_ops_summary(
     State(state): State<KpiRestState>,
     headers: HeaderMap,
-) -> Result<Json<mnt_reporting_application::OpsSummary>, RestError> {
+) -> Result<Json<console_reporting_application::OpsSummary>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     authorize(
         &principal,
@@ -500,40 +500,40 @@ async fn principal_from_headers(
         .jwt_verifier
         .as_ref()
         .ok_or_else(|| RestError::unavailable("JWT verification is not configured for KPI API"))?;
-    mnt_platform_request_context::resolve_principal(verifier, state.repository.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.repository.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for KPI API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::internal(message)
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => {
+        console_platform_request_context::RequestContextError::MissingOrg => {
             RestError::internal("no tenant context is bound to the current request")
         }
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }

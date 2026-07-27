@@ -9,7 +9,7 @@
 use std::collections::BTreeSet;
 use std::str::FromStr;
 
-use mnt_kernel_core::{BranchId, KernelError, OrgId};
+use console_kernel_core::{BranchId, KernelError, OrgId};
 
 use crate::{Action, Feature, PermissionLevel, Principal, authorize, authorize_org_wide};
 
@@ -169,7 +169,7 @@ pub struct AuthorizationContext {
 
 /// Evidence that DB reads used to build the Cedar request were performed under
 /// an armed Postgres RLS scope. This is a typed witness for the cutover contract:
-/// Cedar may decide capabilities/actions, but it never replaces `mnt_rt`/RLS row
+/// Cedar may decide capabilities/actions, but it never replaces `console_rt`/RLS row
 /// isolation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]

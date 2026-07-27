@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use mnt_attendance_application::{
+use console_attendance_application::{
     self as app, AcknowledgeWeek52, AmendClose, AssignSubstitute, AttendanceEvidence,
     AttendanceExceptionRead, AttendanceObjectLink, AttendancePage, AttendanceSubstitutionRead,
     CallerScope, CancelSubstitution, CloseAmendmentRead, CloseCheckRead, CloseChecks, CloseMonth,
@@ -13,12 +13,12 @@ use mnt_attendance_application::{
     RaiseException, ResolveException, SubstitutionCandidateFacts, SubstitutionCandidateQuery,
     SubstitutionCandidateRead, Week52AcknowledgementRead, Week52Read,
 };
-use mnt_attendance_domain::{
+use console_attendance_domain::{
     AttendanceDateRange, ExceptionKind, HistoricalAbsence, StrictDurationEvent,
     StrictDurationEventKind, StrictDurationWindow, strict_pair_seconds,
 };
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext};
-use mnt_platform_db::{DbError, issue_code, with_audits, with_org_conn};
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext};
+use console_platform_db::{DbError, issue_code, with_audits, with_org_conn};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -58,7 +58,7 @@ const EXCEPTION_BY_ID_SQL: &str = "\
            ON r.exception_id=e.id AND r.org_id=e.org_id \
     WHERE e.id=$1";
 const SUBSTITUTION_ELIGIBILITY_LOCK_SQL: &str =
-    "SELECT public.mnt_employee_day_eligibility_lock($1,$2,$3)";
+    "SELECT public.console_employee_day_eligibility_lock($1,$2,$3)";
 
 #[derive(Debug, thiserror::Error)]
 pub enum AttendanceStoreError {
@@ -764,7 +764,7 @@ fn event(
     after: Option<Value>,
 ) -> Result<AuditEvent, AttendanceStoreError> {
     let mut e = AuditEvent::new(
-        Some(mnt_kernel_core::UserId::from_uuid(caller.user_id)),
+        Some(console_kernel_core::UserId::from_uuid(caller.user_id)),
         AuditAction::new(action).map_err(|_| {
             AttendanceStoreError::Application(app::AttendanceApplicationError::InvalidText(
                 "audit action",
@@ -785,7 +785,7 @@ fn event(
 async fn ensure_historical_coverage(
     tx: &mut Transaction<'_, Postgres>,
     employee: Uuid,
-    window: &mnt_attendance_domain::SubstitutionWindow,
+    window: &console_attendance_domain::SubstitutionWindow,
     _exception_id: Option<Uuid>,
 ) -> Result<(), AttendanceStoreError> {
     if window.cover_date
@@ -845,7 +845,7 @@ struct WorkerSnapshot {
 async fn worker_snapshot_and_eligibility(
     tx: &mut Transaction<'_, Postgres>,
     worker_employee_id: Uuid,
-    window: &mnt_attendance_domain::SubstitutionWindow,
+    window: &console_attendance_domain::SubstitutionWindow,
 ) -> Result<WorkerSnapshot, AttendanceStoreError> {
     // Lock identity first; eligibility must be a separate, fresh statement
     // after the platform-owned employee/day lock has been acquired.
@@ -1036,7 +1036,7 @@ fn exception_read(
     let resolution = match resolution_action {
         None => None,
         Some(action) => Some(ExceptionResolutionRead {
-            action: mnt_attendance_domain::ResolutionAction::parse(&action)
+            action: console_attendance_domain::ResolutionAction::parse(&action)
                 .map_err(app::AttendanceApplicationError::from)?,
             reason: r.try_get("resolution_reason")?,
             linked_work_ref: r.try_get("linked_work_ref")?,
@@ -1197,7 +1197,7 @@ async fn close_read(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_attendance_domain::SubstitutionWindow;
+    use console_attendance_domain::SubstitutionWindow;
     use time::{Date, Month};
 
     fn command() -> AssignSubstitute {
@@ -1350,7 +1350,7 @@ mod tests {
     fn substitution_eligibility_lock_uses_the_platform_coordination_contract() {
         assert!(
             SUBSTITUTION_ELIGIBILITY_LOCK_SQL
-                .contains("public.mnt_employee_day_eligibility_lock($1,$2,$3)")
+                .contains("public.console_employee_day_eligibility_lock($1,$2,$3)")
         );
         assert!(!SUBSTITUTION_ELIGIBILITY_LOCK_SQL.contains("pg_advisory_xact_lock"));
     }

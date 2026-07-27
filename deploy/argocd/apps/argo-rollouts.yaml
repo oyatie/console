@@ -6,7 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
-  project: maintenance
+  project: console
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argo-rollouts

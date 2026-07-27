@@ -6,7 +6,7 @@
 // machine through the reused ADR-0018 spine and idempotently stages exactly ONE
 // payroll_draft_runs row landing status BLOCKED_LEGAL_GATE — with a replay adding
 // ZERO rows. The behavioral proof is the backing #[sqlx::test] (run by the
-// backend cargo-test job as the real mnt_rt role against a fresh migrated DB);
+// backend cargo-test job as the real console_rt role against a fresh migrated DB);
 // this gate asserts that E2E genuinely encodes the AC's invariants and that it
 // reuses the spine (no new runtime tables), so it cannot silently rot into a
 // tautology or start creating runtime state. If any invariant regresses, the gate
@@ -56,7 +56,7 @@ function requireMatches(source, path, pattern, label) {
 
 const e2e = read(E2E);
 
-// --- (1) Real E2E: fresh migrated DB, exercised as the non-owner mnt_rt role. ---
+// --- (1) Real E2E: fresh migrated DB, exercised as the non-owner console_rt role. ---
 requireMatches(
   e2e,
   E2E,
@@ -66,8 +66,8 @@ requireMatches(
 requireIncludes(
   e2e,
   E2E,
-  "SET LOCAL ROLE mnt_rt",
-  "the E2E drops to the genuine non-owner mnt_rt role (RLS is actually enforced)",
+  "SET LOCAL ROLE console_rt",
+  "the E2E drops to the genuine non-owner console_rt role (RLS is actually enforced)",
 );
 requireIncludes(
   e2e,
@@ -76,16 +76,16 @@ requireIncludes(
   "the E2E arms app.current_org so RLS scopes every statement (like with_org_conn)",
 );
 // Never a superuser / BYPASSRLS path that would mask a broken RLS/flag path.
-// Every `SET [LOCAL] ROLE <x>` in the E2E must target mnt_rt — never a
-// superuser/owner role (postgres/mnt_app) which would bypass RLS and mask a
+// Every `SET [LOCAL] ROLE <x>` in the E2E must target console_rt — never a
+// superuser/owner role (postgres/console_app) which would bypass RLS and mask a
 // broken RLS/flag path. Scan actual statements, not documentation prose.
 const roleSwitches = [...e2e.matchAll(/set\s+(?:local\s+)?role\s+([a-z_]+)/gi)].map(
   (m) => m[1].toLowerCase(),
 );
 assert(
-  roleSwitches.length > 0 && roleSwitches.every((r) => r === "mnt_rt"),
-  "every role switch in the E2E targets mnt_rt (never a superuser/owner/BYPASSRLS role)",
-  `${E2E}: every SET ROLE must target mnt_rt (found: ${[...new Set(roleSwitches)].join(", ") || "none"})`,
+  roleSwitches.length > 0 && roleSwitches.every((r) => r === "console_rt"),
+  "every role switch in the E2E targets console_rt (never a superuser/owner/BYPASSRLS role)",
+  `${E2E}: every SET ROLE must target console_rt (found: ${[...new Set(roleSwitches)].join(", ") || "none"})`,
 );
 
 // --- (2) Flag-ON for the TEST tenant only, resolved through the real resolver. ---
@@ -261,6 +261,6 @@ console.log(
   "- Flag-ON (test tenant only) E2E drives one run→node FSM through the reused ADR-0018 spine and " +
     "idempotently stages exactly ONE payroll_draft_runs row landing BLOCKED_LEGAL_GATE " +
     "(source_label workflow_runtime_m2:run:{run_id}); the drain replay, outbox re-emit, and draft " +
-    "re-insert each add ZERO rows. Proven as the real mnt_rt role with app.current_org armed; no new runtime tables.",
+    "re-insert each add ZERO rows. Proven as the real console_rt role with app.current_org armed; no new runtime tables.",
 );
 for (const item of passes) console.log(`- ${item}`);

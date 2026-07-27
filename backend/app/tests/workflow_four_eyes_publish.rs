@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-AUTO slice 2 E2E — four-eyes definition publish (pendingRev) over the REAL
-//! router on a genuine non-owner `mnt_rt` pool (RLS enforced), JWT-authed, with a
+//! router on a genuine non-owner `console_rt` pool (RLS enforced), JWT-authed, with a
 //! REAL passkey step-up (SoftPasskey) satisfying the sensitive-publish gate.
 //!
 //! Proves:
@@ -31,11 +31,11 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, DecideApprovalCommand};
-use mnt_kernel_core::{BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, DecideApprovalCommand};
+use console_kernel_core::{BranchId, OrgId, TraceContext, UserId};
+use console_platform_auth::{
     AccessTokenInput, JwtIssuer, JwtSettings, PasskeyRegistrationStart, PasskeyService,
     WebauthnSettings,
 };
@@ -51,8 +51,8 @@ use url::Url;
 use webauthn_authenticator_rs::prelude::{RequestChallengeResponse, WebauthnAuthenticator};
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const RP_ID: &str = "localhost";
 const RP_ORIGIN: &str = "http://localhost";
 
@@ -83,7 +83,7 @@ fn passkey_service() -> PasskeyService {
     PasskeyService::new(WebauthnSettings {
         rp_id: RP_ID.to_owned(),
         rp_origin: Url::parse(RP_ORIGIN).unwrap(),
-        rp_name: "MNT".to_owned(),
+        rp_name: "Console".to_owned(),
         extra_allowed_origins: vec![],
         ceremony_ttl: Duration::minutes(5),
     })
@@ -96,7 +96,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(6)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -107,14 +107,14 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
 
 fn app_state(pool: PgPool, keys: &Keys) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", keys.public_pem.clone()),
-        ("MNT_JWT_PRIVATE_KEY_PEM", keys.private_pem.clone()),
-        ("MNT_WEBAUTHN_RP_ID", RP_ID.to_owned()),
-        ("MNT_WEBAUTHN_RP_ORIGIN", RP_ORIGIN.to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", keys.public_pem.clone()),
+        ("CONSOLE_JWT_PRIVATE_KEY_PEM", keys.private_pem.clone()),
+        ("CONSOLE_WEBAUTHN_RP_ID", RP_ID.to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_ORIGIN", RP_ORIGIN.to_owned()),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
@@ -283,7 +283,7 @@ async fn seed_four_eyes_approval(
     let request_ref = uuid::Uuid::new_v4();
     let approver = UserId::new();
     seed_super_admin(owner_pool, approver, "four-eyes-gate-approver").await;
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         PgGovernanceStore::new(rt.clone())
             .decide_approval(DecideApprovalCommand {
                 approver,

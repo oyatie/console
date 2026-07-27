@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-support-application",
+    name = "console-support-application",
     mapped_srcs = repo_mapped_srcs("backend/crates/support/application", glob(["src/**/*.rs"])),
-    crate = "mnt_support_application",
+    crate = "console_support_application",
     edition = "2024",
     crate_root = "backend/crates/support/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/support/application"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/support/domain:mnt-support-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/support/domain:console-support-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -27,17 +27,17 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-support-application-unit",
+    name = "console-support-application-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/support/application", glob(["src/**/*.rs"])),
-    crate = "mnt_support_application",
+    crate = "console_support_application",
     edition = "2024",
     crate_root = "backend/crates/support/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/support/application"},
     labels = ["owner.backend.crates.support.application", "domain.support", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/support/domain:mnt-support-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/support/domain:console-support-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

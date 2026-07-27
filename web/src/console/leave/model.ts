@@ -6,12 +6,12 @@
 // BE contract (verified against backend/crates/leave/rest/src/lib.rs +
 // openapi.yaml, both read directly — no REST is speculated):
 //   • POST /api/v2/leave/requests (operationId createLeaveRequestV2) now exists —
-//     built + mnt_rt-tested in this lane (see rest::create_request +
+//     built + console_rt-tested in this lane (see rest::create_request +
 //     resolve_self_filing_context; fragment wave-mc-fragments/people.yaml). The
 //     본인 신청 form is REAL-submitting and fail-closed (§4-19): subject_employee_id
 //     + branch_id are resolved server-side from the caller, `days` derived
 //     server-side, never trusted from the client (leave/api.ts). Until
-//     consolidation regenerates @maintenance/api-client-ts from the fragment,
+//     consolidation regenerates @console/api-client-ts from the fragment,
 //     leave/api.ts is the one localized boundary that types `api.POST`.
 //   • No employee→account(user_id) lookup REST exists, so a §61 push target
 //     can only be resolved from a REAL LeaveRequestView the employee is

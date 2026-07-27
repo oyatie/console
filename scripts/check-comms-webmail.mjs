@@ -6,24 +6,24 @@ const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const backendDir = resolve(root, "backend");
 const targetDir = process.env.CARGO_TARGET_DIR ?? resolve(root, ".tmp/cargo-target-g014");
 
-await runCommand("cargo", ["clippy", "-p", "mnt-comms-adapter-imap", "--all-targets", "--", "-D", "warnings"], {
+await runCommand("cargo", ["clippy", "-p", "console-comms-adapter-imap", "--all-targets", "--", "-D", "warnings"], {
   cwd: backendDir,
   env: {
     ...process.env,
     CARGO_INCREMENTAL: process.env.CARGO_INCREMENTAL ?? "0",
     CARGO_TARGET_DIR: targetDir,
   },
-  label: "cargo clippy -p mnt-comms-adapter-imap --all-targets -- -D warnings",
+  label: "cargo clippy -p console-comms-adapter-imap --all-targets -- -D warnings",
 });
 
-await runCommand("cargo", ["test", "-p", "mnt-comms-adapter-imap"], {
+await runCommand("cargo", ["test", "-p", "console-comms-adapter-imap"], {
   cwd: backendDir,
   env: {
     ...process.env,
     CARGO_INCREMENTAL: process.env.CARGO_INCREMENTAL ?? "0",
     CARGO_TARGET_DIR: targetDir,
   },
-  label: "cargo test -p mnt-comms-adapter-imap",
+  label: "cargo test -p console-comms-adapter-imap",
 });
 
 async function runCommand(command, args, options) {

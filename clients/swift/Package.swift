@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "MaintenanceAPIClient",
+    name: "ConsoleAPIClient",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13),
@@ -12,22 +12,22 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "MaintenanceAPIClient", targets: ["MaintenanceAPIClient"]),
+        .library(name: "ConsoleAPIClient", targets: ["ConsoleAPIClient"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.12.0"),
     ],
     targets: [
         .target(
-            name: "MaintenanceAPIClient",
+            name: "ConsoleAPIClient",
             dependencies: [
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
             ]
         ),
         .executableTarget(
-            name: "MaintenanceAPIClientContractTests",
-            dependencies: ["MaintenanceAPIClient"],
-            path: "Tests/MaintenanceAPIClientContractTests"
+            name: "ConsoleAPIClientContractTests",
+            dependencies: ["ConsoleAPIClient"],
+            path: "Tests/ConsoleAPIClientContractTests"
         ),
     ]
 )

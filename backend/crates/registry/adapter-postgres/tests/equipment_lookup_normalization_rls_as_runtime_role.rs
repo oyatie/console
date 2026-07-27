@@ -9,16 +9,16 @@
 //! ltrim($1,'0')`) so the floor-typed '10' / '10호기' / '#10호기' all match the
 //! stored zero-padded '010'.
 //!
-//! This runs as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! This runs as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy and
 //! the role production connects as. The default `#[sqlx::test]` pool connects as
 //! a BYPASSRLS superuser, which sees every row regardless of `app.current_org`
 //! and so MASKS the #18.6 bug (a bare-pool read that, unarmed, returns zero rows
-//! under FORCE RLS). We SEED as the owner (row_security off) and READ as `mnt_rt`.
+//! under FORCE RLS). We SEED as the owner (row_security off) and READ as `console_rt`.
 //!
-//! Asserts, as `mnt_rt`, for a single equipment row stored with management_no
+//! Asserts, as `console_rt`, for a single equipment row stored with management_no
 //! '010' (model 'DFO30-MODEL'):
-//!   (a) FAIL-CLOSED — a raw `mnt_rt` lookup with NO `app.current_org` armed
+//!   (a) FAIL-CLOSED — a raw `console_rt` lookup with NO `app.current_org` armed
 //!       returns ZERO rows (FORCE RLS filters every row): the #18.6 prod bug;
 //!   (b) ARMED — under the row's org GUC, `find_model_by_management_no` returns
 //!       the model (the arming fix);
@@ -26,9 +26,9 @@
 //!       row under the armed GUC (#18.5 호기-suffix + leading-zero match), while
 //!       a different 호기 ('11') does NOT.
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_request_context::scope_org;
-use mnt_registry_adapter_postgres::PgRegistryStore;
+use console_kernel_core::OrgId;
+use console_platform_request_context::scope_org;
+use console_registry_adapter_postgres::PgRegistryStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -39,7 +39,7 @@ use uuid::Uuid;
 const STORED_MANAGEMENT_NO: &str = "010";
 const STORED_MODEL: &str = "DFO30-MODEL";
 
-/// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`
+/// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`
 /// (NOBYPASSRLS, subject to FORCE RLS), exactly like production. Mirrors the
 /// other runtime-role RLS tests in this crate.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -48,7 +48,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -128,7 +128,7 @@ async fn seed_equipment(owner_pool: &PgPool, org: Uuid) {
     tx.commit().await.unwrap();
 }
 
-/// Raw `mnt_rt` lookup mirroring the handler SQL, run on a tx with NO
+/// Raw `console_rt` lookup mirroring the handler SQL, run on a tx with NO
 /// `app.current_org` armed: under FORCE RLS this MUST return zero rows. This is
 /// the exact #18.6 failure mode (a bare-pool read returns nothing in prod).
 async fn unarmed_runtime_lookup_count(rt_pool: &PgPool, management_no: &str) -> i64 {
@@ -154,11 +154,11 @@ async fn equipment_hogi_lookup_normalizes_and_is_rls_armed_as_runtime_role(owner
     let rt_pool = runtime_role_pool(&owner_pool).await;
 
     // (a) FAIL-CLOSED: without app.current_org armed, even the stored '010'
-    // returns ZERO rows under FORCE RLS as mnt_rt — the #18.6 prod bug.
+    // returns ZERO rows under FORCE RLS as console_rt — the #18.6 prod bug.
     assert_eq!(
         unarmed_runtime_lookup_count(&rt_pool, STORED_MANAGEMENT_NO).await,
         0,
-        "unarmed mnt_rt lookup must return zero rows (FORCE RLS), reproducing #18.6"
+        "unarmed console_rt lookup must return zero rows (FORCE RLS), reproducing #18.6"
     );
 
     let store = PgRegistryStore::new(rt_pool.clone());
@@ -166,11 +166,11 @@ async fn equipment_hogi_lookup_normalizes_and_is_rls_armed_as_runtime_role(owner
     // (b) ARMED: under the row's org GUC, the lookup returns the model.
     let armed = scope_org(org, store.find_model_by_management_no(STORED_MANAGEMENT_NO))
         .await
-        .expect("armed lookup must succeed as mnt_rt");
+        .expect("armed lookup must succeed as console_rt");
     assert_eq!(
         armed.as_deref(),
         Some(STORED_MODEL),
-        "with app.current_org armed the row must be visible to mnt_rt"
+        "with app.current_org armed the row must be visible to console_rt"
     );
 
     // (c) NORMALIZATION: the floor-typed 호기 forms all resolve to stored '010'.

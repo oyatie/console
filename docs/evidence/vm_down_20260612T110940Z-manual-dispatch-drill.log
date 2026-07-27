@@ -1,6 +1,6 @@
 vm_down_drill_started_at=2026-06-12T11:09:40Z
 drill_id=vm_down_20260612T110940Z
-simulation_env=compose_project:mnt-t013-manual
+simulation_env=compose_project:console-t013-manual
 simulated_condition=production_vm_down_in_flight_p1
 CREATE TABLE
 INSERT 0 1

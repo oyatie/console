@@ -7,18 +7,18 @@
 //! (design §4.5). Preflight gates are re-computed inside the transition
 //! transaction — the GET report is advisory, the transaction is the enforcer.
 
-use mnt_evaluation_application::{
+use console_evaluation_application::{
     CreateCycleInput, CycleDetail, CyclePage, CycleQuery, CycleSummary, EvidenceInput,
     EvidenceLinkView, GoalInput, GoalView, LedgerEntry, LedgerPage, PreflightItem, PreflightReport,
     ReviewDraftInput, ReviewView, SubjectDetail, SubjectSummary, TaskItem, TaskPage, UnitProgress,
 };
-use mnt_evaluation_domain::{
+use console_evaluation_domain::{
     CycleKind, CycleStage, CycleTransition, EvidenceKind, Grade, MetricKind, ReviewKind,
     ReviewStatus, derive_subject_state,
 };
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde_json::json;
 use sqlx::{PgPool, Postgres, Row, Transaction, postgres::PgRow};
 use time::{Date, OffsetDateTime};

@@ -18,7 +18,7 @@
 //! (reads), so RLS tenancy and audit atomicity come from the caller's
 //! transaction.
 
-use mnt_kernel_core::{KernelError, OrgId};
+use console_kernel_core::{KernelError, OrgId};
 use sqlx::{Postgres, Row, Transaction};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;

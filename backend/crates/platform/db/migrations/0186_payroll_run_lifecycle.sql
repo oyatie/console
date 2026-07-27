@@ -4,7 +4,7 @@
 -- readiness-only contract: draft lines still store no won amount; all computed
 -- draft math lives in the new append-only, versioned
 -- `payroll_line_calculations` and stays `payable = FALSE` until the
--- 노무사/세무사 release gate (mnt_payroll_domain::validate_release_gate) passes.
+-- 노무사/세무사 release gate (console_payroll_domain::validate_release_gate) passes.
 --
 -- NOTE: migration number is provisional (lane rule) — the consolidation
 -- integrator renumbers on merge if another lane claimed 0186 first.
@@ -172,7 +172,7 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON payroll_line_calculations TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON payroll_run_exceptions TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON payroll_disbursements TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON payroll_payslip_deliveries TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_line_calculations TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_run_exceptions TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_disbursements TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON payroll_payslip_deliveries TO console_rt;

@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-compliance-domain",
+    name = "console-compliance-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/compliance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_compliance_domain",
+    crate = "console_compliance_domain",
     edition = "2024",
     crate_root = "backend/crates/compliance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/compliance/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -26,16 +26,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-compliance-domain-unit",
+    name = "console-compliance-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/compliance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_compliance_domain",
+    crate = "console_compliance_domain",
     edition = "2024",
     crate_root = "backend/crates/compliance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/compliance/domain"},
     labels = ["owner.backend.crates.compliance.domain", "domain.compliance", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -44,7 +44,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-compliance-domain-itest-location_consent_fsm",
+    name = "console-compliance-domain-itest-location_consent_fsm",
     mapped_srcs = repo_mapped_srcs("backend/crates/compliance/domain", ["tests/location_consent_fsm.rs"]),
     crate = "location_consent_fsm",
     edition = "2024",
@@ -53,17 +53,17 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/compliance/domain"},
     labels = ["owner.backend.crates.compliance.domain", "domain.compliance", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
-        ":mnt-compliance-domain",
+        ":console-compliance-domain",
     ],
 )
 
 rust_test(
-    name = "mnt-compliance-domain-itest-location_ping_policy",
+    name = "console-compliance-domain-itest-location_ping_policy",
     mapped_srcs = repo_mapped_srcs("backend/crates/compliance/domain", ["tests/location_ping_policy.rs"]),
     crate = "location_ping_policy",
     edition = "2024",
@@ -72,11 +72,11 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/compliance/domain"},
     labels = ["owner.backend.crates.compliance.domain", "domain.compliance", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
-        ":mnt-compliance-domain",
+        ":console-compliance-domain",
     ],
 )

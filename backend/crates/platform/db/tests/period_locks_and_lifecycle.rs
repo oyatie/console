@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-LC slice 1 runtime proofs, executed as the genuine non-owner runtime
-//! role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only faithful
+//! role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only faithful
 //! exercise of the tenant policy:
 //!
 //! 1. `assert_period_open` fails closed inside an active lock, is scoped to
@@ -13,8 +13,8 @@
 //! 4. `object_lifecycle_transitions` is append-only, and lifecycles are
 //!    invisible across tenants.
 
-use mnt_kernel_core::{ErrorKind, OrgId};
-use mnt_platform_db::{PeriodLockDomain, assert_period_open, lifecycle, with_org_conn};
+use console_kernel_core::{ErrorKind, OrgId};
+use console_platform_db::{PeriodLockDomain, assert_period_open, lifecycle, with_org_conn};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::date;
@@ -28,7 +28,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -74,7 +74,7 @@ async fn seed_active_lock(owner_pool: &PgPool, org: Uuid, domain: &str) -> Uuid 
 }
 
 // ===========================================================================
-// 1. Period-lock guard semantics under mnt_rt.
+// 1. Period-lock guard semantics under console_rt.
 // ===========================================================================
 #[sqlx::test(migrations = "./migrations")]
 async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(owner_pool: PgPool) {
@@ -87,7 +87,7 @@ async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(o
 
     // (a) Inside the locked window + domain + tenant → conflict, fail closed.
     let blocked =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 Ok(assert_period_open(tx, PeriodLockDomain::Payroll, date!(2026 - 06 - 15)).await)
             })
@@ -106,7 +106,7 @@ async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(o
     // (c) Same tenant, date outside the window → open.
     // (d) OTHER tenant, same domain + window → open (RLS isolation).
     let checks =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 let other_domain =
                     assert_period_open(tx, PeriodLockDomain::Accounting, date!(2026 - 06 - 15))
@@ -123,7 +123,7 @@ async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(o
         .expect("accounting domain must not be frozen by a payroll lock");
     checks.1.expect("a date outside the window must stay open");
 
-    let cross_org = with_org_conn::<_, _, mnt_platform_db::DbError>(
+    let cross_org = with_org_conn::<_, _, console_platform_db::DbError>(
         &rt_pool,
         OrgId::from_uuid(ORG_B),
         move |tx| {
@@ -134,7 +134,7 @@ async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(o
     )
     .await
     .unwrap();
-    cross_org.expect("org A's lock must be invisible to org B (RLS as mnt_rt)");
+    cross_org.expect("org A's lock must be invisible to org B (RLS as console_rt)");
 
     // (e) Unlock restores the window.
     sqlx::query(
@@ -145,7 +145,7 @@ async fn period_lock_guard_blocks_scoped_by_domain_and_org_and_unlock_restores(o
     .await
     .unwrap();
     let reopened =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 Ok(assert_period_open(tx, PeriodLockDomain::Payroll, date!(2026 - 06 - 15)).await)
             })
@@ -230,7 +230,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
         ("archived", maker),
     ] {
         let record =
-            with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+            with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
                 Box::pin(async move {
                     Ok(lifecycle::transition_lifecycle(
                         tx,
@@ -253,7 +253,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
 
     // Illegal transition refused (archived → approved has no rule).
     let illegal =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 Ok(lifecycle::transition_lifecycle(
                     tx,
@@ -275,7 +275,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
 
     // Unknown object type fails closed.
     let unknown =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 Ok(lifecycle::transition_lifecycle(
                     tx,
@@ -300,7 +300,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
     );
 
     // Dispose gate 1: legal hold blocks dispose.
-    let held = with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+    let held = with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
         Box::pin(async move {
             lifecycle::set_lifecycle_hold(tx, org_a, "document", object_id, true, None)
                 .await
@@ -328,7 +328,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
 
     // Dispose gate 2: future retention blocks dispose even without a hold.
     let retained =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 lifecycle::set_lifecycle_hold(
                     tx,
@@ -364,7 +364,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
 
     // Retention elapsed → dispose succeeds; the log holds the full history.
     let disposed =
-        with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+        with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
             Box::pin(async move {
                 lifecycle::set_lifecycle_hold(
                     tx,
@@ -403,7 +403,7 @@ async fn lifecycle_walks_document_chain_and_gates_dispose(owner_pool: PgPool) {
     assert_eq!(disposed.1[0].to_state, "disposed");
 
     // Cross-org isolation: org B cannot see org A's lifecycle.
-    let foreign = with_org_conn::<_, _, mnt_platform_db::DbError>(
+    let foreign = with_org_conn::<_, _, console_platform_db::DbError>(
         &rt_pool,
         OrgId::from_uuid(ORG_B),
         move |tx| {
@@ -425,7 +425,7 @@ async fn lifecycle_transition_log_is_append_only(owner_pool: PgPool) {
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let object_id = Uuid::new_v4();
 
-    with_org_conn::<_, _, mnt_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
+    with_org_conn::<_, _, console_platform_db::DbError>(&rt_pool, OrgId::knl(), move |tx| {
         Box::pin(async move {
             lifecycle::transition_lifecycle(
                 tx,

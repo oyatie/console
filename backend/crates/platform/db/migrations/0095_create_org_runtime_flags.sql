@@ -14,7 +14,7 @@
 --     FALSE for every tenant and production behavior is unchanged.
 --
 -- Enrolling a tenant later (the strangler roll-forward) is a deliberate, audited,
--- tenant-scoped INSERT/UPDATE performed under the mnt_rt role with app.current_org
+-- tenant-scoped INSERT/UPDATE performed under the console_rt role with app.current_org
 -- armed; it is intentionally out of scope for this dark landing.
 
 CREATE TABLE org_runtime_flags (
@@ -42,16 +42,16 @@ CREATE POLICY org_isolation ON org_runtime_flags
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON org_runtime_flags TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON org_runtime_flags TO console_rt;
 -- Migration 0031's ALTER DEFAULT PRIVILEGES auto-grants FULL DML (incl. DELETE)
--- to mnt_rt on every table mnt_app creates, so the SELECT/INSERT/UPDATE grant
+-- to console_rt on every table console_app creates, so the SELECT/INSERT/UPDATE grant
 -- above is not sufficient: without this REVOKE the runtime role could DELETE its
 -- own tenant's flag row under RLS, erasing governance history and silently
 -- reverting an enabled flag to the absent-row OFF state. Governance flags are
--- append/update-only for the app role — never deletable by mnt_rt (mirrors the
--- deliberate organizations REVOKE in 0031). The owner (mnt_app) retains DELETE so
+-- append/update-only for the app role — never deletable by console_rt (mirrors the
+-- deliberate organizations REVOKE in 0031). The owner (console_app) retains DELETE so
 -- DEFINER tenant-removal functions can still cascade.
-REVOKE DELETE ON org_runtime_flags FROM mnt_rt;
+REVOKE DELETE ON org_runtime_flags FROM console_rt;
 
 -- Keep updated_at honest without ever permitting DELETE of governance history.
 CREATE OR REPLACE FUNCTION org_runtime_flags_touch_updated_at()
@@ -82,7 +82,7 @@ CREATE TRIGGER trg_org_runtime_flags_org_immutable
 
 -- Dark-by-default resolver and single source of truth for whether a tenant drives
 -- the M2 workflow runtime. It runs SECURITY INVOKER, so it reads under the caller's
--- RLS (mnt_rt + app.current_org) and can only ever see the current tenant's row.
+-- RLS (console_rt + app.current_org) and can only ever see the current tenant's row.
 -- A missing row COALESCEs to FALSE, so with zero enabled rows shipped this returns
 -- FALSE for every tenant.
 CREATE OR REPLACE FUNCTION org_runtime_flag_enabled(p_flag_key TEXT)
@@ -101,4 +101,4 @@ AS $$
     );
 $$;
 
-GRANT EXECUTE ON FUNCTION org_runtime_flag_enabled(TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION org_runtime_flag_enabled(TEXT) TO console_rt;

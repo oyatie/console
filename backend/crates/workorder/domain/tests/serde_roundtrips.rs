@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_workorder_domain::{
+use console_workorder_domain::{
     ApprovalRole, ApprovalStatus, AssignmentRole, AttachmentStage, DelayReason, PriorityLevel,
     TransitionActor, WorkOrderStatus, WorkResultType,
 };

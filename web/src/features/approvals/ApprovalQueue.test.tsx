@@ -12,7 +12,7 @@ import {
   vi,
 } from "vitest";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { WorkOrderListItem } from "../../api/types";
 import { ApprovalQueue } from "./ApprovalQueue";
 import { AuthContext } from "../../context/auth";

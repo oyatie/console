@@ -5,8 +5,8 @@
     "sha": "051f770e2d34bac947a3c489cf2c2b050ec28993",
     "review": "approved",
     "buck2": {
-      "//backend/crates/platform/request-context:mnt-platform-request-context-unit": "passed",
-      "//backend/app:mnt-app-itest-auth_rest": "passed_by_writer; independent_rerun_pending"
+      "//backend/crates/platform/request-context:console-platform-request-context-unit": "passed",
+      "//backend/app:console-app-itest-auth_rest": "passed_by_writer; independent_rerun_pending"
     }
   },
   "integratedInputs": [

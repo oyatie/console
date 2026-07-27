@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! L20 audit-chain seal + verify suite, proven as the GENUINE non-owner runtime
-//! role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — NEVER the BYPASSRLS
+//! role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — NEVER the BYPASSRLS
 //! superuser the default `#[sqlx::test]` pool connects as, which would mask a
 //! broken RLS policy or grant.
 //!
@@ -12,25 +12,25 @@
 
 use std::sync::Arc;
 
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_audit_chain::{
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_platform_audit_chain::{
     AuditChainError, ChainReportKind, InMemoryEd25519Signer, SealConfig, SealSignError, SealSigner,
     seal_org_once, verify_org_chain,
 };
-use mnt_platform_db::{DbError, with_audit};
+use console_platform_db::{DbError, with_audit};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute
 /// as the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -38,7 +38,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -138,7 +138,7 @@ async fn seed_tenant(owner_pool: &PgPool, org: Uuid, tag: &str) -> (Uuid, Uuid) 
     (branch_id, user_id)
 }
 
-/// Write `n` audit rows for `org` via the real `with_audit` path as `mnt_rt`
+/// Write `n` audit rows for `org` via the real `with_audit` path as `console_rt`
 /// (arms `app.current_org`, RLS-scoped INSERT). Returns their ids in write order.
 async fn write_events(
     rt_pool: &PgPool,
@@ -482,7 +482,7 @@ async fn verify_detects_missing_seq(owner_pool: PgPool) {
 }
 
 // ---------------------------------------------------------------------------
-// §6.5 RLS org-isolation on seals, proven as mnt_rt
+// §6.5 RLS org-isolation on seals, proven as console_rt
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../db/migrations")]
 async fn seals_isolate_tenants_as_runtime_role(owner_pool: PgPool) {
@@ -507,7 +507,7 @@ async fn seals_isolate_tenants_as_runtime_role(owner_pool: PgPool) {
         .unwrap()
         .unwrap();
 
-    // Under org A's GUC, mnt_rt sees ONLY A's seal; B's is invisible.
+    // Under org A's GUC, console_rt sees ONLY A's seal; B's is invisible.
     {
         let mut tx = rt.begin().await.unwrap();
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -560,7 +560,7 @@ async fn seals_isolate_tenants_as_runtime_role(owner_pool: PgPool) {
 }
 
 // ---------------------------------------------------------------------------
-// §6.6 seals are immutable to mnt_rt (REVOKE UPDATE + DELETE)
+// §6.6 seals are immutable to console_rt (REVOKE UPDATE + DELETE)
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../db/migrations")]
 async fn seals_are_immutable_to_runtime_role(owner_pool: PgPool) {
@@ -585,11 +585,11 @@ async fn seals_are_immutable_to_runtime_role(owner_pool: PgPool) {
     let update_err = sqlx::query("UPDATE audit_chain_seals SET row_count = 999")
         .execute(&mut *tx)
         .await
-        .expect_err("mnt_rt must not UPDATE a seal")
+        .expect_err("console_rt must not UPDATE a seal")
         .to_string();
     assert!(
         update_err.contains("permission denied"),
-        "UPDATE must be REVOKEd for mnt_rt, got: {update_err}"
+        "UPDATE must be REVOKEd for console_rt, got: {update_err}"
     );
     let _ = tx.rollback().await;
 
@@ -602,11 +602,11 @@ async fn seals_are_immutable_to_runtime_role(owner_pool: PgPool) {
     let delete_err = sqlx::query("DELETE FROM audit_chain_seals")
         .execute(&mut *tx)
         .await
-        .expect_err("mnt_rt must not DELETE a seal")
+        .expect_err("console_rt must not DELETE a seal")
         .to_string();
     assert!(
         delete_err.contains("permission denied"),
-        "DELETE must be REVOKEd for mnt_rt, got: {delete_err}"
+        "DELETE must be REVOKEd for console_rt, got: {delete_err}"
     );
     let _ = tx.rollback().await;
 }

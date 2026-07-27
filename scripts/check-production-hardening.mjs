@@ -149,18 +149,18 @@ function formatScalar(value) {
 }
 
 const SMTP_NON_SECRET_KEYS = Object.freeze([
-  "MNT_EMAIL_SMTP_HOST",
-  "MNT_EMAIL_SMTP_PORT",
-  "MNT_EMAIL_FROM",
-  "MNT_EMAIL_FROM_NAME",
+  "CONSOLE_EMAIL_SMTP_HOST",
+  "CONSOLE_EMAIL_SMTP_PORT",
+  "CONSOLE_EMAIL_FROM",
+  "CONSOLE_EMAIL_FROM_NAME",
 ]);
 
 const SMTP_SECRET_KEYS = Object.freeze([
-  "MNT_EMAIL_SMTP_USERNAME",
-  "MNT_EMAIL_SMTP_PASSWORD",
+  "CONSOLE_EMAIL_SMTP_USERNAME",
+  "CONSOLE_EMAIL_SMTP_PASSWORD",
 ]);
 
-const SMTP_STUB_MODE_KEY = "MNT_EMAIL_STUB_MODE";
+const SMTP_STUB_MODE_KEY = "CONSOLE_EMAIL_STUB_MODE";
 const SMTP_ALLOWED_STUB_MODES = Object.freeze([
   "local",
   "dev",
@@ -170,8 +170,8 @@ const SMTP_ALLOWED_STUB_MODES = Object.freeze([
 ]);
 
 const SMTP_WORKLOADS = Object.freeze([
-  { label: "mnt-app", path: "deploy/apps/maintenance/base/backend.yaml" },
-  { label: "mnt-worker", path: "deploy/apps/maintenance/base/worker.yaml" },
+  { label: "console-app", path: "deploy/apps/console/base/backend.yaml" },
+  { label: "console-worker", path: "deploy/apps/console/base/worker.yaml" },
 ]);
 
 const CNPG_OCI_CHECKSUM_ENV_NAMES = Object.freeze([
@@ -524,7 +524,7 @@ function findDigestBumpOnlyVerificationClaims(logicalLines) {
 
 export function evaluateProdOverlayImageChecks(readText) {
   const result = createResult();
-  const path = "deploy/apps/maintenance/overlays/prod/kustomization.yaml";
+  const path = "deploy/apps/console/overlays/prod/kustomization.yaml";
   const prodOverlay = requirePresentText(
     result,
     readText,
@@ -532,7 +532,7 @@ export function evaluateProdOverlayImageChecks(readText) {
     "prod overlay kustomization",
   );
   const imageEntries = parseKustomizeImageEntries(prodOverlay);
-  const requiredImages = ["mnt-app", "mnt-web"];
+  const requiredImages = ["console-app", "console-web"];
   const pinnedRequiredImages = requiredImages.filter((imageName) =>
     imageEntries.some(
       (entry) =>
@@ -544,7 +544,7 @@ export function evaluateProdOverlayImageChecks(readText) {
     result,
     pinnedRequiredImages.length === requiredImages.length,
     `prod overlay digest pins: ${pinnedRequiredImages.length} (${pinnedRequiredImages.join(", ")})`,
-    `${path} must pin at least mnt-app and mnt-web by immutable sha256 digest (found ${pinnedRequiredImages.length}); do not deploy mutable tags`,
+    `${path} must pin at least console-app and console-web by immutable sha256 digest (found ${pinnedRequiredImages.length}); do not deploy mutable tags`,
   );
 
   const mutableTags = imageEntries.filter(
@@ -577,13 +577,13 @@ const PR473_TOPOLOGY_COMMAND = [
   'PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"',
   "docker run --rm --network host",
   '-v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro"',
-  "-e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci",
+  "-e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci",
   "-e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres",
-  '-e MNT_APP_POSTGRES_PASSWORD="$APP_PASSWORD"',
-  '-e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD"',
-  '-e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD"',
-  '-e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD"',
-  '-e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD"',
+  '-e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD"',
+  '-e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD"',
+  '-e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD"',
+  '-e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD"',
+  '-e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD"',
   "--entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20",
   "/usr/local/bin/postgres-reconcile-topology",
   "docker run --rm --network host",
@@ -591,14 +591,14 @@ const PR473_TOPOLOGY_COMMAND = [
   "--entrypoint psql",
   "postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20",
   "-h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1",
-  '-c "DROP DATABASE IF EXISTS mnt_apalis_contract WITH (FORCE)"',
-  '-c "CREATE DATABASE mnt_apalis_contract OWNER mnt_app"',
-  // Migration 0196 admits only `mnt_buck_admin` for applying migrations, so the
+  '-c "DROP DATABASE IF EXISTS console_apalis_contract WITH (FORCE)"',
+  '-c "CREATE DATABASE console_apalis_contract OWNER console_app"',
+  // Migration 0196 admits only `console_buck_admin` for applying migrations, so the
   // suites built on #[sqlx::test] cannot run as the `postgres` service account.
   // The password reaches psql through a mode-0600 file, never argv.
   'BUCK_ADMIN_PASSWORD="$(openssl rand -hex 32)"',
   "umask 077",
-  'printf "CREATE ROLE mnt_buck_admin SUPERUSER LOGIN PASSWORD \'%s\';\\n"',
+  'printf "CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD \'%s\';\\n"',
   '"$BUCK_ADMIN_PASSWORD" > "$RUNNER_TEMP/buck-admin.sql"',
   "docker run --rm --network host",
   "-e PGPASSWORD=postgres",
@@ -611,10 +611,10 @@ const PR473_TOPOLOGY_COMMAND = [
   'echo "::add-mask::$RT_PASSWORD"',
   'echo "::add-mask::$BUCK_ADMIN_PASSWORD"',
   "{",
-  'echo "MNT_BUCK_ADMIN_DATABASE_URL=postgres://mnt_buck_admin:${BUCK_ADMIN_PASSWORD}@localhost:5432/mnt_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"',
-  'echo "MNT_APALIS_OWNER_DATABASE_URL=postgres://mnt_app:${APP_PASSWORD}@localhost:5432/mnt_apalis_contract"',
-  'echo "MNT_APALIS_RUNTIME_DATABASE_URL=postgres://mnt_rt:${RT_PASSWORD}@localhost:5432/mnt_apalis_contract"',
-  'echo "MNT_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/mnt_apalis_contract"',
+  'echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"',
+  'echo "CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@localhost:5432/console_apalis_contract"',
+  'echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:${RT_PASSWORD}@localhost:5432/console_apalis_contract"',
+  'echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"',
   '} >> "$GITHUB_ENV"',
 ].join(" ");
 const PR473_DOCUMENTS = [
@@ -636,77 +636,77 @@ const PR473_DIRECTIVES = [
 const PR473_TESTS = [
   [
     "ontology",
-    "mnt-ontology-adapter-postgres",
+    "console-ontology-adapter-postgres",
     "key_revision_migration_upgrade",
     "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs",
     "migration_0165_upgrades_legacy_sibling_versions_without_tenant_leakage",
   ],
   [
     "ontology",
-    "mnt-ontology-adapter-postgres",
+    "console-ontology-adapter-postgres",
     "key_revision_migration_upgrade",
     "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs",
     "migration_0165_keeps_exact_old_binary_writes_audited_and_cas_consistent",
   ],
   [
     "ontology",
-    "mnt-ontology-adapter-postgres",
+    "console-ontology-adapter-postgres",
     "key_revision_migration_upgrade",
     "backend/crates/ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs",
     "migration_0165_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "migration_0166_rehearses_populated_expand_with_bounded_lock_and_statement_timeouts",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "exact_charge_create_accepts_resolved_and_review_required_shapes",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "exact_charge_create_atomically_rejects_mismatched_reason_and_evidence_shapes",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "immediate_f6ff_employee_import_remains_usable_after_0166",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "staged_f6ff_employee_import_apply_remains_atomic_after_0166",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "staged_f6ff_apply_rejects_missing_duplicate_or_forged_current_tx_audit",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "legacy_leave_mutations_require_exactly_one_same_transaction_audit",
   ],
   [
     "leave",
-    "mnt-leave-adapter-postgres",
+    "console-leave-adapter-postgres",
     "leave_migration_expand_contract",
     "backend/crates/leave/adapter-postgres/tests/leave_migration_expand_contract.rs",
     "staged_employee_import_rejects_payload_not_equal_to_immutable_ledger",
@@ -1522,7 +1522,7 @@ export function evaluateAndroidE2eTokenHandoffChecks(readText) {
   const ciPath = ".github/workflows/ci.yml";
   const gradlePath = "android/app/build.gradle.kts";
   const testPath =
-    "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt";
+    "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt";
   const ciWorkflow = requirePresentText(result, readText, ciPath, "CI workflow");
   const gradleFile = requirePresentText(result, readText, gradlePath, "Android app Gradle file");
   const workOrderFlowTest = requirePresentText(
@@ -1655,7 +1655,7 @@ export function evaluateAndroidE2eFailClosedChecks(readText) {
     patternsAppearInOrder(androidWorkflow, [
       /git\s+rev-parse\s+HEAD/,
       /GITHUB_SHA/,
-      /cargo\s+build[\s\S]*mnt-app|cargo\s+build[\s\S]*--bin\s+mnt-app/,
+      /cargo\s+build[\s\S]*console-app|cargo\s+build[\s\S]*--bin\s+console-app/,
     ]),
     "Android E2E verifies exact candidate SHA before backend build",
     `${ciPath} must verify git HEAD against GITHUB_SHA before building the E2E backend`,
@@ -1730,7 +1730,7 @@ export function evaluateAndroidE2eFailClosedChecks(readText) {
 
 export function evaluateSmtpDeploymentChecks(readText) {
   const result = createResult();
-  const configPath = "deploy/apps/maintenance/base/configmap.yaml";
+  const configPath = "deploy/apps/console/base/configmap.yaml";
   const configMap = requirePresentText(
     result,
     readText,
@@ -1754,7 +1754,7 @@ export function evaluateSmtpDeploymentChecks(readText) {
       );
     } else {
       result.failures.push(
-        `${configPath} must either configure non-secret MNT_EMAIL_* SMTP relay fields or set ${SMTP_STUB_MODE_KEY}=local|dev|development|test|e2e for an explicit non-production stub email config`,
+        `${configPath} must either configure non-secret CONSOLE_EMAIL_* SMTP relay fields or set ${SMTP_STUB_MODE_KEY}=local|dev|development|test|e2e for an explicit non-production stub email config`,
       );
     }
     return result;
@@ -1769,7 +1769,7 @@ export function evaluateSmtpDeploymentChecks(readText) {
       `${workload.label} workload manifest`,
     );
     const missingKeys = SMTP_SECRET_KEYS.filter(
-      (key) => !envVarRequiresSecretKeyRef(text, key, "mnt-secrets"),
+      (key) => !envVarRequiresSecretKeyRef(text, key, "console-secrets"),
     );
     if (missingKeys.length === 0) {
       completeWorkloads.push(workload.label);
@@ -1777,7 +1777,7 @@ export function evaluateSmtpDeploymentChecks(readText) {
     }
     for (const key of missingKeys) {
       result.failures.push(
-        `${workload.path} must explicitly require ${key} from mnt-secrets via secretKeyRef when ${configPath} sets ${activeRelayFields.join(", ")}; envFrom alone does not fail on missing Secret keys before rollout`,
+        `${workload.path} must explicitly require ${key} from console-secrets via secretKeyRef when ${configPath} sets ${activeRelayFields.join(", ")}; envFrom alone does not fail on missing Secret keys before rollout`,
       );
     }
   }
@@ -1794,7 +1794,7 @@ export function evaluateArgoTargetRevisionChecks(readText) {
   const result = createResult();
   for (const path of [
     "deploy/argocd/root.yaml",
-    "deploy/argocd/apps/maintenance.yaml",
+    "deploy/argocd/apps/console.yaml",
   ]) {
     const text = requirePresentText(result, readText, path, path);
     const targetRevision = extractYamlScalar(
@@ -1825,7 +1825,7 @@ export function evaluateDeployAutomationChecks(readText) {
   );
   const executableText = logicalLines.join("\n");
   const rollouts = parseShellArray(logicalLines, "ROLLOUTS");
-  const requiredRollouts = ["mnt-app", "mnt-web"];
+  const requiredRollouts = ["console-app", "console-web"];
   const missingRollouts = requiredRollouts.filter(
     (rollout) => !rollouts.includes(rollout),
   );
@@ -1833,7 +1833,7 @@ export function evaluateDeployAutomationChecks(readText) {
     result,
     missingRollouts.length === 0,
     `deploy automation rollouts covered: ${requiredRollouts.join(", ")}`,
-    `${path} must actively wait for both mnt-app and mnt-web rollouts; ROLLOUTS must list both before claiming deployment verification (missing ${missingRollouts.join(", ") || "none"})`,
+    `${path} must actively wait for both console-app and console-web rollouts; ROLLOUTS must list both before claiming deployment verification (missing ${missingRollouts.join(", ") || "none"})`,
   );
 
   const failOpenBlocks = findFailOpenKubectlPrerequisiteBlocks(logicalLines);
@@ -2026,7 +2026,7 @@ export function evaluateGlobalHardeningChecks(readText) {
     result,
     readText,
     "scripts/check-networkpolicy-enforcement.sh",
-    "MNT_NETWORKPOLICY_PREFLIGHT",
+    "CONSOLE_NETWORKPOLICY_PREFLIGHT",
     "NetworkPolicy preflight has warning/required modes",
   );
   requireTextIncludes(
@@ -2040,14 +2040,14 @@ export function evaluateGlobalHardeningChecks(readText) {
     result,
     readText,
     "docs/CI-GATES.md",
-    "MNT_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy",
+    "CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy",
     "CI gates document required NetworkPolicy enforcement preflight",
   );
   requireTextIncludes(
     result,
     readText,
     "deploy/README.md",
-    "MNT_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy",
+    "CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy",
     "deployment checklist requires live NetworkPolicy enforcement preflight",
   );
 
@@ -2067,20 +2067,20 @@ export function evaluateGlobalHardeningChecks(readText) {
   requirePresentText(
     result,
     readText,
-    "deploy/apps/maintenance/components/admission-audit/kustomization.yaml",
+    "deploy/apps/console/components/admission-audit/kustomization.yaml",
     "admission-audit component",
   );
   requirePresentText(
     result,
     readText,
-    "deploy/apps/maintenance/components/admission-audit/README.md",
+    "deploy/apps/console/components/admission-audit/README.md",
     "admission-audit runbook",
   );
   for (const needle of [
     "kind: ClusterImagePolicy",
     "mode: warn",
-    "ghcr.io/jason931225/mnt-app",
-    "ghcr.io/jason931225/mnt-web",
+    "ghcr.io/jason931225/console-app",
+    "ghcr.io/jason931225/console-web",
     "https://token.actions.githubusercontent.com",
     "image-release\\.yml@refs/(heads/main|tags/v[0-9].*)",
     "https://fulcio.sigstore.dev",
@@ -2089,7 +2089,7 @@ export function evaluateGlobalHardeningChecks(readText) {
     requireTextIncludes(
       result,
       readText,
-      "deploy/apps/maintenance/components/admission-audit/clusterimagepolicy.yaml",
+      "deploy/apps/console/components/admission-audit/clusterimagepolicy.yaml",
       needle,
       `admission audit policy: ${needle}`,
     );
@@ -2127,27 +2127,27 @@ export function evaluateGlobalHardeningChecks(readText) {
   requirePresentText(
     result,
     readText,
-    "deploy/apps/maintenance/components/monitoring/servicemonitor.yaml",
+    "deploy/apps/console/components/monitoring/servicemonitor.yaml",
     "Prometheus ServiceMonitor",
   );
   requirePresentText(
     result,
     readText,
-    "deploy/apps/maintenance/components/monitoring/prometheusrule.yaml",
+    "deploy/apps/console/components/monitoring/prometheusrule.yaml",
     "PrometheusRule SLO alerts",
   );
   for (const needle of [
     "/metrics",
-    "MntApiAvailabilityBurn",
-    "MntApiLatencyP99High",
+    "ConsoleApiAvailabilityBurn",
+    "ConsoleApiLatencyP99High",
     "Prometheus Operator",
   ]) {
     const file =
       needle === "/metrics"
-        ? "deploy/apps/maintenance/components/monitoring/servicemonitor.yaml"
+        ? "deploy/apps/console/components/monitoring/servicemonitor.yaml"
         : needle === "Prometheus Operator"
-          ? "deploy/apps/maintenance/components/monitoring/README.md"
-          : "deploy/apps/maintenance/components/monitoring/prometheusrule.yaml";
+          ? "deploy/apps/console/components/monitoring/README.md"
+          : "deploy/apps/console/components/monitoring/prometheusrule.yaml";
     requireTextIncludes(
       result,
       readText,
@@ -2162,7 +2162,7 @@ export function evaluateGlobalHardeningChecks(readText) {
   // mail/admin surface.
   for (const needle of [
     "kind: StatefulSet",
-    "name: mnt-mox",
+    "name: console-mox",
     "r.xmox.nl/mox@sha256",
     "WebAPIHTTP",
     "MetricsHTTP",
@@ -2171,19 +2171,19 @@ export function evaluateGlobalHardeningChecks(readText) {
     requireTextIncludes(
       result,
       readText,
-      "deploy/apps/maintenance/base/mox.yaml",
+      "deploy/apps/console/base/mox.yaml",
       needle,
       `mox dark stack: ${needle}`,
     );
   }
   for (const needle of [
-    "MNT_MAIL_MOX_BASE_URL",
-    "http://mnt-mox.maintenance.svc:1080",
+    "CONSOLE_MAIL_MOX_BASE_URL",
+    "http://console-mox.console.svc:1080",
   ]) {
     requireTextIncludes(
       result,
       readText,
-      "deploy/apps/maintenance/base/configmap.yaml",
+      "deploy/apps/console/base/configmap.yaml",
       needle,
       `mox app wiring: ${needle}`,
     );
@@ -2197,23 +2197,23 @@ export function evaluateGlobalHardeningChecks(readText) {
     requireTextIncludes(
       result,
       readText,
-      "deploy/apps/maintenance/base/networkpolicy.yaml",
+      "deploy/apps/console/base/networkpolicy.yaml",
       needle,
       `mox network policy: ${needle}`,
     );
   }
   for (const needle of [
-    "name: mnt-mox",
+    "name: console-mox",
     "port: metrics",
-    "MntMoxDown",
-    "MntMoxWebhookFailures",
-    "MntMoxQueueBacklog",
-    "MntMoxPvcSaturation",
+    "ConsoleMoxDown",
+    "ConsoleMoxWebhookFailures",
+    "ConsoleMoxQueueBacklog",
+    "ConsoleMoxPvcSaturation",
   ]) {
     const file =
-      needle === "port: metrics" || needle === "name: mnt-mox"
-        ? "deploy/apps/maintenance/components/monitoring/servicemonitor.yaml"
-        : "deploy/apps/maintenance/components/monitoring/prometheusrule.yaml";
+      needle === "port: metrics" || needle === "name: console-mox"
+        ? "deploy/apps/console/components/monitoring/servicemonitor.yaml"
+        : "deploy/apps/console/components/monitoring/prometheusrule.yaml";
     requireTextIncludes(
       result,
       readText,
@@ -2222,7 +2222,7 @@ export function evaluateGlobalHardeningChecks(readText) {
       `mox observability: ${needle}`,
     );
   }
-  const moxManifest = readText("deploy/apps/maintenance/base/mox.yaml");
+  const moxManifest = readText("deploy/apps/console/base/mox.yaml");
   for (const forbidden of [
     "NodePort",
     "LoadBalancer",
@@ -2245,8 +2245,8 @@ export function evaluateGlobalHardeningChecks(readText) {
 export function evaluateOciGuestCnpgChecks(readText) {
   const result = createResult();
   const paths = {
-    base: "deploy/apps/maintenance/base/database.yaml",
-    prod: "deploy/apps/maintenance/overlays/prod/kustomization.yaml",
+    base: "deploy/apps/console/base/database.yaml",
+    prod: "deploy/apps/console/overlays/prod/kustomization.yaml",
   };
 
   const baseDatabase = readText(paths.base);
@@ -2295,9 +2295,9 @@ export function evaluateOciGuestCnpgChecks(readText) {
   requirement(
     result,
     !prodOverlay.includes("cnpg-ha-patch.yaml") &&
-      !prodOverlay.includes("mnt-pg-hot"),
+      !prodOverlay.includes("console-pg-hot"),
     "oci-guest prod overlay: does not opt into on-prem HA storage patch",
-    `oci-guest prod overlay: ${paths.prod} must not load cnpg-ha-patch.yaml or mnt-pg-hot; those belong to the on-prem-ha context`,
+    `oci-guest prod overlay: ${paths.prod} must not load cnpg-ha-patch.yaml or console-pg-hot; those belong to the on-prem-ha context`,
   );
   requirement(
     result,
@@ -2305,7 +2305,7 @@ export function evaluateOciGuestCnpgChecks(readText) {
       prodOverlay,
     ),
     "oci-guest prod overlay CNPG shape: does not patch instances or storageClass",
-    `oci-guest prod overlay CNPG shape: ${paths.prod} must leave CNPG instances/storage on the single-node base; use deploy/apps/maintenance/overlays/on-prem for HA`,
+    `oci-guest prod overlay CNPG shape: ${paths.prod} must leave CNPG instances/storage on the single-node base; use deploy/apps/console/overlays/on-prem for HA`,
   );
 
   return result;
@@ -2314,10 +2314,10 @@ export function evaluateOciGuestCnpgChecks(readText) {
 export function evaluateOnPremHaCnpgChecks(readText) {
   const result = createResult();
   const paths = {
-    base: "deploy/apps/maintenance/base/database.yaml",
-    onPrem: "deploy/apps/maintenance/overlays/on-prem/kustomization.yaml",
-    onPremPatch: "deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml",
-    storageClass: "deploy/apps/storage/manifests/storageclass-mnt-pg-hot.yaml",
+    base: "deploy/apps/console/base/database.yaml",
+    onPrem: "deploy/apps/console/overlays/on-prem/kustomization.yaml",
+    onPremPatch: "deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml",
+    storageClass: "deploy/apps/storage/manifests/storageclass-console-pg-hot.yaml",
   };
 
   const onPremOverlay = readText(paths.onPrem);
@@ -2331,9 +2331,9 @@ export function evaluateOnPremHaCnpgChecks(readText) {
   requirement(
     result,
     /kind:\s*Cluster/.test(onPremOverlay) &&
-      /name:\s*mnt-db/.test(onPremOverlay),
-    "on-prem-ha CNPG overlay target: Cluster/mnt-db",
-    `on-prem-ha CNPG overlay target: ${paths.onPrem} must target Cluster/mnt-db`,
+      /name:\s*console-db/.test(onPremOverlay),
+    "on-prem-ha CNPG overlay target: Cluster/console-db",
+    `on-prem-ha CNPG overlay target: ${paths.onPrem} must target Cluster/console-db`,
   );
 
   const onPremEndpoint = extractJson6902PatchScalar(
@@ -2391,9 +2391,9 @@ export function evaluateOnPremHaCnpgChecks(readText) {
   );
   requirement(
     result,
-    haStorageClass === "mnt-pg-hot",
-    "on-prem-ha CNPG HA storageClass: mnt-pg-hot",
-    `on-prem-ha CNPG HA storageClass: ${paths.onPremPatch} must use mnt-pg-hot and must not use local-path (found ${formatScalar(haStorageClass)})`,
+    haStorageClass === "console-pg-hot",
+    "on-prem-ha CNPG HA storageClass: console-pg-hot",
+    `on-prem-ha CNPG HA storageClass: ${paths.onPremPatch} must use console-pg-hot and must not use local-path (found ${formatScalar(haStorageClass)})`,
   );
   requirement(
     result,
@@ -2416,9 +2416,9 @@ export function evaluateOnPremHaCnpgChecks(readText) {
   requirement(
     result,
     /kind:\s*StorageClass/.test(storageClass) &&
-      /^\s*name:\s*mnt-pg-hot\s*$/m.test(storageClass),
-    "on-prem-ha storage contract: StorageClass/mnt-pg-hot",
-    `on-prem-ha storage contract: ${paths.storageClass} must define StorageClass/mnt-pg-hot`,
+      /^\s*name:\s*console-pg-hot\s*$/m.test(storageClass),
+    "on-prem-ha storage contract: StorageClass/console-pg-hot",
+    `on-prem-ha storage contract: ${paths.storageClass} must define StorageClass/console-pg-hot`,
   );
   const provisioner = extractYamlScalar(storageClass, "provisioner");
   requirement(
@@ -2537,11 +2537,11 @@ export function evaluateOciGuestContextChecks(readText) {
     result,
     secretsPath,
     secrets,
-    "MNT_MAIL_MASTER_KEY",
+    "CONSOLE_MAIL_MASTER_KEY",
     "oci-guest secrets runbook: mail KEK remains documented",
   );
 
-  const databasePath = "deploy/apps/maintenance/base/database.yaml";
+  const databasePath = "deploy/apps/console/base/database.yaml";
   const database = requirePresentText(
     result,
     readText,
@@ -2868,7 +2868,7 @@ export function evaluateOnPremHaContextChecks(readText) {
     result,
     observabilityPath,
     observability,
-    /Do not replace[\s\S]*components\/monitoring|ServiceMonitor\/mnt-app[\s\S]*\/metrics/i,
+    /Do not replace[\s\S]*components\/monitoring|ServiceMonitor\/console-app[\s\S]*\/metrics/i,
     "on-prem-ha observability: preserves portable /metrics and monitoring contract",
   );
 

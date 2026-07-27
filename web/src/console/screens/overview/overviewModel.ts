@@ -10,7 +10,7 @@
 // description. We derive the stat strip FROM that same list rather than a second
 // count endpoint, so a stat can never disagree with the queue below it.
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { NotificationSummary } from "../../../api/types";
 import { NOTIFICATION_CATEGORY } from "../../../i18n/notificationCategories";
 import type { OverviewStrings, RailCategoryStrings } from "./strings";

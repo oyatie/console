@@ -7,11 +7,11 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, CustomerId, DailyPlanId, EquipmentId,
     KernelError, OrgId, SiteId, Timestamp, TraceContext, UserId, VendorId, WorkOrderId,
 };
-use mnt_workorder_domain::{
+use console_workorder_domain::{
     AssignmentRole, MaintenanceCause, MaintenanceType, PriorityLevel, SettlementLineKind,
     SettlementStatus, WorkOrderStatus, WorkResultType,
 };
@@ -299,7 +299,7 @@ impl std::error::Error for AiAssistantPortError {}
 ///   correlation outside this port.
 ///
 /// ```
-/// use mnt_workorder_application::AiAssistantPort;
+/// use console_workorder_application::AiAssistantPort;
 ///
 /// fn accepts_oyatie_seam(_port: &dyn AiAssistantPort) {}
 /// ```

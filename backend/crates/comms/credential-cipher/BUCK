@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-comms-credential-cipher",
+    name = "console-comms-credential-cipher",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/credential-cipher", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_credential_cipher",
+    crate = "console_comms_credential_cipher",
     edition = "2024",
     crate_root = "backend/crates/comms/credential-cipher/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/credential-cipher"},
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:base64",
         "//third-party/rust:chacha20poly1305",
         "//third-party/rust:secrecy",
@@ -27,17 +27,17 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-comms-credential-cipher-unit",
+    name = "console-comms-credential-cipher-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/comms/credential-cipher", glob(["src/**/*.rs"])),
-    crate = "mnt_comms_credential_cipher",
+    crate = "console_comms_credential_cipher",
     edition = "2024",
     crate_root = "backend/crates/comms/credential-cipher/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/comms/credential-cipher"},
     labels = ["owner.backend.crates.comms.credential-cipher", "domain.comms", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/comms/application:mnt-comms-application",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/comms/application:console-comms-application",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:base64",
         "//third-party/rust:chacha20poly1305",
         "//third-party/rust:secrecy",

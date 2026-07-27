@@ -16,7 +16,7 @@
     {
       "root": "backend/app/src/lib.rs route census + backend/app/tests/openapi_drift.rs",
       "action": "add",
-      "detail": "Router mount is DONE by this lane (build_router merges mnt_orgchange_rest::router after governance; routes are live behind role floors). Remaining integrator step, in the SAME commit as the openapi.yaml splice: add ConfiguredRouteSurface { name: 'orgchange', paths: mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS } to CONFIGURED_ROUTE_SURFACES (marker comment sits after the governance entry) and a RouteSource for crates/orgchange/rest to openapi_drift.rs — a lane-side census entry would trip the census-subset-of-openapi gate before the splice."
+      "detail": "Router mount is DONE by this lane (build_router merges console_orgchange_rest::router after governance; routes are live behind role floors). Remaining integrator step, in the SAME commit as the openapi.yaml splice: add ConfiguredRouteSurface { name: 'orgchange', paths: console_orgchange_rest::ORG_CHANGE_ROUTE_PATHS } to CONFIGURED_ROUTE_SURFACES (marker comment sits after the governance entry) and a RouteSource for crates/orgchange/rest to openapi_drift.rs — a lane-side census entry would trip the census-subset-of-openapi gate before the splice."
     },
     {
       "root": "backend/crates/platform/db/migrations",

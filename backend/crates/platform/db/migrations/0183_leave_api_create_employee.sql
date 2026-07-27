@@ -1,9 +1,9 @@
 -- Console People creation must use the same isolated command capability as
 -- home-branch changes. The command owns every write in its idempotent create
 -- transaction so a runtime-role caller cannot leave a partially created row.
-GRANT SELECT, INSERT, UPDATE ON public.employee_create_idempotency TO mnt_leave_definer;
+GRANT SELECT, INSERT, UPDATE ON public.employee_create_idempotency TO console_leave_definer;
 GRANT SELECT, INSERT ON public.employee_employment_profiles,
-    public.employee_lifecycle_events TO mnt_leave_definer;
+    public.employee_lifecycle_events TO console_leave_definer;
 
 -- These pre-existing trigger bodies run inside this command's hardened
 -- `pg_catalog` search path, so their relation references must remain explicit.
@@ -122,7 +122,7 @@ BEGIN
     END IF;
 END;
 $$;
-ALTER FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.create_employee(
     p_org_id UUID, p_employee_id UUID, p_employee_number TEXT, p_name TEXT,
@@ -225,12 +225,12 @@ $$;
 ALTER FUNCTION leave_api.create_employee(
     UUID, UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, NUMERIC,
     TEXT, TEXT, UUID, TEXT, TEXT
-) OWNER TO mnt_leave_definer;
+) OWNER TO console_leave_definer;
 REVOKE ALL ON FUNCTION leave_api.create_employee(
     UUID, UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, NUMERIC,
     TEXT, TEXT, UUID, TEXT, TEXT
-) FROM PUBLIC, mnt_rt;
+) FROM PUBLIC, console_rt;
 GRANT EXECUTE ON FUNCTION leave_api.create_employee(
     UUID, UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, NUMERIC,
     TEXT, TEXT, UUID, TEXT, TEXT
-) TO mnt_leave_cmd;
+) TO console_leave_cmd;

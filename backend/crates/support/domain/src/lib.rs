@@ -6,7 +6,7 @@
 //! rules, exercised by unit tests.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, EvidenceObjectId, KernelError, OrgId, SupportTicketId, Timestamp, Transition,
     TransitionError, UserId, WorkOrderId,
 };

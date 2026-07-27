@@ -6,7 +6,7 @@
 //! by licensed 노무사/세무사 validation artifacts.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use time::Date;
 use time::macros::date;
 
@@ -1053,7 +1053,7 @@ mod tests {
         )
         .unwrap_err();
 
-        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Conflict);
+        assert_eq!(error.kind, console_kernel_core::ErrorKind::Conflict);
         assert!(
             error
                 .message
@@ -1070,7 +1070,7 @@ mod tests {
         )
         .unwrap_err();
 
-        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Conflict);
+        assert_eq!(error.kind, console_kernel_core::ErrorKind::Conflict);
         assert!(error.message.contains("step-up authorization"));
         assert!(error.message.contains("audit evidence"));
         assert!(error.message.contains("immutable issuance artifact"));
@@ -1148,7 +1148,7 @@ mod tests {
             closed_june_prerequisites(),
         )
         .unwrap_err();
-        assert_eq!(error.kind, mnt_kernel_core::ErrorKind::Forbidden);
+        assert_eq!(error.kind, console_kernel_core::ErrorKind::Forbidden);
     }
 
     fn fixture_tax_row() -> NtsWithholdingTaxRow {

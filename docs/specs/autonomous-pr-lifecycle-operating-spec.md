@@ -350,7 +350,7 @@ apply before dispatch.
 
 - Docs/process only: markdown/readability check plus governance consistency;
   product CI is N/A unless docs under CI-triggered paths intentionally need PR CI.
-- Backend/internal: fmt, clippy, tests, relevant `mnt-gate-*`, DB/migration checks.
+- Backend/internal: fmt, clippy, tests, relevant `console-gate-*`, DB/migration checks.
 - OpenAPI/client: OpenAPI app coverage, generated-client drift, TS/Kotlin/Swift
   compile, contract test where runtime shapes move.
 - Web/UI: lint/test/build plus browser/user-story evidence for the changed flow.

@@ -17,11 +17,11 @@
 
 use std::{future::Future, pin::Pin};
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchScope, Date, KernelError, LeavePromotionId, LeaveRequestId,
     OrgId, Timestamp, TraceContext, UserId,
 };
-use mnt_leave_domain::{
+use console_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveDecision, LeaveStatus,
     LeaveType, LeaveUnits, NewLeaveRequest, PartialDayPeriod, PromotionKind, PromotionTrack,
@@ -409,7 +409,7 @@ pub fn leave_promotion_audit_event(
 
 /// `time::Date` wire format (`YYYY-MM-DD`), shared by the request views.
 mod date_fmt {
-    use mnt_kernel_core::Date;
+    use console_kernel_core::Date;
     use serde::{self, Deserialize, Deserializer, Serializer};
     use time::format_description::well_known::Iso8601;
 

@@ -28,7 +28,7 @@
 -- RLS: org_isolation policy + FORCE RLS + enforce_org_id_immutable trigger,
 -- identical to the pattern established in migrations 0030/0031/0035.
 --
--- mnt-gate: audited-table governance_findings
+-- console-gate: audited-table governance_findings
 CREATE TABLE governance_findings (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL
@@ -109,7 +109,7 @@ CREATE POLICY org_isolation ON governance_findings
         org_id = NULLIF(current_setting('app.current_org', true), '')::uuid
     );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON governance_findings TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON governance_findings TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- org_id immutability trigger (mirrors 0031/0035 pattern).

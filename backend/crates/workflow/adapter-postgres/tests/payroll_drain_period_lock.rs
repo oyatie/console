@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-LC period-lock enforcement on the REAL payroll write path
-//! (`drain_payroll_job_outbox`), proven as the genuine non-owner `mnt_rt` role
+//! (`drain_payroll_job_outbox`), proven as the genuine non-owner `console_rt` role
 //! under FORCE RLS:
 //!
 //!   (a) an active `payroll` period lock overlapping the event's draft period
@@ -9,19 +9,19 @@
 //!   (b) after unlock the SAME event drains normally: draft created, event
 //!       acked DELIVERED.
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_request_context::scope_org;
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_kernel_core::OrgId;
+use console_platform_request_context::scope_org;
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, UPDATE ON workflow_outbox_events TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, UPDATE ON workflow_outbox_events TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -30,7 +30,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })

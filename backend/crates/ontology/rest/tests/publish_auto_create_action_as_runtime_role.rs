@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proof for the no-code "add-a-type" gap ① fix, exercised under the
-//! effective `mnt_rt` and `mnt_ontology_cmd` roles (NOSUPERUSER, NOBYPASSRLS).
+//! effective `console_rt` and `console_ontology_cmd` roles (NOSUPERUSER, NOBYPASSRLS).
 //! The test pools authenticate as the sqlx test owner and use `SET ROLE`, so
 //! this proves effective-role permissions and RLS behavior, not direct login.
 //!
@@ -15,17 +15,17 @@
 //! with no actions → a `create` action (instance_revision dispatch) exists on
 //! the published head → executing it creates an instance immediately.
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
-use mnt_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
-use mnt_ontology_adapter_postgres::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand};
+use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_adapter_postgres::{
     CreateObjectTypeDraft, ObjectTypeSummary, PgOntologyStore, PropertyDefInput,
 };
-use mnt_ontology_domain::{ActionDispatch, BackingKind, SchemaLifecycleState};
-use mnt_ontology_rest::{ActionCommand, OntologyRestState};
-use mnt_platform_authz::{Principal, Role};
-use mnt_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
+use console_ontology_domain::{ActionDispatch, BackingKind, SchemaLifecycleState};
+use console_ontology_rest::{ActionCommand, OntologyRestState};
+use console_platform_authz::{Principal, Role};
+use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
 use serde_json::json;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -50,7 +50,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -95,7 +95,7 @@ fn state(pool: &PgPool, command_pool: &PgPool) -> OntologyRestState {
     OntologyRestState::new(
         PgOntologyStore::new(pool.clone()).with_command_pool(command_pool.clone()),
         PgInstanceStore::new(pool.clone()),
-        mnt_governance_adapter_postgres::PgGovernanceStore::new(pool.clone()),
+        console_governance_adapter_postgres::PgGovernanceStore::new(pool.clone()),
         None,
     )
 }
@@ -190,13 +190,13 @@ fn no_code_draft(stable_key: &str) -> CreateObjectTypeDraft {
 async fn publish_auto_attaches_create_action_and_instance_creation_works(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
     let cmd = command_role_pool(&owner_pool).await;
-    assert_effective_role(&owner_pool, &rt, "mnt_rt").await;
-    assert_effective_role(&owner_pool, &cmd, "mnt_ontology_cmd").await;
+    assert_effective_role(&owner_pool, &rt, "console_rt").await;
+    assert_effective_role(&owner_pool, &cmd, "console_ontology_cmd").await;
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
     let approver = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a-reviewer").await;
 
-    let (draft_actions_len, published) = mnt_platform_request_context::scope_org(org, async {
+    let (draft_actions_len, published) = console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(rt.clone()).with_command_pool(cmd.clone());
         let created = store
             .create_object_type(
@@ -206,7 +206,7 @@ async fn publish_auto_attaches_create_action_and_instance_creation_works(owner_p
                 AT,
             )
             .await
-            .expect("no-code draft create must succeed under effective mnt_rt permissions");
+            .expect("no-code draft create must succeed under effective console_rt permissions");
 
         // Confirm the draft truly ships with zero actions, matching the FE's
         // no-code 타입 추가 flow (the gap this fix closes).
@@ -227,7 +227,7 @@ async fn publish_auto_attaches_create_action_and_instance_creation_works(owner_p
     assert_eq!(published.lifecycle_state, SchemaLifecycleState::Published);
 
     // The published head now carries an auto-attached create action.
-    let create_action = mnt_platform_request_context::scope_org(org, async {
+    let create_action = console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(rt.clone());
         let detail = store
             .get_object_type("handover_policy", None)
@@ -253,7 +253,7 @@ async fn publish_auto_attaches_create_action_and_instance_creation_works(owner_p
 
     // Acceptance path: creating an instance works immediately — zero
     // engineering required after publish.
-    let outcome = mnt_platform_request_context::scope_org(org, async {
+    let outcome = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -300,14 +300,14 @@ async fn publish_auto_attaches_create_action_and_instance_creation_works(owner_p
 async fn publish_does_not_duplicate_an_existing_create_capable_action(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
     let cmd = command_role_pool(&owner_pool).await;
-    assert_effective_role(&owner_pool, &rt, "mnt_rt").await;
-    assert_effective_role(&owner_pool, &cmd, "mnt_ontology_cmd").await;
+    assert_effective_role(&owner_pool, &rt, "console_rt").await;
+    assert_effective_role(&owner_pool, &cmd, "console_ontology_cmd").await;
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b").await;
     let approver = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b-reviewer").await;
 
     let mut draft = no_code_draft("with_action");
-    draft.actions = vec![mnt_ontology_adapter_postgres::ActionTypeInput {
+    draft.actions = vec![console_ontology_adapter_postgres::ActionTypeInput {
         stable_key: "make".to_owned(),
         title: "생성".to_owned(),
         params_schema: json!({"policy_name": {"required": true}}),
@@ -319,7 +319,7 @@ async fn publish_does_not_duplicate_an_existing_create_capable_action(owner_pool
         control_points: json!(["authority"]),
     }];
 
-    let detail = mnt_platform_request_context::scope_org(org, async {
+    let detail = console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(rt.clone()).with_command_pool(cmd.clone());
         let created = store
             .create_object_type(actor, draft, TraceContext::generate(), AT)

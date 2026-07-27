@@ -7,7 +7,7 @@
 
 mod tx_helpers;
 
-use mnt_compliance_application::{
+use console_compliance_application::{
     AcceptEvidenceBindingCommand, ArrivalEvent, ArrivalEventPage, ArrivalEventQuery,
     AuditStreamAuthorizationFacts, AuditStreamPage, AuditStreamQuery, AuditStreamReadKind,
     AuditStreamRecord, CEO_COVERT_AUDIT_SENSITIVITY, CEO_COVERT_AUDIT_STREAM_KEY,
@@ -21,7 +21,7 @@ use mnt_compliance_application::{
     RegulationImpactPage, RegulationImpactQuery, audit_stream_access_event, compliance_audit_event,
     consent_audit_event, relation_audit_snapshot,
 };
-use mnt_compliance_domain::{
+use console_compliance_domain::{
     ComplianceControl, ComplianceFramework, ComplianceObligation, ComplianceRiskLevel,
     ComplianceScope, ComplianceScopeKind, ControlCadence, ControlObligationCoverage, ControlStatus,
     ControlType, CoverageLevel, CoverageStatus, EvidenceBinding, EvidenceBindingStatus,
@@ -32,12 +32,12 @@ use mnt_compliance_domain::{
     validate_date_range, validate_evidence_requirements, validate_evidence_status_transition,
     validate_hash_sha256, validate_metadata_object, validate_optional_text, validate_required_text,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ConsentId, DEFAULT_GEOFENCE_RADIUS_M,
     ErrorKind, KernelError, OrgId, Timestamp, TraceContext, UserId,
 };
-use mnt_platform_db::{DbError, insert_audit_event, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, insert_audit_event, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use std::collections::BTreeSet;
 use tx_helpers::{insert_obligation_regulation_link_tx, next_compliance_code_tx};
 
@@ -269,8 +269,8 @@ impl PgComplianceStore {
         self.current_or_unrecorded(user_id, branch_id).await
     }
 
-    // mnt-gate: state-changing-handler
-    // mnt-gate: audit-exempt location_ping_ingestion
+    // console-gate: state-changing-handler
+    // console-gate: audit-exempt location_ping_ingestion
     pub async fn record_location_ping(&self, ping: LocationPing) -> Result<(), PgComplianceError> {
         if !ping.on_duty() {
             return Err(KernelError::forbidden(
@@ -383,7 +383,7 @@ impl PgComplianceStore {
         .await
     }
 
-    // mnt-gate: audit-exempt location_data_retention_purge
+    // console-gate: audit-exempt location_data_retention_purge
     // Automated data-lifecycle maintenance: it ERASES expired location-derived
     // data (ping partitions, collection logs, and now geofence presence) to honour
     // the retention window. It is not an auditable business event and writes no
@@ -718,7 +718,7 @@ impl PgComplianceStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_regulation_impact(
         &self,
         command: CreateRegulationImpactCommand,
@@ -842,7 +842,7 @@ impl PgComplianceStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_compliance_obligation(
         &self,
         command: CreateComplianceObligationCommand,
@@ -999,7 +999,7 @@ impl PgComplianceStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn link_obligation_regulation(
         &self,
         command: LinkObligationRegulationCommand,
@@ -1037,7 +1037,7 @@ impl PgComplianceStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_compliance_framework(
         &self,
         command: CreateComplianceFrameworkCommand,
@@ -1143,7 +1143,7 @@ impl PgComplianceStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_compliance_control(
         &self,
         command: CreateComplianceControlCommand,
@@ -1250,7 +1250,7 @@ impl PgComplianceStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn link_control_obligation(
         &self,
         command: LinkControlObligationCommand,
@@ -1312,7 +1312,7 @@ impl PgComplianceStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_evidence_binding(
         &self,
         command: CreateEvidenceBindingCommand,
@@ -1812,10 +1812,10 @@ fn optional_branch_id(row: &PgRow, column: &str) -> Result<Option<BranchId>, PgC
 fn optional_site_id(
     row: &PgRow,
     column: &str,
-) -> Result<Option<mnt_kernel_core::SiteId>, PgComplianceError> {
+) -> Result<Option<console_kernel_core::SiteId>, PgComplianceError> {
     Ok(row
         .try_get::<Option<uuid::Uuid>, _>(column)?
-        .map(mnt_kernel_core::SiteId::from_uuid))
+        .map(console_kernel_core::SiteId::from_uuid))
 }
 
 fn push_regulation_filters(builder: &mut QueryBuilder<Postgres>, query: &RegulationImpactQuery) {
@@ -2096,7 +2096,7 @@ fn audit_stream_record_from_row(row: PgRow) -> Result<AuditStreamRecord, PgCompl
 ///
 /// The ping itself is audit-exempt, but these derived attendance writes ARE
 /// audited (site.arrival / site.departure) — hence the marker + insert_audit_event.
-// mnt-gate: state-changing-handler
+// console-gate: state-changing-handler
 async fn record_geofence_crossings(
     tx: &mut sqlx::Transaction<'_, Postgres>,
     org_uuid: uuid::Uuid,

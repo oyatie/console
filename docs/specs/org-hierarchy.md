@@ -11,11 +11,11 @@ punches a hole in it.
 The keystone architecture (N armed per-member reads, no BYPASSRLS on the data path) PASSED and is kept.
 These hardening fixes are now binding on implementation:
 - **FIX-1 (was HIGH 8a — cross-tenant disclosure of the auth table):** `group_memberships` and
-  `group_role_grants` are **NOT** on the tenant-isolation GLOBAL allowlist and `mnt_rt` has **NO** raw
+  `group_role_grants` are **NOT** on the tenant-isolation GLOBAL allowlist and `console_rt` has **NO** raw
   SELECT on them. They are owner-only; the runtime role reads them ONLY through identity-only SECURITY
   DEFINER resolvers that return the caller's OWN grants / their group's member ids (mirroring
   `platform_resolve_token_org`'s "nothing but the tenant id" blast radius). `groups` may carry a minimal
-  `mnt_rt` SELECT (name/slug/status only — no authorization data) or also go through a resolver.
+  `console_rt` SELECT (name/slug/status only — no authorization data) or also go through a resolver.
 - **FIX-2 (was HIGH 8b — gate blind spot):** the consolidated-read helper lives in a **gate-SCANNED**
   crate (`backend/crates/platform/group/` — new) and *calls* `with_org_conn` from the db crate for member
   reads; it is NOT placed under `/platform/db/` (which the rls-arming gate skips). So a bare-pool read in
@@ -34,13 +34,13 @@ These hardening fixes are now binding on implementation:
   wraps the body in an `EXCEPTION … restore row_security; RAISE` block.
 - **FIX-7 (was LOW — tier):** a `view_as=true` token may **never** carry `group_roles` (an impersonation
   token can't be widened into a cross-entity writer) — asserted in P2 JWT issuance/verification + a test.
-- **6 NEW mnt_rt TESTS** specified in §10: T13 cross-tenant read of group_role_grants returns own/zero rows;
+- **6 NEW console_rt TESTS** specified in §10: T13 cross-tenant read of group_role_grants returns own/zero rows;
   T14 group helper file is gate-scanned (bare-pool read flagged); T15 C1 negative — a group id can never
   arm app.current_org; T16 mid-session membership revocation drops the member on the next read AND write;
   T17 view_as+group_roles mutual exclusion; T18 resolver restores row_security on the inner-error path.
 
 > Keystone invariant: *the consolidated group view is an aggregation over per-member ARMED reads, never a
-> `BYPASSRLS` blanket read* — realized in §4, with the remaining `mnt_rt` coverage specified in §10. The static gates
+> `BYPASSRLS` blanket read* — realized in §4, with the remaining `console_rt` coverage specified in §10. The static gates
 > (`rls-arming`, `tenant-isolation`) stay green (§11).
 
 ## 1. Objective
@@ -50,7 +50,7 @@ switches to a single-법인 view, and performs audited cross-entity admin — re
 members; a **법인-admin** stays locked to one entity (today's behavior); a **branch/worksite-local** user
 is subtree-scoped with least privilege; sensitive cross-entity data (payroll/financials) stays per-법인
 RBAC unless an explicit group role grants it. The **Org remains the single RLS hard boundary**
-(`app.current_org`, the `org_isolation` policies in 0030, `mnt_rt` NOBYPASSRLS/FORCE-RLS in 0031, the
+(`app.current_org`, the `org_isolation` policies in 0030, `console_rt` NOBYPASSRLS/FORCE-RLS in 0031, the
 org_id-immutability triggers) — unmodified.
 Non-goals: intercompany/elimination accounting (Track C); column/cell masking; no-code group ontology.
 The vendor Platform tier (`PlatformPrincipal`, view-as) is a distinct higher tier, unchanged (§6 contrasts).
@@ -71,14 +71,14 @@ personnel / site-responsibility / approval-graph UI.
 A Group is NOT a tenant and carries NO tenant data — pure grouping + grant target. Only `groups`
 is a GLOBAL allowlisted table, limited to identity columns. `group_memberships` and
 `group_role_grants` are cross-tenant authorization tables but remain owner-only (not RLS-scoped,
-not `mnt_rt`-readable): group-admin fan-out must enumerate sibling members BEFORE any member GUC
+not `console_rt`-readable): group-admin fan-out must enumerate sibling members BEFORE any member GUC
 is armed (same chicken-and-egg `platform_resolve_token_org` solves in 0036), so topology/grant
 resolution is a narrow SECURITY DEFINER read, not a raw table grant.
 
 ```sql
 -- 0060_create_groups_and_membership.sql  (house style: 0026/0036/0049; migration head is 0059) [FIX-4]
--- mnt-gate: global-table groups (rationale: holding topology — name/slug/status only, NO auth data)
--- group_memberships + group_role_grants are OWNER-ONLY (NOT global-allowlisted, NO mnt_rt grant): they
+-- console-gate: global-table groups (rationale: holding topology — name/slug/status only, NO auth data)
+-- group_memberships + group_role_grants are OWNER-ONLY (NOT global-allowlisted, NO console_rt grant): they
 -- are the cross-tenant AUTHORIZATION tables. Runtime reads go ONLY through identity-only SECURITY DEFINER
 -- resolvers (own-grants / own-group-members), mirroring platform_resolve_token_org's blast radius. [FIX-1]
 CREATE TABLE groups (
@@ -102,9 +102,9 @@ CREATE TABLE group_role_grants (
   granted_by UUID NULL REFERENCES users(id), created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (group_id, user_id, group_role));
 CREATE INDEX idx_group_role_grants_user ON group_role_grants (user_id);
-REVOKE ALL ON groups, group_memberships, group_role_grants FROM mnt_rt;        -- owner-only by default
-GRANT SELECT (id, slug, name, status) ON groups TO mnt_rt;                     -- topology identity only
--- group_memberships + group_role_grants: NO mnt_rt grant; exposed ONLY via the DEFINER resolvers. [FIX-1]
+REVOKE ALL ON groups, group_memberships, group_role_grants FROM console_rt;        -- owner-only by default
+GRANT SELECT (id, slug, name, status) ON groups TO console_rt;                     -- topology identity only
+-- group_memberships + group_role_grants: NO console_rt grant; exposed ONLY via the DEFINER resolvers. [FIX-1]
 -- resolver body must snapshot under row_security=off then restore on (or wrap in EXCEPTION … restore). [FIX-6]
 
 -- identity-only own-group resolver (SECURITY DEFINER, mirrors platform_list_organizations 0036).
@@ -135,7 +135,7 @@ EXCEPTION WHEN OTHERS THEN
   RAISE;
 END; $$;
 REVOKE ALL ON FUNCTION group_member_org_ids(UUID, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION group_member_org_ids(UUID, UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION group_member_org_ids(UUID, UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)
 RETURNS TABLE (group_id UUID, group_role TEXT)
@@ -158,11 +158,11 @@ EXCEPTION WHEN OTHERS THEN
   RAISE;
 END; $$;
 REVOKE ALL ON FUNCTION group_role_grants_for_user(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION group_role_grants_for_user(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION group_role_grants_for_user(UUID) TO console_rt;
 ```
 Key decisions: `group_id` NULLABLE → an ungrouped 법인 is unchanged (backward-compat free). Group roles
 live in the owner-only `group_role_grants`, NOT `users.roles` — a tenant role array must never silently confer
-cross-entity reach (same separation as `PlatformPrincipal` is not a `Role`). `mnt_rt` SELECT-only; grants
+cross-entity reach (same separation as `PlatformPrincipal` is not a `Role`). `console_rt` SELECT-only; grants
 are written via an audited DEFINER path (mirrors `platform_create_organization`). Operational rows carry
 NO `group_id` — a second weaker isolation axis is explicitly rejected; the subtree stays isolated by the
 existing `org_isolation` policies.
@@ -184,7 +184,7 @@ a Group-scoped token still carries `org`=the member currently being viewed (the 
 the tenant middleware arms exactly one real org per request.
 
 Implementation hardening now applied: every tenant REST/WS principal extractor calls the shared
-`mnt_platform_request_context` resolver (or its bearer-token variant for WebSocket subprotocol auth). The
+`console_platform_request_context` resolver (or its bearer-token variant for WebSocket subprotocol auth). The
 resolver re-reads live `user_branches`, intersects that live membership with the JWT `AccessScope`, and
 rejects `AccessScope::Group` on ordinary tenant routes; group scope must use the §4 fan-out helper instead.
 `group_roles` are canonical uppercase codes only (`GROUP_ADMIN`, `GROUP_VIEWER`, `GROUP_FINANCE`) and are
@@ -205,7 +205,7 @@ through the normal armed path).
 Fail-closed: empty resolver ⇒ `Ok(vec![])` (never a global scan); each `read(org)` arms its own GUC (FORCE
 RLS returns 0 rows if unarmed); the member set passed in is `group_members ∩ principal.AccessScope reach`
 (a foreign org isn't in `group_member_org_ids(G, actor)` and the principal has no role there anyway); the only
-`row_security off` is the identity-only resolver, restored before return; `mnt_rt` is NOBYPASSRLS.
+`row_security off` is the identity-only resolver, restored before return; `console_rt` is NOBYPASSRLS.
 
 ## 5. Scope Selector
 One shared shell control. Privileged (group-admin): full ladder `[All subsidiaries] · [KNL]·[COSS]·
@@ -254,16 +254,16 @@ on the data path · C3 only `row_security off` is the identity-only resolver, re
 group-admin sees ONLY their group's members · C5 cross-group impossible · C6 single-법인 user = today's
 behavior · C7 worksite-local confined to subtree · C8 payroll consolidated requires conjunctive
 GROUP_FINANCE · C9 every cross-entity action audited with real actor+target · C10 group-role grants only
-via audited DEFINER; mnt_rt cannot self-grant · C11 consolidated helper unarmed/empty fails closed · C12
+via audited DEFINER; console_rt cannot self-grant · C11 consolidated helper unarmed/empty fails closed · C12
 legacy tokens unchanged · C13 rls-arming + tenant-isolation gates green · C14 group-admin token
 platform=false, rejected on `/api/platform/*`.
 
-## 10. mnt_rt Test Plan (genuine NOBYPASSRLS runtime_role_pool; seed as owner row_security off)
+## 10. console_rt Test Plan (genuine NOBYPASSRLS runtime_role_pool; seed as owner row_security off)
 T1 group_admin_consolidated_sees_all_members · T2 consolidated_excludes_non_member_org · T3
 single_entity_scope_isolates (consolidated→403) · T4 cross_group_invisible · T5
 worksite_local_least_privilege · T6 no_bypassrls_on_data_path (grep + resolver restores row_security) · T7
 cross_entity_admin_arms_target_and_audits · T8 consolidated_helper_fails_closed_unarmed (never a global
-read) · T9 group_finance_marking_is_conjunctive · T10 mnt_rt_cannot_self_grant_group_role · T11
+read) · T9 group_finance_marking_is_conjunctive · T10 console_rt_cannot_self_grant_group_role · T11
 legacy_token_without_scope_claims_is_org_scoped · T12 group_id_immutability_and_member_isolation · T13
 cross_tenant_group_role_grants_raw_read_returns_own_or_zero_rows · T14 group_helper_file_is_gate_scanned
 (bare-pool read flagged) · T15 group_id_cannot_arm_app_current_org · T16 mid_session_membership_revocation
@@ -272,17 +272,17 @@ resolver_restores_row_security_on_inner_error_path.
 
 ## 11. Static-gate satisfaction
 rls-arming: the helper lives in the new gate-scanned `backend/crates/platform/group/` crate, and every
-member read calls `with_org_conn` from `mnt-platform-db` (executor `tx.as_mut()`, not a
+member read calls `with_org_conn` from `console-platform-db` (executor `tx.as_mut()`, not a
 bare pool). The helper must not live under `platform/db`, because that crate owns the arming primitives and
 receives narrower gate treatment. The DEFINER call carries `// rls-arming: ok identity-only DEFINER resolver`.
 tenant-isolation: only `groups` is added to the GLOBAL allowlist with a rationale comment;
 `group_memberships` and `group_role_grants` stay owner-only and are exposed only through resolvers.
 `organizations.group_id` is a nullable add to an already-RLS table (no new policy, like 0049).
 
-## 12. Phased Implementation (each ≤~5 files, mnt_rt tests, separate review pass)
+## 12. Phased Implementation (each ≤~5 files, console_rt tests, separate review pass)
 P0 schema + identity resolver (0060, done) → P1 AccessScope kernel type + BranchScope bridge (pure-logic,
-done in `mnt-kernel-core`) → P2 claims + login resolution + live branch-scope intersection + legacy default
-(done in `mnt-platform-auth` / shared principal resolver / tenant REST+WS adapters) → P3 consolidated-read helper (`platform/group`, done) → P4a platform-operator bridge
+done in `console-kernel-core`) → P2 claims + login resolution + live branch-scope intersection + legacy default
+(done in `console-platform-auth` / shared principal resolver / tenant REST+WS adapters) → P3 consolidated-read helper (`platform/group`, done) → P4a platform-operator bridge
 (local/unreleased: audited single-tenant management context + platform group/org scope filters) → P4b
 tenant-tier group authz + group-role principal extension + conjunctive marking → P5 REST
 consolidated/switch-context/cross-entity + audited grant endpoint → P6 tenant group scope selector and org

@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { PolicyGateProvider } from "../policy/PolicyGated";
 import { ModuleScreen } from "./ModuleScreen";
 import { supportTicketModuleConfig, workOrderModuleConfig } from "./moduleConfigs";

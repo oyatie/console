@@ -9,13 +9,13 @@
 //! `router_layer_tests` unit module in `lib.rs` (it asserts the merge-order
 //! semantics directly); here we additionally confirm the realtime WS route is
 //! mounted and reachable through the real `build_router`, even with a tiny
-//! `MNT_REQUEST_TIMEOUT_SECS`, i.e. nothing about the timeout blocks it.
+//! `CONSOLE_REQUEST_TIMEOUT_SECS`, i.e. nothing about the timeout blocks it.
 
 use axum::body::Body;
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -24,8 +24,8 @@ use time::{Duration, OffsetDateTime};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const TWO_MIB: usize = 2 * 1024 * 1024;
 
 fn keys() -> (String, String) {
@@ -43,14 +43,14 @@ fn keys() -> (String, String) {
 
 fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
         // A tiny request timeout proves the realtime WS route below is reachable
         // regardless of the timeout (it is merged outside the timeout layer).
-        ("MNT_REQUEST_TIMEOUT_SECS", "1".to_owned()),
+        ("CONSOLE_REQUEST_TIMEOUT_SECS", "1".to_owned()),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()

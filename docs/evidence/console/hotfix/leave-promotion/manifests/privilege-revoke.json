@@ -4,14 +4,14 @@
   "slot": "TAKE FROM THE LEDGER — do not `ls`",
   "blocking": false,
   "not_this_lane": "Pre-existing on the spine. Raised here because it is the one red in this lane's gate set and it reddens the leave test file for every lane that runs it.",
-  "defect": "leave_api.assert_employee_directory_manager(UUID, UUID) is SECURITY DEFINER, owned by mnt_leave_definer, and 0183_leave_api_create_employee.sql issues no REVOKE for it — so it keeps PostgreSQL's default EXECUTE TO PUBLIC. Every sibling function in the same file is explicitly REVOKE ALL ... FROM PUBLIC, mnt_rt before being granted.",
+  "defect": "leave_api.assert_employee_directory_manager(UUID, UUID) is SECURITY DEFINER, owned by console_leave_definer, and 0183_leave_api_create_employee.sql issues no REVOKE for it — so it keeps PostgreSQL's default EXECUTE TO PUBLIC. Every sibling function in the same file is explicitly REVOKE ALL ... FROM PUBLIC, console_rt before being granted.",
   "evidence": {
     "grep": "grep -rn assert_employee_directory_manager backend/crates/platform/db/migrations/*.sql → 3 lines: CREATE (0183:61), ALTER ... OWNER (0183:125), PERFORM (0183:141). No GRANT, no REVOKE.",
     "failing_test": "backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs::leave_command_preprovision_and_privilege_matrix_are_fail_closed — 'command role receives exactly six public entrypoints and no helpers'; observed eight (create_employee, assert_employee_directory_manager)."
   },
-  "severity": "low direct risk — only mnt_leave_cmd holds USAGE ON SCHEMA leave_api (0166), and it may already call create_employee, so there is no privilege gain and no reach from mnt_rt. What is real: a SECURITY DEFINER authorization predicate over users/role assignments is callable with an arbitrary p_org_id, and the deny-by-default tripwire built to catch exactly that is red on the spine.",
+  "severity": "low direct risk — only console_leave_cmd holds USAGE ON SCHEMA leave_api (0166), and it may already call create_employee, so there is no privilege gain and no reach from console_rt. What is real: a SECURITY DEFINER authorization predicate over users/role assignments is callable with an arbitrary p_org_id, and the deny-by-default tripwire built to catch exactly that is red on the spine.",
   "fix": [
-    "REVOKE ALL ON FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) FROM PUBLIC, mnt_rt, mnt_leave_cmd;"
+    "REVOKE ALL ON FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID) FROM PUBLIC, console_rt, console_leave_cmd;"
   ],
   "then": "The privilege-matrix assertion must be widened to seven — adding only create_employee, the one deliberate new entrypoint. It must NOT be widened to include the helper: that would delete the invariant instead of restoring it.",
   "owner": "the employee-directory / leave_api.create_employee lane"

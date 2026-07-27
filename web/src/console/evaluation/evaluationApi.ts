@@ -1,4 +1,4 @@
-import type { components, paths } from "@maintenance/api-client-ts";
+import type { components, paths } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 

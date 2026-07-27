@@ -2,24 +2,24 @@
 //! RUNTIME RLS cross-org gate for the three Slack-parity tables added in
 //! migrations 0128/0129: `messenger_message_acks`, `messenger_presence`,
 //! `messenger_thread_mutes`. Proven as the genuine non-owner runtime role
-//! `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the crate's other ack/
+//! `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the crate's other ack/
 //! presence/mute tests (`use_cases.rs`) run on the default `#[sqlx::test]`
 //! BYPASSRLS superuser pool, which sees every row regardless of the
 //! `app.current_org` GUC and would mask a broken `org_isolation` policy
 //! entirely (rls-verify-as-runtime-role discipline).
 //!
-//! Seeds one row per table in org A, then as `mnt_rt` with the GUC armed to
+//! Seeds one row per table in org A, then as `console_rt` with the GUC armed to
 //! org B: (a) a plain `SELECT count(*)` must see ZERO org-A rows (invisible),
 //! and (b) an INSERT tagged `org_id = A` while the GUC is B must be rejected
 //! by the policy's `WITH CHECK`.
 
-use mnt_kernel_core::OrgId;
+use console_kernel_core::OrgId;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 const ORG_B: Uuid = Uuid::from_u128(0x8a55_8a55_8a55_8a55_8a55_8a55_8a55_8a55);
 
-const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE mnt_rt";
+const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE console_rt";
 
 /// The org-A message and thread the seeded ack/mute rows FK to, for the
 /// cross-org INSERT-rejection test to reference.

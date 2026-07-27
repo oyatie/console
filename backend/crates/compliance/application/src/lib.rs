@@ -4,14 +4,14 @@
 //! crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_compliance_domain::{
+use console_compliance_domain::{
     ComplianceControl, ComplianceFramework, ComplianceObligation, ComplianceRiskLevel,
     ComplianceScope, ControlCadence, ControlStatus, ControlType, CoverageLevel, EvidenceBinding,
     EvidenceBindingStatus, EvidenceConfidence, EvidenceTargetType, FrameworkKind, FrameworkStatus,
     LocationConsent, LocationConsentState, ObligationRegulationRelationship, ObligationStatus,
     ObligationType, RegulationImpact, RegulationImpactStatus, ReviewCadence,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, KernelError, Timestamp, TraceContext,
     Transition, UserId,
 };
@@ -345,9 +345,9 @@ pub struct ComplianceObligationQuery {
     pub branch_scope: BranchScope,
     pub status: Option<ObligationStatus>,
     pub severity: Option<ComplianceRiskLevel>,
-    pub scope_type: Option<mnt_compliance_domain::ComplianceScopeKind>,
+    pub scope_type: Option<console_compliance_domain::ComplianceScopeKind>,
     pub branch_id: Option<BranchId>,
-    pub site_id: Option<mnt_kernel_core::SiteId>,
+    pub site_id: Option<console_kernel_core::SiteId>,
     pub q: Option<String>,
     pub page: PageRequest,
 }

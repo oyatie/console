@@ -130,5 +130,5 @@ CREATE TRIGGER docs_evidence_objects_register_sequence_immutable
 -- UPDATE would let an authenticated tenant forge PENDING -> VERIFIED outside
 -- the storage-attestation insert path above. Keep the trigger function private
 -- as defence in depth and remove the unused table UPDATE capability.
-REVOKE ALL ON FUNCTION docs_evidence_copy_bind_storage_attestation() FROM PUBLIC, mnt_rt;
-REVOKE UPDATE ON docs_evidence_copies FROM mnt_rt;
+REVOKE ALL ON FUNCTION docs_evidence_copy_bind_storage_attestation() FROM PUBLIC, console_rt;
+REVOKE UPDATE ON docs_evidence_copies FROM console_rt;

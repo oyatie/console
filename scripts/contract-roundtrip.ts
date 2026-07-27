@@ -10,7 +10,7 @@ import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import pg from "pg";
 
-import { createMaintenanceApiClient } from "../clients/ts/src/index.js";
+import { createConsoleApiClient } from "../clients/ts/src/index.js";
 import {
   observeChild,
   stopChild,
@@ -20,9 +20,9 @@ import {
 const { Client: PgClient } = pg;
 const root = resolve(new URL("..", import.meta.url).pathname);
 const databaseUrl = process.env.CONTRACT_DATABASE_URL;
-const appBinary = process.env.MNT_APP_BIN
-  ? resolve(process.env.MNT_APP_BIN)
-  : resolve(root, ".tmp/buck2/api-contract/mnt-app");
+const appBinary = process.env.CONSOLE_APP_BIN
+  ? resolve(process.env.CONSOLE_APP_BIN)
+  : resolve(root, ".tmp/buck2/api-contract/console-app");
 const port = process.env.CONTRACT_APP_PORT
   ? Number(process.env.CONTRACT_APP_PORT)
   : await findOpenPort();
@@ -32,8 +32,8 @@ if (!Number.isInteger(port) || port <= 0 || port > 65535) {
   );
 }
 const baseUrl = `http://127.0.0.1:${port}`;
-const issuer = "mnt-platform-auth";
-const audience = "mnt-api";
+const issuer = "console-platform-auth";
+const audience = "console-api";
 // KNL is tenant #1, seeded by migration 0028 (OrgId::knl()). Every tenant-scoped
 // row now carries org_id, so the contract seed stamps the same tenant. Declared
 // at module top so the top-level seed IIFE can reference it (no TDZ).
@@ -46,7 +46,7 @@ if (!databaseUrl) {
 }
 if (!existsSync(appBinary)) {
   throw new Error(
-    `MNT_APP_BIN must name an already-built mnt-app binary (looked for ${appBinary})`,
+    `CONSOLE_APP_BIN must name an already-built console-app binary (looked for ${appBinary})`,
   );
 }
 
@@ -75,11 +75,11 @@ try {
     LEAVE_COMMAND_DATABASE_URL: topology.leaveCommandDatabaseUrl,
     ONTOLOGY_COMMAND_DATABASE_URL: topology.ontologyCommandDatabaseUrl,
     PLATFORM_FORCE_COMMAND_DATABASE_URL: topology.platformForceCommandDatabaseUrl,
-    MNT_APP_ROLE: "api",
-    MNT_HTTP_ADDR: `127.0.0.1:${port}`,
-    MNT_JWT_ISSUER: issuer,
-    MNT_JWT_AUDIENCE: audience,
-    MNT_JWT_PUBLIC_KEY_PEM: publicKeyPem,
+    CONSOLE_APP_ROLE: "api",
+    CONSOLE_HTTP_ADDR: `127.0.0.1:${port}`,
+    CONSOLE_JWT_ISSUER: issuer,
+    CONSOLE_JWT_AUDIENCE: audience,
+    CONSOLE_JWT_PUBLIC_KEY_PEM: publicKeyPem,
   };
   const observed = observeChild(spawn(appBinary, [], {
     cwd: root,
@@ -97,7 +97,7 @@ try {
     process.stderr.write(text);
   };
   if (!app.stdout || !app.stderr) {
-    throw new Error("mnt-app must expose stdout and stderr pipes");
+    throw new Error("console-app must expose stdout and stderr pipes");
   }
   app.stdout.on("data", capture);
   app.stderr.on("data", capture);
@@ -114,7 +114,7 @@ try {
       throw new Error(`healthz returned ${health.status}`);
     }
 
-    const client = createMaintenanceApiClient({ baseUrl, bearerToken: token });
+    const client = createConsoleApiClient({ baseUrl, bearerToken: token });
     const { data, error, response } = await client.POST("/api/work-orders", {
       body: {
         branch_id: branchId,
@@ -148,9 +148,9 @@ async function provisionDatabaseTopology(
   const currentUser = await client.query<{ current_user: string }>(
     "SELECT current_user",
   );
-  if (currentUser.rows[0].current_user === "mnt_app") {
+  if (currentUser.rows[0].current_user === "console_app") {
     throw new Error(
-      "CONTRACT_DATABASE_URL must use a cluster administrator distinct from mnt_app",
+      "CONTRACT_DATABASE_URL must use a cluster administrator distinct from console_app",
     );
   }
   const timeoutPrerequisites = await client.query<{ ok: boolean }>(
@@ -174,11 +174,11 @@ async function provisionDatabaseTopology(
     return password;
   };
   const rolePasswords = {
-    mnt_app: distinctPassword(),
-    mnt_rt: distinctPassword(),
-    mnt_leave_cmd: distinctPassword(),
-    mnt_ontology_cmd: distinctPassword(),
-    mnt_platform_force_cmd: distinctPassword(),
+    console_app: distinctPassword(),
+    console_rt: distinctPassword(),
+    console_leave_cmd: distinctPassword(),
+    console_ontology_cmd: distinctPassword(),
+    console_platform_force_cmd: distinctPassword(),
   } as const;
 
   // ALTER ROLE has no parameterized password protocol. Suppress statement and
@@ -191,21 +191,21 @@ async function provisionDatabaseTopology(
     await client.query(`
     DO $block$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='mnt_leave_definer') THEN
-        CREATE ROLE mnt_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='console_leave_definer') THEN
+        CREATE ROLE console_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
       END IF;
-      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='mnt_ontology_writer') THEN
-        CREATE ROLE mnt_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='console_ontology_writer') THEN
+        CREATE ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
       END IF;
     END
     $block$;
-    ALTER ROLE mnt_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
-    ALTER ROLE mnt_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+    ALTER ROLE console_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+    ALTER ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
   `);
 
     for (const [role, password] of Object.entries(rolePasswords)) {
-      const inherit = role === "mnt_app" ? "INHERIT" : "NOINHERIT";
-      const bypassRls = role === "mnt_app" ? "BYPASSRLS" : "NOBYPASSRLS";
+      const inherit = role === "console_app" ? "INHERIT" : "NOINHERIT";
+      const bypassRls = role === "console_app" ? "BYPASSRLS" : "NOBYPASSRLS";
       const ddl = await client.query<{ create_ddl: string; alter_ddl: string }>(
         `SELECT
          format('CREATE ROLE %I LOGIN NOSUPERUSER ${bypassRls} ${inherit} NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD %L', $1::text, $2::text) AS create_ddl,
@@ -221,7 +221,7 @@ async function provisionDatabaseTopology(
       );
     }
 
-    for (const role of ["mnt_rt", "mnt_leave_cmd", "mnt_ontology_cmd", "mnt_platform_force_cmd"]) {
+    for (const role of ["console_rt", "console_leave_cmd", "console_ontology_cmd", "console_platform_force_cmd"]) {
       const defaults = await client.query<{
         statement_ddl: string;
         idle_ddl: string;
@@ -269,24 +269,24 @@ async function provisionDatabaseTopology(
         JOIN pg_roles member ON member.oid=membership.member
         JOIN pg_roles granted ON granted.oid=membership.roleid
         WHERE member.rolname IN (
-                'mnt_app','mnt_rt','mnt_leave_cmd','mnt_ontology_cmd','mnt_platform_force_cmd',
-                'mnt_leave_definer','mnt_ontology_writer'
+                'console_app','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd',
+                'console_leave_definer','console_ontology_writer'
               )
            OR granted.rolname IN (
-                'mnt_app','mnt_rt','mnt_leave_cmd','mnt_ontology_cmd','mnt_platform_force_cmd',
-                'mnt_leave_definer','mnt_ontology_writer'
+                'console_app','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd',
+                'console_leave_definer','console_ontology_writer'
               )
       LOOP
         EXECUTE format('REVOKE %I FROM %I', edge.granted_name, edge.member_name);
       END LOOP;
     END
     $block$;
-    GRANT mnt_leave_definer, mnt_ontology_writer TO mnt_app
+    GRANT console_leave_definer, console_ontology_writer TO console_app
       WITH ADMIN FALSE, INHERIT TRUE, SET TRUE;
-    ALTER SCHEMA public OWNER TO mnt_app;
+    ALTER SCHEMA public OWNER TO console_app;
   `);
     const databaseOwnerDdl = await client.query<{ ddl: string }>(
-      "SELECT format('ALTER DATABASE %I OWNER TO mnt_app', current_database()) AS ddl",
+      "SELECT format('ALTER DATABASE %I OWNER TO console_app', current_database()) AS ddl",
     );
     await client.query(databaseOwnerDdl.rows[0].ddl);
 
@@ -301,8 +301,8 @@ async function provisionDatabaseTopology(
          ',' ORDER BY rolname)
        FROM pg_roles
        WHERE rolname IN (
-         'mnt_app','mnt_rt','mnt_leave_cmd','mnt_ontology_cmd','mnt_platform_force_cmd',
-         'mnt_leave_definer','mnt_ontology_writer'
+         'console_app','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd',
+         'console_leave_definer','console_ontology_writer'
        )) AS roles,
       (SELECT string_agg(
          member.rolname || '>' || granted.rolname || ':' ||
@@ -312,19 +312,19 @@ async function provisionDatabaseTopology(
        JOIN pg_roles member ON member.oid=membership.member
        JOIN pg_roles granted ON granted.oid=membership.roleid
        WHERE member.rolname IN (
-               'mnt_app','mnt_rt','mnt_leave_cmd','mnt_ontology_cmd','mnt_platform_force_cmd',
-               'mnt_leave_definer','mnt_ontology_writer'
+               'console_app','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd',
+               'console_leave_definer','console_ontology_writer'
              )
           OR granted.rolname IN (
-               'mnt_app','mnt_rt','mnt_leave_cmd','mnt_ontology_cmd','mnt_platform_force_cmd',
-               'mnt_leave_definer','mnt_ontology_writer'
+               'console_app','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd',
+               'console_leave_definer','console_ontology_writer'
              )) AS memberships,
       current_setting('server_version_num')::integer >= 170000
         AND current_setting('max_prepared_transactions')::integer = 0
         AND NOT EXISTS (SELECT 1 FROM pg_prepared_xacts)
         AND NOT EXISTS (
           SELECT 1
-          FROM (VALUES ('mnt_rt'), ('mnt_leave_cmd'), ('mnt_ontology_cmd'), ('mnt_platform_force_cmd')) expected(role_name)
+          FROM (VALUES ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd'), ('console_platform_force_cmd')) expected(role_name)
           WHERE NOT EXISTS (
             SELECT 1
             FROM pg_db_role_setting settings
@@ -343,7 +343,7 @@ async function provisionDatabaseTopology(
           FROM pg_db_role_setting settings
           JOIN pg_roles role ON role.oid = settings.setrole
           CROSS JOIN LATERAL unnest(settings.setconfig) setting
-          WHERE role.rolname IN ('mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd', 'mnt_platform_force_cmd')
+          WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
             AND settings.setdatabase <> 0
             AND split_part(setting, '=', 1) IN (
               'statement_timeout', 'idle_in_transaction_session_timeout', 'transaction_timeout'
@@ -352,9 +352,9 @@ async function provisionDatabaseTopology(
   `);
     if (
       topology.rows[0].roles !==
-        "mnt_app:true:false:true:true,mnt_leave_cmd:true:false:false:false,mnt_leave_definer:false:false:false:false,mnt_ontology_cmd:true:false:false:false,mnt_ontology_writer:false:false:false:false,mnt_platform_force_cmd:true:false:false:false,mnt_rt:true:false:false:false" ||
+        "console_app:true:false:true:true,console_leave_cmd:true:false:false:false,console_leave_definer:false:false:false:false,console_ontology_cmd:true:false:false:false,console_ontology_writer:false:false:false:false,console_platform_force_cmd:true:false:false:false,console_rt:true:false:false:false" ||
       topology.rows[0].memberships !==
-        "mnt_app>mnt_leave_definer:false:true:true,mnt_app>mnt_ontology_writer:false:true:true" ||
+        "console_app>console_leave_definer:false:true:true,console_app>console_ontology_writer:false:true:true" ||
       !topology.rows[0].runtime_defaults_ok
     ) {
       throw new Error(
@@ -370,7 +370,7 @@ async function provisionDatabaseTopology(
   const capturedBackends = await client.query<{ pid: number }>(
     `SELECT pid
        FROM pg_stat_activity
-      WHERE usename IN ('mnt_rt', 'mnt_leave_cmd', 'mnt_ontology_cmd', 'mnt_platform_force_cmd')
+      WHERE usename IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
         AND pid <> pg_backend_pid()
       ORDER BY pid`,
   );
@@ -400,27 +400,27 @@ async function provisionDatabaseTopology(
     return url.toString();
   };
   const topology = {
-    ownerDatabaseUrl: roleUrl("mnt_app"),
-    runtimeDatabaseUrl: roleUrl("mnt_rt"),
-    leaveCommandDatabaseUrl: roleUrl("mnt_leave_cmd"),
-    ontologyCommandDatabaseUrl: roleUrl("mnt_ontology_cmd"),
-    platformForceCommandDatabaseUrl: roleUrl("mnt_platform_force_cmd"),
+    ownerDatabaseUrl: roleUrl("console_app"),
+    runtimeDatabaseUrl: roleUrl("console_rt"),
+    leaveCommandDatabaseUrl: roleUrl("console_leave_cmd"),
+    ontologyCommandDatabaseUrl: roleUrl("console_ontology_cmd"),
+    platformForceCommandDatabaseUrl: roleUrl("console_platform_force_cmd"),
   };
-  await assertDirectDatabaseLogin(topology.ownerDatabaseUrl, "mnt_app", true);
-  await assertDirectDatabaseLogin(topology.runtimeDatabaseUrl, "mnt_rt", false);
+  await assertDirectDatabaseLogin(topology.ownerDatabaseUrl, "console_app", true);
+  await assertDirectDatabaseLogin(topology.runtimeDatabaseUrl, "console_rt", false);
   await assertDirectDatabaseLogin(
     topology.leaveCommandDatabaseUrl,
-    "mnt_leave_cmd",
+    "console_leave_cmd",
     false,
   );
   await assertDirectDatabaseLogin(
     topology.ontologyCommandDatabaseUrl,
-    "mnt_ontology_cmd",
+    "console_ontology_cmd",
     false,
   );
   await assertDirectDatabaseLogin(
     topology.platformForceCommandDatabaseUrl,
-    "mnt_platform_force_cmd",
+    "console_platform_force_cmd",
     false,
   );
   return topology;
@@ -457,7 +457,7 @@ async function assertDirectDatabaseLogin(
                    FROM pg_auth_members membership
                   WHERE membership.member = authenticated.oid
                     AND membership.roleid IN (
-                      to_regrole('mnt_leave_definer'), to_regrole('mnt_ontology_writer')
+                      to_regrole('console_leave_definer'), to_regrole('console_ontology_writer')
                     )
                     AND NOT membership.admin_option
                     AND membership.inherit_option
@@ -466,7 +466,7 @@ async function assertDirectDatabaseLogin(
                   SELECT 1 FROM pg_roles candidate
                   WHERE candidate.rolname <> session_user
                     AND candidate.rolname NOT IN (
-                      'pg_database_owner', 'mnt_leave_definer', 'mnt_ontology_writer'
+                      'pg_database_owner', 'console_leave_definer', 'console_ontology_writer'
                     )
                     AND pg_has_role(session_user, candidate.oid, 'MEMBER')
                 )
@@ -526,7 +526,7 @@ async function assertRuntimePublicSchemaAccess(runtimeDatabaseUrl: string) {
       access.visible_rows !== "0"
     ) {
       throw new Error(
-        `contract database mnt_rt public schema ACL readback failed: ${JSON.stringify(access)}`,
+        `contract database console_rt public schema ACL readback failed: ${JSON.stringify(access)}`,
       );
     }
   } finally {
@@ -539,7 +539,7 @@ async function runAppMigration(binary: string, ownerDatabaseUrl: string) {
     cwd: root,
     env: {
       DATABASE_URL: ownerDatabaseUrl,
-      MNT_APP_ROLE: "migrate",
+      CONSOLE_APP_ROLE: "migrate",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -561,7 +561,7 @@ async function runAppMigration(binary: string, ownerDatabaseUrl: string) {
   });
   if (result.code !== 0) {
     throw new Error(
-      `mnt-app migrate failed: code=${result.code} signal=${result.signal ?? "none"}\n${output}`,
+      `console-app migrate failed: code=${result.code} signal=${result.signal ?? "none"}\n${output}`,
     );
   }
 }

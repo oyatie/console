@@ -1,5 +1,5 @@
 [package]
-name = "mnt-facilities-rest"
+name = "console-facilities-rest"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
@@ -8,11 +8,11 @@ publish.workspace = true
 
 [dependencies]
 axum = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-auth = { path = "../../platform/auth" }
-mnt-platform-authz = { path = "../../platform/authz" }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-auth = { path = "../../platform/auth" }
+console-platform-authz = { path = "../../platform/authz" }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }

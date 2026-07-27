@@ -9,18 +9,18 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-request-context",
+    name = "console-platform-request-context",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/request-context", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_request_context",
+    crate = "console_platform_request_context",
     edition = "2024",
     crate_root = "backend/crates/platform/request-context/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/request-context"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/group:mnt-platform-group",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/group:console-platform-group",
         "//third-party/rust:axum",
         "//third-party/rust:http",
         "//third-party/rust:ipnet",
@@ -32,19 +32,19 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-platform-request-context-unit",
+    name = "console-platform-request-context-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/request-context", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_request_context",
+    crate = "console_platform_request_context",
     edition = "2024",
     crate_root = "backend/crates/platform/request-context/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/request-context"},
     labels = ["owner.backend.crates.platform.request-context", "domain.platform", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/group:mnt-platform-group",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/group:console-platform-group",
         "//third-party/rust:axum",
         "//third-party/rust:http",
         "//third-party/rust:ipnet",

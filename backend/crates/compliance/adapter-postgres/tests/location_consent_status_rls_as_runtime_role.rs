@@ -5,11 +5,11 @@
 //! non-functional).
 //!
 //! The existing `location_store` tests run as the BYPASSRLS owner pool, so they
-//! never exercise the consent read/write as the genuine non-owner `mnt_rt`
+//! never exercise the consent read/write as the genuine non-owner `console_rt`
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — a missing GRANT or a read that fails
 //! to arm `app.current_org` would be invisible to them but 500 in production,
 //! which is exactly the "page won't load" symptom. This test exercises the whole
-//! flow as `mnt_rt` under org A's armed GUC:
+//! flow as `console_rt` under org A's armed GUC:
 //!   (a) `current_consent` on a user with NO row returns NO_RECORD (the initial
 //!       page load must NOT error just because nothing was granted yet),
 //!   (b) grant → suspend → resume → withdraw each succeed and the status the
@@ -19,14 +19,14 @@
 //!   (d) cross-tenant: with org B's GUC armed, org A's consent row is invisible
 //!       (the read fails closed to NO_RECORD), never leaked.
 
-use mnt_compliance_adapter_postgres::PgComplianceStore;
-use mnt_compliance_application::{
+use console_compliance_adapter_postgres::PgComplianceStore;
+use console_compliance_application::{
     AcceptEvidenceBindingCommand, ConsentTransitionCommand, ConsentTransitionKind,
     CreateEvidenceBindingCommand,
 };
-use mnt_compliance_domain::{EvidenceConfidence, EvidenceTargetType, LocationConsentState};
-use mnt_kernel_core::{BranchId, OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_compliance_domain::{EvidenceConfidence, EvidenceTargetType, LocationConsentState};
+use console_kernel_core::{BranchId, OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -36,7 +36,7 @@ use uuid::Uuid;
 /// Second tenant org used for cross-tenant isolation assertions.
 const ORG_B: Uuid = Uuid::from_u128(0xc000_0000_0000_0000_0000_0000_0000_0007);
 
-/// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`
+/// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`
 /// (NOBYPASSRLS, subject to FORCE RLS), exactly like production.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -44,7 +44,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -170,7 +170,7 @@ async fn evidence_acceptance_is_tenant_invisible_and_does_not_leak_audit_as_runt
             .expect_err("org-B runtime role must not see or accept org-A evidence")
     })
     .await;
-    assert_eq!(denied.kind(), mnt_kernel_core::ErrorKind::NotFound);
+    assert_eq!(denied.kind(), console_kernel_core::ErrorKind::NotFound);
 
     let audit_count: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM audit_events WHERE action = 'compliance.evidence_binding.accept' AND target_id = $1",
@@ -214,7 +214,7 @@ async fn seed_compliance_control(owner_pool: &PgPool, org: Uuid, actor: UserId, 
 }
 
 // ===========================================================================
-// (a)(b)(c) status read + full grant/suspend/resume/withdraw flow as mnt_rt.
+// (a)(b)(c) status read + full grant/suspend/resume/withdraw flow as console_rt.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPool) {
@@ -232,7 +232,7 @@ async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPo
         let initial = store
             .current_consent(user_id, branch_id)
             .await
-            .expect("current_consent must read (NO_RECORD) as mnt_rt under org-A's GUC");
+            .expect("current_consent must read (NO_RECORD) as console_rt under org-A's GUC");
         assert_eq!(initial.state(), LocationConsentState::NoRecord);
 
         // (b) grant → suspend → resume → withdraw, each surfacing the new state.
@@ -244,7 +244,7 @@ async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPo
                 datetime!(2026-06-23 08:00:00 UTC),
             ))
             .await
-            .expect("grant must succeed as mnt_rt");
+            .expect("grant must succeed as console_rt");
         assert_eq!(granted.state(), LocationConsentState::Granted);
 
         let suspended = store
@@ -255,7 +255,7 @@ async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPo
                 datetime!(2026-06-23 09:00:00 UTC),
             ))
             .await
-            .expect("suspend must succeed as mnt_rt");
+            .expect("suspend must succeed as console_rt");
         assert_eq!(suspended.state(), LocationConsentState::Suspended);
 
         let resumed = store
@@ -266,7 +266,7 @@ async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPo
                 datetime!(2026-06-23 10:00:00 UTC),
             ))
             .await
-            .expect("resume must succeed as mnt_rt");
+            .expect("resume must succeed as console_rt");
         assert_eq!(resumed.state(), LocationConsentState::Granted);
 
         let withdrawn = store
@@ -277,14 +277,14 @@ async fn consent_status_and_transitions_succeed_as_runtime_role(owner_pool: PgPo
                 datetime!(2026-06-23 11:00:00 UTC),
             ))
             .await
-            .expect("withdraw must succeed as mnt_rt");
+            .expect("withdraw must succeed as console_rt");
         assert_eq!(withdrawn.state(), LocationConsentState::Withdrawn);
 
         // (c) A fresh read after the round-trip still works and is WITHDRAWN.
         let after = store
             .current_consent(user_id, branch_id)
             .await
-            .expect("current_consent must still read as mnt_rt after the round-trip");
+            .expect("current_consent must still read as console_rt after the round-trip");
         assert_eq!(after.state(), LocationConsentState::Withdrawn);
     })
     .await;
@@ -314,7 +314,7 @@ async fn consent_read_is_tenant_isolated_as_runtime_role(owner_pool: PgPool) {
     seed_org(&owner_pool, ORG_B, "B").await;
     let (user_a, branch_a) = seed_user_and_branch(&owner_pool, org_a_uuid, "A").await;
 
-    // Org A grants consent (as mnt_rt, under org A's GUC).
+    // Org A grants consent (as console_rt, under org A's GUC).
     scope_org(org_a, async {
         let store = PgComplianceStore::new(rt_pool.clone());
         store
@@ -325,7 +325,7 @@ async fn consent_read_is_tenant_isolated_as_runtime_role(owner_pool: PgPool) {
                 datetime!(2026-06-23 08:00:00 UTC),
             ))
             .await
-            .expect("org A grant must succeed as mnt_rt");
+            .expect("org A grant must succeed as console_rt");
     })
     .await;
 
@@ -337,7 +337,7 @@ async fn consent_read_is_tenant_isolated_as_runtime_role(owner_pool: PgPool) {
         let seen = store
             .current_consent(user_a, branch_a)
             .await
-            .expect("read must succeed as mnt_rt under org B's GUC");
+            .expect("read must succeed as console_rt under org B's GUC");
         assert_eq!(
             seen.state(),
             LocationConsentState::NoRecord,

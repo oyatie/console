@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{AccessScope, AccessScopeLevel, BranchId, OrgId, ScopeNodeId, UserId};
-use mnt_platform_auth::{
+use console_kernel_core::{AccessScope, AccessScopeLevel, BranchId, OrgId, ScopeNodeId, UserId};
+use console_platform_auth::{
     AccessClaims, AccessTokenInput, JwtIssuer, JwtSettings, TenantAccessContext,
 };
 use p256::ecdsa::SigningKey;
@@ -19,8 +19,8 @@ fn es256_material() -> (JwtIssuer, String, String) {
 
     let issuer = JwtIssuer::from_es256_pem(
         JwtSettings {
-            issuer: "mnt-platform-auth".to_owned(),
-            audience: "mnt-api".to_owned(),
+            issuer: "console-platform-auth".to_owned(),
+            audience: "console-api".to_owned(),
             access_token_ttl: Duration::minutes(15),
         },
         private_pem.as_bytes(),
@@ -64,8 +64,8 @@ fn es256_access_token_round_trips_with_expected_claims() {
     let claims = issuer.verify_access_token(&token).unwrap();
 
     assert_eq!(claims.sub, user_id.to_string());
-    assert_eq!(claims.iss, "mnt-platform-auth");
-    assert_eq!(claims.aud, "mnt-api");
+    assert_eq!(claims.iss, "console-platform-auth");
+    assert_eq!(claims.aud, "console-api");
     assert_eq!(claims.roles, vec!["MECHANIC"]);
     assert_eq!(claims.branches, vec![branch_id.to_string()]);
     assert_eq!(claims.iat, now.unix_timestamp());
@@ -351,8 +351,8 @@ fn es256_scoped_token_rejects_unknown_group_role_on_verify() {
     let (issuer, private_pem, _) = es256_material();
     let now = OffsetDateTime::now_utc();
     let claims = AccessClaims {
-        iss: "mnt-platform-auth".to_owned(),
-        aud: "mnt-api".to_owned(),
+        iss: "console-platform-auth".to_owned(),
+        aud: "console-api".to_owned(),
         sub: UserId::new().to_string(),
         iat: now.unix_timestamp(),
         nbf: now.unix_timestamp(),
@@ -423,8 +423,8 @@ fn es256_view_as_token_refuses_group_roles() {
 #[test]
 fn access_scope_claims_must_be_a_complete_pair() {
     let claims = AccessClaims {
-        iss: "mnt-platform-auth".to_owned(),
-        aud: "mnt-api".to_owned(),
+        iss: "console-platform-auth".to_owned(),
+        aud: "console-api".to_owned(),
         sub: UserId::new().to_string(),
         iat: 1,
         nbf: 1,
@@ -498,8 +498,8 @@ fn legacy_access_token_without_freshness_claims_defaults_to_zero() {
     let now = OffsetDateTime::now_utc();
 
     let legacy = serde_json::json!({
-        "iss": "mnt-platform-auth",
-        "aud": "mnt-api",
+        "iss": "console-platform-auth",
+        "aud": "console-api",
         "sub": UserId::new().to_string(),
         "iat": now.unix_timestamp(),
         "nbf": now.unix_timestamp(),

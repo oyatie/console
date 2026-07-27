@@ -10,11 +10,11 @@
 //! drained into a payroll draft in the same tick. Both steps are dark-safe no-ops
 //! for un-enrolled tenants.
 //!
-//! Because the app connects as the non-owner `mnt_rt` role under RLS, the loop
+//! Because the app connects as the non-owner `console_rt` role under RLS, the loop
 //! cannot see any tenant's rows without arming `app.current_org`. Each tick:
 //!   1. ENUMERATES every real tenant via the `platform_list_organizations()`
 //!      SECURITY DEFINER function (id-only) — the one read that legitimately
-//!      spans tenants and the only RLS-safe way for `mnt_rt` to discover orgs;
+//!      spans tenants and the only RLS-safe way for `console_rt` to discover orgs;
 //!      then
 //!   2. for each org, re-enters the tenant scope with `scope_org(org, ..)` (a
 //!      bare `tokio::spawn`/loop iteration does NOT inherit `CURRENT_ORG`, which
@@ -33,11 +33,11 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use mnt_kernel_core::OrgId;
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_platform_realtime::PostgresNotificationNotifier;
-use mnt_platform_request_context::scope_org;
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_kernel_core::OrgId;
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_platform_realtime::PostgresNotificationNotifier;
+use console_platform_request_context::scope_org;
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use tokio::sync::watch;
 use uuid::Uuid;
 
@@ -128,7 +128,7 @@ async fn run_tick(
         // a published completion definition.
         match scope_org(
             org,
-            mnt_workorder_rest::m2_strangler::reconcile_completion_tails(store, org),
+            console_workorder_rest::m2_strangler::reconcile_completion_tails(store, org),
         )
         .await
         {

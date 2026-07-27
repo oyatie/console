@@ -13,7 +13,7 @@
 -- All tables are tenant-scoped FORCE-RLS org-isolated. No hard delete anywhere
 -- (§9.8): DELETE is revoked from the runtime role on every table.
 
--- mnt-gate: audited-table ont_object_types
+-- console-gate: audited-table ont_object_types
 CREATE TABLE ont_object_types (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -45,7 +45,7 @@ CREATE UNIQUE INDEX idx_ont_object_types_one_draft
 CREATE INDEX idx_ont_object_types_list
     ON ont_object_types (org_id, backing_kind, lifecycle_state, updated_at DESC);
 
--- mnt-gate: audited-table ont_property_defs
+-- console-gate: audited-table ont_property_defs
 CREATE TABLE ont_property_defs (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -63,7 +63,7 @@ CREATE TABLE ont_property_defs (
 );
 CREATE INDEX idx_ont_property_defs_owner ON ont_property_defs (org_id, object_type_id);
 
--- mnt-gate: audited-table ont_link_types
+-- console-gate: audited-table ont_link_types
 CREATE TABLE ont_link_types (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -83,7 +83,7 @@ CREATE TABLE ont_link_types (
 );
 CREATE INDEX idx_ont_link_types_owner ON ont_link_types (org_id, object_type_id);
 
--- mnt-gate: audited-table ont_action_types
+-- console-gate: audited-table ont_action_types
 CREATE TABLE ont_action_types (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -103,7 +103,7 @@ CREATE TABLE ont_action_types (
 );
 CREATE INDEX idx_ont_action_types_owner ON ont_action_types (org_id, object_type_id);
 
--- mnt-gate: audited-table ont_analytics
+-- console-gate: audited-table ont_analytics
 CREATE TABLE ont_analytics (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -149,19 +149,19 @@ CREATE TRIGGER trg_ont_object_types_org_immutable BEFORE UPDATE ON ont_object_ty
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 
 -- Runtime-role grants. Production auto-grants these via ALTER DEFAULT PRIVILEGES
--- FOR ROLE mnt_app (0031); the #[sqlx::test] harness runs migrations as a
+-- FOR ROLE console_app (0031); the #[sqlx::test] harness runs migrations as a
 -- different superuser, so grant explicitly here (mirrors 0103).
 --
 -- Object-type head: SELECT + INSERT + UPDATE (lifecycle FSM), never DELETE.
-GRANT SELECT, INSERT, UPDATE ON ont_object_types TO mnt_rt;
-REVOKE DELETE ON ont_object_types FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON ont_object_types TO console_rt;
+REVOKE DELETE ON ont_object_types FROM console_rt;
 -- Definition children are append-only snapshots: SELECT + INSERT only. A new
 -- revision appends a fresh child set; a published version's rows never change.
-GRANT SELECT, INSERT ON ont_property_defs TO mnt_rt;
-REVOKE UPDATE, DELETE ON ont_property_defs FROM mnt_rt;
-GRANT SELECT, INSERT ON ont_link_types TO mnt_rt;
-REVOKE UPDATE, DELETE ON ont_link_types FROM mnt_rt;
-GRANT SELECT, INSERT ON ont_action_types TO mnt_rt;
-REVOKE UPDATE, DELETE ON ont_action_types FROM mnt_rt;
-GRANT SELECT, INSERT ON ont_analytics TO mnt_rt;
-REVOKE UPDATE, DELETE ON ont_analytics FROM mnt_rt;
+GRANT SELECT, INSERT ON ont_property_defs TO console_rt;
+REVOKE UPDATE, DELETE ON ont_property_defs FROM console_rt;
+GRANT SELECT, INSERT ON ont_link_types TO console_rt;
+REVOKE UPDATE, DELETE ON ont_link_types FROM console_rt;
+GRANT SELECT, INSERT ON ont_action_types TO console_rt;
+REVOKE UPDATE, DELETE ON ont_action_types FROM console_rt;
+GRANT SELECT, INSERT ON ont_analytics TO console_rt;
+REVOKE UPDATE, DELETE ON ont_analytics FROM console_rt;

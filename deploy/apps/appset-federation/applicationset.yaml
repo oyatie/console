@@ -4,13 +4,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: maintenance-root-federation
+  name: console-root-federation
   namespace: argocd
   labels:
-    maintenance.io/federation-stage: dark
-    maintenance.nousresearch.com/dark-stage: "true"
+    console.io/federation-stage: dark
+    console.nousresearch.com/dark-stage: "true"
   annotations:
-    maintenance.nousresearch.com/activation-boundary: "DARK: not referenced by deploy/argocd/root.yaml"
+    console.nousresearch.com/activation-boundary: "DARK: not referenced by deploy/argocd/root.yaml"
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
@@ -21,9 +21,9 @@ spec:
         selector:
           matchLabels:
             argocd.argoproj.io/secret-type: cluster
-            maintenance.io/federation: enabled
-            maintenance.io/environment: prod
-            maintenance.io/dr-role: primary
+            console.io/federation: enabled
+            console.io/environment: prod
+            console.io/dr-role: primary
         values:
           syncClass: primary
           rootPath: deploy/argocd/apps
@@ -33,9 +33,9 @@ spec:
         selector:
           matchLabels:
             argocd.argoproj.io/secret-type: cluster
-            maintenance.io/federation: enabled
-            maintenance.io/environment: prod
-            maintenance.io/dr-role: warm-standby
+            console.io/federation: enabled
+            console.io/environment: prod
+            console.io/dr-role: warm-standby
         values:
           syncClass: warm-standby
           rootPath: deploy/apps/appset-federation/app-groups/warm-standby
@@ -45,17 +45,17 @@ spec:
       namespace: argocd
       annotations:
         argocd.argoproj.io/sync-wave: "-10"
-        maintenance.nousresearch.com/dark-stage: "true"
+        console.nousresearch.com/dark-stage: "true"
       labels:
-        maintenance.io/federation-stage: dark
-        maintenance.io/site: '{{index .metadata.labels "maintenance.io/site"}}'
-        maintenance.io/dr-role: '{{index .metadata.labels "maintenance.io/dr-role"}}'
-        maintenance.io/residency: '{{index .metadata.labels "maintenance.io/residency"}}'
-        maintenance.io/sync-class: '{{.values.syncClass}}'
+        console.io/federation-stage: dark
+        console.io/site: '{{index .metadata.labels "console.io/site"}}'
+        console.io/dr-role: '{{index .metadata.labels "console.io/dr-role"}}'
+        console.io/residency: '{{index .metadata.labels "console.io/residency"}}'
+        console.io/sync-class: '{{.values.syncClass}}'
     spec:
-      project: maintenance
+      project: console
       source:
-        repoURL: https://github.com/jason931225/maintenance.git
+        repoURL: https://github.com/jason931225/console.git
         targetRevision: main
         path: '{{.values.rootPath}}'
         directory:

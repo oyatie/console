@@ -1,7 +1,7 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 
 use apalis_sqlx::Row as _;
-use mnt_platform_jobs::{
+use console_platform_jobs::{
     ApalisPostgresJobQueue, BoxFuture, JobQueue, JobQueueError, JobRequest, PlatformJob,
     PlatformJobHandler, connect_apalis_runtime_pool, migrate_and_reconcile_apalis_postgres,
     run_apalis_worker_until_shutdown,
@@ -34,12 +34,12 @@ struct LedgerRow {
 
 #[tokio::test]
 async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
-    let owner_url = required_url("MNT_APALIS_OWNER_DATABASE_URL");
-    let runtime_url = required_url("MNT_APALIS_RUNTIME_DATABASE_URL");
-    let admin_url = required_url("MNT_APALIS_ADMIN_DATABASE_URL");
+    let owner_url = required_url("CONSOLE_APALIS_OWNER_DATABASE_URL");
+    let runtime_url = required_url("CONSOLE_APALIS_RUNTIME_DATABASE_URL");
+    let admin_url = required_url("CONSOLE_APALIS_ADMIN_DATABASE_URL");
     let mut owner = sqlx::PgConnection::connect(&owner_url)
         .await
-        .expect("connect as mnt_app");
+        .expect("connect as console_app");
 
     let database_name: String = sqlx::query_scalar("SELECT current_database()")
         .fetch_one(&mut owner)
@@ -125,7 +125,7 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
         .expect("remove lone helper fixture");
 
     reset_apalis(&mut owner).await;
-    sqlx::raw_sql("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC, mnt_rt")
+    sqlx::raw_sql("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC, console_rt")
         .execute(&mut owner)
         .await
         .expect("remove runtime access to the public schema");
@@ -359,8 +359,8 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
         CREATE TABLE apalis.future_jobs_contract (id INTEGER PRIMARY KEY);
         CREATE FUNCTION apalis.future_contract_helper() RETURNS INTEGER
         LANGUAGE sql IMMUTABLE AS 'SELECT 1';
-        GRANT SELECT ON TABLE apalis.future_jobs_contract TO mnt_rt;
-        GRANT EXECUTE ON FUNCTION apalis.future_contract_helper() TO mnt_rt;
+        GRANT SELECT ON TABLE apalis.future_jobs_contract TO console_rt;
+        GRANT EXECUTE ON FUNCTION apalis.future_contract_helper() TO console_rt;
         "#,
     )
     .execute(&mut owner)
@@ -371,8 +371,8 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
         .expect("owner reconciles ACL after additive migration");
     let future_grants_preserved: bool = sqlx::query_scalar(
         r#"
-        SELECT has_table_privilege('mnt_rt', 'apalis.future_jobs_contract', 'SELECT')
-           AND has_function_privilege('mnt_rt', 'apalis.future_contract_helper()', 'EXECUTE')
+        SELECT has_table_privilege('console_rt', 'apalis.future_jobs_contract', 'SELECT')
+           AND has_function_privilege('console_rt', 'apalis.future_contract_helper()', 'EXECUTE')
         "#,
     )
     .fetch_one(&mut owner)
@@ -489,17 +489,17 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
         .expect("connect runtime through workspace SQLx");
     let runtime_owner_error = migrate_and_reconcile_apalis_postgres(&mut runtime)
         .await
-        .expect_err("mnt_rt must not enter owner migration path");
+        .expect_err("console_rt must not enter owner migration path");
     assert!(
         runtime_owner_error
             .to_string()
-            .contains("mnt_app database owner")
+            .contains("console_app database owner")
     );
 
     let mut admin = sqlx::PgConnection::connect(&admin_url)
         .await
         .expect("connect contract-test administrator");
-    sqlx::query("ALTER TABLE apalis.workers OWNER TO mnt_rt")
+    sqlx::query("ALTER TABLE apalis.workers OWNER TO console_rt")
         .execute(&mut admin)
         .await
         .expect("create foreign-owned object state");
@@ -509,9 +509,9 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
     assert!(
         foreign_owner_error
             .to_string()
-            .contains("not owned by mnt_app")
+            .contains("not owned by console_app")
     );
-    sqlx::query("ALTER TABLE apalis.workers OWNER TO mnt_app")
+    sqlx::query("ALTER TABLE apalis.workers OWNER TO console_app")
         .execute(&mut admin)
         .await
         .expect("restore worker table owner");
@@ -528,7 +528,7 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
 async fn assert_runtime_least_privilege(runtime_url: &str) {
     let mut runtime = sqlx::PgConnection::connect(runtime_url)
         .await
-        .expect("connect mnt_rt");
+        .expect("connect console_rt");
     let acl: bool = sqlx::query_scalar(
         r#"
         SELECT NOT has_schema_privilege(current_user, 'public', 'USAGE')
@@ -635,14 +635,14 @@ async fn assert_runtime_worker_delivers_and_shuts_down(
     let queue_name = format!("contract.worker.{}", uuid::Uuid::new_v4());
     let worker_name = format!("contract-worker-{}", uuid::Uuid::new_v4());
     let key = format!("contract-worker-job:{}", uuid::Uuid::new_v4());
-    let expected = PlatformJob::EscalationTimer(mnt_platform_jobs::EscalationTimerJob {
+    let expected = PlatformJob::EscalationTimer(console_platform_jobs::EscalationTimerJob {
         scenario_id: "contract".to_owned(),
         timer_id: "worker-delivery".to_owned(),
         scheduled_for: time::OffsetDateTime::now_utc(),
     });
     let request = JobRequest {
         job: expected.clone(),
-        idempotency_key: mnt_platform_jobs::IdempotencyKey::new(&key)
+        idempotency_key: console_platform_jobs::IdempotencyKey::new(&key)
             .expect("build unique worker contract idempotency key"),
     };
     let (delivered_tx, mut delivered_rx) = tokio::sync::mpsc::unbounded_channel();
@@ -812,7 +812,7 @@ async fn assert_runtime_pool_resets_poisoned_session(runtime_url: &str) {
         .expect("connect hardened runtime pool");
     {
         let mut connection = pool.acquire().await.expect("acquire runtime connection");
-        apalis_sqlx::query("SET ROLE mnt_rt")
+        apalis_sqlx::query("SET ROLE console_rt")
             .execute(&mut *connection)
             .await
             .expect("poison runtime role state");
@@ -842,8 +842,8 @@ async fn assert_runtime_pool_resets_poisoned_session(runtime_url: &str) {
     .fetch_one(&mut *connection)
     .await
     .expect("read reset runtime session");
-    assert_eq!(row.get::<String, _>("session_user"), "mnt_rt");
-    assert_eq!(row.get::<String, _>("current_user"), "mnt_rt");
+    assert_eq!(row.get::<String, _>("session_user"), "console_rt");
+    assert_eq!(row.get::<String, _>("current_user"), "console_rt");
     assert!(row.get::<bool, _>("statement_ok"));
     assert!(row.get::<bool, _>("idle_ok"));
     assert!(row.get::<bool, _>("transaction_ok"));
@@ -859,7 +859,7 @@ async fn assert_runtime_can_enqueue(runtime_url: &str, owner: &mut sqlx::PgConne
     let request =
         JobRequest::escalation_timer("contract", "enqueue", time::OffsetDateTime::now_utc(), &key)
             .expect("build contract enqueue request");
-    queue.enqueue(request).await.expect("enqueue as mnt_rt");
+    queue.enqueue(request).await.expect("enqueue as console_rt");
     let count: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM apalis.jobs WHERE job_type = $1 AND idempotency_key = $2",
     )

@@ -2,7 +2,7 @@
 -- 예방팀 is represented by users.team = '예방'; adapters enforce that
 -- assigned mechanics are active MECHANIC users in the schedule branch.
 
--- mnt-gate: audited-table regular_inspection_schedules
+-- console-gate: audited-table regular_inspection_schedules
 CREATE TABLE regular_inspection_schedules (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id     UUID        NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
@@ -33,7 +33,7 @@ CREATE INDEX idx_regular_inspection_schedules_due
 CREATE INDEX idx_regular_inspection_schedules_mechanic_due
     ON regular_inspection_schedules (mechanic_id, due_date);
 
--- mnt-gate: audited-table inspection_rounds
+-- console-gate: audited-table inspection_rounds
 CREATE TABLE inspection_rounds (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     schedule_id   UUID        NOT NULL REFERENCES regular_inspection_schedules(id) ON DELETE RESTRICT,

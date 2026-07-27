@@ -1,6 +1,6 @@
 -- T4.2/T4.3 reporting Excel exports and editable work-diary drafts.
 
--- mnt-gate: audited-table excel_export_logs
+-- console-gate: audited-table excel_export_logs
 CREATE TABLE excel_export_logs (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     actor        UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -19,7 +19,7 @@ CREATE INDEX idx_excel_export_logs_kind_date
 CREATE INDEX idx_excel_export_logs_actor
     ON excel_export_logs (actor, created_at DESC);
 
--- mnt-gate: audited-table work_diary_drafts
+-- console-gate: audited-table work_diary_drafts
 CREATE TABLE work_diary_drafts (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     diary_date   DATE        NOT NULL,

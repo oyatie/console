@@ -9,7 +9,7 @@
 -- only touch rows whose org_id is still NULL, so re-running is a clean no-op.
 
 -- KNL's org id is FIXED (not gen_random_uuid) so the application has a stable
--- compile-time constant for tenant #1 (mnt_kernel_core::OrgId::knl()). Every
+-- compile-time constant for tenant #1 (console_kernel_core::OrgId::knl()). Every
 -- single-tenant write path arms `app.current_org` with this exact value until
 -- the per-request tenant resolver lands; the runtime constant and the seeded
 -- row must therefore agree byte-for-byte.

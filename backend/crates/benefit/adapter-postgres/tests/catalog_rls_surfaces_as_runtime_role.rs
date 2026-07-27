@@ -2,22 +2,22 @@
 //! Runtime proof for the Benefits vertical.
 //!
 //! The owner pool used by `sqlx::test` bypasses RLS, so every actual catalog
-//! write below runs as production's non-owner `mnt_rt` role with a transaction
+//! write below runs as production's non-owner `console_rt` role with a transaction
 //! scoped org GUC. This covers create/update/tier replacement/condition
 //! replacement, logical retirement of children, audit evidence, and cross-tenant
 //! denial-by-omission.
 
-use mnt_benefit_adapter_postgres::PgBenefitCatalogStore;
-use mnt_benefit_application::{
+use console_benefit_adapter_postgres::PgBenefitCatalogStore;
+use console_benefit_application::{
     BenefitCatalogScopeDraft, BenefitConditionDraft, BenefitTierDraft,
     CreateBenefitCatalogItemCommand, ListBenefitCatalogItemsQuery, ReplaceBenefitConditionsCommand,
     ReplaceBenefitTiersCommand, UpdateBenefitCatalogItemCommand, UpdateBenefitCatalogItemFields,
 };
-use mnt_benefit_domain::{BenefitCategory, BenefitConditionKind, BenefitConditionOperator};
-use mnt_kernel_core::{BranchScope, OrgId, TraceContext};
-use mnt_platform_db::lifecycle;
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{grant_mnt_rt, runtime_role_pool, seed_org_and_super_admin};
+use console_benefit_domain::{BenefitCategory, BenefitConditionKind, BenefitConditionOperator};
+use console_kernel_core::{BranchScope, OrgId, TraceContext};
+use console_platform_db::lifecycle;
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{grant_console_rt, runtime_role_pool, seed_org_and_super_admin};
 use serde_json::json;
 use sqlx::{PgPool, Row};
 use time::OffsetDateTime;
@@ -54,17 +54,17 @@ async fn benefit_catalog_writes_are_rls_scoped_audited_and_retire_children_as_ru
     owner_pool: PgPool,
 ) {
     // The production migration grants these already; the sqlx harness creates
-    // tables as a different owner, so grant them explicitly for the mnt_rt proof.
-    grant_mnt_rt(
+    // tables as a different owner, so grant them explicitly for the console_rt proof.
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT, INSERT, UPDATE ON benefit_code_counters TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_items TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_tiers TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_conditions TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON object_lifecycles TO mnt_rt",
-            "GRANT SELECT, INSERT ON object_lifecycle_transitions TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT, INSERT, UPDATE ON benefit_code_counters TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_items TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_tiers TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON benefit_catalog_conditions TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON object_lifecycles TO console_rt",
+            "GRANT SELECT, INSERT ON object_lifecycle_transitions TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
         ],
     )
     .await;
@@ -104,7 +104,7 @@ async fn benefit_catalog_writes_are_rls_scoped_audited_and_retire_children_as_ru
             .await
     })
     .await
-    .expect("create must succeed as mnt_rt with the org GUC armed");
+    .expect("create must succeed as console_rt with the org GUC armed");
     assert_eq!(created.lifecycle.current_state.as_deref(), Some("draft"));
     assert_eq!(created.tiers.len(), 1);
     assert_eq!(created.conditions.len(), 1);
@@ -199,7 +199,7 @@ async fn benefit_catalog_writes_are_rls_scoped_audited_and_retire_children_as_ru
             .await
     })
     .await
-    .expect("update must succeed as mnt_rt");
+    .expect("update must succeed as console_rt");
     assert_eq!(updated.name, "국민연금 개정");
 
     let replaced_tiers = scope_org(org_a, async {
@@ -215,7 +215,7 @@ async fn benefit_catalog_writes_are_rls_scoped_audited_and_retire_children_as_ru
             .await
     })
     .await
-    .expect("tier replacement must succeed as mnt_rt");
+    .expect("tier replacement must succeed as console_rt");
     assert_eq!(replaced_tiers.tiers[0].value_label, "개정 등급");
 
     let replaced_conditions = scope_org(org_a, async {
@@ -231,7 +231,7 @@ async fn benefit_catalog_writes_are_rls_scoped_audited_and_retire_children_as_ru
             .await
     })
     .await
-    .expect("condition replacement must succeed as mnt_rt");
+    .expect("condition replacement must succeed as console_rt");
     assert_eq!(
         replaced_conditions.conditions[0].display_label,
         "개정 재직자"

@@ -4,7 +4,7 @@
 //! `list_equipment` runs inside `with_org_conn(current_org()?, ..)` so every
 //! read is tenant-isolated by the row-security policy
 //! `registry_equipment_org_isolation`. This test exercises all three RLS
-//! invariants as the genuine non-owner `mnt_rt` role (NOSUPERUSER,
+//! invariants as the genuine non-owner `console_rt` role (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy:
 //!
 //! (a) FAIL-CLOSED — without `app.current_org` armed, a raw COUNT returns 0
@@ -16,10 +16,10 @@
 //! (d) BRANCH-SCOPE-FILTERED — the branch_scope filter narrows the result so
 //!     a branch-scoped principal only sees their own branches' rows.
 
-use mnt_kernel_core::{BranchScope, OrgId};
-use mnt_platform_request_context::scope_org;
-use mnt_registry_adapter_postgres::PgRegistryStore;
-use mnt_registry_application::{EquipmentListQuery, EquipmentSortBy};
+use console_kernel_core::{BranchScope, OrgId};
+use console_platform_request_context::scope_org;
+use console_registry_adapter_postgres::PgRegistryStore;
+use console_registry_application::{EquipmentListQuery, EquipmentSortBy};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -27,7 +27,7 @@ use uuid::Uuid;
 /// Second tenant org used for cross-tenant isolation assertions.
 const ORG_B: Uuid = Uuid::from_u128(0xb000_0000_0000_0000_0000_0000_0000_0002);
 
-/// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`
+/// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`
 /// (NOBYPASSRLS, subject to FORCE RLS), exactly like production.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -35,7 +35,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -141,7 +141,7 @@ async fn seed_org_equipment(owner_pool: &PgPool, org: Uuid, tag: &str) -> (Uuid,
     (branch_id, eq_ids)
 }
 
-/// Unarmed COUNT as mnt_rt — must return 0 under FORCE RLS.
+/// Unarmed COUNT as console_rt — must return 0 under FORCE RLS.
 async fn unarmed_count(rt_pool: &PgPool) -> i64 {
     sqlx::query_scalar(
         "SELECT COUNT(*) FROM registry_equipment WHERE source_sheet = 'list-rls-test'",
@@ -184,7 +184,7 @@ async fn equipment_list_is_rls_armed_org_scoped_and_branch_filtered(owner_pool: 
     assert_eq!(
         unarmed_count(&rt_pool).await,
         0,
-        "unarmed mnt_rt must see zero rows (FORCE RLS)"
+        "unarmed console_rt must see zero rows (FORCE RLS)"
     );
 
     // (b) ORG-SCOPED: under org A's GUC, only org A's 2 rows are visible.
@@ -228,7 +228,7 @@ async fn equipment_list_is_rls_armed_org_scoped_and_branch_filtered(owner_pool: 
     let _ = branch_b_uuid; // org B's branch — not same org, already tested above.
 
     // Scope to branch_a only via BranchScope::Branches.
-    use mnt_kernel_core::BranchId;
+    use console_kernel_core::BranchId;
     use std::collections::BTreeSet;
     let branch_a_id = BranchId::from_uuid(branch_a);
     let branch_scoped_query = EquipmentListQuery {

@@ -10,7 +10,7 @@ metadata, Postgres row counts, and SeaweedFS volume file checksums, then tears
 the scratch project down by default.
 
 Options:
-  --scratch-project NAME  Scratch compose project (default: mnt-scratch)
+  --scratch-project NAME  Scratch compose project (default: console-scratch)
   --compose-file PATH     Compose file, repeatable (default: ops/compose.yml)
   --backup-root PATH      Backup root (default: ops/backup/artifacts)
   --backup-dir PATH       Specific backup directory to restore
@@ -26,7 +26,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 cd "${repo_root}"
 
-scratch_project="${SCRATCH_PROJECT:-mnt-scratch}"
+scratch_project="${SCRATCH_PROJECT:-console-scratch}"
 backup_root="${BACKUP_ROOT:-ops/backup/artifacts}"
 backup_dir="${BACKUP_DIR:-}"
 keep_scratch="${KEEP_SCRATCH:-0}"

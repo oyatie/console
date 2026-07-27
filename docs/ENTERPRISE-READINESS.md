@@ -38,16 +38,16 @@ operator activation has been, or is tracked below.
 
 | Property | `oci-guest` (current live) | `on-prem-ha` / ADR-0024 (DARK until activation) |
 |---|---|---|
-| Acceptable secret store | OCI Vault is the recovery source; operators manually project Kubernetes secrets such as `mnt-secrets`, `oci-objectstore-creds`, and `mnt-db-rt`. External Secrets / Sealed Secrets are documented upgrade paths, not live controllers. | OpenBao HA Raft plus External Secrets Operator. OpenBao must have initialization/unseal custody, audit logging, snapshots/backups, scoped policies, and ESO projection before production credentials move. |
-| Object-store endpoint and retention | OCI Object Storage S3-compatible endpoint in Chuncheon for CNPG Barman (`s3://mnt-db-backups/`) and evidence storage. Barman retention is currently indefinite/no automatic pruning in `database.yaml`; the tradeoff is unbounded storage growth under the Always Free object-storage budget and a future lifecycle/offsite-copy task. | SeaweedFS is the accepted self-hosted S3-compatible reference; the staged service is `http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333`. A different engine requires a newer accepted decision and fresh security/readiness evidence. CNPG Barman and evidence storage credentials must come from OpenBao/ESO, with retention, WORM/evidence policy, and replication to a second physical site or equivalent independent failure domain before HA/DR durability is claimed. |
-| Database/topology HA | One A1 VM, one schedulable control-plane, local/default storage, CNPG `instances: 1`, no node/database automatic failover. Node loss means restore/rebuild from Vault + Barman artifacts. | Three control-plane/etcd members, dedicated worker/storage failure domains, replicated block storage (`mnt-pg-hot`), CNPG `instances: 3`, synchronous failover posture, hostname/failure-domain spread, VIP/ingress failover, and recorded node/pod kill plus restore drills. |
+| Acceptable secret store | OCI Vault is the recovery source; operators manually project Kubernetes secrets such as `console-secrets`, `oci-objectstore-creds`, and `console-db-rt`. External Secrets / Sealed Secrets are documented upgrade paths, not live controllers. | OpenBao HA Raft plus External Secrets Operator. OpenBao must have initialization/unseal custody, audit logging, snapshots/backups, scoped policies, and ESO projection before production credentials move. |
+| Object-store endpoint and retention | OCI Object Storage S3-compatible endpoint in Chuncheon for CNPG Barman (`s3://mnt-db-backups/`) and evidence storage. Barman retention is currently indefinite/no automatic pruning in `database.yaml`; the tradeoff is unbounded storage growth under the Always Free object-storage budget and a future lifecycle/offsite-copy task. | SeaweedFS is the accepted self-hosted S3-compatible reference; the staged service is `http://console-object-store-s3.console-object-store.svc.cluster.local:8333`. A different engine requires a newer accepted decision and fresh security/readiness evidence. CNPG Barman and evidence storage credentials must come from OpenBao/ESO, with retention, WORM/evidence policy, and replication to a second physical site or equivalent independent failure domain before HA/DR durability is claimed. |
+| Database/topology HA | One A1 VM, one schedulable control-plane, local/default storage, CNPG `instances: 1`, no node/database automatic failover. Node loss means restore/rebuild from Vault + Barman artifacts. | Three control-plane/etcd members, dedicated worker/storage failure domains, replicated block storage (`console-pg-hot`), CNPG `instances: 3`, synchronous failover posture, hostname/failure-domain spread, VIP/ingress failover, and recorded node/pod kill plus restore drills. |
 | Automatic failover claim | Not present for `oci-guest`; blue/green and PDBs only cover rollout/voluntary-disruption behavior on the same node. | Claimable only after the activated on-prem substrate proves etcd/API quorum, storage health, CNPG primary promotion, ingress VIP movement, and rollback evidence. DARK manifests alone are not production failover evidence. |
 
 ## Scorecard
 
 | Dimension | State | Notes |
 |---|---|---|
-| **CI / supply chain** | **Strong** | fmt + clippy `-D warnings` + workspace tests; `mnt-gate-*` (layer-boundary, audit-coverage, migration-safety, pii-no-logs); tri-client drift; cosign keyless signing; SLSA provenance + SPDX SBOM; blocking Trivy HIGH/CRITICAL; cargo-audit + npm-audit; Renovate digest pinning. |
+| **CI / supply chain** | **Strong** | fmt + clippy `-D warnings` + workspace tests; `console-gate-*` (layer-boundary, audit-coverage, migration-safety, pii-no-logs); tri-client drift; cosign keyless signing; SLSA provenance + SPDX SBOM; blocking Trivy HIGH/CRITICAL; cargo-audit + npm-audit; Renovate digest pinning. |
 | **Deploy / DR** | **Context-aware / strong in-repo** | `oci-guest`: Argo CD GitOps (self-heal + prune), Argo Rollouts blue/green with smoke-gate auto-rollback, CNPG + Barman PITR to OCI (RPO ≤ 5m / RTO ≤ 1h) with **tested** restore + PITR drills, OpenTofu IaC. `on-prem`: ADR-0024 requires replicated storage, a provider-neutral object-storage capability with SeaweedFS as the first S3 adapter, a second site / failure domain for evidence and DR copies, OpenBao/External Secrets, and multi-node drills before production HA/DR claims. |
 | **Security posture** | **Strong** | default-deny NetworkPolicies; PSS `restricted`; hardened securityContexts (non-root, drop ALL, seccomp, readOnlyRootFS on Rust pods); cert-manager + Let's Encrypt; HSTS + strict CSP; comprehensive tested RBAC (5 roles × 32 features, dual role+branch gate). |
 | **Observability** | **Strong in-repo / ops-gated live** | Structured JSON logs; OTLP tracing in code; health/readiness/startup probes; OpenSLO objectives; Prometheus `/metrics` backing the SLOs; opt-in ServiceMonitor/PrometheusRule; Palantir/Foundry-derived operating benchmark captured in [`docs/benchmarks/palantir-foundry-ops-benchmark.md`](benchmarks/palantir-foundry-ops-benchmark.md). **Gap:** no monitoring stack deployed; no alert routing/test-fired runbooks. |
@@ -60,23 +60,23 @@ operator activation has been, or is tracked below.
   `service_name`, `http_response_status_code`) — the exact series the OpenSLO
   files query. Previously the SLOs referenced a metric that did not exist.
   (`backend/app/src/lib.rs`, test in `tests/health_readiness.rs`.)
-- **Per-workload `service_name`** (`mnt-app-api` / `mnt-app-worker`) so metrics
+- **Per-workload `service_name`** (`console-app-api` / `console-app-worker`) so metrics
   and traces match the SLO selector.
 - **Graceful-shutdown wiring** — `terminationGracePeriodSeconds` on all pods +
   nginx `preStop` drain on web.
 - **OTLP endpoint** documented as opt-in in the ConfigMap (no longer points
   every request at a non-existent collector).
-- **Opt-in monitoring component** — `deploy/apps/maintenance/components/monitoring/`
+- **Opt-in monitoring component** — `deploy/apps/console/components/monitoring/`
   ServiceMonitor + PrometheusRule (availability-burn + p99-latency alerts mapped
   to the OpenSLO objectives). Requires a Prometheus Operator; intentionally not
   wired into base/prod.
-- **Digest-pinned GitOps desired state** — production overlay pins `mnt-app` and
-  `mnt-web` by immutable `sha256` digest; `scripts/bump-prod-digests.sh` and the
+- **Digest-pinned GitOps desired state** — production overlay pins `console-app` and
+  `console-web` by immutable `sha256` digest; `scripts/bump-prod-digests.sh` and the
   render gate reject mutable tag deploys. A digest bump by itself is not live
   rollout proof; deployment completion still requires the default
   `scripts/deploy.sh` Argo/rollout/pod-digest/endpoint verification.
 - **Admission audit-mode policy** —
-  `deploy/apps/maintenance/components/admission-audit/` defines a sigstore
+  `deploy/apps/console/components/admission-audit/` defines a sigstore
   policy-controller `ClusterImagePolicy` in `warn` mode for the keyless
   `image-release.yml` signatures. It is opt-in until ops installs the controller
   CRDs, then can burn in safely before hard-fail enforcement.

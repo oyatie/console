@@ -9,7 +9,7 @@
 
 use axum::body::Body;
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use serde_json::Value;
 use tower::ServiceExt;
 
@@ -35,17 +35,17 @@ async fn get_json(
     Ok((status, content_type, json))
 }
 
-fn configured() -> Result<AppConfig, mnt_app::AppError> {
+fn configured() -> Result<AppConfig, console_app::AppError> {
     AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         (
-            "MNT_IOS_APP_IDS",
+            "CONSOLE_IOS_APP_IDS",
             "ABCDE12345.com.knl.fsm, ABCDE12345.com.knl.fsm.dev".to_owned(),
         ),
-        ("MNT_ANDROID_PACKAGE", "com.knl.fsm".to_owned()),
+        ("CONSOLE_ANDROID_PACKAGE", "com.knl.fsm".to_owned()),
         (
-            "MNT_ANDROID_CERT_SHA256",
+            "CONSOLE_ANDROID_CERT_SHA256",
             "AA:BB:CC:DD, 11:22:33:44".to_owned(),
         ),
     ])
@@ -64,7 +64,7 @@ async fn aasa_serves_configured_ios_app_ids() -> Result<(), Box<dyn std::error::
     assert_eq!(
         apps,
         vec!["ABCDE12345.com.knl.fsm", "ABCDE12345.com.knl.fsm.dev"],
-        "comma-separated MNT_IOS_APP_IDS must be trimmed + split into the apps list"
+        "comma-separated CONSOLE_IOS_APP_IDS must be trimmed + split into the apps list"
     );
     Ok(())
 }
@@ -99,8 +99,8 @@ async fn well_known_endpoints_serve_empty_but_valid_documents_when_unconfigured(
 -> Result<(), Box<dyn std::error::Error>> {
     let base = || {
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ])
     };
 
@@ -112,7 +112,7 @@ async fn well_known_endpoints_serve_empty_but_valid_documents_when_unconfigured(
             .as_array()
             .expect("apps array present even when unset")
             .is_empty(),
-        "unset MNT_IOS_APP_IDS yields an empty apps list, not an error"
+        "unset CONSOLE_IOS_APP_IDS yields an empty apps list, not an error"
     );
 
     let (links_status, links_ct, links_json) = get_json(base()?, ASSETLINKS_PATH).await?;
@@ -120,7 +120,7 @@ async fn well_known_endpoints_serve_empty_but_valid_documents_when_unconfigured(
     assert_eq!(links_ct.as_deref(), Some("application/json"));
     assert!(
         links_json.as_array().expect("array present").is_empty(),
-        "unset MNT_ANDROID_PACKAGE yields an empty asset-links array"
+        "unset CONSOLE_ANDROID_PACKAGE yields an empty asset-links array"
     );
     Ok(())
 }

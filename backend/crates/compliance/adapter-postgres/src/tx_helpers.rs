@@ -9,8 +9,8 @@
 
 use sqlx::{Postgres, Transaction};
 
-use mnt_compliance_domain::{ObligationRegulationLink, ObligationRegulationRelationship};
-use mnt_kernel_core::{Timestamp, UserId};
+use console_compliance_domain::{ObligationRegulationLink, ObligationRegulationRelationship};
+use console_kernel_core::{Timestamp, UserId};
 
 use crate::{PgComplianceError, obligation_regulation_link_from_row};
 

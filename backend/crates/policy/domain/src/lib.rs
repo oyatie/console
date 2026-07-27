@@ -5,7 +5,7 @@
 //! promotion to `shadow`/`enforced` belongs to a later governance lane.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{KernelError, OrgId, Timestamp, UserId};
+use console_kernel_core::{KernelError, OrgId, Timestamp, UserId};
 
 macro_rules! wire_enum {
     (

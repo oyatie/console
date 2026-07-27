@@ -2,13 +2,13 @@
 
 use std::io::Cursor;
 
-use mnt_kernel_core::{BranchId, BranchScope, OrgId, RegionId, TraceContext, UserId};
-use mnt_platform_excel::umya_spreadsheet;
-use mnt_reporting_adapter_postgres::PgKpiRepository;
-use mnt_reporting_application::{
+use console_kernel_core::{BranchId, BranchScope, OrgId, RegionId, TraceContext, UserId};
+use console_platform_excel::umya_spreadsheet;
+use console_reporting_adapter_postgres::PgKpiRepository;
+use console_reporting_application::{
     KpiExportQuery, KpiQuery, KpiQueryPort, KpiScope, Period, ReportingExportPort,
 };
-use mnt_reporting_domain::{KpiMetric, KpiRollupScope};
+use console_reporting_domain::{KpiMetric, KpiRollupScope};
 use sqlx::pool::PoolOptions;
 use sqlx::{Executor, PgConnection, PgPool};
 use time::{Duration, OffsetDateTime, macros::datetime};
@@ -18,7 +18,7 @@ const PERIOD_END: OffsetDateTime = datetime!(2026-07-01 00:00 UTC);
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn completed_count_uses_approval_period_priority_weights_and_exclusions(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         let report = company_report(&pool).await;
         let company = report.rollup(&KpiRollupScope::Company).unwrap();
@@ -41,7 +41,7 @@ async fn completed_count_uses_approval_period_priority_weights_and_exclusions(po
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn query_kpis_rejects_unknown_work_order_status(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         set_work_order_status_raw(&pool, seeded.p1_completed, "DONE-ish").await;
 
@@ -52,7 +52,7 @@ async fn query_kpis_rejects_unknown_work_order_status(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn query_kpis_rejects_unknown_work_order_priority(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         set_work_order_priority_raw(&pool, seeded.p1_completed, "P0").await;
 
@@ -63,7 +63,7 @@ async fn query_kpis_rejects_unknown_work_order_priority(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn query_kpis_rejects_unknown_work_order_result_type(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         set_work_order_result_type_raw(&pool, seeded.p1_completed, "PARTIAL").await;
 
@@ -74,7 +74,7 @@ async fn query_kpis_rejects_unknown_work_order_result_type(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn average_response_speed_uses_first_in_progress_status_history(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         seed_golden_dataset(&pool).await;
         let report = company_report(&pool).await;
         let company = report.rollup(&KpiRollupScope::Company).unwrap();
@@ -86,7 +86,7 @@ async fn average_response_speed_uses_first_in_progress_status_history(pool: PgPo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn completion_duration_and_due_compliance_use_final_approval_timestamp(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         seed_golden_dataset(&pool).await;
         let report = company_report(&pool).await;
         let company = report.rollup(&KpiRollupScope::Company).unwrap();
@@ -99,7 +99,7 @@ async fn completion_duration_and_due_compliance_use_final_approval_timestamp(poo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn revisit_rate_uses_revisit_required_approved_reports(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         seed_golden_dataset(&pool).await;
         let report = company_report(&pool).await;
         let company = report.rollup(&KpiRollupScope::Company).unwrap();
@@ -111,7 +111,7 @@ async fn revisit_rate_uses_revisit_required_approved_reports(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn delay_rate_and_reason_distribution_ignore_excluded_records(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         seed_golden_dataset(&pool).await;
         let report = company_report(&pool).await;
         let company = report.rollup(&KpiRollupScope::Company).unwrap();
@@ -137,7 +137,7 @@ async fn delay_rate_and_reason_distribution_ignore_excluded_records(pool: PgPool
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn inspection_plan_completion_uses_regular_inspection_schedules(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         seed_inspection_schedule(
             &pool,
@@ -206,7 +206,7 @@ async fn inspection_plan_completion_uses_regular_inspection_schedules(pool: PgPo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn p1_acceptance_rate_uses_dispatch_responses_and_auto_assignment(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         let admin = seed_user(&pool, "P1관리자", "ADMIN", seeded.branch_a).await;
 
@@ -302,7 +302,7 @@ async fn p1_acceptance_rate_uses_dispatch_responses_and_auto_assignment(pool: Pg
 async fn p1_acceptance_rate_is_isolated_per_tenant(pool: PgPool) {
     // A P1 dispatch belonging to a SECOND org must never leak into knl's rollup
     // when the KPI query runs bound to the knl org GUC under RLS.
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         let admin = seed_user(&pool, "P1관리자", "ADMIN", seeded.branch_a).await;
         seed_p1_dispatch(
@@ -320,9 +320,9 @@ async fn p1_acceptance_rate_is_isolated_per_tenant(pool: PgPool) {
         // Stage an entire second-org P1 dispatch (owner role bypasses RLS on insert).
         seed_other_org_p1_dispatch(&pool).await;
 
-        // Read under the unprivileged mnt_rt role so RLS is fully enforced,
+        // Read under the unprivileged console_rt role so RLS is fully enforced,
         // exactly as the deployed app reads.
-        let rt_pool = mnt_rt_pool(&pool).await;
+        let rt_pool = console_rt_pool(&pool).await;
         let repo = PgKpiRepository::new(rt_pool.clone());
         let report = repo
             .query_kpis(KpiQuery {
@@ -342,16 +342,16 @@ async fn p1_acceptance_rate_is_isolated_per_tenant(pool: PgPool) {
     .await;
 }
 
-/// Build a pool bound to the unprivileged `mnt_rt` runtime role so RLS is fully
+/// Build a pool bound to the unprivileged `console_rt` runtime role so RLS is fully
 /// enforced for the read (the `#[sqlx::test]` pool connects as the owner, which
 /// bypasses non-FORCE RLS). Mirrors the deployed app's connection.
-async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
+async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options();
     PoolOptions::new()
         .max_connections(2)
         .after_connect(|conn: &mut PgConnection, _meta| {
             Box::pin(async move {
-                conn.execute("SET ROLE mnt_rt").await?;
+                conn.execute("SET ROLE console_rt").await?;
                 Ok(())
             })
         })
@@ -361,19 +361,19 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
 }
 
 /// The KPI Excel export is built from the same aggregation as the JSON endpoint,
-/// read under the unprivileged `mnt_rt` role (RLS fully enforced), returns a
+/// read under the unprivileged `console_rt` role (RLS fully enforced), returns a
 /// readable workbook whose company row carries the golden numbers, and is
 /// audited exactly like the sibling daily-status / work-diary exports: one
 /// `excel_export_logs` row (export_kind='kpi') plus one `audit_events` row
 /// (action='export.kpi').
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn export_kpi_builds_audited_workbook_under_rls(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
 
-        // Run the export read+audit path as `mnt_rt`, exactly as the deployed app
+        // Run the export read+audit path as `console_rt`, exactly as the deployed app
         // does; the owner pool would bypass non-FORCE RLS and hide a broken path.
-        let rt_pool = mnt_rt_pool(&pool).await;
+        let rt_pool = console_rt_pool(&pool).await;
         let repo = PgKpiRepository::new(rt_pool.clone());
         let export = repo
             .export_kpi(KpiExportQuery {
@@ -429,7 +429,7 @@ fn cell(sheet: &umya_spreadsheet::Worksheet, col: u32, row: u32) -> String {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn rollups_respect_branch_scope_across_two_branches(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_golden_dataset(&pool).await;
         let repo = PgKpiRepository::new(pool.clone());
         let report = repo
@@ -467,13 +467,13 @@ async fn rollups_respect_branch_scope_across_two_branches(pool: PgPool) {
     .await;
 }
 
-async fn company_report(pool: &PgPool) -> mnt_reporting_domain::KpiReport {
+async fn company_report(pool: &PgPool) -> console_reporting_domain::KpiReport {
     company_report_result(pool).await.unwrap()
 }
 
 async fn company_report_result(
     pool: &PgPool,
-) -> Result<mnt_reporting_domain::KpiReport, mnt_reporting_application::KpiQueryError> {
+) -> Result<console_reporting_domain::KpiReport, console_reporting_application::KpiQueryError> {
     let repo = PgKpiRepository::new(pool.clone());
     repo.query_kpis(KpiQuery {
         period: period(),

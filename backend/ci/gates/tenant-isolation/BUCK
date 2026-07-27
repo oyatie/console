@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-tenant-isolation-lib",
+    name = "console-gate-tenant-isolation-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/tenant-isolation", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_tenant_isolation",
+    crate = "console_gate_tenant_isolation",
     edition = "2024",
     crate_root = "backend/ci/gates/tenant-isolation/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -19,22 +19,22 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-tenant-isolation",
+    name = "console-gate-tenant-isolation",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/tenant-isolation", ["src/main.rs"]),
-    crate = "mnt_gate_tenant_isolation",
+    crate = "console_gate_tenant_isolation",
     edition = "2024",
     crate_root = "backend/ci/gates/tenant-isolation/src/main.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/tenant-isolation"},
     deps = [
-        ":mnt-gate-tenant-isolation-lib",
+        ":console-gate-tenant-isolation-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-tenant-isolation-unit",
+    name = "console-gate-tenant-isolation-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/tenant-isolation", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_tenant_isolation",
+    crate = "console_gate_tenant_isolation",
     edition = "2024",
     crate_root = "backend/ci/gates/tenant-isolation/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -47,7 +47,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-gate-tenant-isolation-itest-owner_only_acl_postgres18",
+    name = "console-gate-tenant-isolation-itest-owner_only_acl_postgres18",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/tenant-isolation", ["tests/owner_only_acl_postgres18.rs"]),
     crate = "owner_only_acl_postgres18",
     edition = "2024",
@@ -58,6 +58,6 @@ rust_test(
     deps = [
         "//third-party/rust:sqlx",
         "//third-party/rust:tokio",
-        ":mnt-gate-tenant-isolation-lib",
+        ":console-gate-tenant-isolation-lib",
     ],
 )

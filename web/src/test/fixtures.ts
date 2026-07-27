@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 export const branchId = "11111111-1111-4111-8111-111111111111";
 export const primaryMechanicId = "22222222-2222-4222-8222-222222222222";

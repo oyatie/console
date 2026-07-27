@@ -1,5 +1,5 @@
 [package]
-name = "mnt-kernel-core"
+name = "console-kernel-core"
 version = "0.1.0"
 description = "Shared kernel: typed IDs, branch scope, audit event, trace context, error taxonomy, transition results. Pure — no async, no sqlx, no axum."
 edition.workspace = true

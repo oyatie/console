@@ -137,7 +137,7 @@ Shape now in tree (`backend/crates/docs/{domain,application,adapter-postgres,res
 - `EVIDENCE_ROUTE_PATHS` already mounted in the app (`wave23-consolidation-inventory.md:44`)
 
 **Merge decision already recorded** (`wave23-consolidation-inventory.md:75`):
-> `**docs** | mnt_docs_rest mounted (EVIDENCE_ROUTE_PATHS); retention absent | lane 0195_evidence_retention collides w/ spine 0195_docs_gaps | **MERGE** lane's retention additions + renumber.`
+> `**docs** | console_docs_rest mounted (EVIDENCE_ROUTE_PATHS); retention absent | lane 0195_evidence_retention collides w/ spine 0195_docs_gaps | **MERGE** lane's retention additions + renumber.`
 and `:85` → `docs 0195_evidence_retention → **0201_evidence_retention**`.
 
 **Rebase-on-spine item, concretely:** the wave docs lane's *pagination* work is superseded — the spine's cursor contract wins outright and is test-covered. The only surviving lane delta is **evidence retention**, which must land as migration **`0201_evidence_retention`** (the reserved gap) plus additive adapter/application/REST code that consumes the existing `EvidenceObjectCursor`/`EvidenceObjectPage` types rather than reintroducing offset paging. Do not re-derive the cursor.
@@ -166,9 +166,9 @@ All nine are declared Cargo workspace members (`backend/Cargo.toml:17,27,43` glo
 
 **Worse — `backend/app` is Cargo/Buck divergent, i.e. the Buck app target cannot compile:**
 
-- `backend/app/Cargo.toml` declares `mnt-recruiting-{adapter-postgres,application,domain,rest}` (`:90-93`), `mnt-orgchange-{adapter-postgres,rest}` (`:117-118`), `mnt-evaluation-{adapter-postgres,rest}` (`:167-168`)
-- `backend/app/src/lib.rs` **uses** them: `use mnt_orgchange_adapter_postgres::PgOrgChangeStore;` (`:79`), `use mnt_orgchange_rest::OrgChangeRestState;` (`:80`), `use mnt_recruiting_adapter_postgres::PgRecruitingStore;` (`:118`), `use mnt_recruiting_rest::RecruitingRestState;` (`:119`), `.merge(mnt_recruiting_rest::router(...))` (`:3000`), `.merge(mnt_orgchange_rest::router(...))` (`:3207`); plus `backend/app/src/recruiting_hire.rs:18,21`
-- `backend/app/BUCK` has **6056 `mnt-` dep lines and ZERO matches** for `recruiting|orgchange|evaluation`
+- `backend/app/Cargo.toml` declares `console-recruiting-{adapter-postgres,application,domain,rest}` (`:90-93`), `console-orgchange-{adapter-postgres,rest}` (`:117-118`), `console-evaluation-{adapter-postgres,rest}` (`:167-168`)
+- `backend/app/src/lib.rs` **uses** them: `use console_orgchange_adapter_postgres::PgOrgChangeStore;` (`:79`), `use console_orgchange_rest::OrgChangeRestState;` (`:80`), `use console_recruiting_adapter_postgres::PgRecruitingStore;` (`:118`), `use console_recruiting_rest::RecruitingRestState;` (`:119`), `.merge(console_recruiting_rest::router(...))` (`:3000`), `.merge(console_orgchange_rest::router(...))` (`:3207`); plus `backend/app/src/recruiting_hire.rs:18,21`
+- `backend/app/BUCK` has **6056 `console-` dep lines and ZERO matches** for `recruiting|orgchange|evaluation`
 
 **Proven stale, not merely unregenerated:** `backend/app/BUCK` was last touched by `bfa0a635 test(dispatch): harden replay and console contracts`; `git merge-base --is-ancestor bfa0a635 8a99f4c9` → true, i.e. the BUCK file predates all three lane merges (`8a99f4c9 merge(recruiting)`, `a4ae5ab5 merge(org)`, `d5a2ba73 merge(evaluation)`) that added the Cargo deps. Those merges touched `backend/app/Cargo.toml` and never regenerated BUCK.
 

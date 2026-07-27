@@ -36,7 +36,7 @@ windowManager?.open(objectCardWindowEntry(descriptor, handlers));  // §4.7-3 de
 
 ### 1b. Drag-source / drop-target tokens (`window/objDrag.ts`)
 
-- Source: spread `{...objDrag(code, title)}` on any chip/row/code label (`objDrag.ts:40-49`). Emits typed mime `application/x-mnt-objref` + text/plain token `[CODE title]`; sets `data-obj-code` for DOM-level PBAC reads.
+- Source: spread `{...objDrag(code, title)}` on any chip/row/code label (`objDrag.ts:40-49`). Emits typed mime `application/x-console-objref` + text/plain token `[CODE title]`; sets `data-obj-code` for DOM-level PBAC reads.
 - Target: `useObjectDrop({ onRef, canAccept? })` (`objDrag.ts:86-109`) — `canAccept(code)` is the PBAC deny hook; parse order = typed mime → bracketed token → bare code (`parseObjectRef`, :62-78).
 - Recognition ≠ authorization: rendering/drop stays PBAC-gated downstream (`codeGrammar.ts:11-13`).
 - Port cost per module: 1 line per draggable surface + 1 `useObjectDrop` per drop zone. New codes need **no objDrag/grammar edit** once their prefix is in the registry (§5).

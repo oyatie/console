@@ -30,12 +30,12 @@ The freshest pilot (**logistics**) is the primary template; facilities contribut
 surface and in-transaction branch authorization. The build stage follows:
 
 - **Crate layout**: `equipment/{domain,application,adapter-postgres,rest}` with package names
-  `mnt-equipment-{domain,application,adapter-postgres,rest}` (+ BUCK files per crate, mirroring logistics).
+  `console-equipment-{domain,application,adapter-postgres,rest}` (+ BUCK files per crate, mirroring logistics).
   Domain = FSM vocabulary with `as_db/from_db/can_transition_to` + unit tests; application = HTTP-independent
   DTO contracts (no org_id by design); adapter = `PgEquipment3rStore` with all mutations under `with_audits`;
   rest = router + authz + canonical envelope.
 - **RLS**: every table `ENABLE`+`FORCE ROW LEVEL SECURITY`, `org_isolation` policy on
-  `app.current_org` GUC, `GRANT SELECT, INSERT, UPDATE TO mnt_rt`, `enforce_org_id_immutable()`
+  `app.current_org` GUC, `GRANT SELECT, INSERT, UPDATE TO console_rt`, `enforce_org_id_immutable()`
   trigger per table, composite FKs `(branch_id, org_id) REFERENCES branches(id, org_id)` and
   `UNIQUE (id, org_id)` so child FKs carry org.
 - **Audit**: `with_audits(pool, org, |tx| …)` returning `(json, Vec<AuditEvent>)`; audit action
@@ -56,11 +56,11 @@ surface and in-transaction branch authorization. The build stage follows:
   `authorize` (branch) / `authorize_org_wide` (`BranchScope::All`). Branch derived from the
   persisted row inside the locked transaction for transitions (facilities pattern — client
   cannot steer authz by body branch).
-- **App mount**: `build_router` merges `mnt_equipment_rest::router(state)`; route paths exported
+- **App mount**: `build_router` merges `console_equipment_rest::router(state)`; route paths exported
   as `EQUIPMENT_3R_ROUTE_PATHS` const for telemetry registration (facilities precedent at
   `backend/app/src/lib.rs:283`).
 - **Test style** (`backend/app/tests/*_pilot_story.rs`): `#[sqlx::test(migrations=…)]`,
-  ES256 keypair + real `JwtIssuer` token, `SET ROLE mnt_rt` pool via `after_connect`,
+  ES256 keypair + real `JwtIssuer` token, `SET ROLE console_rt` pool via `after_connect`,
   `build_router(...).oneshot(...)` through the assembled HTTP router, PBAC grants seeded via
   `policy_roles`/`policy_role_permissions`/`user_role_assignments`, assertions on branch-scope
   widening denial, ungranted-user denial, concurrent single-winner, history/audit row counts.

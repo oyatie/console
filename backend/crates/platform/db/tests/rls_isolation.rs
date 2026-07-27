@@ -7,14 +7,14 @@
 //! ## Why the test switches role — and to which role
 //! RLS is enforced only for roles that are NOT superusers and do NOT carry
 //! BYPASSRLS. `sqlx::test` connects as the database owner/superuser, which
-//! bypasses RLS. Production connects as `mnt_rt` — the least-privilege RUNTIME
+//! bypasses RLS. Production connects as `console_rt` — the least-privilege RUNTIME
 //! role (migration 0031): NOSUPERUSER, NOBYPASSRLS, owns nothing. Every
 //! tenant-scoped statement below runs inside a transaction that first
-//! `SET LOCAL ROLE mnt_rt` and then arms `app.current_org`, so the test sees
+//! `SET LOCAL ROLE console_rt` and then arms `app.current_org`, so the test sees
 //! exactly what production sees. `FORCE ROW LEVEL SECURITY` additionally
 //! subjects the table owner to the policies, closing the owner-bypass hole.
 //!
-//! Crucially, the DDL-denial block runs as `mnt_rt` too: a non-owner cannot
+//! Crucially, the DDL-denial block runs as `console_rt` too: a non-owner cannot
 //! `DROP POLICY` / `DISABLE ROW LEVEL SECURITY` / `DISABLE TRIGGER`. That is the
 //! regression guard for the CRITICAL "de-own the runtime role" fix — if the app
 //! ever reverts to connecting as the owner, those statements would succeed and
@@ -31,8 +31,8 @@
 //!  7. DDL-denial as the non-owner role: DROP POLICY, DISABLE ROW LEVEL
 //!     SECURITY, DISABLE TRIGGER on audit_events all raise insufficient-privilege.
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_db::{DbError, with_org_conn};
+use console_kernel_core::OrgId;
+use console_platform_db::{DbError, with_org_conn};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
@@ -41,7 +41,7 @@ const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 /// The non-owner runtime role the application connects as in production.
 /// A static literal so sqlx accepts it without an injection-audit override.
-const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE mnt_rt";
+const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE console_rt";
 
 /// Seed one org plus a full slice (region → branch → user → customer → site →
 /// equipment → work_order) as the unprivileged runtime role with the tenant GUC
@@ -52,9 +52,9 @@ struct Seeded {
 }
 
 async fn seed_org(pool: &PgPool, org: Uuid, tag: &str) -> Seeded {
-    // Provisioning an organization is an OWNER operation (mnt_rt has SELECT-only
+    // Provisioning an organization is an OWNER operation (console_rt has SELECT-only
     // on organizations), so insert the org row as the owner/superuser pool role
-    // — which also bypasses RLS — BEFORE dropping to mnt_rt for the tenant rows.
+    // — which also bypasses RLS — BEFORE dropping to console_rt for the tenant rows.
     let mut tx = pool.begin().await.unwrap();
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
         .bind(org)

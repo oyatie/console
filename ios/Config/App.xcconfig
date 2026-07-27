@@ -1,9 +1,9 @@
-// Build settings for the MaintenanceFieldApp host target (Xcode app wrapper used
+// Build settings for the ConsoleApp host target (Xcode app wrapper used
 // only by CI's `xcodebuild test`; the day-to-day build is `swift build`).
 //
 // The hermetic Simulator gate uses the repository defaults below and does not
 // require an Apple identity secret. Signed device/distribution builds may
-// override `MNT_IOS_BUNDLE_ID` and `MNT_IOS_TEAM_ID` with their registered App
+// override `CONSOLE_IOS_BUNDLE_ID` and `CONSOLE_IOS_TEAM_ID` with their registered App
 // ID and Team ID. See ios/Config/README.md for the separate release boundary.
 //
 // Local fallbacks below let `xcodebuild` resolve the project when a developer
@@ -12,17 +12,17 @@
 // ID, capabilities, and provisioning profile match before release.
 
 // --- Identity ---
-// Bundle id is com.maintenance.field (matches the Android applicationId + the
-// keychain-access-group baked into the entitlements: <prefix>com.maintenance.field.shared).
+// Bundle id is com.console.app (matches the Android applicationId + the
+// keychain-access-group baked into the entitlements: <prefix>com.console.app.shared).
 // This is the App ID to register under Team 98Q89GFZWP in the Apple Developer
 // portal WITH the Associated Domains capability enabled (or let Xcode automatic
-// signing create it on first build). Overridable via the MNT_IOS_BUNDLE_ID /
-// MNT_IOS_TEAM_ID build settings if a different identity is ever needed.
-MNT_IOS_BUNDLE_ID = $(MNT_IOS_BUNDLE_ID:default=com.maintenance.field)
-MNT_IOS_TEAM_ID = $(MNT_IOS_TEAM_ID:default=98Q89GFZWP)
+// signing create it on first build). Overridable via the CONSOLE_IOS_BUNDLE_ID /
+// CONSOLE_IOS_TEAM_ID build settings if a different identity is ever needed.
+CONSOLE_IOS_BUNDLE_ID = $(CONSOLE_IOS_BUNDLE_ID:default=com.console.app)
+CONSOLE_IOS_TEAM_ID = $(CONSOLE_IOS_TEAM_ID:default=98Q89GFZWP)
 
-PRODUCT_BUNDLE_IDENTIFIER = $(MNT_IOS_BUNDLE_ID)
-DEVELOPMENT_TEAM = $(MNT_IOS_TEAM_ID)
+PRODUCT_BUNDLE_IDENTIFIER = $(CONSOLE_IOS_BUNDLE_ID)
+DEVELOPMENT_TEAM = $(CONSOLE_IOS_TEAM_ID)
 
 // --- Shared Keychain access group ---
 // The separate CI-only seeder app writes the real session token pair into the

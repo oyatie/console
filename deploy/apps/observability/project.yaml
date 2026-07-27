@@ -4,19 +4,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: maintenance-observability-dark
+  name: console-observability-dark
   namespace: argocd
   annotations:
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
   description: Dark ADR-0024 self-hosted observability stage; manual apply/sync only after founder/operator activation.
   sourceRepos:
-    - https://github.com/jason931225/maintenance.git
+    - https://github.com/jason931225/console.git
   destinations:
     - server: https://kubernetes.default.svc
-      namespace: maintenance-observability
-  # The rendered stack owns only the maintenance-observability namespace plus
+      namespace: console-observability
+  # The rendered stack owns only the console-observability namespace plus
   # namespace-scoped workloads inside it. Keep the project isolated instead of
   # broadening the live maintenance project during a no-op merge.
   clusterResourceWhitelist:

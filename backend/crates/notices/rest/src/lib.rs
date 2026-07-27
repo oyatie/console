@@ -15,16 +15,16 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{ErrorKind, KernelError, NoticeId, TraceContext};
-use mnt_notices_adapter_postgres::{PgNoticeError, PgNoticeStore};
-use mnt_notices_application::{
+use console_kernel_core::{ErrorKind, KernelError, NoticeId, TraceContext};
+use console_notices_adapter_postgres::{PgNoticeError, PgNoticeStore};
+use console_notices_application::{
     AcknowledgeNoticeCommand, CreateDraftNoticeCommand, GetNoticeQuery, ListNoticeReceiptsQuery,
     ListNoticesQuery, NoticeAudienceInput, NoticeProgressQuery, PublishNoticeCommand,
     UpdateDraftNoticeCommand,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_request_context::RequestContextError;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 
 pub const NOTICES_PATH: &str = "/api/v1/notices";
@@ -73,7 +73,7 @@ pub fn router(state: NoticeRestState) -> Router {
         .route(NOTICE_PROGRESS_PATH_TEMPLATE, get(notice_progress))
         .route(NOTICE_RECEIPTS_PATH_TEMPLATE, get(notice_receipts))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -370,7 +370,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for notices API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }

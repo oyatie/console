@@ -1,11 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Cedar Policy Studio store, exercised as the genuine non-owner role `mnt_rt`.
+//! Cedar Policy Studio store, exercised as the genuine non-owner role `console_rt`.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser and would see every tenant's rows regardless of
 //! `app.current_org`, green-lighting a broken isolation policy. We SEED as the
-//! owner (catalog INSERT is revoked from `mnt_rt`) and RUN every authoring
-//! mutation / point decision as `mnt_rt` under an armed org.
+//! owner (catalog INSERT is revoked from `console_rt`) and RUN every authoring
+//! mutation / point decision as `console_rt` under an armed org.
 //!
 //! Proves:
 //!   (a) a no-code draft can never create an enforced/shadow row — it lands as
@@ -16,13 +16,13 @@
 //!   (d) an object policy HIDES a cross-principal row (owner sees it, others do not);
 //!   (e) `forbid` always wins over a matching permit (legal-hold guardrail).
 
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_authz::cedar_pbac::authoring::{
+use console_kernel_core::{OrgId, UserId};
+use console_platform_authz::cedar_pbac::authoring::{
     self, AuthoredPolicy, Condition, ConditionOp, ConditionValue, Effect, NoCodeBlocks, SimEffect,
     SimRequest, SimResource, SimSubject,
 };
-use mnt_platform_authz_rest::{CreateDraftCommand, PgCedarPolicyStore};
-use mnt_platform_request_context::scope_org;
+use console_platform_authz_rest::{CreateDraftCommand, PgCedarPolicyStore};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -35,7 +35,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -67,7 +67,7 @@ async fn seed_user(pool: &PgPool, org_id: Uuid, name: &str) -> UserId {
     UserId::from_uuid(id)
 }
 
-/// Seed a catalog entry as the OWNER (mnt_rt has no catalog INSERT). A `draft`
+/// Seed a catalog entry as the OWNER (console_rt has no catalog INSERT). A `draft`
 /// status entry needs no policy_version/bundle_digest, and the attach path reads
 /// its `generated_policy_text` regardless of status.
 async fn seed_catalog_entry(

@@ -71,11 +71,11 @@ contradict its two siblings. Two fail-closed branches: no recorded 기안, and a
 
 ## Gates
 
-`cargo fmt --check` clean · `cargo clippy -p mnt-platform-db --all-targets -- -D
+`cargo fmt --check` clean · `cargo clippy -p console-platform-db --all-targets -- -D
 warnings` clean, 0 warnings · suite 44/45.
 
 The single failure,
-`platform_force_migration_rejects_superuser_on_mnt_app_owned_database`
+`platform_force_migration_rejects_superuser_on_console_app_owned_database`
 (`XX000 tuple concurrently updated`, `heapam.c:4509`), is a catalog race against
 other lanes on the shared dev PG. It **passes in isolation** (verified) and
 touches 0196 force-migration — unrelated to a change that creates no catalog

@@ -167,7 +167,7 @@ backend contract"*) and unblocks **C-39** (*"keyboard nav over server-paginated 
   **under a concurrent insert** (this is what snapshot stability buys, and the docs lane's
   `48a89167 test(docs): prove snapshots reject backdated inserts` is the model).
 - Sort applied server-side, asserted by row order across two pages.
-- RLS: pilot list executed **as `mnt_rt`** with `app.current_org` armed, plus a cross-tenant
+- RLS: pilot list executed **as `console_rt`** with `app.current_org` armed, plus a cross-tenant
   negative asserting zero rows (superuser `#[sqlx::test]` BYPASSRLS masks this — project memory).
 - Buck2 targets for the new crate build+test green (`buck2 test //backend/crates/listing/...`);
   cargo run via a spawned subagent as a pre-push check.
@@ -246,7 +246,7 @@ with no `role="row"`, makes rows `aria-selected` while never focusable (grid hol
 - e2e: extend `e2e/specs/chrome-02-axe.spec.ts` with the ported board screen — zero
   critical/serious axe violations; add a keyboard journey spec asserting `document.activeElement`
   after each of Arrow/Home/End/Ctrl+End/Escape.
-  `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap && MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/chrome-02-axe.spec.ts`
+  `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap && CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/chrome-02-axe.spec.ts`
 - Screen-reader flow written up (VoiceOver + NVDA table navigation over a 2-page list) in the
   evidence dir — axe cannot see any of this.
 - No stubs: every prop either works or is absent. A disabled sort header states its reason.
@@ -308,7 +308,7 @@ this lane's.
   pin → popout/minimize → restore → close, asserting `document.activeElement` at **every** step,
   plus `F6` cycling. Axe-clean is necessary and explicitly **not** sufficient — the journey is the
   merge evidence.
-  `MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/admin-29-console-window.spec.ts`
+  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/admin-29-console-window.spec.ts`
 - `npm --prefix web run lint && npm --prefix web run test`.
 - Evidence: a before/after AT transcript for the drill gesture.
 
@@ -503,7 +503,7 @@ maintenance, field, board, directory, equipment. Bulk-op incidents come from one
 - Vitest: an unauthorized row is not selectable.
 - `npm --prefix web run test && npm --prefix web run lint`.
 - e2e: keyboard-only bulk selection + execute + retry-failed on the pilot list, axe-clean.
-- Backend: batch endpoint audited per item; RLS verified as `mnt_rt`; idempotent retry proven.
+- Backend: batch endpoint audited per item; RLS verified as `console_rt`; idempotent retry proven.
 
 **Depends on.** L-C2 (seam), L-C1 (query-scoped identity needs a stable server-side filter+sort).
 
@@ -585,7 +585,7 @@ tab bar) — same objects, same state, not a forked app.
 owning lens-B lanes as a register, not fixed here — except the shared engines L-C2 owns).
 
 **DoD.**
-- `MNT_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap && MNT_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/ux-50-viewport-sweep.spec.ts && node scripts/dev-up.mjs down`
+- `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap && CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth e2e/specs/ux-50-viewport-sweep.spec.ts && node scripts/dev-up.mjs down`
   green across all four viewports for every mounted screen.
 - Vitest: container-query demotion drops the lowest-priority column first and never the identity
   column; a demoted cell keeps its full value as the accessible name.

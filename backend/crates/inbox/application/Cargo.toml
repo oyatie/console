@@ -1,5 +1,5 @@
 [package]
-name = "mnt-inbox-application"
+name = "console-inbox-application"
 version = "0.1.0"
 description = "InboxDoc use-case commands, views, and the emission write port."
 edition.workspace = true
@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-inbox-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-inbox-domain = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }

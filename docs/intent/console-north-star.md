@@ -19,7 +19,7 @@ matching the Claude Design prototype's grammar exactly.
   (design-intent-register), not only from pixels.
 - **Backend-thin surfaces → build the backend.** When a module's design section
   is richer than the backend, the missing backend surface is built to full
-  production enterprise standard (RLS as `mnt_rt`, deny-by-default PBAC, audit,
+  production enterprise standard (RLS as `console_rt`, deny-by-default PBAC, audit,
   lifecycle, canonical envelopes, idempotency, story-level integration tests) —
   not shipped as a truthful-but-thin screen with a recorded gap.
 - **Ontology integration model = (a) projection registration**, per §18/D1/D2:

@@ -11,7 +11,7 @@ use std::pin::Pin;
 
 use hmac::{Hmac, KeyInit, Mac};
 use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
-use mnt_kernel_core::{Clock, Timestamp};
+use console_kernel_core::{Clock, Timestamp};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderValue};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -175,7 +175,7 @@ impl FcmHttpV1Client {
 
     pub async fn send(&self, message: FcmPushMessage) -> Result<ProviderMessageId, PushError> {
         let access_token = self
-            .access_token(mnt_kernel_core::SystemClock.now())
+            .access_token(console_kernel_core::SystemClock.now())
             .await?;
         let url = format!(
             "https://fcm.googleapis.com/v1/projects/{}/messages:send",
@@ -280,7 +280,7 @@ impl SolapiAlimtalkClient {
     }
 
     pub async fn send(&self, message: AlimtalkMessage) -> Result<ProviderMessageId, PushError> {
-        let now = mnt_kernel_core::SystemClock.now();
+        let now = console_kernel_core::SystemClock.now();
         let auth =
             solapi_authorization_header(&self.config, now, uuid::Uuid::new_v4().to_string())?;
         let url = format!(

@@ -15,14 +15,14 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_inbox_adapter_postgres::{PgInboxError, PgInboxStore};
-use mnt_inbox_application::{
+use console_inbox_adapter_postgres::{PgInboxError, PgInboxStore};
+use console_inbox_application::{
     ConfirmReceiptCommand, GetInboxDocQuery, InboxDocFilter, ListInboxDocsQuery,
 };
-use mnt_kernel_core::{ErrorKind, InboxDocId, KernelError, TraceContext};
-use mnt_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use mnt_platform_authz::Principal;
-use mnt_platform_request_context::RequestContextError;
+use console_kernel_core::{ErrorKind, InboxDocId, KernelError, TraceContext};
+use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_authz::Principal;
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -77,7 +77,7 @@ pub fn router(state: InboxRestState) -> Router {
         .route(ME_INBOX_DOC_PATH_TEMPLATE, get(get_inbox_doc))
         .route(ME_INBOX_DOC_CONFIRM_PATH_TEMPLATE, post(confirm_receipt))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -277,7 +277,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the inbox API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }

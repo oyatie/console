@@ -38,7 +38,7 @@ async function seedDeviceId(page: Page): Promise<void> {
 
 async function refreshCookieValue(page: Page): Promise<string | undefined> {
   const cookies = await page.context().cookies();
-  return cookies.find((cookie) => cookie.name === "mnt_refresh")?.value;
+  return cookies.find((cookie) => cookie.name === "console_refresh")?.value;
 }
 
 test("AUTH-08 phone QR enrollment completes the waiting desktop and clears pending setup", async ({

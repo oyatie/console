@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-email"
+name = "console-platform-email"
 version = "0.1.0"
 description = "SMTP outbound email adapter (OCI Email Delivery relay) behind a platform port."
 edition.workspace = true

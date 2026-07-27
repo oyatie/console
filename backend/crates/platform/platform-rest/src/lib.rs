@@ -1,7 +1,7 @@
 //! PLATFORM tier REST API â tenant onboarding and lifecycle.
 //!
 //! These routes live under `/api/platform/*` and are mounted behind the PLATFORM
-//! extractor ([`mnt_platform_request_context::with_platform_context`]), NOT the
+//! extractor ([`console_platform_request_context::with_platform_context`]), NOT the
 //! tenant org middleware. A TENANT token is rejected here (403) and a PLATFORM
 //! token is rejected on the tenant `/api/v1/*` routes â the two tiers are strictly
 //! separated, so a tenant admin can never reach a platform endpoint.
@@ -27,10 +27,10 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, put};
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{JwtIssuer, JwtVerifier};
-use mnt_platform_authz::{PlatformFeature, PlatformPrincipal};
-use mnt_platform_provisioning::{
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{JwtIssuer, JwtVerifier};
+use console_platform_authz::{PlatformFeature, PlatformPrincipal};
+use console_platform_provisioning::{
     GroupAccountOnboarding, GroupAccountSummary, GroupMemberSummary, GroupSummary,
     OrganizationSummary, PlatformProvisioner, ProvisioningError, RouteAdoptionMetric, TenantHealth,
     TenantOnboarding, TenantRemovalOutcome,
@@ -153,7 +153,7 @@ pub const PLATFORM_ROUTE_OPERATIONS: &[PlatformRouteOperation] = &[
 /// (§4-26 SLO settings, §19 console views) THROUGH the ontology engine, scoped to
 /// the new org. Modeled as a boxed async callback so the platform tier does NOT
 /// depend on the ontology ADAPTER (the layer boundary forbids `platform → adapter`);
-/// the App composition root (`mnt-app`) supplies the concrete engine-backed impl,
+/// the App composition root (`console-app`) supplies the concrete engine-backed impl,
 /// and the wiring test supplies its own. `None` skips seeding (e.g. tests that only
 /// exercise onboarding shell behavior).
 pub type TenantConfigSeeder = std::sync::Arc<
@@ -259,7 +259,7 @@ pub fn router(state: PlatformRestState) -> Router {
     // PLATFORM extractor: resolves the PlatformPrincipal and REJECTS any tenant
     // token. Deliberately NOT the tenant org middleware â the platform tier is
     // not tenant-scoped, and each handler arms the TARGET org per action.
-    mnt_platform_request_context::with_platform_context(router, verifier)
+    console_platform_request_context::with_platform_context(router, verifier)
 }
 
 // ---------------------------------------------------------------------------

@@ -9,30 +9,30 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-logistics-domain",
+    name = "console-logistics-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/logistics/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_logistics_domain",
+    crate = "console_logistics_domain",
     edition = "2024",
     crate_root = "backend/crates/logistics/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/logistics/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-logistics-domain-unit",
+    name = "console-logistics-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/logistics/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_logistics_domain",
+    crate = "console_logistics_domain",
     edition = "2024",
     crate_root = "backend/crates/logistics/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/logistics/domain"},
     labels = ["owner.backend.crates.logistics.domain", "domain.logistics", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )

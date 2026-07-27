@@ -6,11 +6,11 @@
 //! transaction so the HR `create_employee_core` and the recruiting linkage
 //! commit atomically; this crate only exposes the in-transaction pieces
 //! ([`hire_context`] / [`apply_hire`]).
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_recruiting_application::{ApplicantIntake, OfferTerms, PostingDraft, Rejection};
-use mnt_recruiting_domain::{
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
+use console_recruiting_application::{ApplicantIntake, OfferTerms, PostingDraft, Rejection};
+use console_recruiting_domain::{
     AmountPeriod, ApplicantStage, AssessmentScore, EmploymentType, OfferStatus,
     PREFLIGHT_EXPOSURE_ATTESTED, PREFLIGHT_NO_DUPLICATE_OPEN, PREFLIGHT_QUOTA_DEFINED,
     PREFLIGHT_ROLE_DEFINED, PostingStatus,
@@ -126,7 +126,7 @@ impl PgRecruitingStore {
     pub async fn list_postings(
         &self,
         status: Option<PostingStatus>,
-        scope: Option<mnt_recruiting_domain::PostingScope>,
+        scope: Option<console_recruiting_domain::PostingScope>,
     ) -> Result<Value, PgRecruitingError> {
         let org = current_org().map_err(KernelError::from)?;
         with_org_conn(&self.pool, org, |tx| {
@@ -146,7 +146,7 @@ impl PgRecruitingStore {
                      GROUP BY p.id ORDER BY p.created_at DESC, p.posting_no DESC",
                 )
                 .bind(status.map(PostingStatus::as_db))
-                .bind(scope.map(mnt_recruiting_domain::PostingScope::as_db))
+                .bind(scope.map(console_recruiting_domain::PostingScope::as_db))
                 .fetch_all(tx.as_mut())
                 .await?;
                 let mut items = Vec::with_capacity(rows.len());

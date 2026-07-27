@@ -99,7 +99,7 @@ the lane is later dropped, the number is not recycled.
 | 8 | — | L-X7 | ontology projections (deal / listing / inquiry) | number assigned at merge (§5) | 2026-07-25 |
 | 9 | — | L-X8 | lead PII: consent, retention, masking, audited sensitive view | number assigned at merge (§5) | 2026-07-25 |
 | 10 | 0204 | L-A1 | ontology catalog additive-upgrade path — assigned AT MERGE per §5 (pre-assignment had said 0211; taking the next free number keeps the sequence contiguous) | landed | 2026-07-25 |
-| 11 | 0212 | hf-audit-guard | extend protected_audit_writer_guard to the two builtin-catalog audit actions (mnt_rt can currently forge them) | assigned | 2026-07-25 |
+| 11 | 0212 | hf-audit-guard | extend protected_audit_writer_guard to the two builtin-catalog audit actions (console_rt can currently forge them) | assigned | 2026-07-25 |
 
 Next free slot after the seeded assignments: **0211**.
 
@@ -138,7 +138,7 @@ self-service path.
 
 ## 5. Policy correction — assign at LAND time, not at charter time
 
-**The pre-assignment model in §1 was wrong, and `mnt-gate-migration-safety` was
+**The pre-assignment model in §1 was wrong, and `console-gate-migration-safety` was
 right.** The gate requires contiguous versions from 0001
 (`NonContiguousMigrationVersion`, `backend/ci/gates/migration-safety/src/lib.rs:132`).
 That is not ceremony: a hole on the main line is a real hazard, because any

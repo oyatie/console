@@ -9,11 +9,11 @@ nothing below is design intent.
 
 | Piece | Where |
 |---|---|
-| Migration 0186 (provisional) | `backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql` — run FSM widen (+ the 0074 `calculation_enabled` CHECK widen the contract draft missed), SoD CHECK, 4 new tables, RLS FORCE + `mnt_rt` grants, no DELETE grants |
-| Domain | `mnt-payroll-domain::build_line_calculation` + `VerifiedNtsTaxRow` (owned-string tax row for source-materialized figures); shared internals extracted from `build_employee_payroll_draft`, byte-identical amounts proven by test |
-| Adapter | `mnt-payroll-adapter-postgres::lifecycle` — all in-tx lifecycle functions; `PayrollRunSummary/Detail` extended per contract §3 |
-| REST | `mnt-payroll-rest::lifecycle` — 12 routes under `/api/v1/payroll/runs/{id}/*`; writes gated by `Feature::PayrollRunManage` (org-wide, mirror of `PayrollRunRead`); typed 409 codes; `{error:{code,message,details?}}` envelope |
-| Tests | `payroll_lifecycle_rls_as_runtime_role.rs` (adapter, as `mnt_rt`); `backend/crates/payroll/rest/tests/run_lifecycle_api.rs` (full HTTP story + denial/cross-tenant/audit readback, served on an `mnt_rt` pool) |
+| Migration 0186 (provisional) | `backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql` — run FSM widen (+ the 0074 `calculation_enabled` CHECK widen the contract draft missed), SoD CHECK, 4 new tables, RLS FORCE + `console_rt` grants, no DELETE grants |
+| Domain | `console-payroll-domain::build_line_calculation` + `VerifiedNtsTaxRow` (owned-string tax row for source-materialized figures); shared internals extracted from `build_employee_payroll_draft`, byte-identical amounts proven by test |
+| Adapter | `console-payroll-adapter-postgres::lifecycle` — all in-tx lifecycle functions; `PayrollRunSummary/Detail` extended per contract §3 |
+| REST | `console-payroll-rest::lifecycle` — 12 routes under `/api/v1/payroll/runs/{id}/*`; writes gated by `Feature::PayrollRunManage` (org-wide, mirror of `PayrollRunRead`); typed 409 codes; `{error:{code,message,details?}}` envelope |
+| Tests | `payroll_lifecycle_rls_as_runtime_role.rs` (adapter, as `console_rt`); `backend/crates/payroll/rest/tests/run_lifecycle_api.rs` (full HTTP story + denial/cross-tenant/audit readback, served on an `console_rt` pool) |
 
 No `backend/app/src` change was needed: the existing payroll router mount
 picks the new routes up from `PAYROLL_ROUTE_PATHS`.
@@ -92,12 +92,12 @@ picks the new routes up from `PAYROLL_ROUTE_PATHS`.
 - duplicate migration version 0170 (financial vs ontology lanes) aborting
   every `#[sqlx::test]` — financial index renumbered to 0181, commit
   `8d9cde06`.
-- `mnt-logistics-adapter-postgres` `format!("{:x}", …)` on a sha2 digest that
-  no longer implements `LowerHex` (blocked building `mnt-app` tests) — repo
+- `console-logistics-adapter-postgres` `format!("{:x}", …)` on a sha2 digest that
+  no longer implements `LowerHex` (blocked building `console-app` tests) — repo
   idiom `hex::encode` applied.
 - **NOT repaired** (out of scope, actively-refactored foreign lanes):
-  `mnt-facilities-rest` and `mnt-production-rest` do not compile at branch
-  HEAD, so `mnt-app` (and every `backend/app/tests/*` suite) cannot build.
+  `console-facilities-rest` and `console-production-rest` do not compile at branch
+  HEAD, so `console-app` (and every `backend/app/tests/*` suite) cannot build.
   The chartered `backend/app/tests/payroll_run_api.rs` therefore lives at
   `backend/crates/payroll/rest/tests/run_lifecycle_api.rs` against the exact
   router + `with_request_context` middleware the app mounts verbatim —
@@ -106,18 +106,18 @@ picks the new routes up from `PAYROLL_ROUTE_PATHS`.
 
 ## 5. Verification
 
-- `cargo test -p mnt-payroll-domain` — 11 green (incl. parity of
+- `cargo test -p console-payroll-domain` — 11 green (incl. parity of
   `build_line_calculation` with the draft builder).
-- `cargo test -p mnt-payroll-adapter-postgres` — RLS-as-`mnt_rt` suites green
+- `cargo test -p console-payroll-adapter-postgres` — RLS-as-`console_rt` suites green
   (0074 surfaces + new lifecycle tables; cross-org reads empty, WITH CHECK
   write rejected, cross-org mutation NotFound).
-- `cargo test -p mnt-payroll-rest` — unit + HTTP suites green.
-- `cargo test -p mnt-payroll-rest --test run_lifecycle_api` — full lifecycle
-  story on the crate router as `mnt_rt` (ES256 chain, preflight fail-closed →
+- `cargo test -p console-payroll-rest` — unit + HTTP suites green.
+- `cargo test -p console-payroll-rest --test run_lifecycle_api` — full lifecycle
+  story on the crate router as `console_rt` (ES256 chain, preflight fail-closed →
   close → calculate with real kernel figures (3,000,000 → net 2,626,698) →
   exception fail-closed submit → SoD → reject/withdraw/resubmit/approve →
   disbursement FSM → legal-gate 409 → gated issuance with vault dedup →
   audit readback), plus PBAC denial without leakage + cross-tenant
   invisibility + denied-probe no-side-effect proof.
-- `cargo clippy -p mnt-payroll-{domain,adapter-postgres,rest} -- -D warnings`
+- `cargo clippy -p console-payroll-{domain,adapter-postgres,rest} -- -D warnings`
   clean; `cargo fmt` applied.

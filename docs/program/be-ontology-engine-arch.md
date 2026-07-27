@@ -12,7 +12,7 @@ This is the buildable spec the ontology/lifecycle/guardrails/Cedar-authoring lan
 | Cedar coexistence boundary + `SubjectFreshness` + engine-mode ladder | `crates/platform/authz/src/cedar_pbac.rs` | the enforce-mode state machine (`legacy_only`→`cedar_shadow_legacy_enforce`→`cedar_enforce_legacy_compare`→`cedar_only`) |
 | Cedar staging tables (catalog + no-code drafts) | migration `0103_create_cedar_policy_staging.sql` | Policy Studio substrate; extend with object/property-policy + simulate log |
 | `with_audit(pool, event, closure)` — mutation + audit row in ONE tx | `crates/platform/db/src/audit_tx.rs` | every writeback wraps in this; atomicity is non-negotiable |
-| RLS arming: `set_config('app.current_org',$1,true)` transaction-local GUC | `audit_tx.rs` + `mnt_platform_request_context::with_request_context` | every ontology table FORCE-RLS `org_isolation` reads this; unset ⇒ fail-closed |
+| RLS arming: `set_config('app.current_org',$1,true)` transaction-local GUC | `audit_tx.rs` + `console_platform_request_context::with_request_context` | every ontology table FORCE-RLS `org_isolation` reads this; unset ⇒ fail-closed |
 | `audit_events` append-only (actor/action/target/before_snap/after_snap/trace) + immutable triggers + REVOKE UPDATE/DELETE | migration `0003` | the audit trail; ontology writes land here via `with_audit` |
 | Tamper-evident hash-chain (L20) + canonicalization + seal/verify | `crates/compliance/integrity/{domain,store,rest}.rs` | REUSE its canonical-hash helper for instance-revision fixity — do NOT re-implement sha256 chaining |
 | WORM object-lock storage (retention, `checksum_sha256`, object-lock buckets) | `crates/platform/storage/src/lib.rs` | evidence/attachment fixity for action side-effects |
@@ -310,7 +310,7 @@ Parallelizable now: {1,4} → {2,5} → {3,6} → 7. L-GOV(4) runs anytime.
    RLS+audit+FSM), NOT a second writeback into its table — else two sources of truth. Ontology holds
    metadata + dispatch only.
 4. **Residual grammar fail-closed** — any untranslatable residual term ⇒ deny, never silent allow. Test as
-   `mnt_rt` (superuser BYPASSRLS masks a broken filter — the known trap).
+   `console_rt` (superuser BYPASSRLS masks a broken filter — the known trap).
 5. **JSONB attributes over EAV** (§1b) — accepted; revisit column-projection views only under measured
    hot-path pressure.
 6. **Migration-number collisions** across the 6 lanes — reserve the next free `00NN` immediately before

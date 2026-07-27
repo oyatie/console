@@ -8,15 +8,15 @@
 
 use std::sync::Arc;
 
-use mnt_attendance_adapter_postgres::PgAttendanceStore;
-use mnt_attendance_application::{
+use console_attendance_adapter_postgres::PgAttendanceStore;
+use console_attendance_application::{
     AssignSubstitute, CallerScope, CancelSubstitution, ResolveException, SubstitutionCandidateQuery,
 };
-use mnt_attendance_domain::{ResolutionAction, SubstitutionWindow};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audits};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{
+use console_attendance_domain::{ResolutionAction, SubstitutionWindow};
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_db::{DbError, with_audits};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{
     runtime_role_pool, seed_branch, seed_org_and_super_admin, seed_user,
 };
 use serde_json::json;
@@ -595,7 +595,7 @@ async fn open_no_show_commit_blocks_the_single_connection_adapter_then_conflicts
         wait_for_advisory_lock_waiter(&owner_pool, &reader_session, &writer_session).await;
         writer.commit().await.unwrap();
         let error = task.await.unwrap().expect_err("fresh eligibility query must reject committed NO_SHOW");
-        assert!(matches!(error, mnt_attendance_adapter_postgres::AttendanceStoreError::Conflict));
+        assert!(matches!(error, console_attendance_adapter_postgres::AttendanceStoreError::Conflict));
     }).await;
 }
 
@@ -827,7 +827,7 @@ async fn legacy_assignment_rechecks_after_leave_commit(owner_pool: PgPool) {
             .execute(&mut *leave)
             .await
             .unwrap();
-        sqlx::query("SELECT public.mnt_employee_day_eligibility_lock($1,$2,$3)")
+        sqlx::query("SELECT public.console_employee_day_eligibility_lock($1,$2,$3)")
             .bind(*OrgId::knl().as_uuid())
             .bind(worker)
             .bind(day)
@@ -884,12 +884,12 @@ async fn one_connection_pool(
                 match role {
                     PoolRole::Owner => {}
                     PoolRole::Runtime => {
-                        sqlx::query("SET ROLE mnt_rt")
+                        sqlx::query("SET ROLE console_rt")
                             .execute(&mut *connection)
                             .await?;
                     }
                     PoolRole::LeaveDefiner => {
-                        sqlx::query("SET ROLE mnt_leave_definer")
+                        sqlx::query("SET ROLE console_leave_definer")
                             .execute(&mut *connection)
                             .await?;
                     }
@@ -1010,15 +1010,15 @@ fn legacy_v1_fingerprint(
 
 async fn seed_employee(
     pool: &PgPool,
-    branch: mnt_kernel_core::BranchId,
-    actor: mnt_kernel_core::UserId,
+    branch: console_kernel_core::BranchId,
+    actor: console_kernel_core::UserId,
     name: &str,
 ) -> Uuid {
     let employee = Uuid::new_v4();
     let employee_number = format!("ATT-{employee}");
     let idempotency_key = format!("attendance-cancel-{employee}");
     let mut command = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_cmd")
+    sqlx::query("SET LOCAL ROLE console_leave_cmd")
         .execute(&mut *command)
         .await
         .unwrap();
@@ -1051,8 +1051,8 @@ async fn seed_employee(
 
 async fn seed_assigned_substitution(
     pool: &PgPool,
-    branch: mnt_kernel_core::BranchId,
-    actor: mnt_kernel_core::UserId,
+    branch: console_kernel_core::BranchId,
+    actor: console_kernel_core::UserId,
     covered_employee_id: Uuid,
 ) -> Uuid {
     let substitution_id = Uuid::new_v4();

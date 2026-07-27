@@ -14,12 +14,12 @@ case "${1:-}" in
 esac
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-buck_bin="${MNT_BUCK_PREFLIGHT_BUCK:-${repo_root}/tools/buck2}"
+buck_bin="${CONSOLE_BUCK_PREFLIGHT_BUCK:-${repo_root}/tools/buck2}"
 expected_release="2026-07-15"
 safe_user="${USER:-user}"
 safe_user="${safe_user//[^[:alnum:]_.-]/_}"
 repo_hash="$(printf '%s' "${repo_root}" | cksum | awk '{print $1}')"
-isolation_name="${MNT_BUCK_PREFLIGHT_ISOLATION_DIR:-mnt-buck-preflight-${safe_user}-${repo_hash}}"
+isolation_name="${CONSOLE_BUCK_PREFLIGHT_ISOLATION_DIR:-console-buck-preflight-${safe_user}-${repo_hash}}"
 
 if [[ ! "${isolation_name}" =~ ^[[:alnum:]_.-]+$ ]]; then
   echo "buck-preflight: isolation name must contain only letters, digits, dot, underscore, or dash" >&2

@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_kernel_core::{BranchId, EquipmentId};
-use mnt_registry_domain::{
+use console_kernel_core::{BranchId, EquipmentId};
+use console_registry_domain::{
     EquipmentNo, EquipmentStatus, MoneyWon, SubstituteEquipmentProfile, SubstituteMatchKind, Ton,
     rank_substitute_candidates,
 };

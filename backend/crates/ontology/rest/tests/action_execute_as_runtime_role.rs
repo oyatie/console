@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the §2/§16 action execute path, exercised as the genuine
-//! non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
+//! non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the only
 //! faithful exercise of RLS org-isolation. The default `#[sqlx::test]` pool is a
 //! BYPASSRLS superuser that would green-light a broken policy.
 //!
@@ -22,17 +22,17 @@
 
 use std::collections::BTreeSet;
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, DecideApprovalCommand};
-use mnt_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
-use mnt_ontology_adapter_postgres::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, DecideApprovalCommand};
+use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_adapter_postgres::{
     ActionTypeInput, CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput,
 };
-use mnt_ontology_domain::{ActionDispatch, BackingKind, ObjectTypeId};
-use mnt_ontology_rest::{ActionCommand, ActionError, OntologyRestState};
-use mnt_platform_authz::{Principal, Role};
-use mnt_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
+use console_ontology_domain::{ActionDispatch, BackingKind, ObjectTypeId};
+use console_ontology_rest::{ActionCommand, ActionError, OntologyRestState};
+use console_platform_authz::{Principal, Role};
+use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -57,7 +57,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -88,7 +88,7 @@ async fn seed_instance_type_with_action(
     control_points: Value,
     submission_criteria: Value,
 ) -> ObjectTypeId {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
         let draft = CreateObjectTypeDraft {
@@ -138,7 +138,7 @@ async fn seed_projected_type_with_action(
     key: &str,
     action_key: &str,
 ) -> ObjectTypeId {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
         let draft = CreateObjectTypeDraft {
@@ -230,7 +230,7 @@ async fn execute_happy_path_appends_revision_and_one_audit_atomically(owner_pool
     )
     .await;
 
-    let outcome = mnt_platform_request_context::scope_org(org, async {
+    let outcome = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -278,7 +278,7 @@ async fn missing_four_eyes_denies_and_writes_zero_rows(owner_pool: PgPool) {
     )
     .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -300,7 +300,7 @@ async fn missing_four_eyes_denies_and_writes_zero_rows(owner_pool: PgPool) {
     // re-check reads it and the revision commits.
     let request_ref = Uuid::new_v4();
     let approver = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b").await;
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         PgGovernanceStore::new(rt.clone())
             .decide_approval(DecideApprovalCommand {
                 approver,
@@ -321,7 +321,7 @@ async fn missing_four_eyes_denies_and_writes_zero_rows(owner_pool: PgPool) {
 
     let mut approved = create_command(type_id, "hi");
     approved.four_eyes_request_ref = Some(request_ref);
-    let outcome = mnt_platform_request_context::scope_org(org, async {
+    let outcome = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor, org), "set_priority", approved)
             .await
@@ -350,7 +350,7 @@ async fn submission_criteria_failure_denies_with_zero_rows(owner_pool: PgPool) {
     )
     .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -375,7 +375,7 @@ async fn projected_dispatch_is_not_wired_yet_and_writes_nothing(owner_pool: PgPo
         seed_projected_type_with_action(&owner_pool, org, actor, "equip.proj", "update_equipment")
             .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -430,7 +430,7 @@ async fn cross_org_action_is_invisible(owner_pool: PgPool) {
     .await;
 
     // Under org-B's GUC, org-A's action type does not resolve → NotFound.
-    let err = mnt_platform_request_context::scope_org(org_b, async {
+    let err = console_platform_request_context::scope_org(org_b, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor_b, org_b),
@@ -461,7 +461,7 @@ async fn command_receipt_replays_and_stale_editor_cannot_append(owner_pool: PgPo
         json!([]),
     )
     .await;
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -487,14 +487,14 @@ async fn command_receipt_replays_and_stale_editor_cannot_append(owner_pool: PgPo
         command_id: Some(command_id),
         expected_revision: Some(1),
     };
-    let first = mnt_platform_request_context::scope_org(org, async {
+    let first = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor, org), "set_priority", edit.clone())
             .await
     })
     .await
     .unwrap();
-    let replay = mnt_platform_request_context::scope_org(org, async {
+    let replay = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor, org), "set_priority", edit)
             .await
@@ -520,7 +520,7 @@ async fn command_receipt_replays_and_stale_editor_cannot_append(owner_pool: PgPo
         expected_revision: Some(1),
     };
     assert!(
-        mnt_platform_request_context::scope_org(org, async {
+        console_platform_request_context::scope_org(org, async {
             state(&rt, &cmd)
                 .execute_action(&super_admin(actor, org), "set_priority", mismatch)
                 .await
@@ -542,7 +542,7 @@ async fn command_receipt_replays_and_stale_editor_cannot_append(owner_pool: PgPo
         expected_revision: Some(1),
     };
     assert!(
-        mnt_platform_request_context::scope_org(org, async {
+        console_platform_request_context::scope_org(org, async {
             state(&rt, &cmd)
                 .execute_action(&super_admin(actor, org), "set_priority", stale)
                 .await
@@ -580,7 +580,7 @@ async fn command_receipt_rejects_same_org_cross_principal_reuse(owner_pool: PgPo
         ..create_command(type_id, "hi")
     };
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor_a, org), "set_priority", command.clone())
             .await
@@ -588,7 +588,7 @@ async fn command_receipt_rejects_same_org_cross_principal_reuse(owner_pool: PgPo
     .await
     .expect("the command owner must be able to execute it");
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor_b, org), "set_priority", command)
             .await
@@ -623,12 +623,12 @@ async fn concurrent_same_command_creates_one_revision_audit_and_receipt(owner_po
     let command = create_command(type_id, "hi");
     let first_command = command.clone();
 
-    let first = mnt_platform_request_context::scope_org(org, async {
+    let first = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor, org), "set_priority", first_command)
             .await
     });
-    let second = mnt_platform_request_context::scope_org(org, async {
+    let second = console_platform_request_context::scope_org(org, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor, org), "set_priority", command)
             .await
@@ -683,14 +683,14 @@ async fn command_id_can_be_reused_by_different_tenants(owner_pool: PgPool) {
         ..create_command(type_b, "hi")
     };
 
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor_a, org_a), "set_priority", command_a)
             .await
     })
     .await
     .expect("tenant A command must succeed");
-    mnt_platform_request_context::scope_org(org_b, async {
+    console_platform_request_context::scope_org(org_b, async {
         state(&rt, &cmd)
             .execute_action(&super_admin(actor_b, org_b), "set_priority", command_b)
             .await

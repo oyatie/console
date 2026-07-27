@@ -407,7 +407,7 @@ def ignored_scratch_root(repo: Path) -> Path:
         spec.loader.exec_module(helper)
         root = helper.root_for(
             repo,
-            os.environ.get("MNT_BUCK_IMPACT_SCRATCH_ROOT", "buck-out/buck-impact-snapshots"),
+            os.environ.get("CONSOLE_BUCK_IMPACT_SCRATCH_ROOT", "buck-out/buck-impact-snapshots"),
         )
     except (OSError, ValueError) as error:
         raise PlannerError(f"invalid Buck output snapshot root: {error}") from error

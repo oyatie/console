@@ -6,5 +6,5 @@
 # role patch in TalosConfigTemplate for generated worker bootstrap data.
 machine:
   nodeLabels:
-    maintenance.nousresearch.com/substrate: on-prem
-    maintenance.nousresearch.com/node-role: worker
+    console.nousresearch.com/substrate: on-prem
+    console.nousresearch.com/node-role: worker

@@ -5,8 +5,8 @@
 #![cfg(not(feature = "dev-auth"))]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_app::assert_no_dev_auth_personas;
-use mnt_kernel_core::OrgId;
+use console_app::assert_no_dev_auth_personas;
+use console_kernel_core::OrgId;
 use sqlx::PgPool;
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]

@@ -18,9 +18,9 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-use mnt_platform_authz::cedar_pbac::engine;
-use mnt_platform_authz::{
+use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+use console_platform_authz::cedar_pbac::engine;
+use console_platform_authz::{
     Action, AuthorizationContext, AuthorizationRequest, AuthorizationResource, CedarEvaluation,
     CoexistenceMapEntry, CompiledBundleCacheKey, DecisionEffect, DecisionEngine, DecisionReason,
     DualEngineMode, Feature, Principal, RlsScopeProof, Role, SubjectFreshness,
@@ -356,7 +356,7 @@ fn scenario_for(case_id: &str) -> Scenario {
 fn assert_must_audit(
     case: &ReadinessCase,
     scenario: &Scenario,
-    audit: &mnt_platform_authz::AuthorizationAuditEvent,
+    audit: &console_platform_authz::AuthorizationAuditEvent,
 ) {
     // Common to every case.
     assert_eq!(
@@ -559,7 +559,7 @@ fn every_readiness_case_binds_to_a_fail_closed_boundary_decision() {
     }
 }
 
-fn metric_label_keys(metric: &mnt_platform_authz::AuthorizationMetricLabels) -> BTreeSet<String> {
+fn metric_label_keys(metric: &console_platform_authz::AuthorizationMetricLabels) -> BTreeSet<String> {
     let value = serde_json::to_value(metric).expect("metric labels serialize");
     value
         .as_object()

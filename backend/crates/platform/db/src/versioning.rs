@@ -7,7 +7,7 @@
 //!    migration 0107, substituting your base table name:
 //!
 //!    ```sql
-//!    -- mnt-gate: audited-table <base>_versions
+//!    -- console-gate: audited-table <base>_versions
 //!    CREATE TABLE <base>_versions (
 //!        id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
 //!        org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -21,7 +21,7 @@
 //!        UNIQUE (org_id, object_id, version)
 //!    );
 //!    -- + index, append-only triggers (platform_append_only_immutable),
-//!    --   RLS ENABLE/FORCE + org_isolation, GRANT SELECT, INSERT TO mnt_rt
+//!    --   RLS ENABLE/FORCE + org_isolation, GRANT SELECT, INSERT TO console_rt
 //!    ```
 //!
 //! 2. **A few lines of Rust** — declare the table once and call the helpers

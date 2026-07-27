@@ -6,12 +6,12 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
-use mnt_support_adapter_postgres::{MAX_BODY_CHARS, PgSupportStore};
-use mnt_support_rest::{SupportRestState, router};
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
+use console_support_adapter_postgres::{MAX_BODY_CHARS, PgSupportStore};
+use console_support_rest::{SupportRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 async fn build(owner_pool: &PgPool) -> Router {
     build_with_public_intake_org(owner_pool, OrgId::knl()).await
@@ -32,7 +32,7 @@ async fn build_with_public_intake_org(owner_pool: &PgPool, public_intake_org: Or
     // unauthenticated, and notifications degrade gracefully. Exercise the app
     // with the production-like runtime role so FORCE RLS (not a BYPASSRLS test
     // owner) governs tenant writes/reads at the REST surface.
-    mnt_platform_request_context::with_trusted_client_ip(
+    console_platform_request_context::with_trusted_client_ip(
         router(
             SupportRestState::new(
                 PgSupportStore::new(runtime_role_pool(owner_pool).await),
@@ -210,7 +210,7 @@ async fn intake_written_to_configured_org_is_visible_only_to_same_org_staff(pool
 /// requests each succeed (202) and a different IP keeps an independent bucket.
 ///
 /// The cap/reset boundary is asserted deterministically with a synthetic clock
-/// in `mnt_support_rest`'s `rate_limit_trips_at_cap_and_resets_after_window`
+/// in `console_support_rest`'s `rate_limit_trips_at_cap_and_resets_after_window`
 /// unit test. Driving real HTTP round-trips past the cap here raced the wall
 /// clock's minute boundary — a burst that straddles a minute lands the last
 /// request in a fresh fixed window and resets the bucket before the cap trips —
@@ -218,7 +218,7 @@ async fn intake_written_to_configured_org_is_visible_only_to_same_org_staff(pool
 /// `otp_redeem_rate_limit_wires_up_on_real_clock_path` split.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn intake_succeeds_and_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let app = build(&pool).await;
         let ip = "203.0.113.42";
 
@@ -246,7 +246,7 @@ async fn intake_succeeds_and_rate_limit_wires_up_on_real_clock_path(pool: PgPool
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn intake_rejects_missing_fields_generically(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let app = build(&pool).await;
         let body = serde_json::json!({
             "category": "OTHER",
@@ -272,7 +272,7 @@ async fn intake_rejects_missing_fields_generically(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn intake_rejects_over_length_fields_generically(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let app = build(&pool).await;
         // One scalar past the store-side body bound: must be rejected at the edge
         // with a generic 400, before any persistence.

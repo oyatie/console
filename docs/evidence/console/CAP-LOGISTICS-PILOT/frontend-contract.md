@@ -8,7 +8,7 @@ below is verified against source, not inferred.
 ## 1. REST contract
 
 All routes live in `backend/crates/logistics/rest/src/lib.rs` and are wrapped by
-`mnt_platform_request_context::with_request_context` (bearer JWT → Principal →
+`console_platform_request_context::with_request_context` (bearer JWT → Principal →
 tenant `app.current_org` arming). **The router is write-only: 9 POST routes, zero
 GET routes.** There is no list, detail-read, stock, or history endpoint anywhere
 in the crate or in `backend/app` for logistics.
@@ -148,7 +148,7 @@ use<Module>ConsoleAuthz.ts  — authz projection hook
 
 ### 3.2 API module pattern (`productionApi.ts`)
 
-- `import type { components } from "@maintenance/api-client-ts"`; DTO aliases
+- `import type { components } from "@console/api-client-ts"`; DTO aliases
   from `components["schemas"][...]` (for logistics: hand-written interfaces
   until §2 is resolved).
 - `create<Module>Api(api: ConsoleApiClient)` returns an object of methods, each

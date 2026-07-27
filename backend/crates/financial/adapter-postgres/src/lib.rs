@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use mnt_financial_application::{
+use console_financial_application::{
     AppendCostLedgerEntryCommand, AssetLifecycleCostSummary,
     ConfirmPurchaseAttachmentUploadCommand, CostLedgerEntrySummary, CostLedgerSource,
     CreatePurchaseRequestCommand, CreateRentalQuoteCommand, ExecutePurchaseCommand,
@@ -15,18 +15,18 @@ use mnt_financial_application::{
     PurchaseSubmitCommand, PurchaseType, RejectPurchaseCommand, RentalQuoteSummary,
     financial_audit_event,
 };
-use mnt_financial_domain::{
+use console_financial_domain::{
     AcquisitionAnchor, MoneyInput, PurchaseActor, PurchaseStatus, PurchaseTransition,
     RentalQuoteInput, ResidualRecomputeInput, compute_rental_quote, cost_per_hour_won,
     cost_per_month_won, gross_margin_won, recompute_residual_value, tco_won,
     validate_purchase_transition,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditEvent, BranchId, EquipmentId, KernelError, OrgId, PurchaseRequestId, QuoteId,
     TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgConnection, PgPool, Postgres, Row, Transaction};
 use time::{Date, OffsetDateTime};
 
@@ -975,7 +975,7 @@ impl PgFinancialStore {
         requested_to: PurchaseStatus,
         expenditure_no: Option<String>,
         memo: Option<String>,
-        trace: mnt_kernel_core::TraceContext,
+        trace: console_kernel_core::TraceContext,
         occurred_at: OffsetDateTime,
     ) -> Result<PurchaseRequestSummary, PgFinancialError> {
         let purchase = self.purchase_request(purchase_request_id).await?;
@@ -1131,7 +1131,7 @@ struct LockedPurchase {
     branch_id: BranchId,
     equipment_id: Option<EquipmentId>,
     work_order_id: Option<WorkOrderId>,
-    statement_evidence_id: Option<mnt_kernel_core::EvidenceId>,
+    statement_evidence_id: Option<console_kernel_core::EvidenceId>,
     status: PurchaseStatus,
     amount_won: i64,
     executive_threshold_won: i64,
@@ -1251,9 +1251,9 @@ async fn append_cost_ledger_entry_tx(
     // Freeze-window gate: EVERY accounting ledger write (manual admin entry and
     // purchase execution both funnel through here) must land outside a locked
     // accounting period. Fails closed with a 409-mapping conflict.
-    mnt_platform_db::assert_period_open(
+    console_platform_db::assert_period_open(
         tx,
-        mnt_platform_db::PeriodLockDomain::Accounting,
+        console_platform_db::PeriodLockDomain::Accounting,
         command.occurred_at.date(),
     )
     .await
@@ -1379,7 +1379,7 @@ async fn ensure_work_order_matches_tx(
 /// evidence carries no financial-integrity risk.
 async fn ensure_statement_evidence_tx(
     tx: &mut Transaction<'_, Postgres>,
-    evidence_id: mnt_kernel_core::EvidenceId,
+    evidence_id: console_kernel_core::EvidenceId,
     branch_id: BranchId,
     equipment_id: EquipmentId,
     expected_work_order_id: Option<WorkOrderId>,
@@ -1433,7 +1433,7 @@ async fn ensure_statement_evidence_tx(
 /// seeing a silent failure.
 async fn ensure_statement_evidence_verified_tx(
     tx: &mut Transaction<'_, Postgres>,
-    evidence_id: mnt_kernel_core::EvidenceId,
+    evidence_id: console_kernel_core::EvidenceId,
 ) -> Result<(), PgFinancialError> {
     let status: Option<String> =
         sqlx::query_scalar("SELECT worm_replica_status FROM evidence_media WHERE id = $1")
@@ -1463,7 +1463,7 @@ async fn insert_quote_tx(
     residual_value_won: i64,
     cumulative_repair_cost_won: i64,
     config: &FinancialConfigSnapshot,
-    quote: &mnt_financial_domain::ComputedRentalQuote,
+    quote: &console_financial_domain::ComputedRentalQuote,
     occurred_at: OffsetDateTime,
     org_uuid: uuid::Uuid,
 ) -> Result<(), PgFinancialError> {
@@ -1589,7 +1589,7 @@ async fn rental_quote_by_id(
 
 fn rental_quote_from_row(
     row: &sqlx::postgres::PgRow,
-    lines: Vec<mnt_financial_domain::QuoteLine>,
+    lines: Vec<console_financial_domain::QuoteLine>,
 ) -> Result<RentalQuoteSummary, PgFinancialError> {
     Ok(RentalQuoteSummary {
         id: QuoteId::from_uuid(row.try_get("id")?),
@@ -1609,7 +1609,7 @@ fn rental_quote_from_row(
 async fn quote_lines_tx(
     tx: &mut Transaction<'_, Postgres>,
     quote_id: QuoteId,
-) -> Result<Vec<mnt_financial_domain::QuoteLine>, PgFinancialError> {
+) -> Result<Vec<console_financial_domain::QuoteLine>, PgFinancialError> {
     let rows = sqlx::query(
         r#"
         SELECT code, label, amount_won
@@ -1623,7 +1623,7 @@ async fn quote_lines_tx(
     .await?;
     rows.into_iter()
         .map(|row| {
-            Ok(mnt_financial_domain::QuoteLine {
+            Ok(console_financial_domain::QuoteLine {
                 code: row.try_get("code")?,
                 label: row.try_get("label")?,
                 amount: MoneyInput::won(row.try_get("amount_won")?),
@@ -2211,12 +2211,12 @@ async fn lock_purchase_tx(
         branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
         equipment_id: equipment_id.map(EquipmentId::from_uuid),
         work_order_id: work_order_id.map(WorkOrderId::from_uuid),
-        statement_evidence_id: statement_evidence_id.map(mnt_kernel_core::EvidenceId::from_uuid),
+        statement_evidence_id: statement_evidence_id.map(console_kernel_core::EvidenceId::from_uuid),
         status: PurchaseStatus::from_db_str(&status)?,
         amount_won: row.try_get("amount_won")?,
         executive_threshold_won,
         config: FinancialConfigSnapshot {
-            depreciation_method: mnt_financial_domain::DepreciationMethod::from_db_str(&method)?,
+            depreciation_method: console_financial_domain::DepreciationMethod::from_db_str(&method)?,
             useful_life_months: u32::try_from(useful_life_months)
                 .map_err(|_| KernelError::validation("stored useful life months is negative"))?,
             residual_rate_bps: row.try_get("residual_rate_bps")?,
@@ -2404,7 +2404,7 @@ fn purchase_from_parts(
         branch_id: BranchId::from_uuid(row.try_get("branch_id")?),
         equipment_id: equipment_id.map(EquipmentId::from_uuid),
         work_order_id: work_order_id.map(WorkOrderId::from_uuid),
-        statement_evidence_id: statement_evidence_id.map(mnt_kernel_core::EvidenceId::from_uuid),
+        statement_evidence_id: statement_evidence_id.map(console_kernel_core::EvidenceId::from_uuid),
         purchase_type: PurchaseType::from_db_str(&purchase_type_raw)?,
         vendor_name: row.try_get("vendor_name")?,
         amount_won: row.try_get("amount_won")?,
@@ -2912,10 +2912,10 @@ async fn check_self_approval_tx(
         "exemption_reason": exemption_reason,
     });
     let entity_id = purchase_request_id.as_uuid().to_string();
-    mnt_platform_db::upsert_open_finding_tx(
+    console_platform_db::upsert_open_finding_tx(
         tx,
         OrgId::from_uuid(org_uuid),
-        mnt_platform_db::OpenFinding {
+        console_platform_db::OpenFinding {
             detector_id: "anomaly.self_approval",
             entity_type: "financial_purchase_request",
             entity_id: &entity_id,

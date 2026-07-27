@@ -14,7 +14,7 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditEvent, KernelError, OrgId, Timestamp, Transition, TransitionError, UserId,
 };
 
@@ -305,7 +305,7 @@ pub fn validate_node_transition(
 //
 // The port is the single seam through which the runtime engine touches the DB.
 // It lives in the domain layer (like `CompletionEvidenceInterlock`) so both the
-// application-style engine crate (`mnt-workflow-runtime`) and the Postgres
+// application-style engine crate (`console-workflow-runtime`) and the Postgres
 // adapter can depend on it without an illegal adapter→adapter edge, and so the
 // engine stays free of sqlx/tokio. Every method is tenant-scoped: the adapter
 // arms `app.current_org` (via `with_audit`/`with_audits`/`with_org_conn`) before

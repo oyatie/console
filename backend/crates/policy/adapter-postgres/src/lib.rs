@@ -6,15 +6,15 @@
 //! `policy_versions`, `shadow`, or `enforced` state.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{ErrorKind, KernelError, OrgId, UserId};
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_policy_application::{
+use console_kernel_core::{ErrorKind, KernelError, OrgId, UserId};
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
+use console_policy_application::{
     CedarPolicyCatalogPage, CedarPolicyCatalogQuery, CedarPolicyDraftSaveCommand,
     CedarPolicyDraftSaveResponse, EnforcementEffect, build_draft_artifact,
     draft_create_audit_event,
 };
-use mnt_policy_domain::{
+use console_policy_domain::{
     CedarPolicyBlocks, CedarPolicyCatalogRow, CedarPolicyDraft, CedarPolicyEffect,
     CedarPolicyReviewStatus, CedarPolicySource, CedarPolicyStatus, CedarValidationError,
     CedarValidationStatus,
@@ -121,7 +121,7 @@ impl PgPolicyStore {
     /// The org is read from the bound request context, not from client input.
     /// `with_audit` arms the same org GUC before the INSERT, so FORCE RLS and
     /// same-org FKs are exercised by the runtime role.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn save_draft(
         &self,
         command: CedarPolicyDraftSaveCommand,

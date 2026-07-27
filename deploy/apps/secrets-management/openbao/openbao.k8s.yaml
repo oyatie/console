@@ -18,9 +18,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: mnt-kms
+  name: console-kms
   labels:
-    app.kubernetes.io/part-of: mnt-substrate
+    app.kubernetes.io/part-of: console-substrate
     # Restricted PSS: OpenBao runs non-root, no added caps (securityContext below).
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: latest
@@ -29,7 +29,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: openbao-config
-  namespace: mnt-kms
+  namespace: console-kms
 data:
   openbao.hcl: |
     storage "file" { path = "/openbao/data" }   # barrier-encrypted at rest
@@ -37,8 +37,8 @@ data:
       address     = "0.0.0.0:8200"
       tls_disable = true   # in-cluster only; mTLS via the service mesh (follow-up)
     }
-    api_addr     = "http://openbao.mnt-kms.svc.cluster.local:8200"
-    cluster_addr = "http://openbao.mnt-kms.svc.cluster.local:8201"
+    api_addr     = "http://openbao.console-kms.svc.cluster.local:8200"
+    cluster_addr = "http://openbao.console-kms.svc.cluster.local:8201"
     ui        = true
     log_level = "info"
     default_lease_ttl = "768h"
@@ -48,7 +48,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: openbao-data
-  namespace: mnt-kms
+  namespace: console-kms
 spec:
   accessModes: ["ReadWriteOnce"]
   resources: { requests: { storage: 2Gi } }
@@ -57,10 +57,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openbao
-  namespace: mnt-kms
+  namespace: console-kms
   labels:
     app.kubernetes.io/name: openbao
-    app.kubernetes.io/part-of: mnt-substrate
+    app.kubernetes.io/part-of: console-substrate
 spec:
   replicas: 1
   strategy: { type: Recreate }
@@ -108,10 +108,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: openbao
-  namespace: mnt-kms
+  namespace: console-kms
   labels:
     app.kubernetes.io/name: openbao
-    app.kubernetes.io/part-of: mnt-substrate
+    app.kubernetes.io/part-of: console-substrate
 spec:
   selector: { app.kubernetes.io/name: openbao }
   ports:

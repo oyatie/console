@@ -6,7 +6,7 @@
 //! whether Cedar — evaluated as if it were the sole enforcer — would reach the
 //! SAME allow/deny as the legacy matrix that actually enforces today. That
 //! recorded agree/disagree stream is the promotion evidence artifact
-//! (`mnt-cedar-parity-report`).
+//! (`console-cedar-parity-report`).
 //!
 //! ## Load-bearing safety invariant (ADR-0021)
 //! The legacy decision is the SOLE enforcer and is computed + enforced by the
@@ -30,15 +30,15 @@ use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use futures::FutureExt;
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_authz::cedar_pbac::engine;
-use mnt_platform_authz::{
+use console_identity_adapter_postgres::PgOrgStore;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_authz::cedar_pbac::engine;
+use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, CoexistenceMapEntry, DecisionEffect,
     DualEngineMode, Feature, Principal, RlsScopeProof, SubjectFreshnessRequirement,
     evaluate_cedar_pbac_boundary,
 };
-use mnt_platform_db::{DbError, with_audit};
+use console_platform_db::{DbError, with_audit};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use time::OffsetDateTime;
@@ -200,7 +200,7 @@ async fn try_observe_parity(
     }
 
     // DB-current freshness the token snapshot must be at least as fresh as, read
-    // under the armed mnt_rt GUC.
+    // under the armed console_rt GUC.
     let policy_version = store
         .get_policy_version()
         .await
@@ -272,7 +272,7 @@ async fn try_observe_parity(
     .await
 }
 
-/// Render a serde snake_case enum (e.g. [`mnt_platform_authz::DecisionReason`]) to
+/// Render a serde snake_case enum (e.g. [`console_platform_authz::DecisionReason`]) to
 /// its string label.
 fn reason_label(value: &impl Serialize) -> String {
     serde_json::to_value(value)
@@ -314,7 +314,7 @@ async fn persist(
 }
 
 // ---------------------------------------------------------------------------
-// Report aggregation (consumed by `bin/mnt-cedar-parity-report`).
+// Report aggregation (consumed by `bin/console-cedar-parity-report`).
 // ---------------------------------------------------------------------------
 
 /// One concrete divergent case, deduped by (action, kind, roles, effects,

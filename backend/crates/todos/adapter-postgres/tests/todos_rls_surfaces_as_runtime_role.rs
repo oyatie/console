@@ -1,19 +1,19 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + owner-isolation gate for the todos domain.
 //!
-//! Proven as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the default `#[sqlx::test]` BYPASSRLS
 //! superuser pool, which sees every row and would green-light a broken owner
 //! filter. There is no per-person GUC, so owner scoping is enforced in
 //! application code; this test is the thing that proves user B cannot list,
 //! done-mark, or delete user A's todos, and that another tenant sees nothing.
 
-use mnt_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
-use mnt_todos_adapter_postgres::PgTodoStore;
-use mnt_todos_application::{
+use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
+use console_todos_adapter_postgres::PgTodoStore;
+use console_todos_application::{
     CreateTodoCommand, DeleteTodoCommand, ListTodosQuery, SetTodoDoneCommand,
 };
-use mnt_todos_domain::TodoRef;
+use console_todos_domain::TodoRef;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -23,10 +23,10 @@ const OTHER_ORG: Uuid = Uuid::from_u128(0x7303_7303_7303_7303_7303_7303_7303_730
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -35,7 +35,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -108,14 +108,14 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     let store = PgTodoStore::new(rt_pool.clone());
 
     // Create one todo per user (both under knl).
-    let a_todo = mnt_platform_request_context::scope_org(knl, async {
+    let a_todo = console_platform_request_context::scope_org(knl, async {
         store
             .create(create_for(user_a, "지게차 12호 점검 일정 잡기"))
             .await
     })
     .await
     .expect("create for A");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.create(create_for(user_b, "월간 보고서 검토")).await
     })
     .await
@@ -129,21 +129,21 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
 
     // (a) owner isolation: A sees only A's; B sees only B's.
     let a_list =
-        mnt_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
+        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
             .await
             .expect("A list");
     assert_eq!(a_list.items.len(), 1, "A sees exactly one todo");
     assert_eq!(a_list.items[0].id, a_todo.id);
 
     let b_list =
-        mnt_platform_request_context::scope_org(knl, async { store.list(list_open(user_b)).await })
+        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_b)).await })
             .await
             .expect("B list");
     assert_eq!(b_list.items.len(), 1);
     assert_ne!(b_list.items[0].id, a_todo.id, "B must never see A's todo");
 
     // (b) cross-user done-mark and delete: NotFound, not a silent success.
-    let cross_done = mnt_platform_request_context::scope_org(knl, async {
+    let cross_done = console_platform_request_context::scope_org(knl, async {
         store
             .set_done(SetTodoDoneCommand {
                 owner: user_b,
@@ -160,7 +160,7 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
         ErrorKind::NotFound
     );
 
-    let cross_delete = mnt_platform_request_context::scope_org(knl, async {
+    let cross_delete = console_platform_request_context::scope_org(knl, async {
         store
             .delete(DeleteTodoCommand {
                 owner: user_b,
@@ -179,7 +179,7 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     );
 
     // (c) done -> undo round-trip on the owner's own todo.
-    let marked = mnt_platform_request_context::scope_org(knl, async {
+    let marked = console_platform_request_context::scope_org(knl, async {
         store
             .set_done(SetTodoDoneCommand {
                 owner: user_a,
@@ -196,7 +196,7 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     assert!(marked.done_at.is_some());
 
     let open_after =
-        mnt_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
+        console_platform_request_context::scope_org(knl, async { store.list(list_open(user_a)).await })
             .await
             .expect("A open list after done");
     assert!(
@@ -204,7 +204,7 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
         "done todo leaves the open list"
     );
 
-    let undone = mnt_platform_request_context::scope_org(knl, async {
+    let undone = console_platform_request_context::scope_org(knl, async {
         store
             .set_done(SetTodoDoneCommand {
                 owner: user_a,
@@ -221,7 +221,7 @@ async fn owner_isolation_and_done_undo_as_runtime_role(owner_pool: PgPool) {
     assert!(undone.done_at.is_none(), "undo clears done_at");
 
     // (d) cross-tenant: under another org's GUC, A's rows are invisible (RLS).
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store.list(list_open(user_a)).await
     })
     .await
@@ -240,13 +240,13 @@ async fn delete_and_audit_trail_as_runtime_role(owner_pool: PgPool) {
     let user = seed_user(&owner_pool, *knl.as_uuid(), "Busy Owner").await;
     let store = PgTodoStore::new(rt_pool.clone());
 
-    let todo = mnt_platform_request_context::scope_org(knl, async {
+    let todo = console_platform_request_context::scope_org(knl, async {
         store.create(create_for(user, "삭제될 항목")).await
     })
     .await
     .expect("create");
 
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .delete(DeleteTodoCommand {
                 owner: user,
@@ -259,7 +259,7 @@ async fn delete_and_audit_trail_as_runtime_role(owner_pool: PgPool) {
     .await
     .expect("delete own todo");
 
-    let remaining = mnt_platform_request_context::scope_org(knl, async {
+    let remaining = console_platform_request_context::scope_org(knl, async {
         store
             .list(ListTodosQuery {
                 owner: user,
@@ -287,7 +287,7 @@ async fn delete_and_audit_trail_as_runtime_role(owner_pool: PgPool) {
     );
 
     // Validation failures reject before any write.
-    let invalid = mnt_platform_request_context::scope_org(knl, async {
+    let invalid = console_platform_request_context::scope_org(knl, async {
         store.create(create_for(user, "   ")).await
     })
     .await;

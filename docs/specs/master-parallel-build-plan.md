@@ -23,9 +23,9 @@
 - **(d) Agent-operating-contract = merge-clean protocol.** One lane = one `git worktree` on `agent/<lane>` =
   one PR over one crate family. Serialize points = root `Cargo.toml`/`Cargo.lock` + `openapi.yaml` +
   generated clients (claim across these one-lane-at-a-time; glob members already eliminates the members
-  conflict). "Done" = pasted gate output + RLS-as-`mnt_rt` test; never self-approval.
+  conflict). "Done" = pasted gate output + RLS-as-`console_rt` test; never self-approval.
 
-Concrete integration: payroll (L14) needs attendance owned by HR (L13). It does NOT depend on `mnt-hr-domain`;
+Concrete integration: payroll (L14) needs attendance owned by HR (L13). It does NOT depend on `console-hr-domain`;
 HR publishes `openapi/hr/attendance-v1.yaml` + `contracts/events/attendance-recorded-v1.yaml`; payroll
 consumes the generated type. A **route-parity gate** + a **bindings.tsv** keep handler↔contract↔wire-type
 1:1; a **cohesion gate** ensures exactly one owner per contract.
@@ -34,16 +34,16 @@ consumes the generated type. A **route-parity gate** + a **bindings.tsv** keep h
 
 | # | Artifact (oyatie) | Verdict | Accelerates | Adapt notes |
 |---|---|---|---|---|
-| 1 | Slice-plan template (`tasks/*-plan.md`) | **LIFT** | every lane (per-agent brief) | add maintenance constraints: arm `app.current_org`; adapter tests as real `mnt_rt`; new table→RLS policy+gate; new endpoint→openapi fragment+regen |
+| 1 | Slice-plan template (`tasks/*-plan.md`) | **LIFT** | every lane (per-agent brief) | add maintenance constraints: arm `app.current_org`; adapter tests as real `console_rt`; new table→RLS policy+gate; new endpoint→openapi fragment+regen |
 | 2 | billing-kernel `aggregate_invoice` (int-micros, round-half-up, overflow-guarded) | **LIFT** | ERP invoice + 거래명세표 + 부가세 10% | into `kernel/core`; won as minor unit; `tax_basis_points=1000` |
 | 3 | OpenAPI↔REST route-parity gate | **LIFT** | stops openapi drift across lanes; fixes red #47 | new `ci/gates/openapi-route-parity` (scan `*_PATH` consts vs openapi `paths:`) |
 | 4 | workload-identity `evaluate_decision` (forbid-wins precedence + audit `DecisionReason`) | **ADAPT** | configurable RBAC (#46) | fold into authz; keep 42×6 matrix as default; reason→audit |
 | 5 | RLS overlay (default-row `org_id IS NULL` + per-tenant + `app.role` bypass) | **LIFT** | ontology defaults + custom roles | overlay `USING` only on ontology/role tables; business tables stay strict-equality; arm `app.role` |
-| 6 | Cedar PDP adapter (signed bundles, default-deny, version cache) | **ADAPT** | configurable RBAC at scale | `mnt-authz-cedar`; default bundle from 42×6; Cedar decides capability, RLS decides rows; single in-process PDP (skip the distribution fabric until a real sub-60s-revocation SLO exists) |
+| 6 | Cedar PDP adapter (signed bundles, default-deny, version cache) | **ADAPT** | configurable RBAC at scale | `console-authz-cedar`; default bundle from 42×6; Cedar decides capability, RLS decides rows; single in-process PDP (skip the distribution fabric until a real sub-60s-revocation SLO exists) |
 | 7 | Binding manifests (operationId→crate→handler→type→test) | **ADAPT** | reviewer verifies a slice is fully wired | `openapi/bindings.tsv` + gate asserting each operationId has a row + symbol/test on disk |
 | 8 | Per-domain OpenAPI split + `.meta.yaml` sidecar | **ADAPT** | modularizes the openapi monolith | `openapi/<domain>/<name>-v1.yaml` + owner/version; `$ref`-bundle build for client gen |
 | 9 | tenant-quota kernel (check/consume/release) | **ADAPT** | SaaS plan tiering | durable storage+seats axes; reuse mail rate-limiter (#30) as rate axis |
-| 10 | signed audit digest-chain | **ADAPT** | tamper-EVIDENT audit | `mnt-audit-chain`: batch-seal a hash-link over new `audit_events`, sign with OCI Vault |
+| 10 | signed audit digest-chain | **ADAPT** | tamper-EVIDENT audit | `console-audit-chain`: batch-seal a hash-link over new `audit_events`, sign with OCI Vault |
 | 11 | i18n completeness check + ko.ts split | **ADAPT** | UI lanes don't collide on ko.ts | `web/src/i18n/<domain>/ko.ts` merged at an index; vitest key-parity |
 | 12 | cohesion / one-owner gate | **ADAPT** | merge-clean (one owner per contract) | gate over the bounded-context registry |
 | 13 | cursor-pagination kernel | **ADAPT** | every list endpoint | into `kernel/core` |
@@ -57,7 +57,7 @@ lanes fan out. The future MES lane stays gated until its prerequisites are accep
 
 - **S0 — Agent-operating-contract + slice-plan template + PR template.** The rulebook every lane obeys
   (pre-flight Why+Test, done-definition, reviewer-routing, sanctioned-primitives, **mandatory: arm
-  `app.current_org` + test as `mnt_rt`**). `.github/pull_request_template.md` ("no Code Review section = no
+  `app.current_org` + test as `console_rt`**). `.github/pull_request_template.md` ("no Code Review section = no
   merge"). Folds into the ultragoal brief/loop.
 - **S1 — OpenAPI modularization + bundle + route-parity + bindings + codegen-determinism gates.** Splits
   the serialize point so every REST lane owns its fragment; fixes the red #47 api lane.
@@ -93,12 +93,12 @@ Existing contexts → **maturity** lanes (mature + close coverage/#19/#20); new 
 | **L15 ERP** 🆕 | `erp/*` | financial, registry, S4 | GL, AR/AP, 재고, 부가세, purchase-request governance workflow |
 | **L16 gov-adapters** 🆕 | `govadapter/*` | financial, payroll | 국세청 e-세금계산서, 공공데이터포털 rates, 도로명주소 |
 | **L17 ontology** 🆕 | `ontology/*` | S3 authz overlay, audit-chain | no-code typed entities; jsonb + per-property `data_class`; RLS overlay |
-| L18 authz/RBAC | `platform/authz` + `mnt-authz-cedar` 🆕 | — (S3 owns) | console-managed custom roles + approval graph policy |
+| L18 authz/RBAC | `platform/authz` + `console-authz-cedar` 🆕 | — (S3 owns) | console-managed custom roles + approval graph policy |
 | L19 quota/billing-plan 🆕 | `platform/quota` | comms, storage | SaaS tiering |
-| L20 audit-chain 🆕 | `mnt-audit-chain` | — | tamper-evident sealing worker |
+| L20 audit-chain 🆕 | `console-audit-chain` | — | tamper-evident sealing worker |
 | **L21 MES** 🆕 future | `mes/*` | identity, ontology, erp, registry, hr, financial, audit-chain | Future manufacturing execution: production orders, routings, work centers, quality/NC, material traceability, OEE, labor capture; **do not fan out until org/people/assets/inventory/ERP/workflow/policy/import foundations are accepted** |
 
-**Plus cross-cutting parallel lanes:** L-Q coverage backfill (per-domain mnt_rt/unit, ~80% of the 109
+**Plus cross-cutting parallel lanes:** L-Q coverage backfill (per-domain console_rt/unit, ~80% of the 109
 gaps), L-O ops/infra (log persistence #50, metrics, secrets #28), L-Auth (#19.25 enroll fix #49).
 
 First parallel wave = the pure-domain/kernel lanes (L2 FSM, L7 messenger, L10/L14 money math, L13
@@ -113,7 +113,7 @@ publishes the attendance event-contract in its first subtask so payroll starts a
   + replacing oyatie's `Classified<T>`/data-boundary dep with our `OrgId`. **Everything else
   reference-only** (oyatie is gRPC/tonic-primary; its domain crates are pure invariant models — there is NO
   runnable payroll or ontology engine to copy; **KR payroll + the ontology engine are built fresh**). GUC
-  rename `oyatie.tenant_id`→`app.current_org`, role→`mnt_rt`.
+  rename `oyatie.tenant_id`→`app.current_org`, role→`console_rt`.
 - **Frontend: SKIP** (oyatie is SolidJS/Leptos; we're React 19 + Vite + Tailwind + shadcn + openapi-fetch).
   Only the codegen-determinism harness ports.
 - **buck2: do NOT migrate for this build.** We already have the cargo equivalent (`ci.yml` + 6 gates). The
@@ -174,7 +174,7 @@ deliberately-red change is observed to block deployment.
   silent DDL loss). Reserve disjoint bands per lane in the registry, frozen at fan-out, + a
   `DuplicateVersion`/`NonContiguous` migration-safety variant; better, switch new migrations to
   timestamp/ULID lexical prefixes so "next number" is no longer a shared write.
-  Progress checkpoint (2026-06-25): `mnt-gate-migration-safety` now rejects duplicate `NNNN` prefixes and
+  Progress checkpoint (2026-06-25): `console-gate-migration-safety` now rejects duplicate `NNNN` prefixes and
   missing numeric gaps before the normal migration scan; the real repo gate passes through `0059`. The
   registry band reservation is still required before any multi-lane fan-out.
 - **S7 Transactional outbox** — the attendance→payroll event seam is vaporware (no bus/outbox exists).
@@ -188,7 +188,7 @@ deliberately-red change is observed to block deployment.
 - **S9 RLS overlay safety (security: UNSOUND as drafted)** — `app.role` must be a **closed platform-only
   enum** with **allowlisted call sites** (compile-time-constant value, never derived from `users.roles`/
   Cedar); overlay `WITH CHECK` stays **strict tenant-equality** even when `USING` relaxes reads (gate
-  asserts the asymmetry; `mnt_rt` test: tenant INSERT of `org_id=NULL` rejected); teach tenant-isolation +
+  asserts the asymmetry; `console_rt` test: tenant INSERT of `org_id=NULL` rejected); teach tenant-isolation +
   rls-arming gates about `app.role`; tighten the dynamic-RLS detector; **ship #43 (org-binding lint) as
   substrate**; invert rls-arming from denylist→allowlist + forbid pool aliasing.
 - **S10 Contract freeze + regulated specs** — pre-populate `backend/registry/bounded-contexts.json` with
@@ -211,7 +211,7 @@ deliberately-red change is observed to block deployment.
 - **S12 Lane-sandbox throughput** — invert the 230-line `build_router` to `mount()` registration
   (linkme/inventory) so the composition root never changes; pin shared deps in `[workspace.dependencies]`
   (Cargo.lock churn); per-worktree `CARGO_TARGET_DIR` + per-lane ephemeral Postgres (the 57 existing
-  worktrees share one `mnt_ci` + one target dir — "8–16 concurrent" is wishful until isolated); shard
+  worktrees share one `console_ci` + one target dir — "8–16 concurrent" is wishful until isolated); shard
   Playwright (`--shard`, per-shard DB + distinct loopback IP for the per-IP auth rate-limit); per-crate
   `cargo sqlx prepare -p <crate>` + a `--workspace --check` determinism gate.
 
@@ -240,7 +240,7 @@ aid); ontology shared (`org_id IS NULL`) rows carry schema metadata only, never 
 ## 9. GitHub issue/comment intake (binding live-feedback ledger)
 
 **Last polled:** 2026-06-26T04:20:00Z (2026-06-26 00:20 EDT). Source of truth:
-open GitHub issues + issue comments in `jason931225/maintenance`. Current live intake found PR #37 open for the platform/group/import-foundation slice; re-run this intake before every wave gate and before marking an issue-backed lane done.
+open GitHub issues + issue comments in `jason931225/console`. Current live intake found PR #37 open for the platform/group/import-foundation slice; re-run this intake before every wave gate and before marking an issue-backed lane done.
 
 **Intake rules.**
 - A GitHub issue/comment becomes plan scope when it is actionable, maps to a business workflow, security
@@ -261,18 +261,18 @@ open GitHub issues + issue comments in `jason931225/maintenance`. Current live i
 
 | GitHub source | Valid intake | Owning lane / gate |
 |---|---|---|
-| [#18](https://github.com/jason931225/maintenance/issues/18) + latest comment | OTP issuance bug; region edit; customer/site creation; intake priority admin-setting; equipment search/list visibility after import. | L1 identity + L3 registry + L2 workorder; Q0/Q1 mnt_rt regressions. |
-| [#19](https://github.com/jason931225/maintenance/issues/19) comments 9-25 | Excel progress import; equipment detail popup; org chart + rank; corporation grouping; intake/approval visibility; FLMS import/export dependency; purchase-request + 거래명세표 upload/scan; sales listing autofill/photos/fields; spare/substitution recommendation; external inquiries → support; PM schedule cycle; inactive-user deletion/archive + PC/QR passkey flow. | L1/L2/L3/L5/L9/L10/L13/L18; Q0 first for broken live loops, then F-track maturity. |
-| [#20](https://github.com/jason931225/maintenance/issues/20) + comments + 2026-06-25 operator field report | Site-scoped substitution dropdown; bulk OTP/passkey defects, including a live lost-device admin credential-reset failure that shows `패스키 재설정에 실패했습니다. 다시 시도하세요.` instead of issuing a replacement code; duplicate-name/deactivated-user archival and role-revocation behavior; intake equipment validation bug; daily-plan equipment selection, plan detail view, auto-review submission, admin visibility; worksite-level org tree/personnel view; customer/site/manufacturer/model/specification fields should be dropdown-first with add-new typing, and fields derivable from a known model should auto-fill where safe; corporate governance workflow/approval graph needs (기안서, 구매요청서, 휴가신청서) without adopting the legacy "groupware" label. | L1 identity/auth Q0 recovery gate, L2 workorder/daily plan, L3 registry, L4 dispatch, L13 HR/org tree + leave workflow, L15 ERP purchase workflow, L18 RBAC/approval graph. |
-| [#24](https://github.com/jason931225/maintenance/issues/24) | Production rollout is not done until `knllogistic.com` and `console.knllogistic.com` serve the current `main` web assets. GitHub state is clean after `v0.1.11` (`main` only, no open PRs, CI/Security/Release Please/Image Release green), but read-only production still shows Argo `root`/`maintenance` pinned to `feat/multi-tenant-phase1`, live rollout digests differ from the current overlay, and public hosts still serve the older asset hash. | Track L launch gate; requires live Argo/kubectl evidence or live asset match before closing. |
-| [#17](https://github.com/jason931225/maintenance/issues/17) comments | Daily backup preferred; weekly acceptable if storage-constrained; server-down/offline-resync concern; document leak prevention/alerting; VPN has access-friction and must not become a blanket requirement without UX/security tradeoff. | Track O resilience/security + Track L launch hardening; backup restore drill and document-access audit/alerting are release gates. |
-| [#6](https://github.com/jason931225/maintenance/issues/6), [#10](https://github.com/jason931225/maintenance/issues/10) | Public landing page + marketing view of sale/rental assets; inquiry/contact/FAQ; payment/subscription interest. | L5 sales + L19 quota/billing-plan; keep payments behind explicit provider/security review. |
-| [#7](https://github.com/jason931225/maintenance/issues/7), [#9](https://github.com/jason931225/maintenance/issues/9) | Daily diary/progress exports for internal reporting/corporate-governance approval; import existing Excel progress so operations continue from current sheets. | L12 reporting + F1 import/export + L18 approval graph; generated XLSX must be tested against sample attachments. |
-| [#8](https://github.com/jason931225/maintenance/issues/8), [#15](https://github.com/jason931225/maintenance/issues/15) comments | Equipment master/detail system; residual-value math from depreciation + repair costs; repair/failure history by vehicle; warranty/contract history; mobile-readable equipment tab; simple generic 3D/failure hotspot view if cheap. | L3 registry + L10 financial + L12 reporting + P object view. 3D is optional only if it does not delay core equipment history. |
-| [#11](https://github.com/jason931225/maintenance/issues/11) | User permissions page, create/remove users, lower org groups, edit user details, mobile app linkage, deactivation on leavers. | S3 authz/RBAC + L18; ties to #20 inactive-user/archive comments. |
-| [#12](https://github.com/jason931225/maintenance/issues/12), [#13](https://github.com/jason931225/maintenance/issues/13) | Visual rental dispatch map by province/city/customer site; move/displace assets; customer/site registration with contact/address; arrival/departure location events. | L4 dispatch + L3 registry + C dispatch map; consent-gated arrival/return markers, not 24h live tracking. |
-| [#14](https://github.com/jason931225/maintenance/issues/14) | Intake receipt form with required fields, equipment model pulled from master list, request date, symptom, contact. | L2 workorder intake + OpenAPI/UI tests. |
-| [#16](https://github.com/jason931225/maintenance/issues/16) | AI assistant request for maintenance recommendations and report generation. | Valid only as final-stage operations intelligence. First build deterministic/probabilistic maintenance recommendations, structured workflow history, observability, evaluation, tenant isolation, privacy review, and no-direct-write workflow drafts per `docs/specs/operations-intelligence.md`; reject any request for premature autonomous AI action. |
+| [#18](https://github.com/jason931225/console/issues/18) + latest comment | OTP issuance bug; region edit; customer/site creation; intake priority admin-setting; equipment search/list visibility after import. | L1 identity + L3 registry + L2 workorder; Q0/Q1 console_rt regressions. |
+| [#19](https://github.com/jason931225/console/issues/19) comments 9-25 | Excel progress import; equipment detail popup; org chart + rank; corporation grouping; intake/approval visibility; FLMS import/export dependency; purchase-request + 거래명세표 upload/scan; sales listing autofill/photos/fields; spare/substitution recommendation; external inquiries → support; PM schedule cycle; inactive-user deletion/archive + PC/QR passkey flow. | L1/L2/L3/L5/L9/L10/L13/L18; Q0 first for broken live loops, then F-track maturity. |
+| [#20](https://github.com/jason931225/console/issues/20) + comments + 2026-06-25 operator field report | Site-scoped substitution dropdown; bulk OTP/passkey defects, including a live lost-device admin credential-reset failure that shows `패스키 재설정에 실패했습니다. 다시 시도하세요.` instead of issuing a replacement code; duplicate-name/deactivated-user archival and role-revocation behavior; intake equipment validation bug; daily-plan equipment selection, plan detail view, auto-review submission, admin visibility; worksite-level org tree/personnel view; customer/site/manufacturer/model/specification fields should be dropdown-first with add-new typing, and fields derivable from a known model should auto-fill where safe; corporate governance workflow/approval graph needs (기안서, 구매요청서, 휴가신청서) without adopting the legacy "groupware" label. | L1 identity/auth Q0 recovery gate, L2 workorder/daily plan, L3 registry, L4 dispatch, L13 HR/org tree + leave workflow, L15 ERP purchase workflow, L18 RBAC/approval graph. |
+| [#24](https://github.com/jason931225/console/issues/24) | Production rollout is not done until `knllogistic.com` and `console.knllogistic.com` serve the current `main` web assets. GitHub state is clean after `v0.1.11` (`main` only, no open PRs, CI/Security/Release Please/Image Release green), but read-only production still shows Argo `root`/`maintenance` pinned to `feat/multi-tenant-phase1`, live rollout digests differ from the current overlay, and public hosts still serve the older asset hash. | Track L launch gate; requires live Argo/kubectl evidence or live asset match before closing. |
+| [#17](https://github.com/jason931225/console/issues/17) comments | Daily backup preferred; weekly acceptable if storage-constrained; server-down/offline-resync concern; document leak prevention/alerting; VPN has access-friction and must not become a blanket requirement without UX/security tradeoff. | Track O resilience/security + Track L launch hardening; backup restore drill and document-access audit/alerting are release gates. |
+| [#6](https://github.com/jason931225/console/issues/6), [#10](https://github.com/jason931225/console/issues/10) | Public landing page + marketing view of sale/rental assets; inquiry/contact/FAQ; payment/subscription interest. | L5 sales + L19 quota/billing-plan; keep payments behind explicit provider/security review. |
+| [#7](https://github.com/jason931225/console/issues/7), [#9](https://github.com/jason931225/console/issues/9) | Daily diary/progress exports for internal reporting/corporate-governance approval; import existing Excel progress so operations continue from current sheets. | L12 reporting + F1 import/export + L18 approval graph; generated XLSX must be tested against sample attachments. |
+| [#8](https://github.com/jason931225/console/issues/8), [#15](https://github.com/jason931225/console/issues/15) comments | Equipment master/detail system; residual-value math from depreciation + repair costs; repair/failure history by vehicle; warranty/contract history; mobile-readable equipment tab; simple generic 3D/failure hotspot view if cheap. | L3 registry + L10 financial + L12 reporting + P object view. 3D is optional only if it does not delay core equipment history. |
+| [#11](https://github.com/jason931225/console/issues/11) | User permissions page, create/remove users, lower org groups, edit user details, mobile app linkage, deactivation on leavers. | S3 authz/RBAC + L18; ties to #20 inactive-user/archive comments. |
+| [#12](https://github.com/jason931225/console/issues/12), [#13](https://github.com/jason931225/console/issues/13) | Visual rental dispatch map by province/city/customer site; move/displace assets; customer/site registration with contact/address; arrival/departure location events. | L4 dispatch + L3 registry + C dispatch map; consent-gated arrival/return markers, not 24h live tracking. |
+| [#14](https://github.com/jason931225/console/issues/14) | Intake receipt form with required fields, equipment model pulled from master list, request date, symptom, contact. | L2 workorder intake + OpenAPI/UI tests. |
+| [#16](https://github.com/jason931225/console/issues/16) | AI assistant request for maintenance recommendations and report generation. | Valid only as final-stage operations intelligence. First build deterministic/probabilistic maintenance recommendations, structured workflow history, observability, evaluation, tenant isolation, privacy review, and no-direct-write workflow drafts per `docs/specs/operations-intelligence.md`; reject any request for premature autonomous AI action. |
 
 **Latest #20 clarification:** do not adopt "groupware" as the product/domain label. The clarified need is
 corporate governance capabilities: draft requests, purchase requests, leave requests, and other workflow +
@@ -315,8 +315,8 @@ follow-up open and continue treating future GitHub issue comments as intake cand
 **2026-06-25 #24 rollout state after v0.1.11:** GitHub delivery is clean (`v0.1.11` at `378f00f`,
 prod-overlay bump `7ed8194`, open PRs 0, remote branches `main` only, CI/Security/Release
 Please/Image Release green). Read-only prod verification still shows Argo `root` and `maintenance`
-Applications pinned to `feat/multi-tenant-phase1`, running older `mnt-app@8bbf...` and `mnt-web@eb78...`
-images instead of the current overlay (`mnt-app@5095...`, `mnt-web@7646...`); both public hosts still
+Applications pinned to `feat/multi-tenant-phase1`, running older `console-app@8bbf...` and `console-web@eb78...`
+images instead of the current overlay (`console-app@5095...`, `console-web@7646...`); both public hosts still
 serve `/assets/utils-DRMbRFdX.js`. Keep #24 open until a production Argo patch/sync to the intended current
 revision is performed and live assets match the current overlay.
 

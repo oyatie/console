@@ -2,10 +2,10 @@
 //! audit event builders. Org scope is intentionally absent from commands; the
 //! adapter derives it from the authenticated request context/current principal.
 
-use mnt_inventory_domain::{
+use console_inventory_domain::{
     CycleCountStatus, InventoryConsumptionSource, InventoryItemStatus, MovementKind, VarianceReason,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, InventoryConsumptionEventId, InventoryItemId,
     InventoryStockLocationId, KernelError, P1DispatchId, SiteId, Timestamp, TraceContext, UserId,
     WorkOrderId,

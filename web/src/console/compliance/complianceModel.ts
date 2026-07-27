@@ -40,7 +40,7 @@ export function kindChip(kind: ComplianceObjectKind, id: string): ModuleSourceVa
 }
 
 // Status tone/label tables — one entry per REAL backend state (mirrors
-// mnt_compliance_domain::{ObligationStatus,RegulationImpactStatus,FrameworkStatus}
+// console_compliance_domain::{ObligationStatus,RegulationImpactStatus,FrameworkStatus}
 // as_db_str values exactly; keep in sync with backend/crates/compliance/domain).
 const OBLIGATION_STATUS: Record<ObligationStatus, { labelKey: string; tone: ModuleChipTone }> = {
   DRAFT: { labelKey: `${NS}.statuses.draft`, tone: "neutral" },

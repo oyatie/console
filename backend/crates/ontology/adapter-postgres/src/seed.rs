@@ -19,8 +19,8 @@
 
 use std::collections::HashMap;
 
-use mnt_kernel_core::{KernelError, TraceContext, UserId};
-use mnt_ontology_domain::{
+use console_kernel_core::{KernelError, TraceContext, UserId};
+use console_ontology_domain::{
     ActionDispatch, BackingKind, LinkCardinality, ObjectTypeId, SchemaLifecycleState,
 };
 use serde_json::json;

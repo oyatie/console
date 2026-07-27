@@ -9,11 +9,11 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, KernelError, OrgId, TraceContext};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::{RequestContextError, resolve_principal};
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, KernelError, OrgId, TraceContext};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::{RequestContextError, resolve_principal};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -104,7 +104,7 @@ pub async fn poll_scheduled_hvac(pool: &PgPool) -> Result<u64, DbError> {
 pub fn router(state: FacilitiesRestState) -> Router {
     let verifier = state.jwt_verifier.clone();
     let pool = state.pool.clone();
-    mnt_platform_request_context::with_request_context(
+    console_platform_request_context::with_request_context(
         Router::new()
             .route(FACILITIES_CASES_PATH, get(list_cases).post(create_due_case))
             .route(FACILITIES_CASE_PATH, get(get_case))

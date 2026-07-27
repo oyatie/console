@@ -4,7 +4,7 @@
 //! Tests return `Result<(), Box<dyn std::error::Error>>` so they can use `?`
 //! without triggering the `expect_used` / `unwrap_used` / `panic` lints.
 
-use mnt_gate_layer_boundary::{Layer, ViolationKind, check, classify_crate, load_metadata};
+use console_gate_layer_boundary::{Layer, ViolationKind, check, classify_crate, load_metadata};
 use std::fs;
 use std::path::PathBuf;
 
@@ -13,7 +13,7 @@ use std::path::PathBuf;
 // ---------------------------------------------------------------------------
 
 fn temp_workspace(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let dir = std::env::temp_dir().join(format!("mnt-gate-test-{name}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("console-gate-test-{name}-{}", std::process::id()));
     if dir.exists() {
         fs::remove_dir_all(&dir)?;
     }
@@ -54,13 +54,13 @@ unsafe_code = "forbid"
 "#,
     )?;
 
-    // mnt-demo-adapter-postgres (adapter layer)
+    // console-demo-adapter-postgres (adapter layer)
     let adapter_dir = ws.join("crates/demo/adapter-postgres");
     write_file(
         &adapter_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-demo-adapter-postgres"
+name = "console-demo-adapter-postgres"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
@@ -71,19 +71,19 @@ workspace = true
     )?;
     write_file(&adapter_dir.join("src/lib.rs"), "// adapter placeholder\n")?;
 
-    // mnt-demo-domain (domain layer) — ILLEGALLY depends on the adapter
+    // console-demo-domain (domain layer) — ILLEGALLY depends on the adapter
     let domain_dir = ws.join("crates/demo/domain");
     write_file(
         &domain_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-demo-domain"
+name = "console-demo-domain"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-demo-adapter-postgres = { path = "../adapter-postgres" }
+console-demo-adapter-postgres = { path = "../adapter-postgres" }
 
 [lints]
 workspace = true
@@ -120,7 +120,7 @@ workspace = true
     );
     if let Some(ev) = edge_violation {
         assert_eq!(
-            ev.crate_name, "mnt-demo-domain",
+            ev.crate_name, "console-demo-domain",
             "violation should be on the domain crate"
         );
     }
@@ -157,13 +157,13 @@ unsafe_code = "forbid"
 "#,
     )?;
 
-    // mnt-kernel-core
+    // console-kernel-core
     let kernel_dir = ws.join("crates/kernel/core");
     write_file(
         &kernel_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-kernel-core"
+name = "console-kernel-core"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
@@ -174,19 +174,19 @@ workspace = true
     )?;
     write_file(&kernel_dir.join("src/lib.rs"), "// kernel\n")?;
 
-    // mnt-demo-domain → mnt-kernel-core (legal)
+    // console-demo-domain → console-kernel-core (legal)
     let domain_dir = ws.join("crates/demo/domain");
     write_file(
         &domain_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-demo-domain"
+name = "console-demo-domain"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { path = "../../kernel/core" }
+console-kernel-core = { path = "../../kernel/core" }
 
 [lints]
 workspace = true
@@ -194,20 +194,20 @@ workspace = true
     )?;
     write_file(&domain_dir.join("src/lib.rs"), "// domain\n")?;
 
-    // mnt-demo-application → mnt-demo-domain (legal)
+    // console-demo-application → console-demo-domain (legal)
     let app_dir = ws.join("crates/demo/application");
     write_file(
         &app_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-demo-application"
+name = "console-demo-application"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-demo-domain = { path = "../domain" }
-mnt-kernel-core = { path = "../../kernel/core" }
+console-demo-domain = { path = "../domain" }
+console-kernel-core = { path = "../../kernel/core" }
 
 [lints]
 workspace = true
@@ -237,7 +237,7 @@ workspace = true
 #[test]
 fn gate_detects_domain_depending_on_sqlx() {
     let layer = classify_crate(
-        "mnt-workorder-domain",
+        "console-workorder-domain",
         "/fake/ws/crates/workorder/domain/Cargo.toml",
         "/fake/ws",
     );
@@ -258,11 +258,11 @@ fn gate_detects_domain_depending_on_sqlx() {
 }
 
 // ---------------------------------------------------------------------------
-// Manifest hygiene: missing mnt- prefix is detected
+// Manifest hygiene: missing console- prefix is detected
 // ---------------------------------------------------------------------------
 
 #[test]
-fn gate_detects_missing_mnt_prefix() -> Result<(), Box<dyn std::error::Error>> {
+fn gate_detects_missing_console_prefix() -> Result<(), Box<dyn std::error::Error>> {
     let ws = temp_workspace("prefix")?;
 
     write_file(
@@ -303,10 +303,10 @@ workspace = true
     let has_prefix_violation = result
         .violations
         .iter()
-        .any(|v| v.kind == ViolationKind::MissingMntPrefix);
+        .any(|v| v.kind == ViolationKind::MissingConsolePrefix);
     assert!(
         has_prefix_violation,
-        "expected MissingMntPrefix violation, got: {:#?}",
+        "expected MissingConsolePrefix violation, got: {:#?}",
         result.violations
     );
     Ok(())
@@ -341,7 +341,7 @@ unsafe_code = "forbid"
         &kernel_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-kernel-core"
+name = "console-kernel-core"
 version = "0.1.0"
 edition.workspace = true
 
@@ -372,7 +372,7 @@ workspace = true
         result.violations
     );
     assert_eq!(
-        violation.crate_name, "mnt-kernel-core",
+        violation.crate_name, "console-kernel-core",
         "violation should be scoped to the crate missing publish=false"
     );
     assert!(
@@ -413,7 +413,7 @@ unsafe_code = "forbid"
         &kernel_dir.join("Cargo.toml"),
         r#"
 [package]
-name = "mnt-kernel-core"
+name = "console-kernel-core"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true

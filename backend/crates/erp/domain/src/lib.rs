@@ -5,7 +5,7 @@
 //! accounting behavior without a source-versioned rule and 세무사 validation.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use time::Date;
 use time::macros::date;
 

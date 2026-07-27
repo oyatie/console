@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_financial_domain::{
+use console_financial_domain::{
     DepreciationMethod, FinancialConfig, MoneyInput, PurchaseActor, PurchaseStatus,
     PurchaseTransition, RentalQuoteInput, ResidualRecomputeInput, compute_rental_quote,
     recompute_residual_value, validate_purchase_transition,

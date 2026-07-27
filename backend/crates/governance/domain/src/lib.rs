@@ -1,13 +1,13 @@
 //! Governance domain — pure lifecycle FSM + §16 guardrail gate-chain logic.
 //!
 //! No I/O, no sqlx, no authz crate: this layer only knows kernel types (the
-//! layer-boundary gate restricts domain crates to `mnt-kernel-core`). The
+//! layer-boundary gate restricts domain crates to `console-kernel-core`). The
 //! Authority gate consumes an [`AuthorityEffect`] that the outer layers derive
 //! from the Cedar evaluator's `DecisionEffect`; the gate chain itself is pure so
 //! it is trivially unit-testable and re-runnable inside a writeback transaction.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 // ===========================================================================
@@ -172,7 +172,7 @@ impl GateChainConfig {
 }
 
 /// Cedar decision effect, mirrored into the domain so this crate stays
-/// kernel-only. Outer layers map `mnt_platform_authz::cedar_pbac::DecisionEffect`
+/// kernel-only. Outer layers map `console_platform_authz::cedar_pbac::DecisionEffect`
 /// onto this.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

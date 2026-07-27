@@ -7,7 +7,7 @@
 --
 -- The feature is unreleased on this branch (no email_accounts rows exist yet), so
 -- there is nothing to migrate; this only tightens the constraint. The application
--- `ALLOWED_SMTP_PORTS` const (mnt-comms-application) mirrors this exact set.
+-- `ALLOWED_SMTP_PORTS` const (console-comms-application) mirrors this exact set.
 --
 -- 0053's inline `CHECK (smtp_port IN (465, 587, 25))` is auto-named by Postgres
 -- (email_accounts_smtp_port_check). We drop that constraint by introspection

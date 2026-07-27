@@ -1,19 +1,19 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Notification-center REST E2E over the REAL router on a genuine non-owner
-//! `mnt_rt` pool (RLS actually enforced, never a BYPASSRLS superuser).
+//! `console_rt` pool (RLS actually enforced, never a BYPASSRLS superuser).
 //!
 //! This is the shape that catches the failure a superuser-pool test masks: a
-//! handler that never armed `app.current_org` returns nothing to real mnt_rt
+//! handler that never armed `app.current_org` returns nothing to real console_rt
 //! traffic even though the row exists. Here user A must SEE its own notification
-//! over HTTP as mnt_rt (proving the read path arms the tenant GUC), and B's id
+//! over HTTP as console_rt (proving the read path arms the tenant GUC), and B's id
 //! must 404 for A (recipient scoping). Helpers copied from
 //! workflow_runtime_instance_api.rs per the no-shared-helper convention.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -24,8 +24,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Keys {
     private_pem: String,
@@ -52,7 +52,7 @@ async fn notifications_are_recipient_scoped_over_http_as_runtime_role(pool: PgPo
         build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
     let token_a = bearer(&keys, user_a, "ADMIN", branch);
 
-    // A lists over HTTP as mnt_rt: must SEE its own row. If the handler failed
+    // A lists over HTTP as console_rt: must SEE its own row. If the handler failed
     // to arm app.current_org, RLS would hide it and this length check fails.
     let listed = get(service.clone(), "/api/v1/me/notifications", &token_a).await;
     assert_eq!(listed.status, StatusCode::OK, "{:?}", listed.json);
@@ -60,7 +60,7 @@ async fn notifications_are_recipient_scoped_over_http_as_runtime_role(pool: PgPo
     assert_eq!(
         items.len(),
         1,
-        "A sees exactly its own notification as mnt_rt"
+        "A sees exactly its own notification as console_rt"
     );
     assert_eq!(items[0]["id"].as_str().unwrap(), notif_a.to_string());
 
@@ -150,7 +150,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -159,13 +159,13 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
 }

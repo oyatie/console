@@ -1,4 +1,4 @@
-//! `mnt-app` composition root.
+//! `console-app` composition root.
 //!
 //! This crate owns the process boundary: 12-factor configuration, health and
 //! readiness endpoints, telemetry, database dependency wiring, and graceful
@@ -25,115 +25,115 @@ use axum::{Json, Router};
 use base64::Engine as _;
 use ipnet::IpNet;
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
-use mnt_analytics_quant_rest::AnalyticsQuantState;
-use mnt_attendance_adapter_postgres::PgAttendanceStore;
-use mnt_attendance_rest::AttendanceRestState;
-use mnt_benefit_adapter_postgres::PgBenefitCatalogStore;
-use mnt_benefit_rest::BenefitRestState;
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_credential_cipher::EnvelopeCredentialCipher;
-use mnt_comms_rest::CommsRestState;
-use mnt_compliance_adapter_postgres::PgComplianceStore;
-use mnt_compliance_rest::ComplianceRestState;
-use mnt_consulting_rest::ConsultingRestState;
-use mnt_dispatch_adapter_postgres::PgDispatchStore;
-use mnt_dispatch_domain::DispatchTimerConfig;
-use mnt_dispatch_rest::DispatchRestState;
-use mnt_dispatch_worker::{AlimtalkEscalationPolicy, DispatchWorker};
-use mnt_docs_adapter_postgres::PgDocsStore;
-use mnt_docs_rest::DocsRestState;
-use mnt_equipment_adapter_postgres::PgEquipment3rStore;
-use mnt_equipment_rest::EquipmentRestState;
-use mnt_evaluation_adapter_postgres::PgEvaluationStore;
-use mnt_evaluation_rest::EvaluationRestState;
-use mnt_facilities_rest::FacilitiesRestState;
-use mnt_finance_gl_adapter_postgres::PgVoucherStore;
-use mnt_finance_gl_rest::FinanceGlRestState;
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_rest::FinancialRestState;
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_rest::GovernanceRestState;
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_identity_rest::IdentityRestState;
-use mnt_inbox_adapter_postgres::PgInboxStore;
-use mnt_inbox_rest::InboxRestState;
-use mnt_inspection_adapter_postgres::PgInspectionStore;
-use mnt_inspection_rest::InspectionRestState;
-use mnt_integrity::{IntegrityRestState, PgIntegrityStore};
-use mnt_inventory_adapter_postgres::PgInventoryStore;
-use mnt_inventory_rest::InventoryRestState;
-use mnt_kernel_core::{
+use console_analytics_quant_rest::AnalyticsQuantState;
+use console_attendance_adapter_postgres::PgAttendanceStore;
+use console_attendance_rest::AttendanceRestState;
+use console_benefit_adapter_postgres::PgBenefitCatalogStore;
+use console_benefit_rest::BenefitRestState;
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_credential_cipher::EnvelopeCredentialCipher;
+use console_comms_rest::CommsRestState;
+use console_compliance_adapter_postgres::PgComplianceStore;
+use console_compliance_rest::ComplianceRestState;
+use console_consulting_rest::ConsultingRestState;
+use console_dispatch_adapter_postgres::PgDispatchStore;
+use console_dispatch_domain::DispatchTimerConfig;
+use console_dispatch_rest::DispatchRestState;
+use console_dispatch_worker::{AlimtalkEscalationPolicy, DispatchWorker};
+use console_docs_adapter_postgres::PgDocsStore;
+use console_docs_rest::DocsRestState;
+use console_equipment_adapter_postgres::PgEquipment3rStore;
+use console_equipment_rest::EquipmentRestState;
+use console_evaluation_adapter_postgres::PgEvaluationStore;
+use console_evaluation_rest::EvaluationRestState;
+use console_facilities_rest::FacilitiesRestState;
+use console_finance_gl_adapter_postgres::PgVoucherStore;
+use console_finance_gl_rest::FinanceGlRestState;
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_rest::FinancialRestState;
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_rest::GovernanceRestState;
+use console_identity_adapter_postgres::PgOrgStore;
+use console_identity_rest::IdentityRestState;
+use console_inbox_adapter_postgres::PgInboxStore;
+use console_inbox_rest::InboxRestState;
+use console_inspection_adapter_postgres::PgInspectionStore;
+use console_inspection_rest::InspectionRestState;
+use console_integrity::{IntegrityRestState, PgIntegrityStore};
+use console_inventory_adapter_postgres::PgInventoryStore;
+use console_inventory_rest::InventoryRestState;
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, EquipmentId, ErrorKind, EvidenceId,
     KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_logistics_adapter_postgres::PgLogisticsStore;
-use mnt_logistics_rest::LogisticsRestState;
-use mnt_messenger_adapter_postgres::PgMessengerStore;
-use mnt_messenger_rest::MessengerRestState;
-use mnt_notices_adapter_postgres::PgNoticeStore;
-use mnt_notices_rest::NoticeRestState;
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_notifications_rest::NotificationRestState;
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
-use mnt_ontology_rest::{
+use console_logistics_adapter_postgres::PgLogisticsStore;
+use console_logistics_rest::LogisticsRestState;
+use console_messenger_adapter_postgres::PgMessengerStore;
+use console_messenger_rest::MessengerRestState;
+use console_notices_adapter_postgres::PgNoticeStore;
+use console_notices_rest::NoticeRestState;
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_notifications_rest::NotificationRestState;
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_rest::{
     ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry, ProjectedHandler,
 };
-use mnt_orgchange_adapter_postgres::PgOrgChangeStore;
-use mnt_orgchange_rest::OrgChangeRestState;
-use mnt_payroll_adapter_postgres::PgPayrollStore;
-use mnt_payroll_rest::PayrollRestState;
-use mnt_platform_audit_chain::{
+use console_orgchange_adapter_postgres::PgOrgChangeStore;
+use console_orgchange_rest::OrgChangeRestState;
+use console_payroll_adapter_postgres::PgPayrollStore;
+use console_payroll_rest::PayrollRestState;
+use console_platform_audit_chain::{
     ChainReport, InMemoryEd25519Signer, SealConfig, SealSigner, verify_org_chain,
 };
-use mnt_platform_auth::{
+use console_platform_auth::{
     AccessClaims, AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings,
     JwtVerifier, PasskeyService, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
     WebauthnSettings, android_assetlinks_json, apple_app_site_association_json,
 };
-use mnt_platform_auth_rest::{AuthRestConfig, AuthRestState};
-use mnt_platform_authz::{Action, Feature, Principal, Role, authorize, authorize_org_wide};
-use mnt_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_email::{
+use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
+use console_platform_authz::{Action, Feature, Principal, Role, authorize, authorize_org_wide};
+use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
+use console_platform_db::{DbError, with_audit};
+use console_platform_email::{
     DisabledEmailSender, EmailSender, LettreSmtpSender, SmtpEmailConfig, StubEmailMode,
     StubEmailSender,
 };
-use mnt_platform_jobs::{
+use console_platform_jobs::{
     ApalisPostgresJobQueue, BoxFuture, JobQueue, JobQueueError, PlatformJob, PlatformJobHandler,
     migrate_and_reconcile_apalis_postgres, run_apalis_worker_until_shutdown,
 };
-use mnt_platform_provisioning::{BootstrapCredentialStore, PlatformProvisioner};
-use mnt_platform_push::{
+use console_platform_provisioning::{BootstrapCredentialStore, PlatformProvisioner};
+use console_platform_push::{
     FcmConfig, FcmHttpV1Client, ProviderPushNotifier, PushNotifier, SolapiAlimtalkClient,
     SolapiConfig,
 };
-use mnt_platform_realtime::{
+use console_platform_realtime::{
     PgRealtimeHub, PostgresBridgeHandle, PostgresMessageNotifier, PostgresNotificationNotifier,
     RealtimeRestState,
 };
-use mnt_platform_rest::PlatformRestState;
-use mnt_platform_storage::{
+use console_platform_rest::PlatformRestState;
+use console_platform_storage::{
     EvidenceService, FfmpegMediaProcessor, S3ObjectStore, S3StorageConfig, SeaweedS3Storage,
     StorageError,
 };
-use mnt_production_rest::ProductionRestState;
-use mnt_recruiting_adapter_postgres::PgRecruitingStore;
-use mnt_recruiting_rest::RecruitingRestState;
-use mnt_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
-use mnt_registry_application::{UpdateEquipmentCommand, UpdateEquipmentFields};
-use mnt_registry_domain::EquipmentStatus;
-use mnt_registry_rest::RegistryRestState;
-use mnt_reporting_adapter_postgres::PgKpiRepository;
-use mnt_reporting_rest::KpiRestState;
-use mnt_sales_adapter_postgres::PgSalesStore;
-use mnt_sales_rest::SalesRestState;
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_support_rest::SupportRestState;
-use mnt_todos_adapter_postgres::PgTodoStore;
-use mnt_todos_rest::TodoRestState;
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_rest::{MobileRestState, WorkOrderRestState};
+use console_production_rest::ProductionRestState;
+use console_recruiting_adapter_postgres::PgRecruitingStore;
+use console_recruiting_rest::RecruitingRestState;
+use console_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
+use console_registry_application::{UpdateEquipmentCommand, UpdateEquipmentFields};
+use console_registry_domain::EquipmentStatus;
+use console_registry_rest::RegistryRestState;
+use console_reporting_adapter_postgres::PgKpiRepository;
+use console_reporting_rest::KpiRestState;
+use console_sales_adapter_postgres::PgSalesStore;
+use console_sales_rest::SalesRestState;
+use console_support_adapter_postgres::PgSupportStore;
+use console_support_rest::SupportRestState;
+use console_todos_adapter_postgres::PgTodoStore;
+use console_todos_rest::TodoRestState;
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_rest::{MobileRestState, WorkOrderRestState};
 use opentelemetry::global;
 use opentelemetry::trace::{TraceContextExt, TracerProvider};
 use opentelemetry_otlp::WithExportConfig;
@@ -170,7 +170,7 @@ pub mod workflow_schedules;
 mod workflow_studio;
 
 const DEFAULT_HTTP_ADDR: &str = "0.0.0.0:8080";
-const DEFAULT_SERVICE_NAME: &str = "mnt-app";
+const DEFAULT_SERVICE_NAME: &str = "console-app";
 const DEFAULT_SHUTDOWN_TIMEOUT_SECS: u64 = 10;
 // Blue/green may temporarily run four API pods and the worker rolling update
 // two workers. Six runtime connections per process, plus the API's two
@@ -184,9 +184,9 @@ const SERVING_STATEMENT_TIMEOUT: &str = "30s";
 const SERVING_IDLE_IN_TRANSACTION_SESSION_TIMEOUT: &str = "30s";
 const SERVING_TRANSACTION_TIMEOUT: &str = "45s";
 const DEFAULT_EVIDENCE_TRANSCODE_CONCURRENCY: usize = 2;
-const DEFAULT_JWT_ISSUER: &str = "mnt-platform-auth";
-const DEFAULT_JWT_AUDIENCE: &str = "mnt-api";
-const DEFAULT_WEBAUTHN_RP_NAME: &str = "MNT Maintenance";
+const DEFAULT_JWT_ISSUER: &str = "console-platform-auth";
+const DEFAULT_JWT_AUDIENCE: &str = "console-api";
+const DEFAULT_WEBAUTHN_RP_NAME: &str = "Console";
 const DEFAULT_AUTH_CEREMONY_TTL_SECS: u64 = 300;
 const DEFAULT_REFRESH_TOKEN_TTL_SECS: u64 = 60 * 60 * 24 * 30;
 /// Absolute refresh-family lifetime cap (NIST 800-63B AAL2). Default 24h: past
@@ -200,7 +200,7 @@ const DEFAULT_DISPATCH_GPS_FRESHNESS_SECS: u64 = 15 * 60;
 const DEFAULT_FCM_TOKEN_URI: &str = "https://oauth2.googleapis.com/token";
 const DEFAULT_FCM_SCOPE: &str = "https://www.googleapis.com/auth/firebase.messaging";
 const DEFAULT_SOLAPI_BASE_URL: &str = "https://api.solapi.com";
-const EMAIL_STUB_MODE_ENV: &str = "MNT_EMAIL_STUB_MODE";
+const EMAIL_STUB_MODE_ENV: &str = "CONSOLE_EMAIL_STUB_MODE";
 const DEFAULT_AUDIT_LIMIT: i64 = 50;
 const MAX_AUDIT_LIMIT: i64 = 200;
 /// Global request-body cap. Modest by design: the JSON APIs here carry small
@@ -209,7 +209,7 @@ const MAX_AUDIT_LIMIT: i64 = 200;
 const MAX_REQUEST_BODY_BYTES: usize = 2 * 1024 * 1024;
 /// Default per-request timeout; sheds requests that hang on a slow upstream or
 /// DB so a stuck handler cannot pin a connection indefinitely. Overridable via
-/// `MNT_REQUEST_TIMEOUT_SECS` (see `AppConfig::request_timeout`).
+/// `CONSOLE_REQUEST_TIMEOUT_SECS` (see `AppConfig::request_timeout`).
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const OPENAPI_YAML: &str = include_str!("../../openapi/openapi.yaml");
 
@@ -228,55 +228,55 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
     },
     ConfiguredRouteSurface {
         name: "attendance",
-        paths: mnt_attendance_rest::ATTENDANCE_ROUTE_PATHS,
+        paths: console_attendance_rest::ATTENDANCE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "inventory",
-        paths: mnt_inventory_rest::INVENTORY_ROUTE_PATHS,
+        paths: console_inventory_rest::INVENTORY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "dispatch",
-        paths: mnt_dispatch_rest::DISPATCH_ROUTE_PATHS,
+        paths: console_dispatch_rest::DISPATCH_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "benefit",
-        paths: mnt_benefit_rest::BENEFIT_ROUTE_PATHS,
+        paths: console_benefit_rest::BENEFIT_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "consulting",
-        paths: mnt_consulting_rest::CONSULTING_ROUTE_PATHS,
+        paths: console_consulting_rest::CONSULTING_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "financial",
-        paths: mnt_financial_rest::FINANCIAL_ROUTE_PATHS,
+        paths: console_financial_rest::FINANCIAL_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "evaluation",
-        paths: mnt_evaluation_rest::EVALUATION_ROUTE_PATHS,
+        paths: console_evaluation_rest::EVALUATION_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "inspection",
-        paths: mnt_inspection_rest::INSPECTION_ROUTE_PATHS,
+        paths: console_inspection_rest::INSPECTION_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "support",
-        paths: mnt_support_rest::SUPPORT_ROUTE_PATHS,
+        paths: console_support_rest::SUPPORT_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "identity",
-        paths: mnt_identity_rest::IDENTITY_ROUTE_PATHS,
+        paths: console_identity_rest::IDENTITY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "compliance",
-        paths: mnt_compliance_rest::COMPLIANCE_ROUTE_PATHS,
+        paths: console_compliance_rest::COMPLIANCE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "integrity",
-        paths: mnt_integrity::INTEGRITY_ROUTE_PATHS,
+        paths: console_integrity::INTEGRITY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "registry",
-        paths: mnt_registry_rest::REGISTRY_ROUTE_PATHS,
+        paths: console_registry_rest::REGISTRY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "hr",
@@ -292,95 +292,95 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
     },
     ConfiguredRouteSurface {
         name: "sales",
-        paths: mnt_sales_rest::SALES_ROUTE_PATHS,
+        paths: console_sales_rest::SALES_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "reporting",
-        paths: mnt_reporting_rest::KPI_ROUTE_PATHS,
+        paths: console_reporting_rest::KPI_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "workorder",
-        paths: mnt_workorder_rest::WORKORDER_ROUTE_PATHS,
+        paths: console_workorder_rest::WORKORDER_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "workorder-mobile",
-        paths: mnt_workorder_rest::MOBILE_ROUTE_PATHS,
+        paths: console_workorder_rest::MOBILE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "facilities",
-        paths: mnt_facilities_rest::FACILITIES_ROUTE_PATHS,
+        paths: console_facilities_rest::FACILITIES_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "production",
-        paths: mnt_production_rest::PRODUCTION_ROUTE_PATHS,
+        paths: console_production_rest::PRODUCTION_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "messenger",
-        paths: mnt_messenger_rest::MESSENGER_ROUTE_PATHS,
+        paths: console_messenger_rest::MESSENGER_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "comms",
-        paths: mnt_comms_rest::COMMS_ROUTE_PATHS,
+        paths: console_comms_rest::COMMS_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "platform",
-        paths: mnt_platform_rest::PLATFORM_ROUTE_PATHS,
+        paths: console_platform_rest::PLATFORM_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "auth",
-        paths: mnt_platform_auth_rest::AUTH_ROUTE_PATHS,
+        paths: console_platform_auth_rest::AUTH_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "realtime",
-        paths: mnt_platform_realtime::WS_ROUTE_PATHS,
+        paths: console_platform_realtime::WS_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "ontology",
-        paths: mnt_ontology_rest::ONTOLOGY_ROUTE_PATHS,
+        paths: console_ontology_rest::ONTOLOGY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "governance",
-        paths: mnt_governance_rest::GOVERNANCE_ROUTE_PATHS,
+        paths: console_governance_rest::GOVERNANCE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "orgchange",
-        paths: mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS,
+        paths: console_orgchange_rest::ORG_CHANGE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "policy",
-        paths: mnt_platform_authz_rest::CEDAR_POLICY_ROUTE_PATHS,
+        paths: console_platform_authz_rest::CEDAR_POLICY_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "evidence",
-        paths: mnt_docs_rest::EVIDENCE_ROUTE_PATHS,
+        paths: console_docs_rest::EVIDENCE_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "notices",
-        paths: mnt_notices_rest::NOTICES_ROUTE_PATHS,
+        paths: console_notices_rest::NOTICES_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "finance-gl",
-        paths: mnt_finance_gl_rest::FINANCE_GL_ROUTE_PATHS,
+        paths: console_finance_gl_rest::FINANCE_GL_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "payroll",
-        paths: mnt_payroll_rest::PAYROLL_ROUTE_PATHS,
+        paths: console_payroll_rest::PAYROLL_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "analytics",
-        paths: mnt_analytics_quant_rest::ANALYTICS_QUANT_ROUTE_PATHS,
+        paths: console_analytics_quant_rest::ANALYTICS_QUANT_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "equipment-3r",
-        paths: mnt_equipment_rest::EQUIPMENT_3R_ROUTE_PATHS,
+        paths: console_equipment_rest::EQUIPMENT_3R_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "notifications",
-        paths: mnt_notifications_rest::NOTIFICATIONS_ROUTE_PATHS,
+        paths: console_notifications_rest::NOTIFICATIONS_ROUTE_PATHS,
     },
     ConfiguredRouteSurface {
         name: "recruiting",
-        paths: mnt_recruiting_rest::RECRUITING_ROUTE_PATHS,
+        paths: console_recruiting_rest::RECRUITING_ROUTE_PATHS,
     },
     // The hire handshake is the one recruiting route that lives in the app
     // crate (acceptance → employee creation must go through the HR-owned core
@@ -395,7 +395,7 @@ pub const CONFIGURED_ROUTE_SURFACES: &[ConfiguredRouteSurface] = &[
 #[cfg(test)]
 mod production_route_surface_tests {
     use super::*;
-    use mnt_production_rest::{
+    use console_production_rest::{
         PRODUCTION_CAPACITY_SLOTS_PATH, PRODUCTION_OPERATION_RECORDS_PATH, PRODUCTION_PLAN_PATH,
         PRODUCTION_PLAN_RELEASE_PATH, PRODUCTION_PLANS_PATH, PRODUCTION_SOURCE_INGRESS_PATH,
         PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH, PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH,
@@ -427,7 +427,7 @@ mod production_route_surface_tests {
 }
 
 /// Embedded schema migrations, compiled into the binary at build time from the
-/// canonical `mnt-platform-db` migration directory (the same `0001..NNNN_*.sql`
+/// canonical `console-platform-db` migration directory (the same `0001..NNNN_*.sql`
 /// files applied to prod). `migrate` mode runs these in version order; sqlx
 /// tracks applied versions + per-file checksums in `_sqlx_migrations`, so re-runs
 /// are idempotent and a mutated already-applied file is rejected rather than
@@ -444,7 +444,7 @@ pub enum AppRole {
     /// One-shot schema-migration mode. Connects to `DATABASE_URL` as the table
     /// OWNER, runs the embedded migrations, then exits â it never serves HTTP.
     /// Invoked out of band (an Argo CD PreSync Job) before the api/worker
-    /// Deployments roll, so the runtime `mnt_rt` role never needs DDL.
+    /// Deployments roll, so the runtime `console_rt` role never needs DDL.
     Migrate,
 }
 
@@ -467,7 +467,7 @@ impl std::str::FromStr for AppRole {
             "worker" => Ok(Self::Worker),
             "migrate" => Ok(Self::Migrate),
             other => Err(AppError::Config(format!(
-                "MNT_APP_ROLE must be api, worker, or migrate, got {other:?}"
+                "CONSOLE_APP_ROLE must be api, worker, or migrate, got {other:?}"
             ))),
         }
     }
@@ -482,18 +482,18 @@ pub struct AppConfig {
     /// Dedicated least-privilege connection used only for leave commands
     /// (`LEAVE_COMMAND_DATABASE_URL`). The API requires this whenever its
     /// general runtime `DATABASE_URL` is configured so command execution can
-    /// never silently fall back to the broader `mnt_rt` credential. Worker and
+    /// never silently fall back to the broader `console_rt` credential. Worker and
     /// migrate roles do not open or require this pool.
     pub leave_command_database_url: Option<String>,
     /// Dedicated least-privilege connection for ontology schema commands
     /// (`ONTOLOGY_COMMAND_DATABASE_URL`). Like the leave command credential,
-    /// this is API-only and never falls back to `mnt_rt` in a configured
+    /// this is API-only and never falls back to `console_rt` in a configured
     /// deployment.
     pub ontology_command_database_url: Option<String>,
     /// Dedicated least-privilege connection for destructive platform tenant
     /// removal (`PLATFORM_FORCE_COMMAND_DATABASE_URL`). This API-only pool is
     /// required whenever the runtime database is configured; it never falls
-    /// back to `mnt_rt`.
+    /// back to `console_rt`.
     pub platform_force_command_database_url: Option<String>,
     pub otlp_endpoint: Option<String>,
     pub jwt: Option<JwtVerifierConfig>,
@@ -502,63 +502,63 @@ pub struct AppConfig {
     pub dispatch_timers: DispatchTimerConfig,
     pub dispatch_jobs_enabled: bool,
     /// Max concurrent evidence transcodes the worker runs at once
-    /// (`MNT_EVIDENCE_TRANSCODE_CONCURRENCY`, default 2). Backpressure cap so a
+    /// (`CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY`, default 2). Backpressure cap so a
     /// burst of mechanic uploads can't exhaust the worker's CPU/disk.
     pub evidence_transcode_concurrency: usize,
     pub fcm: Option<FcmConfig>,
     pub solapi: Option<SolapiConfig>,
     pub solapi_disabled_reason: Option<String>,
     /// Outbound SMTP relay for transactional email (open-signup OTP). `Some`
-    /// only when the live `MNT_EMAIL_*` SMTP group is complete and valid.
+    /// only when the live `CONSOLE_EMAIL_*` SMTP group is complete and valid.
     pub email: Option<SmtpEmailConfig>,
     /// Explicit non-production mode that allows `StubEmailSender` to log OTPs
-    /// instead of sending mail (`MNT_EMAIL_STUB_MODE=local|dev|development|test|e2e`).
+    /// instead of sending mail (`CONSOLE_EMAIL_STUB_MODE=local|dev|development|test|e2e`).
     /// `None` means missing SMTP fails closed at send time and partial SMTP
     /// configuration fails during config parsing.
     pub email_stub_mode: Option<StubEmailMode>,
     pub shutdown_timeout: Duration,
     /// Per-request timeout applied to every non-streaming route
-    /// (`MNT_REQUEST_TIMEOUT_SECS`, default 30s). Deliberately NOT applied to
+    /// (`CONSOLE_REQUEST_TIMEOUT_SECS`, default 30s). Deliberately NOT applied to
     /// the long-lived realtime WS route, which is merged outside this layer.
     /// Configurable primarily so tests can prove the realtime route escapes the
     /// timeout without waiting the full production budget.
     pub request_timeout: Duration,
     /// Deploy-time cold-start OTP for the cold-start SUPER_ADMIN, supplied
-    /// out-of-band via `MNT_COLDSTART_OTP`. `None` (or empty) means no
+    /// out-of-band via `CONSOLE_COLDSTART_OTP`. `None` (or empty) means no
     /// cold-start OTP is seeded at boot â the normal state once an admin exists.
     pub coldstart_otp: Option<String>,
-    /// Lifetime of a boot-seeded cold-start OTP (`MNT_COLDSTART_OTP_TTL_SECS`,
+    /// Lifetime of a boot-seeded cold-start OTP (`CONSOLE_COLDSTART_OTP_TTL_SECS`,
     /// default 3600s).
     pub coldstart_otp_ttl: time::Duration,
     /// Number of configured reverse-proxy hops in front of the service,
-    /// including the direct transport peer (`MNT_TRUSTED_PROXY_COUNT`, default
+    /// including the direct transport peer (`CONSOLE_TRUSTED_PROXY_COUNT`, default
     /// 0). Forwarding headers are ignored unless every configured hop is in
     /// [`Self::trusted_proxy_cidrs`].
     pub trusted_proxy_count: usize,
     /// CIDRs allowed to present forwarding headers at process ingress
-    /// (`MNT_TRUSTED_PROXY_CIDRS`, comma-separated). Required when the hop
+    /// (`CONSOLE_TRUSTED_PROXY_CIDRS`, comma-separated). Required when the hop
     /// count is nonzero.
     pub trusted_proxy_cidrs: Vec<IpNet>,
     /// Native app-link association metadata served at `/.well-known/*`. Drives
     /// the public, unauthenticated Apple App Site Association + Android asset
     /// links documents that authorize the native apps' passkeys for the RP
-    /// domain. Sourced from `MNT_IOS_APP_IDS`, `MNT_ANDROID_PACKAGE`, and
-    /// `MNT_ANDROID_CERT_SHA256` (see [`app_links_config_from_vars`]).
+    /// domain. Sourced from `CONSOLE_IOS_APP_IDS`, `CONSOLE_ANDROID_PACKAGE`, and
+    /// `CONSOLE_ANDROID_CERT_SHA256` (see [`app_links_config_from_vars`]).
     pub app_links: AppLinksConfig,
-    /// Whether the inbound webmail IMAP sync worker runs (`MNT_MAIL_ENABLED`,
+    /// Whether the inbound webmail IMAP sync worker runs (`CONSOLE_MAIL_ENABLED`,
     /// default false). Even when true the worker only starts if the master KEK
-    /// (`MNT_MAIL_MASTER_KEY`) and object storage are both configured — it is a
+    /// (`CONSOLE_MAIL_MASTER_KEY`) and object storage are both configured — it is a
     /// no-op otherwise, so a misconfiguration never crashes the app.
     pub mail_enabled: bool,
     /// Mox webapi base URL for outbound webmail transport
-    /// (`MNT_MAIL_MOX_BASE_URL`). `None` keeps the default SMTP/lettre path.
+    /// (`CONSOLE_MAIL_MOX_BASE_URL`). `None` keeps the default SMTP/lettre path.
     pub mail_mox_base_url: Option<String>,
     /// Shared secret for the inbound Mox delivery webhook
-    /// (`MNT_MAIL_MOX_WEBHOOK_SECRET`). `None` leaves the webhook mounted but
+    /// (`CONSOLE_MAIL_MOX_WEBHOOK_SECRET`). `None` leaves the webhook mounted but
     /// unavailable with 503 rather than accepting unauthenticated deliveries.
     pub mail_mox_webhook_secret: Option<String>,
     /// Whether the L20 tamper-evident audit-chain seal worker runs
-    /// (`MNT_AUDIT_CHAIN_SEAL_ENABLED`, default false). Post-merge review F3:
+    /// (`CONSOLE_AUDIT_CHAIN_SEAL_ENABLED`, default false). Post-merge review F3:
     /// the PR-1 in-crate `InMemoryEd25519Signer` generates a FRESH keypair on
     /// every worker restart and writes real seals under `key_ref =
     /// test:ed25519:<hex>` — dev/test-grade, not yet the context-selected
@@ -578,8 +578,8 @@ pub struct AppConfig {
     /// staff inbox reads under (#19.21/#398) instead of the `0x…a1` sentinel.
     pub storefront_org: Option<OrgId>,
     /// In-console office editor (ONLYOFFICE DocumentServer) integration. `None`
-    /// unless all of `MNT_OFFICE_JWT_SECRET` / `MNT_OFFICE_CALLBACK_BASE_URL` /
-    /// `MNT_OFFICE_DOCSERVER_URL` are set; the office routes still mount but
+    /// unless all of `CONSOLE_OFFICE_JWT_SECRET` / `CONSOLE_OFFICE_CALLBACK_BASE_URL` /
+    /// `CONSOLE_OFFICE_DOCSERVER_URL` are set; the office routes still mount but
     /// return `503 office_not_configured`.
     pub office: Option<office::OfficeConfig>,
     /// Base64-encoded, exactly 32-byte HMAC key for machine-only production
@@ -597,12 +597,12 @@ pub struct AppConfig {
 #[derive(Debug, Clone, Default)]
 pub struct AppLinksConfig {
     /// iOS app identifiers (`<TeamID>.<bundle-id>`), e.g. `ABCDE12345.com.knl.fsm`.
-    /// From `MNT_IOS_APP_IDS` (comma-separated).
+    /// From `CONSOLE_IOS_APP_IDS` (comma-separated).
     pub ios_app_ids: Vec<String>,
-    /// Android application id, e.g. `com.knl.fsm`. From `MNT_ANDROID_PACKAGE`.
+    /// Android application id, e.g. `com.knl.fsm`. From `CONSOLE_ANDROID_PACKAGE`.
     pub android_package: Option<String>,
     /// Android signing-cert SHA-256 fingerprints (colon-separated hex). From
-    /// `MNT_ANDROID_CERT_SHA256` (comma-separated for multiple signing keys).
+    /// `CONSOLE_ANDROID_CERT_SHA256` (comma-separated for multiple signing keys).
     pub android_cert_sha256: Vec<String>,
 }
 
@@ -623,7 +623,7 @@ impl JwtVerifierConfig {
             },
             self.public_key_pem.as_bytes(),
         )
-        .map_err(|err| AppError::Config(format!("invalid MNT_JWT_PUBLIC_KEY_PEM: {err}")))
+        .map_err(|err| AppError::Config(format!("invalid CONSOLE_JWT_PUBLIC_KEY_PEM: {err}")))
     }
 }
 
@@ -638,7 +638,7 @@ fn build_view_as_issuer(config: &AuthRestConfig) -> Result<JwtIssuer, AppError> 
         JwtSettings {
             issuer: config.jwt_issuer.clone(),
             audience: config.jwt_audience.clone(),
-            access_token_ttl: mnt_platform_rest::VIEW_AS_TOKEN_TTL,
+            access_token_ttl: console_platform_rest::VIEW_AS_TOKEN_TTL,
         },
         config.jwt_private_key_pem.as_bytes(),
         config.jwt_public_key_pem.as_bytes(),
@@ -676,21 +676,21 @@ impl AppConfig {
             .collect();
 
         let role = vars
-            .get("MNT_APP_ROLE")
+            .get("CONSOLE_APP_ROLE")
             .map(String::as_str)
             .unwrap_or("api")
             .parse()?;
         let service_name = vars
             .get("OTEL_SERVICE_NAME")
-            .or_else(|| vars.get("MNT_SERVICE_NAME"))
+            .or_else(|| vars.get("CONSOLE_SERVICE_NAME"))
             .cloned()
             .unwrap_or_else(|| DEFAULT_SERVICE_NAME.to_owned());
         let http_addr = vars
-            .get("MNT_HTTP_ADDR")
+            .get("CONSOLE_HTTP_ADDR")
             .map(String::as_str)
             .unwrap_or(DEFAULT_HTTP_ADDR)
             .parse::<SocketAddr>()
-            .map_err(|err| AppError::Config(format!("invalid MNT_HTTP_ADDR: {err}")))?;
+            .map_err(|err| AppError::Config(format!("invalid CONSOLE_HTTP_ADDR: {err}")))?;
         let database_url = non_empty(vars.get("DATABASE_URL"));
         let leave_command_database_url = non_empty(vars.get("LEAVE_COMMAND_DATABASE_URL"));
         if role == AppRole::Api && database_url.is_some() && leave_command_database_url.is_none() {
@@ -738,21 +738,21 @@ impl AppConfig {
                 platform_force_command_database_url.as_deref(),
             ) {
                 let runtime_password =
-                    validate_database_url_identity("DATABASE_URL", database_url, "mnt_rt")?;
+                    validate_database_url_identity("DATABASE_URL", database_url, "console_rt")?;
                 let leave_password = validate_database_url_identity(
                     "LEAVE_COMMAND_DATABASE_URL",
                     leave_url,
-                    "mnt_leave_cmd",
+                    "console_leave_cmd",
                 )?;
                 let ontology_password = validate_database_url_identity(
                     "ONTOLOGY_COMMAND_DATABASE_URL",
                     ontology_url,
-                    "mnt_ontology_cmd",
+                    "console_ontology_cmd",
                 )?;
                 let platform_force_password = validate_database_url_identity(
                     "PLATFORM_FORCE_COMMAND_DATABASE_URL",
                     force_url,
-                    "mnt_platform_force_cmd",
+                    "console_platform_force_cmd",
                 )?;
                 ensure_distinct_database_credentials([
                     ("DATABASE_URL", Some(runtime_password.as_str())),
@@ -772,8 +772,8 @@ impl AppConfig {
                 .as_deref()
                 .map(|database_url| {
                     let expected_role = match role {
-                        AppRole::Worker => "mnt_rt",
-                        AppRole::Migrate => "mnt_app",
+                        AppRole::Worker => "console_rt",
+                        AppRole::Migrate => "console_app",
                         AppRole::Api => unreachable!("api database URLs are validated above"),
                     };
                     validate_database_url_identity("DATABASE_URL", database_url, expected_role)
@@ -785,7 +785,7 @@ impl AppConfig {
                     validate_database_url_identity(
                         "LEAVE_COMMAND_DATABASE_URL",
                         url,
-                        "mnt_leave_cmd",
+                        "console_leave_cmd",
                     )
                 })
                 .transpose()?;
@@ -795,7 +795,7 @@ impl AppConfig {
                     validate_database_url_identity(
                         "ONTOLOGY_COMMAND_DATABASE_URL",
                         url,
-                        "mnt_ontology_cmd",
+                        "console_ontology_cmd",
                     )
                 })
                 .transpose()?;
@@ -805,7 +805,7 @@ impl AppConfig {
                     validate_database_url_identity(
                         "PLATFORM_FORCE_COMMAND_DATABASE_URL",
                         url,
-                        "mnt_platform_force_cmd",
+                        "console_platform_force_cmd",
                     )
                 })
                 .transpose()?;
@@ -823,37 +823,37 @@ impl AppConfig {
             ])?;
         }
         let otlp_endpoint = non_empty(vars.get("OTEL_EXPORTER_OTLP_ENDPOINT"));
-        let jwt_public_key_pem = non_empty(vars.get("MNT_JWT_PUBLIC_KEY_PEM"));
+        let jwt_public_key_pem = non_empty(vars.get("CONSOLE_JWT_PUBLIC_KEY_PEM"));
         let jwt_has_partial_config = jwt_public_key_pem.is_none()
-            && (non_empty(vars.get("MNT_JWT_ISSUER")).is_some()
-                || non_empty(vars.get("MNT_JWT_AUDIENCE")).is_some());
+            && (non_empty(vars.get("CONSOLE_JWT_ISSUER")).is_some()
+                || non_empty(vars.get("CONSOLE_JWT_AUDIENCE")).is_some());
         if jwt_has_partial_config {
             return Err(AppError::Config(
-                "MNT_JWT_PUBLIC_KEY_PEM is required when JWT issuer/audience is configured"
+                "CONSOLE_JWT_PUBLIC_KEY_PEM is required when JWT issuer/audience is configured"
                     .to_owned(),
             ));
         }
         let jwt = jwt_public_key_pem.map(|public_key_pem| JwtVerifierConfig {
-            issuer: non_empty(vars.get("MNT_JWT_ISSUER"))
+            issuer: non_empty(vars.get("CONSOLE_JWT_ISSUER"))
                 .unwrap_or_else(|| DEFAULT_JWT_ISSUER.to_owned()),
-            audience: non_empty(vars.get("MNT_JWT_AUDIENCE"))
+            audience: non_empty(vars.get("CONSOLE_JWT_AUDIENCE"))
                 .unwrap_or_else(|| DEFAULT_JWT_AUDIENCE.to_owned()),
             public_key_pem,
         });
         let auth_rest = auth_rest_config_from_vars(&vars, jwt.as_ref())?;
         let storage = storage_config_from_vars(&vars)?;
         let dispatch_timers = dispatch_timer_config_from_vars(&vars)?;
-        let dispatch_jobs_enabled = match vars.get("MNT_DISPATCH_JOBS_ENABLED") {
+        let dispatch_jobs_enabled = match vars.get("CONSOLE_DISPATCH_JOBS_ENABLED") {
             Some(raw) => raw.parse::<bool>().map_err(|err| {
-                AppError::Config(format!("invalid MNT_DISPATCH_JOBS_ENABLED: {err}"))
+                AppError::Config(format!("invalid CONSOLE_DISPATCH_JOBS_ENABLED: {err}"))
             })?,
             None => true,
         };
-        let evidence_transcode_concurrency = match vars.get("MNT_EVIDENCE_TRANSCODE_CONCURRENCY") {
+        let evidence_transcode_concurrency = match vars.get("CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY") {
             Some(raw) => raw
                 .parse::<usize>()
                 .map_err(|err| {
-                    AppError::Config(format!("invalid MNT_EVIDENCE_TRANSCODE_CONCURRENCY: {err}"))
+                    AppError::Config(format!("invalid CONSOLE_EVIDENCE_TRANSCODE_CONCURRENCY: {err}"))
                 })
                 .map(|value| value.max(1))?,
             None => DEFAULT_EVIDENCE_TRANSCODE_CONCURRENCY,
@@ -862,39 +862,39 @@ impl AppConfig {
         let (solapi, solapi_disabled_reason) = solapi_config_from_vars(&vars)?;
         let email_stub_mode = email_stub_mode_from_vars(&vars)?;
         let email = email_config_from_vars(&vars, email_stub_mode)?;
-        let shutdown_timeout = match vars.get("MNT_SHUTDOWN_TIMEOUT_SECS") {
+        let shutdown_timeout = match vars.get("CONSOLE_SHUTDOWN_TIMEOUT_SECS") {
             Some(raw) => raw.parse::<u64>().map(Duration::from_secs).map_err(|err| {
-                AppError::Config(format!("invalid MNT_SHUTDOWN_TIMEOUT_SECS: {err}"))
+                AppError::Config(format!("invalid CONSOLE_SHUTDOWN_TIMEOUT_SECS: {err}"))
             })?,
             None => Duration::from_secs(DEFAULT_SHUTDOWN_TIMEOUT_SECS),
         };
-        let request_timeout = match vars.get("MNT_REQUEST_TIMEOUT_SECS") {
+        let request_timeout = match vars.get("CONSOLE_REQUEST_TIMEOUT_SECS") {
             Some(raw) => raw.parse::<u64>().map(Duration::from_secs).map_err(|err| {
-                AppError::Config(format!("invalid MNT_REQUEST_TIMEOUT_SECS: {err}"))
+                AppError::Config(format!("invalid CONSOLE_REQUEST_TIMEOUT_SECS: {err}"))
             })?,
             None => REQUEST_TIMEOUT,
         };
-        let coldstart_otp = non_empty(vars.get("MNT_COLDSTART_OTP"));
+        let coldstart_otp = non_empty(vars.get("CONSOLE_COLDSTART_OTP"));
         let coldstart_otp_ttl = parse_time_duration_secs(
-            vars.get("MNT_COLDSTART_OTP_TTL_SECS"),
+            vars.get("CONSOLE_COLDSTART_OTP_TTL_SECS"),
             DEFAULT_COLDSTART_OTP_TTL_SECS,
-            "MNT_COLDSTART_OTP_TTL_SECS",
+            "CONSOLE_COLDSTART_OTP_TTL_SECS",
         )?;
-        let trusted_proxy_count = parse_trusted_proxy_count(vars.get("MNT_TRUSTED_PROXY_COUNT"))?;
+        let trusted_proxy_count = parse_trusted_proxy_count(vars.get("CONSOLE_TRUSTED_PROXY_COUNT"))?;
         let trusted_proxy_cidrs =
-            parse_trusted_proxy_cidrs(vars.get("MNT_TRUSTED_PROXY_CIDRS"), trusted_proxy_count)?;
+            parse_trusted_proxy_cidrs(vars.get("CONSOLE_TRUSTED_PROXY_CIDRS"), trusted_proxy_count)?;
         let app_links = app_links_config_from_vars(&vars);
-        let mail_enabled = match vars.get("MNT_MAIL_ENABLED") {
+        let mail_enabled = match vars.get("CONSOLE_MAIL_ENABLED") {
             Some(raw) => raw
                 .parse::<bool>()
-                .map_err(|err| AppError::Config(format!("invalid MNT_MAIL_ENABLED: {err}")))?,
+                .map_err(|err| AppError::Config(format!("invalid CONSOLE_MAIL_ENABLED: {err}")))?,
             None => false,
         };
-        let mail_mox_base_url = non_empty(vars.get("MNT_MAIL_MOX_BASE_URL"));
-        let mail_mox_webhook_secret = non_empty(vars.get("MNT_MAIL_MOX_WEBHOOK_SECRET"));
-        let audit_chain_seal_enabled = match vars.get("MNT_AUDIT_CHAIN_SEAL_ENABLED") {
+        let mail_mox_base_url = non_empty(vars.get("CONSOLE_MAIL_MOX_BASE_URL"));
+        let mail_mox_webhook_secret = non_empty(vars.get("CONSOLE_MAIL_MOX_WEBHOOK_SECRET"));
+        let audit_chain_seal_enabled = match vars.get("CONSOLE_AUDIT_CHAIN_SEAL_ENABLED") {
             Some(raw) => raw.parse::<bool>().map_err(|err| {
-                AppError::Config(format!("invalid MNT_AUDIT_CHAIN_SEAL_ENABLED: {err}"))
+                AppError::Config(format!("invalid CONSOLE_AUDIT_CHAIN_SEAL_ENABLED: {err}"))
             })?,
             None => false,
         };
@@ -908,19 +908,19 @@ impl AppConfig {
         let office = office::office_config_from_vars(|key| non_empty(vars.get(key)))
             .map_err(AppError::Config)?;
         let production_service_principal_hmac_key =
-            non_empty(vars.get("MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY"))
+            non_empty(vars.get("CONSOLE_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY"))
                 .map(|encoded| {
                     let bytes = base64::engine::general_purpose::STANDARD
                         .decode(encoded)
                         .map_err(|_| {
                             AppError::Config(
-                                "MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must be base64"
+                                "CONSOLE_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must be base64"
                                     .to_owned(),
                             )
                         })?;
                     bytes.try_into().map_err(|_: Vec<u8>| {
                         AppError::Config(
-                    "MNT_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must decode to exactly 32 bytes"
+                    "CONSOLE_PRODUCTION_SERVICE_PRINCIPAL_HMAC_KEY must decode to exactly 32 bytes"
                         .to_owned(),
                 )
                     })
@@ -974,9 +974,9 @@ impl AppConfig {
 /// harmless.
 fn app_links_config_from_vars(vars: &HashMap<String, String>) -> AppLinksConfig {
     AppLinksConfig {
-        ios_app_ids: parse_csv_list(vars.get("MNT_IOS_APP_IDS")),
-        android_package: non_empty(vars.get("MNT_ANDROID_PACKAGE")),
-        android_cert_sha256: parse_csv_list(vars.get("MNT_ANDROID_CERT_SHA256")),
+        ios_app_ids: parse_csv_list(vars.get("CONSOLE_IOS_APP_IDS")),
+        android_package: non_empty(vars.get("CONSOLE_ANDROID_PACKAGE")),
+        android_cert_sha256: parse_csv_list(vars.get("CONSOLE_ANDROID_CERT_SHA256")),
     }
 }
 
@@ -998,60 +998,60 @@ fn auth_rest_config_from_vars(
     vars: &HashMap<String, String>,
     jwt: Option<&JwtVerifierConfig>,
 ) -> Result<Option<AuthRestConfig>, AppError> {
-    let Some(jwt_private_key_pem) = non_empty(vars.get("MNT_JWT_PRIVATE_KEY_PEM")) else {
+    let Some(jwt_private_key_pem) = non_empty(vars.get("CONSOLE_JWT_PRIVATE_KEY_PEM")) else {
         return Ok(None);
     };
     let jwt = jwt.ok_or_else(|| {
         AppError::Config(
-            "MNT_JWT_PUBLIC_KEY_PEM is required when MNT_JWT_PRIVATE_KEY_PEM is configured"
+            "CONSOLE_JWT_PUBLIC_KEY_PEM is required when CONSOLE_JWT_PRIVATE_KEY_PEM is configured"
                 .to_owned(),
         )
     })?;
-    let rp_id = non_empty(vars.get("MNT_WEBAUTHN_RP_ID")).ok_or_else(|| {
-        AppError::Config("MNT_WEBAUTHN_RP_ID is required when auth REST is configured".to_owned())
+    let rp_id = non_empty(vars.get("CONSOLE_WEBAUTHN_RP_ID")).ok_or_else(|| {
+        AppError::Config("CONSOLE_WEBAUTHN_RP_ID is required when auth REST is configured".to_owned())
     })?;
-    let rp_origin = non_empty(vars.get("MNT_WEBAUTHN_RP_ORIGIN")).ok_or_else(|| {
+    let rp_origin = non_empty(vars.get("CONSOLE_WEBAUTHN_RP_ORIGIN")).ok_or_else(|| {
         AppError::Config(
-            "MNT_WEBAUTHN_RP_ORIGIN is required when auth REST is configured".to_owned(),
+            "CONSOLE_WEBAUTHN_RP_ORIGIN is required when auth REST is configured".to_owned(),
         )
     })?;
 
     Ok(Some(AuthRestConfig {
         rp_id,
         rp_origin,
-        rp_name: non_empty(vars.get("MNT_WEBAUTHN_RP_NAME"))
+        rp_name: non_empty(vars.get("CONSOLE_WEBAUTHN_RP_NAME"))
             .unwrap_or_else(|| DEFAULT_WEBAUTHN_RP_NAME.to_owned()),
         ceremony_ttl: parse_time_duration_secs(
-            vars.get("MNT_AUTH_CEREMONY_TTL_SECS"),
+            vars.get("CONSOLE_AUTH_CEREMONY_TTL_SECS"),
             DEFAULT_AUTH_CEREMONY_TTL_SECS,
-            "MNT_AUTH_CEREMONY_TTL_SECS",
+            "CONSOLE_AUTH_CEREMONY_TTL_SECS",
         )?,
         jwt_issuer: jwt.issuer.clone(),
         jwt_audience: jwt.audience.clone(),
         jwt_private_key_pem,
         jwt_public_key_pem: jwt.public_key_pem.clone(),
         refresh_token_ttl: parse_time_duration_secs(
-            vars.get("MNT_REFRESH_TOKEN_TTL_SECS"),
+            vars.get("CONSOLE_REFRESH_TOKEN_TTL_SECS"),
             DEFAULT_REFRESH_TOKEN_TTL_SECS,
-            "MNT_REFRESH_TOKEN_TTL_SECS",
+            "CONSOLE_REFRESH_TOKEN_TTL_SECS",
         )?,
         refresh_family_absolute_ttl: parse_time_duration_secs(
-            vars.get("MNT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS"),
+            vars.get("CONSOLE_REFRESH_FAMILY_ABSOLUTE_TTL_SECS"),
             DEFAULT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS,
-            "MNT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS",
+            "CONSOLE_REFRESH_FAMILY_ABSOLUTE_TTL_SECS",
         )?,
-        cookie_secure: parse_cookie_secure(vars.get("MNT_COOKIE_SECURE"))?,
+        cookie_secure: parse_cookie_secure(vars.get("CONSOLE_COOKIE_SECURE"))?,
     }))
 }
 
 /// Whether the web refresh cookie carries the `Secure` attribute. Defaults to
-/// `true` (production over HTTPS); set `MNT_COOKIE_SECURE=false` only for local
+/// `true` (production over HTTPS); set `CONSOLE_COOKIE_SECURE=false` only for local
 /// http dev, where a `Secure` cookie would be dropped on `http://localhost`.
 fn parse_cookie_secure(raw: Option<&String>) -> Result<bool, AppError> {
     match non_empty(raw) {
         Some(value) => value
             .parse::<bool>()
-            .map_err(|err| AppError::Config(format!("invalid MNT_COOKIE_SECURE: {err}"))),
+            .map_err(|err| AppError::Config(format!("invalid CONSOLE_COOKIE_SECURE: {err}"))),
         None => Ok(true),
     }
 }
@@ -1063,7 +1063,7 @@ fn parse_trusted_proxy_count(raw: Option<&String>) -> Result<usize, AppError> {
     match raw {
         Some(raw) => raw
             .parse::<usize>()
-            .map_err(|err| AppError::Config(format!("invalid MNT_TRUSTED_PROXY_COUNT: {err}"))),
+            .map_err(|err| AppError::Config(format!("invalid CONSOLE_TRUSTED_PROXY_COUNT: {err}"))),
         None => Ok(0),
     }
 }
@@ -1081,7 +1081,7 @@ fn parse_trusted_proxy_cidrs(
                 .map(|value| {
                     value.parse::<IpNet>().map_err(|err| {
                         AppError::Config(format!(
-                            "invalid MNT_TRUSTED_PROXY_CIDRS entry {value:?}: {err}"
+                            "invalid CONSOLE_TRUSTED_PROXY_CIDRS entry {value:?}: {err}"
                         ))
                     })
                 })
@@ -1091,7 +1091,7 @@ fn parse_trusted_proxy_cidrs(
         .unwrap_or_default();
     if trusted_proxy_count > 0 && cidrs.is_empty() {
         return Err(AppError::Config(
-            "MNT_TRUSTED_PROXY_CIDRS is required when MNT_TRUSTED_PROXY_COUNT is nonzero"
+            "CONSOLE_TRUSTED_PROXY_CIDRS is required when CONSOLE_TRUSTED_PROXY_COUNT is nonzero"
                 .to_owned(),
         ));
     }
@@ -1101,7 +1101,7 @@ fn parse_trusted_proxy_cidrs(
 fn storage_config_from_vars(
     vars: &HashMap<String, String>,
 ) -> Result<Option<S3StorageConfig>, AppError> {
-    let Some(endpoint_url) = non_empty(vars.get("MNT_S3_ENDPOINT_URL")) else {
+    let Some(endpoint_url) = non_empty(vars.get("CONSOLE_S3_ENDPOINT_URL")) else {
         return Ok(None);
     };
     let required = |name: &'static str| {
@@ -1109,20 +1109,20 @@ fn storage_config_from_vars(
             AppError::Config(format!("{name} is required when S3 storage is configured"))
         })
     };
-    let force_path_style = match non_empty(vars.get("MNT_S3_FORCE_PATH_STYLE")) {
+    let force_path_style = match non_empty(vars.get("CONSOLE_S3_FORCE_PATH_STYLE")) {
         Some(raw) => raw
             .parse::<bool>()
-            .map_err(|err| AppError::Config(format!("invalid MNT_S3_FORCE_PATH_STYLE: {err}")))?,
+            .map_err(|err| AppError::Config(format!("invalid CONSOLE_S3_FORCE_PATH_STYLE: {err}")))?,
         None => true,
     };
 
     Ok(Some(S3StorageConfig {
         endpoint_url,
-        region: non_empty(vars.get("MNT_S3_REGION")).unwrap_or_else(|| "us-east-1".to_owned()),
-        access_key_id: required("MNT_S3_ACCESS_KEY_ID")?,
-        secret_access_key: required("MNT_S3_SECRET_ACCESS_KEY")?,
-        primary_bucket: required("MNT_S3_PRIMARY_BUCKET")?,
-        replica_bucket: required("MNT_S3_REPLICA_BUCKET")?,
+        region: non_empty(vars.get("CONSOLE_S3_REGION")).unwrap_or_else(|| "us-east-1".to_owned()),
+        access_key_id: required("CONSOLE_S3_ACCESS_KEY_ID")?,
+        secret_access_key: required("CONSOLE_S3_SECRET_ACCESS_KEY")?,
+        primary_bucket: required("CONSOLE_S3_PRIMARY_BUCKET")?,
+        replica_bucket: required("CONSOLE_S3_REPLICA_BUCKET")?,
         force_path_style,
     }))
 }
@@ -1132,51 +1132,51 @@ fn dispatch_timer_config_from_vars(
 ) -> Result<DispatchTimerConfig, AppError> {
     Ok(DispatchTimerConfig {
         accept_window: parse_time_duration_secs(
-            vars.get("MNT_DISPATCH_ACCEPT_WINDOW_SECS"),
+            vars.get("CONSOLE_DISPATCH_ACCEPT_WINDOW_SECS"),
             DEFAULT_DISPATCH_ACCEPT_WINDOW_SECS,
-            "MNT_DISPATCH_ACCEPT_WINDOW_SECS",
+            "CONSOLE_DISPATCH_ACCEPT_WINDOW_SECS",
         )?,
         force_assign_alert_after: parse_time_duration_secs(
-            vars.get("MNT_DISPATCH_FORCE_ASSIGN_ALERT_SECS"),
+            vars.get("CONSOLE_DISPATCH_FORCE_ASSIGN_ALERT_SECS"),
             DEFAULT_DISPATCH_FORCE_ASSIGN_ALERT_SECS,
-            "MNT_DISPATCH_FORCE_ASSIGN_ALERT_SECS",
+            "CONSOLE_DISPATCH_FORCE_ASSIGN_ALERT_SECS",
         )?,
         alimtalk_no_ack_after: parse_time_duration_secs(
-            vars.get("MNT_DISPATCH_ALIMTALK_NO_ACK_SECS"),
+            vars.get("CONSOLE_DISPATCH_ALIMTALK_NO_ACK_SECS"),
             DEFAULT_DISPATCH_ALIMTALK_NO_ACK_SECS,
-            "MNT_DISPATCH_ALIMTALK_NO_ACK_SECS",
+            "CONSOLE_DISPATCH_ALIMTALK_NO_ACK_SECS",
         )?,
         gps_ping_freshness: parse_time_duration_secs(
-            vars.get("MNT_DISPATCH_GPS_FRESHNESS_SECS"),
+            vars.get("CONSOLE_DISPATCH_GPS_FRESHNESS_SECS"),
             DEFAULT_DISPATCH_GPS_FRESHNESS_SECS,
-            "MNT_DISPATCH_GPS_FRESHNESS_SECS",
+            "CONSOLE_DISPATCH_GPS_FRESHNESS_SECS",
         )?,
     })
 }
 
 fn fcm_config_from_vars(vars: &HashMap<String, String>) -> Result<Option<FcmConfig>, AppError> {
-    let project_id = non_empty(vars.get("MNT_FCM_PROJECT_ID"));
-    let client_email = non_empty(vars.get("MNT_FCM_CLIENT_EMAIL"));
-    let private_key_pem = non_empty(vars.get("MNT_FCM_PRIVATE_KEY_PEM"));
+    let project_id = non_empty(vars.get("CONSOLE_FCM_PROJECT_ID"));
+    let client_email = non_empty(vars.get("CONSOLE_FCM_CLIENT_EMAIL"));
+    let private_key_pem = non_empty(vars.get("CONSOLE_FCM_PRIVATE_KEY_PEM"));
     let configured = project_id.is_some() || client_email.is_some() || private_key_pem.is_some();
     if !configured {
         return Ok(None);
     }
     let config = FcmConfig {
         project_id: project_id.ok_or_else(|| {
-            AppError::Config("MNT_FCM_PROJECT_ID is required when FCM is configured".to_owned())
+            AppError::Config("CONSOLE_FCM_PROJECT_ID is required when FCM is configured".to_owned())
         })?,
         client_email: client_email.ok_or_else(|| {
-            AppError::Config("MNT_FCM_CLIENT_EMAIL is required when FCM is configured".to_owned())
+            AppError::Config("CONSOLE_FCM_CLIENT_EMAIL is required when FCM is configured".to_owned())
         })?,
         private_key_pem: private_key_pem.ok_or_else(|| {
             AppError::Config(
-                "MNT_FCM_PRIVATE_KEY_PEM is required when FCM is configured".to_owned(),
+                "CONSOLE_FCM_PRIVATE_KEY_PEM is required when FCM is configured".to_owned(),
             )
         })?,
-        token_uri: non_empty(vars.get("MNT_FCM_TOKEN_URI"))
+        token_uri: non_empty(vars.get("CONSOLE_FCM_TOKEN_URI"))
             .unwrap_or_else(|| DEFAULT_FCM_TOKEN_URI.to_owned()),
-        scope: non_empty(vars.get("MNT_FCM_SCOPE")).unwrap_or_else(|| DEFAULT_FCM_SCOPE.to_owned()),
+        scope: non_empty(vars.get("CONSOLE_FCM_SCOPE")).unwrap_or_else(|| DEFAULT_FCM_SCOPE.to_owned()),
     };
     config
         .validate()
@@ -1187,11 +1187,11 @@ fn fcm_config_from_vars(vars: &HashMap<String, String>) -> Result<Option<FcmConf
 fn solapi_config_from_vars(
     vars: &HashMap<String, String>,
 ) -> Result<(Option<SolapiConfig>, Option<String>), AppError> {
-    let api_key = non_empty(vars.get("MNT_SOLAPI_API_KEY"));
-    let api_secret = non_empty(vars.get("MNT_SOLAPI_API_SECRET"));
-    let from = non_empty(vars.get("MNT_SOLAPI_FROM"));
-    let pf_id = non_empty(vars.get("MNT_SOLAPI_PF_ID"));
-    let template_id = non_empty(vars.get("MNT_SOLAPI_TEMPLATE_ID"));
+    let api_key = non_empty(vars.get("CONSOLE_SOLAPI_API_KEY"));
+    let api_secret = non_empty(vars.get("CONSOLE_SOLAPI_API_SECRET"));
+    let from = non_empty(vars.get("CONSOLE_SOLAPI_FROM"));
+    let pf_id = non_empty(vars.get("CONSOLE_SOLAPI_PF_ID"));
+    let template_id = non_empty(vars.get("CONSOLE_SOLAPI_TEMPLATE_ID"));
     let credentials_configured =
         api_key.is_some() || api_secret.is_some() || from.is_some() || pf_id.is_some();
     if !credentials_configured && template_id.is_none() {
@@ -1201,7 +1201,7 @@ fn solapi_config_from_vars(
         return Ok((
             None,
             Some(
-                "Solapi Alimtalk disabled: MNT_SOLAPI_TEMPLATE_ID is required after Kakao template approval"
+                "Solapi Alimtalk disabled: CONSOLE_SOLAPI_TEMPLATE_ID is required after Kakao template approval"
                     .to_owned(),
             ),
         ));
@@ -1212,12 +1212,12 @@ fn solapi_config_from_vars(
         })
     };
     let config = SolapiConfig {
-        base_url: non_empty(vars.get("MNT_SOLAPI_BASE_URL"))
+        base_url: non_empty(vars.get("CONSOLE_SOLAPI_BASE_URL"))
             .unwrap_or_else(|| DEFAULT_SOLAPI_BASE_URL.to_owned()),
-        api_key: required(api_key, "MNT_SOLAPI_API_KEY")?,
-        api_secret: required(api_secret, "MNT_SOLAPI_API_SECRET")?,
-        from: required(from, "MNT_SOLAPI_FROM")?,
-        pf_id: required(pf_id, "MNT_SOLAPI_PF_ID")?,
+        api_key: required(api_key, "CONSOLE_SOLAPI_API_KEY")?,
+        api_secret: required(api_secret, "CONSOLE_SOLAPI_API_SECRET")?,
+        from: required(from, "CONSOLE_SOLAPI_FROM")?,
+        pf_id: required(pf_id, "CONSOLE_SOLAPI_PF_ID")?,
         template_id,
     };
     config
@@ -1247,19 +1247,19 @@ fn email_stub_mode_from_vars(
 ///
 /// `Ok(None)` means there is no live SMTP config. The composition root may use a
 /// `StubEmailSender` only when `stub_mode` is `Some`; otherwise the email sender
-/// fails closed without logging OTPs. Any partial `MNT_EMAIL_*` group is accepted
+/// fails closed without logging OTPs. Any partial `CONSOLE_EMAIL_*` group is accepted
 /// only in explicit stub mode, because production ConfigMap+missing-Secret paths
 /// must not reach the OTP-logging stub.
 fn email_config_from_vars(
     vars: &HashMap<String, String>,
     stub_mode: Option<StubEmailMode>,
 ) -> Result<Option<SmtpEmailConfig>, AppError> {
-    let host = non_empty(vars.get("MNT_EMAIL_SMTP_HOST"));
-    let port_raw = non_empty(vars.get("MNT_EMAIL_SMTP_PORT"));
-    let username = non_empty(vars.get("MNT_EMAIL_SMTP_USERNAME"));
-    let password = non_empty(vars.get("MNT_EMAIL_SMTP_PASSWORD"));
-    let from_address = non_empty(vars.get("MNT_EMAIL_FROM"));
-    let from_name = non_empty(vars.get("MNT_EMAIL_FROM_NAME"));
+    let host = non_empty(vars.get("CONSOLE_EMAIL_SMTP_HOST"));
+    let port_raw = non_empty(vars.get("CONSOLE_EMAIL_SMTP_PORT"));
+    let username = non_empty(vars.get("CONSOLE_EMAIL_SMTP_USERNAME"));
+    let password = non_empty(vars.get("CONSOLE_EMAIL_SMTP_PASSWORD"));
+    let from_address = non_empty(vars.get("CONSOLE_EMAIL_FROM"));
+    let from_name = non_empty(vars.get("CONSOLE_EMAIL_FROM_NAME"));
     let configured = host.is_some()
         || port_raw.is_some()
         || username.is_some()
@@ -1270,12 +1270,12 @@ fn email_config_from_vars(
         return Ok(None);
     }
     let missing_fields = [
-        ("MNT_EMAIL_SMTP_HOST", host.is_none()),
-        ("MNT_EMAIL_SMTP_PORT", port_raw.is_none()),
-        ("MNT_EMAIL_SMTP_USERNAME", username.is_none()),
-        ("MNT_EMAIL_SMTP_PASSWORD", password.is_none()),
-        ("MNT_EMAIL_FROM", from_address.is_none()),
-        ("MNT_EMAIL_FROM_NAME", from_name.is_none()),
+        ("CONSOLE_EMAIL_SMTP_HOST", host.is_none()),
+        ("CONSOLE_EMAIL_SMTP_PORT", port_raw.is_none()),
+        ("CONSOLE_EMAIL_SMTP_USERNAME", username.is_none()),
+        ("CONSOLE_EMAIL_SMTP_PASSWORD", password.is_none()),
+        ("CONSOLE_EMAIL_FROM", from_address.is_none()),
+        ("CONSOLE_EMAIL_FROM_NAME", from_name.is_none()),
     ]
     .into_iter()
     .filter_map(|(name, missing)| missing.then_some(name))
@@ -1285,12 +1285,12 @@ fn email_config_from_vars(
             tracing::warn!(
                 email_stub_mode = %mode,
                 missing = %missing_fields.join(", "),
-                "MNT_EMAIL_* partially configured; explicit non-production stub mode enabled, so OTP email uses the logging stub"
+                "CONSOLE_EMAIL_* partially configured; explicit non-production stub mode enabled, so OTP email uses the logging stub"
             );
             return Ok(None);
         }
         return Err(AppError::Config(format!(
-            "MNT_EMAIL_* is partially configured: missing {}; complete all SMTP fields for production startup or set {EMAIL_STUB_MODE_ENV}=local|dev|development|test|e2e only for explicit non-production stub OTP logging",
+            "CONSOLE_EMAIL_* is partially configured: missing {}; complete all SMTP fields for production startup or set {EMAIL_STUB_MODE_ENV}=local|dev|development|test|e2e only for explicit non-production stub OTP logging",
             missing_fields.join(", ")
         )));
     }
@@ -1301,20 +1301,20 @@ fn email_config_from_vars(
     let port = match port_raw {
         Some(raw) => raw
             .parse::<u16>()
-            .map_err(|err| AppError::Config(format!("invalid MNT_EMAIL_SMTP_PORT: {err}")))?,
+            .map_err(|err| AppError::Config(format!("invalid CONSOLE_EMAIL_SMTP_PORT: {err}")))?,
         None => {
             return Err(AppError::Config(
-                "MNT_EMAIL_SMTP_PORT is required when email is configured".to_owned(),
+                "CONSOLE_EMAIL_SMTP_PORT is required when email is configured".to_owned(),
             ));
         }
     };
     let config = SmtpEmailConfig {
-        host: required(host, "MNT_EMAIL_SMTP_HOST")?,
+        host: required(host, "CONSOLE_EMAIL_SMTP_HOST")?,
         port,
-        username: required(username, "MNT_EMAIL_SMTP_USERNAME")?,
-        password: required(password, "MNT_EMAIL_SMTP_PASSWORD")?,
-        from_address: required(from_address, "MNT_EMAIL_FROM")?,
-        from_name: required(from_name, "MNT_EMAIL_FROM_NAME")?,
+        username: required(username, "CONSOLE_EMAIL_SMTP_USERNAME")?,
+        password: required(password, "CONSOLE_EMAIL_SMTP_PASSWORD")?,
+        from_address: required(from_address, "CONSOLE_EMAIL_FROM")?,
+        from_name: required(from_name, "CONSOLE_EMAIL_FROM_NAME")?,
     };
     config
         .validate()
@@ -1392,20 +1392,20 @@ pub struct AppState {
     push_notifier: Option<Arc<dyn PushNotifier>>,
     /// Outbound email sender for the open-signup OTP (#38). Always present: a
     /// `LettreSmtpSender` when live SMTP is configured, an explicitly-enabled
-    /// non-prod `StubEmailSender` when `MNT_EMAIL_STUB_MODE` is set, otherwise a
+    /// non-prod `StubEmailSender` when `CONSOLE_EMAIL_STUB_MODE` is set, otherwise a
     /// fail-closed sender that never logs OTPs.
     email_sender: Arc<dyn EmailSender>,
     realtime_hub: Option<Arc<PgRealtimeHub>>,
     realtime_bridge: Option<PostgresBridgeHandle>,
     /// The webmail master-key cipher (envelope AEAD for SMTP/IMAP credentials).
-    /// `None` when `MNT_MAIL_MASTER_KEY` is absent at boot — the app STILL boots
+    /// `None` when `CONSOLE_MAIL_MASTER_KEY` is absent at boot — the app STILL boots
     /// and the mail router still mounts. Read-only mail endpoints degrade to a
     /// clean no-account/empty state; credential-using endpoints return a clear
     /// `503 email_not_configured`. The cipher feature is lazily/optionally init'd
     /// so a missing key is never a panic.
     mail_cipher: Option<Arc<EnvelopeCredentialCipher>>,
     /// The inbound webmail IMAP sync worker handle. `None` when the worker is OFF
-    /// (no KEK / no storage / `MNT_MAIL_ENABLED` unset). Held so its lifetime is
+    /// (no KEK / no storage / `CONSOLE_MAIL_ENABLED` unset). Held so its lifetime is
     /// tied to the running `AppState` and it stops on shutdown.
     mail_sync_handle: Option<Arc<mail_sync::MailSyncHandle>>,
     /// Shared dev/test verifier used by the read-only audit-chain attestation
@@ -1489,7 +1489,7 @@ impl AppState {
         })
     }
 
-    /// Attach the isolated `mnt_leave_cmd` command pool used for protected
+    /// Attach the isolated `console_leave_cmd` command pool used for protected
     /// leave and People mutations. Production configuration constructs this
     /// pool only from `LEAVE_COMMAND_DATABASE_URL`; this builder supports
     /// explicit dependency injection for integration composition.
@@ -1508,12 +1508,12 @@ impl AppState {
     pub async fn from_config(config: AppConfig) -> Result<Self, AppError> {
         let database = match config.database_url.as_deref() {
             Some(url) => {
-                let after_connect_role = "mnt_rt".to_owned();
+                let after_connect_role = "console_rt".to_owned();
                 let pool = PgPoolOptions::new()
                     .max_connections(RUNTIME_DATABASE_POOL_MAX_CONNECTIONS)
                     .acquire_timeout(Duration::from_secs(3))
                     // Tenant-isolation backstop. The app connects as the non-owner
-                    // `mnt_rt` role under RLS keyed on the `app.current_org` GUC.
+                    // `console_rt` role under RLS keyed on the `app.current_org` GUC.
                     // Every query sets that GUC with SET LOCAL (transaction-scoped,
                     // auto-cleared on COMMIT/ROLLBACK), so it cannot normally
                     // persist. RESET ALL on release is defense-in-depth: if any
@@ -1536,13 +1536,13 @@ impl AppState {
                         Box::pin(reset_serving_database_connection(
                             conn,
                             "DATABASE_URL",
-                            "mnt_rt",
+                            "console_rt",
                         ))
                     })
                     .connect(url)
                     .await
                     .map_err(AppError::Database)?;
-                validate_database_pool_identity(&pool, "DATABASE_URL", "mnt_rt").await?;
+                validate_database_pool_identity(&pool, "DATABASE_URL", "console_rt").await?;
                 DatabaseDependency::Postgres(pool)
             }
             None => DatabaseDependency::NotConfigured,
@@ -1554,7 +1554,7 @@ impl AppState {
             config.leave_command_database_url.as_deref(),
         ) {
             (AppRole::Api, Some(_), Some(url)) => DatabaseDependency::Postgres(
-                connect_command_pool(url, "mnt_leave_cmd", "LEAVE_COMMAND_DATABASE_URL").await?,
+                connect_command_pool(url, "console_leave_cmd", "LEAVE_COMMAND_DATABASE_URL").await?,
             ),
             _ => DatabaseDependency::NotConfigured,
         };
@@ -1564,7 +1564,7 @@ impl AppState {
             config.ontology_command_database_url.as_deref(),
         ) {
             (AppRole::Api, Some(_), Some(url)) => DatabaseDependency::Postgres(
-                connect_command_pool(url, "mnt_ontology_cmd", "ONTOLOGY_COMMAND_DATABASE_URL")
+                connect_command_pool(url, "console_ontology_cmd", "ONTOLOGY_COMMAND_DATABASE_URL")
                     .await?,
             ),
             _ => DatabaseDependency::NotConfigured,
@@ -1577,7 +1577,7 @@ impl AppState {
             (AppRole::Api, Some(_), Some(url)) => DatabaseDependency::Postgres(
                 connect_command_pool(
                     url,
-                    "mnt_platform_force_cmd",
+                    "console_platform_force_cmd",
                     "PLATFORM_FORCE_COMMAND_DATABASE_URL",
                 )
                 .await?,
@@ -1610,7 +1610,7 @@ impl AppState {
             (&state.database, config.database_url.as_deref())
             && config.dispatch_jobs_enabled
         {
-            let queue = ApalisPostgresJobQueue::connect(database_url, "mnt.dispatch")
+            let queue = ApalisPostgresJobQueue::connect(database_url, "console.dispatch")
                 .await
                 .map_err(|err| AppError::Config(format!("invalid dispatch job queue: {err}")))?;
             state.dispatch_job_queue = Some(Arc::new(queue));
@@ -1641,11 +1641,11 @@ impl AppState {
             state.email_sender = Arc::new(StubEmailSender::new(mode));
             tracing::warn!(
                 email_stub_mode = %mode,
-                "MNT_EMAIL_STUB_MODE enabled: outbound OTP email uses the logging stub (non-production only)"
+                "CONSOLE_EMAIL_STUB_MODE enabled: outbound OTP email uses the logging stub (non-production only)"
             );
         } else {
             tracing::warn!(
-                "MNT_EMAIL_* unset and MNT_EMAIL_STUB_MODE disabled: outbound OTP email fails closed without logging OTPs"
+                "CONSOLE_EMAIL_* unset and CONSOLE_EMAIL_STUB_MODE disabled: outbound OTP email fails closed without logging OTPs"
             );
         }
         // Hand the resolved OTP email sender to the auth REST layer so its
@@ -1656,7 +1656,7 @@ impl AppState {
             state.auth_rest = Some(auth_rest.with_email_sender(state.email_sender.clone()));
         }
         // Webmail master key (envelope AEAD KEK) — GRACEFULLY OPTIONAL. When
-        // `MNT_MAIL_MASTER_KEY` is present + valid it arms the webmail credential
+        // `CONSOLE_MAIL_MASTER_KEY` is present + valid it arms the webmail credential
         // cipher; when it is absent the app STILL boots and the mail router still
         // mounts (so the OpenAPI paths exist). Read-only mail endpoints degrade to
         // a clean no-account/empty state; credential-using endpoints return a clear
@@ -1664,14 +1664,14 @@ impl AppState {
         // boot error so it is caught immediately rather than at first use.
         match EnvelopeCredentialCipher::from_env() {
             Ok(cipher) => state.mail_cipher = Some(Arc::new(cipher)),
-            Err(_) if std::env::var(mnt_comms_credential_cipher::MASTER_KEY_ENV).is_err() => {
+            Err(_) if std::env::var(console_comms_credential_cipher::MASTER_KEY_ENV).is_err() => {
                 tracing::info!(
-                    "MNT_MAIL_MASTER_KEY unset: credential-using webmail endpoints are unavailable; read paths stay clean and the app boots normally"
+                    "CONSOLE_MAIL_MASTER_KEY unset: credential-using webmail endpoints are unavailable; read paths stay clean and the app boots normally"
                 );
             }
             Err(_) => {
                 return Err(AppError::Config(
-                    "MNT_MAIL_MASTER_KEY is set but is not a valid base64 32-byte key".to_owned(),
+                    "CONSOLE_MAIL_MASTER_KEY is set but is not a valid base64 32-byte key".to_owned(),
                 ));
             }
         }
@@ -1685,7 +1685,7 @@ impl AppState {
         // Inbound webmail sync worker (B-mail-3). Spawned like the realtime
         // listener: a background loop on the app pool that arms `app.current_org`
         // per tenant for each sync pass. GRACEFUL — only runs when the master KEK,
-        // object storage, and `MNT_MAIL_ENABLED` are all present; otherwise a
+        // object storage, and `CONSOLE_MAIL_ENABLED` are all present; otherwise a
         // no-op so the app boots normally and mail endpoints still mount.
         //
         // WORKER-ROLE ONLY: this background ticker belongs on the worker, never on
@@ -2053,7 +2053,7 @@ async fn validate_migration_database_connection(
            FROM pg_catalog.pg_auth_members AS membership
            JOIN pg_catalog.pg_roles AS granted ON granted.oid = membership.roleid
            JOIN pg_catalog.pg_roles AS member ON member.oid = membership.member
-           WHERE member.rolname = 'mnt_app'
+           WHERE member.rolname = 'console_app'
            ORDER BY granted.rolname"#,
     )
     .fetch_all(&mut *conn)
@@ -2086,7 +2086,7 @@ async fn validate_migration_database_connection(
                         AND pg_catalog.pg_has_role(subordinate.oid, candidate.oid, 'MEMBER')
                   )
            FROM pg_catalog.pg_roles AS subordinate
-           WHERE subordinate.rolname IN ('mnt_leave_definer', 'mnt_ontology_writer')
+           WHERE subordinate.rolname IN ('console_leave_definer', 'console_ontology_writer')
            ORDER BY subordinate.rolname"#,
         )
         .fetch_all(&mut *conn)
@@ -2127,17 +2127,17 @@ async fn validate_migration_database_connection(
                JOIN pg_catalog.pg_roles AS member ON member.oid = membership.member
                WHERE (
                    granted.rolname IN (
-                       'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                       'mnt_ontology_writer', 'mnt_ontology_cmd', 'mnt_platform_force_cmd'
+                       'console_app', 'console_rt', 'console_leave_definer', 'console_leave_cmd',
+                       'console_ontology_writer', 'console_ontology_cmd', 'console_platform_force_cmd'
                    )
                    OR member.rolname IN (
-                       'mnt_app', 'mnt_rt', 'mnt_leave_definer', 'mnt_leave_cmd',
-                       'mnt_ontology_writer', 'mnt_ontology_cmd', 'mnt_platform_force_cmd'
+                       'console_app', 'console_rt', 'console_leave_definer', 'console_leave_cmd',
+                       'console_ontology_writer', 'console_ontology_cmd', 'console_platform_force_cmd'
                    )
                )
                AND NOT (
-                   member.rolname = 'mnt_app'
-                   AND granted.rolname IN ('mnt_leave_definer', 'mnt_ontology_writer')
+                   member.rolname = 'console_app'
+                   AND granted.rolname IN ('console_leave_definer', 'console_ontology_writer')
                    AND NOT membership.admin_option
                    AND membership.inherit_option
                    AND membership.set_option
@@ -2147,7 +2147,7 @@ async fn validate_migration_database_connection(
     .fetch_one(&mut *conn)
     .await?;
 
-    // Database ownership implicitly makes mnt_app a member of
+    // Database ownership implicitly makes console_app a member of
     // pg_database_owner. Apart from that safe database-local capability and
     // the two direct SET edges required to transfer SECURITY DEFINER function
     // ownership, the migration login must not inherit any effective role.
@@ -2157,7 +2157,7 @@ async fn validate_migration_database_connection(
                FROM pg_catalog.pg_roles AS candidate
                WHERE candidate.rolname <> session_user
                  AND candidate.rolname NOT IN (
-                     'pg_database_owner', 'mnt_leave_definer', 'mnt_ontology_writer'
+                     'pg_database_owner', 'console_leave_definer', 'console_ontology_writer'
                  )
                  AND pg_catalog.pg_has_role(session_user, candidate.oid, 'MEMBER')
            )"#,
@@ -2264,27 +2264,27 @@ fn ensure_expected_migration_database_identity(
     subordinate_roles: &[SubordinateRoleContract],
     has_unexpected_application_membership_edge: bool,
 ) -> Result<(), AppError> {
-    if session_user != "mnt_app" || current_user != "mnt_app" {
+    if session_user != "console_app" || current_user != "console_app" {
         return Err(AppError::Config(format!(
             "DATABASE_URL migration connection must authenticate directly as PostgreSQL role \
-             \"mnt_app\"; session_user={session_user:?}, current_user={current_user:?}"
+             \"console_app\"; session_user={session_user:?}, current_user={current_user:?}"
         )));
     }
-    if database_owner != "mnt_app" {
+    if database_owner != "console_app" {
         return Err(AppError::Config(
-            "DATABASE_URL migration database must be owned by PostgreSQL role \"mnt_app\""
+            "DATABASE_URL migration database must be owned by PostgreSQL role \"console_app\""
                 .to_owned(),
         ));
     }
     if attributes != RoleAttributes::HARDENED_MIGRATION_LOGIN {
         return Err(AppError::Config(
-            "DATABASE_URL migration role \"mnt_app\" must be LOGIN, INHERIT, NOSUPERUSER, \
+            "DATABASE_URL migration role \"console_app\" must be LOGIN, INHERIT, NOSUPERUSER, \
              BYPASSRLS, NOCREATEDB, NOCREATEROLE, and NOREPLICATION"
                 .to_owned(),
         ));
     }
 
-    const EXPECTED_DEFINERS: [&str; 2] = ["mnt_leave_definer", "mnt_ontology_writer"];
+    const EXPECTED_DEFINERS: [&str; 2] = ["console_leave_definer", "console_ontology_writer"];
     if memberships.len() != EXPECTED_DEFINERS.len()
         || EXPECTED_DEFINERS.iter().any(|expected| {
             !memberships.iter().any(|membership| {
@@ -2296,14 +2296,14 @@ fn ensure_expected_migration_database_identity(
         })
     {
         return Err(AppError::Config(
-            "DATABASE_URL migration role \"mnt_app\" must have exactly the mnt_leave_definer and \
-             mnt_ontology_writer memberships with ADMIN false, INHERIT true, and SET true"
+            "DATABASE_URL migration role \"console_app\" must have exactly the console_leave_definer and \
+             console_ontology_writer memberships with ADMIN false, INHERIT true, and SET true"
                 .to_owned(),
         ));
     }
     if has_unexpected_application_membership_edge {
         return Err(AppError::Config(
-            "migration application roles have a forbidden membership edge; only mnt_app membership in the two definer roles is permitted"
+            "migration application roles have a forbidden membership edge; only console_app membership in the two definer roles is permitted"
                 .to_owned(),
         ));
     }
@@ -2473,18 +2473,18 @@ fn ensure_distinct_database_credentials<const N: usize>(
 /// Build the inbound-attachment object store the webmail read API uses for
 /// presigned GETs, from the same storage config the evidence pipeline uses.
 /// `None` when storage is unconfigured (the attachment-download endpoint 503s).
-fn mail_attachment_store(state: &AppState) -> Option<mnt_comms_rest::SharedAttachmentStore> {
+fn mail_attachment_store(state: &AppState) -> Option<console_comms_rest::SharedAttachmentStore> {
     state.sales_media_storage.as_ref().map(|(store, bucket)| {
         Arc::new(mail_sync::S3MailAttachmentStore::new(
             store.clone(),
             bucket.clone(),
-        )) as mnt_comms_rest::SharedAttachmentStore
+        )) as console_comms_rest::SharedAttachmentStore
     })
 }
 
 // --- ontology §18 projected-dispatch registry (App-tier only; the ontology
 // REST tier stays free of a domain-adapter edge, exactly like
-// `TenantConfigSeeder` — see `mnt_ontology_rest::ProjectedDispatchRegistry`
+// `TenantConfigSeeder` — see `console_ontology_rest::ProjectedDispatchRegistry`
 // module docs) ---------------------------------------------------------------
 
 /// Map a registry use-case error onto [`ActionError`] without touching the
@@ -2541,7 +2541,7 @@ fn update_equipment_projected_handler(store: PgRegistryStore) -> ProjectedHandle
 
 /// The full projected-dispatch registry supplied to the ontology REST tier.
 /// Unregistered targets fail closed (`NotWiredYet`) — see
-/// `mnt_ontology_rest::ProjectedDispatchRegistry::dispatch`.
+/// `console_ontology_rest::ProjectedDispatchRegistry::dispatch`.
 fn projected_dispatch_registry(pool: PgPool) -> ProjectedDispatchRegistry {
     ProjectedDispatchRegistry::new().register(
         "registry.update_equipment",
@@ -2690,7 +2690,7 @@ pub fn install_metrics_recorder() -> Result<PrometheusHandle, AppError> {
     {
         Ok(handle) => Ok(METRICS_HANDLE.get_or_init(|| handle).clone()),
         // Lost the install race against a caller outside this lock (e.g. a
-        // non-mnt-app global installer in the same process) -- adopt the
+        // non-console-app global installer in the same process) -- adopt the
         // winner's handle; only a genuine absence is an error.
         Err(err) => METRICS_HANDLE
             .get()
@@ -2845,13 +2845,13 @@ fn http_trace_layer() -> TraceLayer<
 /// (SLO settings, console views) through the engine, scoped to the new org so the
 /// registry writes pass FORCE-RLS. Lives here (App tier) because the platform tier
 /// must not depend on the ontology adapter (layer boundary).
-fn tenant_config_seeder(store: PgOntologyStore) -> mnt_platform_rest::TenantConfigSeeder {
+fn tenant_config_seeder(store: PgOntologyStore) -> console_platform_rest::TenantConfigSeeder {
     Arc::new(move |org, actor, at| {
         let store = store.clone();
         Box::pin(async move {
-            mnt_platform_request_context::scope_org(
+            console_platform_request_context::scope_org(
                 org,
-                mnt_ontology_adapter_postgres::seed::seed_governed_config_object_types(
+                console_ontology_adapter_postgres::seed::seed_governed_config_object_types(
                     &store, actor, at,
                 ),
             )
@@ -2929,7 +2929,7 @@ pub fn build_router(state: AppState) -> Router {
             let benefit_store = PgBenefitCatalogStore::new(pool.clone());
             let logistics_store = PgLogisticsStore::new(pool.clone());
             let leave_store = {
-                let store = mnt_leave_adapter_postgres::PgLeaveStore::new(
+                let store = console_leave_adapter_postgres::PgLeaveStore::new(
                     pool.clone(),
                     Arc::new(PgInboxStore::new(pool.clone())),
                 );
@@ -2947,7 +2947,7 @@ pub fn build_router(state: AppState) -> Router {
             // middleware applied directly here. L20 audit-chain PR-2: the
             // read-only attestation endpoint joins the SAME router (no new
             // `.merge()`), the established pattern for app-level audit REST.
-            let audit_router = mnt_platform_request_context::with_request_context(
+            let audit_router = console_platform_request_context::with_request_context(
                 Router::new()
                     .route(AUDIT_ROUTE_PATH, get(audit_log))
                     .route("/api/v1/audit/attestation", get(audit_attestation))
@@ -2962,39 +2962,39 @@ pub fn build_router(state: AppState) -> Router {
                         state.jwt_verifier.clone(),
                     ),
                 ))
-                .merge(mnt_dispatch_rest::router(DispatchRestState::new(
+                .merge(console_dispatch_rest::router(DispatchRestState::new(
                     dispatch_store,
                     state.jwt_verifier.clone(),
                     state.config.dispatch_timers,
                     state.dispatch_job_queue.clone(),
                     state.push_notifier.clone(),
                 )))
-                .merge(mnt_logistics_rest::router(LogisticsRestState::new(
+                .merge(console_logistics_rest::router(LogisticsRestState::new(
                     logistics_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_attendance_rest::router(AttendanceRestState::new(
+                .merge(console_attendance_rest::router(AttendanceRestState::new(
                     PgAttendanceStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_inventory_rest::router(InventoryRestState::new(
+                .merge(console_inventory_rest::router(InventoryRestState::new(
                     PgInventoryStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_equipment_rest::router(EquipmentRestState::new(
+                .merge(console_equipment_rest::router(EquipmentRestState::new(
                     PgEquipment3rStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_financial_rest::router(
+                .merge(console_financial_rest::router(
                     FinancialRestState::new(financial_store, state.jwt_verifier.clone())
                         .with_passkey_step_up(state.policy_step_up.clone())
                         .with_purchase_attachment_storage(state.sales_media_storage.clone()),
                 ))
-                .merge(mnt_inspection_rest::router(InspectionRestState::new(
+                .merge(console_inspection_rest::router(InspectionRestState::new(
                     inspection_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_support_rest::router({
+                .merge(console_support_rest::router({
                     let mut support_state = SupportRestState::new(
                         support_store,
                         state.jwt_verifier.clone(),
@@ -3005,19 +3005,19 @@ pub fn build_router(state: AppState) -> Router {
                     }
                     support_state
                 }))
-                .merge(mnt_identity_rest::router(
+                .merge(console_identity_rest::router(
                     IdentityRestState::new(org_store, state.jwt_verifier.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
-                .merge(mnt_compliance_rest::router(ComplianceRestState::new(
+                .merge(console_compliance_rest::router(ComplianceRestState::new(
                     compliance_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_integrity::router(IntegrityRestState::new(
+                .merge(console_integrity::router(IntegrityRestState::new(
                     integrity_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_registry_rest::router(
+                .merge(console_registry_rest::router(
                     RegistryRestState::new(registry_store, state.jwt_verifier.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
@@ -3025,11 +3025,11 @@ pub fn build_router(state: AppState) -> Router {
                     let hr_state = hr::HrState::new(pool.clone(), state.jwt_verifier.clone());
                     hr_state.with_leave_command_store(leave_store.clone())
                 }))
-                .merge(mnt_recruiting_rest::router(RecruitingRestState::new(
+                .merge(console_recruiting_rest::router(RecruitingRestState::new(
                     PgRecruitingStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_evaluation_rest::router(EvaluationRestState::new(
+                .merge(console_evaluation_rest::router(EvaluationRestState::new(
                     evaluation_store,
                     state.jwt_verifier.clone(),
                 )))
@@ -3097,7 +3097,7 @@ pub fn build_router(state: AppState) -> Router {
                         office_blobs,
                     )
                 }))
-                .merge(mnt_sales_rest::router({
+                .merge(console_sales_rest::router({
                     let mut sales_state =
                         SalesRestState::new(sales_store, state.jwt_verifier.clone());
                     if let Some(storefront_org) = state.config.storefront_org {
@@ -3108,19 +3108,19 @@ pub fn build_router(state: AppState) -> Router {
                     }
                     sales_state
                 }))
-                .merge(mnt_reporting_rest::router(KpiRestState::new(
+                .merge(console_reporting_rest::router(KpiRestState::new(
                     kpi_repository,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_workorder_rest::router(
+                .merge(console_workorder_rest::router(
                     WorkOrderRestState::new(work_order_store.clone(), state.jwt_verifier.clone())
                         .with_workflow_runtime(Some(
-                            mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
+                            console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
                                 pool.clone(),
                             ),
                         )),
                 ))
-                .merge(mnt_workorder_rest::mobile_router(
+                .merge(console_workorder_rest::mobile_router(
                     MobileRestState::new(
                         pool.clone(),
                         work_order_store,
@@ -3129,23 +3129,23 @@ pub fn build_router(state: AppState) -> Router {
                     )
                     .with_passkey_step_up(state.policy_step_up.clone())
                     .with_workflow_runtime(Some(
-                        mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
+                        console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
                             pool.clone(),
                         ),
                     ))
                     .with_job_queue(state.dispatch_job_queue.clone()),
                 ))
-                .merge(mnt_facilities_rest::router(FacilitiesRestState::new(
+                .merge(console_facilities_rest::router(FacilitiesRestState::new(
                     pool.clone(),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_production_rest::router(
+                .merge(console_production_rest::router(
                     ProductionRestState::new(pool.clone(), state.jwt_verifier.clone())
                         .with_service_principal_hmac_key(
                             state.config.production_service_principal_hmac_key,
                         ),
                 ))
-                .merge(mnt_messenger_rest::router(MessengerRestState::new(
+                .merge(console_messenger_rest::router(MessengerRestState::new(
                     messenger_store,
                     state.jwt_verifier.clone(),
                 )))
@@ -3153,7 +3153,7 @@ pub fn build_router(state: AppState) -> Router {
                 // legal-hold). The fixity check HEADs the WORM (replica) bucket;
                 // when object storage is unconfigured the store is `None` and
                 // `verify` 503s rather than green-lighting an unverifiable object.
-                .merge(mnt_docs_rest::router(DocsRestState::new(
+                .merge(console_docs_rest::router(DocsRestState::new(
                     PgDocsStore::new(pool.clone()),
                     governance_store.clone(),
                     state
@@ -3167,11 +3167,11 @@ pub fn build_router(state: AppState) -> Router {
                         .unwrap_or_default(),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_notifications_rest::router(NotificationRestState::new(
+                .merge(console_notifications_rest::router(NotificationRestState::new(
                     notification_store.clone(),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_inbox_rest::router(
+                .merge(console_inbox_rest::router(
                     InboxRestState::new(
                         PgInboxStore::new(pool.clone()),
                         state.jwt_verifier.clone(),
@@ -3181,19 +3181,19 @@ pub fn build_router(state: AppState) -> Router {
                 // Leave-request queue + §61 statutory push. The push delivers a
                 // receipt-gated notice through the SAME inbox vault (a fresh
                 // `PgInboxStore` over the shared pool as the `InboxDocSink`).
-                .merge(mnt_leave_rest::router(mnt_leave_rest::LeaveRestState::new(
+                .merge(console_leave_rest::router(console_leave_rest::LeaveRestState::new(
                     leave_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_benefit_rest::router(BenefitRestState::new(
+                .merge(console_benefit_rest::router(BenefitRestState::new(
                     benefit_store,
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_consulting_rest::router(ConsultingRestState::new(
+                .merge(console_consulting_rest::router(ConsultingRestState::new(
                     pool.clone(),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_todos_rest::router(TodoRestState::new(
+                .merge(console_todos_rest::router(TodoRestState::new(
                     todo_store,
                     state.jwt_verifier.clone(),
                 )))
@@ -3204,11 +3204,11 @@ pub fn build_router(state: AppState) -> Router {
                 // The inbound-attachment object store (presigned GET) is wired
                 // from the same storage config the evidence pipeline uses; `None`
                 // when storage is unconfigured (download then 503s).
-                // mox integration (slice 1): when `MNT_MAIL_MOX_BASE_URL` is set,
+                // mox integration (slice 1): when `CONSOLE_MAIL_MOX_BASE_URL` is set,
                 // the outbound transport rides our own mox server's webapi instead
-                // of the lettre SMTP client; `MNT_MAIL_MOX_WEBHOOK_SECRET` arms the
+                // of the lettre SMTP client; `CONSOLE_MAIL_MOX_WEBHOOK_SECRET` arms the
                 // inbound delivery webhook (absent → webhook 503s, never hardcoded).
-                .merge(mnt_comms_rest::router(
+                .merge(console_comms_rest::router(
                     CommsRestState::new(
                         PgMailStore::new(pool.clone()),
                         state.mail_cipher.clone(),
@@ -3221,7 +3221,7 @@ pub fn build_router(state: AppState) -> Router {
                 // Ontology / governance / Policy-Studio engine surfaces.
                 // `ontology` self-applies four-eyes/governance gate chains; its
                 // action-execute path is the single mutation surface (§16).
-                .merge(mnt_ontology_rest::router(
+                .merge(console_ontology_rest::router(
                     OntologyRestState::new(
                         ontology_registry_store.clone(),
                         ontology_instance_store,
@@ -3230,17 +3230,17 @@ pub fn build_router(state: AppState) -> Router {
                     )
                     .with_projected_dispatch(projected_dispatch_registry(pool.clone())),
                 ))
-                .merge(mnt_governance_rest::router(GovernanceRestState::new(
+                .merge(console_governance_rest::router(GovernanceRestState::new(
                     governance_store,
                     state.jwt_verifier.clone(),
                 )))
                 // Org-change lifecycle engine (조직 개편 결재): draft → preflight
                 // → ordered SoD approval → effective-dated apply (§15/§16).
-                .merge(mnt_orgchange_rest::router(OrgChangeRestState::new(
+                .merge(console_orgchange_rest::router(OrgChangeRestState::new(
                     PgOrgChangeStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
-                .merge(mnt_platform_authz_rest::router(CedarPolicyRestState::new(
+                .merge(console_platform_authz_rest::router(CedarPolicyRestState::new(
                     cedar_policy_store,
                     state.jwt_verifier.clone(),
                 )))
@@ -3248,23 +3248,23 @@ pub fn build_router(state: AppState) -> Router {
                 // `notice_receipts` and fans out one notification per recipient
                 // through the SAME notification-center sink the messenger
                 // @-mention path uses (#198 pattern).
-                .merge(mnt_notices_rest::router(NoticeRestState::new(
+                .merge(console_notices_rest::router(NoticeRestState::new(
                     PgNoticeStore::new(pool.clone())
                         .with_notification_sink(Arc::new(notification_store.clone())),
                     state.jwt_verifier.clone(),
                 )))
                 // Accounting GL vouchers (전표): create/submit/approve/post/reverse.
-                .merge(mnt_finance_gl_rest::router(FinanceGlRestState::new(
+                .merge(console_finance_gl_rest::router(FinanceGlRestState::new(
                     PgVoucherStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
                 // Payroll draft-run visibility (admin org-wide + self payslips).
-                .merge(mnt_payroll_rest::router(PayrollRestState::new(
+                .merge(console_payroll_rest::router(PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
                     state.jwt_verifier.clone(),
                 )))
                 // Deterministic statistical projection (read-only, stateless).
-                .merge(mnt_analytics_quant_rest::router(AnalyticsQuantState::new(
+                .merge(console_analytics_quant_rest::router(AnalyticsQuantState::new(
                     pool.clone(),
                     state.jwt_verifier.clone(),
                 )));
@@ -3277,7 +3277,7 @@ pub fn build_router(state: AppState) -> Router {
             // impersonating, regardless of the acting role. It is orthogonal to
             // (and does not replace) the tenant org middleware each domain router
             // already applies; an ordinary tenant/platform token is untouched.
-            let domain_router = mnt_platform_rest::with_view_as_read_only_gate(
+            let domain_router = console_platform_rest::with_view_as_read_only_gate(
                 domain_router,
                 state.jwt_verifier.clone(),
             );
@@ -3295,7 +3295,7 @@ pub fn build_router(state: AppState) -> Router {
             // ingress `/api`→backend rule route it while the SPA keeps the bare
             // browser routes `/platform/*`. This is the only path that creates org
             // rows.
-            let platform_router = mnt_platform_rest::router(
+            let platform_router = console_platform_rest::router(
                 PlatformRestState::new(
                     pool.clone(),
                     state.jwt_verifier.clone(),
@@ -3323,8 +3323,8 @@ pub fn build_router(state: AppState) -> Router {
                         // wrap them — otherwise an impersonation token could reach
                         // a write here. The pre-auth POSTs (login/refresh/redeem)
                         // carry no view_as token, so the gate is a no-op for them.
-                        let auth_router = mnt_platform_rest::with_view_as_read_only_gate(
-                            mnt_platform_auth_rest::router(auth_rest),
+                        let auth_router = console_platform_rest::with_view_as_read_only_gate(
+                            console_platform_auth_rest::router(auth_rest),
                             state.jwt_verifier.clone(),
                         );
                         timed.merge(auth_router)
@@ -3345,7 +3345,7 @@ pub fn build_router(state: AppState) -> Router {
             // escapes the 30s budget. It is intentionally NOT under the org
             // middleware: the WS handler runs its own auth over the socket
             // lifetime (a task-local would not survive the upgrade anyway).
-            timed.merge(mnt_platform_realtime::router(RealtimeRestState::new(
+            timed.merge(console_platform_realtime::router(RealtimeRestState::new(
                 realtime_hub,
                 state.jwt_verifier.clone(),
             )))
@@ -3367,7 +3367,7 @@ pub fn build_router(state: AppState) -> Router {
     // This wraps the fully-composed HTTP surface exactly once.  Every router
     // below consumes the resolved extension; no domain/rate-limit surface is
     // allowed to interpret raw X-Forwarded-For itself.
-    let router = mnt_platform_request_context::with_trusted_client_ip(
+    let router = console_platform_request_context::with_trusted_client_ip(
         router,
         state.config.trusted_proxy_count,
         state.config.trusted_proxy_cidrs.clone(),
@@ -3479,7 +3479,7 @@ async fn openapi_yaml() -> impl IntoResponse {
 ///
 /// Public + unauthenticated, served as `application/json` (no extension, per
 /// Apple's requirement). The `webcredentials.apps` list is sourced from
-/// `MNT_IOS_APP_IDS`; an empty list yields a valid but inert document. Apple
+/// `CONSOLE_IOS_APP_IDS`; an empty list yields a valid but inert document. Apple
 /// fetches this over the RP origin to authorize the native app's passkeys.
 async fn apple_app_site_association(State(state): State<AppState>) -> Response<Body> {
     let body = apple_app_site_association_json(AppleAppSiteAssociationConfig {
@@ -3491,8 +3491,8 @@ async fn apple_app_site_association(State(state): State<AppState>) -> Response<B
 /// Serve the Android Digital Asset Links document at `/.well-known/assetlinks.json`.
 ///
 /// Public + unauthenticated, served as `application/json`. The package +
-/// signing-cert fingerprints come from `MNT_ANDROID_PACKAGE` /
-/// `MNT_ANDROID_CERT_SHA256`; when the package is unset the document is an empty
+/// signing-cert fingerprints come from `CONSOLE_ANDROID_PACKAGE` /
+/// `CONSOLE_ANDROID_CERT_SHA256`; when the package is unset the document is an empty
 /// JSON array (valid + inert). Android fetches this to authorize the app's
 /// passkeys for the RP domain.
 async fn android_assetlinks(State(state): State<AppState>) -> Response<Body> {
@@ -3513,7 +3513,7 @@ async fn android_assetlinks(State(state): State<AppState>) -> Response<Body> {
 ///
 /// Serialization of these tiny, statically-shaped documents cannot realistically
 /// fail; if it ever did we surface a 500 rather than serving a malformed body.
-fn well_known_json_response(body: Result<String, mnt_platform_auth::AuthError>) -> Response<Body> {
+fn well_known_json_response(body: Result<String, console_platform_auth::AuthError>) -> Response<Body> {
     match body {
         Ok(json) => ([(header::CONTENT_TYPE, "application/json")], json).into_response(),
         Err(err) => {
@@ -3582,7 +3582,7 @@ async fn audit_log(
 /// wall time scales with the org's total sealed audit history. Bounded today
 /// by (a) org-wide built-in callers (SUPER_ADMIN for `AuditLogRead`), so
 /// callers are trusted and infrequent, (b) the app-wide request timeout, and
-/// (c) mnt_rt's 30s `statement_timeout` (migration 0112) capping any single DB
+/// (c) console_rt's 30s `statement_timeout` (migration 0112) capping any single DB
 /// pass. A head-N-seals or cached-verdict endpoint variant for orgs with a long
 /// history is a PR-3 item (charter F1 anchor), not built here.
 async fn audit_attestation(
@@ -3752,7 +3752,7 @@ fn audit_read_event(principal: &Principal) -> Result<AuditEvent, ApiError> {
     )
     // Arm `app.current_org` for the FORCE-RLS read: `with_audit` binds the GUC
     // from `event.org_id`, so without this the `audit_events` SELECT runs with
-    // an unset GUC and RLS fails closed (zero rows) as the `mnt_rt` role. Also
+    // an unset GUC and RLS fails closed (zero rows) as the `console_rt` role. Also
     // stamps the `audit.read` row with the caller's org instead of NULL.
     .with_org(principal.org_id);
     Ok(match audit_event_branch(&principal.branch_scope) {
@@ -4025,7 +4025,7 @@ pub async fn serve(config: AppConfig, state: AppState) -> Result<(), AppError> {
 
 /// Refuse to boot (api or worker role) if a dev-auth persona row leaked into
 /// this database. `dev-auth:<org>:<role>` is the synthetic `phone` key
-/// `DevPrincipalProvisioner` (mnt-platform-provisioning) upserts for the
+/// `DevPrincipalProvisioner` (console-platform-provisioning) upserts for the
 /// local role-switch endpoint; that endpoint only exists in a build compiled
 /// with `--features dev-auth`, so any such row in a build WITHOUT that
 /// feature means a dev database dump (or a devved-up environment's data)
@@ -4058,7 +4058,7 @@ pub async fn assert_no_dev_auth_personas(_pool: &sqlx::PgPool) -> Result<(), App
 /// Apply the embedded schema migrations against `DATABASE_URL`, then return.
 ///
 /// This is the `migrate` run-mode (an Argo CD PreSync Job). It is deliberately
-/// lean: it needs ONLY `DATABASE_URL` (the OWNER `mnt_app` connection that can
+/// lean: it needs ONLY `DATABASE_URL` (the OWNER `console_app` connection that can
 /// run DDL) â no JWT keys, S3 creds, or any other app config â so a migration
 /// Job can run with a minimal environment. It opens a tiny single-connection
 /// pool, runs the migrator (idempotent: sqlx skips versions already recorded in
@@ -4104,7 +4104,7 @@ pub async fn run_migrations(config: &AppConfig) -> Result<(), AppError> {
 
     // Apalis' vendor migrations are deliberately owned by the same one-shot
     // migration boundary rather than by an API/worker login. Reuse the exact
-    // already-validated physical checkout so the runtime `mnt_rt` role never
+    // already-validated physical checkout so the runtime `console_rt` role never
     // needs schema or migration-ledger write privileges.
     migrate_and_reconcile_apalis_postgres(&mut connection)
         .await
@@ -4160,7 +4160,7 @@ async fn serve_api(config: AppConfig, state: AppState) -> Result<(), AppError> {
         service = %config.service_name,
         role = %config.role,
         addr = %config.http_addr,
-        "starting mnt-app"
+        "starting console-app"
     );
 
     axum::serve(
@@ -4175,7 +4175,7 @@ async fn serve_api(config: AppConfig, state: AppState) -> Result<(), AppError> {
 /// Seed the cold-start admin's bootstrap OTP at API boot, after migrations have
 /// been applied to the database.
 ///
-/// Runs only for the API role with a configured `MNT_COLDSTART_OTP` and a live
+/// Runs only for the API role with a configured `CONSOLE_COLDSTART_OTP` and a live
 /// database. The seeding itself is idempotent and race-safe in the provisioning
 /// crate: it inserts a credential only when the cold-start admin has neither a
 /// passkey nor an open credential. The OTP value is NEVER logged â only whether a
@@ -4230,17 +4230,17 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     tracing::info!(
         service = %config.service_name,
         role = %config.role,
-        queue = "mnt.dispatch",
-        "starting mnt-app worker"
+        queue = "console.dispatch",
+        "starting console-app worker"
     );
     // M2 workflow-runtime payroll outbox drainer (design §B/§F). Runs alongside
-    // the apalis dispatch worker on the same `mnt_rt` pool, re-arming
+    // the apalis dispatch worker on the same `console_rt` pool, re-arming
     // `app.current_org` per tenant each tick. Lands dark: no tenant is enrolled in
     // a shipped migration/seed, so it finds no work in production.
     let workflow_drain_handle = workflow_drain::spawn(pool.clone());
     // L20 tamper-evident audit-chain seal worker (charter §5.1). Seals batches of
     // audit_events into the append-only audit_chain_seals hash chain on the same
-    // `mnt_rt` pool, re-arming `app.current_org` per tenant each tick. Dev/test
+    // `console_rt` pool, re-arming `app.current_org` per tenant each tick. Dev/test
     // uses an in-process Ed25519 signer; production swaps in a context-selected
     // external signer/key-custody adapter so the DB owner never holds the
     // private key. Self-host uses owner-controlled custody first; OCI Vault is
@@ -4250,11 +4250,11 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     // production — until the real signer lands, an always-on worker writes real
     // seals every tick under a fresh `key_ref = test:ed25519:<hex>` keypair
     // generated on every restart, which is not yet the evidentiary guarantee the
-    // chain is meant to provide. `MNT_AUDIT_CHAIN_SEAL_ENABLED=true` opts a
+    // chain is meant to provide. `CONSOLE_AUDIT_CHAIN_SEAL_ENABLED=true` opts a
     // deployment in (dev/staging) ahead of the external custody adapter.
     let audit_chain_handle = if config.audit_chain_seal_enabled {
-        match mnt_platform_audit_chain::InMemoryEd25519Signer::generate() {
-            Ok(signer) => Some(mnt_platform_audit_chain::spawn(
+        match console_platform_audit_chain::InMemoryEd25519Signer::generate() {
+            Ok(signer) => Some(console_platform_audit_chain::spawn(
                 pool.clone(),
                 Arc::new(signer),
             )),
@@ -4265,7 +4265,7 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
         }
     } else {
         tracing::info!(
-            "MNT_AUDIT_CHAIN_SEAL_ENABLED is not set; the audit-chain seal worker is OFF"
+            "CONSOLE_AUDIT_CHAIN_SEAL_ENABLED is not set; the audit-chain seal worker is OFF"
         );
         None
     };
@@ -4286,7 +4286,7 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
         alimtalk_policy,
     );
     // Compose the dispatch-timer worker with the evidence-transcode handler so a
-    // SINGLE apalis worker on the `mnt.dispatch` queue services both job
+    // SINGLE apalis worker on the `console.dispatch` queue services both job
     // families. EvidenceTranscode is routed to the transcode handler (which owns
     // the EvidenceService + ffmpeg processor + a concurrency cap); everything
     // else falls through to the dispatch worker.
@@ -4326,11 +4326,11 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     // Kubernetes sets this explicitly via the Downward API in worker.yaml. Do
     // not use generic HOSTNAME: Docker/local shells often set it too, and those
     // environments should keep the stable service-name-only worker identity.
-    let pod_name = env::var("MNT_POD_NAME").ok();
+    let pod_name = env::var("CONSOLE_POD_NAME").ok();
     let worker_name = dispatch_apalis_worker_name(&config.service_name, pod_name.as_deref());
     let result = run_apalis_worker_until_shutdown(
         database_url,
-        "mnt.dispatch",
+        "console.dispatch",
         worker_name,
         worker,
         shutdown_signal(config.shutdown_timeout, state.clone()),
@@ -4361,7 +4361,7 @@ fn dispatch_apalis_worker_name(service_name: &str, pod_name: Option<&str>) -> St
     }
 }
 
-/// Routes apalis jobs on the shared `mnt.dispatch` queue: `EvidenceTranscode`
+/// Routes apalis jobs on the shared `console.dispatch` queue: `EvidenceTranscode`
 /// goes to the evidence handler, everything else to the dispatch-timer worker.
 struct CompositeJobHandler {
     dispatch: DispatchWorker,
@@ -4420,7 +4420,7 @@ impl EvidenceTranscodeWorker {
             .map_err(|err| JobQueueError::Worker(err.to_string()))?;
         // Arm the tenant from the job payload BEFORE any RLS-gated work; the
         // EvidenceService reads/writes the staging + status rows under this org.
-        mnt_platform_request_context::scope_org(org, async { self.process(evidence_id).await })
+        console_platform_request_context::scope_org(org, async { self.process(evidence_id).await })
             .await
             .map_err(|err| JobQueueError::Worker(err.to_string()))
     }
@@ -4506,7 +4506,7 @@ pub enum AppError {
     #[error("worker error: {0}")]
     Worker(String),
     #[error("realtime error: {0}")]
-    Realtime(#[from] mnt_platform_realtime::RealtimeError),
+    Realtime(#[from] console_platform_realtime::RealtimeError),
 }
 
 impl From<DbError> for AppError {
@@ -4527,27 +4527,27 @@ mod trusted_ingress_tests {
     use axum::extract::{ConnectInfo, Extension};
     use axum::routing::get;
     use http::Request;
-    use mnt_platform_request_context::TrustedClientIp;
+    use console_platform_request_context::TrustedClientIp;
     use tower::ServiceExt;
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn proxy_forwarding_is_disabled_by_default_and_requires_a_trusted_peer_cidr() {
         let direct = super::AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api".to_owned()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_APP_ROLE", "api".to_owned()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ])
         .unwrap();
         assert_eq!(direct.trusted_proxy_count, 0);
         assert!(direct.trusted_proxy_cidrs.is_empty());
 
         let err = super::AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api".to_owned()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-            ("MNT_TRUSTED_PROXY_COUNT", "1".to_owned()),
+            ("CONSOLE_APP_ROLE", "api".to_owned()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_TRUSTED_PROXY_COUNT", "1".to_owned()),
         ])
         .expect_err("a nonzero proxy count without trusted peers must fail closed");
-        assert!(err.to_string().contains("MNT_TRUSTED_PROXY_CIDRS"));
+        assert!(err.to_string().contains("CONSOLE_TRUSTED_PROXY_CIDRS"));
     }
 
     #[cfg(not(feature = "test-postgres"))]
@@ -4557,7 +4557,7 @@ mod trusted_ingress_tests {
             ip.get().to_string()
         }
 
-        let app = mnt_platform_request_context::with_trusted_client_ip(
+        let app = console_platform_request_context::with_trusted_client_ip(
             axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
             2,
             vec!["10.0.0.0/8".parse().unwrap()],
@@ -4585,7 +4585,7 @@ mod trusted_ingress_tests {
             ip.get().to_string()
         }
 
-        let app = mnt_platform_request_context::with_trusted_client_ip(
+        let app = console_platform_request_context::with_trusted_client_ip(
             axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
             2,
             vec!["10.0.0.0/8".parse().unwrap()],
@@ -4613,7 +4613,7 @@ mod trusted_ingress_tests {
             ip.get().to_string()
         }
 
-        let app = mnt_platform_request_context::with_trusted_client_ip(
+        let app = console_platform_request_context::with_trusted_client_ip(
             axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
             2,
             vec!["10.0.0.0/8".parse().unwrap()],
@@ -4641,7 +4641,7 @@ mod trusted_ingress_tests {
             ip.get().to_string()
         }
 
-        let app = mnt_platform_request_context::with_trusted_client_ip(
+        let app = console_platform_request_context::with_trusted_client_ip(
             axum::Router::new().route("/__test/client-ip", get(observed_client_ip)),
             1,
             vec!["10.0.0.0/8".parse().unwrap()],
@@ -4678,8 +4678,8 @@ mod readiness_tests {
 
     fn api_config() -> AppConfig {
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ])
         .expect("valid api test config")
     }
@@ -4728,9 +4728,9 @@ mod wide_event_middleware_tests {
     async fn http_metrics_label_matched_route_template_not_raw_path() {
         install_metrics_recorder().expect("metrics recorder installs once");
         let config = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-            ("MNT_SERVICE_NAME", "mnt-wide-event-test".to_owned()),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_SERVICE_NAME", "console-wide-event-test".to_owned()),
         ])
         .expect("valid app config");
         let state = AppState::new(config, DatabaseDependency::NotConfigured)
@@ -4772,7 +4772,7 @@ mod wide_event_middleware_tests {
         .unwrap();
 
         assert!(
-            text.contains("service_name=\"mnt-wide-event-test\"")
+            text.contains("service_name=\"console-wide-event-test\"")
                 && text.contains("http_route=\"/__wide_event/widgets/{widget_id}\""),
             "wide-event metrics must label the matched route template, not the raw request path; got:\n{text}"
         );
@@ -4787,11 +4787,11 @@ mod wide_event_middleware_tests {
     async fn http_metrics_label_unmatched_route_sentinel_not_raw_path() {
         install_metrics_recorder().expect("metrics recorder installs once");
         let config = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             (
-                "MNT_SERVICE_NAME",
-                "mnt-wide-event-unmatched-test".to_owned(),
+                "CONSOLE_SERVICE_NAME",
+                "console-wide-event-unmatched-test".to_owned(),
             ),
         ])
         .expect("valid app config");
@@ -4834,7 +4834,7 @@ mod wide_event_middleware_tests {
         .unwrap();
 
         assert!(
-            text.contains("service_name=\"mnt-wide-event-unmatched-test\"")
+            text.contains("service_name=\"console-wide-event-unmatched-test\"")
                 && text.contains("http_route=\"/_unmatched\"")
                 && text.contains("http_response_status_code=\"404\""),
             "unmatched wide-event metrics must use the bounded sentinel; got:\n{text}"
@@ -4853,8 +4853,8 @@ mod wide_event_middleware_tests {
 mod audit_attestation_auth_tests {
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-    use mnt_platform_authz::{Principal, Role};
+    use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+    use console_platform_authz::{Principal, Role};
 
     use super::authorize_audit_attestation;
 
@@ -5003,25 +5003,25 @@ mod worker_identity_tests {
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_includes_pod_hostname_when_present() {
-        let name = dispatch_apalis_worker_name("mnt-app-worker", Some("mnt-worker-abc123"));
+        let name = dispatch_apalis_worker_name("console-app-worker", Some("console-worker-abc123"));
 
-        assert_eq!(name, "mnt-app-worker-mnt-worker-abc123-dispatch-worker");
+        assert_eq!(name, "console-app-worker-console-worker-abc123-dispatch-worker");
     }
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_falls_back_to_service_name_outside_kubernetes() {
-        let name = dispatch_apalis_worker_name("mnt-app-worker", None);
+        let name = dispatch_apalis_worker_name("console-app-worker", None);
 
-        assert_eq!(name, "mnt-app-worker-dispatch-worker");
+        assert_eq!(name, "console-app-worker-dispatch-worker");
     }
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn dispatch_worker_name_ignores_empty_hostname() {
-        let name = dispatch_apalis_worker_name("mnt-app-worker", Some("   "));
+        let name = dispatch_apalis_worker_name("console-app-worker", Some("   "));
 
-        assert_eq!(name, "mnt-app-worker-dispatch-worker");
+        assert_eq!(name, "console-app-worker-dispatch-worker");
     }
 
     #[cfg(not(feature = "test-postgres"))]
@@ -5082,7 +5082,7 @@ mod migration_database_budget_tests {
                                    role.rolbypassrls
                             FROM pg_catalog.pg_authid AS role
                             WHERE role.rolname IN (
-                                'mnt_app', 'mnt_leave_definer', 'mnt_ontology_writer'
+                                'console_app', 'console_leave_definer', 'console_ontology_writer'
                             )
                         ) AS role_state
                     ), '[]'::jsonb),
@@ -5102,9 +5102,9 @@ mod migration_database_budget_tests {
                             JOIN pg_catalog.pg_roles AS granted
                               ON granted.oid = membership.roleid
                             WHERE member.rolname IN (
-                                'mnt_app', 'mnt_leave_definer', 'mnt_ontology_writer'
+                                'console_app', 'console_leave_definer', 'console_ontology_writer'
                             ) OR granted.rolname IN (
-                                'mnt_app', 'mnt_leave_definer', 'mnt_ontology_writer'
+                                'console_app', 'console_leave_definer', 'console_ontology_writer'
                             )
                         ) AS membership_state
                     ), '[]'::jsonb)
@@ -5245,7 +5245,7 @@ mod serving_database_timeout_tests {
             .fetch_one(&pool)
             .await
             .expect("test backend pid reads");
-        let role = format!("mnt_serving_timeout_test_{backend_pid}");
+        let role = format!("console_serving_timeout_test_{backend_pid}");
         let password = "serving-timeout-test-password";
         let quoted_database: String = sqlx::query_scalar("SELECT quote_ident(current_database())")
             .fetch_one(&pool)
@@ -5394,15 +5394,15 @@ mod command_database_config_tests {
         serving_database_identity_query, validate_database_url_identity,
     };
 
-    const RUNTIME_URL: &str = "postgresql://mnt_rt:runtime-secret@db/maintenance";
-    const LEAVE_COMMAND_URL: &str = "postgresql://mnt_leave_cmd:leave-secret@db/maintenance";
+    const RUNTIME_URL: &str = "postgresql://console_rt:runtime-secret@db/console";
+    const LEAVE_COMMAND_URL: &str = "postgresql://console_leave_cmd:leave-secret@db/console";
     const ONTOLOGY_COMMAND_URL: &str =
-        "postgresql://mnt_ontology_cmd:ontology-secret@db/maintenance";
+        "postgresql://console_ontology_cmd:ontology-secret@db/console";
     const PLATFORM_FORCE_COMMAND_URL: &str =
-        "postgresql://mnt_platform_force_cmd:platform-force-secret@db/maintenance";
+        "postgresql://console_platform_force_cmd:platform-force-secret@db/console";
 
     fn migration_memberships() -> Vec<RoleMembership> {
-        ["mnt_leave_definer", "mnt_ontology_writer"]
+        ["console_leave_definer", "console_ontology_writer"]
             .into_iter()
             .map(|role_name| RoleMembership {
                 role_name: role_name.to_owned(),
@@ -5414,7 +5414,7 @@ mod command_database_config_tests {
     }
 
     fn migration_subordinate_roles() -> Vec<SubordinateRoleContract> {
-        ["mnt_leave_definer", "mnt_ontology_writer"]
+        ["console_leave_definer", "console_ontology_writer"]
             .into_iter()
             .map(|role_name| SubordinateRoleContract {
                 role_name: role_name.to_owned(),
@@ -5427,7 +5427,7 @@ mod command_database_config_tests {
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn api_with_database_requires_distinct_leave_command_database_url() {
-        let error = AppConfig::from_pairs([("MNT_APP_ROLE", "api"), ("DATABASE_URL", RUNTIME_URL)])
+        let error = AppConfig::from_pairs([("CONSOLE_APP_ROLE", "api"), ("DATABASE_URL", RUNTIME_URL)])
             .unwrap_err();
 
         assert!(
@@ -5443,7 +5443,7 @@ mod command_database_config_tests {
     fn blank_leave_command_database_url_fails_closed_for_database_backed_api() {
         assert!(
             AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "api"),
+                ("CONSOLE_APP_ROLE", "api"),
                 ("DATABASE_URL", RUNTIME_URL),
                 ("LEAVE_COMMAND_DATABASE_URL", "   "),
             ])
@@ -5455,7 +5455,7 @@ mod command_database_config_tests {
     #[test]
     fn api_accepts_distinct_leave_command_database_url() {
         let config = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
@@ -5485,7 +5485,7 @@ mod command_database_config_tests {
     #[test]
     fn api_with_database_requires_distinct_ontology_command_database_url() {
         let error = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
         ])
@@ -5503,7 +5503,7 @@ mod command_database_config_tests {
     #[test]
     fn api_with_database_requires_platform_force_command_database_url() {
         let error = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
@@ -5520,7 +5520,7 @@ mod command_database_config_tests {
     #[test]
     fn api_rejects_command_urls_equal_to_runtime_or_each_other() {
         let leave_equals_runtime = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", RUNTIME_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
@@ -5537,7 +5537,7 @@ mod command_database_config_tests {
         );
 
         let ontology_equals_runtime = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", RUNTIME_URL),
@@ -5554,7 +5554,7 @@ mod command_database_config_tests {
         );
 
         let shared_command_url = AppConfig::from_pairs([
-            ("MNT_APP_ROLE", "api"),
+            ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
             ("ONTOLOGY_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
@@ -5574,7 +5574,7 @@ mod command_database_config_tests {
             (ONTOLOGY_COMMAND_URL, "ONTOLOGY_COMMAND_DATABASE_URL"),
         ] {
             let error = AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "api"),
+                ("CONSOLE_APP_ROLE", "api"),
                 ("DATABASE_URL", RUNTIME_URL),
                 ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
                 ("ONTOLOGY_COMMAND_DATABASE_URL", ONTOLOGY_COMMAND_URL),
@@ -5594,9 +5594,9 @@ mod command_database_config_tests {
         assert!(
             ensure_expected_serving_database_identity(
                 "LEAVE_COMMAND_DATABASE_URL",
-                "mnt_leave_cmd",
-                "mnt_leave_cmd",
-                "mnt_leave_cmd",
+                "console_leave_cmd",
+                "console_leave_cmd",
+                "console_leave_cmd",
                 RoleAttributes::HARDENED_LOGIN,
                 false,
             )
@@ -5605,9 +5605,9 @@ mod command_database_config_tests {
         assert!(
             ensure_expected_serving_database_identity(
                 "DATABASE_URL",
-                "mnt_rt",
-                "mnt_leave_cmd",
-                "mnt_rt",
+                "console_rt",
+                "console_leave_cmd",
+                "console_rt",
                 RoleAttributes::HARDENED_LOGIN,
                 false,
             )
@@ -5617,8 +5617,8 @@ mod command_database_config_tests {
             ensure_expected_serving_database_identity(
                 "DATABASE_URL",
                 "local_dev",
-                "mnt_rt",
-                "mnt_rt",
+                "console_rt",
+                "console_rt",
                 RoleAttributes::HARDENED_LOGIN,
                 false,
             )
@@ -5627,9 +5627,9 @@ mod command_database_config_tests {
         assert!(
             ensure_expected_serving_database_identity(
                 "DATABASE_URL",
-                "mnt_rt",
-                "mnt_rt",
-                "mnt_rt",
+                "console_rt",
+                "console_rt",
+                "console_rt",
                 RoleAttributes::HARDENED_LOGIN,
                 true,
             )
@@ -5675,9 +5675,9 @@ mod command_database_config_tests {
             assert!(
                 ensure_expected_serving_database_identity(
                     "DATABASE_URL",
-                    "mnt_rt",
-                    "mnt_rt",
-                    "mnt_rt",
+                    "console_rt",
+                    "console_rt",
+                    "console_rt",
                     attributes,
                     false,
                 )
@@ -5692,29 +5692,29 @@ mod command_database_config_tests {
         assert!(
             validate_database_url_identity(
                 "DATABASE_URL",
-                "postgresql://local_dev:secret@db/maintenance",
-                "mnt_rt",
+                "postgresql://local_dev:secret@db/console",
+                "console_rt",
             )
             .is_err()
         );
 
         for options in [
-            "-c role=mnt_rt",
-            "-crole=mnt_rt",
-            "--ROLE=mnt_rt",
-            "role=mnt_rt",
+            "-c role=console_rt",
+            "-crole=console_rt",
+            "--ROLE=console_rt",
+            "role=console_rt",
         ] {
             assert!(postgres_options_set_role(options), "options: {options}");
         }
         assert!(!postgres_options_set_role("-c search_path=public"));
 
         for url in [
-            "postgresql://mnt_rt:secret@db/maintenance?options=-c%20role%3Dmnt_rt",
-            "postgresql://mnt_rt:secret@db/maintenance?options=-crole%3Dmnt_rt",
-            "postgresql://mnt_rt:secret@db/maintenance?options%5Brole%5D=mnt_rt",
-            "postgresql://local_dev:secret@db/maintenance?user=mnt_rt",
+            "postgresql://console_rt:secret@db/console?options=-c%20role%3Dconsole_rt",
+            "postgresql://console_rt:secret@db/console?options=-crole%3Dconsole_rt",
+            "postgresql://console_rt:secret@db/console?options%5Brole%5D=console_rt",
+            "postgresql://local_dev:secret@db/console?user=console_rt",
         ] {
-            let error = validate_database_url_identity("DATABASE_URL", url, "mnt_rt").unwrap_err();
+            let error = validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
             assert!(
                 error.to_string().contains("must not set PostgreSQL role"),
                 "unexpected error: {error}"
@@ -5726,11 +5726,11 @@ mod command_database_config_tests {
     #[test]
     fn database_urls_require_nonempty_decoded_passwords() {
         for url in [
-            "postgresql://mnt_rt@db/maintenance",
-            "postgresql://mnt_rt:@db/maintenance",
-            "postgresql://mnt_rt:secret@db/maintenance?password=",
+            "postgresql://console_rt@db/console",
+            "postgresql://console_rt:@db/console",
+            "postgresql://console_rt:secret@db/console?password=",
         ] {
-            let error = validate_database_url_identity("DATABASE_URL", url, "mnt_rt").unwrap_err();
+            let error = validate_database_url_identity("DATABASE_URL", url, "console_rt").unwrap_err();
             let message = error.to_string();
             assert!(
                 message.contains("nonempty password"),
@@ -5816,9 +5816,9 @@ mod command_database_config_tests {
     fn migration_identity_accepts_only_the_exact_owner_topology() {
         assert!(
             ensure_expected_migration_database_identity(
-                "mnt_app",
-                "mnt_app",
-                "mnt_app",
+                "console_app",
+                "console_app",
+                "console_app",
                 RoleAttributes::HARDENED_MIGRATION_LOGIN,
                 &migration_memberships(),
                 &migration_subordinate_roles(),
@@ -5828,9 +5828,9 @@ mod command_database_config_tests {
         );
 
         for (session_user, current_user, owner) in [
-            ("bootstrap", "mnt_app", "mnt_app"),
-            ("mnt_app", "mnt_leave_definer", "mnt_app"),
-            ("mnt_app", "mnt_app", "bootstrap"),
+            ("bootstrap", "console_app", "console_app"),
+            ("console_app", "console_leave_definer", "console_app"),
+            ("console_app", "console_app", "bootstrap"),
         ] {
             assert!(
                 ensure_expected_migration_database_identity(
@@ -5879,9 +5879,9 @@ mod command_database_config_tests {
         for attributes in hostile_attributes {
             assert!(
                 ensure_expected_migration_database_identity(
-                    "mnt_app",
-                    "mnt_app",
-                    "mnt_app",
+                    "console_app",
+                    "console_app",
+                    "console_app",
                     attributes,
                     &migration_memberships(),
                     &migration_subordinate_roles(),
@@ -5919,9 +5919,9 @@ mod command_database_config_tests {
         ] {
             assert!(
                 ensure_expected_migration_database_identity(
-                    "mnt_app",
-                    "mnt_app",
-                    "mnt_app",
+                    "console_app",
+                    "console_app",
+                    "console_app",
                     RoleAttributes::HARDENED_MIGRATION_LOGIN,
                     &memberships,
                     &migration_subordinate_roles(),
@@ -5947,9 +5947,9 @@ mod command_database_config_tests {
         ] {
             assert!(
                 ensure_expected_migration_database_identity(
-                    "mnt_app",
-                    "mnt_app",
-                    "mnt_app",
+                    "console_app",
+                    "console_app",
+                    "console_app",
                     RoleAttributes::HARDENED_MIGRATION_LOGIN,
                     &migration_memberships(),
                     &subordinate_roles,
@@ -5961,9 +5961,9 @@ mod command_database_config_tests {
 
         assert!(
             ensure_expected_migration_database_identity(
-                "mnt_app",
-                "mnt_app",
-                "mnt_app",
+                "console_app",
+                "console_app",
+                "console_app",
                 RoleAttributes::HARDENED_MIGRATION_LOGIN,
                 &migration_memberships(),
                 &migration_subordinate_roles(),
@@ -5975,11 +5975,11 @@ mod command_database_config_tests {
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]
-    fn migration_identity_rejects_incoming_mnt_app_membership_edge() {
+    fn migration_identity_rejects_incoming_console_app_membership_edge() {
         let error = ensure_expected_migration_database_identity(
-            "mnt_app",
-            "mnt_app",
-            "mnt_app",
+            "console_app",
+            "console_app",
+            "console_app",
             RoleAttributes::HARDENED_MIGRATION_LOGIN,
             &migration_memberships(),
             &migration_subordinate_roles(),
@@ -5998,9 +5998,9 @@ mod command_database_config_tests {
     fn serving_identity_rejects_outgoing_or_incoming_membership_edges() {
         let error = ensure_expected_serving_database_identity(
             "DATABASE_URL",
-            "mnt_rt",
-            "mnt_rt",
-            "mnt_rt",
+            "console_rt",
+            "console_rt",
+            "console_rt",
             RoleAttributes::HARDENED_LOGIN,
             true,
         )
@@ -6013,52 +6013,52 @@ mod command_database_config_tests {
     fn api_rejects_pairwise_equal_decoded_database_passwords() {
         let cases = [
             (
-                "postgresql://mnt_rt:shared%2Dsecret@db/maintenance",
-                "postgresql://mnt_leave_cmd:shared-secret@db/leave",
+                "postgresql://console_rt:shared%2Dsecret@db/console",
+                "postgresql://console_leave_cmd:shared-secret@db/leave",
                 ONTOLOGY_COMMAND_URL,
                 PLATFORM_FORCE_COMMAND_URL,
                 "DATABASE_URL and LEAVE_COMMAND_DATABASE_URL",
             ),
             (
                 RUNTIME_URL,
-                "postgresql://mnt_leave_cmd:shared%2Dsecret@db/leave",
-                "postgresql://mnt_ontology_cmd:shared-secret@db/ontology",
+                "postgresql://console_leave_cmd:shared%2Dsecret@db/leave",
+                "postgresql://console_ontology_cmd:shared-secret@db/ontology",
                 PLATFORM_FORCE_COMMAND_URL,
                 "LEAVE_COMMAND_DATABASE_URL and ONTOLOGY_COMMAND_DATABASE_URL",
             ),
             (
-                "postgresql://mnt_rt:query-secret@db/runtime",
+                "postgresql://console_rt:query-secret@db/runtime",
                 LEAVE_COMMAND_URL,
-                "postgresql://mnt_ontology_cmd:different@db/ontology?password=query-secret",
+                "postgresql://console_ontology_cmd:different@db/ontology?password=query-secret",
                 PLATFORM_FORCE_COMMAND_URL,
                 "DATABASE_URL and ONTOLOGY_COMMAND_DATABASE_URL",
             ),
             (
-                "postgresql://mnt_rt:force-secret@db/runtime",
+                "postgresql://console_rt:force-secret@db/runtime",
                 LEAVE_COMMAND_URL,
                 ONTOLOGY_COMMAND_URL,
-                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "postgresql://console_platform_force_cmd:force-secret@db/platform-force",
                 "DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
             ),
             (
                 RUNTIME_URL,
-                "postgresql://mnt_leave_cmd:force-secret@db/leave",
+                "postgresql://console_leave_cmd:force-secret@db/leave",
                 ONTOLOGY_COMMAND_URL,
-                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "postgresql://console_platform_force_cmd:force-secret@db/platform-force",
                 "LEAVE_COMMAND_DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
             ),
             (
                 RUNTIME_URL,
                 LEAVE_COMMAND_URL,
-                "postgresql://mnt_ontology_cmd:force-secret@db/ontology",
-                "postgresql://mnt_platform_force_cmd:force-secret@db/platform-force",
+                "postgresql://console_ontology_cmd:force-secret@db/ontology",
+                "postgresql://console_platform_force_cmd:force-secret@db/platform-force",
                 "ONTOLOGY_COMMAND_DATABASE_URL and PLATFORM_FORCE_COMMAND_DATABASE_URL",
             ),
         ];
 
         for (runtime, leave, ontology, platform_force, expected_pair) in cases {
             let error = AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "api"),
+                ("CONSOLE_APP_ROLE", "api"),
                 ("DATABASE_URL", runtime),
                 ("LEAVE_COMMAND_DATABASE_URL", leave),
                 ("ONTOLOGY_COMMAND_DATABASE_URL", ontology),
@@ -6079,7 +6079,7 @@ mod command_database_config_tests {
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn database_free_api_does_not_require_leave_command_database_url() {
-        let config = AppConfig::from_pairs([("MNT_APP_ROLE", "api")]).unwrap();
+        let config = AppConfig::from_pairs([("CONSOLE_APP_ROLE", "api")]).unwrap();
 
         assert!(config.database_url.is_none());
         assert!(config.leave_command_database_url.is_none());
@@ -6093,11 +6093,11 @@ mod command_database_config_tests {
             ("worker", RUNTIME_URL),
             (
                 "migrate",
-                "postgresql://mnt_app:migration-secret@db/maintenance",
+                "postgresql://console_app:migration-secret@db/console",
             ),
         ] {
             let config =
-                AppConfig::from_pairs([("MNT_APP_ROLE", role), ("DATABASE_URL", database_url)])
+                AppConfig::from_pairs([("CONSOLE_APP_ROLE", role), ("DATABASE_URL", database_url)])
                     .unwrap();
 
             assert!(config.leave_command_database_url.is_none());
@@ -6110,25 +6110,25 @@ mod command_database_config_tests {
     fn worker_requires_exact_runtime_login_but_migrate_keeps_owner_url() {
         assert!(
             AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "worker"),
+                ("CONSOLE_APP_ROLE", "worker"),
                 (
                     "DATABASE_URL",
-                    "postgresql://local_dev:secret@db/maintenance",
+                    "postgresql://local_dev:secret@db/console",
                 ),
             ])
             .is_err()
         );
         assert!(
             AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "migrate"),
-                ("DATABASE_URL", "postgresql://mnt_app:secret@db/maintenance",),
+                ("CONSOLE_APP_ROLE", "migrate"),
+                ("DATABASE_URL", "postgresql://console_app:secret@db/console",),
             ])
             .is_ok()
         );
         assert!(
             AppConfig::from_pairs([
-                ("MNT_APP_ROLE", "migrate"),
-                ("DATABASE_URL", "postgresql://mnt_rt:secret@db/maintenance",),
+                ("CONSOLE_APP_ROLE", "migrate"),
+                ("DATABASE_URL", "postgresql://console_rt:secret@db/console",),
             ])
             .is_err()
         );
@@ -6139,7 +6139,7 @@ mod command_database_config_tests {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod email_config_tests {
     //! Guards `email_config_from_vars` robustness. The regression being
-    //! prevented: a partially-set `MNT_EMAIL_*` group (ConfigMap supplies
+    //! prevented: a partially-set `CONSOLE_EMAIL_*` group (ConfigMap supplies
     //! host/port/from, but the Secret with the SMTP creds is not yet
     //! provisioned) must not silently degrade to the OTP-logging stub in
     //! production. Stub OTP logging is allowed only behind an explicit
@@ -6147,22 +6147,22 @@ mod email_config_tests {
 
     use std::collections::HashMap;
 
-    use mnt_platform_email::StubEmailMode;
+    use console_platform_email::StubEmailMode;
 
     use super::{
         AppConfig, AppState, DatabaseDependency, EMAIL_STUB_MODE_ENV, email_config_from_vars,
         email_stub_mode_from_vars,
     };
 
-    /// The full, well-formed `MNT_EMAIL_*` set that yields a live SMTP config.
+    /// The full, well-formed `CONSOLE_EMAIL_*` set that yields a live SMTP config.
     fn full_email_vars() -> HashMap<String, String> {
         [
-            ("MNT_EMAIL_SMTP_HOST", "smtp.example.com"),
-            ("MNT_EMAIL_SMTP_PORT", "587"),
-            ("MNT_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example"),
-            ("MNT_EMAIL_SMTP_PASSWORD", "secret"),
-            ("MNT_EMAIL_FROM", "noreply@example.com"),
-            ("MNT_EMAIL_FROM_NAME", "MNT"),
+            ("CONSOLE_EMAIL_SMTP_HOST", "smtp.example.com"),
+            ("CONSOLE_EMAIL_SMTP_PORT", "587"),
+            ("CONSOLE_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example"),
+            ("CONSOLE_EMAIL_SMTP_PASSWORD", "secret"),
+            ("CONSOLE_EMAIL_FROM", "noreply@example.com"),
+            ("CONSOLE_EMAIL_FROM_NAME", "Console"),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_owned(), v.to_owned()))
@@ -6171,8 +6171,8 @@ mod email_config_tests {
 
     fn app_pairs() -> Vec<(&'static str, String)> {
         vec![
-            ("MNT_APP_ROLE", "api".to_owned()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_APP_ROLE", "api".to_owned()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ]
     }
 
@@ -6201,7 +6201,7 @@ mod email_config_tests {
         // ConfigMap set host/port/from, but the Secret (username) is absent.
         // In production this must fail closed instead of reaching the OTP-logging stub.
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_SMTP_USERNAME");
+        vars.remove("CONSOLE_EMAIL_SMTP_USERNAME");
         assert!(
             email_config_from_vars(&vars, None).is_err(),
             "missing SMTP username must fail closed unless explicit stub mode is enabled"
@@ -6212,7 +6212,7 @@ mod email_config_tests {
     #[test]
     fn partial_config_missing_username_with_stub_mode_falls_back_to_stub() {
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_SMTP_USERNAME");
+        vars.remove("CONSOLE_EMAIL_SMTP_USERNAME");
         assert!(
             email_config_from_vars(&vars, Some(StubEmailMode::E2e))
                 .unwrap()
@@ -6225,7 +6225,7 @@ mod email_config_tests {
     #[test]
     fn partial_config_missing_password_without_stub_mode_errors() {
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_SMTP_PASSWORD");
+        vars.remove("CONSOLE_EMAIL_SMTP_PASSWORD");
         assert!(
             email_config_from_vars(&vars, None).is_err(),
             "missing SMTP password must fail closed unless explicit stub mode is enabled"
@@ -6238,8 +6238,8 @@ mod email_config_tests {
         // Empty (not absent) creds — e.g. a Secret mounted with blank values —
         // are treated the same as missing and must fail closed outside stub mode.
         let mut vars = full_email_vars();
-        vars.insert("MNT_EMAIL_SMTP_USERNAME".to_owned(), "   ".to_owned());
-        vars.insert("MNT_EMAIL_SMTP_PASSWORD".to_owned(), String::new());
+        vars.insert("CONSOLE_EMAIL_SMTP_USERNAME".to_owned(), "   ".to_owned());
+        vars.insert("CONSOLE_EMAIL_SMTP_PASSWORD".to_owned(), String::new());
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
@@ -6304,7 +6304,7 @@ mod email_config_tests {
     }
 
     /// Exhaustively prove the OTP-log leak footgun is closed: ANY permutation of
-    /// the `MNT_EMAIL_*` group that is set WITHOUT both SMTP credentials must
+    /// the `CONSOLE_EMAIL_*` group that is set WITHOUT both SMTP credentials must
     /// error outside explicit stub mode. This is the prod scenario — a ConfigMap
     /// supplies some non-secret fields while the credential Secret is not yet
     /// provisioned — across every subset of the non-secret fields.
@@ -6312,10 +6312,10 @@ mod email_config_tests {
     #[test]
     fn every_partial_config_without_credentials_errors_without_stub_mode() {
         const NON_SECRET_KEYS: [(&str, &str); 4] = [
-            ("MNT_EMAIL_SMTP_HOST", "smtp.example.com"),
-            ("MNT_EMAIL_SMTP_PORT", "587"),
-            ("MNT_EMAIL_FROM", "noreply@example.com"),
-            ("MNT_EMAIL_FROM_NAME", "MNT"),
+            ("CONSOLE_EMAIL_SMTP_HOST", "smtp.example.com"),
+            ("CONSOLE_EMAIL_SMTP_PORT", "587"),
+            ("CONSOLE_EMAIL_FROM", "noreply@example.com"),
+            ("CONSOLE_EMAIL_FROM_NAME", "Console"),
         ];
         // All 16 subsets of the 4 non-secret fields, crossed with the 3 broken
         // credential states (no username, no password, neither). The empty subset
@@ -6323,8 +6323,8 @@ mod email_config_tests {
         // configured subset must fail closed.
         for mask in 0u8..(1 << NON_SECRET_KEYS.len()) {
             for creds in [
-                &[("MNT_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example")][..],
-                &[("MNT_EMAIL_SMTP_PASSWORD", "secret")][..],
+                &[("CONSOLE_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example")][..],
+                &[("CONSOLE_EMAIL_SMTP_PASSWORD", "secret")][..],
                 &[][..],
             ] {
                 let mut vars: HashMap<String, String> = HashMap::new();
@@ -6356,7 +6356,7 @@ mod email_config_tests {
         // operator misconfiguration and still hard-errors (not the missing-Secret
         // crashloop this guard targets).
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_SMTP_HOST");
+        vars.remove("CONSOLE_EMAIL_SMTP_HOST");
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
@@ -6364,7 +6364,7 @@ mod email_config_tests {
     #[test]
     fn creds_present_but_missing_port_still_errors() {
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_SMTP_PORT");
+        vars.remove("CONSOLE_EMAIL_SMTP_PORT");
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
@@ -6372,7 +6372,7 @@ mod email_config_tests {
     #[test]
     fn creds_present_but_missing_from_still_errors() {
         let mut vars = full_email_vars();
-        vars.remove("MNT_EMAIL_FROM");
+        vars.remove("CONSOLE_EMAIL_FROM");
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
@@ -6381,7 +6381,7 @@ mod email_config_tests {
     fn creds_present_but_invalid_port_still_errors() {
         // A non-numeric port is an operator typo, not a missing Secret — error.
         let mut vars = full_email_vars();
-        vars.insert("MNT_EMAIL_SMTP_PORT".to_owned(), "not-a-port".to_owned());
+        vars.insert("CONSOLE_EMAIL_SMTP_PORT".to_owned(), "not-a-port".to_owned());
         assert!(email_config_from_vars(&vars, None).is_err());
     }
 
@@ -6392,8 +6392,8 @@ mod email_config_tests {
         // the relay fields once creds exist; silently sending nowhere or using the
         // stub would hide a broken production delivery path.
         let vars: HashMap<String, String> = [
-            ("MNT_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example"),
-            ("MNT_EMAIL_SMTP_PASSWORD", "secret"),
+            ("CONSOLE_EMAIL_SMTP_USERNAME", "ocid1.user.oc1..example"),
+            ("CONSOLE_EMAIL_SMTP_PASSWORD", "secret"),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_owned(), v.to_owned()))

@@ -13,7 +13,7 @@
 //! Purity rule: domain and application crates may NOT depend on sqlx, axum, or tokio.
 //!
 //! Manifest hygiene:
-//!   - Every workspace crate name starts with `mnt-`
+//!   - Every workspace crate name starts with `console-`
 //!   - Every crate uses `edition.workspace = true` (edition equals workspace edition "2024")
 //!   - Every crate is non-publishable: `publish.workspace = true`
 //!     (inheriting workspace `publish = false`) or direct `publish = false`
@@ -161,23 +161,23 @@ pub fn classify_crate(name: &str, manifest_path: &str, workspace_root: &str) -> 
     }
 
     // For crates/*, classify by name suffix
-    // mnt-*-domain
+    // console-*-domain
     if name.ends_with("-domain") {
         return Layer::Domain;
     }
-    // mnt-*-application
+    // console-*-application
     if name.ends_with("-application") {
         return Layer::Application;
     }
-    // mnt-*-adapter-* (e.g. mnt-workorder-adapter-postgres)
+    // console-*-adapter-* (e.g. console-workorder-adapter-postgres)
     if name.contains("-adapter-") {
         return Layer::Adapter;
     }
-    // mnt-*-rest
+    // console-*-rest
     if name.ends_with("-rest") {
         return Layer::Rest;
     }
-    // mnt-*-worker
+    // console-*-worker
     if name.ends_with("-worker") {
         return Layer::Worker;
     }
@@ -202,7 +202,7 @@ pub struct Violation {
 pub enum ViolationKind {
     IllegalLayerEdge,
     ForbiddenExternalDep,
-    MissingMntPrefix,
+    MissingConsolePrefix,
     WrongEdition,
     MissingPublishFalse,
     MissingLintsWorkspace,
@@ -214,7 +214,7 @@ impl std::fmt::Display for Violation {
         let kind = match self.kind {
             ViolationKind::IllegalLayerEdge => "ILLEGAL_LAYER_EDGE",
             ViolationKind::ForbiddenExternalDep => "FORBIDDEN_EXTERNAL_DEP",
-            ViolationKind::MissingMntPrefix => "MISSING_MNT_PREFIX",
+            ViolationKind::MissingConsolePrefix => "MISSING_CONSOLE_PREFIX",
             ViolationKind::WrongEdition => "WRONG_EDITION",
             ViolationKind::MissingPublishFalse => "MISSING_PUBLISH_FALSE",
             ViolationKind::MissingLintsWorkspace => "MISSING_LINTS_WORKSPACE",
@@ -330,12 +330,12 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
     for pkg in &workspace_pkgs {
         let layer = classify_crate(&pkg.name, &pkg.manifest_path, &metadata.workspace_root);
 
-        // --- Manifest hygiene: mnt- prefix ---
-        if !pkg.name.starts_with("mnt-") {
+        // --- Manifest hygiene: console- prefix ---
+        if !pkg.name.starts_with("console-") {
             violations.push(Violation {
-                kind: ViolationKind::MissingMntPrefix,
+                kind: ViolationKind::MissingConsolePrefix,
                 crate_name: pkg.name.clone(),
-                detail: format!("name '{}' does not start with 'mnt-'", pkg.name),
+                detail: format!("name '{}' does not start with 'console-'", pkg.name),
             });
         }
 
@@ -589,7 +589,7 @@ mod tests {
     fn classify_kernel() {
         assert_eq!(
             classify_crate(
-                "mnt-kernel-core",
+                "console-kernel-core",
                 "/ws/crates/kernel/core/Cargo.toml",
                 "/ws"
             ),
@@ -601,7 +601,7 @@ mod tests {
     fn classify_domain() {
         assert_eq!(
             classify_crate(
-                "mnt-workorder-domain",
+                "console-workorder-domain",
                 "/ws/crates/workorder/domain/Cargo.toml",
                 "/ws"
             ),
@@ -613,7 +613,7 @@ mod tests {
     fn classify_application() {
         assert_eq!(
             classify_crate(
-                "mnt-workorder-application",
+                "console-workorder-application",
                 "/ws/crates/workorder/application/Cargo.toml",
                 "/ws"
             ),
@@ -625,7 +625,7 @@ mod tests {
     fn classify_adapter() {
         assert_eq!(
             classify_crate(
-                "mnt-workorder-adapter-postgres",
+                "console-workorder-adapter-postgres",
                 "/ws/crates/workorder/adapter-postgres/Cargo.toml",
                 "/ws"
             ),
@@ -637,7 +637,7 @@ mod tests {
     fn classify_platform() {
         assert_eq!(
             classify_crate(
-                "mnt-platform-auth",
+                "console-platform-auth",
                 "/ws/crates/platform/auth/Cargo.toml",
                 "/ws"
             ),
@@ -649,7 +649,7 @@ mod tests {
     fn classify_rest() {
         assert_eq!(
             classify_crate(
-                "mnt-workorder-rest",
+                "console-workorder-rest",
                 "/ws/crates/workorder/rest/Cargo.toml",
                 "/ws"
             ),
@@ -661,7 +661,7 @@ mod tests {
     fn classify_worker() {
         assert_eq!(
             classify_crate(
-                "mnt-workorder-worker",
+                "console-workorder-worker",
                 "/ws/crates/workorder/worker/Cargo.toml",
                 "/ws"
             ),
@@ -673,7 +673,7 @@ mod tests {
     fn classify_gate() {
         assert_eq!(
             classify_crate(
-                "mnt-gate-layer-boundary",
+                "console-gate-layer-boundary",
                 "/ws/ci/gates/layer-boundary/Cargo.toml",
                 "/ws"
             ),
@@ -684,7 +684,7 @@ mod tests {
     #[test]
     fn classify_app() {
         assert_eq!(
-            classify_crate("mnt-app", "/ws/app/Cargo.toml", "/ws"),
+            classify_crate("console-app", "/ws/app/Cargo.toml", "/ws"),
             Layer::App
         );
     }
@@ -712,7 +712,7 @@ mod tests {
         // Gate layer is exempt — its allowed_deps() is empty but it is not
         // checked in the gate loop. Just confirm the classify works.
         assert_eq!(
-            classify_crate("mnt-gate-foo", "/ws/ci/gates/foo/Cargo.toml", "/ws"),
+            classify_crate("console-gate-foo", "/ws/ci/gates/foo/Cargo.toml", "/ws"),
             Layer::Gate
         );
     }
@@ -724,7 +724,7 @@ mod conflict_marker_tests {
     use super::*;
 
     fn write_temp(name: &str, content: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join("mnt-gate-marker-tests");
+        let dir = std::env::temp_dir().join("console-gate-marker-tests");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join(name);
         std::fs::write(&path, content).unwrap();
@@ -761,7 +761,7 @@ mod conflict_marker_tests {
 
     #[test]
     fn skips_non_utf8_binary_files() {
-        let dir = std::env::temp_dir().join("mnt-gate-marker-tests");
+        let dir = std::env::temp_dir().join("console-gate-marker-tests");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("binary.bin");
         std::fs::write(&path, [0u8, 159, 146, 150, 255]).unwrap();

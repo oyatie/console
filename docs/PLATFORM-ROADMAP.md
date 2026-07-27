@@ -54,7 +54,7 @@ filler, online-centric** (phone is a last resort). Korean-first, multi-tenant (R
 - **Real ticket system** everywhere "contact/support" appears (never a static board).
 - **Cost & governance woven in** — acquisition cost, maintenance cost, price history/anomaly,
   who-approved-what (audit), per-asset and per-tenant.
-- Every new read is **RLS-armed** (`with_org_conn`/`current_org`; the `mnt-gate-rls-arming`
+- Every new read is **RLS-armed** (`with_org_conn`/`current_org`; the `console-gate-rls-arming`
   gate flags bare-pool reads). All migrations bounded-text + CHECK constraints per repo convention.
 
 ## Verification / debt
@@ -63,7 +63,7 @@ filler, online-centric** (phone is a last resort). Korean-first, multi-tenant (R
   **public customer support-request** (`/support/new`).
 - Stale specs to update: `landing.spec.ts` (tests removed #10 page — replace with the new
   homepage), `mech-01-02-dispatch.spec.ts` (a "현장 담당자" text assertion).
-- Live deploy of the web changes needs a `mnt-web` image rebuild plus the default
+- Live deploy of the web changes needs a `console-web` image rebuild plus the default
   verified `scripts/deploy.sh` path (digest bump + Argo sync + rollout/pod digest
   + endpoint evidence); bump-only mode is not a deployed/verified claim. See
   `deploy/OPS-RUNBOOK.md`.

@@ -4,7 +4,7 @@
 //! transactions, and audit persistence live in outer crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, ConsentId, KernelError, LocationPingId, Timestamp, Transition, TransitionError,
     UserId,
 };
@@ -454,7 +454,7 @@ pub fn evaluate_geofence(
 ) -> (bool, Option<GeofenceCrossing>) {
     // Unrounded distance: rounding to whole metres before the compare would push
     // the boundary out ~0.5 m, which is material for a small geofence radius.
-    let distance = mnt_kernel_core::haversine_meters_f64(
+    let distance = console_kernel_core::haversine_meters_f64(
         ping_latitude,
         ping_longitude,
         site_latitude,
@@ -637,7 +637,7 @@ pub struct ComplianceScope {
     pub kind: ComplianceScopeKind,
     pub scope_ref: Option<uuid::Uuid>,
     pub branch_id: Option<BranchId>,
-    pub site_id: Option<mnt_kernel_core::SiteId>,
+    pub site_id: Option<console_kernel_core::SiteId>,
 }
 
 impl ComplianceScope {
@@ -662,7 +662,7 @@ impl ComplianceScope {
     }
 
     #[must_use]
-    pub fn site(branch_id: BranchId, site_id: mnt_kernel_core::SiteId) -> Self {
+    pub fn site(branch_id: BranchId, site_id: console_kernel_core::SiteId) -> Self {
         Self {
             kind: ComplianceScopeKind::Site,
             scope_ref: Some(*site_id.as_uuid()),
@@ -1170,7 +1170,7 @@ mod compliance_domain_tests {
             kind: ComplianceScopeKind::Site,
             scope_ref: Some(uuid::Uuid::new_v4()),
             branch_id: None,
-            site_id: Some(mnt_kernel_core::SiteId::new()),
+            site_id: Some(console_kernel_core::SiteId::new()),
         };
         assert!(scope.validate().is_err());
     }

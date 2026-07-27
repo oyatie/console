@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{BranchId, MessageId, OrgId, ThreadId};
-use mnt_messenger_application::MessagePostedNotification;
-use mnt_platform_realtime::{
+use console_kernel_core::{BranchId, MessageId, OrgId, ThreadId};
+use console_messenger_application::MessagePostedNotification;
+use console_platform_realtime::{
     MessageNotifyPayload, NOTIFY_PAYLOAD_LIMIT_BYTES, NotifyPayloadError, PostgresMessageNotifier,
 };
 use serde_json::Value;

@@ -2,12 +2,12 @@
 //! event builders, and the notification port.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, CustomerId, EvidenceObjectId, KernelError,
     OrgId, SiteId, SupportTicketCommentId, SupportTicketId, Timestamp, TraceContext, UserId,
     WorkOrderId,
 };
-use mnt_support_domain::{
+use console_support_domain::{
     AcceptanceChannel, AcceptanceKind, CaseEvent, CaseHistoryEntry, CaseScope,
     DispatchHandoffStatus, FieldSlaState, SupportCase, TicketCategory, TicketOrigin,
     TicketPriority, TicketStatus,
@@ -971,7 +971,7 @@ pub fn support_audit_event(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_support_domain::SlaPolicy;
+    use console_support_domain::SlaPolicy;
     use time::macros::datetime;
 
     struct RecordingTransaction {
@@ -1186,7 +1186,7 @@ mod tests {
         let actor = UserId::new();
         let branch = BranchId::new();
         let context = SupportCaseActorContext {
-            org_id: mnt_kernel_core::OrgId::new(),
+            org_id: console_kernel_core::OrgId::new(),
             user_id: actor,
             branch_scope: BranchScope::single(branch),
         };

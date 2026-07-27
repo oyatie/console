@@ -6,7 +6,7 @@
 //! formatting (e.g. "2.5톤", "₩12,000,000") is a presentation concern.
 #![cfg_attr(test, allow(clippy::unwrap_used))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 
 /// Fuel / drive class of a listed forklift. Mirrors the `sales_listings.kind`
 /// CHECK. The rental recommender additionally offers LPG, hence it is included

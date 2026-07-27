@@ -2,13 +2,13 @@
 
 use std::sync::{Arc, Mutex};
 
-use mnt_dispatch_adapter_postgres::PgDispatchStore;
-use mnt_dispatch_application::{IncidentLocationInput, StartP1DispatchCommand};
-use mnt_dispatch_domain::{DispatchStatus, DispatchTimerConfig};
-use mnt_dispatch_worker::{AlimtalkEscalationPolicy, DispatchWorker};
-use mnt_kernel_core::TraceContext;
-use mnt_platform_jobs::{DispatchTimerJob, PlatformJob};
-use mnt_platform_push::{
+use console_dispatch_adapter_postgres::PgDispatchStore;
+use console_dispatch_application::{IncidentLocationInput, StartP1DispatchCommand};
+use console_dispatch_domain::{DispatchStatus, DispatchTimerConfig};
+use console_dispatch_worker::{AlimtalkEscalationPolicy, DispatchWorker};
+use console_kernel_core::TraceContext;
+use console_platform_jobs::{DispatchTimerJob, PlatformJob};
+use console_platform_push::{
     AlimtalkMessage, BoxFuture, FcmPushMessage, ProviderMessageId, PushError, PushNotifier,
 };
 use sqlx::{PgPool, Row};
@@ -21,7 +21,7 @@ use dispatch_worker_fixtures::seed_dispatch_context;
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn timer_worker_delivers_alimtalk_and_manager_force_push(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -55,7 +55,7 @@ async fn timer_worker_delivers_alimtalk_and_manager_force_push(pool: PgPool) {
         worker
             .handle(PlatformJob::DispatchAlimtalkNoAck(DispatchTimerJob {
                 dispatch_id: started.id,
-                org_id: mnt_kernel_core::OrgId::knl(),
+                org_id: console_kernel_core::OrgId::knl(),
                 scheduled_for: now + timers.alimtalk_no_ack_after,
             }))
             .await
@@ -70,7 +70,7 @@ async fn timer_worker_delivers_alimtalk_and_manager_force_push(pool: PgPool) {
         worker
             .handle(PlatformJob::DispatchAcceptWindowExpired(DispatchTimerJob {
                 dispatch_id: started.id,
-                org_id: mnt_kernel_core::OrgId::knl(),
+                org_id: console_kernel_core::OrgId::knl(),
                 scheduled_for: started.accept_window_ends_at,
             }))
             .await
@@ -91,7 +91,7 @@ async fn timer_worker_delivers_alimtalk_and_manager_force_push(pool: PgPool) {
 async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clears_on_force_assign(
     pool: PgPool,
 ) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -124,7 +124,7 @@ async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clea
         worker
             .handle(PlatformJob::DispatchAlimtalkNoAck(DispatchTimerJob {
                 dispatch_id: started.id,
-                org_id: mnt_kernel_core::OrgId::knl(),
+                org_id: console_kernel_core::OrgId::knl(),
                 scheduled_for: now + timers.alimtalk_no_ack_after,
             }))
             .await
@@ -148,7 +148,7 @@ async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clea
         worker
             .handle(PlatformJob::DispatchAcceptWindowExpired(DispatchTimerJob {
                 dispatch_id: started.id,
-                org_id: mnt_kernel_core::OrgId::knl(),
+                org_id: console_kernel_core::OrgId::knl(),
                 scheduled_for: started.accept_window_ends_at,
             }))
             .await
@@ -160,7 +160,7 @@ async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clea
         worker
             .handle(PlatformJob::DispatchManualCallRequired(DispatchTimerJob {
                 dispatch_id: started.id,
-                org_id: mnt_kernel_core::OrgId::knl(),
+                org_id: console_kernel_core::OrgId::knl(),
                 scheduled_for: now + timers.force_assign_alert_after,
             }))
             .await
@@ -184,7 +184,7 @@ async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clea
         );
 
         let forced = store
-            .force_assign(mnt_dispatch_application::ForceAssignP1DispatchCommand {
+            .force_assign(console_dispatch_application::ForceAssignP1DispatchCommand {
                 actor: seeded.manager,
                 dispatch_id: started.id,
                 mechanic_id: seeded.near_mechanic,
@@ -209,9 +209,9 @@ async fn escalation_chain_skips_unconfigured_alimtalk_flags_manual_call_and_clea
 // stable idempotency key lets the provider dedupe the (at most one) retry.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn crash_after_send_yields_exactly_one_sent_row_and_stable_idempotency_key(pool: PgPool) {
-    use mnt_dispatch_adapter_postgres::ALERT_LEASE_TTL;
+    use console_dispatch_adapter_postgres::ALERT_LEASE_TTL;
 
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -238,7 +238,7 @@ async fn crash_after_send_yields_exactly_one_sent_row_and_stable_idempotency_key
         // worker's no-ack handler before fanout).
         let no_ack_at = now + timers.alimtalk_no_ack_after;
         store
-            .mark_alimtalk_no_ack(mnt_dispatch_application::ExpireP1DispatchCommand {
+            .mark_alimtalk_no_ack(console_dispatch_application::ExpireP1DispatchCommand {
                 dispatch_id: started.id,
                 trace: TraceContext::generate(),
                 occurred_at: no_ack_at,
@@ -371,7 +371,7 @@ impl PushNotifier for RecordingNotifier {
 
 async fn alert_count(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     alert_type: &str,
     status: &str,
 ) -> i64 {
@@ -397,7 +397,7 @@ async fn alert_count(
 
 async fn alert_count_without_sent_at(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     alert_type: &str,
     status: &str,
 ) -> i64 {
@@ -421,7 +421,7 @@ async fn alert_count_without_sent_at(
 
 async fn skipped_alert_reason(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     alert_type: &str,
 ) -> String {
     sqlx::query_scalar(
@@ -442,7 +442,7 @@ async fn skipped_alert_reason(
 
 async fn audit_count(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     action: &str,
 ) -> i64 {
     sqlx::query_scalar(

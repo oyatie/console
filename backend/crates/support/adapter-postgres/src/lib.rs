@@ -6,13 +6,13 @@
 //! cross-branch rollups like reporting.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, CustomerId, ErrorKind, KernelError, SiteId, SupportTicketCommentId,
     SupportTicketId, UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
-use mnt_support_application::{
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
+use console_support_application::{
     AddCommentCommand, AssignTicketCommand, CommentAudience, CommentView,
     CreateCustomerIntakeCommand, CreateInternalTicketCommand, FieldAttendanceEvent,
     FieldSiteDetail, FieldSitePage, FieldSiteRow, FieldSiteSummary, FieldSlaSummary,
@@ -21,7 +21,7 @@ use mnt_support_application::{
     TicketNotificationKind, TicketPage, TicketSummary, TransitionTicketCommand,
     support_audit_event,
 };
-use mnt_support_domain::{
+use console_support_domain::{
     AcceptanceChannel, AcceptanceKind, FieldSlaState, SlaPolicy, TicketCategory, TicketOrigin,
     TicketPriority, TicketStatus,
 };
@@ -169,7 +169,7 @@ impl PgSupportStore {
         // Arm the tenant on the audit event so `with_audit` binds
         // `app.current_org` BEFORE the closure runs. Without it, the
         // ensure_active_user_in_branch SELECT + the INSERT execute under FORCE
-        // RLS with an unset GUC and fail closed as the real `mnt_rt` role.
+        // RLS with an unset GUC and fail closed as the real `console_rt` role.
         .with_org(org);
 
         with_audit::<_, TicketSummary, PgSupportError>(&self.pool, event, |tx| {

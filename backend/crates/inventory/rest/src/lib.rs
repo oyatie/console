@@ -10,8 +10,8 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_inventory_adapter_postgres::{PgInventoryError, PgInventoryStore};
-use mnt_inventory_application::{
+use console_inventory_adapter_postgres::{PgInventoryError, PgInventoryStore};
+use console_inventory_application::{
     CancelCycleCountCommand, ConsumeInventoryCommand, ConsumeInventorySource, CycleCountDecision,
     CycleCountDetail, CycleCountPage, DecideCycleCountCommand, InventoryConsumptionEventView,
     InventoryConsumptionResult, InventoryItemPage, InventoryItemView, InventoryMovementView,
@@ -19,16 +19,16 @@ use mnt_inventory_application::{
     ListInventoryItemsQuery, ListMovementsQuery, MrpLineView, MrpQuery, OpenCycleCountCommand,
     RecordReceiptCommand, SubmitCycleCountCommand, UpsertCountLineCommand,
 };
-use mnt_inventory_domain::{CycleCountStatus, InventoryItemStatus, VarianceReason};
-use mnt_kernel_core::{
+use console_inventory_domain::{CycleCountStatus, InventoryItemStatus, VarianceReason};
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, InventoryItemId, InventoryStockLocationId, KernelError,
     P1DispatchId, SiteId, TraceContext, WorkOrderId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{
     Action, EffectiveFeatureGrant, Feature, PermissionLevel, Principal, authorize, permission_for,
 };
-use mnt_platform_request_context::RequestContextError;
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use time::OffsetDateTime;
@@ -119,7 +119,7 @@ pub fn router(state: InventoryRestState) -> Router {
             post(cancel_cycle_count),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -808,7 +808,7 @@ async fn principal_from_headers(
             "JWT verification is not configured for the inventory API",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(|error| match error {
             RequestContextError::MissingBearer
@@ -843,12 +843,12 @@ async fn principal_from_headers(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::OrgId;
-    use mnt_platform_authz::Role;
+    use console_kernel_core::OrgId;
+    use console_platform_authz::Role;
 
     fn principal(role: Role, scope: BranchScope) -> Principal {
         Principal::new(
-            mnt_kernel_core::UserId::new(),
+            console_kernel_core::UserId::new(),
             OrgId::knl(),
             BTreeSet::from([role]),
             scope,

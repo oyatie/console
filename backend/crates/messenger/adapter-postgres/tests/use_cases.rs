@@ -2,23 +2,23 @@
 
 use std::sync::{Arc, Mutex};
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, OrgId, ThreadId, TraceContext, UserId, WorkOrderId,
 };
-use mnt_messenger_adapter_postgres::PgMessengerStore;
-use mnt_messenger_application::{
+use console_messenger_adapter_postgres::PgMessengerStore;
+use console_messenger_application::{
     CreateThreadCommand, EnsureWorkOrderThreadCommand, JoinThreadCommand, ListChannelsQuery,
     ListThreadsQuery, MarkThreadReadCommand, MemberProfileQuery, MessageNotifier,
     MessageNotifyFuture, MessagePageQuery, MessagePostedNotification, SearchMessagesQuery,
     SendMessageCommand, SetThreadMuteCommand, ThreadPresenceQuery, ToggleAckCommand,
 };
-use mnt_messenger_domain::{PresenceStatus, ThreadKind, ThreadVisibility};
+use console_messenger_domain::{PresenceStatus, ThreadKind, ThreadVisibility};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn message_send_persists_audit_before_post_commit_notify(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let notifier = Arc::new(RecordingNotifier::new(pool.clone()));
         let store = PgMessengerStore::new(pool.clone()).with_notifier(notifier.clone());
@@ -71,10 +71,10 @@ async fn message_send_persists_audit_before_post_commit_notify(pool: PgPool) {
 // NotificationSink, so the assertion is on actual rows, not a discarded field.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn at_mention_emits_notification_for_thread_member_only(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let sink =
-            Arc::new(mnt_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
+            Arc::new(console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
         let store = PgMessengerStore::new(pool.clone()).with_notification_sink(sink);
         // Thread members: sender + recipient. receptionist is NOT a member.
         let thread = create_team_thread(&store, &seeded).await;
@@ -181,7 +181,7 @@ async fn notification_count(pool: &PgPool, recipient: UserId) -> i64 {
 // `#`-refs never notify (DESIGN §4.7-7), unlike `@`-mentions.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn object_code_ref_persisted_on_write_and_hashtag_noise_dropped(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -222,7 +222,7 @@ async fn object_code_ref_persisted_on_write_and_hashtag_noise_dropped(pool: PgPo
 // not_found with no audit (deny-by-omission).
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn member_profile_records_person_view_audit_for_non_self_only(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let isolated_branch = seed_branch(&pool, "Isolated Branch").await;
         let outsider = seed_user(&pool, "Outsider", "MECHANIC", isolated_branch).await;
@@ -278,7 +278,7 @@ async fn member_profile_records_person_view_audit_for_non_self_only(pool: PgPool
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn work_order_thread_auto_create_is_idempotent_and_members_actor(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let work_order_id = seed_work_order(&pool, &seeded).await;
         let store = PgMessengerStore::new(pool.clone());
@@ -331,7 +331,7 @@ async fn work_order_thread_auto_create_is_idempotent_and_members_actor(pool: PgP
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn membership_and_branch_scope_are_default_deny(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -382,7 +382,7 @@ async fn membership_and_branch_scope_are_default_deny(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn fts_search_returns_korean_message_hits(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -413,7 +413,7 @@ async fn fts_search_returns_korean_message_hits(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn cursor_pagination_is_stable_when_newer_messages_arrive(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -486,7 +486,7 @@ async fn cursor_pagination_is_stable_when_newer_messages_arrive(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn list_threads_reports_unread_incoming_messages_for_actor(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -541,7 +541,7 @@ async fn list_threads_reports_unread_incoming_messages_for_actor(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn read_receipt_never_moves_back_to_an_older_message(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -610,7 +610,7 @@ async fn read_receipt_never_moves_back_to_an_older_message(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn read_receipt_coalesces_to_latest_message_and_audits_once(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -650,7 +650,7 @@ async fn read_receipt_coalesces_to_latest_message_and_audits_once(pool: PgPool) 
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn message_page_reports_non_sender_read_progress(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -713,7 +713,7 @@ async fn message_page_reports_non_sender_read_progress(pool: PgPool) {
 // not joinable). Deny-by-omission: joining outside branch scope is not_found.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn channel_is_discoverable_and_joinable_but_dm_is_not(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let channel = create_team_thread(&store, &seeded).await;
@@ -809,7 +809,7 @@ async fn channel_is_discoverable_and_joinable_but_dm_is_not(pool: PgPool) {
 // ack a thread they are not in.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn ack_toggle_is_idempotent_and_member_only(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let notifier = Arc::new(RecordingNotifier::new(pool.clone()));
         let store = PgMessengerStore::new(pool.clone()).with_notifier(notifier.clone());
@@ -897,7 +897,7 @@ async fn ack_toggle_is_idempotent_and_member_only(pool: PgPool) {
 // user_id) primary key and the request 500'd instead of landing idempotently.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn racing_duplicate_ack_insert_is_absorbed_not_a_500(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -992,7 +992,7 @@ async fn racing_duplicate_ack_insert_is_absorbed_not_a_500(pool: PgPool) {
 // cross-thread one.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn reply_quote_is_same_thread_only_and_surfaced(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -1039,10 +1039,10 @@ async fn reply_quote_is_same_thread_only_and_surfaced(pool: PgPool) {
 // is flagged muted in the thread list; a non-member cannot mute it.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn mute_suppresses_mention_notification_and_flags_thread(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let sink =
-            Arc::new(mnt_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
+            Arc::new(console_notifications_adapter_postgres::PgNotificationStore::new(pool.clone()));
         let store = PgMessengerStore::new(pool.clone()).with_notification_sink(sink);
         let thread = create_team_thread(&store, &seeded).await;
         let base = OffsetDateTime::now_utc();
@@ -1126,7 +1126,7 @@ async fn mute_suppresses_mention_notification_and_flags_thread(pool: PgPool) {
 // sent a message is online; a non-member cannot read presence at all.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn presence_is_member_only_and_activity_derived(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_context(&pool).await;
         let store = PgMessengerStore::new(pool.clone());
         let thread = create_team_thread(&store, &seeded).await;
@@ -1176,7 +1176,7 @@ async fn presence_is_member_only_and_activity_derived(pool: PgPool) {
     .await;
 }
 
-async fn ack_audit_count(pool: &PgPool, message_id: mnt_kernel_core::MessageId) -> i64 {
+async fn ack_audit_count(pool: &PgPool, message_id: console_kernel_core::MessageId) -> i64 {
     sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM audit_events WHERE action = 'message.ack' AND target_id = $1",
     )
@@ -1200,7 +1200,7 @@ struct SeededContext {
 struct RecordingNotifier {
     pool: PgPool,
     calls: Arc<Mutex<Vec<MessagePostedNotification>>>,
-    ack_calls: Arc<Mutex<Vec<mnt_messenger_application::MessageAckNotification>>>,
+    ack_calls: Arc<Mutex<Vec<console_messenger_application::MessageAckNotification>>>,
 }
 
 impl RecordingNotifier {
@@ -1241,7 +1241,7 @@ impl MessageNotifier for RecordingNotifier {
 
     fn message_ack_toggled(
         &self,
-        notification: mnt_messenger_application::MessageAckNotification,
+        notification: console_messenger_application::MessageAckNotification,
     ) -> MessageNotifyFuture<'_> {
         Box::pin(async move {
             // The ack event fans out post-commit, so the audit row is already
@@ -1262,7 +1262,7 @@ impl MessageNotifier for RecordingNotifier {
 async fn create_team_thread(
     store: &PgMessengerStore,
     seeded: &SeededContext,
-) -> mnt_messenger_application::ThreadSummary {
+) -> console_messenger_application::ThreadSummary {
     store
         .create_thread(CreateThreadCommand {
             actor: seeded.sender,
@@ -1286,7 +1286,7 @@ async fn send_at(
     thread_id: ThreadId,
     body: &str,
     occurred_at: OffsetDateTime,
-) -> mnt_messenger_application::MessageSummary {
+) -> console_messenger_application::MessageSummary {
     store
         .send_message(SendMessageCommand {
             actor: seeded.sender,
@@ -1309,7 +1309,7 @@ async fn send_from(
     thread_id: ThreadId,
     body: &str,
     occurred_at: OffsetDateTime,
-) -> mnt_messenger_application::MessageSummary {
+) -> console_messenger_application::MessageSummary {
     store
         .send_message(SendMessageCommand {
             actor,

@@ -266,7 +266,7 @@ mod tests {
             ),
             art(
                 IacTier::TierAArgoCd,
-                "deploy/argocd/apps/maintenance.yaml",
+                "deploy/argocd/apps/console.yaml",
                 "apiVersion: argoproj.io/v1alpha1\nkind: Application\nspec:\n  source: { repoURL: 'maintenance' }",
             ),
         ];
@@ -312,7 +312,7 @@ mod tests {
     fn argocd_app_referencing_oci_primitive_is_flagged() {
         let arts = vec![art(
             IacTier::TierAArgoCd,
-            "deploy/apps/maintenance/base/bad.yaml",
+            "deploy/apps/console/base/bad.yaml",
             "spec:\n  values: |\n    bucket: oci_objectstorage_bucket.evidence.name\n",
         )];
         let result = audit(&arts);

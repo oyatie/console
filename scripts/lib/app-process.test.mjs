@@ -76,7 +76,7 @@ describe("app process lifecycle", () => {
   });
 
   it("reports a spawn error through readiness and leaves no child", async () => {
-    const observed = observeChild(spawn("/definitely/not/a/real/mnt-app"));
+    const observed = observeChild(spawn("/definitely/not/a/real/console-app"));
     await assert.rejects(
       waitForChildReady({
         observed,
@@ -108,7 +108,7 @@ describe("app process lifecycle", () => {
           probeTimeoutMs: 10,
           pollIntervalMs: 5,
         }),
-        /Timed out waiting for mnt-app/,
+        /Timed out waiting for console-app/,
       );
       assert.ok(Date.now() - startedAt < 250);
     } finally {

@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-benefit-application",
+    name = "console-benefit-application",
     mapped_srcs = repo_mapped_srcs("backend/crates/benefit/application", glob(["src/**/*.rs"])),
-    crate = "mnt_benefit_application",
+    crate = "console_benefit_application",
     edition = "2024",
     crate_root = "backend/crates/benefit/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/benefit/application"},
     deps = [
-        "//backend/crates/benefit/domain:mnt-benefit-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/benefit/domain:console-benefit-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -27,17 +27,17 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-benefit-application-unit",
+    name = "console-benefit-application-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/benefit/application", glob(["src/**/*.rs"])),
-    crate = "mnt_benefit_application",
+    crate = "console_benefit_application",
     edition = "2024",
     crate_root = "backend/crates/benefit/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/benefit/application"},
     labels = ["owner.backend.crates.benefit.application", "domain.benefit", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/benefit/domain:mnt-benefit-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/benefit/domain:console-benefit-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

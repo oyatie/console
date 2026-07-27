@@ -51,7 +51,7 @@ UPDATE object_types SET code_prefix = 'NT-'  WHERE kind = 'notification';
 -- ---------------------------------------------------------------------------
 -- object_code_counters — per-org, per-kind monotonic sequence (tenant data).
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table object_code_counters
+-- console-gate: audited-table object_code_counters
 CREATE TABLE object_code_counters (
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
     kind          TEXT        NOT NULL REFERENCES object_types(kind) ON DELETE RESTRICT,
@@ -65,7 +65,7 @@ CREATE POLICY org_isolation ON object_code_counters
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
--- The counter is bumped in place (INSERT … ON CONFLICT DO UPDATE), so mnt_rt
+-- The counter is bumped in place (INSERT … ON CONFLICT DO UPDATE), so console_rt
 -- needs INSERT + UPDATE here. It is not an append-only audit table and it is
 -- never deleted (a counter only ever moves forward), so no DELETE.
-GRANT SELECT, INSERT, UPDATE ON object_code_counters TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON object_code_counters TO console_rt;

@@ -2,12 +2,12 @@
 //! RUNTIME RLS + freshness gate for `subject_authz_versions` (Cedar/PBAC
 //! activation, ADR-0021, migration 0096).
 //!
-//! Two concerns proven as the GENUINE non-owner runtime role `mnt_rt`
+//! Two concerns proven as the GENUINE non-owner runtime role `console_rt`
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — never the BYPASSRLS superuser the
 //! default `#[sqlx::test]` pool connects as, which would green-light a broken or
 //! leaking policy:
 //!   1. Tenant isolation: under org A's armed GUC, only A's freshness row is
-//!      visible; B's is invisible. mnt_rt may NOT DELETE (REVOKE DELETE governance
+//!      visible; B's is invisible. console_rt may NOT DELETE (REVOKE DELETE governance
 //!      history), so a runtime actor can never erase a subject's freshness back to
 //!      the absent-row "0" baseline.
 //!   2. Sourcing: `PgOrgStore::get_subject_authz_versions` reads the current
@@ -17,21 +17,21 @@
 //!
 //! SLICE-2 is additive: no authorization decision consults this table yet.
 
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_identity_application::{
+use console_identity_adapter_postgres::PgOrgStore;
+use console_identity_application::{
     CreatePolicyAssignmentPreviewReceiptCommand, DeactivateUserCommand, UpdateUserCommand,
 };
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -39,7 +39,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -106,7 +106,7 @@ async fn seed_freshness_row(owner_pool: &PgPool, org: Uuid, user: UserId) {
     tx.commit().await.unwrap();
 }
 
-/// Count freshness rows visible to `mnt_rt` under the given tenant GUC.
+/// Count freshness rows visible to `console_rt` under the given tenant GUC.
 async fn count_as_runtime(rt_pool: &PgPool, org: Uuid) -> i64 {
     let mut tx = rt_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -136,7 +136,7 @@ async fn subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role(
     seed_freshness_row(&owner_pool, org_a, user_a).await;
     seed_freshness_row(&owner_pool, org_b, user_b).await;
 
-    // (1) Under each tenant's GUC, mnt_rt sees ONLY that tenant's freshness row.
+    // (1) Under each tenant's GUC, console_rt sees ONLY that tenant's freshness row.
     assert_eq!(
         count_as_runtime(&rt_pool, org_a).await,
         1,
@@ -169,7 +169,7 @@ async fn subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role(
         );
     }
 
-    // (3) mnt_rt may NEVER DELETE freshness rows (REVOKE DELETE governance guard),
+    // (3) console_rt may NEVER DELETE freshness rows (REVOKE DELETE governance guard),
     // so it cannot erase a subject's freshness back to the absent-row baseline.
     {
         let mut tx = rt_pool.begin().await.unwrap();
@@ -181,11 +181,11 @@ async fn subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role(
         let err = sqlx::query("DELETE FROM subject_authz_versions")
             .execute(&mut *tx)
             .await
-            .expect_err("mnt_rt must not DELETE subject_authz_versions")
+            .expect_err("console_rt must not DELETE subject_authz_versions")
             .to_string();
         assert!(
             err.contains("permission denied"),
-            "DELETE as mnt_rt must be denied by the REVOKE, got: {err}"
+            "DELETE as console_rt must be denied by the REVOKE, got: {err}"
         );
         let _ = tx.rollback().await;
     }
@@ -225,7 +225,7 @@ async fn mint_role_change_receipt(
             ),
         )
         .await
-        .expect("minting a preview receipt must succeed as mnt_rt under the armed GUC")
+        .expect("minting a preview receipt must succeed as console_rt under the armed GUC")
         .id
 }
 
@@ -244,7 +244,7 @@ async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
     let initial = CURRENT_ORG
         .scope(org, store.get_subject_authz_versions(target))
         .await
-        .expect("get must succeed as mnt_rt under the armed GUC");
+        .expect("get must succeed as console_rt under the armed GUC");
     assert_eq!(initial, (0, 0), "no bump yet must read as (0, 0)");
 
     // A system-role change bumps the subject version in the same audited tx. The
@@ -276,7 +276,7 @@ async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
             }),
         )
         .await
-        .expect("update_user must succeed as mnt_rt under the armed GUC");
+        .expect("update_user must succeed as console_rt under the armed GUC");
     assert_eq!(
         CURRENT_ORG
             .scope(org, store.get_subject_authz_versions(target))

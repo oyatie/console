@@ -1,4 +1,4 @@
-//! `mnt-platform-audit-chain` — L20 tamper-evident audit chain (design charter).
+//! `console-platform-audit-chain` — L20 tamper-evident audit chain (design charter).
 //!
 //! A per-org, append-only, cryptographically-sealed hash chain over
 //! `audit_events`. A background worker seals batches of audit rows in a fixed
@@ -6,7 +6,7 @@
 //! divergence to a seal.
 //!
 //! # What it defends against
-//! A party with direct DB write access (the `mnt_app` owner, a leaked
+//! A party with direct DB write access (the `console_app` owner, a leaked
 //! superuser, an edited backup restore) who can bypass the append-only
 //! triggers/grants on `audit_events`: a **row edit / delete / insert / reorder**
 //! recomputes a divergent `batch_hash` → `seal_hash`. The signature over
@@ -54,8 +54,8 @@ use std::sync::Arc;
 use std::time::Duration as StdDuration;
 
 use futures::FutureExt;
-use mnt_kernel_core::OrgId;
-use mnt_platform_db::{DbError, with_org_conn};
+use console_kernel_core::OrgId;
+use console_platform_db::{DbError, with_org_conn};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Transaction};
 use time::{Duration, OffsetDateTime, UtcOffset};
@@ -68,9 +68,9 @@ use uuid::Uuid;
 
 /// Domain-separation tags. Prefixing every hash input with a distinct tag makes
 /// a row-hash preimage unusable as a batch- or seal-hash preimage.
-const DOMAIN_ROW: &[u8] = b"mnt.audit-chain.row.v1";
-const DOMAIN_BATCH: &[u8] = b"mnt.audit-chain.batch.v1";
-const DOMAIN_SEAL: &[u8] = b"mnt.audit-chain.seal.v1";
+const DOMAIN_ROW: &[u8] = b"console.audit-chain.row.v1";
+const DOMAIN_BATCH: &[u8] = b"console.audit-chain.batch.v1";
+const DOMAIN_SEAL: &[u8] = b"console.audit-chain.seal.v1";
 
 /// Genesis predecessor hash: the first seal for an org links to 32 zero bytes.
 const GENESIS_PREV: [u8; 32] = [0u8; 32];
@@ -474,7 +474,7 @@ const SELECT_BATCH_COLUMNS: &str = "id, actor, action, target_type, target_id, b
      org_id, before_snap, after_snap, trace_id, span_id, occurred_at, created_at";
 
 /// Seal at most `config.batch_max` not-yet-sealed rows for one org, in a single
-/// tenant-scoped transaction as `mnt_rt`. Returns `Ok(None)` when there is
+/// tenant-scoped transaction as `console_rt`. Returns `Ok(None)` when there is
 /// nothing old enough to seal.
 ///
 /// Idempotency + crash-safety (charter §5.2): progress *is* the head seal row;
@@ -500,7 +500,7 @@ pub async fn seal_org_once(
             // Per-org advisory lock: two worker replicas never seal one org
             // concurrently (belt-and-suspenders over the PK/UNIQUE constraints).
             // Transaction-scoped ⇒ auto-released on COMMIT/ROLLBACK.
-            sqlx::query("SELECT pg_advisory_xact_lock(hashtext('mnt.audit-chain'), hashtext($1))")
+            sqlx::query("SELECT pg_advisory_xact_lock(hashtext('console.audit-chain'), hashtext($1))")
                 .bind(org_id.to_string())
                 .execute(tx.as_mut())
                 .await?;
@@ -629,7 +629,7 @@ impl AuditChainHandle {
     }
 }
 
-/// Spawn the seal worker on the app `mnt_rt` pool. Ticks every
+/// Spawn the seal worker on the app `console_rt` pool. Ticks every
 /// [`SEAL_TICK_SECS`]; per tick, enumerates tenants and seals one batch per org.
 /// A backlog larger than `batch_max` drains over subsequent ticks (the watermark
 /// bounds staleness to `seal_lag + tick`). The loop runs until the returned

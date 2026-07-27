@@ -3,8 +3,8 @@ kind: Namespace
 metadata:
   name: metallb-system
   labels:
-    maintenance.nousresearch.com/context: onprem
-    maintenance.nousresearch.com/vip-provider: metallb
+    console.nousresearch.com/context: onprem
+    console.nousresearch.com/vip-provider: metallb
     # MetalLB speaker runs as a privileged network component on Talos nodes.
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged

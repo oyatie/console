@@ -59,7 +59,7 @@ Machine-readable copy: `integration-manifest.json` (same dir).
 
 1. **Cross-table reads from support adapter** (work_orders, site_attendance_events,
    registry_*): accepted for the aggregation read model; all under org RLS as
-   `mnt_rt`; adapter tests must run as the runtime role (mnt-gate-rls-arming
+   `console_rt`; adapter tests must run as the runtime role (console-gate-rls-arming
    lesson) and cover the site-scope confinement.
 2. **Acceptance drives existing FSM edges** instead of adding states — keeps the
    ticket FSM matrix tests valid; declined acceptance = the already-legal reopen

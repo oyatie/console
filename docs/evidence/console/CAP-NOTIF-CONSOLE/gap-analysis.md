@@ -19,11 +19,11 @@
   unread-count / summary; POST {id}/read, read-all. Already in `backend/openapi/openapi.yaml`
   (tag `me`, operationIds listMyNotifications / getMyUnreadNotificationCount /
   markAllMyNotificationsRead / markMyNotificationRead / getNotificationsSummary).
-- **Schema**: migrations `0099_create_notifications.sql` (RLS org_isolation FORCE, mnt_rt
+- **Schema**: migrations `0099_create_notifications.sql` (RLS org_isolation FORCE, console_rt
   SELECT/INSERT/UPDATE no DELETE, dedup partial unique, recipient-unread index) +
   `0161_notifications_kind_and_resolution.sql` (kind, resolved_at/by, unresolved partial index).
 - **Tests**: `rest/tests/api.rs` (real-router HTTP person-scoping, ES256 JWT, sqlx::test),
-  `adapter-postgres/tests/notifications_rls_surfaces_as_runtime_role.rs` (mnt_rt runtime-role
+  `adapter-postgres/tests/notifications_rls_surfaces_as_runtime_role.rs` (console_rt runtime-role
   RLS proof per `rls-verify-as-runtime-role` discipline).
 
 ### Frontend
@@ -58,7 +58,7 @@ objects**, and are **acknowledged, muted, or routed per user policy**."
 ## C. Design decisions (owning crates, mechanism)
 
 1. **No new crate.** All gap closure extends `backend/crates/notifications/*` (domain shapes in
-   `mnt-notifications-domain`/`-application`, SQL in `-adapter-postgres`, routes in `-rest`);
+   `console-notifications-domain`/`-application`, SQL in `-adapter-postgres`, routes in `-rest`);
    DDL in `backend/crates/platform/db/migrations`. Producers keep depending only on the
    application ports (dependency arrow unchanged).
 2. **Aggregation is a read path, not a schema change.** `GROUP BY link` over the existing JSONB

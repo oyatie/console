@@ -12,12 +12,12 @@ use axum::http::{StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{
     Action, Feature, PermissionLevel, Principal, authorize, authorize_org_wide, permission_for,
 };
-use mnt_platform_db::{DbError, with_org_conn};
+use console_platform_db::{DbError, with_org_conn};
 use serde::Serialize;
 use serde_json::json;
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -63,7 +63,7 @@ pub fn router(state: WorkflowObjectContextState) -> Router {
             get(list_workflow_runs_for_object),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 /// The only subjects this bounded bridge accepts.  Keeping this type closed is
@@ -563,8 +563,8 @@ mod tests {
     use super::*;
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{OrgId, UserId};
-    use mnt_platform_authz::{EffectiveFeatureGrant, Role};
+    use console_kernel_core::{OrgId, UserId};
+    use console_platform_authz::{EffectiveFeatureGrant, Role};
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]

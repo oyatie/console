@@ -46,4 +46,4 @@ CREATE TRIGGER trg_cedar_policy_catalog_normalization_blockers_org_immutable
 BEFORE UPDATE ON cedar_policy_catalog_normalization_blockers
 FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 
-GRANT SELECT ON cedar_policy_catalog_normalization_blockers TO mnt_rt;
+GRANT SELECT ON cedar_policy_catalog_normalization_blockers TO console_rt;

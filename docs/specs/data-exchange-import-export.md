@@ -417,7 +417,7 @@ external_source_keys
   unique(org_id, domain, source_system_owner, source_system_id)
 ```
 
-All tenant-scoped tables must be `FORCE ROW LEVEL SECURITY`, audited for state-changing writes, and compatible with the existing `mnt-gate` static checks.
+All tenant-scoped tables must be `FORCE ROW LEVEL SECURITY`, audited for state-changing writes, and compatible with the existing `console-gate` static checks.
 
 ### 7.4 Import execution model
 

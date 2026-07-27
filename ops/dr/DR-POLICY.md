@@ -43,8 +43,8 @@ row, and archive the WAL:
 
 ```sh
 ops/dr/pitr-drill.sh \
-  --source-project mnt-prod \
-  --scratch-project mnt-pitr-scratch \
+  --source-project console-prod \
+  --scratch-project console-pitr-scratch \
   --backup-root /var/backups/mnt \
   --target-timestamp "2026-06-12T12:34:56Z" \
   2>&1 | tee "ops/dr/drill-logs/$(date -u +%Y%m%dT%H%M%SZ)-pitr-drill.log"

@@ -6,12 +6,12 @@
 //! `payroll_draft_runs`/`payroll_draft_lines` are *pre-calculation readiness*
 //! rows: work-day/hour counts and `*_source_present` booleans, gated
 //! `BLOCKED_LEGAL_GATE` by default. They store **no won amount** — the real
-//! per-employee deduction math (`mnt_payroll_domain::build_employee_payroll_draft`)
+//! per-employee deduction math (`console_payroll_domain::build_employee_payroll_draft`)
 //! is a pure in-memory function with no persistence anywhere in this schema.
 //! `/me/lines` below is therefore a self-service view of draft READINESS
 //! data, not an issued payslip. The self-service surface that already
 //! delivers a real payslip document is the statutory-notice vault
-//! (`GET /api/v1/me/inbox-docs?filter=kind:payslip`, `mnt-inbox-rest`) — see
+//! (`GET /api/v1/me/inbox-docs?filter=kind:payslip`, `console-inbox-rest`) — see
 //! HANDOFF for the gap this leaves.
 //!
 //! # Branch scoping
@@ -41,15 +41,15 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
-use mnt_payroll_adapter_postgres::{
+use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
+use console_payroll_adapter_postgres::{
     MyPayrollLinePage, PayrollRunDetail, PayrollRunPage, PgPayrollError, PgPayrollStore,
     get_run_in_tx, list_runs_in_tx,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audits};
-use mnt_platform_request_context::RequestContextError;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{DbError, with_audits};
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -174,7 +174,7 @@ pub fn router(state: PayrollRestState) -> Router {
             get(lifecycle::get_payslip_delivery),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -410,7 +410,7 @@ pub(crate) async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the payroll API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -444,13 +444,13 @@ fn rest_error_from_request_context(err: RequestContextError) -> RestError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_platform_authz::Role;
+    use console_platform_authz::Role;
     use std::collections::BTreeSet;
 
-    fn principal(role: Role, scope: mnt_kernel_core::BranchScope) -> Principal {
+    fn principal(role: Role, scope: console_kernel_core::BranchScope) -> Principal {
         Principal::new(
-            mnt_kernel_core::UserId::new(),
-            mnt_kernel_core::OrgId::knl(),
+            console_kernel_core::UserId::new(),
+            console_kernel_core::OrgId::knl(),
             BTreeSet::from([role]),
             scope,
         )
@@ -458,7 +458,7 @@ mod tests {
 
     #[test]
     fn member_is_denied_run_read() {
-        let p = principal(Role::Member, mnt_kernel_core::BranchScope::All);
+        let p = principal(Role::Member, console_kernel_core::BranchScope::All);
         assert_eq!(
             require_run_read(&p).unwrap_err().status,
             StatusCode::FORBIDDEN
@@ -468,12 +468,12 @@ mod tests {
     #[test]
     fn built_in_admin_is_denied_run_read_even_with_all_branch_scope() {
         // `authorize_org_wide`'s built-in path only ever considers
-        // SuperAdmin/Executive (`mnt_platform_authz::authorize_org_wide`) — an
+        // SuperAdmin/Executive (`console_platform_authz::authorize_org_wide`) — an
         // ADMIN role never satisfies it, All-branch-scope or not. This matches
         // the existing `EmployeeDirectoryRead`/`OrgWideQueueTriage` behavior
         // exactly, so it is not a payroll-specific gap: an ADMIN's only path
         // to these endpoints is a custom org-wide PBAC grant.
-        let p = principal(Role::Admin, mnt_kernel_core::BranchScope::All);
+        let p = principal(Role::Admin, console_kernel_core::BranchScope::All);
         assert_eq!(
             require_run_read(&p).unwrap_err().status,
             StatusCode::FORBIDDEN
@@ -486,8 +486,8 @@ mod tests {
         // be denied rather than silently widened to org-wide visibility.
         let p = principal(
             Role::Admin,
-            mnt_kernel_core::BranchScope::Branches(BTreeSet::from([
-                mnt_kernel_core::BranchId::new(),
+            console_kernel_core::BranchScope::Branches(BTreeSet::from([
+                console_kernel_core::BranchId::new(),
             ])),
         );
         assert_eq!(
@@ -499,7 +499,7 @@ mod tests {
     #[test]
     fn executive_and_super_admin_can_read_runs() {
         for role in [Role::Executive, Role::SuperAdmin] {
-            let p = principal(role, mnt_kernel_core::BranchScope::All);
+            let p = principal(role, console_kernel_core::BranchScope::All);
             assert!(
                 require_run_read(&p).is_ok(),
                 "{role:?} must be able to read payroll runs"

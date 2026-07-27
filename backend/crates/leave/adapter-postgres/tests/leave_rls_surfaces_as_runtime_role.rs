@@ -2,7 +2,7 @@
 //! RUNTIME RLS + branch-isolation + SoD + ledger write-back gate for the
 //! leave-request domain.
 //!
-//! Proven as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the `#[sqlx::test]` BYPASSRLS superuser pool,
 //! which sees every row and would green-light a broken branch/SoD filter.
 //!
@@ -22,16 +22,16 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-use mnt_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
-use mnt_inbox_adapter_postgres::PgInboxStore;
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
-use mnt_leave_adapter_postgres::PgLeaveStore;
-use mnt_leave_application::{
+use console_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
+use console_inbox_adapter_postgres::PgInboxStore;
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
+use console_leave_adapter_postgres::PgLeaveStore;
+use console_leave_application::{
     ApSubmission, CreateLeaveRequestCommand, DecideLeaveRequestCommand, ListLeaveRequestsQuery,
     ListSelfLeaveRequestsQuery, ResolveLeaveChargeCommand, ResolveLeaveChargeQuery,
     StatutoryPushCommand, WorkCalendarPort,
 };
-use mnt_leave_domain::{
+use console_leave_domain::{
     LeaveChargeAssessment, LeaveChargeEvidence, LeaveChargeState, LeaveDateCharge, LeaveDecision,
     LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest, PromotionKind, PromotionTrack,
     SourceRevisionRef, WorkObligation,
@@ -78,16 +78,16 @@ fn f6ff_apply_after_snap(run_id: Uuid) -> serde_json::Value {
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON leave_requests TO mnt_rt",
-        "GRANT SELECT, INSERT ON leave_charge_resolutions TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON leave_promotions TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON inbox_docs TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT, INSERT, UPDATE ON employees TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON user_branches TO mnt_rt",
-        "GRANT SELECT ON branches TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON leave_requests TO console_rt",
+        "GRANT SELECT, INSERT ON leave_charge_resolutions TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON leave_promotions TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON inbox_docs TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT, INSERT, UPDATE ON employees TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON user_branches TO console_rt",
+        "GRANT SELECT ON branches TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -96,7 +96,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -111,7 +111,7 @@ async fn leave_command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_leave_cmd").execute(conn).await?;
+                sqlx::query("SET ROLE console_leave_cmd").execute(conn).await?;
                 Ok(())
             })
         })
@@ -221,7 +221,7 @@ async fn link_user_to_employee_and_branch(
             .await
             .unwrap();
     let mut command = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_cmd")
+    sqlx::query("SET LOCAL ROLE console_leave_cmd")
         .execute(&mut *command)
         .await
         .unwrap();
@@ -252,7 +252,7 @@ async fn seed_employee(
     let id = Uuid::new_v4();
     let key = format!("emp-{id}");
     let mut command = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *command)
         .await
         .unwrap();
@@ -281,8 +281,8 @@ async fn seed_employee(
     id
 }
 
-fn date(y: i32, m: u8, d: u8) -> mnt_kernel_core::Date {
-    mnt_kernel_core::Date::from_calendar_date(y, Month::try_from(m).unwrap(), d).unwrap()
+fn date(y: i32, m: u8, d: u8) -> console_kernel_core::Date {
+    console_kernel_core::Date::from_calendar_date(y, Month::try_from(m).unwrap(), d).unwrap()
 }
 
 fn create_cmd(
@@ -309,7 +309,7 @@ fn create_cmd(
 }
 
 fn decide_cmd(
-    request_id: mnt_kernel_core::LeaveRequestId,
+    request_id: console_kernel_core::LeaveRequestId,
     decider: UserId,
     scope: BranchScope,
     decision: LeaveDecision,
@@ -336,7 +336,7 @@ struct ThreeDayCalendar;
 fn resolved_calendar_assessment(
     query: ResolveLeaveChargeQuery,
     revision: &str,
-) -> Result<LeaveChargeAssessment, mnt_kernel_core::KernelError> {
+) -> Result<LeaveChargeAssessment, console_kernel_core::KernelError> {
     let mut current = query.start_date;
     let mut date_charges = Vec::new();
     loop {
@@ -365,7 +365,7 @@ impl WorkCalendarPort for ThreeDayCalendar {
     fn resolve_charge(
         &self,
         query: ResolveLeaveChargeQuery,
-    ) -> mnt_leave_application::LeaveChargeFuture<'_> {
+    ) -> console_leave_application::LeaveChargeFuture<'_> {
         Box::pin(async move { resolved_calendar_assessment(query, "v1") })
     }
 }
@@ -379,7 +379,7 @@ impl WorkCalendarPort for MutableCalendar {
     fn resolve_charge(
         &self,
         query: ResolveLeaveChargeQuery,
-    ) -> mnt_leave_application::LeaveChargeFuture<'_> {
+    ) -> console_leave_application::LeaveChargeFuture<'_> {
         let revision = format!("v{}", self.revision.load(Ordering::SeqCst));
         Box::pin(async move { resolved_calendar_assessment(query, &revision) })
     }
@@ -395,7 +395,7 @@ fn test_store(rt: &PgPool, command: &PgPool) -> PgLeaveStore {
 }
 
 fn manual_resolution_command(
-    request_id: mnt_kernel_core::LeaveRequestId,
+    request_id: console_kernel_core::LeaveRequestId,
     resolver: UserId,
     branch: Uuid,
     expected_version: i64,
@@ -476,7 +476,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
 
     let store = PgLeaveStore::new(rt.clone(), Arc::new(PgInboxStore::new(rt.clone())))
         .with_leave_command_pool(command_pool.clone());
-    let request = mnt_platform_request_context::scope_org(org, async {
+    let request = console_platform_request_context::scope_org(org, async {
         store
             .create_request(create_cmd(home, requester, employee, 3.0))
             .await
@@ -489,7 +489,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
     );
     assert_eq!(request.charge_version, 0);
 
-    let blocked = mnt_platform_request_context::scope_org(org, async {
+    let blocked = console_platform_request_context::scope_org(org, async {
         store
             .decide(DecideLeaveRequestCommand {
                 expected_version: Some(1),
@@ -501,7 +501,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
     .expect_err("unresolved approval must fail closed");
     assert!(matches!(
         blocked,
-        mnt_leave_adapter_postgres::PgLeaveError::ChargeReviewRequired(_)
+        console_leave_adapter_postgres::PgLeaveError::ChargeReviewRequired(_)
     ));
     let (status, request_version, charge_version): (String, i64, i64) = sqlx::query_as(
         "SELECT status, request_version, charge_version FROM leave_requests WHERE id = $1",
@@ -536,7 +536,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
     .unwrap();
     assert_eq!(blocked_audits, 1);
 
-    let resolved = mnt_platform_request_context::scope_org(org, async {
+    let resolved = console_platform_request_context::scope_org(org, async {
         store
             .resolve_charge(manual_resolution_command(request.id, resolver, home, 1))
             .await
@@ -547,7 +547,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
     assert_eq!(resolved.request_version, 2);
     assert_eq!(resolved.charge_version, 1);
 
-    let resolver_approve = mnt_platform_request_context::scope_org(org, async {
+    let resolver_approve = console_platform_request_context::scope_org(org, async {
         store
             .decide(DecideLeaveRequestCommand {
                 expected_version: Some(2),
@@ -558,7 +558,7 @@ async fn unresolved_charge_is_audited_without_mutation_then_exact_resolution_is_
     .await;
     assert_eq!(resolver_approve.unwrap_err().kind(), ErrorKind::Forbidden);
 
-    let approved = mnt_platform_request_context::scope_org(org, async {
+    let approved = console_platform_request_context::scope_org(org, async {
         store
             .decide(DecideLeaveRequestCommand {
                 expected_version: Some(2),
@@ -599,7 +599,7 @@ async fn concurrent_resolver_wins_before_blocked_approval_without_partial_mutati
 
     let store = PgLeaveStore::new(rt.clone(), Arc::new(PgInboxStore::new(rt)))
         .with_leave_command_pool(command_pool.clone());
-    let request = mnt_platform_request_context::scope_org(org, async {
+    let request = console_platform_request_context::scope_org(org, async {
         store
             .create_request(create_cmd(home, requester, employee, 3.0))
             .await
@@ -621,7 +621,7 @@ async fn concurrent_resolver_wins_before_blocked_approval_without_partial_mutati
 
     let resolving_store = store.clone();
     let resolving = tokio::spawn(async move {
-        mnt_platform_request_context::scope_org(org, async move {
+        console_platform_request_context::scope_org(org, async move {
             resolving_store
                 .resolve_charge(manual_resolution_command(request.id, resolver, home, 1))
                 .await
@@ -632,7 +632,7 @@ async fn concurrent_resolver_wins_before_blocked_approval_without_partial_mutati
 
     let deciding_store = store.clone();
     let deciding = tokio::spawn(async move {
-        mnt_platform_request_context::scope_org(org, async move {
+        console_platform_request_context::scope_org(org, async move {
             deciding_store
                 .decide(DecideLeaveRequestCommand {
                     expected_version: Some(1),
@@ -651,7 +651,7 @@ async fn concurrent_resolver_wins_before_blocked_approval_without_partial_mutati
     assert_eq!(resolved.charge_version, 1);
     assert!(matches!(
         deciding.await.unwrap().unwrap_err(),
-        mnt_leave_adapter_postgres::PgLeaveError::ConcurrentModification
+        console_leave_adapter_postgres::PgLeaveError::ConcurrentModification
     ));
 
     let (status, charge_state, request_version, charge_version, resolution_count, blocked_audits, used_micros, remaining_micros):
@@ -709,7 +709,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
             .unwrap();
     }
     let store = test_store(&rt, &command_pool);
-    let created = mnt_platform_request_context::scope_org(org, async {
+    let created = console_platform_request_context::scope_org(org, async {
         store
             .create_request(create_cmd(branch, requester, employee, 3.0))
             .await
@@ -718,7 +718,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     .unwrap();
     assert_eq!((created.request_version, created.charge_version), (1, 1));
 
-    let resolved = mnt_platform_request_context::scope_org(org, async {
+    let resolved = console_platform_request_context::scope_org(org, async {
         store
             .resolve_charge(manual_resolution_command(created.id, requester, branch, 1))
             .await
@@ -727,7 +727,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     // The requester cannot resolve their own request; this failed command must
     // not consume either request or evidence versions.
     assert_eq!(resolved.unwrap_err().kind(), ErrorKind::Forbidden);
-    let resolved = mnt_platform_request_context::scope_org(org, async {
+    let resolved = console_platform_request_context::scope_org(org, async {
         store
             .resolve_charge(manual_resolution_command(created.id, resolver, branch, 1))
             .await
@@ -736,7 +736,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     .unwrap();
     assert_eq!((resolved.request_version, resolved.charge_version), (2, 2));
 
-    let stale = mnt_platform_request_context::scope_org(org, async {
+    let stale = console_platform_request_context::scope_org(org, async {
         store
             .decide(DecideLeaveRequestCommand {
                 expected_version: Some(1),
@@ -752,7 +752,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     .await;
     assert!(matches!(
         stale,
-        Err(mnt_leave_adapter_postgres::PgLeaveError::ConcurrentModification)
+        Err(console_leave_adapter_postgres::PgLeaveError::ConcurrentModification)
     ));
 
     let old_resolution: Uuid = sqlx::query_scalar(
@@ -763,7 +763,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     .await
     .unwrap();
     let mut forged_pointer = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *forged_pointer)
         .await
         .unwrap();
@@ -783,7 +783,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
     );
     forged_pointer.rollback().await.unwrap();
 
-    let approved = mnt_platform_request_context::scope_org(org, async {
+    let approved = console_platform_request_context::scope_org(org, async {
         store
             .decide(DecideLeaveRequestCommand {
                 expected_version: Some(2),
@@ -818,7 +818,7 @@ async fn request_cas_and_charge_evidence_versions_are_independent_and_exact(owne
 async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_pool: PgPool) {
     let cmd = sqlx::query(
         "SELECT rolcanlogin,rolsuper,rolbypassrls,rolinherit,rolcreatedb,rolcreaterole,rolreplication \
-         FROM pg_roles WHERE rolname='mnt_leave_cmd'",
+         FROM pg_roles WHERE rolname='console_leave_cmd'",
     )
     .fetch_one(&owner_pool)
     .await
@@ -842,7 +842,7 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     }
     let definer = sqlx::query(
         "SELECT rolcanlogin,rolsuper,rolbypassrls,rolinherit,rolcreatedb,rolcreaterole,rolreplication \
-         FROM pg_roles WHERE rolname='mnt_leave_definer'",
+         FROM pg_roles WHERE rolname='console_leave_definer'",
     )
     .fetch_one(&owner_pool)
     .await
@@ -862,7 +862,7 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
         );
     }
     let command_can_assume_definer: bool =
-        sqlx::query_scalar("SELECT pg_has_role('mnt_leave_cmd','mnt_leave_definer','MEMBER')")
+        sqlx::query_scalar("SELECT pg_has_role('console_leave_cmd','console_leave_definer','MEMBER')")
             .fetch_one(&owner_pool)
             .await
             .unwrap();
@@ -873,7 +873,7 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     let migrator_membership: (bool, bool, bool) = sqlx::query_as(
         "SELECT am.admin_option,am.inherit_option,am.set_option \
          FROM pg_auth_members am \
-         WHERE am.roleid='mnt_leave_definer'::regrole AND am.member='mnt_app'::regrole",
+         WHERE am.roleid='console_leave_definer'::regrole AND am.member='console_app'::regrole",
     )
     .fetch_one(&owner_pool)
     .await
@@ -881,13 +881,13 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     assert_eq!(
         migrator_membership,
         (false, true, true),
-        "mnt_app receives the exact non-admin ownership edge"
+        "console_app receives the exact non-admin ownership edge"
     );
 
     let command_functions: Vec<String> = sqlx::query_scalar(
         "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
          WHERE n.nspname='leave_api' \
-           AND has_function_privilege('mnt_leave_cmd',p.oid,'EXECUTE') ORDER BY p.proname",
+           AND has_function_privilege('console_leave_cmd',p.oid,'EXECUTE') ORDER BY p.proname",
     )
     .fetch_all(&owner_pool)
     .await
@@ -910,8 +910,8 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     // reachable only to its owner. `fetch_one` also fails if the helper is
     // renamed away rather than revoked.
     let (helper_cmd_execute, helper_rt_execute): (bool, bool) = sqlx::query_as(
-        "SELECT has_function_privilege('mnt_leave_cmd',p.oid,'EXECUTE'), \
-                has_function_privilege('mnt_rt',p.oid,'EXECUTE') \
+        "SELECT has_function_privilege('console_leave_cmd',p.oid,'EXECUTE'), \
+                has_function_privilege('console_rt',p.oid,'EXECUTE') \
          FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
          WHERE n.nspname='leave_api' AND p.proname='assert_employee_directory_manager'",
     )
@@ -924,14 +924,14 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     );
     let runtime_execute_count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
-         WHERE n.nspname='leave_api' AND has_function_privilege('mnt_rt',p.oid,'EXECUTE')",
+         WHERE n.nspname='leave_api' AND has_function_privilege('console_rt',p.oid,'EXECUTE')",
     )
     .fetch_one(&owner_pool)
     .await
     .unwrap();
     assert_eq!(
         runtime_execute_count, 0,
-        "mnt_rt executes no leave command or helper"
+        "console_rt executes no leave command or helper"
     );
     // A function that was never revoked from carries a NULL `proacl` and still
     // holds PostgreSQL's implicit default EXECUTE TO PUBLIC, which `aclexplode`
@@ -962,18 +962,18 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
         cmd_resolution_dml,
         rt_resolution_dml,
     ): (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool) = sqlx::query_as(
-            "SELECT has_schema_privilege('mnt_leave_cmd','leave_api','USAGE'), \
-                    has_schema_privilege('mnt_rt','leave_api','USAGE'), \
-                    has_table_privilege('mnt_leave_cmd','leave_requests','INSERT'), \
-                    has_table_privilege('mnt_rt','leave_requests','INSERT'), \
-                    has_table_privilege('mnt_leave_cmd','leave_requests','UPDATE'), \
-                    has_table_privilege('mnt_rt','leave_requests','UPDATE'), \
-                    has_table_privilege('mnt_leave_cmd','leave_requests','DELETE'), \
-                    has_table_privilege('mnt_rt','leave_requests','DELETE'), \
-                    has_table_privilege('mnt_leave_cmd','leave_requests','TRUNCATE'), \
-                    has_table_privilege('mnt_rt','leave_requests','TRUNCATE'), \
-                    has_table_privilege('mnt_leave_cmd','leave_charge_resolutions','INSERT,UPDATE,DELETE,TRUNCATE'), \
-                    has_table_privilege('mnt_rt','leave_charge_resolutions','INSERT,UPDATE,DELETE,TRUNCATE')",
+            "SELECT has_schema_privilege('console_leave_cmd','leave_api','USAGE'), \
+                    has_schema_privilege('console_rt','leave_api','USAGE'), \
+                    has_table_privilege('console_leave_cmd','leave_requests','INSERT'), \
+                    has_table_privilege('console_rt','leave_requests','INSERT'), \
+                    has_table_privilege('console_leave_cmd','leave_requests','UPDATE'), \
+                    has_table_privilege('console_rt','leave_requests','UPDATE'), \
+                    has_table_privilege('console_leave_cmd','leave_requests','DELETE'), \
+                    has_table_privilege('console_rt','leave_requests','DELETE'), \
+                    has_table_privilege('console_leave_cmd','leave_requests','TRUNCATE'), \
+                    has_table_privilege('console_rt','leave_requests','TRUNCATE'), \
+                    has_table_privilege('console_leave_cmd','leave_charge_resolutions','INSERT,UPDATE,DELETE,TRUNCATE'), \
+                    has_table_privilege('console_rt','leave_charge_resolutions','INSERT,UPDATE,DELETE,TRUNCATE')",
         )
         .fetch_one(&owner_pool)
         .await
@@ -982,7 +982,7 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
     assert!(!rt_schema);
     assert!(
         !cmd_request_insert && !cmd_request_update && rt_request_insert && rt_request_update,
-        "only mnt_rt retains both guarded legacy INSERT and UPDATE expand bridges"
+        "only console_rt retains both guarded legacy INSERT and UPDATE expand bridges"
     );
     assert!(
         !cmd_request_delete && !rt_request_delete && !cmd_request_truncate && !rt_request_truncate
@@ -1117,7 +1117,7 @@ async fn runtime_expand_bridge_allows_exact_f6ff_apply_but_denies_laundering_and
     assert_eq!(state.4, 1);
 
     // The bridge is one exact transition, not continuing terminal authority.
-    // A later mnt_rt statement cannot rewrite the committed result.
+    // A later console_rt statement cannot rewrite the committed result.
     let mut terminal_rewrite = rt.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org',$1,true)")
         .bind(org_id.to_string())
@@ -1176,7 +1176,7 @@ async fn runtime_expand_bridge_allows_exact_f6ff_apply_but_denies_laundering_and
         .execute(&rt)
         .await
         .is_err(),
-        "command-owned employee balance audit actions remain denied to mnt_rt"
+        "command-owned employee balance audit actions remain denied to console_rt"
     );
     assert!(
         sqlx::query(
@@ -1325,7 +1325,7 @@ async fn raw_runtime_home_branch_command_is_guarded_and_intrinsically_audited(ow
         .execute(&mut *direct_insert)
         .await
         .is_err(),
-        "mnt_rt must not assign authoritative routing during employee insert"
+        "console_rt must not assign authoritative routing during employee insert"
     );
     direct_insert.rollback().await.unwrap();
     let inserted_count: i64 = sqlx::query_scalar("SELECT count(*) FROM employees WHERE id = $1")
@@ -1388,20 +1388,20 @@ async fn raw_runtime_home_branch_command_is_guarded_and_intrinsically_audited(ow
         .execute(&mut *audit_spoof)
         .await
         .is_err(),
-        "mnt_rt must not forge a protected leave audit after spoofing GUCs"
+        "console_rt must not forge a protected leave audit after spoofing GUCs"
     );
     audit_spoof.rollback().await.unwrap();
 
     let store = PgLeaveStore::new(rt, Arc::new(PgInboxStore::new(owner_pool.clone())))
         .with_leave_command_pool(command_pool);
-    let denied = mnt_platform_request_context::scope_org(org, async {
+    let denied = console_platform_request_context::scope_org(org, async {
         store
             .set_employee_home_branch(
                 employee,
                 branch,
                 expected,
                 actor,
-                mnt_kernel_core::TraceContext::generate(),
+                console_kernel_core::TraceContext::generate(),
             )
             .await
     })
@@ -1416,14 +1416,14 @@ async fn raw_runtime_home_branch_command_is_guarded_and_intrinsically_audited(ow
     .unwrap();
     assert_eq!(denied_audits, 0, "denied first assignment must not audit");
 
-    let updated = mnt_platform_request_context::scope_org(org, async {
+    let updated = console_platform_request_context::scope_org(org, async {
         store
             .set_employee_home_branch(
                 employee,
                 branch,
                 expected,
                 super_admin,
-                mnt_kernel_core::TraceContext::generate(),
+                console_kernel_core::TraceContext::generate(),
             )
             .await
     })
@@ -1439,21 +1439,21 @@ async fn raw_runtime_home_branch_command_is_guarded_and_intrinsically_audited(ow
     .unwrap();
     assert_eq!(audit_count, 1);
 
-    let stale = mnt_platform_request_context::scope_org(org, async {
+    let stale = console_platform_request_context::scope_org(org, async {
         store
             .set_employee_home_branch(
                 employee,
                 branch,
                 expected,
                 super_admin,
-                mnt_kernel_core::TraceContext::generate(),
+                console_kernel_core::TraceContext::generate(),
             )
             .await
     })
     .await;
     assert!(matches!(
         stale,
-        Err(mnt_leave_adapter_postgres::PgLeaveError::ConcurrentModification)
+        Err(console_leave_adapter_postgres::PgLeaveError::ConcurrentModification)
     ));
     let final_count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM audit_events WHERE target_id=$1 AND action='employee.home_branch_set'",
@@ -1648,7 +1648,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
 
     let store = test_store(&rt, &command_pool);
 
-    let request = mnt_platform_request_context::scope_org(knl, async {
+    let request = console_platform_request_context::scope_org(knl, async {
         store
             .create_request(create_cmd(branch_a, requester, employee, 3.0))
             .await
@@ -1658,7 +1658,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
     assert_eq!(request.status, LeaveStatus::Pending);
 
     // SoD: the requester cannot decide their own request.
-    let sod = mnt_platform_request_context::scope_org(knl, async {
+    let sod = console_platform_request_context::scope_org(knl, async {
         store
             .decide(decide_cmd(
                 request.id,
@@ -1677,7 +1677,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
 
     // Branch isolation: an approver scoped to branch B cannot see branch A's
     // request — deny-by-omission (NotFound), not a leak.
-    let cross_branch = mnt_platform_request_context::scope_org(knl, async {
+    let cross_branch = console_platform_request_context::scope_org(knl, async {
         store
             .decide(decide_cmd(
                 request.id,
@@ -1698,7 +1698,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
     link_user_to_branch(&owner_pool, knl_uuid, approver, branch_a).await;
 
     // Approve in-branch: status flips AND the ledger moves in the same tx.
-    let approved = mnt_platform_request_context::scope_org(knl, async {
+    let approved = console_platform_request_context::scope_org(knl, async {
         store
             .decide(decide_cmd(
                 request.id,
@@ -1730,7 +1730,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
     );
 
     // Re-decide is a conflict (no double ledger write).
-    let again = mnt_platform_request_context::scope_org(knl, async {
+    let again = console_platform_request_context::scope_org(knl, async {
         store
             .decide(decide_cmd(
                 request.id,
@@ -1748,7 +1748,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
 
     // Queue: in-branch scope sees it; empty scope sees nothing; other tenant
     // sees nothing.
-    let in_branch = mnt_platform_request_context::scope_org(knl, async {
+    let in_branch = console_platform_request_context::scope_org(knl, async {
         store
             .list_requests(ListLeaveRequestsQuery {
                 branch_scope: scope_of(branch_a),
@@ -1762,7 +1762,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
     .unwrap();
     assert_eq!(in_branch.items.len(), 1);
 
-    let empty_scope = mnt_platform_request_context::scope_org(knl, async {
+    let empty_scope = console_platform_request_context::scope_org(knl, async {
         store
             .list_requests(ListLeaveRequestsQuery {
                 branch_scope: BranchScope::Branches(BTreeSet::new()),
@@ -1779,7 +1779,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
         "an empty branch scope sees nothing (deny-by-omission)"
     );
 
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store
             .list_requests(ListLeaveRequestsQuery {
                 branch_scope: BranchScope::All,
@@ -1797,7 +1797,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
     );
 
     // Balances roster reflects the moved ledger.
-    let balances = mnt_platform_request_context::scope_org(knl, async {
+    let balances = console_platform_request_context::scope_org(knl, async {
         store.list_balances(BranchScope::All).await
     })
     .await
@@ -1829,7 +1829,7 @@ async fn approve_rejects_when_days_exceed_remaining_balance(owner_pool: PgPool) 
 
     let store = test_store(&rt, &command_pool);
 
-    let request = mnt_platform_request_context::scope_org(knl, async {
+    let request = console_platform_request_context::scope_org(knl, async {
         store
             .create_request(create_cmd(branch, requester, employee, 3.0))
             .await
@@ -1837,7 +1837,7 @@ async fn approve_rejects_when_days_exceed_remaining_balance(owner_pool: PgPool) 
     .await
     .expect("create request");
 
-    let rejected = mnt_platform_request_context::scope_org(knl, async {
+    let rejected = console_platform_request_context::scope_org(knl, async {
         store
             .decide(decide_cmd(
                 request.id,
@@ -1867,7 +1867,7 @@ async fn approve_rejects_when_days_exceed_remaining_balance(owner_pool: PgPool) 
     assert!((used - 14.0).abs() < f64::EPSILON, "ledger untouched");
     assert!((remaining - 1.0).abs() < f64::EPSILON, "ledger untouched");
 
-    let still_pending = mnt_platform_request_context::scope_org(knl, async {
+    let still_pending = console_platform_request_context::scope_org(knl, async {
         store
             .list_requests(ListLeaveRequestsQuery {
                 branch_scope: scope_of(branch),
@@ -1895,7 +1895,7 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
 
     let base = OffsetDateTime::now_utc() - time::Duration::days(1);
     let mut seed_requests = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *seed_requests)
         .await
         .unwrap();
@@ -1932,14 +1932,14 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
         cursor,
     };
 
-    let first = mnt_platform_request_context::scope_org(org, async {
+    let first = console_platform_request_context::scope_org(org, async {
         store.list_requests(query(None)).await
     })
     .await
     .unwrap();
     assert_eq!(first.items.len(), 200);
     let cursor = first.next_cursor.expect("five rows remain after the cap");
-    let self_first = mnt_platform_request_context::scope_org(org, async {
+    let self_first = console_platform_request_context::scope_org(org, async {
         store
             .list_self_requests(ListSelfLeaveRequestsQuery {
                 requester,
@@ -1958,7 +1958,7 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
     // A row inserted after page one sorts ahead of its cursor. A stable keyset
     // must not duplicate, skip, or splice that concurrent row into page two.
     let mut insert_concurrent = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *insert_concurrent)
         .await
         .unwrap();
@@ -1985,14 +1985,14 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
     .unwrap();
     insert_concurrent.commit().await.unwrap();
 
-    let second = mnt_platform_request_context::scope_org(org, async {
+    let second = console_platform_request_context::scope_org(org, async {
         store.list_requests(query(Some(cursor))).await
     })
     .await
     .unwrap();
     assert_eq!(second.items.len(), 5);
     assert!(second.next_cursor.is_none());
-    let self_second = mnt_platform_request_context::scope_org(org, async {
+    let self_second = console_platform_request_context::scope_org(org, async {
         store
             .list_self_requests(ListSelfLeaveRequestsQuery {
                 requester,
@@ -2052,7 +2052,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
     .with_leave_command_pool(command_pool.clone());
 
     // The caller's OWN filing context is resolved from their account — not input.
-    let (subject, resolved_branch) = mnt_platform_request_context::scope_org(knl, async {
+    let (subject, resolved_branch) = console_platform_request_context::scope_org(knl, async {
         store.resolve_self_filing_context(filer).await
     })
     .await
@@ -2062,7 +2062,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
 
     // Filing with that resolved context creates a pending, requester=self row.
     let create = create_cmd(resolved_branch, filer, subject, 3.0);
-    let request = mnt_platform_request_context::scope_org(knl, async {
+    let request = console_platform_request_context::scope_org(knl, async {
         store.create_request(create.clone()).await
     })
     .await
@@ -2081,7 +2081,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
     // remains bound to the client's canonical intent, not mutable server state.
     calendar_revision.store(2, Ordering::SeqCst);
     let mut reroute = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *reroute)
         .await
         .unwrap();
@@ -2097,7 +2097,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
         .await
         .unwrap();
     reroute.commit().await.unwrap();
-    let replay = mnt_platform_request_context::scope_org(knl, async {
+    let replay = console_platform_request_context::scope_org(knl, async {
         store.create_request(create.clone()).await
     })
     .await
@@ -2140,7 +2140,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
         None,
     )
     .unwrap();
-    let conflict = mnt_platform_request_context::scope_org(knl, async {
+    let conflict = console_platform_request_context::scope_org(knl, async {
         store.create_request(conflicting).await
     })
     .await
@@ -2149,7 +2149,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
 
     // An account with NO linked employee cannot file (deny-by-omission → 422).
     let unlinked = seed_user(&owner_pool, knl_uuid).await;
-    let denied = mnt_platform_request_context::scope_org(knl, async {
+    let denied = console_platform_request_context::scope_org(knl, async {
         store.resolve_self_filing_context(unlinked).await
     })
     .await
@@ -2166,7 +2166,7 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
         .execute(&owner_pool)
         .await
         .unwrap();
-    let denied = mnt_platform_request_context::scope_org(knl, async {
+    let denied = console_platform_request_context::scope_org(knl, async {
         store.resolve_self_filing_context(branchless).await
     })
     .await
@@ -2187,12 +2187,12 @@ async fn backdate_promotion(owner_pool: &PgPool, id: Uuid, at: OffsetDateTime) {
         .unwrap();
 }
 
-/// `trg_employees_leave_command_only` exempts only `mnt_leave_definer`, so the
+/// `trg_employees_leave_command_only` exempts only `console_leave_definer`, so the
 /// fixture drops to it the same way `seed_employee` does. Nothing in production
 /// may clear a balance this way — that is the point of the guard.
 async fn clear_leave_remaining(owner_pool: &PgPool, org: Uuid, employee: Uuid) {
     let mut tx = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *tx)
         .await
         .unwrap();
@@ -2232,7 +2232,7 @@ async fn statutory_push_target_binding_is_enforced_as_runtime_role(owner_pool: P
 
     let store = test_store(&rt, &command_pool);
 
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .verify_statutory_push_target(branch, target, target_emp)
             .await
@@ -2240,7 +2240,7 @@ async fn statutory_push_target_binding_is_enforced_as_runtime_role(owner_pool: P
     .await
     .expect("linked target is valid for statutory push");
 
-    let mismatch = mnt_platform_request_context::scope_org(knl, async {
+    let mismatch = console_platform_request_context::scope_org(knl, async {
         store
             .verify_statutory_push_target(branch, target, other_emp)
             .await
@@ -2250,7 +2250,7 @@ async fn statutory_push_target_binding_is_enforced_as_runtime_role(owner_pool: P
     assert_eq!(mismatch.kind(), ErrorKind::Forbidden);
 
     let wrong_branch = seed_branch(&owner_pool, knl_uuid).await;
-    let wrong_branch_result = mnt_platform_request_context::scope_org(knl, async {
+    let wrong_branch_result = console_platform_request_context::scope_org(knl, async {
         store
             .verify_statutory_push_target(wrong_branch, target, target_emp)
             .await
@@ -2292,7 +2292,7 @@ async fn statutory_push_enforces_the_section_61_windows_as_runtime_role(owner_po
                 end: time::Date| {
         let store = store.clone();
         async move {
-            mnt_platform_request_context::scope_org(knl, async move {
+            console_platform_request_context::scope_org(knl, async move {
                 store
                     .statutory_push(StatutoryPushCommand {
                         actor,

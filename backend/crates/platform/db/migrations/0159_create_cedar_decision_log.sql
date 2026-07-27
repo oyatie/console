@@ -5,7 +5,7 @@
 -- this table closes that gap.
 --
 -- FORCE-RLS org-isolated and append-only (no UPDATE/DELETE): a decision, once
--- recorded, is immutable. Runtime writes go through `with_org_conn` as mnt_rt
+-- recorded, is immutable. Runtime writes go through `with_org_conn` as console_rt
 -- under `app.current_org`, so Postgres RLS scopes every row to the tenant.
 --
 -- ponytail: unbounded growth is capped by a retention prune (a periodic DELETE
@@ -59,5 +59,5 @@ CREATE TRIGGER trg_cedar_decision_log_no_delete
     FOR EACH ROW EXECUTE FUNCTION cedar_decision_log_append_only();
 
 -- Runtime role: append + read only. No hard delete on the app path.
-GRANT SELECT, INSERT ON cedar_decision_log TO mnt_rt;
-REVOKE UPDATE, DELETE ON cedar_decision_log FROM mnt_rt;
+GRANT SELECT, INSERT ON cedar_decision_log TO console_rt;
+REVOKE UPDATE, DELETE ON cedar_decision_log FROM console_rt;

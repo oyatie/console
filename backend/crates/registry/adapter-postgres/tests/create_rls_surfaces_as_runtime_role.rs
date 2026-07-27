@@ -5,36 +5,36 @@
 //! in-transaction ownership/duplicate checks) inside a `with_audits(org, ..)`
 //! closure that arms `app.current_org`. A *static* gate proves the wrapping is in
 //! source; this test proves it WORKS AT RUNTIME when the write executes as the
-//! genuine non-owner runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) —
+//! genuine non-owner runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) —
 //! the only faithful exercise of the tenant policy.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser, which can INSERT any org_id regardless of
 //! `app.current_org` and would green-light a totally broken (or cross-tenant
-//! leaking) write. We SEED as the owner (raw inserts) and WRITE as `mnt_rt`.
+//! leaking) write. We SEED as the owner (raw inserts) and WRITE as `console_rt`.
 //!
 //! Asserts, with two tenants A (KNL) and B:
 //!   (a) under org-A's armed GUC, create_customer + create_site succeed as
-//!       `mnt_rt` and land under org A (FORCE RLS WITH CHECK passes);
+//!       `console_rt` and land under org A (FORCE RLS WITH CHECK passes);
 //!   (b) CROSS-ORG ISOLATION: under org-A's armed GUC, creating a site under org
 //!       B's customer is NOT FOUND — the customer is invisible to org A, so the
 //!       site is never created in (or attached across) another tenant;
 //!   (c) FAIL-CLOSED: with NO GUC armed the create fails closed (MissingOrg),
 //!       never an unscoped write.
 
-use mnt_kernel_core::{BranchId, CustomerId, OrgId, TraceContext, UserId};
-use mnt_registry_adapter_postgres::PgRegistryStore;
-use mnt_registry_application::{CreateCustomerCommand, CreateSiteCommand};
+use console_kernel_core::{BranchId, CustomerId, OrgId, TraceContext, UserId};
+use console_registry_adapter_postgres::PgRegistryStore;
+use console_registry_application::{CreateCustomerCommand, CreateSiteCommand};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x3333_3333_3333_3333_3333_3333_3333_3333);
 
 // ===========================================================================
-// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`.
+// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`.
 // ===========================================================================
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -42,7 +42,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -130,7 +130,7 @@ fn occurred_at() -> time::OffsetDateTime {
 }
 
 // ===========================================================================
-// (a) Under org-A's armed GUC, create_customer + create_site succeed as mnt_rt.
+// (a) Under org-A's armed GUC, create_customer + create_site succeed as console_rt.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_customer_and_site_succeed_as_runtime_role(owner_pool: PgPool) {
@@ -145,7 +145,7 @@ async fn create_customer_and_site_succeed_as_runtime_role(owner_pool: PgPool) {
     let seeded_branch = seed_branch(&owner_pool, org_uuid).await;
     let admin = seed_user(&owner_pool, org_uuid, "ADMIN", seeded_branch).await;
 
-    let (customer, site) = mnt_platform_request_context::scope_org(org_a, async {
+    let (customer, site) = console_platform_request_context::scope_org(org_a, async {
         let store = PgRegistryStore::new(rt_pool.clone());
         let customer = store
             .create_customer(CreateCustomerCommand {
@@ -156,7 +156,7 @@ async fn create_customer_and_site_succeed_as_runtime_role(owner_pool: PgPool) {
                 occurred_at: occurred_at(),
             })
             .await
-            .expect("create_customer must succeed as mnt_rt under org-A's armed GUC");
+            .expect("create_customer must succeed as console_rt under org-A's armed GUC");
         let site = store
             .create_site(CreateSiteCommand {
                 actor: admin,
@@ -176,7 +176,7 @@ async fn create_customer_and_site_succeed_as_runtime_role(owner_pool: PgPool) {
                 occurred_at: occurred_at(),
             })
             .await
-            .expect("create_site must succeed as mnt_rt under org-A's armed GUC");
+            .expect("create_site must succeed as console_rt under org-A's armed GUC");
         (customer, site)
     })
     .await;
@@ -250,7 +250,7 @@ async fn duplicate_customer_name_conflicts_as_runtime_role(owner_pool: PgPool) {
     let branch_id = seed_branch(&owner_pool, org_uuid).await;
     let admin = seed_user(&owner_pool, org_uuid, "ADMIN", branch_id).await;
 
-    let err = mnt_platform_request_context::scope_org(org_a, async {
+    let err = console_platform_request_context::scope_org(org_a, async {
         let store = PgRegistryStore::new(rt_pool.clone());
         store
             .create_customer(CreateCustomerCommand {
@@ -300,7 +300,7 @@ async fn cannot_create_site_under_another_orgs_customer(owner_pool: PgPool) {
     // Org B owns a customer; org A must not be able to attach a site to it.
     let foreign_customer = seed_customer(&owner_pool, *org_b.as_uuid(), branch_b, "B고객").await;
 
-    let result = mnt_platform_request_context::scope_org(org_a, async {
+    let result = console_platform_request_context::scope_org(org_a, async {
         let store = PgRegistryStore::new(rt_pool.clone());
         store
             .create_site(CreateSiteCommand {

@@ -25,8 +25,8 @@ manifests into the live OCI guest app-of-apps root.
 - GitHub issue #10, verified unrelated (`Landing Page`); the #376 mention of
   "#10 CNPG anti-affinity" is stale. CNPG anti-affinity ownership belongs to #379.
 - Current DARK on-prem artifacts under `deploy/apps/storage/`,
-  `deploy/apps/maintenance/overlays/on-prem/`, and `deploy/apps/traefik-onprem/`.
-- Current live OCI base manifests under `deploy/apps/maintenance/base/`.
+  `deploy/apps/console/overlays/on-prem/`, and `deploy/apps/traefik-onprem/`.
+- Current live OCI base manifests under `deploy/apps/console/base/`.
 
 ## Scheduling contract
 
@@ -58,10 +58,10 @@ manifests into the live OCI guest app-of-apps root.
 |---|---|---|
 | Talos/Kubernetes control plane | No general app, ingress, database, or storage workload should depend on control-plane scheduling in `on-prem`. Node-loss acceptance is one control-plane node lost while etcd/API remain healthy. | #376 and the Talos/on-prem substrate lane |
 | Ingress/VIP data plane | Multi-replica ingress must spread across distinct worker nodes and keep a PDB. The staged Traefik on-prem variant already uses required pod anti-affinity and topology spread by `kubernetes.io/hostname`; VIP failover evidence belongs with the VIP/Traefik lane. | `deploy/apps/traefik-onprem/`, issue #378 |
-| Stateful Postgres | CNPG instances, synchronous replication, storage class, and CNPG pod anti-affinity are owned by #379. This note only requires that the CNPG lane keep replicas from collapsing onto one node/failure domain and prove primary failover on the HA substrate. | #379 and `deploy/apps/maintenance/overlays/on-prem/` |
+| Stateful Postgres | CNPG instances, synchronous replication, storage class, and CNPG pod anti-affinity are owned by #379. This note only requires that the CNPG lane keep replicas from collapsing onto one node/failure domain and prove primary failover on the HA substrate. | #379 and `deploy/apps/console/overlays/on-prem/` |
 | Replicated block storage | Storage replicas must be placed on independent worker/storage nodes. Longhorn/Rook-specific replica placement, disk labels, and rebuild gates belong to the storage lane. | #379 and `deploy/apps/storage/` |
-| Maintenance API/web Rollouts | When the first self-host `on-prem` app overlay/component is introduced, `mnt-app` and `mnt-web` replicas should spread across workers by hostname, keep `minAvailable: 1`, and avoid control-plane nodes. Do not put these constraints in base/prod while the OCI guest is single-node. | self-host on-prem maintenance app overlay |
-| Background workers | `mnt-worker` is currently single-replica and should not be counted as HA. If scaled above one, it needs idempotent/leased work ownership plus worker-node spread; ADR-0024's implemented `mail_sync` lease/fencing controls still require multi-replica failure and duplicate-side-effect proof before API/worker horizontal scaling is claimed. | app HA verification/remediation lane |
+| Maintenance API/web Rollouts | When the first self-host `on-prem` app overlay/component is introduced, `console-app` and `console-web` replicas should spread across workers by hostname, keep `minAvailable: 1`, and avoid control-plane nodes. Do not put these constraints in base/prod while the OCI guest is single-node. | self-host on-prem maintenance app overlay |
+| Background workers | `console-worker` is currently single-replica and should not be counted as HA. If scaled above one, it needs idempotent/leased work ownership plus worker-node spread; ADR-0024's implemented `mail_sync` lease/fencing controls still require multi-replica failure and duplicate-side-effect proof before API/worker horizontal scaling is claimed. | app HA verification/remediation lane |
 | GitOps/platform operators | Argo CD, Argo Rollouts, cert-manager, Cilium operator, MetalLB controller, External Secrets/OpenBao, and similar platform controllers should use their chart-native HA/anti-affinity knobs when staged for `on-prem`. DaemonSets such as speakers/agents rely on node coverage instead of pod anti-affinity. | each dark app lane |
 
 ## Configuration guidance for the first self-host on-prem overlays

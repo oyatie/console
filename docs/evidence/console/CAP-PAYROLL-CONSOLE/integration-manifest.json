@@ -46,11 +46,11 @@
     },
     {
       "file": "backend/crates/logistics/adapter-postgres/{Cargo.toml,src/lib.rs}",
-      "reason": "fingerprint() used format!(\"{:x}\") on a sha2 digest that no longer implements LowerHex — blocked every mnt-app-dependent build. Repo idiom hex::encode applied (workspace hex dep)."
+      "reason": "fingerprint() used format!(\"{:x}\") on a sha2 digest that no longer implements LowerHex — blocked every console-app-dependent build. Repo idiom hex::encode applied (workspace hex dep)."
     }
   ],
   "known_spine_breaks_not_repaired": [
-    "mnt-facilities-rest and mnt-production-rest do not compile at branch HEAD (mid-refactor foreign lanes), so mnt-app and backend/app/tests/* cannot build. The chartered app-level payroll test runs instead at backend/crates/payroll/rest/tests/run_lifecycle_api.rs against the identical crate router + with_request_context middleware; relocate to app/tests once those lanes heal."
+    "console-facilities-rest and console-production-rest do not compile at branch HEAD (mid-refactor foreign lanes), so console-app and backend/app/tests/* cannot build. The chartered app-level payroll test runs instead at backend/crates/payroll/rest/tests/run_lifecycle_api.rs against the identical crate router + with_request_context middleware; relocate to app/tests once those lanes heal."
   ],
   "module_owned": {
     "backend": "backend/crates/payroll/{domain,adapter-postgres,rest}",

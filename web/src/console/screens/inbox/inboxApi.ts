@@ -6,7 +6,7 @@
 // (428 without one), so `confirmReceipt` performs the same WebAuthn assertion
 // (`assertPasskeyStepUp`) workflow-studio publication uses, then POSTs it.
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../../api/client";
 import { assertPasskeyStepUp } from "../../../auth/webauthn";

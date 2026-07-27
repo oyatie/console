@@ -127,10 +127,10 @@ DO $$ DECLARE t TEXT; BEGIN FOREACH t IN ARRAY ARRAY['recruit_postings','recruit
 END LOOP; END $$;
 -- No DELETE grant anywhere (archive-not-delete); the stage-event history is
 -- append-only for the runtime role.
-GRANT SELECT, INSERT, UPDATE ON recruit_postings TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON recruit_applicants TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON recruit_offers TO mnt_rt;
-GRANT SELECT, INSERT ON recruit_stage_events TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON recruit_postings TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON recruit_applicants TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON recruit_offers TO console_rt;
+GRANT SELECT, INSERT ON recruit_stage_events TO console_rt;
 
 CREATE TRIGGER trg_recruit_postings_org_immutable BEFORE UPDATE ON recruit_postings FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 CREATE TRIGGER trg_recruit_applicants_org_immutable BEFORE UPDATE ON recruit_applicants FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();

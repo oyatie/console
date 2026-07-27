@@ -3,7 +3,7 @@
 //! Source files mark state-changing handlers with:
 //!
 //! ```text
-//! // mnt-gate: state-changing-handler
+//! // console-gate: state-changing-handler
 //! ```
 //!
 //! Such handlers must construct an `AuditEvent` and route the mutation through
@@ -159,7 +159,7 @@ fn check_source_file(
 
     for line in source.lines() {
         let trimmed = line.trim_start();
-        if trimmed.starts_with("//") && trimmed.contains("mnt-gate: state-changing-handler") {
+        if trimmed.starts_with("//") && trimmed.contains("console-gate: state-changing-handler") {
             pending_state_changing = true;
         }
         if trimmed.starts_with("//")
@@ -244,7 +244,7 @@ fn check_source_file(
 }
 
 fn parse_exemption_reason(line: &str) -> Option<String> {
-    let (_prefix, reason) = line.split_once("mnt-gate: audit-exempt")?;
+    let (_prefix, reason) = line.split_once("console-gate: audit-exempt")?;
     let reason = reason.trim();
     if reason.is_empty() {
         None

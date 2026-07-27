@@ -152,7 +152,7 @@ BEGIN
             || 'WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)',
             t
         );
-        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO mnt_rt', t);
+        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO console_rt', t);
         EXECUTE format(
             'CREATE TRIGGER %I BEFORE UPDATE ON %I '
             || 'FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()',

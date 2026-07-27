@@ -13,12 +13,12 @@ GO for consolidation, with the pre-existing integrator open items unchanged
 
 - Migration `0185_create_equipment_3r.sql` applies `ENABLE` + `FORCE ROW LEVEL SECURITY`
   and an `org_isolation` USING/WITH CHECK policy (`app.current_org`, `NULLIF` fail-closed)
-  to all six tables via one loop; `mnt_rt` gets SELECT/INSERT/UPDATE only (no DELETE);
+  to all six tables via one loop; `console_rt` gets SELECT/INSERT/UPDATE only (no DELETE);
   `enforce_org_id_immutable()` is attached to every table.
 - The integration suite drives the assembled `build_router` over a pool whose
-  `after_connect` runs `SET ROLE mnt_rt`; the router never sees the admin pool.
+  `after_connect` runs `SET ROLE console_rt`; the router never sees the admin pool.
   RLS applies to the current role's attributes, so this is the runtime posture.
-- Cross-tenant isolation proven as `mnt_rt`: a fully-granted second-org principal gets
+- Cross-tenant isolation proven as `console_rt`: a fully-granted second-org principal gets
   404 on first-org unit detail and case approval, and — added this stage — an
   org-wide second-org observer receives **empty** unit and case lists
   (count-leak-free), which doubles as the BYPASSRLS canary: a bypassing role would
@@ -82,10 +82,10 @@ GO for consolidation, with the pre-existing integrator open items unchanged
 
 | Command | Result |
 | --- | --- |
-| `cargo fmt --check -p mnt-equipment-{domain,application,adapter-postgres,rest}` + `rustfmt --check` on the test | clean |
+| `cargo fmt --check -p console-equipment-{domain,application,adapter-postgres,rest}` + `rustfmt --check` on the test | clean |
 | `cargo clippy -p` (same 4 crates) `-- -D warnings` | clean |
-| `cargo test -p mnt-equipment-domain` | 7 passed, 0 failed |
-| `DATABASE_URL=…55432/mnt_dev cargo test -p mnt-app --test equipment_3r_api` | 4 passed, 0 failed (as `mnt_rt`, sqlx per-test scratch DBs) |
+| `cargo test -p console-equipment-domain` | 7 passed, 0 failed |
+| `DATABASE_URL=…55432/console_dev cargo test -p console-app --test equipment_3r_api` | 4 passed, 0 failed (as `console_rt`, sqlx per-test scratch DBs) |
 
 Red-green evidence for the fix: pre-fix run failed
 `cross-org branch must be concealed on register` with

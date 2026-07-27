@@ -18,9 +18,9 @@
 --
 -- Blobs live in object storage (SeaweedFS, the existing evidence store); only
 -- the storage key + content hash are recorded here. Versions are immutable by
--- GRANT: `mnt_rt` gets SELECT + INSERT only, never UPDATE/DELETE.
+-- GRANT: `console_rt` gets SELECT + INSERT only, never UPDATE/DELETE.
 
--- mnt-gate: audited-table document_versions
+-- console-gate: audited-table document_versions
 CREATE TABLE document_versions (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -77,4 +77,4 @@ CREATE POLICY org_isolation ON document_versions
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Immutable by grant: rows are appended and read, never updated or deleted.
-GRANT SELECT, INSERT ON document_versions TO mnt_rt;
+GRANT SELECT, INSERT ON document_versions TO console_rt;

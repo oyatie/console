@@ -76,7 +76,7 @@ function seedPromotionTarget(): void {
     SELECT set_config(
       'role',
       CASE WHEN to_regprocedure('leave_api.protected_request_writer_guard()') IS NULL
-        THEN current_user ELSE 'mnt_leave_definer' END,
+        THEN current_user ELSE 'console_leave_definer' END,
       true
     );
     INSERT INTO employees (

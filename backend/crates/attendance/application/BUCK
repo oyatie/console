@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-attendance-application",
+    name = "console-attendance-application",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/application", glob(["src/**/*.rs"])),
-    crate = "mnt_attendance_application",
+    crate = "console_attendance_application",
     edition = "2024",
     crate_root = "backend/crates/attendance/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/attendance/application"},
     deps = [
-        "//backend/crates/attendance/domain:mnt-attendance-domain",
+        "//backend/crates/attendance/domain:console-attendance-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
@@ -27,16 +27,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-attendance-application-unit",
+    name = "console-attendance-application-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/application", glob(["src/**/*.rs"])),
-    crate = "mnt_attendance_application",
+    crate = "console_attendance_application",
     edition = "2024",
     crate_root = "backend/crates/attendance/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/attendance/application"},
     labels = ["owner.backend.crates.attendance.application", "domain.attendance", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/attendance/domain:mnt-attendance-domain",
+        "//backend/crates/attendance/domain:console-attendance-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
@@ -46,7 +46,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-attendance-application-itest-attendance_policy",
+    name = "console-attendance-application-itest-attendance_policy",
     mapped_srcs = repo_mapped_srcs("backend/crates/attendance/application", ["tests/attendance_policy.rs"]),
     crate = "attendance_policy",
     edition = "2024",
@@ -55,12 +55,12 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/attendance/application"},
     labels = ["owner.backend.crates.attendance.application", "domain.attendance", "test.integration", "resource.none"],
     deps = [
-        "//backend/crates/attendance/domain:mnt-attendance-domain",
+        "//backend/crates/attendance/domain:console-attendance-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
-        ":mnt-attendance-application",
+        ":console-attendance-application",
     ],
 )

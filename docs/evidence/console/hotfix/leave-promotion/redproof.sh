@@ -24,9 +24,9 @@ trap restore EXIT
 run() {
   cd "$W/backend" || exit 1
   echo "--- domain ---"
-  cargo test -p mnt-leave-domain 2>&1 | grep -E "^(test result|error\[|error:)" | head -5
-  echo "--- adapter statutory (DB, asserts as mnt_rt) ---"
-  cargo test -p mnt-leave-adapter-postgres --test leave_rls_surfaces_as_runtime_role statutory \
+  cargo test -p console-leave-domain 2>&1 | grep -E "^(test result|error\[|error:)" | head -5
+  echo "--- adapter statutory (DB, asserts as console_rt) ---"
+  cargo test -p console-leave-adapter-postgres --test leave_rls_surfaces_as_runtime_role statutory \
     -- --test-threads=1 2>&1 | grep -E "^(test result|error\[|error:)" | head -5
 }
 

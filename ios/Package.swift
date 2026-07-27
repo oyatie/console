@@ -3,15 +3,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "MaintenanceField",
+    name: "Console",
     defaultLocalization: "ko",
     platforms: [
         .iOS(.v16),
         .macOS(.v14),
     ],
     products: [
-        .library(name: "MaintenanceFieldCore", targets: ["MaintenanceFieldCore"]),
-        .executable(name: "MaintenanceFieldApp", targets: ["MaintenanceFieldApp"]),
+        .library(name: "ConsoleCore", targets: ["ConsoleCore"]),
+        .executable(name: "ConsoleApp", targets: ["ConsoleApp"]),
     ],
     dependencies: [
         .package(path: "../clients/swift"),
@@ -19,15 +19,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "MaintenanceFieldCore",
+            name: "ConsoleCore",
             dependencies: [
-                .product(name: "MaintenanceAPIClient", package: "swift"),
+                .product(name: "ConsoleAPIClient", package: "swift"),
                 .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
             ]
         ),
         .executableTarget(
-            name: "MaintenanceFieldApp",
-            dependencies: ["MaintenanceFieldCore"],
+            name: "ConsoleApp",
+            dependencies: ["ConsoleCore"],
             // Info.plist is consumed by the linker (see linkerSettings below), not as a
             // bundle resource, so exclude it from SwiftPM resource processing.
             exclude: ["Info.plist"],
@@ -43,23 +43,23 @@ let package = Package(
             // Xcode app target for App Store / device distribution, the app target's
             // own Info.plist MUST also declare `NSCameraUsageDescription` (Xcode does
             // not read this embedded section for its bundle Info.plist). See
-            // Sources/MaintenanceFieldApp/Info.plist for the canonical Korean copy.
+            // Sources/ConsoleApp/Info.plist for the canonical Korean copy.
             linkerSettings: [
                 .unsafeFlags([
                     "-Xlinker", "-sectcreate",
                     "-Xlinker", "__TEXT",
                     "-Xlinker", "__info_plist",
-                    "-Xlinker", "Sources/MaintenanceFieldApp/Info.plist",
+                    "-Xlinker", "Sources/ConsoleApp/Info.plist",
                 ])
             ]
         ),
         .executableTarget(
-            name: "MaintenanceFieldCoreBehaviorTests",
-            dependencies: ["MaintenanceFieldCore"]
+            name: "ConsoleCoreBehaviorTests",
+            dependencies: ["ConsoleCore"]
         ),
         .testTarget(
-            name: "MaintenanceFieldCoreTests",
-            dependencies: ["MaintenanceFieldCore"]
+            name: "ConsoleCoreTests",
+            dependencies: ["ConsoleCore"]
         ),
     ]
 )

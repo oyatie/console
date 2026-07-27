@@ -20,7 +20,7 @@ second A1" to bare metal; the on-prem target requires multiple nodes.
 | Bootstrap shape | Talos image/import or `dd` to OCI boot volume | Talos install media/PXE/IPMI plus Cluster API/Metal3 templates |
 | Control plane | One schedulable control-plane node | Three dedicated control-plane/etcd members, not general workers |
 | Secrets root | OCI Vault plus manually created Kubernetes secrets | OpenBao HA Raft plus External Secrets Operator |
-| Storage | OCI Object Storage for backups/evidence and local-path PVCs | Replicated block storage (`mnt-pg-hot`, Longhorn first) plus self-hosted S3 |
+| Storage | OCI Object Storage for backups/evidence and local-path PVCs | Replicated block storage (`console-pg-hot`, Longhorn first) plus self-hosted S3 |
 | Ingress | Reserved OCI IP `140.245.68.253` and hostPort Traefik | On-prem VIP/LoadBalancer such as MetalLB L2 plus multi-replica Traefik |
 | Time/MTU | OCI link-local NTP and VNIC MTU workaround | Site NTP/chrony/GPS and the real fabric MTU |
 
@@ -75,7 +75,7 @@ chat, and issue comments.
    - Talos secrets, talosconfig, kubeconfig, OpenBao unseal shares, and service
      credentials have an out-of-band encrypted backup location.
 6. Storage and data:
-   - Longhorn `mnt-pg-hot` or the approved replicated StorageClass has enough raw
+   - Longhorn `console-pg-hot` or the approved replicated StorageClass has enough raw
      capacity for three replicas, snapshots, rebuild headroom, and CNPG `instances: 3`.
    - SeaweedFS is recorded as the accepted self-hosted S3 reference; an engine change cites a newer accepted decision and fresh security/readiness evidence.
      Evidence/WORM replication to a second physical site is designed before live
@@ -197,7 +197,7 @@ For the CAPI ownership path, use this sequence:
    ```sh
    python3 deploy/talos/on-prem/render-capi-metal3.py \
      --inventory <approved-inventory.json> \
-     --output /tmp/maintenance-onprem-capi-metal3.yaml
+     --output /tmp/console-onprem-capi-metal3.yaml
    ```
 
    The rendered desired state must show one `TalosControlPlane` with three
@@ -223,10 +223,10 @@ For the CAPI ownership path, use this sequence:
 2. Apply only dark/on-prem apps until the activation ticket authorizes production
    wiring. Current dark app paths include:
    - `deploy/apps/cilium/` for the on-prem CNI stage;
-   - `deploy/apps/storage/` for Longhorn and `mnt-pg-hot`;
+   - `deploy/apps/storage/` for Longhorn and `console-pg-hot`;
    - `deploy/apps/vip-ingress/` for MetalLB L2 VIP provider;
    - `deploy/apps/traefik-onprem/` for LoadBalancer Traefik;
-   - `deploy/apps/maintenance/overlays/on-prem/` for CNPG `instances: 3` and
+   - `deploy/apps/console/overlays/on-prem/` for CNPG `instances: 3` and
      replicated storage.
 3. Keep the live OCI app-of-apps root and `deploy/argocd/apps/traefik.yaml` intact
    until a separate cutover deliberately replaces them in the target cluster.
@@ -280,21 +280,21 @@ ADR-0024 on-prem, with External Secrets Operator reconciling Kubernetes secrets.
 
 1. Stage Longhorn from `deploy/apps/storage/` on the on-prem cluster only after the
    node prerequisites in that README are met.
-2. Confirm `mnt-pg-hot` is a replicated default StorageClass in the on-prem
+2. Confirm `console-pg-hot` is a replicated default StorageClass in the on-prem
    context and that the OCI guest still uses its own local-path path:
 
    ```sh
    kubectl -n longhorn-system get pods -o wide
-   kubectl get storageclass mnt-pg-hot -o yaml
+   kubectl get storageclass console-pg-hot -o yaml
    kubectl get storageclass local-path -o yaml
    ```
 
-3. Create a disposable PVC with `storageClassName: mnt-pg-hot`, bind it to a test
+3. Create a disposable PVC with `storageClassName: console-pg-hot`, bind it to a test
    pod, delete the test workload, and verify Longhorn reports the expected replica
    count before putting CNPG on the class.
 4. Sync the on-prem maintenance overlay only after storage is healthy. It expects
    CNPG `instances: 3`, synchronous replication, anti-affinity, and
-   `storageClass: mnt-pg-hot`.
+   `storageClass: console-pg-hot`.
 5. Before traffic moves, perform and record a CNPG primary pod/node kill drill.
    Success means a standby promotes automatically and data remains continuous.
 
@@ -342,17 +342,17 @@ NetworkPolicy validation is a security gate, not just a render check. Production
 namespace isolation requires a policy-capable CNI such as the staged Cilium app in
 `deploy/apps/cilium/`, or an explicitly selected Calico/Canal equivalent. Plain
 Talos/flannel leaves the Maintenance NetworkPolicy manifests in
-`deploy/apps/maintenance/base/networkpolicy.yaml` inert. `kubectl kustomize`,
+`deploy/apps/console/base/networkpolicy.yaml` inert. `kubectl kustomize`,
 `scripts/render-k8s-manifests.sh`, and `npm run check:production-hardening` are
 still required desired-state checks, but they do not prove packet enforcement;
 capture CNI readiness plus `npm run smoke:k8s:networkpolicy-deny` output (or an
 equivalent recorded deny/allow pod-connectivity transcript) before moving
 production traffic. The smoke is safe to repeat: it creates temporary
 same-namespace pods/services, checks an allowed control path, proves the
-`app=mnt-app` client can use DNS, outbound HTTPS, and Postgres when the
-`mnt-db-rw` Service exists, expects that same app-tier client's TCP/8080 egress
+`app=console-app` client can use DNS, outbound HTTPS, and Postgres when the
+`console-db-rw` Service exists, expects that same app-tier client's TCP/8080 egress
 to be denied by `default-deny-egress-app-tier`, and cleans up unless
-`MNT_NETWORKPOLICY_SMOKE_KEEP=1` is set for debugging.
+`CONSOLE_NETWORKPOLICY_SMOKE_KEEP=1` is set for debugging.
 
 For ingress, follow `deploy/apps/vip-ingress/README.md` and
 `deploy/apps/traefik-onprem/README.md`:
@@ -376,7 +376,7 @@ kubectl get nodes -o wide
 kubectl get pods -A -o wide
 kubectl get application -n argocd
 kubectl -n longhorn-system get pods -o wide
-kubectl -n maintenance get cluster,pod,pvc -o wide
+kubectl -n console get cluster,pod,pvc -o wide
 kubectl -n metallb-system get pods -o wide
 bao status
 ```
@@ -442,12 +442,12 @@ kubectl kustomize deploy/apps/storage/manifests
 kubectl kustomize deploy/apps/vip-ingress
 kubectl kustomize deploy/apps/vip-ingress/manifests
 kubectl kustomize deploy/apps/traefik-onprem
-kubectl kustomize deploy/apps/maintenance/overlays/on-prem
-MNT_NETWORKPOLICY_PREFLIGHT=require \
-  MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+kubectl kustomize deploy/apps/console/overlays/on-prem
+CONSOLE_NETWORKPOLICY_PREFLIGHT=require \
+  CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
   npm run check:k8s:networkpolicy
-MNT_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto \
+CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
   npm run smoke:k8s:networkpolicy-deny
 npm run check:production-hardening
 ```
@@ -465,10 +465,10 @@ For a real on-prem activation, attach evidence for:
    target context, applied `maintenance` NetworkPolicies, and Cilium (or an
    explicitly approved policy-capable equivalent) as the detected enforcer; add
    `scripts/smoke-networkpolicy-deny.sh` output showing the control, DNS,
-   HTTPS, and Postgres-if-present paths passed and the `app=mnt-app` TCP/8080
+   HTTPS, and Postgres-if-present paths passed and the `app=console-app` TCP/8080
    path was denied before claiming isolation.
 6. OpenBao initialized, unsealed, audited, backed up, and ESO projections healthy.
-7. Longhorn or approved storage backend healthy with replicated `mnt-pg-hot` PVCs.
+7. Longhorn or approved storage backend healthy with replicated `console-pg-hot` PVCs.
 8. CNPG `instances: 3`, primary failover drill, and restore-drill result.
 9. MetalLB/Traefik VIP failover result and DNS/rollback evidence.
 10. OCI guest path still documented and not accidentally modified or deleted.

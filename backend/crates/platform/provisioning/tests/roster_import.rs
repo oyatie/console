@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_provisioning::RosterProvisioner;
+use console_kernel_core::OrgId;
+use console_platform_provisioning::RosterProvisioner;
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 

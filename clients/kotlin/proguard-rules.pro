@@ -6,6 +6,6 @@
 -keepclasseswithmembers class kotlinx.serialization.json.** { kotlinx.serialization.KSerializer serializer(...); }
 
 # project specific.
--keep,includedescriptorclasses class com.maintenance.api.client.model.**$$serializer { *; }
--keepclassmembers class com.maintenance.api.client.model.** { *** Companion; }
--keepclasseswithmembers class com.maintenance.api.client.model.** { kotlinx.serialization.KSerializer serializer(...); }
+-keep,includedescriptorclasses class com.console.api.client.model.**$$serializer { *; }
+-keepclassmembers class com.console.api.client.model.** { *** Companion; }
+-keepclasseswithmembers class com.console.api.client.model.** { kotlinx.serialization.KSerializer serializer(...); }

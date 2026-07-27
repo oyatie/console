@@ -1,6 +1,6 @@
 # CAP-EVALUATION-CONSOLE — openapi fragment for the consolidation integrator.
 # Merge into backend/openapi/openapi.yaml in the SAME change that mounts
-# mnt_evaluation_rest::router in build_router (the openapi drift test couples
+# console_evaluation_rest::router in build_router (the openapi drift test couples
 # them), then regenerate clients/{ts,kotlin,swift} (3 CI drift gates).
 # Every operation carries `tags: [evaluation]` — required per-domain tagging
 # (kotlin client OOM guard, PR #261).

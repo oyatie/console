@@ -52,7 +52,7 @@ recursive workflow triggers from `GITHUB_TOKEN`.
 
 Optional:
 
-- `ANDROID_PACKAGE_NAME`: package override. Defaults to `com.maintenance.field`.
+- `ANDROID_PACKAGE_NAME`: package override. Defaults to `com.console.app`.
 
 ### iOS / TestFlight
 
@@ -60,14 +60,14 @@ Optional:
 - `APP_STORE_CONNECT_ISSUER_ID`: App Store Connect issuer ID.
 - `APP_STORE_CONNECT_KEY_BASE64`: base64 of the downloaded App Store Connect `.p8` API key. Apple only allows downloading the key file once.
 - `IOS_APP_IDENTIFIER`: bundle identifier registered in App Store Connect. The
-  repo default is `com.maintenance.field` (`ios/Config/App.xcconfig` defaults
-  `MNT_IOS_BUNDLE_ID` to the same value under Team `98Q89GFZWP`), but this is
+  repo default is `com.console.app` (`ios/Config/App.xcconfig` defaults
+  `CONSOLE_IOS_BUNDLE_ID` to the same value under Team `98Q89GFZWP`), but this is
   production-ready only after the App ID and capabilities are registered and
   matched by provisioning profiles.
-- `IOS_SCHEME`: Xcode scheme to archive, for example `MaintenanceFieldApp` once
+- `IOS_SCHEME`: Xcode scheme to archive, for example `ConsoleApp` once
   the archive-capable project/workspace is available to the release job.
 - `IOS_XCODE_PROJECT`: path to an archive-capable Xcode project that exists in
-  the checkout, for example `ios/MaintenanceField.xcodeproj` only after that
+  the checkout, for example `ios/Console.xcodeproj` only after that
   project has been generated/committed or otherwise materialized for release.
 - `IOS_XCODE_WORKSPACE`: path to the Xcode workspace if the app uses one. Set
   this instead of `IOS_XCODE_PROJECT`; the path must exist in the checkout before
@@ -83,7 +83,7 @@ Current iOS repo state has three separate readiness levels:
    release dry-run lane and main CI build this path without uploading to
    TestFlight.
 2. **XcodeGen/XCUITest:** `.github/workflows/ios-ui-tests.yml` generates
-   `ios/MaintenanceField.xcodeproj` from `ios/project.yml` with XcodeGen and runs
+   `ios/Console.xcodeproj` from `ios/project.yml` with XcodeGen and runs
    Simulator XCUITest/accessibility checks. That generated `.xcodeproj` is a CI
    artifact and is not committed.
 3. **TestFlight/archive:** the release workflow has an iOS/TestFlight lane, but

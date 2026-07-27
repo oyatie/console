@@ -2,12 +2,12 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-use mnt_dispatch_domain::{DispatchResponseKind, DispatchStatus, TechnicianLoad};
-use mnt_kernel_core::{
+use console_dispatch_domain::{DispatchResponseKind, DispatchStatus, TechnicianLoad};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, KernelError, P1DispatchId, Timestamp,
     TraceContext, UserId, WorkOrderId,
 };
-use mnt_workorder_domain::{PriorityLevel, WorkOrderStatus};
+use console_workorder_domain::{PriorityLevel, WorkOrderStatus};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -385,7 +385,7 @@ pub struct P1DispatchResponsePage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::ErrorKind;
+    use console_kernel_core::ErrorKind;
 
     #[test]
     fn queue_cursor_rejects_malformed_unknown_and_future_payloads() {

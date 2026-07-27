@@ -29,10 +29,10 @@ run that is already sealed. Proven, not asserted — see §5 (red run).
 already is the platform's freeze-window enforcement: an append-only row with
 `unlocked_at IS NULL` closes `[period_start, period_end]` for one domain
 (`payroll` | `accounting`), FORCE RLS + `org_isolation`, one-shot-unlock
-trigger, `GRANT SELECT, INSERT, UPDATE … TO mnt_rt`. Its Rust half is
-`mnt_platform_db::period_lock::{assert_period_open, assert_period_open_range}`,
-already consumed by `mnt-financial-adapter-postgres` (cost ledger) and
-`mnt-workflow-adapter-postgres` (payroll draft drain).
+trigger, `GRANT SELECT, INSERT, UPDATE … TO console_rt`. Its Rust half is
+`console_platform_db::period_lock::{assert_period_open, assert_period_open_range}`,
+already consumed by `console-financial-adapter-postgres` (cost ledger) and
+`console-workflow-adapter-postgres` (payroll draft drain).
 
 This lane **adds no table, no migration, no new error vocabulary and no second
 lock concept** — it calls the existing guard.
@@ -90,12 +90,12 @@ lock concept** — it calls the existing guard.
 ## 5. Evidence
 
 All backend assertions execute through the assembled HTTP router against a
-**runtime-role (`mnt_rt`) pool** — `runtime_role_pool()` issues `SET ROLE
-mnt_rt` on every connection and `app_state` is built from it, so RLS is real
+**runtime-role (`console_rt`) pool** — `runtime_role_pool()` issues `SET ROLE
+console_rt` on every connection and `app_state` is built from it, so RLS is real
 and superuser BYPASSRLS cannot mask it. Superuser is used only to seed fixtures.
 
 Harness: disposable PostgreSQL 18.4 container with the repo's own topology
-bootstrap (`ops/postgres-reconcile-topology.sh`), `mnt_buck_admin` +
+bootstrap (`ops/postgres-reconcile-topology.sh`), `console_buck_admin` +
 `mnt.sqlx_test_bootstrap=buck-sqlx-superuser-v1`, `SQLX_OFFLINE=true`. The
 shared dev stack was not touched.
 
@@ -114,7 +114,7 @@ i.e. the org change applied cleanly **inside an active payroll lock**.
 ### Green
 
 ```
-cd backend && SQLX_OFFLINE=true <pg-harness> cargo test -p mnt-app --test org_change_api
+cd backend && SQLX_OFFLINE=true <pg-harness> cargo test -p console-app --test org_change_api
 running 4 tests
 test authorization_denies_without_leakage_and_conceals_other_tenants ... ok
 test dissolve_settles_then_archives_with_referential_net ... ok
@@ -124,7 +124,7 @@ test result: ok. 4 passed; 0 failed
 ```
 
 `effectuate_is_frozen_inside_a_locked_period_and_records_the_attempt`
-(`backend/app/tests/org_change_api.rs`) asserts, as `mnt_rt`:
+(`backend/app/tests/org_change_api.rs`) asserts, as `console_rt`:
 
 | # | Assertion |
 |---|---|
@@ -146,14 +146,14 @@ row lands, and after unlock the archive applies the deferred deactivation.
 
 ```
 cargo fmt --check                                          # clean (whole workspace)
-cargo clippy -p mnt-orgchange-adapter-postgres \
-             -p mnt-orgchange-domain -p mnt-orgchange-rest \
+cargo clippy -p console-orgchange-adapter-postgres \
+             -p console-orgchange-domain -p console-orgchange-rest \
              --all-targets -- -D warnings                  # clean
-cargo test -p mnt-orgchange-domain                         # 8 passed
-cargo run -p mnt-gate-audit-coverage                       # PASSED
-cargo run -p mnt-gate-tenant-isolation                     # PASSED
-cargo run -p mnt-gate-rls-arming                           # PASSED
-cargo run -p mnt-gate-dev-auth-absence                     # PASSED
+cargo test -p console-orgchange-domain                         # 8 passed
+cargo run -p console-gate-audit-coverage                       # PASSED
+cargo run -p console-gate-tenant-isolation                     # PASSED
+cargo run -p console-gate-rls-arming                           # PASSED
+cargo run -p console-gate-dev-auth-absence                     # PASSED
 ```
 
 ## 6. Honest gaps
@@ -188,7 +188,7 @@ cargo run -p mnt-gate-dev-auth-absence                     # PASSED
 
 Re-derived against the code, not the §1–§6 narrative. Harness rebuilt
 independently: disposable `postgres:18.4` container + `ops/postgres-reconcile-topology.sh`,
-`mnt_buck_admin` + `mnt.sqlx_test_bootstrap=buck-sqlx-superuser-v1`, `SQLX_OFFLINE=true`,
+`console_buck_admin` + `mnt.sqlx_test_bootstrap=buck-sqlx-superuser-v1`, `SQLX_OFFLINE=true`,
 shared dev stack untouched. (The Docker VM was out of disk — 677 dangling anonymous
 volumes left behind by `--rm` postgres harnesses; removed, no named volume touched.)
 
@@ -203,8 +203,8 @@ volumes left behind by `--rm` postgres harnesses; removed, no named volume touch
   `with_audits` transaction, which arms `app.current_org` before the closure
   (`audit_tx.rs:119`), so `period_locks`' FORCE-RLS `org_isolation` scopes the read.
   Effective-date semantics match the only other consumer,
-  `mnt-financial-adapter-postgres` (`lib.rs:1254`, cost-ledger entry date).
-- **RLS is real in the test.** `runtime_role_pool` issues `SET ROLE mnt_rt` per
+  `console-financial-adapter-postgres` (`lib.rs:1254`, cost-ledger entry date).
+- **RLS is real in the test.** `runtime_role_pool` issues `SET ROLE console_rt` per
   connection and the router is built from it; the superuser pool only seeds fixtures.
 
 ### 7.2 Red proof, re-run by the verifier (not taken on trust)
@@ -256,7 +256,7 @@ volumes left behind by `--rm` postgres harnesses; removed, no named volume touch
 
 ### 7.5 Open, out of this lane's roots
 
-- **`mnt-identity-rest` bypasses the freeze entirely.** `POST/PATCH/DELETE
+- **`console-identity-rest` bypasses the freeze entirely.** `POST/PATCH/DELETE
   /api/v1/regions` and `/api/v1/branches` (`crates/identity/rest/src/lib.rs:236-247`)
   mutate the same org tree with no effective date, no SoD chain and no period-lock
   check — `assert_period_open` has zero hits in `crates/identity/**`. §3.9.1 is now
@@ -290,14 +290,14 @@ volumes left behind by `--rm` postgres harnesses; removed, no named volume touch
 ### 7.6 Stage-2 gate re-run
 
 ```
-cargo test -p mnt-app --test org_change_api        4 passed / 0 failed
-cargo test -p mnt-orgchange-domain                 8 passed / 0 failed
+cargo test -p console-app --test org_change_api        4 passed / 0 failed
+cargo test -p console-orgchange-domain                 8 passed / 0 failed
 cargo fmt --check (whole workspace)                clean
-cargo clippy -p mnt-orgchange-adapter-postgres \
-             -p mnt-orgchange-domain \
-             -p mnt-orgchange-rest --all-targets -- -D warnings   clean
-cargo run -p mnt-gate-audit-coverage               PASSED
-cargo run -p mnt-gate-tenant-isolation             PASSED
-cargo run -p mnt-gate-rls-arming                   PASSED
-cargo run -p mnt-gate-dev-auth-absence             PASSED
+cargo clippy -p console-orgchange-adapter-postgres \
+             -p console-orgchange-domain \
+             -p console-orgchange-rest --all-targets -- -D warnings   clean
+cargo run -p console-gate-audit-coverage               PASSED
+cargo run -p console-gate-tenant-isolation             PASSED
+cargo run -p console-gate-rls-arming                   PASSED
+cargo run -p console-gate-dev-auth-absence             PASSED
 ```

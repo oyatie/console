@@ -1,11 +1,11 @@
 -- Dedicated authorization and forward-compatible direct-tenant FK closure for
 -- destructive platform tenant removal.  The caller receives only EXECUTE on
--- this one command; it is never available through the general mnt_rt pool.
+-- this one command; it is never available through the general console_rt pool.
 DO $block$
 DECLARE
-    v_owner OID := pg_catalog.to_regrole('mnt_app');
-    v_runtime OID := pg_catalog.to_regrole('mnt_rt');
-    v_command OID := pg_catalog.to_regrole('mnt_platform_force_cmd');
+    v_owner OID := pg_catalog.to_regrole('console_app');
+    v_runtime OID := pg_catalog.to_regrole('console_rt');
+    v_command OID := pg_catalog.to_regrole('console_platform_force_cmd');
     v_applier OID;
     v_applier_is_superuser BOOLEAN;
     v_database_owner OID;
@@ -23,7 +23,7 @@ BEGIN
     FROM pg_catalog.pg_database
     WHERE datname = CURRENT_DATABASE();
     v_sqlx_test_bootstrap :=
-        pg_catalog.current_setting('mnt.sqlx_test_bootstrap', true);
+        pg_catalog.current_setting('console.sqlx_test_bootstrap', true);
 
     IF v_applier_is_superuser THEN
         -- Buck's disposable PostgreSQL harness puts an explicit startup marker
@@ -32,7 +32,7 @@ BEGIN
         -- the dedicated disposable admin identity, and aligned database
         -- ownership; a production DBA session cannot match this accidentally.
         IF SESSION_USER <> CURRENT_USER
-           OR CURRENT_USER <> 'mnt_buck_admin'
+           OR CURRENT_USER <> 'console_buck_admin'
            OR v_sqlx_test_bootstrap IS DISTINCT FROM 'buck-sqlx-superuser-v1'
            OR CURRENT_DATABASE() !~ '^_sqlx_test_[A-Za-z0-9_]{52}$'
            OR v_database_owner <> v_applier
@@ -42,10 +42,10 @@ BEGIN
         END IF;
         v_expected_owner := v_applier;
     ELSE
-        IF CURRENT_USER <> 'mnt_app' OR SESSION_USER <> 'mnt_app'
+        IF CURRENT_USER <> 'console_app' OR SESSION_USER <> 'console_app'
            OR v_database_owner <> v_owner THEN
             RAISE EXCEPTION USING ERRCODE = '42501',
-                MESSAGE = 'platform_force_role_topology.mnt_app_must_apply_directly';
+                MESSAGE = 'platform_force_role_topology.console_app_must_apply_directly';
         END IF;
         v_expected_owner := v_owner;
     END IF;
@@ -83,7 +83,7 @@ BEGIN
                OR rolcreatedb OR rolcreaterole OR rolreplication)
     ) THEN
         RAISE EXCEPTION USING ERRCODE = '42501',
-            MESSAGE = 'platform_force_role_topology.mnt_app_not_hardened';
+            MESSAGE = 'platform_force_role_topology.console_app_not_hardened';
     END IF;
     IF EXISTS (
         SELECT 1 FROM pg_catalog.pg_roles
@@ -153,10 +153,10 @@ BEGIN
 END;
 $$;
 -- Keep the migration identity as owner. Production migrations run directly as
--- mnt_app; isolated SQLx databases run as their own table owner. Reassigning
--- only this SECURITY DEFINER to mnt_app would separate it from the tables it
+-- console_app; isolated SQLx databases run as their own table owner. Reassigning
+-- only this SECURITY DEFINER to console_app would separate it from the tables it
 -- must delete under FORCE RLS and break the command with insufficient_privilege.
-REVOKE ALL ON FUNCTION platform_force_remove_direct_org_children(UUID) FROM PUBLIC, mnt_rt, mnt_platform_force_cmd;
+REVOKE ALL ON FUNCTION platform_force_remove_direct_org_children(UUID) FROM PUBLIC, console_rt, console_platform_force_cmd;
 
 CREATE OR REPLACE FUNCTION platform_force_remove_organization(p_id UUID)
 RETURNS TEXT
@@ -318,8 +318,8 @@ BEGIN
     RETURN 'removed';
 END;
 $$;
-REVOKE ALL ON FUNCTION platform_force_remove_organization(UUID) FROM PUBLIC, mnt_rt;
-GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO mnt_platform_force_cmd;
+REVOKE ALL ON FUNCTION platform_force_remove_organization(UUID) FROM PUBLIC, console_rt;
+GRANT EXECUTE ON FUNCTION platform_force_remove_organization(UUID) TO console_platform_force_cmd;
 
 -- A new direct tenant FK must be consumable by the closure. Fail migration
 -- rather than shipping a force-remove function that can only fail at operator
@@ -397,6 +397,6 @@ BEGIN
     RETURN 'removed';
 END;
 $$;
-REVOKE ALL ON FUNCTION platform_force_remove_organization_command(UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ) FROM PUBLIC, mnt_rt;
-GRANT EXECUTE ON FUNCTION platform_force_remove_organization_command(UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ) TO mnt_platform_force_cmd;
-REVOKE EXECUTE ON FUNCTION platform_force_remove_organization(UUID) FROM mnt_platform_force_cmd;
+REVOKE ALL ON FUNCTION platform_force_remove_organization_command(UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ) FROM PUBLIC, console_rt;
+GRANT EXECUTE ON FUNCTION platform_force_remove_organization_command(UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ) TO console_platform_force_cmd;
+REVOKE EXECUTE ON FUNCTION platform_force_remove_organization(UUID) FROM console_platform_force_cmd;

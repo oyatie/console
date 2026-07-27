@@ -5,10 +5,10 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
-    maintenance.nousresearch.com/context: "oci-guest"
-    maintenance.nousresearch.com/ingress-shape: "hostport"
+    console.nousresearch.com/context: "oci-guest"
+    console.nousresearch.com/ingress-shape: "hostport"
 spec:
-  project: maintenance
+  project: console
   sources:
     - repoURL: https://traefik.github.io/charts
       chart: traefik
@@ -19,7 +19,7 @@ spec:
         # oci-guest overlay so the on-prem HA variant cannot inherit it.
         valueFiles:
           - $values/deploy/apps/traefik-oci-guest/values.yaml
-    - repoURL: https://github.com/jason931225/maintenance.git # replace OWNER
+    - repoURL: https://github.com/jason931225/console.git # replace OWNER
       targetRevision: main
       ref: values
   destination:

@@ -13,7 +13,7 @@
 //! issuers serialize on the counter row), gap-free NOT guaranteed (a
 //! rolled-back tx burns its number).
 
-use mnt_kernel_core::OrgId;
+use console_kernel_core::OrgId;
 use sqlx::{Postgres, Transaction};
 
 use crate::error::DbError;

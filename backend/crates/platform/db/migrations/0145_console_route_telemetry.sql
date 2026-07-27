@@ -39,11 +39,11 @@ CREATE POLICY org_isolation ON console_route_telemetry
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT ON console_route_telemetry TO mnt_rt;
--- Migration 0031 default privileges grant broader table DML to mnt_rt. Telemetry
+GRANT SELECT, INSERT ON console_route_telemetry TO console_rt;
+-- Migration 0031 default privileges grant broader table DML to console_rt. Telemetry
 -- is append-only from the runtime role: no updates/deletes that could rewrite ramp
 -- evidence for the D5 "two release cycles of zero legacy traffic" gate.
-REVOKE UPDATE, DELETE ON console_route_telemetry FROM mnt_rt;
+REVOKE UPDATE, DELETE ON console_route_telemetry FROM console_rt;
 
 CREATE OR REPLACE FUNCTION platform_console_route_adoption()
 RETURNS TABLE (
@@ -89,4 +89,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_console_route_adoption() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_console_route_adoption() TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_console_route_adoption() TO console_rt;

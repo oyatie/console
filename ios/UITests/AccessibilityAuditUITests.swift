@@ -2,7 +2,7 @@ import XCTest
 
 /// Strict audit suite. The workflow preconditions simulator presentation before
 /// each method; app launch never mutates global appearance or content size.
-final class AccessibilityAuditUITests: FieldUITestCase {
+final class AccessibilityAuditUITests: ConsoleUITestCase {
     func testTodayScreenPassesDynamicTypeAudit() async throws {
         try await prepareToday(.standard)
         assertDynamicTypeAccessibilitySupport(expectedCompatibilityIssues: [

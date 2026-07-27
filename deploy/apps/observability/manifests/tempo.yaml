@@ -3,10 +3,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: tempo-data
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: tempo
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   accessModes: ["ReadWriteOnce"]
   resources:
@@ -17,10 +17,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: tempo-config
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: tempo
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 data:
   config.yaml: |
     server:
@@ -46,10 +46,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: tempo
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   replicas: 1
   strategy:
@@ -61,7 +61,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: tempo
-        app.kubernetes.io/part-of: maintenance-observability
+        app.kubernetes.io/part-of: console-observability
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -114,10 +114,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: tempo
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: tempo
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   selector:
     app.kubernetes.io/name: tempo

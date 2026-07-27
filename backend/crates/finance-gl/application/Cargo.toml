@@ -1,13 +1,13 @@
 [package]
-name = "mnt-finance-gl-application"
+name = "console-finance-gl-application"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-finance-gl-domain = { path = "../domain" }
-mnt-kernel-core.workspace = true
+console-finance-gl-domain = { path = "../domain" }
+console-kernel-core.workspace = true
 serde.workspace = true
 time.workspace = true
 uuid.workspace = true

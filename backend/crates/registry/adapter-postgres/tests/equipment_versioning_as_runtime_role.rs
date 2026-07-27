@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-LC generic versioning, first adoption (registry_equipment), proven as
-//! the genuine non-owner runtime role `mnt_rt`:
+//! the genuine non-owner runtime role `console_rt`:
 //!
 //!   (a) every `update_equipment` captures non-destructive versions (the
 //!       pre-update content backfills version 1 on first capture);
@@ -10,9 +10,9 @@
 //!   (c) the versions table is append-only (UPDATE/DELETE rejected);
 //!   (d) versions are tenant-isolated under RLS.
 
-use mnt_kernel_core::{BranchId, EquipmentId, OrgId, TraceContext, UserId};
-use mnt_registry_adapter_postgres::PgRegistryStore;
-use mnt_registry_application::{
+use console_kernel_core::{BranchId, EquipmentId, OrgId, TraceContext, UserId};
+use console_registry_adapter_postgres::PgRegistryStore;
+use console_registry_application::{
     RollbackEquipmentCommand, UpdateEquipmentCommand, UpdateEquipmentFields,
 };
 use sqlx::PgPool;
@@ -28,7 +28,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -162,7 +162,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
     let store = PgRegistryStore::new(rt_pool.clone());
 
     // (a) Two updates → 3 versions (backfilled original + 2 captures).
-    let versions = mnt_platform_request_context::scope_org(org, async {
+    let versions = console_platform_request_context::scope_org(org, async {
         store
             .update_equipment(UpdateEquipmentCommand {
                 actor: admin,
@@ -172,7 +172,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
                 occurred_at: datetime!(2026-07-01 09:00 UTC),
             })
             .await
-            .expect("first update must succeed as mnt_rt");
+            .expect("first update must succeed as console_rt");
         store
             .update_equipment(UpdateEquipmentCommand {
                 actor: admin,
@@ -182,11 +182,11 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
                 occurred_at: datetime!(2026-07-02 09:00 UTC),
             })
             .await
-            .expect("second update must succeed as mnt_rt");
+            .expect("second update must succeed as console_rt");
         store
             .list_equipment_versions(equipment_id)
             .await
-            .expect("version list must be readable as mnt_rt")
+            .expect("version list must be readable as console_rt")
     })
     .await;
 
@@ -210,7 +210,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
     assert!(versions.iter().all(|v| v.status == "CAPTURED"));
 
     // (b) Rollback to version 1 → NEW version 4, live row restored.
-    let new_version = mnt_platform_request_context::scope_org(org, async {
+    let new_version = console_platform_request_context::scope_org(org, async {
         store
             .rollback_equipment(RollbackEquipmentCommand {
                 actor: admin,
@@ -220,7 +220,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
                 occurred_at: datetime!(2026-07-03 09:00 UTC),
             })
             .await
-            .expect("rollback must succeed as mnt_rt")
+            .expect("rollback must succeed as console_rt")
     })
     .await;
     assert_eq!(new_version, 4, "rollback appends, never rewrites");
@@ -233,7 +233,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
             .unwrap();
     assert_eq!(manager, None, "live row must return to version 1 content");
 
-    let versions = mnt_platform_request_context::scope_org(org, async {
+    let versions = console_platform_request_context::scope_org(org, async {
         store.list_equipment_versions(equipment_id).await.unwrap()
     })
     .await;
@@ -263,7 +263,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
     assert!(delete.is_err(), "version DELETE must be rejected");
 
     // (d) Cross-org isolation: org B sees no versions for org A's asset.
-    let foreign = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_B), async {
+    let foreign = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_B), async {
         store.list_equipment_versions(equipment_id).await
     })
     .await;

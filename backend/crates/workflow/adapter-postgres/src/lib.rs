@@ -3,7 +3,7 @@
 //! Implements [`WorkflowRuntimePort`] over migrations 0077/0078 using the platform
 //! transactional helpers. Every method arms `app.current_org` before any statement
 //! (via `with_audit` / `with_audits` from `event.org_id`/`org`, or `with_org_conn`
-//! for reads) so RLS scopes it to the tenant exactly as production `mnt_rt`. This
+//! for reads) so RLS scopes it to the tenant exactly as production `console_rt`. This
 //! is the ONLY workflow crate that touches the spine tables and `sqlx`. Runtime
 //! `sqlx::query()` is used throughout (not the compile-time macros) because the
 //! offline query cache cannot be regenerated in this environment.
@@ -11,11 +11,11 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
-use mnt_notifications_application::{EmitNotificationCommand, NotificationSink};
-use mnt_notifications_domain::NotificationLink;
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_workflow_domain::{
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
+use console_notifications_application::{EmitNotificationCommand, NotificationSink};
+use console_notifications_domain::NotificationLink;
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_workflow_domain::{
     FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
     NodeStepCommit, PortFuture, PostFinalizationRejection, PostFinalizationRejectionCommand,
     RunRecord, RunStatus, RunTerminalTimestamp, RunTransition, WaitingTaskStatus,
@@ -69,7 +69,7 @@ struct ReceiptNodeSpec {
 pub struct TriggerBindingRow {
     pub id: Uuid,
     pub definition_id: Uuid,
-    pub trigger_type: mnt_workflow_domain::TriggerType,
+    pub trigger_type: console_workflow_domain::TriggerType,
     pub event_key: String,
 }
 
@@ -179,7 +179,7 @@ pub struct RunListItem {
 #[derive(Debug, Clone)]
 pub struct ClaimWaitingTaskCommand {
     pub task_id: Uuid,
-    pub actor: mnt_kernel_core::UserId,
+    pub actor: console_kernel_core::UserId,
     pub transition_audits: Vec<AuditEvent>,
 }
 
@@ -216,7 +216,7 @@ impl TaskDecision {
 #[derive(Debug, Clone)]
 pub struct DecideWaitingTaskCommand {
     pub task_id: Uuid,
-    pub actor: mnt_kernel_core::UserId,
+    pub actor: console_kernel_core::UserId,
     pub decision: TaskDecision,
     pub comment: Option<String>,
     pub idempotency_key: String,
@@ -453,7 +453,7 @@ impl PgWorkflowRuntimeStore {
 
     /// STEP 4 — resolve the per-tenant strangler flag by calling the SQL resolver
     /// `org_runtime_flag_enabled(flag_key)` (migration 0095) under an armed
-    /// `mnt_rt` connection (`with_org_conn` sets `app.current_org` so the
+    /// `console_rt` connection (`with_org_conn` sets `app.current_org` so the
     /// SECURITY INVOKER resolver reads only this tenant's row). An absent flag row
     /// resolves to `false` — the dark default that keeps un-enrolled tenants on
     /// the legacy path.
@@ -478,7 +478,7 @@ impl PgWorkflowRuntimeStore {
     }
 
     /// Load a run by its tenant-scoped natural `idempotency_key`
-    /// (`UNIQUE(org_id, idempotency_key)`, 0077:34), read as `mnt_rt` under the
+    /// (`UNIQUE(org_id, idempotency_key)`, 0077:34), read as `console_rt` under the
     /// armed `app.current_org` (via `with_org_conn`). Used by the completion-tail
     /// strangler to RESUME an existing (partial) run on the deterministic
     /// completion-key conflict instead of aborting: the caller derives the same
@@ -527,7 +527,7 @@ impl PgWorkflowRuntimeStore {
     }
 
     /// Enabled trigger bindings for one registered domain event key (0105),
-    /// read as `mnt_rt` under the armed `app.current_org`. The dispatcher calls
+    /// read as `console_rt` under the armed `app.current_org`. The dispatcher calls
     /// this at an audited-mutation commit point; ordering is stable (oldest
     /// binding first) so evaluation order is deterministic.
     pub async fn list_enabled_trigger_bindings(
@@ -557,7 +557,7 @@ impl PgWorkflowRuntimeStore {
                             Ok(TriggerBindingRow {
                                 id: row.try_get("id")?,
                                 definition_id: row.try_get("definition_id")?,
-                                trigger_type: mnt_workflow_domain::TriggerType::from_db_str(
+                                trigger_type: console_workflow_domain::TriggerType::from_db_str(
                                     &trigger_type,
                                 )
                                 .map_err(PgWorkflowRuntimeError::Domain)?,
@@ -576,7 +576,7 @@ impl PgWorkflowRuntimeStore {
     /// `(active_version, definition JSON)`. `None` when the definition does not
     /// exist, is not ACTIVE, has no active version, or its active version is not
     /// `wf.exec.v1` — the trigger/schedule caller SKIPS (fail-safe) rather than
-    /// guessing a version. Read as `mnt_rt` under the armed `app.current_org`.
+    /// guessing a version. Read as `console_rt` under the armed `app.current_org`.
     pub async fn resolve_active_exec_definition(
         &self,
         org: OrgId,
@@ -617,7 +617,7 @@ impl PgWorkflowRuntimeStore {
     }
 
     /// Due schedules for the poller: `enabled AND next_run_at <= now`, oldest
-    /// due first, bounded by `limit` (one tick's work). Read as `mnt_rt` under
+    /// due first, bounded by `limit` (one tick's work). Read as `console_rt` under
     /// the armed `app.current_org` (matches `idx_workflow_schedules_due`).
     pub async fn list_due_schedules(
         &self,
@@ -669,7 +669,7 @@ impl PgWorkflowRuntimeStore {
     /// never skipped or double-advanced. The audited system mutation (actor
     /// `None`) commits in its own `with_audits` txn; a lost guard race writes
     /// NO audit row (nothing changed). Returns whether this call advanced.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn advance_schedule(
         &self,
         org: OrgId,
@@ -737,7 +737,7 @@ impl PgWorkflowRuntimeStore {
     /// later retry; a replay claims nothing (the event is DELIVERED) and the
     /// draft's natural key collides, so it is an exactly-once no-op. Returns the
     /// number of payroll drafts actually created.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn drain_payroll_job_outbox(
         &self,
         org: OrgId,
@@ -789,9 +789,9 @@ impl PgWorkflowRuntimeStore {
                         Some((start?, end?))
                     });
                     if let Some((period_start, period_end)) = period
-                        && mnt_platform_db::assert_period_open_range(
+                        && console_platform_db::assert_period_open_range(
                             tx,
-                            mnt_platform_db::PeriodLockDomain::Payroll,
+                            console_platform_db::PeriodLockDomain::Payroll,
                             period_start,
                             period_end,
                         )
@@ -981,7 +981,7 @@ impl PgWorkflowRuntimeStore {
                     recipient: UserId::from_uuid(recipient),
                     category: "결재".to_owned(),
                     // ponytail: unrelated-lane unblock (BE-ingest-checklist-gates
-                    // needed a green `cargo check -p mnt-app`) — `kind` landed on
+                    // needed a green `cargo check -p console-app`) — `kind` landed on
                     // `EmitNotificationCommand` without updating this call site;
                     // "info" mirrors the notices crate's generic default. The
                     // notifications-kind lane should replace with a precise kind.
@@ -1145,7 +1145,7 @@ impl PgWorkflowRuntimeStore {
     pub async fn list_waiting_tasks(
         &self,
         org: OrgId,
-        me: mnt_kernel_core::UserId,
+        me: console_kernel_core::UserId,
         filter: WaitingTaskListFilter,
     ) -> Result<Vec<WaitingTaskListItem>, KernelError> {
         let statuses: Vec<String> = filter
@@ -1215,7 +1215,7 @@ impl PgWorkflowRuntimeStore {
     pub async fn list_waiting_tasks_action_page(
         &self,
         org: OrgId,
-        me: mnt_kernel_core::UserId,
+        me: console_kernel_core::UserId,
         filter: WaitingTaskListFilter,
         as_of: time::OffsetDateTime,
         after: Option<(time::OffsetDateTime, String)>,
@@ -1304,7 +1304,7 @@ impl PgWorkflowRuntimeStore {
     pub async fn list_runs_for_initiator(
         &self,
         org: OrgId,
-        me: mnt_kernel_core::UserId,
+        me: console_kernel_core::UserId,
         filter: RunListFilter,
     ) -> Result<Vec<RunListItem>, KernelError> {
         let statuses: Vec<String> = filter
@@ -1427,7 +1427,7 @@ impl PgWorkflowRuntimeStore {
     /// Claim an OPEN waiting task (OPEN → CLAIMED). A same-user replay on an
     /// already-CLAIMED task is a 200 no-op; a task claimed by another user, or in any
     /// terminal/cancelled/expired state, is a 409. Audits `workflow_task.claim`.
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn claim_waiting_task(
         &self,
         org: OrgId,
@@ -1535,7 +1535,7 @@ impl PgWorkflowRuntimeStore {
     /// reopen — a resubmission is a new run). Idempotent by `idempotency_key`. Audits
     /// `workflow_task.decide` plus the node/run transitions. Finalize/receipt tasks
     /// are 422 here (they go through the finalize endpoint).
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn decide_waiting_task(
         &self,
         org: OrgId,
@@ -1905,10 +1905,10 @@ async fn check_self_approval_tx(
         "exemption_reason": exemption_reason,
     });
     let entity_id = run_id.to_string();
-    mnt_platform_db::upsert_open_finding_tx(
+    console_platform_db::upsert_open_finding_tx(
         tx,
         org,
-        mnt_platform_db::OpenFinding {
+        console_platform_db::OpenFinding {
             detector_id: "anomaly.self_approval",
             entity_type: "workflow_run",
             entity_id: &entity_id,
@@ -1924,7 +1924,7 @@ async fn check_self_approval_tx(
 }
 
 fn run_transition_audit(
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     org: OrgId,
     run_id: Uuid,
     from: &str,
@@ -1976,7 +1976,7 @@ fn run_transition_sql(to: RunStatus) -> &'static str {
 }
 
 impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     fn insert_run<'a>(&'a self, run: NewRun, audit: AuditEvent) -> PortFuture<'a, ()> {
         Box::pin(async move {
             with_audit::<_, (), PgWorkflowRuntimeError>(&self.pool, audit, move |tx| {
@@ -2069,7 +2069,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     fn transition_run<'a>(
         &'a self,
         org: OrgId,
@@ -2102,7 +2102,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     fn commit_node_step<'a>(&'a self, org: OrgId, commit: NodeStepCommit) -> PortFuture<'a, ()> {
         Box::pin(async move {
             with_audits::<_, (), PgWorkflowRuntimeError>(&self.pool, org, move |tx| {
@@ -2289,7 +2289,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
                             required_policy: row.try_get("required_policy")?,
                             object_type: row.try_get("object_type")?,
                             object_id: row.try_get("object_id")?,
-                            initiated_by: mnt_kernel_core::UserId::from_uuid(initiated_by),
+                            initiated_by: console_kernel_core::UserId::from_uuid(initiated_by),
                         }))
                     })
                 },
@@ -2299,7 +2299,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     fn finalize_waiting_task<'a>(
         &'a self,
         org: OrgId,
@@ -2360,7 +2360,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
                                     task_id: command.task_id,
                                     run_id: row.try_get("run_id")?,
                                     status: WaitingTaskStatus::Approved,
-                                    completed_by: completed_by.map(mnt_kernel_core::UserId::from_uuid),
+                                    completed_by: completed_by.map(console_kernel_core::UserId::from_uuid),
                                     decision_payload: existing_decision
                                         .unwrap_or_else(|| serde_json::json!({})),
                                     run_status,
@@ -2602,7 +2602,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     fn create_post_finalization_rejection<'a>(
         &'a self,
         org: OrgId,
@@ -2643,7 +2643,7 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
                                     id: row.try_get("id")?,
                                     original_run_id: stored_run_id,
                                     reason: row.try_get("reason")?,
-                                    created_by: mnt_kernel_core::UserId::from_uuid(
+                                    created_by: console_kernel_core::UserId::from_uuid(
                                         row.try_get("created_by")?,
                                     ),
                                     run_status: RunStatus::from_db_str(&run_status)?,

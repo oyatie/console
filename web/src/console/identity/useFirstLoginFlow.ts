@@ -82,7 +82,7 @@ export type PhoneEnrollmentState =
 function safeDeviceApproveToken(raw: string | null): string | undefined {
   if (!raw) return undefined;
   const trimmed = raw.trim();
-  return /^mnt_dla_[0-9a-fA-F]{64}$/.test(trimmed) ? trimmed : undefined;
+  return /^console_dla_[0-9a-fA-F]{64}$/.test(trimmed) ? trimmed : undefined;
 }
 
 export function useFirstLoginFlow() {

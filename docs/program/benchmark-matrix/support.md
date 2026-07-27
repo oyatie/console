@@ -149,7 +149,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | Native app exists (`com.maintenance.field`) but is work-order/field focused; **support-ticket surface on mobile is a gap** (no `support` screens found under `android/`). Web console is responsive. |
+| **Our Console** | Native app exists (`com.console.app`) but is work-order/field focused; **support-ticket surface on mobile is a gap** (no `support` screens found under `android/`). Web console is responsive. |
 | Palantir Foundry | [I] Foundry Mobile renders Workshop/ontology apps incl. object views. https://www.palantir.com/docs/foundry/ontology/applications |
 | Slack | [V] Full-fidelity mobile app — swarm threads work natively on phone. https://slack.com/ |
 | MS Teams | [V] Teams mobile + adaptive-card approvals/tickets on phone. https://www.usepylon.com/blog/microsoft-teams-helpdesk-2025-guide |
@@ -162,7 +162,7 @@ Module-relevant vendor weighting (per brief): **Asana** (service-desk patterns),
 
 | Vendor | How |
 |---|---|
-| **Our Console** | `support_tickets` + `support_ticket_comments` are `mnt-gate: audited-table`; evidenced transition/assign/comment paths write audit events. Customer PII (`requester_contact`) is excluded from logging macros and audit snapshots by the cited gates. The platform audit-chain seam is partial/DARK, not proved universal or production-tamper-evident. (`0022_create_support.sql` header + migration comments.) |
+| **Our Console** | `support_tickets` + `support_ticket_comments` are `console-gate: audited-table`; evidenced transition/assign/comment paths write audit events. Customer PII (`requester_contact`) is excluded from logging macros and audit snapshots by the cited gates. The platform audit-chain seam is partial/DARK, not proved universal or production-tamper-evident. (`0022_create_support.sql` header + migration comments.) |
 | Palantir Foundry | [V] Full lineage + object edit history + dynamic security; audit is a platform property. https://www.palantir.com/docs/foundry/object-backend/overview |
 | Slack | [I] Enterprise Grid audit logs + DLP + eDiscovery, but PII sits in conversation text. https://slack.com/ |
 | MS Teams | [I] Purview audit/retention/DLP; ticket audit lives in ServiceNow. https://www.usepylon.com/blog/microsoft-teams-helpdesk-2025-guide |

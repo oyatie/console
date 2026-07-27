@@ -89,7 +89,7 @@ async fn seed_org(pool: &PgPool, org: Uuid, tag: &str) -> Seeded {
 
 async fn runtime_tx(pool: &PgPool, org: Uuid) -> sqlx::Transaction<'_, sqlx::Postgres> {
     let mut tx = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_rt")
+    sqlx::query("SET LOCAL ROLE console_rt")
         .execute(&mut *tx)
         .await
         .unwrap();
@@ -115,7 +115,7 @@ async fn attendance_console_contract_is_tenant_scoped_immutable_and_idempotent(p
         "attendance_week52_acknowledgements",
     ] {
         let row = sqlx::query(
-            "SELECT c.relrowsecurity, c.relforcerowsecurity, has_table_privilege('mnt_rt', c.oid, 'SELECT,INSERT') AS can_read_write \
+            "SELECT c.relrowsecurity, c.relforcerowsecurity, has_table_privilege('console_rt', c.oid, 'SELECT,INSERT') AS can_read_write \
              FROM pg_class c WHERE c.oid = $1::regclass",
         )
         .bind(table)
@@ -501,12 +501,12 @@ async fn employee_day_eligibility_coordination_is_catalogued_and_enforced(pool: 
 
     let lock = sqlx::query(
         "SELECT p.provolatile::text AS provolatile, p.proparallel::text AS proparallel, p.prosecdef, p.proconfig, \
-                has_function_privilege('mnt_rt', p.oid, 'EXECUTE') AS runtime_execute, \
-                has_function_privilege('mnt_leave_definer', p.oid, 'EXECUTE') AS leave_execute, \
+                has_function_privilege('console_rt', p.oid, 'EXECUTE') AS runtime_execute, \
+                has_function_privilege('console_leave_definer', p.oid, 'EXECUTE') AS leave_execute, \
                 EXISTS (SELECT 1 FROM aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) privilege \
                         WHERE privilege.grantee = 0 AND privilege.privilege_type = 'EXECUTE') AS public_execute, \
                 pg_get_functiondef(p.oid) AS definition \
-         FROM pg_proc p WHERE p.oid = 'public.mnt_employee_day_eligibility_lock(uuid,uuid,date)'::regprocedure",
+         FROM pg_proc p WHERE p.oid = 'public.console_employee_day_eligibility_lock(uuid,uuid,date)'::regprocedure",
     )
     .fetch_one(&pool)
     .await
@@ -548,7 +548,7 @@ async fn employee_day_eligibility_coordination_is_catalogued_and_enforced(pool: 
         .execute(&mut *lock_tx)
         .await
         .unwrap();
-    sqlx::query("SELECT public.mnt_employee_day_eligibility_lock($1, $2, DATE '2026-07-02')")
+    sqlx::query("SELECT public.console_employee_day_eligibility_lock($1, $2, DATE '2026-07-02')")
         .bind(ORG_A)
         .bind(a.employee)
         .execute(&mut *lock_tx)
@@ -601,21 +601,21 @@ async fn employee_day_eligibility_coordination_is_catalogued_and_enforced(pool: 
                 "trg_attendance_exceptions_eligibility_lock".into(),
                 23,
                 "O".into(),
-                "mnt_attendance_exception_eligibility_lock".into()
+                "console_attendance_exception_eligibility_lock".into()
             ),
             (
                 "attendance_substitutions".into(),
                 "trg_attendance_substitutions_eligibility_guard".into(),
                 23,
                 "O".into(),
-                "mnt_attendance_substitution_eligibility_guard".into()
+                "console_attendance_substitution_eligibility_guard".into()
             ),
             (
                 "leave_requests".into(),
                 "trg_leave_requests_eligibility_lock".into(),
                 19,
                 "O".into(),
-                "mnt_leave_request_eligibility_lock".into()
+                "console_leave_request_eligibility_lock".into()
             ),
         ],
         "all transition triggers must retain their exact table, event, timing, function, and enabled metadata"
@@ -628,7 +628,7 @@ async fn employee_day_eligibility_coordination_is_catalogued_and_enforced(pool: 
     .await
     .unwrap();
     let lock_at = decide_definition
-        .find("mnt_employee_day_eligibility_lock")
+        .find("console_employee_day_eligibility_lock")
         .expect("leave approval takes sorted employee/day locks");
     let employee_lock_at = decide_definition
         .find("FROM public.employees e")
@@ -710,7 +710,7 @@ async fn employee_day_locks_serialize_leave_approval_and_release_terminal_transi
     .unwrap();
 
     let mut create_leave = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *create_leave)
         .await
         .unwrap();
@@ -735,7 +735,7 @@ async fn employee_day_locks_serialize_leave_approval_and_release_terminal_transi
     create_leave.commit().await.unwrap();
 
     let mut approve_leave = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *approve_leave)
         .await
         .unwrap();
@@ -942,8 +942,8 @@ async fn platform_force_removal_closes_direct_org_restrict_fks_and_uses_dedicate
     );
 
     let permissions = sqlx::query(
-        "SELECT has_function_privilege('mnt_rt', 'platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)', 'EXECUTE') AS runtime_can_execute, \
-                has_function_privilege('mnt_platform_force_cmd', 'platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)', 'EXECUTE') AS command_can_execute, \
+        "SELECT has_function_privilege('console_rt', 'platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)', 'EXECUTE') AS runtime_can_execute, \
+                has_function_privilege('console_platform_force_cmd', 'platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)', 'EXECUTE') AS command_can_execute, \
                 EXISTS ( \
                     SELECT 1 \
                     FROM pg_class AS relation \
@@ -953,7 +953,7 @@ async fn platform_force_removal_closes_direct_org_restrict_fks_and_uses_dedicate
                     WHERE namespace.nspname = 'public' \
                       AND relation.relkind IN ('r', 'p') \
                       AND has_table_privilege( \
-                          'mnt_platform_force_cmd', relation.oid, requested.privilege_name \
+                          'console_platform_force_cmd', relation.oid, requested.privilege_name \
                       ) \
                 ) AS command_has_table_privilege",
     )
@@ -975,14 +975,14 @@ async fn platform_force_removal_closes_direct_org_restrict_fks_and_uses_dedicate
 }
 
 #[sqlx::test(migrations = "./migrations")]
-async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(pool: PgPool) {
+async fn platform_force_migration_rejects_superuser_on_console_app_owned_database(pool: PgPool) {
     sqlx::raw_sql(
         r#"
-        ALTER ROLE mnt_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
+        ALTER ROLE console_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
             NOREPLICATION PASSWORD 'platform-force-migration-owner-a198';
         DO $database_owner$
         BEGIN
-            EXECUTE format('ALTER DATABASE %I OWNER TO mnt_app', current_database());
+            EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());
         END
         $database_owner$;
         DO $ownership$
@@ -1007,18 +1007,18 @@ async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(po
                   )
             LOOP
                 EXECUTE format(
-                    'ALTER TABLE %I.%I OWNER TO mnt_app',
+                    'ALTER TABLE %I.%I OWNER TO console_app',
                     target.schema_name,
                     target.relation_name
                 );
             END LOOP;
         END
         $ownership$;
-        ALTER FUNCTION platform_force_remove_direct_org_children(UUID) OWNER TO mnt_app;
-        ALTER FUNCTION platform_force_remove_organization(UUID) OWNER TO mnt_app;
+        ALTER FUNCTION platform_force_remove_direct_org_children(UUID) OWNER TO console_app;
+        ALTER FUNCTION platform_force_remove_organization(UUID) OWNER TO console_app;
         ALTER FUNCTION platform_force_remove_organization_command(
             UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ
-        ) OWNER TO mnt_app;
+        ) OWNER TO console_app;
         "#,
     )
     .execute(&pool)
@@ -1030,7 +1030,7 @@ async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(po
         .execute(&mut *dba_replay)
         .await
         .expect_err(
-            "a superuser must not create force-remove definers in an mnt_app-owned database",
+            "a superuser must not create force-remove definers in an console_app-owned database",
         );
     assert_eq!(database_error_code(&rejected).as_deref(), Some("42501"));
     assert!(
@@ -1045,7 +1045,7 @@ async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(po
         .connect_options()
         .as_ref()
         .clone()
-        .username("mnt_app")
+        .username("console_app")
         .password(FORCE_MIGRATOR_PASSWORD);
     let migrator = PgPoolOptions::new()
         .max_connections(1)
@@ -1056,12 +1056,12 @@ async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(po
         .fetch_one(&migrator)
         .await
         .unwrap();
-    assert_eq!(identity.get::<String, _>("current_user"), "mnt_app");
-    assert_eq!(identity.get::<String, _>("session_user"), "mnt_app");
+    assert_eq!(identity.get::<String, _>("current_user"), "console_app");
+    assert_eq!(identity.get::<String, _>("session_user"), "console_app");
     sqlx::raw_sql(MIGRATION_0196)
         .execute(&migrator)
         .await
-        .expect("the exact 0196 migration must replay through the direct mnt_app login");
+        .expect("the exact 0196 migration must replay through the direct console_app login");
 
     let owners: Vec<String> = sqlx::query_scalar(
         "SELECT owner.rolname \
@@ -1077,7 +1077,7 @@ async fn platform_force_migration_rejects_superuser_on_mnt_app_owned_database(po
     .fetch_all(&pool)
     .await
     .unwrap();
-    assert_eq!(owners, vec!["mnt_app", "mnt_app", "mnt_app"]);
+    assert_eq!(owners, vec!["console_app", "console_app", "console_app"]);
 }
 
 #[sqlx::test(migrations = "./migrations")]
@@ -1085,7 +1085,7 @@ async fn platform_force_migration_rejects_dba_owned_production_shaped_database(p
     let sqlx_identity = sqlx::query(
         "SELECT current_database() AS database_name, \
                 current_user, \
-                current_setting('mnt.sqlx_test_bootstrap', true) AS bootstrap_marker",
+                current_setting('console.sqlx_test_bootstrap', true) AS bootstrap_marker",
     )
     .fetch_one(&pool)
     .await
@@ -1097,7 +1097,7 @@ async fn platform_force_migration_rejects_dba_owned_production_shaped_database(p
     );
     assert_eq!(
         sqlx_identity.get::<String, _>("current_user"),
-        "mnt_buck_admin"
+        "console_buck_admin"
     );
     assert_eq!(
         sqlx_identity.get::<String, _>("bootstrap_marker"),
@@ -1105,7 +1105,7 @@ async fn platform_force_migration_rejects_dba_owned_production_shaped_database(p
     );
 
     let mut unmarked = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL mnt.sqlx_test_bootstrap = 'disabled'")
+    sqlx::query("SET LOCAL console.sqlx_test_bootstrap = 'disabled'")
         .execute(&mut *unmarked)
         .await
         .unwrap();
@@ -1175,13 +1175,13 @@ async fn platform_force_migration_rejects_dba_owned_production_shaped_database(p
 async fn platform_force_migration_rejects_partially_drifted_force_table_owner(pool: PgPool) {
     sqlx::raw_sql(
         r#"
-        ALTER ROLE mnt_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
+        ALTER ROLE console_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
             NOREPLICATION PASSWORD 'platform-force-migration-owner-a198';
         DO $ownership$
         DECLARE
             target RECORD;
         BEGIN
-            EXECUTE format('ALTER DATABASE %I OWNER TO mnt_app', current_database());
+            EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());
             FOR target IN
                 SELECT namespace.nspname AS schema_name, relation.relname AS relation_name
                 FROM pg_class AS relation
@@ -1200,24 +1200,24 @@ async fn platform_force_migration_rejects_partially_drifted_force_table_owner(po
                   )
             LOOP
                 EXECUTE format(
-                    'ALTER TABLE %I.%I OWNER TO mnt_app',
+                    'ALTER TABLE %I.%I OWNER TO console_app',
                     target.schema_name,
                     target.relation_name
                 );
             END LOOP;
         END
         $ownership$;
-        ALTER FUNCTION platform_force_remove_direct_org_children(UUID) OWNER TO mnt_app;
-        ALTER FUNCTION platform_force_remove_organization(UUID) OWNER TO mnt_app;
+        ALTER FUNCTION platform_force_remove_direct_org_children(UUID) OWNER TO console_app;
+        ALTER FUNCTION platform_force_remove_organization(UUID) OWNER TO console_app;
         ALTER FUNCTION platform_force_remove_organization_command(
             UUID, UUID, CHAR(32), CHAR(16), TIMESTAMPTZ
-        ) OWNER TO mnt_app;
+        ) OWNER TO console_app;
         "#,
     )
     .execute(&pool)
     .await
     .unwrap();
-    sqlx::raw_sql("ALTER TABLE registry_customers OWNER TO mnt_buck_admin")
+    sqlx::raw_sql("ALTER TABLE registry_customers OWNER TO console_buck_admin")
         .execute(&pool)
         .await
         .unwrap();
@@ -1226,7 +1226,7 @@ async fn platform_force_migration_rejects_partially_drifted_force_table_owner(po
         .connect_options()
         .as_ref()
         .clone()
-        .username("mnt_app")
+        .username("console_app")
         .password(FORCE_MIGRATOR_PASSWORD);
     let migrator = PgPoolOptions::new()
         .max_connections(1)
@@ -1260,7 +1260,7 @@ async fn platform_force_removal_runtime_is_denied_and_command_role_can_remove_ar
     .unwrap();
 
     let mut runtime = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_rt")
+    sqlx::query("SET LOCAL ROLE console_rt")
         .execute(&mut *runtime)
         .await
         .unwrap();
@@ -1275,12 +1275,12 @@ async fn platform_force_removal_runtime_is_denied_and_command_role_can_remove_ar
     assert_eq!(
         denied_code.as_deref(),
         Some("42501"),
-        "mnt_rt must receive PostgreSQL insufficient_privilege, not a handler-only denial"
+        "console_rt must receive PostgreSQL insufficient_privilege, not a handler-only denial"
     );
     runtime.rollback().await.unwrap();
 
     let mut command = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_platform_force_cmd")
+    sqlx::query("SET LOCAL ROLE console_platform_force_cmd")
         .execute(&mut *command)
         .await
         .unwrap();
@@ -1340,7 +1340,7 @@ async fn platform_force_removal_deletes_post_0188_attendance_rows_before_employe
     .unwrap();
 
     let mut command = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_platform_force_cmd")
+    sqlx::query("SET LOCAL ROLE console_platform_force_cmd")
         .execute(&mut *command)
         .await
         .unwrap();

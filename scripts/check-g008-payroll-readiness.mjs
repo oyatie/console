@@ -45,7 +45,7 @@ requireIncludes(
 );
 requireIncludes(
   "backend/crates/platform/db/migrations/0074_create_payroll_readiness.sql",
-  "GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO mnt_rt",
+  "GRANT SELECT, INSERT, UPDATE ON payroll_draft_runs TO console_rt",
   "runtime grants are explicit for draft runs",
 );
 

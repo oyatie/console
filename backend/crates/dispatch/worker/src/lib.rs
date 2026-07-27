@@ -4,15 +4,15 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use mnt_dispatch_adapter_postgres::{
+use console_dispatch_adapter_postgres::{
     PendingAlimtalkAlert, PendingFcmPush, PgDispatchError, PgDispatchStore,
 };
-use mnt_dispatch_application::ExpireP1DispatchCommand;
-use mnt_kernel_core::{OrgId, P1DispatchAlertId, TraceContext};
-use mnt_platform_jobs::{
+use console_dispatch_application::ExpireP1DispatchCommand;
+use console_kernel_core::{OrgId, P1DispatchAlertId, TraceContext};
+use console_platform_jobs::{
     BoxFuture, DispatchTimerJob, JobQueueError, PlatformJob, PlatformJobHandler,
 };
-use mnt_platform_push::{AlimtalkMessage, FcmPushMessage, PushError, PushNotifier};
+use console_platform_push::{AlimtalkMessage, FcmPushMessage, PushError, PushNotifier};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DispatchWorkerError {
@@ -78,7 +78,7 @@ impl DispatchWorker {
         // tenant, not just the bootstrap one. A job with no org (legacy payload)
         // defaults to KNL via serde, preserving single-tenant behavior.
         let org = job_org(&job);
-        mnt_platform_request_context::scope_org(org, self.handle_inner(job)).await
+        console_platform_request_context::scope_org(org, self.handle_inner(job)).await
     }
 
     async fn handle_inner(&self, job: PlatformJob) -> Result<(), DispatchWorkerError> {
@@ -149,7 +149,7 @@ impl DispatchWorker {
     /// deterministic crash-recovery testing.
     pub async fn deliver_alimtalk_no_ack_alerts_at(
         &self,
-        dispatch_id: mnt_kernel_core::P1DispatchId,
+        dispatch_id: console_kernel_core::P1DispatchId,
         now: time::OffsetDateTime,
     ) -> Result<(), DispatchWorkerError> {
         // When delivery is disabled we must not claim leases for delivery — skip
@@ -185,7 +185,7 @@ impl DispatchWorker {
 
     async fn deliver_manager_force_alerts(
         &self,
-        dispatch_id: mnt_kernel_core::P1DispatchId,
+        dispatch_id: console_kernel_core::P1DispatchId,
         now: time::OffsetDateTime,
     ) -> Result<(), DispatchWorkerError> {
         let Some(notifier) = self.push_notifier.as_ref() else {

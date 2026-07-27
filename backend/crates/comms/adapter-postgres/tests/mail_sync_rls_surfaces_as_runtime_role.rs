@@ -3,7 +3,7 @@
 //! MailReadStore) — B-mail-3.
 //!
 //! Mirrors `mail_account_rls_surfaces_as_runtime_role.rs`: SEED as the owner and
-//! MUTATE/READ as the genuine non-owner runtime role `mnt_rt` (NOBYPASSRLS, FORCE
+//! MUTATE/READ as the genuine non-owner runtime role `console_rt` (NOBYPASSRLS, FORCE
 //! RLS), the only faithful exercise of `org_isolation`. The default
 //! `#[sqlx::test]` pool is a BYPASSRLS superuser and would green-light a
 //! leaking/broken sync path.
@@ -22,18 +22,18 @@
 //!     returns BOTH tenants' accounts to the scheduler (id-only), proving the
 //!     scheduler can see across tenants while the data path stays isolated.
 
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_application::{
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_application::{
     AccountUpsert, EmailAccountId, EmailMessageId, FetchedMessage, ImapFolder, InboundUpsert,
     MailReadStore, MailStore, StoredAttachment, ThreadQuery, account_config_audit_event,
     thread_read_state_audit_event,
 };
-use mnt_comms_credential_cipher::{
+use console_comms_credential_cipher::{
     Aad, CredentialCipher, EnvelopeCredentialCipher, SealedCredential,
 };
-use mnt_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -54,7 +54,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -468,7 +468,7 @@ async fn set_thread_seen_recomputes_unread_counts_as_runtime_role(owner_pool: Pg
 }
 
 // ===========================================================================
-// Cross-tenant isolation + fail-closed for the read API as mnt_rt.
+// Cross-tenant isolation + fail-closed for the read API as console_rt.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn sync_for_org_a_is_invisible_to_org_b_as_runtime_role(owner_pool: PgPool) {
@@ -596,7 +596,7 @@ async fn due_account_enumeration_spans_tenants_as_runtime_role(owner_pool: PgPoo
     let due = store
         .list_due_accounts(OffsetDateTime::now_utc(), 100)
         .await
-        .expect("enumerate due accounts as mnt_rt via SECURITY DEFINER");
+        .expect("enumerate due accounts as console_rt via SECURITY DEFINER");
 
     let ids: std::collections::HashSet<EmailAccountId> = due.iter().map(|d| d.account_id).collect();
     assert!(ids.contains(&account_a), "org A's account is due");
@@ -615,7 +615,7 @@ async fn due_account_enumeration_spans_tenants_as_runtime_role(owner_pool: PgPoo
 // ===========================================================================
 // HA-safety: the due-account CLAIM is exclusive under concurrency (FOR UPDATE
 // SKIP LOCKED) and self-heals a crashed worker's stale lease after timeout.
-// Every call is the genuine `mnt_rt` runtime role via the SECURITY DEFINER
+// Every call is the genuine `console_rt` runtime role via the SECURITY DEFINER
 // claimer — never a BYPASSRLS superuser.
 // ===========================================================================
 

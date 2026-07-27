@@ -7,7 +7,7 @@
 
 ## 1. Existing read/read-write surface (DO NOT rebuild — consume)
 
-All under bearer JWT + `mnt_platform_request_context::with_request_context` (RLS-armed org
+All under bearer JWT + `console_platform_request_context::with_request_context` (RLS-armed org
 conn). Deny model: feature-gated `authorize(...)`, fail-closed.
 
 | Route | Op | Crate | Feature gate | DTO |
@@ -26,13 +26,13 @@ Console org-tree read = compose: group member orgs (법인 columns) × regions/b
 first-class table** (see gap-analysis §1).
 
 Authz floor (role-vector `[VIEWER, MEMBER, DISPATCHER, BRANCH_ADMIN, ORG_ADMIN, SUPER]`
-style array in `mnt_platform_authz`): `RegionManage`/`BranchManage` = `[D,D,D,A,A,A]`.
+style array in `console_platform_authz`): `RegionManage`/`BranchManage` = `[D,D,D,A,A,A]`.
 New org-change features mirror this floor (see §4).
 
 ## 2. New crate: `backend/crates/orgchange/{domain,application,adapter-postgres,rest}`
 
 Composes, does not duplicate:
-- `mnt-governance-domain`: `evaluate_gate_chain` (Authority/SelfChecklist/FourEyes/EgressDlp,
+- `console-governance-domain`: `evaluate_gate_chain` (Authority/SelfChecklist/FourEyes/EgressDlp,
   fail-closed), `assess_impact(Vec<Dependent{kind,id,on_delete}}) → ImpactAssessment`,
   `AuthorityEffect` mapping from Cedar `DecisionEffect`.
 - `gov_approval_requests`/`gov_approvals` (migrations 0153/0158/0164): each SoD step's
@@ -274,7 +274,7 @@ CREATE INDEX idx_org_change_events_request ON org_change_events (org_id, request
   fail-closed floor + `makePolicyGate`; capabilities = pure `deriveXxxCapabilities(gate,
   branch)` with typed feature union (here: `org_change_draft`/`org_change_approve`/
   `org_change_apply`/read composite).
-- API module: typed `components["schemas"][...]` from `@maintenance/api-client-ts`, class
+- API module: typed `components["schemas"][...]` from `@console/api-client-ts`, class
   `XxxApiError(message, status)`, `requireData` unwrap, `AbortSignal` on every call.
 - State discipline: generation counter + AbortController fences, `sessionKey` prop =
   `client_session_incarnation ?? access_token`, remount on authority change.

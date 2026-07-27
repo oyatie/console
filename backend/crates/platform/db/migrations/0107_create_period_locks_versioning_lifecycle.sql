@@ -3,11 +3,11 @@
 --
 -- 1. period_locks — enforceable payroll/accounting freeze windows. A write that
 --    stamps a date inside an active (unlocked_at IS NULL) lock must fail closed
---    via `mnt_platform_db::period_lock::assert_period_open`.
+--    via `console_platform_db::period_lock::assert_period_open`.
 -- 2. registry_equipment_versions — first adoption of the generalized 0069
 --    versioning shape (append-only versions + trigger protection +
 --    rollback-as-new-version). The reusable SQL template lives in
---    `mnt_platform_db::versioning` module docs; a domain adopts it with one
+--    `console_platform_db::versioning` module docs; a domain adopts it with one
 --    migration exactly like this block.
 -- 3. object_lifecycles / object_lifecycle_transitions / lifecycle_transition_rules
 --    — generic per-object FSM keyed by (object_type, object_id) with an
@@ -27,7 +27,7 @@ $$;
 -- ---------------------------------------------------------------------------
 -- 1. Period locks (freeze windows).
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table period_locks
+-- console-gate: audited-table period_locks
 CREATE TABLE period_locks (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -93,14 +93,14 @@ CREATE POLICY org_isolation ON period_locks
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON period_locks TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON period_locks TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- 2. Generic versioning, first adoption: registry_equipment.
 --    (Template: replace `registry_equipment` with your base table. Rust side:
---    `mnt_platform_db::versioning::ObjectVersions`.)
+--    `console_platform_db::versioning::ObjectVersions`.)
 -- ---------------------------------------------------------------------------
--- mnt-gate: audited-table registry_equipment_versions
+-- console-gate: audited-table registry_equipment_versions
 CREATE TABLE registry_equipment_versions (
     id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -130,14 +130,14 @@ CREATE POLICY org_isolation ON registry_equipment_versions
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT ON registry_equipment_versions TO mnt_rt;
+GRANT SELECT, INSERT ON registry_equipment_versions TO console_rt;
 
 -- ---------------------------------------------------------------------------
 -- 3. Object lifecycle engine MVP.
 -- ---------------------------------------------------------------------------
 -- Global FSM rule seed: which (object_type, from, to) transitions are legal.
 -- No tenant data — reference rows exactly like feature_catalog.
--- mnt-gate: global-table lifecycle_transition_rules (rationale: global FSM rule seed, no tenant data)
+-- console-gate: global-table lifecycle_transition_rules (rationale: global FSM rule seed, no tenant data)
 CREATE TABLE lifecycle_transition_rules (
     object_type TEXT NOT NULL CHECK (object_type ~ '^[a-z][a-z0-9_]{1,63}$'),
     from_state  TEXT NOT NULL CHECK (from_state ~ '^[a-z][a-z0-9_]{1,63}$'),
@@ -147,7 +147,7 @@ CREATE TABLE lifecycle_transition_rules (
 );
 
 REVOKE ALL ON lifecycle_transition_rules FROM PUBLIC;
-GRANT SELECT ON lifecycle_transition_rules TO mnt_rt;
+GRANT SELECT ON lifecycle_transition_rules TO console_rt;
 
 INSERT INTO lifecycle_transition_rules (object_type, from_state, to_state) VALUES
     ('document', 'draft',     'submitted'),
@@ -158,7 +158,7 @@ INSERT INTO lifecycle_transition_rules (object_type, from_state, to_state) VALUE
     ('document', 'archived',  'disposed')
 ON CONFLICT DO NOTHING;
 
--- mnt-gate: audited-table object_lifecycles
+-- console-gate: audited-table object_lifecycles
 CREATE TABLE object_lifecycles (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -176,7 +176,7 @@ CREATE TABLE object_lifecycles (
 CREATE INDEX idx_object_lifecycles_state
     ON object_lifecycles (org_id, object_type, current_state, updated_at DESC);
 
--- mnt-gate: audited-table object_lifecycle_transitions
+-- console-gate: audited-table object_lifecycle_transitions
 CREATE TABLE object_lifecycle_transitions (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -211,8 +211,8 @@ CREATE POLICY org_isolation ON object_lifecycle_transitions
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON object_lifecycles TO mnt_rt;
-GRANT SELECT, INSERT ON object_lifecycle_transitions TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON object_lifecycles TO console_rt;
+GRANT SELECT, INSERT ON object_lifecycle_transitions TO console_rt;
 
 CREATE TRIGGER trg_period_locks_org_immutable
     BEFORE UPDATE ON period_locks

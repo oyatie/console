@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-kernel-core",
+    name = "console-kernel-core",
     mapped_srcs = repo_mapped_srcs("backend/crates/kernel/core", glob(["src/**/*.rs"])),
-    crate = "mnt_kernel_core",
+    crate = "console_kernel_core",
     edition = "2024",
     crate_root = "backend/crates/kernel/core/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -26,9 +26,9 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-kernel-core-unit",
+    name = "console-kernel-core-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/kernel/core", glob(["src/**/*.rs"])),
-    crate = "mnt_kernel_core",
+    crate = "console_kernel_core",
     edition = "2024",
     crate_root = "backend/crates/kernel/core/src/lib.rs",
     visibility = ["PUBLIC"],

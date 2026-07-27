@@ -8,8 +8,8 @@
 //! short configurable TTL, and the REST-layer rate limit.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_provisioning::BootstrapCredentialStore;
+use console_kernel_core::OrgId;
+use console_platform_provisioning::BootstrapCredentialStore;
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 

@@ -2,11 +2,11 @@
 //! employee. This module intentionally has no manager authorization branch.
 
 use axum::{Json, extract::State, http::HeaderMap};
-use mnt_attendance_application::{
+use console_attendance_application::{
     ListOwnExceptions, OwnAttendanceExceptionRead, OwnExceptionResolutionRead, OwnWeek52Read,
     ReadOwnWeek52, SelfAttendanceScope, Week52Tone,
 };
-use mnt_attendance_domain::AttendanceDateRange;
+use console_attendance_domain::AttendanceDateRange;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -233,14 +233,14 @@ fn own_list_range(query: &OwnExceptionsQuery) -> Result<AttendanceDateRange, Res
     }
 }
 
-fn self_scope(principal: &mnt_platform_authz::Principal) -> SelfAttendanceScope {
+fn self_scope(principal: &console_platform_authz::Principal) -> SelfAttendanceScope {
     SelfAttendanceScope {
         org_id: *principal.org_id.as_uuid(),
         user_id: *principal.user_id.as_uuid(),
     }
 }
 
-fn validation(error: mnt_attendance_application::AttendanceApplicationError) -> RestError {
+fn validation(error: console_attendance_application::AttendanceApplicationError) -> RestError {
     validation_message(error.to_string())
 }
 
@@ -261,7 +261,7 @@ fn rfc3339(value: time::OffsetDateTime) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_attendance_application::{OwnWeek52Read, Week52Tone};
+    use console_attendance_application::{OwnWeek52Read, Week52Tone};
     use serde_json::json;
     use time::{Date, Month};
 

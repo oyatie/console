@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-audit-coverage-lib",
+    name = "console-gate-audit-coverage-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/audit-coverage", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_audit_coverage",
+    crate = "console_gate_audit_coverage",
     edition = "2024",
     crate_root = "backend/ci/gates/audit-coverage/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -19,20 +19,20 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-audit-coverage",
+    name = "console-gate-audit-coverage",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/audit-coverage", ["src/main.rs"]),
-    crate = "mnt_gate_audit_coverage",
+    crate = "console_gate_audit_coverage",
     edition = "2024",
     crate_root = "backend/ci/gates/audit-coverage/src/main.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/audit-coverage"},
     deps = [
-        ":mnt-gate-audit-coverage-lib",
+        ":console-gate-audit-coverage-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-audit-coverage-itest-gate_detects_violation",
+    name = "console-gate-audit-coverage-itest-gate_detects_violation",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/audit-coverage", ["tests/gate_detects_violation.rs"]),
     crate = "gate_detects_violation",
     edition = "2024",
@@ -41,6 +41,6 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/audit-coverage", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.ci.gates.audit-coverage", "domain.ci", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        ":mnt-gate-audit-coverage-lib",
+        ":console-gate-audit-coverage-lib",
     ],
 )

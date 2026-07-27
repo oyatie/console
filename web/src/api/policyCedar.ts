@@ -5,7 +5,7 @@
 // reader narrows the generated `Record<string, unknown>` at the edge and
 // fails closed on malformed payloads instead of guessing.
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "./client";
 

@@ -24,4 +24,4 @@ CREATE INDEX idx_auth_webauthn_ceremony_bindings_action
 -- auth_webauthn_ceremony_bindings is global transient auth state like
 -- auth_webauthn_ceremonies. Runtime may insert/read bindings; deletion happens
 -- only via the ceremony FK cascade.
-GRANT SELECT, INSERT ON auth_webauthn_ceremony_bindings TO mnt_rt;
+GRANT SELECT, INSERT ON auth_webauthn_ceremony_bindings TO console_rt;

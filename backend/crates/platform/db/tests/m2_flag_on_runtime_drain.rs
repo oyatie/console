@@ -31,11 +31,11 @@
 //!
 //! ## Runtime fidelity (mandatory)
 //! Everything except minting the two `organizations` rows (an owner-only privilege;
-//! `mnt_rt` is SELECT-only there) runs as the genuine non-owner `mnt_rt` role
+//! `console_rt` is SELECT-only there) runs as the genuine non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) with `app.current_org` armed — never a
 //! BYPASSRLS superuser, which would mask a broken RLS/flag path. The definition
 //! seed, the flag enrollment, the run/node FSM writes, the transactional-outbox
-//! emit, the drain, and every assertion read all execute as `mnt_rt` under the
+//! emit, the drain, and every assertion read all execute as `console_rt` under the
 //! armed tenant GUC, exactly as production does through `with_org_conn`.
 //!
 //! No new runtime tables are introduced: this reuses the spine (migrations
@@ -48,7 +48,7 @@ use uuid::Uuid;
 
 /// The non-owner runtime role the application connects as in production.
 /// A static literal so sqlx accepts it without an injection-audit override.
-const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE mnt_rt";
+const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE console_rt";
 
 /// The per-tenant M2 strangler flag key (migration 0095). Absent row ⇒ OFF.
 const STRANGLER_FLAG: &str = "workflow_runtime_m2_strangler";
@@ -80,7 +80,7 @@ async fn arm(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: Uuid) {
         .unwrap();
 }
 
-/// Mint an `organizations` row as the OWNER pool role (mnt_rt is SELECT-only on
+/// Mint an `organizations` row as the OWNER pool role (console_rt is SELECT-only on
 /// organizations, and a fresh org id matches no armed GUC), exactly as the
 /// sibling RLS/parity gates do. Every child row below carries an explicit org_id.
 async fn seed_org(pool: &PgPool, org: Uuid, tag: &str) {
@@ -97,7 +97,7 @@ async fn seed_org(pool: &PgPool, org: Uuid, tag: &str) {
 }
 
 // ===========================================================================
-// Definition catalog + strangler enrollment (both as mnt_rt under armed GUC).
+// Definition catalog + strangler enrollment (both as console_rt under armed GUC).
 // ===========================================================================
 
 /// The real completion→approval→payroll template (step 6): a genuine node graph
@@ -173,7 +173,7 @@ async fn seed_definition(pool: &PgPool, org: Uuid) -> (Uuid, i32) {
 
 /// Enroll the tenant in the M2 runtime (flag ON). This is the deliberate,
 /// audited, per-tenant roll-forward write — performed here for the TEST tenant
-/// ONLY, under `mnt_rt` with the tenant GUC armed. No shipped migration/seed does
+/// ONLY, under `console_rt` with the tenant GUC armed. No shipped migration/seed does
 /// this, so production stays dark.
 async fn enroll_tenant(pool: &PgPool, org: Uuid) {
     let mut tx = pool.begin().await.unwrap();
@@ -192,7 +192,7 @@ async fn enroll_tenant(pool: &PgPool, org: Uuid) {
 
 /// Resolve the strangler flag exactly as the application decides whether a tenant
 /// is routed through the M2 runtime: the `org_runtime_flag_enabled()` SECURITY
-/// INVOKER resolver, run as `mnt_rt` with the tenant GUC armed.
+/// INVOKER resolver, run as `console_rt` with the tenant GUC armed.
 async fn strangler_enabled(pool: &PgPool, org: Uuid) -> bool {
     let mut tx = pool.begin().await.unwrap();
     arm(&mut tx, org).await;
@@ -206,7 +206,7 @@ async fn strangler_enabled(pool: &PgPool, org: Uuid) -> bool {
 }
 
 // ===========================================================================
-// The run→node FSM (as mnt_rt under armed GUC), modeling the executor's write
+// The run→node FSM (as console_rt under armed GUC), modeling the executor's write
 // contract on the ADR-0018 spine.
 // ===========================================================================
 
@@ -321,7 +321,7 @@ async fn process_payroll_node(pool: &PgPool, org: Uuid, run_id: Uuid) -> (Uuid, 
 }
 
 // ===========================================================================
-// The outbox drainer (as mnt_rt under armed GUC).
+// The outbox drainer (as console_rt under armed GUC).
 // ===========================================================================
 
 /// The M2 outbox-drain audit action. Matches the `audit_events.action` regex
@@ -470,10 +470,10 @@ async fn drain_then_rollback(pool: &PgPool, org: Uuid) -> i64 {
 }
 
 // ===========================================================================
-// Idempotency probes + assertion reads (as mnt_rt under armed GUC).
+// Idempotency probes + assertion reads (as console_rt under armed GUC).
 // ===========================================================================
 
-/// A tenant-scoped `SELECT count(*)` (static literal) run as `mnt_rt` under the
+/// A tenant-scoped `SELECT count(*)` (static literal) run as `console_rt` under the
 /// armed GUC.
 async fn count(pool: &PgPool, org: Uuid, count_query: &'static str) -> i64 {
     let mut tx = pool.begin().await.unwrap();
@@ -765,7 +765,7 @@ async fn flag_on_runtime_drives_one_run_and_one_blocked_legal_gate_draft(pool: P
 //     leaves the event PENDING for a later real drain; and
 //   * a committed drain, replayed any number of times, writes ZERO additional
 //     rows — the payroll_draft_runs count stays exactly 1 across drains.
-// Everything runs as the real non-owner `mnt_rt` role with `app.current_org`
+// Everything runs as the real non-owner `console_rt` role with `app.current_org`
 // armed; no new tables are created (spine/payroll/strangler reuse only).
 // ===========================================================================
 #[sqlx::test(migrations = "./migrations")]

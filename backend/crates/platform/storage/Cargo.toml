@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-storage"
+name = "console-platform-storage"
 version = "0.1.0"
 description = "S3 evidence storage port, SeaweedFS adapter, and WORM replication interlock state."
 edition.workspace = true
@@ -12,10 +12,10 @@ bytes = { workspace = true }
 hex = { workspace = true }
 hmac = { workspace = true }
 infer = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
-mnt-workorder-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
+console-workorder-domain = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

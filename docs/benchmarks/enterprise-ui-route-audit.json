@@ -1515,7 +1515,7 @@
       "sourceObject": "none — the harness cards are demo fixtures, not resolved objects; the engine is object-agnostic and hosts whatever body a screen renders into it in later slices",
       "lifecycleStates": "The four window states the harness exercises: grid (default zone), pin-split (space-reserving dock), popout-float (free overlay), tray-minimize (docked chip) — captured to e2e/.artifacts/fidelity/window-<state>.png",
       "e2eSpec": "Required browser story: e2e/specs/admin-29-console-window.spec.ts pins a card, waits for the debounced PUT /api/v1/me/workspace, reloads, and asserts the pin is restored from the server layout (not localStorage)",
-      "denialScopeTest": "Behind ProtectedRoute like /console; the workspace endpoint is owner-only (RLS on me_workspace_layouts, verified as mnt_rt in backend/crates/identity/adapter-postgres/tests/me_workspace_layouts_rls.rs) so no user can read or write another user's layout",
+      "denialScopeTest": "Behind ProtectedRoute like /console; the workspace endpoint is owner-only (RLS on me_workspace_layouts, verified as console_rt in backend/crates/identity/adapter-postgres/tests/me_workspace_layouts_rls.rs) so no user can read or write another user's layout",
       "screenshotTraceEvidence": "e2e/fidelity/window-states.mjs captures the four states to e2e/.artifacts/fidelity/window-<state>.png with a window-states.manifest.json, at a fixed 1440x900 light-theme reduced-motion viewport",
       "groupScopeStory": "none — the dev harness has no org/group scope surface; it renders demo cards only and the persisted layout is per-user, not per-scope"
     },

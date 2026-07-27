@@ -173,7 +173,7 @@ Minimum evidence by class:
 | Change class | Required rerun evidence after implementation/fix |
 | --- | --- |
 | docs/process only | markdown/readability or custom required-term check, link consistency when touched, governance consistency review; product CI is N/A only with rationale. |
-| backend/internal | `cargo fmt --all -- --check`, `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`, relevant `cargo test`, and applicable `mnt-gate-*` gates from `docs/CI-GATES.md`. |
+| backend/internal | `cargo fmt --all -- --check`, `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`, relevant `cargo test`, and applicable `console-gate-*` gates from `docs/CI-GATES.md`. |
 | DB migration/RLS/authz | migration-safety, tenant-isolation/RLS arming, SQLx/offline query cache checks, rollback/forward-only note, and authz/tenant regression tests. |
 | OpenAPI/generated clients | source OpenAPI/generator change, regenerated drift checks, `npm run check:ts`, `npm run check:kotlin`, `npm run check:swift`, openapi-app, contract tests as applicable. |
 | web/RN UI | lint/type/test/build plus browser or React Native web user-story evidence for the changed flow; API-only tests are not enough. |

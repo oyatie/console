@@ -1,4 +1,4 @@
-group 'com.maintenance'
+group 'com.console'
 version '0.1.0'
 
 wrapper {
@@ -75,8 +75,8 @@ java {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'com.maintenance'
-            artifactId = 'maintenance-api-client'
+            groupId = 'com.console'
+            artifactId = 'console-api-client'
             version = '0.1.0'
             from components.java
         }

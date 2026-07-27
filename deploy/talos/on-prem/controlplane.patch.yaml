@@ -11,5 +11,5 @@
 # application workloads belong on dedicated worker nodes.
 machine:
   nodeLabels:
-    maintenance.nousresearch.com/substrate: on-prem
-    maintenance.nousresearch.com/node-role: control-plane
+    console.nousresearch.com/substrate: on-prem
+    console.nousresearch.com/node-role: control-plane

@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-request-context"
+name = "console-platform-request-context"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
@@ -7,10 +7,10 @@ license.workspace = true
 publish = false
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-platform-auth = { path = "../auth" }
-mnt-platform-authz = { path = "../authz" }
-mnt-platform-group = { path = "../group" }
+console-kernel-core = { workspace = true }
+console-platform-auth = { path = "../auth" }
+console-platform-authz = { path = "../authz" }
+console-platform-group = { path = "../group" }
 axum = { workspace = true }
 http = { workspace = true }
 ipnet = { workspace = true }

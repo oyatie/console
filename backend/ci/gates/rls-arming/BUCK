@@ -9,11 +9,11 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-rls-arming-lib",
+    name = "console-gate-rls-arming-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/rls-arming", glob(["src/**/*.rs"], exclude = ["src/main.rs"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
-    crate = "mnt_gate_rls_arming",
+    crate = "console_gate_rls_arming",
     edition = "2024",
     crate_root = "backend/ci/gates/rls-arming/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -21,24 +21,24 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-rls-arming",
+    name = "console-gate-rls-arming",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/rls-arming", ["src/main.rs"]),
-    crate = "mnt_gate_rls_arming",
+    crate = "console_gate_rls_arming",
     edition = "2024",
     crate_root = "backend/ci/gates/rls-arming/src/main.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/rls-arming"},
     deps = [
-        ":mnt-gate-rls-arming-lib",
+        ":console-gate-rls-arming-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-rls-arming-unit",
+    name = "console-gate-rls-arming-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/rls-arming", glob(["src/**/*.rs"], exclude = ["src/main.rs"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
-    crate = "mnt_gate_rls_arming",
+    crate = "console_gate_rls_arming",
     edition = "2024",
     crate_root = "backend/ci/gates/rls-arming/src/lib.rs",
     visibility = ["PUBLIC"],

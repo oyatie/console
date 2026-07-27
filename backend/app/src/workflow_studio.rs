@@ -3,27 +3,27 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post};
 use axum::{Extension, Json, Router};
-use mnt_governance_adapter_postgres::{PgGovernanceError, four_eyes_consume_conn};
-use mnt_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
-use mnt_kernel_core::{
+use console_governance_adapter_postgres::{PgGovernanceError, four_eyes_consume_conn};
+use console_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, TraceContext, UserId,
 };
-use mnt_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use mnt_platform_authz::{
+use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationResource, Feature, PermissionLevel, Principal,
     authorize_org_wide, permission_for,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_workflow_domain::{
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_workflow_domain::{
     FinalizeWaitingTaskCommand, PostFinalizationRejectionCommand, RunStatus, TriggerType,
     WaitingTaskStatus, WorkflowRuntimePort,
 };
-use mnt_workflow_runtime::{
+use console_workflow_runtime::{
     AuditContext, ExecGraph, FinalizeMode, FinalizePolicyRequest, NodeKind, StartRunRequest,
     WAITING_COMPLETION_DOMAIN, build_guard_request, drive_from, enforce_finalize_policy, guard,
     start_run, workflow_coexistence_entry,
 };
-use mnt_workflow_runtime_adapter_postgres::{
+use console_workflow_runtime_adapter_postgres::{
     AdminRunListFilter, ClaimWaitingTaskCommand, DecideWaitingTaskCommand, PgWorkflowRuntimeStore,
     RunListFilter, RunListItem, TaskDecision, WaitingTaskListFilter, WaitingTaskListItem,
 };
@@ -420,7 +420,7 @@ pub fn router(state: WorkflowStudioState) -> Router {
             post(decide_workflow_task),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Serialize)]
@@ -1292,7 +1292,7 @@ fn require_task_authorization_boundary(
 #[allow(clippy::too_many_arguments)]
 fn guard_task_policy(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     required_policy: Option<&str>,
     resource_type: &str,
@@ -1349,7 +1349,7 @@ fn guard_task_policy(
 async fn observe_task_decide_parity(
     pool: &PgPool,
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     required_policy: Option<&str>,
     resource_type: &str,
@@ -1420,7 +1420,7 @@ fn classify_role_key(role_key: &str) -> Option<RoleKeyKind> {
 /// capability question, not a per-object one.
 fn principal_holds_feature(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     feature_key: &str,
 ) -> bool {
@@ -1451,7 +1451,7 @@ fn principal_holds_feature(
 /// inbox's OPEN-task filter (`assignee_role_key = ANY(...)`).
 pub(crate) fn held_authority_role_keys(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
 ) -> Vec<String> {
     WORKFLOW_AUTHORITY_ROLE_KEYS
@@ -1472,7 +1472,7 @@ pub(crate) fn held_authority_role_keys(
 /// denied. A false result is a deny-by-omission (200 empty), never a 403.
 fn holds_group_inbox_role(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     role_key: &str,
 ) -> bool {
@@ -1490,7 +1490,7 @@ fn holds_group_inbox_role(
 /// visible (their `role_key`/`assignee` filter is the access boundary).
 fn task_visible(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     item: &WaitingTaskListItem,
 ) -> bool {
@@ -1577,7 +1577,7 @@ fn parse_run_statuses(raw: Option<&str>) -> Result<Vec<RunStatus>, WorkflowStudi
 /// the second-actor approval.
 async fn resolve_start_definition(
     pool: &PgPool,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     definition_id: Uuid,
     requested_version: Option<i32>,
 ) -> Result<(i32, Value), WorkflowStudioError> {
@@ -1654,7 +1654,7 @@ async fn resolve_start_definition(
 /// Load a run summary + its current OPEN/CLAIMED waiting task (the run's `next_task`).
 async fn load_run_view(
     pool: &PgPool,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     run_id: Uuid,
 ) -> Result<(RunSummaryResponse, Option<TaskSummaryResponse>), WorkflowStudioError> {
     with_org_conn::<_, (RunSummaryResponse, Option<TaskSummaryResponse>), DbError>(
@@ -2961,7 +2961,7 @@ async fn list_submittable_definitions(
 /// per-object grant, so this is the same decision a target-less start makes.
 fn caller_can_start(
     principal: &Principal,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     branch: BranchId,
     definition_id: Uuid,
     definition: &Value,
@@ -4015,7 +4015,7 @@ async fn insert_version_and_clear_pending(
 async fn enforce_revision_self_approval(
     tx: &mut Transaction<'_, Postgres>,
     actor: UserId,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     definition_id: Uuid,
 ) -> Result<(), WorkflowStudioError> {
     let actor_uuid = *actor.as_uuid();
@@ -4038,10 +4038,10 @@ async fn enforce_revision_self_approval(
         "org_lead_exempt"
     };
     let entity_id = definition_id.to_string();
-    mnt_platform_db::upsert_open_finding_tx(
+    console_platform_db::upsert_open_finding_tx(
         tx,
         org,
-        mnt_platform_db::OpenFinding {
+        console_platform_db::OpenFinding {
             detector_id: "anomaly.self_approval",
             entity_type: "workflow_definition",
             entity_id: &entity_id,
@@ -4442,7 +4442,7 @@ async fn mutate_definition_with_source_version(
 }
 
 struct WorkflowVersionMutation<'a> {
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     actor: UserId,
     source: &'a WorkflowVersionRow,
     new_version: i32,
@@ -4663,7 +4663,7 @@ async fn ensure_definition_exists(
 }
 
 struct WorkflowAuditEvent {
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     definition_id: Uuid,
     version: Option<i32>,
     action: &'static str,
@@ -6128,7 +6128,7 @@ fn validate_execution_graph(
                 let predicate = node.get("predicate").ok_or_else(|| {
                     WorkflowStudioError::validation("condition node requires a predicate")
                 })?;
-                mnt_workflow_runtime::Predicate::parse(predicate)
+                console_workflow_runtime::Predicate::parse(predicate)
                     .map_err(WorkflowStudioError::from)?;
                 condition_keys.push(node_key);
             }
@@ -6808,7 +6808,7 @@ fn attach_simulated_path(
         return;
     }
     match ExecGraph::parse(definition)
-        .and_then(|graph| mnt_workflow_runtime::simulate_path(&graph, context))
+        .and_then(|graph| console_workflow_runtime::simulate_path(&graph, context))
     {
         Ok(path) => result.simulated_path = Some(path),
         Err(error) => {
@@ -6937,7 +6937,7 @@ async fn list_trigger_bindings(
     record_workflow_studio_request("trigger_bindings", "success");
     Ok(Json(TriggerBindingListResponse {
         items,
-        registered_event_keys: mnt_workflow_domain::REGISTERED_EVENT_KEYS
+        registered_event_keys: console_workflow_domain::REGISTERED_EVENT_KEYS
             .iter()
             .map(|key| (*key).to_owned())
             .collect(),
@@ -6963,7 +6963,7 @@ async fn create_trigger_binding(
     // Only registered event keys have a real dispatcher producer; anything else
     // would be a rule that can never fire.
     let event_key = body.event_key.trim().to_owned();
-    if !mnt_workflow_domain::REGISTERED_EVENT_KEYS.contains(&event_key.as_str()) {
+    if !console_workflow_domain::REGISTERED_EVENT_KEYS.contains(&event_key.as_str()) {
         return Err(WorkflowStudioError::validation(format!(
             "event_key {event_key:?} is not a registered domain event"
         )));
@@ -7109,7 +7109,7 @@ async fn set_trigger_binding_enabled(
     // with_audits (not with_audit): the before-snapshot must record the REAL
     // prior enabled state read in the same transaction, not an assumption.
     let response =
-        mnt_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
+        console_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
             Box::pin(async move {
                 let prior: Option<bool> = sqlx::query_scalar(
                     "SELECT enabled FROM workflow_trigger_bindings WHERE id = $1 FOR UPDATE",
@@ -7416,7 +7416,7 @@ async fn update_schedule(
     let actor = principal.user_id;
     let org = principal.org_id;
     let response =
-        mnt_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
+        console_platform_db::with_audits::<_, _, WorkflowStudioError>(&state.pool, org, move |tx| {
             Box::pin(async move {
                 let current = sqlx::query(
                     "SELECT id, label, cron_expr, timezone, definition_id, enabled, \
@@ -7681,7 +7681,7 @@ const WORKFLOW_RUN_FOUR_EYES_KIND: &str = "workflow.run";
 fn evaluate_automation_four_eyes_gate(
     owner_scope_is_org: bool,
     four_eyes_approved: Option<bool>,
-) -> mnt_governance_domain::GateChainOutcome {
+) -> console_governance_domain::GateChainOutcome {
     evaluate_gate_chain(
         GateChainConfig {
             four_eyes: owner_scope_is_org,
@@ -7762,7 +7762,7 @@ pub(crate) fn guard_branch(principal: &Principal) -> BranchId {
 fn shadow_audit_event(
     shadow: &AuthorizationAuditEvent,
     actor: UserId,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     task_id: Uuid,
 ) -> Result<AuditEvent, KernelError> {
     shadow_audit_event_for(shadow, actor, org, "workflow_waiting_task", task_id)
@@ -7771,7 +7771,7 @@ fn shadow_audit_event(
 fn shadow_audit_event_for(
     shadow: &AuthorizationAuditEvent,
     actor: UserId,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     target_type: &'static str,
     target_id: Uuid,
 ) -> Result<AuditEvent, KernelError> {

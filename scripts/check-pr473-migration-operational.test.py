@@ -170,15 +170,15 @@ class ExecutionTests(unittest.TestCase):
                 call.args[0],
                 [str(SCRIPT.parents[1] / gate.BUCK_POSTGRES_HARNESS), target, "--test-executor-stdout=-"],
             )
-            self.assertEqual(call.kwargs["env"]["MNT_BUCK_NEEDS_POSTGRES_TEST_EXACT"], name)
+            self.assertEqual(call.kwargs["env"]["CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT"], name)
 
     def test_rejects_reusable_ci_database_urls_before_harness_invocation(self) -> None:
         completed = self.completed_runs()
         inherited = {
             "DATABASE_URL": "postgres://superuser@ci/reusable",
-            "MNT_APALIS_OWNER_DATABASE_URL": "postgres://owner@ci/reusable",
-            "MNT_APALIS_RUNTIME_DATABASE_URL": "postgres://runtime@ci/reusable",
-            "MNT_APALIS_ADMIN_DATABASE_URL": "postgres://admin@ci/reusable",
+            "CONSOLE_APALIS_OWNER_DATABASE_URL": "postgres://owner@ci/reusable",
+            "CONSOLE_APALIS_RUNTIME_DATABASE_URL": "postgres://runtime@ci/reusable",
+            "CONSOLE_APALIS_ADMIN_DATABASE_URL": "postgres://admin@ci/reusable",
         }
         with patch.dict(os.environ, inherited, clear=False):
             with patch.object(gate, "resolved_target_metadata", return_value=self.metadata()), patch.object(gate, "run", side_effect=completed) as run_mock:

@@ -31,11 +31,11 @@ verified live against crates.io) against the real template:
 ## Decision
 
 **Use umya-spreadsheet 3.0.0** as the Excel export engine for the
-`mnt-platform-excel` platform crate.
+`console-platform-excel` platform crate.
 
 ## Evidence
 
-Integration test `tests/template_fidelity.rs` in `mnt-platform-excel` — all 5
+Integration test `tests/template_fidelity.rs` in `console-platform-excel` — all 5
 assertions **PASS**:
 
 | Assertion group | Result |
@@ -59,17 +59,17 @@ Round-trip sub-checks (all within the single `roundtrip_fill_and_read_back` test
 
 Verified with:
 ```
-cargo build -p mnt-platform-excel          # clean
-cargo test -p mnt-platform-excel           # 5 passed, 0 failed
-cargo clippy --all-targets -p mnt-platform-excel  # 0 errors, 0 warnings
+cargo build -p console-platform-excel          # clean
+cargo test -p console-platform-excel           # 5 passed, 0 failed
+cargo clippy --all-targets -p console-platform-excel  # 0 errors, 0 warnings
 ```
 
 ## Consequences
 
-- `mnt-platform-excel` depends on `umya-spreadsheet = "3.0.0"` (pure Rust, no
+- `console-platform-excel` depends on `umya-spreadsheet = "3.0.0"` (pure Rust, no
   native dependencies).
 - Production fill logic (section 1–4 row writers, date/header injection) will be
-  implemented in `mnt-platform-excel` in M4.
+  implemented in `console-platform-excel` in M4.
 - Re-verify umya version on each dependency update (project mandate).
 - No contingency path needed: the spike passed all criteria.
 

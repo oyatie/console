@@ -48,10 +48,10 @@ describe("production authority blocked observation static integration", () => {
 });
 
 const validFiles = {
-  "deploy/apps/maintenance/base/database.yaml": `apiVersion: postgresql.cnpg.io/v1
+  "deploy/apps/console/base/database.yaml": `apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: mnt-db
+  name: console-db
 spec:
   instances: 1 # single oci-guest node
   env:
@@ -62,13 +62,13 @@ spec:
   storage:
     size: 5Gi
 `,
-  "deploy/apps/maintenance/overlays/prod/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
+  "deploy/apps/console/overlays/prod/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
 images: []
 `,
-  "deploy/apps/maintenance/overlays/on-prem/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
+  "deploy/apps/console/overlays/on-prem/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
@@ -77,22 +77,22 @@ patches:
       group: postgresql.cnpg.io
       version: v1
       kind: Cluster
-      name: mnt-db
+      name: console-db
     path: cnpg-ha-patch.yaml
-  - target: { kind: ObjectStore, name: mnt-backups }
+  - target: { kind: ObjectStore, name: console-backups }
     patch: |-
       - op: replace
         path: /spec/configuration/endpointURL
-        value: http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333
+        value: http://console-object-store-s3.console-object-store.svc.cluster.local:8333
 `,
-  "deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml": `- op: remove
+  "deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml": `- op: remove
   path: /spec/env
 - op: replace
   path: /spec/instances
   value: 3
 - op: add
   path: /spec/storage/storageClass
-  value: mnt-pg-hot
+  value: console-pg-hot
 - op: add
   path: /spec/postgresql/synchronous
   value:
@@ -102,10 +102,10 @@ patches:
   value:
     - topologyKey: kubernetes.io/hostname
 `,
-  "deploy/apps/storage/manifests/storageclass-mnt-pg-hot.yaml": `apiVersion: storage.k8s.io/v1
+  "deploy/apps/storage/manifests/storageclass-console-pg-hot.yaml": `apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: mnt-pg-hot
+  name: console-pg-hot
 provisioner: driver.longhorn.io
 parameters:
   numberOfReplicas: "3"
@@ -136,74 +136,74 @@ function replaceLast(text, needle, replacement) {
 const smtpConfigMapWithRelayFields = `apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mnt-config
+  name: console-config
 data:
-  MNT_EMAIL_SMTP_HOST: "smtp.email.ap-chuncheon-1.oci.oraclecloud.com"
-  MNT_EMAIL_SMTP_PORT: "587"
-  MNT_EMAIL_FROM: "no-reply@knllogistic.com"
-  MNT_EMAIL_FROM_NAME: "MNT 정비 콘솔"
+  CONSOLE_EMAIL_SMTP_HOST: "smtp.email.ap-chuncheon-1.oci.oraclecloud.com"
+  CONSOLE_EMAIL_SMTP_PORT: "587"
+  CONSOLE_EMAIL_FROM: "no-reply@knllogistic.com"
+  CONSOLE_EMAIL_FROM_NAME: "Console 정비 콘솔"
 `;
 
 const smtpConfigMapForDevE2eStub = `apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mnt-config
+  name: console-config
 data:
-  MNT_HTTP_ADDR: "0.0.0.0:8080"
-  MNT_EMAIL_STUB_MODE: "e2e"
-  # MNT_EMAIL_* intentionally omitted: dev/e2e uses the explicit stub sender path.
+  CONSOLE_HTTP_ADDR: "0.0.0.0:8080"
+  CONSOLE_EMAIL_STUB_MODE: "e2e"
+  # CONSOLE_EMAIL_* intentionally omitted: dev/e2e uses the explicit stub sender path.
 `;
 
 const smtpConfigMapWithoutRelayOrStub = `apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mnt-config
+  name: console-config
 data:
-  MNT_HTTP_ADDR: "0.0.0.0:8080"
+  CONSOLE_HTTP_ADDR: "0.0.0.0:8080"
 `;
 
 const workloadWithEnvFromOnly = `apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mnt-app
+  name: console-app
 spec:
   template:
     spec:
       containers:
-        - name: mnt-app
+        - name: console-app
           envFrom:
-            - configMapRef: { name: mnt-config }
-            - secretRef: { name: mnt-secrets }
+            - configMapRef: { name: console-config }
+            - secretRef: { name: console-secrets }
 `;
 
 const workloadWithRequiredSmtpSecretRefs = `apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mnt-app
+  name: console-app
 spec:
   template:
     spec:
       containers:
-        - name: mnt-app
+        - name: console-app
           envFrom:
-            - configMapRef: { name: mnt-config }
-            - secretRef: { name: mnt-secrets }
+            - configMapRef: { name: console-config }
+            - secretRef: { name: console-secrets }
           env:
-            - name: MNT_EMAIL_SMTP_USERNAME
+            - name: CONSOLE_EMAIL_SMTP_USERNAME
               valueFrom:
-                secretKeyRef: { name: mnt-secrets, key: MNT_EMAIL_SMTP_USERNAME }
-            - name: MNT_EMAIL_SMTP_PASSWORD
+                secretKeyRef: { name: console-secrets, key: CONSOLE_EMAIL_SMTP_USERNAME }
+            - name: CONSOLE_EMAIL_SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mnt-secrets
-                  key: MNT_EMAIL_SMTP_PASSWORD
+                  name: console-secrets
+                  key: CONSOLE_EMAIL_SMTP_PASSWORD
 `;
 
 function evaluateSmtp(overrides = {}) {
   const files = {
-    "deploy/apps/maintenance/base/configmap.yaml": smtpConfigMapWithRelayFields,
-    "deploy/apps/maintenance/base/backend.yaml": workloadWithEnvFromOnly,
-    "deploy/apps/maintenance/base/worker.yaml": workloadWithEnvFromOnly,
+    "deploy/apps/console/base/configmap.yaml": smtpConfigMapWithRelayFields,
+    "deploy/apps/console/base/backend.yaml": workloadWithEnvFromOnly,
+    "deploy/apps/console/base/worker.yaml": workloadWithEnvFromOnly,
     ...overrides,
   };
   return evaluateSmtpDeploymentChecks((path) => files[path] ?? "");
@@ -215,54 +215,54 @@ describe("production hardening SMTP deployment config", () => {
 
     assertHasFailure(
       result,
-      "deploy/apps/maintenance/base/backend.yaml must explicitly require MNT_EMAIL_SMTP_USERNAME",
+      "deploy/apps/console/base/backend.yaml must explicitly require CONSOLE_EMAIL_SMTP_USERNAME",
     );
     assertHasFailure(
       result,
-      "deploy/apps/maintenance/base/backend.yaml must explicitly require MNT_EMAIL_SMTP_PASSWORD",
+      "deploy/apps/console/base/backend.yaml must explicitly require CONSOLE_EMAIL_SMTP_PASSWORD",
     );
     assertHasFailure(
       result,
-      "deploy/apps/maintenance/base/worker.yaml must explicitly require MNT_EMAIL_SMTP_USERNAME",
+      "deploy/apps/console/base/worker.yaml must explicitly require CONSOLE_EMAIL_SMTP_USERNAME",
     );
   });
 
   it("accepts complete SMTP config with required secret-backed credentials", () => {
     const result = evaluateSmtp({
-      "deploy/apps/maintenance/base/backend.yaml":
+      "deploy/apps/console/base/backend.yaml":
         workloadWithRequiredSmtpSecretRefs,
-      "deploy/apps/maintenance/base/worker.yaml":
+      "deploy/apps/console/base/worker.yaml":
         workloadWithRequiredSmtpSecretRefs,
     });
 
     assert.deepEqual(result.failures, []);
     assert.match(
       result.passes.join("\n"),
-      /SMTP production credential refs: mnt-app, mnt-worker/,
+      /SMTP production credential refs: console-app, console-worker/,
     );
   });
 
   it("does not block explicit dev/e2e stub configs that omit SMTP relay fields", () => {
     const result = evaluateSmtp({
-      "deploy/apps/maintenance/base/configmap.yaml": smtpConfigMapForDevE2eStub,
+      "deploy/apps/console/base/configmap.yaml": smtpConfigMapForDevE2eStub,
     });
 
     assert.deepEqual(result.failures, []);
     assert.match(
       result.passes.join("\n"),
-      /SMTP relay disabled for explicit stub mode MNT_EMAIL_STUB_MODE=e2e/,
+      /SMTP relay disabled for explicit stub mode CONSOLE_EMAIL_STUB_MODE=e2e/,
     );
   });
 
   it("rejects no-relay production-like configs without explicit stub mode", () => {
     const result = evaluateSmtp({
-      "deploy/apps/maintenance/base/configmap.yaml":
+      "deploy/apps/console/base/configmap.yaml":
         smtpConfigMapWithoutRelayOrStub,
     });
 
     assertHasFailure(
       result,
-      "must either configure non-secret MNT_EMAIL_* SMTP relay fields or set MNT_EMAIL_STUB_MODE",
+      "must either configure non-secret CONSOLE_EMAIL_* SMTP relay fields or set CONSOLE_EMAIL_STUB_MODE",
     );
   });
 });
@@ -279,12 +279,12 @@ describe("production hardening CNPG context checks", () => {
 
   it("rejects an HA overlay with fewer than three CNPG instances", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
+      "deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
   path: /spec/instances
   value: 2
 - op: add
   path: /spec/storage/storageClass
-  value: mnt-pg-hot
+  value: console-pg-hot
 `,
     });
 
@@ -297,7 +297,7 @@ describe("production hardening CNPG context checks", () => {
 
   it("rejects an HA overlay that points CNPG at local-path storage", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
+      "deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
   path: /spec/instances
   value: 3
 - op: add
@@ -315,12 +315,12 @@ describe("production hardening CNPG context checks", () => {
 
   it("rejects an on-prem overlay that inherits the OCI-only checksum workaround", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
+      "deploy/apps/console/overlays/on-prem/cnpg-ha-patch.yaml": `- op: replace
   path: /spec/instances
   value: 3
 - op: add
   path: /spec/storage/storageClass
-  value: mnt-pg-hot
+  value: console-pg-hot
 `,
     });
 
@@ -331,28 +331,28 @@ describe("production hardening CNPG context checks", () => {
 
   it("rejects removing /spec/env when the base env contains non-checksum entries", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/base/database.yaml": validFiles[
-        "deploy/apps/maintenance/base/database.yaml"
+      "deploy/apps/console/base/database.yaml": validFiles[
+        "deploy/apps/console/base/database.yaml"
       ].replace(
         "  storage:",
-        `    - name: MNT_REQUIRED_CLUSTER_SETTING
+        `    - name: CONSOLE_REQUIRED_CLUSTER_SETTING
       value: keep
   storage:`,
       ),
     });
 
     assertHasFailure(result, "may remove /spec/env only while");
-    assertHasFailure(result, "MNT_REQUIRED_CLUSTER_SETTING");
+    assertHasFailure(result, "CONSOLE_REQUIRED_CLUSTER_SETTING");
   });
 
   it("rejects an oci-guest prod overlay that patches the CNPG instance shape", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/overlays/prod/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
+      "deploy/apps/console/overlays/prod/kustomization.yaml": `apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
 patches:
-  - target: { kind: Cluster, name: mnt-db }
+  - target: { kind: Cluster, name: console-db }
     patch: |-
       - op: replace
         path: /spec/instances
@@ -369,10 +369,10 @@ patches:
 
   it("keeps the oci-guest/base CNPG posture single-instance", () => {
     const result = evaluate({
-      "deploy/apps/maintenance/base/database.yaml": `apiVersion: postgresql.cnpg.io/v1
+      "deploy/apps/console/base/database.yaml": `apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: mnt-db
+  name: console-db
 spec:
   instances: 3
 `,
@@ -400,7 +400,7 @@ describe("production hardening on-prem authority identity", () => {
 
 function evaluateProdOverlay(text) {
   return evaluateProdOverlayImageChecks((path) =>
-    path === "deploy/apps/maintenance/overlays/prod/kustomization.yaml"
+    path === "deploy/apps/console/overlays/prod/kustomization.yaml"
       ? text
       : "",
   );
@@ -411,9 +411,9 @@ describe("production hardening global image checks", () => {
     const digestA = "a".repeat(64);
     const digestB = "b".repeat(64);
     const result = evaluateProdOverlay(`images:
-  - name: mnt-app
+  - name: console-app
     digest: sha256:${digestA}
-  - name: mnt-web
+  - name: console-web
     digest: sha256:${digestB}
 `);
 
@@ -423,13 +423,13 @@ describe("production hardening global image checks", () => {
 
   it("rejects missing digest pins and mutable image tags", () => {
     const result = evaluateProdOverlay(`images:
-  - name: mnt-app
+  - name: console-app
     newTag: latest
 `);
 
     assert.ok(
       result.failures.some((failure) =>
-        failure.includes("must pin at least mnt-app and mnt-web"),
+        failure.includes("must pin at least console-app and console-web"),
       ),
     );
     assert.ok(
@@ -443,16 +443,16 @@ describe("production hardening global image checks", () => {
     const digestA = "a".repeat(64);
     const digestB = "b".repeat(64);
     const result = evaluateProdOverlay(`images:
-  # - name: mnt-app
+  # - name: console-app
   #   digest: sha256:${digestA}
-  # - name: mnt-web
+  # - name: console-web
   #   digest: sha256:${digestB}
   # newTag: latest
 `);
 
     assert.ok(
       result.failures.some((failure) =>
-        failure.includes("must pin at least mnt-app and mnt-web"),
+        failure.includes("must pin at least console-app and console-web"),
       ),
     );
     assert.deepEqual(
@@ -496,13 +496,13 @@ const validPr473Files = {
           PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           docker run --rm --network host \
             -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
-            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci \
             -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
-            -e MNT_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
-            -e MNT_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
-            -e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
-            -e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
-            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
+            -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
+            -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
+            -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
             --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             /usr/local/bin/postgres-reconcile-topology
 
@@ -511,12 +511,12 @@ const validPr473Files = {
             --entrypoint psql \
             postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
             -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            -c "DROP DATABASE IF EXISTS mnt_apalis_contract WITH (FORCE)" \
-            -c "CREATE DATABASE mnt_apalis_contract OWNER mnt_app"
+            -c "DROP DATABASE IF EXISTS console_apalis_contract WITH (FORCE)" \
+            -c "CREATE DATABASE console_apalis_contract OWNER console_app"
 
           BUCK_ADMIN_PASSWORD="$(openssl rand -hex 32)"
           umask 077
-          printf "CREATE ROLE mnt_buck_admin SUPERUSER LOGIN PASSWORD '%s';\\n" \
+          printf "CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '%s';\\n" \
             "$BUCK_ADMIN_PASSWORD" > "$RUNNER_TEMP/buck-admin.sql"
           docker run --rm --network host \
             -e PGPASSWORD=postgres \
@@ -530,10 +530,10 @@ const validPr473Files = {
           echo "::add-mask::$RT_PASSWORD"
           echo "::add-mask::$BUCK_ADMIN_PASSWORD"
           {
-            echo "MNT_BUCK_ADMIN_DATABASE_URL=postgres://mnt_buck_admin:\${BUCK_ADMIN_PASSWORD}@localhost:5432/mnt_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
-            echo "MNT_APALIS_OWNER_DATABASE_URL=postgres://mnt_app:\${APP_PASSWORD}@localhost:5432/mnt_apalis_contract"
-            echo "MNT_APALIS_RUNTIME_DATABASE_URL=postgres://mnt_rt:\${RT_PASSWORD}@localhost:5432/mnt_apalis_contract"
-            echo "MNT_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/mnt_apalis_contract"
+            echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:\${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+            echo "CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:\${APP_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:\${RT_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"
           } >> "$GITHUB_ENV"
       - name: PR 473 migration operational gate
         working-directory: .
@@ -707,7 +707,7 @@ describe("production hardening PR 473 typed operational gate", () => {
           "",
         )
         .replace(
-          '            -e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \\\n',
+          '            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \\\n',
           "",
         ),
     });
@@ -737,21 +737,21 @@ describe("production hardening PR 473 typed operational gate", () => {
       ".github/workflows/ci.yml": validPr473Files[
         ".github/workflows/ci.yml"
       ].replace(
-        "CREATE DATABASE mnt_apalis_contract OWNER mnt_app",
-        "CREATE DATABASE apalis_contract OWNER mnt_app",
+        "CREATE DATABASE console_apalis_contract OWNER console_app",
+        "CREATE DATABASE apalis_contract OWNER console_app",
       ),
     });
 
     assertHasFailure(result, "Apalis database provisioning command");
   });
 
-  it("rejects an Apalis contract database not owned by mnt_app", () => {
+  it("rejects an Apalis contract database not owned by console_app", () => {
     const result = evaluatePr473({
       ".github/workflows/ci.yml": validPr473Files[
         ".github/workflows/ci.yml"
       ].replace(
-        "CREATE DATABASE mnt_apalis_contract OWNER mnt_app",
-        "CREATE DATABASE mnt_apalis_contract OWNER postgres",
+        "CREATE DATABASE console_apalis_contract OWNER console_app",
+        "CREATE DATABASE console_apalis_contract OWNER postgres",
       ),
     });
 
@@ -774,9 +774,9 @@ describe("production hardening PR 473 typed operational gate", () => {
 
   it("requires all three exact Apalis database URL exports", () => {
     for (const variable of [
-      "MNT_APALIS_OWNER_DATABASE_URL",
-      "MNT_APALIS_RUNTIME_DATABASE_URL",
-      "MNT_APALIS_ADMIN_DATABASE_URL",
+      "CONSOLE_APALIS_OWNER_DATABASE_URL",
+      "CONSOLE_APALIS_RUNTIME_DATABASE_URL",
+      "CONSOLE_APALIS_ADMIN_DATABASE_URL",
     ]) {
       const result = evaluatePr473({
         ".github/workflows/ci.yml": validPr473Files[
@@ -1561,7 +1561,7 @@ jobs:
     steps:
       - run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          cargo build --release --bin mnt-app
+          cargo build --release --bin console-app
       - name: Bootstrap hermetic backend and session fixture
         run: |
           set -euo pipefail
@@ -1616,7 +1616,7 @@ android {
   buildTypes { release { buildConfigField("String", "API_BASE_URL", "\\"https://api.example.test\\"") } }
   sourceSets { getByName("androidTest") { fieldE2eSessionAssetsDir.orNull?.let { assets.srcDir(it) } } }
 }`,
-  "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": `class WorkOrderFlowTest {
+  "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": `class WorkOrderFlowTest {
   fun fixture() {
     InstrumentationRegistry.getInstrumentation().context.assets.open("field-e2e-session.properties")
     val access = "FIELD_E2E_ACCESS_TOKEN"
@@ -1705,7 +1705,7 @@ describe("production hardening Android hermetic E2E", () => {
         "./gradlew fieldApi34DebugAndroidTest",
         "./gradlew fieldApi34DebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.FIELD_E2E_ACCESS_TOKEN=$access_token",
       ),
-      "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt": `class WorkOrderFlowTest { fun fixture() = InstrumentationRegistry.getArguments() }`,
+      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": `class WorkOrderFlowTest { fun fixture() = InstrumentationRegistry.getArguments() }`,
     });
     assertHasFailure(result, "must not be written to GITHUB_OUTPUT or passed as Gradle instrumentation arguments");
     assertHasFailure(result, "must load the session tokens from the androidTest asset fixture");
@@ -1729,7 +1729,7 @@ case "\${1:-}" in
     ;;
 esac
 if [[ "\${MODE}" == "digest-bump-only" ]]; then
-  log "done: \${SHORT_SHA} desired prod digests updated only (mnt-app=sha256:aaa, mnt-web=sha256:bbb); deployment, rollout, pod-image, and endpoint verification were NOT run."
+  log "done: \${SHORT_SHA} desired prod digests updated only (console-app=sha256:aaa, console-web=sha256:bbb); deployment, rollout, pod-image, and endpoint verification were NOT run."
   exit 0
 fi
 require kubectl
@@ -1738,7 +1738,7 @@ if ! kubectl version >/dev/null 2>&1; then
   exit 1
 fi
 kubectl -n "$ARGO_NS" annotate "application/$APP_NAME" "argocd.argoproj.io/refresh=hard" --overwrite
-ROLLOUTS=(mnt-app mnt-web)
+ROLLOUTS=(console-app console-web)
 for rollout in "\${ROLLOUTS[@]}"; do
   kubectl argo rollouts status "$rollout" -n "$NAMESPACE" --timeout 600s
 done
@@ -1769,7 +1769,7 @@ log "done: \${SHORT_SHA} deployed and verified"
     assertHasFailure(result, "must actively request an Argo hard refresh");
     assertHasFailure(
       result,
-      "must actively wait for both mnt-app and mnt-web rollouts",
+      "must actively wait for both console-app and console-web rollouts",
     );
   });
 
@@ -1783,7 +1783,7 @@ case "\${1:-}" in
     ;;
 esac
 require kubectl
-ROLLOUTS=(mnt-app mnt-web)
+ROLLOUTS=(console-app console-web)
 if [[ "\${MODE}" == "digest-bump-only" ]]; then
   log "done: \${SHORT_SHA} deployed and verified (digest bump only)"
   exit 0
@@ -1811,7 +1811,7 @@ log "done: \${SHORT_SHA} deployed and verified"
 require kubectl
 kubectl version >/dev/null
 kubectl -n "$ARGO_NS" annotate "application/$APP_NAME" "argocd.argoproj.io/refresh=hard" --overwrite
-ROLLOUTS=(mnt-app mnt-web)
+ROLLOUTS=(console-app console-web)
 for rollout in "\${ROLLOUTS[@]}"; do
   kubectl argo rollouts status "$rollout" -n "$NAMESPACE" --timeout 600s || true
 done
@@ -1864,13 +1864,13 @@ function runDeployWithStubs({
   authority,
   hideKubectl = false,
 } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "maintenance-deploy-test-"));
+  const dir = mkdtempSync(join(tmpdir(), "console-deploy-test-"));
   const scriptsDir = join(dir, "scripts");
   const stubDir = join(dir, "bin");
   const bashEnv = join(dir, "bash-env");
   mkdirSync(scriptsDir, { recursive: true });
   mkdirSync(stubDir, { recursive: true });
-  mkdirSync(join(dir, "deploy/apps/maintenance/overlays/prod"), {
+  mkdirSync(join(dir, "deploy/apps/console/overlays/prod"), {
     recursive: true,
   });
   writeFileSync(
@@ -1893,7 +1893,7 @@ exit 0
 `,
   );
   writeFileSync(
-    join(dir, "deploy/apps/maintenance/overlays/prod/kustomization.yaml"),
+    join(dir, "deploy/apps/console/overlays/prod/kustomization.yaml"),
     "images: []\n",
   );
   writeExecutable(
@@ -2011,7 +2011,7 @@ exit 0
   it("never reaches Argo refresh when main advances on the digest-no-op pre-refresh path", () => {
     const logPath = join(
       tmpdir(),
-      `maintenance-deploy-kubectl-${process.pid}-${Date.now()}.log`,
+      `console-deploy-kubectl-${process.pid}-${Date.now()}.log`,
     );
     const authority = `#!/usr/bin/env python3
 import pathlib, sys

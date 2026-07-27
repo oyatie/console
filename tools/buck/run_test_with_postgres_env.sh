@@ -3,7 +3,7 @@
 # the Buck-built integration-test binary. Values are treated as data, never code.
 set -euo pipefail
 
-env_file="${MNT_BUCK_POSTGRES_ENV_FILE:?Buck PostgreSQL environment file is required}"
+env_file="${CONSOLE_BUCK_POSTGRES_ENV_FILE:?Buck PostgreSQL environment file is required}"
 if [[ ! -f "${env_file}" ]]; then
   echo "buck-postgres: environment file is not a regular file" >&2
   exit 1
@@ -34,13 +34,13 @@ while IFS= read -r line || [[ -n "${line}" ]]; do
     DATABASE_URL)
       [[ "${have_database_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_database_url=1 ;;
-    MNT_APALIS_OWNER_DATABASE_URL)
+    CONSOLE_APALIS_OWNER_DATABASE_URL)
       [[ "${have_owner_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_owner_url=1 ;;
-    MNT_APALIS_RUNTIME_DATABASE_URL)
+    CONSOLE_APALIS_RUNTIME_DATABASE_URL)
       [[ "${have_runtime_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_runtime_url=1 ;;
-    MNT_APALIS_ADMIN_DATABASE_URL)
+    CONSOLE_APALIS_ADMIN_DATABASE_URL)
       [[ "${have_admin_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_admin_url=1 ;;
     *) echo "buck-postgres: unexpected environment key" >&2; exit 1 ;;
@@ -53,7 +53,7 @@ if [[ "${have_database_url}${have_owner_url}${have_runtime_url}${have_admin_url}
   exit 1
 fi
 
-exact_test="${MNT_BUCK_RUST_TEST_EXACT:-}"
+exact_test="${CONSOLE_BUCK_RUST_TEST_EXACT:-}"
 if [[ -n "${exact_test}" ]]; then
   [[ "${exact_test}" =~ ^[[:alnum:]_:]+$ ]] || {
     echo "buck-postgres: exact Rust test name contains unsupported characters" >&2

@@ -9,19 +9,19 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-todos-adapter-postgres",
+    name = "console-todos-adapter-postgres",
     mapped_srcs = repo_mapped_srcs("backend/crates/todos/adapter-postgres", glob(["src/**/*.rs"])),
-    crate = "mnt_todos_adapter_postgres",
+    crate = "console_todos_adapter_postgres",
     edition = "2024",
     crate_root = "backend/crates/todos/adapter-postgres/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/todos/adapter-postgres"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/todos/application:mnt-todos-application",
-        "//backend/crates/todos/domain:mnt-todos-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/todos/application:console-todos-application",
+        "//backend/crates/todos/domain:console-todos-domain",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
         "//third-party/rust:thiserror",
@@ -31,7 +31,7 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-todos-adapter-postgres-itest-todos_rls_surfaces_as_runtime_role",
+    name = "console-todos-adapter-postgres-itest-todos_rls_surfaces_as_runtime_role",
     mapped_srcs = repo_mapped_srcs("backend/crates/todos/adapter-postgres", ["tests/todos_rls_surfaces_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -42,17 +42,17 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/todos/adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.todos.adapter-postgres", "domain.todos", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/todos/application:mnt-todos-application",
-        "//backend/crates/todos/domain:mnt-todos-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/todos/application:console-todos-application",
+        "//backend/crates/todos/domain:console-todos-domain",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
         "//third-party/rust:thiserror",
         "//third-party/rust:time",
         "//third-party/rust:tokio",
         "//third-party/rust:uuid",
-        ":mnt-todos-adapter-postgres",
+        ":console-todos-adapter-postgres",
     ],
 )

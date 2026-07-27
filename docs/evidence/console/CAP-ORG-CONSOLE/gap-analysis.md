@@ -30,7 +30,7 @@ openapi tag.
 models ONE four-eyes gate, not the design's ordered 4-role chain (HR→재무→법무→임원).
 **Decision**: orgchange owns `org_change_approval_steps` (order + role binding + denorm
 decision) and records each step's decision through `gov_approvals` keyed by the step id,
-inheriting the DB self-approval CHECK. Pure gate logic reused from `mnt-governance-domain`
+inheriting the DB self-approval CHECK. Pure gate logic reused from `console-governance-domain`
 (`evaluate_gate_chain`, `assess_impact`). No governance-crate edits.
 
 ## 4. Preflight signals that don't exist yet (warn-only in slice 1)
@@ -50,7 +50,7 @@ enforce at DB level (double net).
 Recorded in `integration-manifest.json` alongside this file:
 1. `backend/openapi/openapi.yaml`: add tag `orgchange` + paths/schemas of design-contract §5
    (+ regenerate clients/{ts,kotlin,swift} — three CI drift gates).
-2. `mnt_platform_authz::Feature`: add `OrgChangeRead/Draft/Approve/Apply` variants + floors +
+2. `console_platform_authz::Feature`: add `OrgChangeRead/Draft/Approve/Apply` variants + floors +
    `as_str`/`from_str` arms (platform/authz is shared; small, mechanical).
 3. `build_router` (platform-rest): mount `orgchange::rest::router` + `orgchange` route paths
    into the route-path census.

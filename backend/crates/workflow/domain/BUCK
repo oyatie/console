@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-workflow-domain",
+    name = "console-workflow-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/workflow/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_workflow_domain",
+    crate = "console_workflow_domain",
     edition = "2024",
     crate_root = "backend/crates/workflow/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/workflow/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",
@@ -26,16 +26,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-workflow-domain-unit",
+    name = "console-workflow-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/workflow/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_workflow_domain",
+    crate = "console_workflow_domain",
     edition = "2024",
     crate_root = "backend/crates/workflow/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/workflow/domain"},
     labels = ["owner.backend.crates.workflow.domain", "domain.workflow", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-excel",
+    name = "console-platform-excel",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/excel", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_excel",
+    crate = "console_platform_excel",
     edition = "2024",
     crate_root = "backend/crates/platform/excel/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -22,7 +22,7 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-platform-excel-itest-template_fidelity",
+    name = "console-platform-excel-itest-template_fidelity",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/excel", ["tests/template_fidelity.rs"], external = {
         "//docs/reference:daily-progress": "docs/reference/일일업무진행현황_0605.xlsx",
         "//docs/reference:work-log": "docs/reference/업무일지_26.05.27.xlsx",
@@ -36,12 +36,12 @@ rust_test(
     deps = [
         "//third-party/rust:tempfile",
         "//third-party/rust:umya-spreadsheet",
-        ":mnt-platform-excel",
+        ":console-platform-excel",
     ],
 )
 
 rust_test(
-    name = "mnt-platform-excel-itest-template_fill_engine",
+    name = "console-platform-excel-itest-template_fill_engine",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/excel", ["tests/template_fill_engine.rs"], external = {
         "//docs/reference:daily-progress": "docs/reference/일일업무진행현황_0605.xlsx",
         "//docs/reference:work-log": "docs/reference/업무일지_26.05.27.xlsx",
@@ -55,6 +55,6 @@ rust_test(
     deps = [
         "//third-party/rust:tempfile",
         "//third-party/rust:umya-spreadsheet",
-        ":mnt-platform-excel",
+        ":console-platform-excel",
     ],
 )

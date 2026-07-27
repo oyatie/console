@@ -1,11 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for the §18 projected-dispatch path — a `projected_usecase`
 //! action routing THROUGH the owning domain crate's use-case (here
-//! `registry.update_equipment`), exercised as the genuine non-owner `mnt_rt` role
+//! `registry.update_equipment`), exercised as the genuine non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) so RLS org-isolation is really enforced.
 //!
 //! This is the wiring test for [`ProjectedDispatchRegistry`]: the production
-//! handlers live in the App tier (`mnt-app`), which alone may depend on a domain
+//! handlers live in the App tier (`console-app`), which alone may depend on a domain
 //! ADAPTER; the ontology REST tier stays layer-clean (this test's registry-backed
 //! handler is a dev-only dependency, which the layer-boundary gate exempts).
 //!
@@ -24,22 +24,22 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_kernel_core::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, EquipmentId, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
-use mnt_ontology_adapter_postgres::{ActionTypeInput, CreateObjectTypeDraft, PgOntologyStore};
-use mnt_ontology_domain::{ActionDispatch, BackingKind, InstanceId, ObjectTypeId};
-use mnt_ontology_rest::{
+use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_adapter_postgres::{ActionTypeInput, CreateObjectTypeDraft, PgOntologyStore};
+use console_ontology_domain::{ActionDispatch, BackingKind, InstanceId, ObjectTypeId};
+use console_ontology_rest::{
     ActionCommand, ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry,
     ProjectedHandler,
 };
-use mnt_platform_authz::{Principal, Role};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
-use mnt_registry_application::{UpdateEquipmentCommand, UpdateEquipmentFields};
-use mnt_registry_domain::EquipmentStatus;
+use console_platform_authz::{Principal, Role};
+use console_platform_db::{DbError, with_audit};
+use console_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
+use console_registry_application::{UpdateEquipmentCommand, UpdateEquipmentFields};
+use console_registry_domain::EquipmentStatus;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -57,7 +57,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -72,7 +72,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -240,7 +240,7 @@ fn super_admin(user_id: UserId, org: OrgId) -> Principal {
         user_id,
         org,
         BTreeSet::from([Role::SuperAdmin]),
-        mnt_kernel_core::BranchScope::All,
+        console_kernel_core::BranchScope::All,
     )
 }
 
@@ -326,7 +326,7 @@ async fn seed_projected_action(
     control_points: Value,
     submission_criteria: Value,
 ) -> ObjectTypeId {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
         let draft = CreateObjectTypeDraft {
@@ -424,7 +424,7 @@ async fn projected_dispatch_fires_domain_use_case_and_engine_writes_nothing(owne
     )
     .await;
 
-    let outcome = mnt_platform_request_context::scope_org(org, async {
+    let outcome = console_platform_request_context::scope_org(org, async {
         state_with_registry(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -489,7 +489,7 @@ async fn unknown_dispatch_target_fails_closed_and_writes_nothing(owner_pool: PgP
     )
     .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state_with_registry(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -536,7 +536,7 @@ async fn failed_gate_denies_before_dispatch_and_writes_nothing(owner_pool: PgPoo
     )
     .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state_with_registry(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),
@@ -581,7 +581,7 @@ async fn projected_action_is_invisible_across_tenants(owner_pool: PgPool) {
     .await;
 
     // Under org-B's GUC, org-A's action type does not resolve → NotFound.
-    let err = mnt_platform_request_context::scope_org(org_b, async {
+    let err = console_platform_request_context::scope_org(org_b, async {
         state_with_registry(&rt, &cmd)
             .execute_action(
                 &super_admin(actor_b, org_b),
@@ -622,7 +622,7 @@ async fn projected_submission_criteria_fail_closed_and_write_nothing(owner_pool:
     )
     .await;
 
-    let err = mnt_platform_request_context::scope_org(org, async {
+    let err = console_platform_request_context::scope_org(org, async {
         state_with_registry(&rt, &cmd)
             .execute_action(
                 &super_admin(actor, org),

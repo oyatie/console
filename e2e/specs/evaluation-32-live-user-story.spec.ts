@@ -15,10 +15,10 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * This requires BOTH local-only gates:
  *
- *   MNT_DEV_AUTH_E2E=1 MNT_CONSOLE_PREVIEW_E2E=1 \
+ *   CONSOLE_DEV_AUTH_E2E=1 CONSOLE_PREVIEW_E2E=1 \
  *   VITE_CONSOLE_DEV_PREVIEW=1 \
  *     node scripts/dev-up.mjs bootstrap
- *   MNT_DEV_AUTH_E2E=1 MNT_CONSOLE_PREVIEW_E2E=1 \
+ *   CONSOLE_DEV_AUTH_E2E=1 CONSOLE_PREVIEW_E2E=1 \
  *   VITE_CONSOLE_DEV_PREVIEW=1 npx playwright test \
  *     --project=dev-auth-console-preview-known-red \
  *     e2e/specs/evaluation-32-live-user-story.spec.ts
@@ -30,11 +30,11 @@ import { expect, test, type Page } from "@playwright/test";
 
 const ORG_ID = "00000000-0000-0000-0000-0000000000a1";
 const DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_URL ??
-  "postgres://mnt_rt:mnt-dev-runtime-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_URL ??
+  "postgres://console_rt:console-dev-runtime-change-me@127.0.0.1:55432/console_dev";
 const OWNER_DATABASE_URL =
-  process.env.MNT_DEV_DATABASE_OWNER_URL ??
-  "postgres://mnt_app:mnt-dev-owner-change-me@127.0.0.1:55432/mnt_dev";
+  process.env.CONSOLE_DEV_DATABASE_OWNER_URL ??
+  "postgres://console_app:console-dev-owner-change-me@127.0.0.1:55432/console_dev";
 
 type Scenario = {
   readonly runId: string;
@@ -67,8 +67,8 @@ function newScenario(): Scenario {
 
 function assertDevOnlyEnvironment(): void {
   if (
-    process.env.MNT_DEV_AUTH_E2E !== "1" ||
-    process.env.MNT_CONSOLE_PREVIEW_E2E !== "1" ||
+    process.env.CONSOLE_DEV_AUTH_E2E !== "1" ||
+    process.env.CONSOLE_PREVIEW_E2E !== "1" ||
     process.env.VITE_CONSOLE_DEV_PREVIEW !== "1"
   ) {
     throw new Error(

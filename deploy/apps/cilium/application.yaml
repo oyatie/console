@@ -8,9 +8,9 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "0" # CNI must land before workload apps when manually promoted.
-    maintenance.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/dark-stage: "true"
 spec:
-  project: maintenance-onprem-cilium
+  project: console-onprem-cilium
   sources:
     - repoURL: https://helm.cilium.io
       chart: cilium
@@ -19,7 +19,7 @@ spec:
         releaseName: cilium
         valueFiles:
           - $values/deploy/apps/cilium/values.yaml
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       ref: values
   destination:

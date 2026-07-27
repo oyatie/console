@@ -4,13 +4,13 @@ Status: DRAFT for review. Do NOT execute until reviewed and a maintenance window
 is scheduled. This cutover transforms the **live** `maintenance` database (adds
 `org_id` everywhere, backfills KNL as tenant #1, enables FORCE RLS, and de-owns
 the application's DB role) and switches the running app from connecting as the
-table **owner** (`mnt_app`) to the non-owner runtime role (`mnt_rt`). It is
+table **owner** (`console_app`) to the non-owner runtime role (`console_rt`). It is
 partly irreversible without a backup restore.
 
 The single hard constraint that makes this a *windowed* cutover: once RLS is
 enabled (migrations 0030/0035) with `FORCE ROW LEVEL SECURITY`, **the old app —
 which connects as the owner and never sets `app.current_org` — reads zero rows**.
-So the schema migration and the new (`mnt_rt`, GUC-setting) app must go live
+So the schema migration and the new (`console_rt`, GUC-setting) app must go live
 together, with the old app not serving in between. A short scheduled maintenance
 window is the safe, simple way to guarantee that.
 
@@ -19,10 +19,10 @@ window is the safe, simple way to guarantee that.
 ## 0. Pre-flight (do BEFORE the window; none of this touches live data)
 
 0. **Take the `maintenance` Argo app off auto-sync FIRST.** It is
-   `automated: { prune: true, selfHeal: true }` (`deploy/argocd/apps/maintenance.yaml`),
+   `automated: { prune: true, selfHeal: true }` (`deploy/argocd/apps/console.yaml`),
    so a merge to `main` would otherwise *immediately* apply the whole cutover
    (the wave-2 Sync migrate Job enables RLS on the live DB, and the app Deployment
-   flips `DATABASE_URL` to `mnt-db-rt`) as an uncontrolled rolling update — an
+   flips `DATABASE_URL` to `console-db-rt`) as an uncontrolled rolling update — an
    outage. Switching to manual sync is **non-disruptive**: running workloads keep
    running; Argo just stops auto-applying git. Do this before the merge:
    ```sh
@@ -36,24 +36,24 @@ window is the safe, simple way to guarantee that.
 
 
 1. **Branch is merged + images built.** `feat/multi-tenant-phase1` is merged to
-   `main`, CI green; `image-release` has built+signed new `mnt-app` and `mnt-web`
+   `main`, CI green; `image-release` has built+signed new `console-app` and `console-web`
    images by digest. Record the two `sha256:` digests.
-2. **All non-owner login secrets exist.** Create `mnt-db-rt`,
-   `mnt-db-leave-command`, and `mnt-db-ontology-command` per
+2. **All non-owner login secrets exist.** Create `console-db-rt`,
+   `console-db-leave-command`, and `console-db-ontology-command` per
    `deploy/SECRETS.md`, each with matching `username`, URL-safe generated
    `password`, and `uri` fields. Preserve all three in the authoritative Vault
    recovery bundle. They must exist before CNPG and the API/worker sync.
 3. **Managed role config.** `deploy/.../database.yaml` declares migration-only
-   `mnt_app` as `BYPASSRLS`, while `mnt_rt` and both command logins are
+   `console_app` as `BYPASSRLS`, while `console_rt` and both command logins are
    `NOSUPERUSER NOBYPASSRLS`. Confirm Argo will reconcile the exact attributes
    and bind the separate password Secrets before migration 0031 runs.
 4. **Backup is fresh + restore is proven.** Confirm a recent CNPG/Barman base
    backup + WAL archiving is current (`ops/dr/cnpg-restore-drill.*`). Note the
    exact pre-cutover timestamp — this is the PITR rollback target.
-5. **Migrate runner ready (#14).** The `mnt-app` image supports `MNT_APP_ROLE=
+5. **Migrate runner ready (#14).** The `console-app` image supports `CONSOLE_APP_ROLE=
    migrate`, and the Argo wave-2 Sync `migrate-job` runs it as the OWNER
-   (`mnt-db-app` secret) before the app syncs. Verify the Job renders
-   (`kubectl kustomize deploy/apps/maintenance/base`).
+   (`console-db-app` secret) before the app syncs. Verify the Job renders
+   (`kubectl kustomize deploy/apps/console/base`).
 6. **Full sync only.** Do not selectively sync the migration Job, API, or
    worker. Sync the maintenance Application as a whole so CNPG, topology
    readback, migration, and serving waves execute in order.
@@ -70,27 +70,27 @@ window is the safe, simple way to guarantee that.
 ## 1. Cutover (inside the maintenance window)
 
 > All commands assume an authenticated `kubectl`/`oc` against the cluster and an
-> SSH tunnel / psql access to the DB as the **owner** (`mnt_app`) for checks.
+> SSH tunnel / psql access to the DB as the **owner** (`console_app`) for checks.
 
 1. **Quiesce the app.** Scale the API + worker to 0 (or serve a maintenance page
    at the ingress). This guarantees no owner-no-GUC reads hit an RLS-enabled DB
    and no writes land mid-migration.
    ```sh
-   kubectl -n maintenance scale deploy/mnt-app deploy/mnt-worker --replicas=0
+   kubectl -n console scale deploy/console-app deploy/console-worker --replicas=0
    ```
 2. **Snapshot point.** Record `SELECT now();` (the PITR rollback target) and
    confirm WAL is archiving.
 3. **Apply migrations 0026→0037.** Let the ordered Sync `migrate-job` run after
-   the wave-1 database topology readback gate, or run the same image as `mnt_app` on the
-   next sync (it connects as owner via `mnt-db-app`), or run them manually as
+   the wave-1 database topology readback gate, or run the same image as `console_app` on the
+   next sync (it connects as owner via `console-db-app`), or run them manually as
    owner through the tunnel:
    ```sh
    # manual fallback (owner connection)
-   SQLX_OFFLINE=true DATABASE_URL="postgres://mnt_app:***@127.0.0.1:5432/maintenance?sslmode=disable" \
+   SQLX_OFFLINE=true DATABASE_URL="postgres://console_app:***@127.0.0.1:5432/console?sslmode=disable" \
      sqlx migrate run --source backend/crates/platform/db/migrations
    ```
    This adds `org_id` (backfilled to KNL `…00a1`), enforces NOT NULL + FKs,
-   enables FORCE RLS, de-owns grants to `mnt_rt`, and re-homes the cold-start
+   enables FORCE RLS, de-owns grants to `console_rt`, and re-homes the cold-start
    admin to the platform sentinel org (`…face`). Watch for errors; it is
    transactional per file.
 4. **Verify the schema cutover (as owner, RLS now on):**
@@ -100,25 +100,25 @@ window is the safe, simple way to guarantee that.
    -- RLS forced on a representative table
    SELECT relrowsecurity, relforcerowsecurity FROM pg_class WHERE relname='work_orders';  -- t,t
    -- runtime role is non-owner, non-bypass
-   SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname IN ('mnt_app','mnt_rt');
+   SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname IN ('console_app','console_rt');
    ```
 5. **Pin the new signed digests** in
-   `deploy/apps/maintenance/overlays/prod/kustomization.yaml` (`mnt-app` +
-   `mnt-web`), commit to `main`. Auto-sync is OFF (§0.0), so Argo will NOT apply
+   `deploy/apps/console/overlays/prod/kustomization.yaml` (`console-app` +
+   `console-web`), commit to `main`. Auto-sync is OFF (§0.0), so Argo will NOT apply
    yet — it shows OutOfSync and waits. Trigger the cutover deliberately with a
    **manual sync**, which runs the wave-2 Sync `migrate-job` (migrations 0026–0037,
    incl. RLS enable) to completion first, then rolls the Deployments to the new
-   digest (now connecting as `mnt_rt`):
+   digest (now connecting as `console_rt`):
    ```sh
    argocd app sync maintenance        # CNPG → topology gate → migrate → app/worker/web
    # or: kubectl -n argocd annotate application maintenance argocd.argoproj.io/sync=...
    ```
-   Watch the `mnt-migrate` Job to Completed before the Deployments roll.
+   Watch the `console-migrate` Job to Completed before the Deployments roll.
 6. **Scale the app back up** (Argo will, as it deploys the new Deployment which
-   now reads `DATABASE_URL` from `mnt-db-rt`). The new app connects as the
+   now reads `DATABASE_URL` from `console-db-rt`). The new app connects as the
    non-owner role and sets `app.current_org` per request, so RLS resolves to the
    request's tenant (KNL for all existing users).
-7. **Platform admin bootstrap.** The global `MNT_COLDSTART_OTP` now seeds the
+7. **Platform admin bootstrap.** The global `CONSOLE_COLDSTART_OTP` now seeds the
    PLATFORM admin (sentinel org). If you need a platform login, set that secret +
    redeem the OTP per the onboarding docs. KNL's own admins are unchanged (they
    were backfilled to the KNL org).
@@ -196,7 +196,7 @@ Pick based on how far the cutover got:
 
 `FORCE ROW LEVEL SECURITY` subjects even the table owner to RLS. The old app
 connects as the owner and does not set `app.current_org`, so the moment RLS is
-enabled it reads zero rows. The new app connects as `mnt_rt` and sets the GUC per
+enabled it reads zero rows. The new app connects as `console_rt` and sets the GUC per
 request, so it works. There is therefore an unavoidable interval — between
 "migrations enable RLS" and "new app is the only one serving" — during which the
 old app is broken. Scaling the old app to 0 for the duration removes that

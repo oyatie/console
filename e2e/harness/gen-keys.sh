@@ -4,7 +4,7 @@
 # Idempotent: keys are written once under E2E_AUTH_DIR (default: e2e/.auth/) and
 # reused on subsequent runs so a passkey enrolled against one boot still verifies
 # on the next. Source this script (`. gen-keys.sh`) to get
-# MNT_JWT_PRIVATE_KEY_PEM / _PUBLIC_KEY_PEM exported into the current shell;
+# CONSOLE_JWT_PRIVATE_KEY_PEM / _PUBLIC_KEY_PEM exported into the current shell;
 # running it directly just (re)creates the files.
 set -euo pipefail
 
@@ -26,6 +26,6 @@ else
   echo "gen-keys: reusing existing ES256 keypair under ${AUTH_DIR}" >&2
 fi
 
-MNT_JWT_PRIVATE_KEY_PEM="$(cat "${PRIV}")"
-MNT_JWT_PUBLIC_KEY_PEM="$(cat "${PUB}")"
-export MNT_JWT_PRIVATE_KEY_PEM MNT_JWT_PUBLIC_KEY_PEM
+CONSOLE_JWT_PRIVATE_KEY_PEM="$(cat "${PRIV}")"
+CONSOLE_JWT_PUBLIC_KEY_PEM="$(cat "${PUB}")"
+export CONSOLE_JWT_PRIVATE_KEY_PEM CONSOLE_JWT_PUBLIC_KEY_PEM

@@ -7,12 +7,12 @@
 //! instead; keep seeding on the original owner pool.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{BranchId, OrgId, UserId};
+use console_kernel_core::{BranchId, OrgId, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 
 /// A pool cloned from `owner_pool`'s connection settings, with every
-/// connection switched to the low-privilege `mnt_rt` role via `SET ROLE`.
+/// connection switched to the low-privilege `console_rt` role via `SET ROLE`.
 /// Build routers/stores from this pool so RLS applies to test requests.
 pub async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -20,21 +20,21 @@ pub async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
         .connect_with(options)
         .await
-        .expect("connect mnt_rt-role test pool")
+        .expect("connect console_rt-role test pool")
 }
 
-/// Run a batch of static GRANT statements on `owner_pool` so the `mnt_rt`
+/// Run a batch of static GRANT statements on `owner_pool` so the `console_rt`
 /// runtime role can reach base tables the `#[sqlx::test]` superuser owns but
 /// hasn't granted by default. `grants` must be static literals — no
 /// interpolation. Living here (an unscanned crate) keeps the mutating-SQL
 /// scanners off the caller's REST test file.
-pub async fn grant_mnt_rt(owner_pool: &PgPool, grants: &[&'static str]) {
+pub async fn grant_console_rt(owner_pool: &PgPool, grants: &[&'static str]) {
     for grant in grants {
         sqlx::query(*grant).execute(owner_pool).await.unwrap();
     }
@@ -42,14 +42,14 @@ pub async fn grant_mnt_rt(owner_pool: &PgPool, grants: &[&'static str]) {
 
 /// Seed an `organizations` row for `org` plus a single `SUPER_ADMIN` user under
 /// it (slug derived from the org UUID), returning the user id. Seeds as the
-/// migration owner during setup, before the `mnt_rt` role switch.
+/// migration owner during setup, before the `console_rt` role switch.
 pub async fn seed_org_and_super_admin(owner_pool: &PgPool, org: uuid::Uuid, tag: &str) -> UserId {
     let slug = format!("org-{}", &org.simple().to_string()[..12]);
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING")
         .bind(org)
         .bind(slug)
         .bind(format!("Org {tag}"))
-        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
         .execute(owner_pool)
         .await
         .unwrap();
@@ -59,7 +59,7 @@ pub async fn seed_org_and_super_admin(owner_pool: &PgPool, org: uuid::Uuid, tag:
         .bind(format!("Admin {tag}"))
         .bind(["SUPER_ADMIN"].as_slice())
         .bind(org)
-        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
         .execute(owner_pool)
         .await
         .unwrap();
@@ -80,7 +80,7 @@ pub async fn seed_org_rls_off(owner_pool: &PgPool, org: uuid::Uuid, tag: &str) {
     .bind(org)
     .bind(format!("org-{}", tag.to_lowercase()))
     .bind(format!("Org {tag}"))
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .execute(&mut *tx)
     .await
     .unwrap();
@@ -101,7 +101,7 @@ pub async fn seed_admin_user_rls_off(owner_pool: &PgPool, org: uuid::Uuid) -> Us
     .bind(format!("User {}", uuid::Uuid::new_v4()))
     .bind(vec!["ADMIN".to_string()])
     .bind(org)
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .fetch_one(&mut *tx)
     .await
     .unwrap();
@@ -125,7 +125,7 @@ pub async fn seed_bound_workflow_and_policy(
         "#,
     )
     .bind(org)
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .execute(owner_pool)
     .await
     .unwrap();
@@ -141,7 +141,7 @@ pub async fn seed_bound_workflow_and_policy(
         "#,
     )
     .bind(org)
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .fetch_one(owner_pool)
     .await
     .unwrap();
@@ -152,7 +152,7 @@ pub async fn seed_bound_workflow_and_policy(
     .bind(org)
     .bind(object_type_id)
     .bind(cedar_id)
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .execute(owner_pool)
     .await
     .unwrap();
@@ -166,7 +166,7 @@ pub async fn seed_branch(pool: &PgPool, region_name: &str, branch_name: &str) ->
         sqlx::query_scalar("INSERT INTO regions (name, org_id) VALUES ($1, $2) RETURNING id")
             .bind(format!("{region_name}-{}", uuid::Uuid::new_v4()))
             .bind(*OrgId::knl().as_uuid())
-            // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+            // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
             .fetch_one(pool)
             .await
             .unwrap();
@@ -176,7 +176,7 @@ pub async fn seed_branch(pool: &PgPool, region_name: &str, branch_name: &str) ->
     .bind(region_id)
     .bind(format!("{branch_name}-{}", uuid::Uuid::new_v4()))
     .bind(*OrgId::knl().as_uuid())
-    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
     .fetch_one(pool)
     .await
     .unwrap();
@@ -191,7 +191,7 @@ pub async fn seed_user(pool: &PgPool, name: &str, role: &str, branch: BranchId) 
         .bind(name)
         .bind(Vec::from([role]))
         .bind(*OrgId::knl().as_uuid())
-        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
         .execute(pool)
         .await
         .unwrap();
@@ -199,7 +199,7 @@ pub async fn seed_user(pool: &PgPool, name: &str, role: &str, branch: BranchId) 
         .bind(*id.as_uuid())
         .bind(*branch.as_uuid())
         .bind(*OrgId::knl().as_uuid())
-        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the mnt_rt role switch
+        // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
         .execute(pool)
         .await
         .unwrap();

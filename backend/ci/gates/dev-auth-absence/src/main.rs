@@ -16,29 +16,29 @@ fn main() {
 
 fn run_gate(workspace_dir: &Path) {
     eprintln!(
-        "mnt-gate-dev-auth-absence: checking workspace at {}",
+        "console-gate-dev-auth-absence: checking workspace at {}",
         workspace_dir.display()
     );
 
-    let metadata = mnt_gate_dev_auth_absence::load_metadata(workspace_dir).unwrap_or_else(|e| {
+    let metadata = console_gate_dev_auth_absence::load_metadata(workspace_dir).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
-    let result = mnt_gate_dev_auth_absence::check(&metadata).unwrap_or_else(|e| {
+    let result = console_gate_dev_auth_absence::check(&metadata).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
     if result.passed() {
         eprintln!(
-            "mnt-gate-dev-auth-absence: PASSED — dev-auth is not in mnt-app's default features"
+            "console-gate-dev-auth-absence: PASSED — dev-auth is not in console-app's default features"
         );
         std::process::exit(0);
     }
 
     eprintln!(
-        "mnt-gate-dev-auth-absence: FAILED — {} violation(s):",
+        "console-gate-dev-auth-absence: FAILED — {} violation(s):",
         result.violations.len()
     );
     for violation in &result.violations {

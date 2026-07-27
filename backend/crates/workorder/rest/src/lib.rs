@@ -13,28 +13,28 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post, put};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, DailyPlanId, DeviceId, ErrorKind, EvidenceId,
     KernelError, OrgId, TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_auth::{
+use console_platform_auth::{
     JwtVerifier, MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope,
     MobilePasskeyStepUpVerificationError, PasskeyService,
 };
-use mnt_platform_authz::{
+use console_platform_authz::{
     Action, BranchColumn, Feature, PermissionLevel, Principal, Role, authorize, permission_for,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_jobs::{JobQueue, JobRequest};
-use mnt_platform_request_context::current_org;
-use mnt_platform_storage::{
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_jobs::{JobQueue, JobRequest};
+use console_platform_request_context::current_org;
+use console_platform_storage::{
     EvidenceMedia, EvidenceService, EvidenceUploadCommand, EvidenceUploadTicket, MediaKind,
     PresignedUpload, ProcessingStatus, S3ObjectStore, StagingUploadCommand, StorageError,
     WormReplicaStatus,
 };
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
-use mnt_workorder_adapter_postgres::{PgWorkOrderError, PgWorkOrderStore};
-use mnt_workorder_application::{
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_workorder_adapter_postgres::{PgWorkOrderError, PgWorkOrderStore};
+use console_workorder_application::{
     AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateSettlementCommand,
     CreateWorkOrderCommand, DailyPlanItemInput, DailyPlanListQuery, DailyPlanStatus,
     DailyPlanSummary, RejectWorkOrderCommand, ReviewDailyPlanCommand, ReviewSettlementCommand,
@@ -44,7 +44,7 @@ use mnt_workorder_application::{
     TargetChangeStatus, UpdatePriorityCommand, UpdateWorkOrderIntakeCommand, VoidSettlementCommand,
     WorkOrderApprovalCommand, WorkOrderAssignmentCommand, WorkOrderStartCommand,
 };
-use mnt_workorder_domain::{
+use console_workorder_domain::{
     AssignmentRole, AttachmentStage, MaintenanceCause, MaintenanceType, PriorityLevel,
     SettlementLineKind, WorkOrderStatus, WorkResultType,
 };
@@ -300,7 +300,7 @@ pub fn router(state: WorkOrderRestState) -> Router {
         .route(SETTLEMENT_REVIEW_V1_PATH_TEMPLATE, post(review_settlement))
         .route(SETTLEMENT_VOID_V1_PATH_TEMPLATE, post(void_settlement))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 pub fn mobile_router<S>(state: MobileRestState<S>) -> Router
@@ -324,7 +324,7 @@ where
         )
         .route(EVIDENCE_STATUS_PATH_TEMPLATE, get(evidence_status::<S>))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -2311,7 +2311,7 @@ async fn record_evidence_presign_audit(
 
 /// Audit a media-processing staging presign under an explicit action name.
 /// Mirrors [`record_evidence_presign_audit`]; the org is armed by `with_audit`
-/// via the event's org stamp so the audit insert is RLS-correct as `mnt_rt`.
+/// via the event's org stamp so the audit insert is RLS-correct as `console_rt`.
 async fn record_evidence_presign_audit_named(
     pool: &PgPool,
     principal: &Principal,
@@ -2903,7 +2903,7 @@ async fn fetch_equipment_lookup_candidates(
         builder.push(", '0')");
     }
     builder.push(" LIMIT 2");
-    let org_id = mnt_kernel_core::OrgId::from_uuid(org);
+    let org_id = console_kernel_core::OrgId::from_uuid(org);
     with_org_conn::<_, _, RestError>(state.store.pool(), org_id, move |tx| {
         Box::pin(async move { Ok(builder.build().fetch_all(tx.as_mut()).await?) })
     })
@@ -5186,7 +5186,7 @@ async fn mobile_principal_from_headers<S>(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for mobile API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, &state.pool, headers)
+    console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -5198,40 +5198,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for work-order API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for this API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::internal(message)
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => {
+        console_platform_request_context::RequestContextError::MissingOrg => {
             RestError::internal("no tenant context is bound to the current request")
         }
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -5306,9 +5306,9 @@ mod tests {
         NamedEntity, StatusHistorySummary, SyncBatchRequest, WorkOrderDetail, WorkOrderListItem,
         normalize_management_no,
     };
-    use mnt_kernel_core::{BranchId, DeviceId, EvidenceId, OrgId, UserId, WorkOrderId};
-    use mnt_platform_storage::ProcessingStatus;
-    use mnt_workorder_domain::AttachmentStage;
+    use console_kernel_core::{BranchId, DeviceId, EvidenceId, OrgId, UserId, WorkOrderId};
+    use console_platform_storage::ProcessingStatus;
+    use console_workorder_domain::AttachmentStage;
 
     fn test_equipment_summary() -> EquipmentSummary {
         EquipmentSummary {

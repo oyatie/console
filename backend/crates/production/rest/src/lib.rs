@@ -13,14 +13,14 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use base64::Engine as _;
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{
     Action, Feature, Principal, ServicePrincipal, authorize, authorize_service,
 };
-use mnt_platform_db::{DbError, insert_audit_event, with_audits, with_org_conn};
+use console_platform_db::{DbError, insert_audit_event, with_audits, with_org_conn};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
@@ -96,7 +96,7 @@ pub fn router(state: ProductionRestState) -> Router {
         )
         .with_state(state.clone());
     let human_router =
-        mnt_platform_request_context::with_request_context(human_router, verifier, pool);
+        console_platform_request_context::with_request_context(human_router, verifier, pool);
     // Basic-auth ingress is deliberately outside JWT request-context middleware.
     // It authenticates the machine principal before parsing JSON, resolves the
     // tenant through the narrow SECURITY DEFINER function, then arms RLS itself.
@@ -298,7 +298,7 @@ async fn list_plans(
     }
     let principal = principal(&state, &headers).await?;
     authorize_daily_plan_read(&principal, query.branch_id)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let mut tx = state.pool.begin().await.map_err(RestError::db)?;
     arm_tenant(&mut tx, *org.as_uuid()).await?;
@@ -318,7 +318,7 @@ async fn list_capacity_slots(
 ) -> Result<Json<Vec<CapacitySlot>>, RestError> {
     let principal = principal(&state, &headers).await?;
     authorize_daily_plan_read(&principal, query.branch_id)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let mut tx = state.pool.begin().await.map_err(RestError::db)?;
     arm_tenant(&mut tx, *org.as_uuid()).await?;
@@ -352,7 +352,7 @@ async fn register_source_system(
         request.branch_id,
     )
     .map_err(RestError::kernel)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let id = Uuid::new_v4();
     let secret = generated_secret();
@@ -360,7 +360,7 @@ async fn register_source_system(
         &hmac_key,
         &secret,
         org,
-        mnt_kernel_core::ServicePrincipalId::from_uuid(id),
+        console_kernel_core::ServicePrincipalId::from_uuid(id),
         request.branch_id,
         1,
     );
@@ -408,7 +408,7 @@ async fn source_system_lifecycle_context(
     id: Uuid,
 ) -> Result<(Principal, OrgId, BranchId, i32, String), RestError> {
     let principal = principal(state, headers).await?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let (branch_id, generation, source_system) =
         with_org_conn::<_, _, RestError>(&state.pool, org, move |tx| {
@@ -455,7 +455,7 @@ async fn rotate_source_system_credential(
         &hmac_key,
         &secret,
         org,
-        mnt_kernel_core::ServicePrincipalId::from_uuid(id),
+        console_kernel_core::ServicePrincipalId::from_uuid(id),
         branch_id,
         next_generation,
     );
@@ -557,7 +557,7 @@ async fn ingest_source(
     let stored_verifier: Vec<u8> = source.try_get("verifier").map_err(RestError::db)?;
     let machine = ServicePrincipal::new(
         credentials.client_id,
-        mnt_kernel_core::OrgId::from_uuid(source_org),
+        console_kernel_core::OrgId::from_uuid(source_org),
         branch_id,
         Feature::ProductionSourceIngest,
     );
@@ -584,7 +584,7 @@ async fn ingest_source(
     }
     let request: SourceIngress = serde_json::from_slice(&body)
         .map_err(|_| RestError::validation("invalid production source ingress body"))?;
-    let org = mnt_kernel_core::OrgId::from_uuid(org_id);
+    let org = console_kernel_core::OrgId::from_uuid(org_id);
     let (kind, source_id, source_version) = match &request {
         SourceIngress::Demand {
             source_id,
@@ -733,7 +733,7 @@ async fn create_plan(
         request.branch_id,
     )
     .map_err(RestError::kernel)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let response = with_audits::<_, _, RestError>(&state.pool, org, move |tx| {
         Box::pin(async move {
@@ -830,7 +830,7 @@ async fn release_plan(
         BranchId::from_uuid(plan.branch_id),
     )
     .map_err(RestError::kernel)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let response = with_audits::<_, _, RestError>(&state.pool, org, move |tx| {
         Box::pin(async move {
@@ -936,7 +936,7 @@ async fn record_operation(
         BranchId::from_uuid(plan.branch_id),
     )
     .map_err(RestError::kernel)?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let response = with_audits::<_, _, RestError>(&state.pool, org, move |tx| {
         Box::pin(async move {
@@ -996,7 +996,7 @@ async fn get_plan(
     let principal = principal(&state, &headers).await?;
     let plan = plan_for_auth(&state.pool, plan_id).await?;
     authorize_daily_plan_read(&principal, BranchId::from_uuid(plan.branch_id))?;
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let mut tx = state.pool.begin().await.map_err(RestError::db)?;
     arm_tenant(&mut tx, *org.as_uuid()).await?;
@@ -1140,7 +1140,7 @@ async fn resolve_required_sources(
     })
 }
 async fn plan_for_auth(pool: &PgPool, id: Uuid) -> Result<PlanRow, RestError> {
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let mut tx = pool.begin().await.map_err(RestError::db)?;
     arm_tenant(&mut tx, *org.as_uuid()).await?;
@@ -1170,7 +1170,7 @@ async fn plan_for_auth_tx(
     })
 }
 async fn operation_detail(pool: &PgPool, id: Uuid) -> Result<OperationDetail, RestError> {
-    let org = mnt_platform_request_context::current_org()
+    let org = console_platform_request_context::current_org()
         .map_err(|_| RestError::internal("tenant context is missing"))?;
     let mut tx = pool.begin().await.map_err(RestError::db)?;
     arm_tenant(&mut tx, *org.as_uuid()).await?;
@@ -1439,7 +1439,7 @@ async fn principal(
         .jwt_verifier
         .as_ref()
         .ok_or_else(|| RestError::internal("JWT verification is not configured"))?;
-    mnt_platform_request_context::resolve_principal(verifier, &state.pool, headers)
+    console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
         .await
         .map_err(|_| RestError::unauthorized("missing, invalid, or unauthorized bearer token"))
 }

@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-notices-application",
+    name = "console-notices-application",
     mapped_srcs = repo_mapped_srcs("backend/crates/notices/application", glob(["src/**/*.rs"])),
-    crate = "mnt_notices_application",
+    crate = "console_notices_application",
     edition = "2024",
     crate_root = "backend/crates/notices/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notices/application"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/notices/domain:mnt-notices-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/notices/domain:console-notices-domain",
         "//third-party/rust:serde",
         "//third-party/rust:time",
     ],

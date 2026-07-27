@@ -4,11 +4,11 @@
 //! tables, not just the original slice that `rls_isolation.rs` covers.
 //!
 //! This is PART 2 of the tenant-isolation CI gate. The static scan
-//! (`mnt-gate-tenant-isolation`) proves every tenant table DECLARES org_id +
+//! (`console-gate-tenant-isolation`) proves every tenant table DECLARES org_id +
 //! ENABLE/FORCE RLS + an org policy; this integration test proves those
-//! declarations actually ISOLATE data at runtime as the non-owner `mnt_rt` role.
+//! declarations actually ISOLATE data at runtime as the non-owner `console_rt` role.
 //!
-//! For each representative table it asserts, running as `mnt_rt`:
+//! For each representative table it asserts, running as `console_rt`:
 //!   1. GUC = A → SELECT sees ONLY org A's row (B invisible); GUC = B → only B.
 //!   2. GUC unset → ZERO rows (fail-closed).
 //!   3. A cross-org INSERT (a row tagged org B while the GUC is armed to A) is
@@ -27,7 +27,7 @@ const ORG_B: Uuid = Uuid::from_u128(0xB22B_B22B_B22B_B22B_B22B_B22B_B22B_B22B);
 
 /// The non-owner runtime role the application connects as in production. A
 /// static literal so sqlx accepts it without an injection-audit override.
-const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE mnt_rt";
+const SET_RUNTIME_ROLE: &str = "SET LOCAL ROLE console_rt";
 
 /// The id of one seeded row per representative table, so the cross-org write
 /// test can target a specific org-B row and the count test knows what to expect.
@@ -58,7 +58,7 @@ async fn set_role_and_org(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: O
 /// Seed one org across the representative rolled-out tables, as the unprivileged
 /// runtime role with the tenant GUC armed (so each row passes WITH CHECK).
 async fn seed_rollout(pool: &PgPool, org: Uuid, tag: &str) -> SeededRollout {
-    // The org row is an OWNER/superuser operation (mnt_rt is SELECT-only on
+    // The org row is an OWNER/superuser operation (console_rt is SELECT-only on
     // organizations) — insert it as the pool role, which also bypasses RLS.
     let mut tx = pool.begin().await.unwrap();
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
@@ -69,7 +69,7 @@ async fn seed_rollout(pool: &PgPool, org: Uuid, tag: &str) -> SeededRollout {
         .await
         .unwrap();
 
-    // Drop to mnt_rt + arm the GUC; every child row passes WITH CHECK as the app
+    // Drop to console_rt + arm the GUC; every child row passes WITH CHECK as the app
     // would write it.
     set_role_and_org(&mut tx, Some(org)).await;
 

@@ -5,9 +5,9 @@
 //! exact test would run against a build where the route legitimately exists,
 //! and fail) — the complement of `dev_auth_session.rs`'s
 //! `#![cfg(feature = "dev-auth")]`. The meaningful run is the plain
-//! `cargo test -p mnt-platform-auth-rest` (no `--features dev-auth`), which
+//! `cargo test -p console-platform-auth-rest` (no `--features dev-auth`), which
 //! is exactly the build every production image ships.
-//! `mnt-gate-dev-auth-absence` proves the same fact at the `cargo metadata`
+//! `console-gate-dev-auth-absence` proves the same fact at the `cargo metadata`
 //! level (the feature graph); this test proves it at the HTTP-routing level
 //! (the literal path 404s).
 #![cfg(not(feature = "dev-auth"))]
@@ -15,7 +15,7 @@
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
-use mnt_platform_auth_rest::{AuthRestState, router};
+use console_platform_auth_rest::{AuthRestState, router};
 use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 
@@ -25,7 +25,7 @@ async fn dev_auth_session_route_is_absent_without_the_feature() {
     // therefore before any pool use) runs, so `connect_lazy` — which opens no
     // real connection until first query — is all a pure routing test needs.
     let pool = PgPoolOptions::new()
-        .connect_lazy("postgres://mnt_rt:mnt_rt@localhost/mnt_dev_auth_absence_probe")
+        .connect_lazy("postgres://console_rt:console_rt@localhost/console_dev_auth_absence_probe")
         .unwrap();
     let app = router(AuthRestState::disabled(pool));
 

@@ -1,13 +1,13 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 //! Authenticated, runtime-role PostgreSQL story for the bounded equipment 3R
 //! pilot.  It intentionally crosses the assembled HTTP router rather than
-//! calling stores, and runs as `mnt_rt` so RLS is exercised, not bypassed.
+//! calling stores, and runs as `console_rt` so RLS is exercised, not bypassed.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const UNITS: &str = "/api/v1/equipment-3r/units";
 const CASES: &str = "/api/v1/equipment-3r/rental-cases";
 const ALL_FEATURES: &[&str] = &[
@@ -1015,7 +1015,7 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .max_connections(8)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -1061,14 +1061,14 @@ async fn send(
         },
     )
 }
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
     AppState::new(
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".into()),
-            ("MNT_JWT_ISSUER", ISSUER.into()),
-            ("MNT_JWT_AUDIENCE", AUDIENCE.into()),
-            ("MNT_JWT_PUBLIC_KEY_PEM", public_key),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
+            ("CONSOLE_JWT_ISSUER", ISSUER.into()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.into()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key),
         ])?,
         DatabaseDependency::Postgres(pool),
     )

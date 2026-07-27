@@ -3,26 +3,26 @@
 //! The HTTP surface is a composition root. Source visibility and persistence
 //! predicates stay in their owning adapters; source-neutral cursor, urgency,
 //! deterministic merge, total, and pagination semantics live in
-//! `mnt-action-inbox-application`.
+//! `console-action-inbox-application`.
 
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Json, Router};
-use mnt_action_inbox_application::{
+use console_action_inbox_application::{
     ActionInboxItem as ApplicationActionInboxItem, ActionInboxLink, ActionInboxSource,
     ActionInboxSourceFuture, ActionInboxSourceItem, ActionInboxSourcePage, ActionInboxSourcePort,
     ActionInboxSourceQuery, CompleteActionInboxError, ListActionInboxQuery,
     canonical_action_link_kind, list_action_inbox as run_action_inbox, list_complete_action_inbox,
 };
-use mnt_dispatch_adapter_postgres::PgDispatchStore;
-use mnt_kernel_core::{ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::Principal;
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_application::{
+use console_dispatch_adapter_postgres::PgDispatchStore;
+use console_kernel_core::{ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::Principal;
+use console_support_adapter_postgres::PgSupportStore;
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_application::{
     ActionInboxPosition as WorkOrderActionInboxPosition, ActionInboxWorkOrderPort,
 };
 use serde::Deserialize;
@@ -56,7 +56,7 @@ pub fn router(state: ActionInboxState) -> Router {
     let router = Router::new()
         .route(ME_ACTION_INBOX_PATH, get(list_action_inbox))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -69,7 +69,7 @@ async fn list_action_inbox(
     State(state): State<ActionInboxState>,
     Extension(principal): Extension<Principal>,
     Query(query): Query<ActionInboxQuery>,
-) -> Result<Json<mnt_action_inbox_application::ActionInboxPage>, InboxError> {
+) -> Result<Json<console_action_inbox_application::ActionInboxPage>, InboxError> {
     let sources = PgActionInboxSources {
         pool: state.pool,
         principal,
@@ -479,10 +479,10 @@ impl IntoResponse for InboxError {
 
 #[cfg(test)]
 mod tests {
-    use mnt_kernel_core::KernelError;
+    use console_kernel_core::KernelError;
 
     use super::InboxError;
-    use mnt_action_inbox_application::canonical_action_link_kind;
+    use console_action_inbox_application::canonical_action_link_kind;
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]

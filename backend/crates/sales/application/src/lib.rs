@@ -2,11 +2,11 @@
 //! builders. Sales is an ORG-LEVEL catalog (no branch scoping), so audit events
 //! carry no branch. The public inquiry submit has no authenticated actor.
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, CustomerInquiryId, EquipmentId, KernelError, SalesListingId,
     Timestamp, TraceContext, UserId,
 };
-use mnt_sales_domain::{
+use console_sales_domain::{
     InquiryStatus, InquiryTopic, ListingCondition, ListingKind, ListingStatus, ListingType,
 };
 use serde::{Deserialize, Serialize};

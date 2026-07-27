@@ -9,7 +9,7 @@
 -- `app.current_org`. There is no per-person GUC, so owner scoping is enforced
 -- in application code from the authenticated principal, never request input.
 
--- mnt-gate: audited-table todos
+-- console-gate: audited-table todos
 CREATE TABLE todos (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -41,4 +41,4 @@ CREATE POLICY org_isolation ON todos
 
 -- Todos are owner-owned scratch items: full CRUD for the runtime role
 -- (delete is a first-class, audited operation — unlike notifications).
-GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO console_rt;

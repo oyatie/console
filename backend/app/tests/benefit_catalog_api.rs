@@ -1,16 +1,16 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Runtime route proof for the tenant-scoped Benefits vertical.
 //!
-//! This uses the app router and a non-owner `mnt_rt` pool: JWT/PBAC denial and
+//! This uses the app router and a non-owner `console_rt` pool: JWT/PBAC denial and
 //! authorization, catalog mutations, generic lifecycle transitions, and both
 //! catalog and lifecycle audit events are proved through the deployed route
 //! composition rather than store-direct calls.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn benefit_catalog_routes_enforce_pbac_and_audit_catalog_and_lifecycle_writes(
@@ -53,7 +53,7 @@ async fn benefit_catalog_routes_enforce_pbac_and_audit_catalog_and_lifecycle_wri
         org,
         vec!["SUPER_ADMIN".to_owned()],
     );
-    let service = build_router(app_state(mnt_rt_pool(&owner_pool).await, public_key_pem));
+    let service = build_router(app_state(console_rt_pool(&owner_pool).await, public_key_pem));
     let create_body = benefit_body();
 
     let denied = request(
@@ -237,7 +237,7 @@ fn condition(label: &str) -> Value {
     })
 }
 
-async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
+async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set for sqlx::test");
     let db_name: String = sqlx::query_scalar("SELECT current_database()")
         .fetch_one(owner_pool)
@@ -251,7 +251,7 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|connection, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt").execute(connection).await?;
                 Ok(())
             })
         })
@@ -284,11 +284,11 @@ async fn seed_tenant_user(pool: &PgPool, org: OrgId, user: UserId, role: &str, n
 
 fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()

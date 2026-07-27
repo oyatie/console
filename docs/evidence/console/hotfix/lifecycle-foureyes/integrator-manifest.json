@@ -45,19 +45,19 @@
   "environment_notes": [
     {
       "id": "E-1",
-      "title": "dev-PG mnt_buck_admin harness password was unset; one was set",
-      "detail": "backend crate tests using #[sqlx::test] must satisfy migration 0196: CURRENT_USER = mnt_buck_admin AND startup option mnt.sqlx_test_bootstrap = buck-sqlx-superuser-v1. The role existed on the shared dev PG with no password. Set to mnt-buck-admin-local (dev-only, local-bound container).",
-      "reusable_dsn": "postgres://mnt_buck_admin:mnt-buck-admin-local@127.0.0.1:55432/mnt_dev?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+      "title": "dev-PG console_buck_admin harness password was unset; one was set",
+      "detail": "backend crate tests using #[sqlx::test] must satisfy migration 0196: CURRENT_USER = console_buck_admin AND startup option mnt.sqlx_test_bootstrap = buck-sqlx-superuser-v1. The role existed on the shared dev PG with no password. Set to console-buck-admin-local (dev-only, local-bound container).",
+      "reusable_dsn": "postgres://console_buck_admin:console-buck-admin-local@127.0.0.1:55432/console_dev?options%5Bmnt.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
     },
     {
       "id": "E-2",
       "title": "shared dev Postgres crashed mid-lane on a full Docker volume",
-      "detail": "The Docker VM volume backing mnt-dev-postgres-1 hit 197G/0 avail and Postgres entered a restart loop (FATAL: could not write lock file postmaster.pid). Cause was 684 orphaned anonymous docker volumes (~85GB) left by disposable Buck2 PG harness containers across lanes; PGDATA itself was 597MB. Escalated to main and cleared with docker volume prune. Recommend adding the prune to wave teardown."
+      "detail": "The Docker VM volume backing console-dev-postgres-1 hit 197G/0 avail and Postgres entered a restart loop (FATAL: could not write lock file postmaster.pid). Cause was 684 orphaned anonymous docker volumes (~85GB) left by disposable Buck2 PG harness containers across lanes; PGDATA itself was 597MB. Escalated to main and cleared with docker volume prune. Recommend adding the prune to wave teardown."
     },
     {
       "id": "E-3",
       "title": "pre-existing parallel-execution flake, not caused by this lane",
-      "detail": "mnt-platform-db --test attendance_console_migration_contract::platform_force_migration_rejects_partially_drifted_force_table_owner intermittently fails with XX000 'tuple concurrently updated' on ALTER TABLE registry_customers OWNER TO mnt_buck_admin (shared catalog contention). Deterministically green with --test-threads=1."
+      "detail": "console-platform-db --test attendance_console_migration_contract::platform_force_migration_rejects_partially_drifted_force_table_owner intermittently fails with XX000 'tuple concurrently updated' on ALTER TABLE registry_customers OWNER TO console_buck_admin (shared catalog contention). Deterministically green with --test-threads=1."
     }
   ]
 }

@@ -11,8 +11,8 @@
 -- This migration ADDS NULLABLE columns to the existing, already RLS-scoped
 -- `evidence_media` table (no new table). The table is already ENABLE + FORCE
 -- ROW LEVEL SECURITY (0035 rollout) with the `org_isolation` policy keyed on the
--- `app.current_org` GUC, and `mnt_rt` already holds SELECT/INSERT/UPDATE/DELETE
--- via the 0031 `ALTER DEFAULT PRIVILEGES FOR ROLE mnt_app … GRANT … ON TABLES`.
+-- `app.current_org` GUC, and `console_rt` already holds SELECT/INSERT/UPDATE/DELETE
+-- via the 0031 `ALTER DEFAULT PRIVILEGES FOR ROLE console_app … GRANT … ON TABLES`.
 -- Adding nullable columns therefore needs NO new grant or policy — the existing
 -- org_isolation USING/WITH CHECK clauses continue to scope every read and the
 -- worker's status UPDATE, and the 0031 enforce_org_id_immutable trigger still
@@ -31,7 +31,7 @@
 -- column DEFAULT is 'READY' — the transcode poller must never pick them up.
 -- Only NEW staging uploads are inserted with processing_status = 'PROCESSING'.
 --
--- mnt-gate: audited-table evidence_media
+-- console-gate: audited-table evidence_media
 
 ALTER TABLE evidence_media
     ADD COLUMN processing_status     TEXT NOT NULL DEFAULT 'READY' CHECK (

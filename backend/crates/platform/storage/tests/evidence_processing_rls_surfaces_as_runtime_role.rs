@@ -6,7 +6,7 @@
 //! a totally broken or cross-tenant-leaking media pipeline. This test SEEDS as
 //! the owner (raw inserts, row_security off) and runs the actual
 //! `EvidenceService` staging-upload + transcode lifecycle as the genuine
-//! non-owner runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
+//! non-owner runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — the
 //! only faithful exercise of the tenant policy.
 //!
 //! Asserts, with two tenants A (KNL) and B:
@@ -16,13 +16,13 @@
 //!     A's GUC and write the optimized artifact + thumbnail to A-prefixed keys;
 //!   * cross-tenant isolation: under tenant B's armed GUC, A's PROCESSING row is
 //!     NOT claimable (claim returns None) and A's evidence row is NOT FOUND, so a
-//!     `mnt_rt` worker armed for the wrong tenant can never touch A's media;
+//!     `console_rt` worker armed for the wrong tenant can never touch A's media;
 //!   * FAIL-CLOSED: with NO GUC armed, claim_processing_job sees nothing.
 
 use std::sync::{Arc, Mutex};
 
-use mnt_kernel_core::{EvidenceId, OrgId, TraceContext, WorkOrderId};
-use mnt_platform_storage::{
+use console_kernel_core::{EvidenceId, OrgId, TraceContext, WorkOrderId};
+use console_platform_storage::{
     CopyObjectRequest, EvidenceService, MediaKind, MediaProcessor, ObjectHead, PresignGetRequest,
     PresignPutRequest, PresignedUpload, ProcessedMedia, ProcessingStatus, RetentionInfo,
     S3ObjectStore, StagingUploadCommand, StorageFuture,
@@ -35,7 +35,7 @@ use uuid::Uuid;
 const ORG_A: Uuid = Uuid::from_u128(0x4b4e_4c00_0000_0000_0000_0000_0000_0001);
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
-// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 // the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -43,7 +43,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -314,11 +314,11 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
     // --- Tenant A: staging upload writes a PROCESSING row with A-prefixed keys.
     let svc = service(rt_pool.clone(), store.clone());
     let a_prefix = format!("orgs/{ORG_A}/");
-    let ticket = mnt_platform_request_context::scope_org(org_a, async {
+    let ticket = console_platform_request_context::scope_org(org_a, async {
         svc.issue_staging_upload(StagingUploadCommand {
-            actor: mnt_kernel_core::UserId::from_uuid(seeded_a.uploaded_by),
+            actor: console_kernel_core::UserId::from_uuid(seeded_a.uploaded_by),
             work_order_id: seeded_a.work_order_id,
-            stage: mnt_workorder_domain::AttachmentStage::During,
+            stage: console_workorder_domain::AttachmentStage::During,
             content_type: "video/quicktime".to_owned(),
             size_bytes: 5 * 1024 * 1024,
             checksum_sha256: None,
@@ -328,7 +328,7 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
         .await
     })
     .await
-    .expect("staging upload as mnt_rt for tenant A should succeed");
+    .expect("staging upload as console_rt for tenant A should succeed");
     assert_eq!(ticket.media.processing_status, ProcessingStatus::Processing);
     assert!(ticket.media.s3_key.starts_with(&a_prefix));
     assert!(
@@ -342,9 +342,9 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
     let media_a = ticket.media.id;
 
     // --- Cross-tenant isolation: under B's GUC, A's PROCESSING row is NOT
-    // claimable and NOT readable as `mnt_rt`.
+    // claimable and NOT readable as `console_rt`.
     let svc_b = service(rt_pool.clone(), store.clone());
-    let claimed_under_b = mnt_platform_request_context::scope_org(org_b, async {
+    let claimed_under_b = console_platform_request_context::scope_org(org_b, async {
         svc_b.claim_processing_job().await
     })
     .await
@@ -353,7 +353,7 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
         claimed_under_b.is_none(),
         "tenant B must not be able to claim tenant A's PROCESSING evidence"
     );
-    let read_under_b = mnt_platform_request_context::scope_org(org_b, async {
+    let read_under_b = console_platform_request_context::scope_org(org_b, async {
         svc_b.evidence_media(media_a).await
     })
     .await;
@@ -366,12 +366,12 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
     // arms via scope_org; this proves the policy itself fails closed).
     // (Seed B's own PROCESSING row so the queue is non-empty globally.)
     let svc_b2 = service(rt_pool.clone(), store.clone());
-    let _b_ticket = mnt_platform_request_context::scope_org(org_b, async {
+    let _b_ticket = console_platform_request_context::scope_org(org_b, async {
         svc_b2
             .issue_staging_upload(StagingUploadCommand {
-                actor: mnt_kernel_core::UserId::from_uuid(seeded_b.uploaded_by),
+                actor: console_kernel_core::UserId::from_uuid(seeded_b.uploaded_by),
                 work_order_id: seeded_b.work_order_id,
-                stage: mnt_workorder_domain::AttachmentStage::Before,
+                stage: console_workorder_domain::AttachmentStage::Before,
                 content_type: "image/jpeg".to_owned(),
                 size_bytes: 1024,
                 checksum_sha256: None,
@@ -385,7 +385,7 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
 
     // --- Tenant A: claim + process transitions PROCESSING -> READY under A.
     let svc_a = service(rt_pool.clone(), store.clone());
-    let status = mnt_platform_request_context::scope_org(org_a, async {
+    let status = console_platform_request_context::scope_org(org_a, async {
         let job = svc_a
             .claim_processing_job()
             .await
@@ -408,7 +408,7 @@ async fn evidence_processing_lifecycle_and_isolation_as_runtime_role(owner_pool:
     let (status, final_key, thumb_key, staging_key) = status;
     assert_eq!(status, ProcessingStatus::Ready);
 
-    let media = mnt_platform_request_context::scope_org(org_a, async {
+    let media = console_platform_request_context::scope_org(org_a, async {
         svc_a.evidence_media(media_a).await
     })
     .await

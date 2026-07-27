@@ -3,7 +3,7 @@
 //! sla_setting, handover_policy, shift_timetable, labor_refusal, regulation_param,
 //! site_coverage, profitability_analytic) ride the ONE ontology engine, exactly
 //! like `support_slo_setting`/`console_view`. Exercised as the genuine non-owner
-//! `mnt_rt` role (FORCE RLS), the only faithful RLS exercise.
+//! `console_rt` role (FORCE RLS), the only faithful RLS exercise.
 //!
 //! Proves:
 //!   (a) `seed_governed_config_object_types` publishes all 9 types (2 existing +
@@ -13,16 +13,16 @@
 //!       v+1 → as-of(t) returns the HISTORICAL v1 while current returns v2 — the
 //!       §3.9.0 staging semantics come free from the engine for the new types too.
 
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
-use mnt_ontology_adapter_postgres::seed::{
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore, StageRevision};
+use console_ontology_adapter_postgres::seed::{
     HANDOVER_POLICY_KEY, LABOR_REFUSAL_KEY, PROFITABILITY_ANALYTIC_KEY, REGULATION_PARAM_KEY,
     SHIFT_TIMETABLE_KEY, SITE_COVERAGE_KEY, SLA_SETTING_KEY, seed_governed_config_object_types,
 };
-use mnt_ontology_domain::ObjectTypeId;
+use console_ontology_domain::ObjectTypeId;
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -49,7 +49,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -64,7 +64,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -96,7 +96,7 @@ async fn seed_org_and_user(owner_pool: &PgPool, org: Uuid) -> UserId {
 }
 
 /// All 9 governed config types (SLO/console_view + the 7 niche types), each
-/// published with a `create` action — as `mnt_rt` would see them.
+/// published with a `create` action — as `console_rt` would see them.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn all_seven_niche_types_seed_published_and_isolated_per_org(owner_pool: PgPool) {
     let org_a = OrgId::from_uuid(ORG_A);
@@ -104,7 +104,7 @@ async fn all_seven_niche_types_seed_published_and_isolated_per_org(owner_pool: P
     let actor_a = seed_org_and_user(&owner_pool, ORG_A).await;
     let actor_b = seed_org_and_user(&owner_pool, ORG_B).await;
 
-    // Seed as `mnt_rt` (FORCE RLS) — the real role `tenant_config_seeder`
+    // Seed as `console_rt` (FORCE RLS) — the real role `tenant_config_seeder`
     // (app/src/lib.rs) provisions through in production; a superuser pool here
     // would bypass RLS and let org B's publish cross-supersede org A's row.
     let rt = runtime_role_pool(&owner_pool).await;
@@ -128,7 +128,7 @@ async fn all_seven_niche_types_seed_published_and_isolated_per_org(owner_pool: P
     .await;
 
     for key in NICHE_KEYS {
-        // Visible + published under org A, as mnt_rt (RLS-armed).
+        // Visible + published under org A, as console_rt (RLS-armed).
         let detail_a = scope_org(org_a, async { store.get_object_type(key, None).await })
             .await
             .unwrap_or_else(|e| panic!("{key} must be visible under org A: {e}"));
@@ -138,7 +138,7 @@ async fn all_seven_niche_types_seed_published_and_isolated_per_org(owner_pool: P
         );
         assert_eq!(
             detail_a.object_type.lifecycle_state,
-            mnt_ontology_domain::SchemaLifecycleState::Published
+            console_ontology_domain::SchemaLifecycleState::Published
         );
 
         // Visible + independently published under org B too — each org's copy

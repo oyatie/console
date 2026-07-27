@@ -30,7 +30,7 @@
 
 use std::str::FromStr;
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 
 use super::{CoexistenceMapEntry, DualEngineMode, cedar_required};
 use crate::Feature;

@@ -360,7 +360,7 @@
   ],
   "mobileContracts": [
     {
-      "file": "ios/Sources/MaintenanceFieldApp/FieldViews.swift",
+      "file": "ios/Sources/ConsoleApp/ConsoleViews.swift",
       "contract": "iOS field app must surface Work Hub, messenger, operations notifications, approvals with comments, mail, calendar, polls, and passkey-sensitive actions.",
       "requiredSnippets": [
         "workHubCollaborationAction",
@@ -375,7 +375,7 @@
       ]
     },
     {
-      "file": "ios/Sources/MaintenanceFieldApp/FieldViewModel.swift",
+      "file": "ios/Sources/ConsoleApp/ConsoleViewModel.swift",
       "contract": "iOS view model must refresh mobile operations, require passkey envelopes for approvals/polls, mark notifications read, and send/search/read messenger messages.",
       "requiredSnippets": [
         "MobileCollaborationAction",
@@ -389,7 +389,7 @@
       ]
     },
     {
-      "file": "ios/Sources/MaintenanceFieldCore/MobileOperationsRepository.swift",
+      "file": "ios/Sources/ConsoleCore/MobileOperationsRepository.swift",
       "contract": "iOS core operations repository must expose approval, mail, calendar, poll, notification inbox, passkey step-up, cached fallback, and poll vote flows.",
       "requiredSnippets": [
         "MobileOperationsSnapshot",
@@ -404,7 +404,7 @@
       ]
     },
     {
-      "file": "ios/Sources/MaintenanceFieldCore/APIGateway.swift",
+      "file": "ios/Sources/ConsoleCore/APIGateway.swift",
       "contract": "iOS API gateway must call generated client endpoints for mail, calendar, polls, approvals, messenger, passkey, and work-order evidence without bespoke divergent APIs.",
       "requiredSnippets": [
         "listMailThreads",
@@ -417,7 +417,7 @@
       ]
     },
     {
-      "file": "android/app/src/main/kotlin/com/maintenance/field/data/collaboration/MobileOperationsRepository.kt",
+      "file": "android/app/src/main/kotlin/com/console/app/data/collaboration/MobileOperationsRepository.kt",
       "contract": "Android operations repository must mirror approval, mail, calendar, polls, notifications, passkey-sensitive action, cache fallback, device registration, and location ping flows.",
       "requiredSnippets": [
         "MobileOperationsGateway",
@@ -432,7 +432,7 @@
       ]
     },
     {
-      "file": "android/app/src/main/kotlin/com/maintenance/field/data/messenger/MessengerRepository.kt",
+      "file": "android/app/src/main/kotlin/com/console/app/data/messenger/MessengerRepository.kt",
       "contract": "Android messenger repository must load/search/send/mark-read and queue offline messages for replay instead of losing field messages.",
       "requiredSnippets": [
         "loadThreads",
@@ -445,7 +445,7 @@
       ]
     },
     {
-      "file": "android/app/src/main/kotlin/com/maintenance/field/ui/FieldApp.kt",
+      "file": "android/app/src/main/kotlin/com/console/app/ui/ConsoleApp.kt",
       "contract": "Android UI must expose Work Hub collaboration actions, messenger, operations notifications, approval comment/passkey queue, mail, calendar, and poll vote flows.",
       "requiredSnippets": [
         "WorkHubScreen",
@@ -459,7 +459,7 @@
       ]
     },
     {
-      "file": "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/CollaborationApi.kt",
+      "file": "clients/kotlin/src/main/kotlin/com/console/api/client/api/CollaborationApi.kt",
       "contract": "Generated Kotlin collaboration client must include calendar and poll endpoints used by mobile collaboration code.",
       "requiredSnippets": [
         "GET /api/v1/collaboration/calendar/events",
@@ -467,7 +467,7 @@
       ]
     },
     {
-      "file": "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/MailApi.kt",
+      "file": "clients/kotlin/src/main/kotlin/com/console/api/client/api/MailApi.kt",
       "contract": "Generated Kotlin mail client must include thread, send, and reply endpoints used by mobile mail code.",
       "requiredSnippets": [
         "GET /api/v1/mail/threads",
@@ -476,21 +476,21 @@
       ]
     },
     {
-      "file": "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/MessengerApi.kt",
+      "file": "clients/kotlin/src/main/kotlin/com/console/api/client/api/MessengerApi.kt",
       "contract": "Generated Kotlin messenger client must include read-receipt endpoints used by mobile messenger code.",
       "requiredSnippets": [
         "PUT /api/messenger/threads/{threadId}/read-receipt"
       ]
     },
     {
-      "file": "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/ApprovalItemsApi.kt",
+      "file": "clients/kotlin/src/main/kotlin/com/console/api/client/api/ApprovalItemsApi.kt",
       "contract": "Generated Kotlin approval-items client must include the federated approval queue used by mobile operations code.",
       "requiredSnippets": [
         "GET /api/approval-items"
       ]
     },
     {
-      "file": "clients/kotlin/src/main/kotlin/com/maintenance/api/client/api/AuthApi.kt",
+      "file": "clients/kotlin/src/main/kotlin/com/console/api/client/api/AuthApi.kt",
       "contract": "Generated Kotlin auth client must include device-login polling used by mobile passkey and QR handoff flows.",
       "requiredSnippets": [
         "POST /api/v1/auth/device-login/poll"
@@ -539,11 +539,11 @@
   ],
   "requiredMobileTests": [
     "ios/UITests/MessengerUITests.swift",
-    "ios/UITests/FieldAccessibilityIDParityTests.swift",
-    "ios/Tests/MaintenanceFieldCoreTests/BuildOnlyTests.swift",
-    "android/app/src/test/kotlin/com/maintenance/field/data/collaboration/MobileOperationsRepositoryTest.kt",
-    "android/app/src/test/kotlin/com/maintenance/field/data/messenger/MessengerRepositoryTest.kt",
-    "android/app/src/test/kotlin/com/maintenance/field/ui/FieldScreensTest.kt",
-    "android/app/src/androidTest/kotlin/com/maintenance/field/WorkOrderFlowTest.kt"
+    "ios/UITests/ConsoleAccessibilityIDParityTests.swift",
+    "ios/Tests/ConsoleCoreTests/BuildOnlyTests.swift",
+    "android/app/src/test/kotlin/com/console/app/data/collaboration/MobileOperationsRepositoryTest.kt",
+    "android/app/src/test/kotlin/com/console/app/data/messenger/MessengerRepositoryTest.kt",
+    "android/app/src/test/kotlin/com/console/app/ui/ConsoleScreensTest.kt",
+    "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt"
   ]
 }

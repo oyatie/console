@@ -18,7 +18,7 @@
 //!
 //! The complementary runtime defense is to wrap sensitive fields in a redacting
 //! newtype so their `Display`/`Debug` never renders the raw value (see
-//! `mnt_kernel_core::RedactedPhone`). The newtype closes the interpolation gap
+//! `console_kernel_core::RedactedPhone`). The newtype closes the interpolation gap
 //! this gate cannot see; the gate closes the raw-literal gap. They are layered,
 //! not redundant.
 

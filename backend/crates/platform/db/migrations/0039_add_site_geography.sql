@@ -14,7 +14,7 @@
 -- migration adds NO new policy, trigger, or org column — only the geo columns,
 -- their value/consistency CHECKs, and one partial lookup index.
 --
--- mnt-gate: audited-table registry_sites
+-- console-gate: audited-table registry_sites
 ALTER TABLE registry_sites
     ADD COLUMN address     TEXT,
     ADD COLUMN province    TEXT,   -- 시도 (administrative level 1, e.g. 경기도)

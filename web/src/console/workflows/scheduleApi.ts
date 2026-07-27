@@ -5,7 +5,7 @@
  * envelope: schedule lifecycle, chronology, and tenant authorization belong to
  * the durable `workflow_schedules` resource the backend owns.
  */
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { ApiCallError } from "../../api/ontologyActions";

@@ -3,14 +3,14 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, OrgId, TraceContext, UserId,
 };
-use mnt_messenger_adapter_postgres::PgMessengerStore;
-use mnt_messenger_application::{CreateThreadCommand, SendMessageCommand};
-use mnt_messenger_domain::ThreadKind;
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_realtime::{
+use console_messenger_adapter_postgres::PgMessengerStore;
+use console_messenger_application::{CreateThreadCommand, SendMessageCommand};
+use console_messenger_domain::ThreadKind;
+use console_platform_db::{DbError, with_audit};
+use console_platform_realtime::{
     PgRealtimeHub, PostgresMessageNotifier, RealtimeEvent, RealtimeHubConfig, RealtimePrincipal,
 };
 use sqlx::PgPool;
@@ -19,7 +19,7 @@ use tokio::time::timeout;
 
 #[sqlx::test(migrations = "../db/migrations")]
 async fn postgres_notify_from_instance_a_wakes_instance_b_and_rereads_message_body(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_id = seed_branch(&pool).await;
         let sender = seed_user_with_branch(&pool, "sender", "MECHANIC", branch_id).await;
         let recipient = seed_user_with_branch(&pool, "recipient", "ADMIN", branch_id).await;
@@ -96,7 +96,7 @@ async fn postgres_notify_from_instance_a_wakes_instance_b_and_rereads_message_bo
 
 #[sqlx::test(migrations = "../db/migrations")]
 async fn reconnect_replays_messages_after_the_last_read_cursor(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_id = seed_branch(&pool).await;
         let sender = seed_user_with_branch(&pool, "resume sender", "MECHANIC", branch_id).await;
         let recipient = seed_user_with_branch(&pool, "resume recipient", "ADMIN", branch_id).await;
@@ -177,7 +177,7 @@ async fn reconnect_replays_messages_after_the_last_read_cursor(pool: PgPool) {
 
 #[sqlx::test(migrations = "../db/migrations")]
 async fn reconnect_replay_pages_past_one_hundred_messages_without_truncating(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_id = seed_branch(&pool).await;
         let sender = seed_user_with_branch(&pool, "page sender", "MECHANIC", branch_id).await;
         let recipient = seed_user_with_branch(&pool, "page recipient", "ADMIN", branch_id).await;
@@ -230,7 +230,7 @@ async fn reconnect_replay_pages_past_one_hundred_messages_without_truncating(poo
 
 #[sqlx::test(migrations = "../db/migrations")]
 async fn reconnect_replay_streams_backlog_larger_than_connection_buffer(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_id = seed_branch(&pool).await;
         let sender = seed_user_with_branch(&pool, "buffer sender", "MECHANIC", branch_id).await;
         let recipient = seed_user_with_branch(&pool, "buffer recipient", "ADMIN", branch_id).await;
@@ -289,7 +289,7 @@ async fn reconnect_replay_streams_backlog_larger_than_connection_buffer(pool: Pg
 
 #[sqlx::test(migrations = "../db/migrations")]
 async fn live_messages_during_replay_are_delivered_after_replay_without_duplicates(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_id = seed_branch(&pool).await;
         let sender = seed_user_with_branch(&pool, "race sender", "MECHANIC", branch_id).await;
         let recipient = seed_user_with_branch(&pool, "race recipient", "ADMIN", branch_id).await;
@@ -402,7 +402,7 @@ async fn create_thread(
     sender: UserId,
     recipient: UserId,
     branch_id: BranchId,
-) -> mnt_messenger_application::ThreadSummary {
+) -> console_messenger_application::ThreadSummary {
     store
         .create_thread(CreateThreadCommand {
             actor: sender,
@@ -424,10 +424,10 @@ async fn send_at(
     store: &PgMessengerStore,
     sender: UserId,
     branch_id: BranchId,
-    thread_id: mnt_kernel_core::ThreadId,
+    thread_id: console_kernel_core::ThreadId,
     body: &str,
     occurred_at: OffsetDateTime,
-) -> mnt_messenger_application::MessageSummary {
+) -> console_messenger_application::MessageSummary {
     store
         .send_message(SendMessageCommand {
             actor: sender,
@@ -444,8 +444,8 @@ async fn send_at(
 }
 
 async fn recv_message_id(
-    connection: &mut mnt_platform_realtime::RealtimeConnection,
-) -> mnt_kernel_core::MessageId {
+    connection: &mut console_platform_realtime::RealtimeConnection,
+) -> console_kernel_core::MessageId {
     let delivered = timeout(Duration::from_secs(3), connection.recv())
         .await
         .expect("replay event should arrive")

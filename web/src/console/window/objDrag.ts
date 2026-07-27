@@ -13,7 +13,7 @@ import { objectCodeRegex, objectRefTokenRegex } from "../ontology/codeGrammar";
 // with no code edit.
 
 /** Typed mime carrying the structured {code,title} payload. */
-export const OBJ_REF_MIME = "application/x-mnt-objref";
+export const OBJ_REF_MIME = "application/x-console-objref";
 
 export interface ObjectRef {
   code: string;

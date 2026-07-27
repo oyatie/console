@@ -23,8 +23,8 @@
 
 use std::collections::HashSet;
 
-use mnt_kernel_core::{AuditEvent, KernelError, OrgId};
-use mnt_workflow_domain::{RunStatus, WorkflowRuntimePort};
+use console_kernel_core::{AuditEvent, KernelError, OrgId};
+use console_workflow_domain::{RunStatus, WorkflowRuntimePort};
 use serde_json::{Value, json};
 use uuid::Uuid;
 

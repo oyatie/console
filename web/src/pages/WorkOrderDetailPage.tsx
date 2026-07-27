@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type {
   UpdateWorkOrderIntakeRequest,
   UserSummary,

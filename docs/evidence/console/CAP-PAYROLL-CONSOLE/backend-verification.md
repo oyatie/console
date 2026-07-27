@@ -9,7 +9,7 @@ build report. One defect was found and fixed (§3); all other claims held.
 | Claim | Verdict | Evidence |
 |---|---|---|
 | FORCE RLS + `org_isolation` (USING + WITH CHECK on `app.current_org`) on all 4 new tables | HOLDS | `0186_payroll_run_lifecycle.sql` §6 DO-block (ENABLE + FORCE + policy per table); grants are SELECT/INSERT/UPDATE only — no DELETE anywhere |
-| RLS proven as the genuine `mnt_rt` runtime role, count-leak-free | HOLDS | `payroll_lifecycle_rls_as_runtime_role.rs` builds its pool with `SET ROLE mnt_rt` (`runtime_role_pool`), seeds org A rows via the owner pool, then under org B's GUC: exceptions page `None`, disbursement `None`, delivery `None`, `COUNT(*)` on `payroll_line_calculations` = 0, cross-org `close_attendance_in_tx` = `NotFound`, WITH CHECK insert of an org-A row rejected; org A sees its own rows |
+| RLS proven as the genuine `console_rt` runtime role, count-leak-free | HOLDS | `payroll_lifecycle_rls_as_runtime_role.rs` builds its pool with `SET ROLE console_rt` (`runtime_role_pool`), seeds org A rows via the owner pool, then under org B's GUC: exceptions page `None`, disbursement `None`, delivery `None`, `COUNT(*)` on `payroll_line_calculations` = 0, cross-org `close_attendance_in_tx` = `NotFound`, WITH CHECK insert of an org-A row rejected; org A sees its own rows |
 | Deny-by-default authz | HOLDS | `Feature::PayrollRunManage` matrix row `[D,D,D,A,A,A]` identical to `PayrollRunRead`; all 12 lifecycle routes call `require_run_read`/`require_run_manage` via `authorize_org_wide` (branch-scoped and built-in ADMIN denied; unit tests in both `rest/src/lib.rs` and `rest/src/lifecycle.rs` assert every denial cell). HTTP test proves MEMBER/ADMIN get the same 403 whether the run exists or not (no existence oracle) |
 | Audit event per mutation, atomic, with readback proof | HOLDS | every mutation runs inside `with_audits` (verified in `platform/db/audit_tx.rs`: org GUC armed before the closure, rollback on `Err`, audit rows inserted in the same tx before commit). HTTP test reads back all 9 mutation actions from `audit_events` and proves denied probes commit zero audit rows and zero state changes |
 | Fail-closed gates | HOLDS | close 409s on preflight (`period_lock` missing proven in test); calculate blocks lines truthfully (`GROSS_PAY_SOURCE_MISSING` / `NTS_TAX_ROW_UNVERIFIED` / `SOURCE_AMOUNTS_NOT_MATERIALIZED` / `SOURCE_AMOUNTS_CONFLICTING`); income tax only ever read verbatim from the linked `data_import_rows.canonical_row.payroll` (`build_line_calculation` refuses without a verified row); submit 409s `exceptions_open`; SoD enforced in code AND by the `payroll_draft_runs_sod` DB CHECK; issue-payslips 409s `legal_gate` until `legal_basis.release_gate` passes `validate_release_gate` |
@@ -23,9 +23,9 @@ build report. One defect was found and fixed (§3); all other claims held.
 
 ## 2. Verification runs (this stage, fresh)
 
-- `cargo fmt -p mnt-payroll-{domain,adapter-postgres,rest} --check` — clean.
-- `cargo clippy -p mnt-payroll-{domain,adapter-postgres,rest} --all-targets -- -D warnings` (SQLX_OFFLINE=true) — clean.
-- `cargo test -p mnt-payroll-domain -p mnt-payroll-adapter-postgres -p mnt-payroll-rest` against dev postgres 127.0.0.1:55432 (`#[sqlx::test]` scratch DBs) — 26 tests green after the fix (11 domain, 1+3 adapter RLS-as-`mnt_rt` + 1 new unit, 5 rest unit, 3 rest api, 2 run_lifecycle_api).
+- `cargo fmt -p console-payroll-{domain,adapter-postgres,rest} --check` — clean.
+- `cargo clippy -p console-payroll-{domain,adapter-postgres,rest} --all-targets -- -D warnings` (SQLX_OFFLINE=true) — clean.
+- `cargo test -p console-payroll-domain -p console-payroll-adapter-postgres -p console-payroll-rest` against dev postgres 127.0.0.1:55432 (`#[sqlx::test]` scratch DBs) — 26 tests green after the fix (11 domain, 1+3 adapter RLS-as-`console_rt` + 1 new unit, 5 rest unit, 3 rest api, 2 run_lifecycle_api).
 
 ## 3. Finding fixed in this stage
 
@@ -69,8 +69,8 @@ block the line truthfully with `SOURCE_AMOUNTS_CONFLICTING`. Unit-tested
    gates); renumber migration 0186 at consolidation; reconcile the in-lane
    shared-root edits (`Feature::PayrollRunManage`, jwt.rs repair, logistics
    hex, 0170→0181 renumber) — all flagged in `integration-manifest.json`.
-2. Pre-existing NOT repaired: `mnt-facilities-rest` / `mnt-production-rest` do
-   not compile at branch HEAD → `mnt-app` unbuildable; relocate
+2. Pre-existing NOT repaired: `console-facilities-rest` / `console-production-rest` do
+   not compile at branch HEAD → `console-app` unbuildable; relocate
    `run_lifecycle_api.rs` to `backend/app/tests/payroll_run_api.rs` once healed.
 3. L3 honest gaps (implementation-notes §3): payable flip via release-gate
    charter; NTS 간이세액표/gross ingestion to `canonical_row.payroll`; bank API;

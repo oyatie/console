@@ -1,16 +1,16 @@
 [package]
-name = "mnt-finance-gl-adapter-postgres"
+name = "console-finance-gl-adapter-postgres"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-finance-gl-application = { path = "../application" }
-mnt-finance-gl-domain = { path = "../domain" }
-mnt-kernel-core.workspace = true
-mnt-platform-db.workspace = true
-mnt-platform-request-context.workspace = true
+console-finance-gl-application = { path = "../application" }
+console-finance-gl-domain = { path = "../domain" }
+console-kernel-core.workspace = true
+console-platform-db.workspace = true
+console-platform-request-context.workspace = true
 sqlx.workspace = true
 thiserror.workspace = true
 time.workspace = true

@@ -4,12 +4,12 @@ Story: "A notice publishes to scoped audiences with acknowledgment tracking to c
 
 ## What is ALREADY BUILT (do not rebuild)
 
-Backend — `backend/crates/notices/{domain,application,adapter-postgres,rest}` is a complete 4-layer vertical, **mounted** in `backend/app/src/lib.rs` (route-inventory entry `notices` + `.merge(mnt_notices_rest::router(...))`), openapi'd (`/api/v1/notices*`, tag `notices`, schemas `NoticeSummary`/`CreateNoticeDraftRequest`/`NoticeProgress`):
+Backend — `backend/crates/notices/{domain,application,adapter-postgres,rest}` is a complete 4-layer vertical, **mounted** in `backend/app/src/lib.rs` (route-inventory entry `notices` + `.merge(console_notices_rest::router(...))`), openapi'd (`/api/v1/notices*`, tag `notices`, schemas `NoticeSummary`/`CreateNoticeDraftRequest`/`NoticeProgress`):
 
 - Tables (migration `0162_create_notices.sql`): `notices` (org-RLS, draft/published CHECK, title ≤300 / body ≤20000, NT- `code` nullable until publish, no DELETE grant) + `notice_receipts` (UNIQUE(notice_id, recipient_user_id), `acknowledged_at`, progress + recipient indexes, org-RLS, no DELETE).
 - Authz: `Feature::NoticeManage` = `notice_manage`, role matrix `[D,D,D,A,A,A]` (ADMIN·EXECUTIVE·SUPER_ADMIN), checked via `authorize_org_wide` (requires `BranchScope::All` — a branch-scoped ADMIN is NOT a notice manager).
 - Flows: create draft (manager, audited `notice.create_draft`); get/list (drafts deny-by-omission → 404/omitted for non-managers); publish (FOR UPDATE status guard, 409 if already published, `issue_code(kind="notification")` → NT-, **org-wide** recipient snapshot into `notice_receipts` in one audited insert, best-effort post-commit notification fan-out — category 공지, `NotificationLink::Object{kind:"notice"}`, dedup key); ack (recipient bound from JWT principal, idempotent `COALESCE(acknowledged_at,$3)`, 404 when not a snapshotted recipient — cross-user isolation idiom); progress (manager-only done/total).
-- Tests: `rest/tests/api.rs` (real router, ES256 JWT, publish-tier 403s, draft 404 leakage checks, recipient scoping) + `adapter-postgres/tests/notices_rls_surfaces_as_runtime_role.rs` (mnt_rt).
+- Tests: `rest/tests/api.rs` (real router, ES256 JWT, publish-tier 403s, draft 404 leakage checks, recipient scoping) + `adapter-postgres/tests/notices_rls_surfaces_as_runtime_role.rs` (console_rt).
 
 Frontend — comms rail (`web/src/console/comms-rail/`) already lists published notices (`GET /api/v1/notices` in `transport.ts`; adapter maps to rail cards, currently `unread: false` hardcoded). Generic module surface exists: `web/src/console/module/config.ts` (`ModuleConfig` — MOD_SCREENS grammar; `lanes` + `prog` fields IMPLEMENTED) + one generic `ModuleScreen`. Nav already declares `{screen:"board"}` ungated in the comms group and `ko.ts` already has `console.shell.nav.board: "게시판·공지"`. No `web/src/console/board/` module exists; `board` is not in `MOUNTED_SCREEN_KEYS`/`SCREEN_REGISTRY`.
 

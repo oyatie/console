@@ -5,7 +5,7 @@
 //! adapter performs the ordinary `ASSIGNED` transition.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     KernelError, P1DispatchId, Timestamp, Transition, TransitionError, UserId, WorkOrderId,
 };
 use serde::{Deserialize, Serialize};
@@ -142,7 +142,7 @@ impl GeoPoint {
     pub fn distance_meters_to(self, other: Self) -> i64 {
         // Single kernel home for the haversine primitive (also used by the
         // compliance geofence eval); domain crates can't depend on one another.
-        mnt_kernel_core::haversine_meters(
+        console_kernel_core::haversine_meters(
             self.latitude,
             self.longitude,
             other.latitude,
@@ -330,7 +330,7 @@ impl std::fmt::Display for DispatchStatus {
 
 #[cfg(test)]
 mod tests {
-    use mnt_kernel_core::WorkOrderId;
+    use console_kernel_core::WorkOrderId;
     use time::macros::datetime;
 
     use super::*;

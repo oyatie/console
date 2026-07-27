@@ -16,15 +16,15 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{
     AuthorizationResource, Feature, PermissionLevel, Principal, permission_for,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sqlx::{PgPool, Row};
@@ -206,7 +206,7 @@ pub fn router(state: ObjectState) -> Router {
         .route(SERIES_BY_ID_PATH_TEMPLATE, get(get_series))
         .route(SERIES_INSTANCES_PATH_TEMPLATE, post(attach_series_instance))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -1947,7 +1947,7 @@ async fn create_series(
                 ));
             };
 
-            let code = mnt_platform_db::issue_code(tx, org, "series")
+            let code = console_platform_db::issue_code(tx, org, "series")
                 .await
                 .map_err(ObjectError::from)?;
 
@@ -2087,7 +2087,7 @@ struct ObjectLinkAttachAck {
 /// "not-yet-in-a-series" promotion invariant).
 async fn attach_instance_row(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    org: mnt_kernel_core::OrgId,
+    org: console_kernel_core::OrgId,
     series_id: Uuid,
     caller: Uuid,
     member_kind: &str,

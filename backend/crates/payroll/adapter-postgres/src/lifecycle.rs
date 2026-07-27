@@ -3,7 +3,7 @@
 //! disbursement → release-gated payslip issuance.
 //!
 //! Every function here takes an already-armed transaction (the REST layer
-//! wraps each mutation in `mnt_platform_db::with_audits`, which binds
+//! wraps each mutation in `console_platform_db::with_audits`, which binds
 //! `app.current_org` before the closure runs), so Postgres RLS scopes every
 //! statement. `Option::None` / [`LifecycleError::NotFound`] is returned for a
 //! run that does not exist OR belongs to another org — RLS makes the two
@@ -19,17 +19,17 @@
 //!   flips that flag — only the 노무사/세무사 release gate charter may.
 //! - Disbursement statuses are operator attestations (no bank API exists).
 //! - Payslip issuance is hard-gated by
-//!   [`mnt_payroll_domain::validate_release_gate`] over the release-gate
+//!   [`console_payroll_domain::validate_release_gate`] over the release-gate
 //!   record registered in `payroll_draft_runs.legal_basis.release_gate`;
 //!   an unregistered gate is a 409, never a fake payslip.
 
-use mnt_kernel_core::KernelError;
-use mnt_payroll_domain::{
+use console_kernel_core::KernelError;
+use console_payroll_domain::{
     DeductionCode, GoldenPayrollCase, LineCalculationInput, PayrollReleaseGateInput,
     ProfessionalReviewerKind, ProfessionalValidation, VerifiedNtsTaxRow, build_line_calculation,
     payroll_sources_verified_on, validate_release_gate,
 };
-use mnt_platform_db::DbError;
+use console_platform_db::DbError;
 use serde::Serialize;
 use serde_json::{Value, json};
 use sqlx::{Postgres, Row, Transaction};

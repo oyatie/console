@@ -10,19 +10,19 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Json, Router};
-use mnt_governance_adapter_postgres::{PgGovernanceError, PgGovernanceStore};
-use mnt_governance_application::{
+use console_governance_adapter_postgres::{PgGovernanceError, PgGovernanceStore};
+use console_governance_application::{
     ApprovalDecision, ConfigureTransitionCommand, CreateApprovalCommand, DecideApprovalCommand,
     OpenOverrideCommand,
 };
-use mnt_governance_domain::{
+use console_governance_domain::{
     AuthorityEffect, GateChainConfig, GateChainOutcome, GateEvidence, LifecycleState,
     TransitionRequirements, evaluate_gate_chain, validate_lifecycle_transition,
 };
-use mnt_kernel_core::{ErrorKind, KernelError, TraceContext, UserId};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::DbError;
+use console_kernel_core::{ErrorKind, KernelError, TraceContext, UserId};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::DbError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -72,7 +72,7 @@ pub fn router(state: GovernanceRestState) -> Router {
             post(lifecycle_preflight),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -356,7 +356,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for governance API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -457,9 +457,9 @@ impl RestError {
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
-    use mnt_platform_request_context::RequestContextError as E;
+    use console_platform_request_context::RequestContextError as E;
     match err {
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for governance API")

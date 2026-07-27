@@ -1,5 +1,5 @@
 //! Docs/evidence REST surface — the read + integrity actions the console's
-//! EvidenceCard needs over the EV objects the `mnt-docs-adapter-postgres` store
+//! EvidenceCard needs over the EV objects the `console-docs-adapter-postgres` store
 //! already owns (RLS + audit + WORM append-only).
 //!
 //! Endpoints:
@@ -29,25 +29,25 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_docs_adapter_postgres::PgDocsStore;
-use mnt_docs_application::{
+use console_docs_adapter_postgres::PgDocsStore;
+use console_docs_application::{
     ApplyLegalHoldCommand, EvidenceObjectCursor, EvidenceObjectDetail, EvidenceObjectPage,
     LegalHoldRecordView, ListEvidenceObjectsQuery, ReleaseLegalHoldCommand,
 };
-use mnt_docs_domain::{
+use console_docs_domain::{
     AdmissibilityStatus, CustodyStage, EvidenceClassification, EvidenceCopyKind,
     EvidenceSourceType, LegalHoldState,
 };
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_kernel_core::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_kernel_core::{
     AuditAction, AuditEvent, ErrorKind, EvidenceLegalHoldId, EvidenceObjectId, KernelError,
     TraceContext, UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audits};
-use mnt_platform_request_context::current_org;
-use mnt_platform_storage::S3ObjectStore;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{DbError, with_audits};
+use console_platform_request_context::current_org;
+use console_platform_storage::S3ObjectStore;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -122,7 +122,7 @@ pub fn router(state: DocsRestState) -> Router {
         .route(OBJECT_VERIFY_PATH, post(verify_object))
         .route(OBJECT_HOLD_PATH, post(hold_object))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ fn encode_register_cursor(cursor: &EvidenceObjectCursor) -> Result<String, Kerne
 
 #[derive(Debug, Serialize)]
 struct EvidenceObjectPageResponse {
-    items: Vec<mnt_docs_application::EvidenceObjectView>,
+    items: Vec<console_docs_application::EvidenceObjectView>,
     limit: i64,
     offset: i64,
     total: i64,
@@ -597,7 +597,7 @@ pub enum VerifyError {
     /// Object storage is not configured — fixity cannot be checked.
     StorageUnconfigured,
     NotFound,
-    Docs(mnt_docs_adapter_postgres::PgDocsError),
+    Docs(console_docs_adapter_postgres::PgDocsError),
     Kernel(KernelError),
     Db(DbError),
 }
@@ -618,15 +618,15 @@ impl From<DbError> for VerifyError {
 pub enum HoldError {
     /// Release was requested without a distinct-approver four-eyes approval.
     FourEyesRequired,
-    Docs(mnt_docs_adapter_postgres::PgDocsError),
+    Docs(console_docs_adapter_postgres::PgDocsError),
 }
 
 impl HoldError {
-    fn governance(error: mnt_governance_adapter_postgres::PgGovernanceError) -> Self {
-        use mnt_governance_adapter_postgres::PgGovernanceError as E;
+    fn governance(error: console_governance_adapter_postgres::PgGovernanceError) -> Self {
+        use console_governance_adapter_postgres::PgGovernanceError as E;
         match error {
-            E::Db(db) => Self::Docs(mnt_docs_adapter_postgres::PgDocsError::from(db)),
-            E::Domain(kernel) => Self::Docs(mnt_docs_adapter_postgres::PgDocsError::from(kernel)),
+            E::Db(db) => Self::Docs(console_docs_adapter_postgres::PgDocsError::from(db)),
+            E::Domain(kernel) => Self::Docs(console_docs_adapter_postgres::PgDocsError::from(kernel)),
         }
     }
 }
@@ -649,7 +649,7 @@ async fn authorize(
         RestError::unavailable("JWT verification is not configured for evidence API")
     })?;
     let principal =
-        mnt_platform_request_context::resolve_principal(verifier, state.docs.pool(), headers)
+        console_platform_request_context::resolve_principal(verifier, state.docs.pool(), headers)
             .await
             .map_err(rest_error_from_request_context)?;
     authorize_org_wide(&principal, Action::new(feature)).map_err(RestError::from_kernel)?;
@@ -710,8 +710,8 @@ impl RestError {
         }
     }
 
-    fn from_docs(error: mnt_docs_adapter_postgres::PgDocsError) -> Self {
-        use mnt_docs_adapter_postgres::PgDocsError as E;
+    fn from_docs(error: console_docs_adapter_postgres::PgDocsError) -> Self {
+        use console_docs_adapter_postgres::PgDocsError as E;
         match error {
             E::Domain(kernel) => Self::from_kernel(kernel),
             E::Db(db) => Self::from_db(db),
@@ -772,9 +772,9 @@ impl RestError {
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
-    use mnt_platform_request_context::RequestContextError as E;
+    use console_platform_request_context::RequestContextError as E;
     match err {
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for evidence API")

@@ -5,7 +5,7 @@ projections for the three PR 473 command identities. Nothing in the default
 secrets-management wiring, the live maintenance base/prod render, or an Argo CD
 Application references it. Activation requires a separate reviewed
 non-production promotion that includes the matching
-[`governed-command-database` component](../../../maintenance/components/governed-command-database/README.md).
+[`governed-command-database` component](../../../console/components/governed-command-database/README.md).
 
 ## Provider-neutral Secret port
 
@@ -16,20 +16,20 @@ secret-store API. All target Secrets use this contract:
 - label: `cnpg.io/reload=true`; and
 - keys: `username`, `password`, and `uri`.
 
-The checked-in adapter targets the `openbao-maintenance` `ClusterSecretStore`:
+The checked-in adapter targets the `openbao-console` `ClusterSecretStore`:
 
 | OpenBao KV v2 path under `secret/` | Target Secret | Required username |
 |---|---|---|
-| `maintenance/db/leave-command` | `mnt-db-leave-command` | `mnt_leave_cmd` |
-| `maintenance/db/ontology-command` | `mnt-db-ontology-command` | `mnt_ontology_cmd` |
-| `maintenance/db/platform-force-command` | `mnt-db-platform-force-command` | `mnt_platform_force_cmd` |
+| `console/db/leave-command` | `console-db-leave-command` | `console_leave_cmd` |
+| `console/db/ontology-command` | `console-db-ontology-command` | `console_ontology_cmd` |
+| `console/db/platform-force-command` | `console-db-platform-force-command` | `console_platform_force_cmd` |
 
-The `uri` value uses host `mnt-db-rw.maintenance.svc`, port `5432`, and database
+The `uri` value uses host `console-db-rw.console.svc`, port `5432`, and database
 `maintenance`. Generate independent 32-byte hexadecimal passwords so the URI
 password component is safe without transformation. If policy selects another
 alphabet, percent-encode that component correctly before storing `uri`.
 
-The two command passwords must differ from each other, `mnt_rt`, and `mnt_app`.
+The two command passwords must differ from each other, `console_rt`, and `console_app`.
 Do not log or export values to compare them. The database topology gate performs
 the decoded in-cluster comparison and reveals only success or failure.
 
@@ -41,7 +41,7 @@ Before a reviewed activation change references this component, prove:
    restore, and named-custodian recovery procedures pass.
 2. All KV entries contain exactly the required username, password, and URI
    values, with no empty field and no unexpected username.
-3. `openbao-maintenance` is Ready and ESO projects all ExternalSecrets as
+3. `openbao-console` is Ready and ESO projects all ExternalSecrets as
    `SecretSynced`.
 4. Each Kubernetes Secret has the required type, reload label, and three keys.
 5. CloudNativePG reconciles all managed login passwords before the API starts.
@@ -63,7 +63,7 @@ resources.
 Self-host/on-prem is the first activation target and uses OpenBao HA Raft plus
 ESO. OCI remains first-class through its manual OCI Vault projection adapter,
 documented in the
-[`OCI-guest rehearsal runbook`](../../../maintenance/overlays/pr-473-expand-oci-guest/README.md).
+[`OCI-guest rehearsal runbook`](../../../console/overlays/pr-473-expand-oci-guest/README.md).
 The Kubernetes Secret port stays identical in both contexts.
 
 ## Rotation

@@ -96,7 +96,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION production_service_principal_org(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION production_service_principal_org(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION production_service_principal_org(UUID) TO console_rt;
 REVOKE ALL ON service_principals, service_principal_audit_events, service_principal_ingress_claims FROM PUBLIC;
-GRANT SELECT, INSERT, UPDATE ON service_principals, service_principal_audit_events, service_principal_ingress_claims TO mnt_rt;
-REVOKE DELETE ON service_principals, service_principal_audit_events, service_principal_ingress_claims FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON service_principals, service_principal_audit_events, service_principal_ingress_claims TO console_rt;
+REVOKE DELETE ON service_principals, service_principal_audit_events, service_principal_ingress_claims FROM console_rt;

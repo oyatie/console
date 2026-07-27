@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_auth::{PasskeyRegistrationStart, PasskeyService, WebauthnSettings};
+use console_kernel_core::OrgId;
+use console_platform_auth::{PasskeyRegistrationStart, PasskeyService, WebauthnSettings};
 use sqlx::{PgPool, Row};
 use time::Duration;
 use url::Url;
@@ -44,7 +44,7 @@ fn service() -> PasskeyService {
     PasskeyService::new(WebauthnSettings {
         rp_id: "example.com".to_owned(),
         rp_origin: Url::parse("https://auth.example.com").unwrap(),
-        rp_name: "MNT Maintenance".to_owned(),
+        rp_name: "Console".to_owned(),
         extra_allowed_origins: vec![],
         ceremony_ttl: Duration::minutes(5),
     })

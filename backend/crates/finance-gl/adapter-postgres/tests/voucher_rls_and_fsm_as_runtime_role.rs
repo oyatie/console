@@ -1,10 +1,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + FSM gate for the finance-GL voucher (전표) domain, exercised as
-//! the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER / NOBYPASSRLS / FORCE
+//! the genuine non-owner runtime role `console_rt` (NOSUPERUSER / NOBYPASSRLS / FORCE
 //! RLS) — the only faithful exercise of the tenant policy. The default
 //! `#[sqlx::test]` pool connects as a BYPASSRLS superuser that sees every row and
 //! would green-light a broken policy, so we SEED as the owner and DO EVERYTHING
-//! ELSE as `mnt_rt`.
+//! ELSE as `console_rt`.
 //!
 //! Proves the lane's binding invariants:
 //!   (a) BALANCE GATE — an unbalanced voucher cannot advance past 차대검증, both
@@ -18,13 +18,13 @@
 //!       not-found, and the account drill never sees B's lines.
 //!   (e) FAIL-CLOSED — with no tenant scope armed, every read/write errors.
 
-use mnt_finance_gl_adapter_postgres::PgVoucherStore;
-use mnt_finance_gl_application::{
+use console_finance_gl_adapter_postgres::PgVoucherStore;
+use console_finance_gl_application::{
     CreateVoucherDraftCommand, CreateVoucherDraftFromSourceCommand, ReverseVoucherCommand,
     VoucherLineInput, VoucherSourceRef, VoucherTransitionCommand,
 };
-use mnt_finance_gl_domain::{DebitCredit, VoucherId, VoucherStatus};
-use mnt_kernel_core::{BranchId, OrgId, TraceContext, UserId};
+use console_finance_gl_domain::{DebitCredit, VoucherId, VoucherStatus};
+use console_kernel_core::{BranchId, OrgId, TraceContext, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -39,7 +39,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -138,7 +138,7 @@ async fn seed_posted_voucher(
     branch_id: BranchId,
 ) -> VoucherId {
     assert_ne!(creator, approver, "SoD: preparer and approver must differ");
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let created = store
             .create_draft(draft(
                 creator,
@@ -171,7 +171,7 @@ async fn balance_gate_blocks_unbalanced_advance(owner_pool: PgPool) {
     let store = PgVoucherStore::new(rt);
     let org = OrgId::from_uuid(ORG_A);
 
-    let unbalanced_id = mnt_platform_request_context::scope_org(org, async {
+    let unbalanced_id = console_platform_request_context::scope_org(org, async {
         let created = store
             .create_draft(draft(
                 actor,
@@ -228,7 +228,7 @@ async fn posted_voucher_is_immutable(owner_pool: PgPool) {
     let posted_id = seed_posted_voucher(&store, org, actor, approver, branch).await;
 
     // No further FSM step except reverse (use-case gate).
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         assert!(
             store.approve(step(actor, posted_id)).await.is_err(),
             "posted voucher must reject 승인"
@@ -264,7 +264,7 @@ async fn posted_voucher_is_immutable(owner_pool: PgPool) {
     );
     let _ = tx.rollback().await;
 
-    // A raw UPDATE of a posted line is impossible — mnt_rt holds no UPDATE grant
+    // A raw UPDATE of a posted line is impossible — console_rt holds no UPDATE grant
     // on the lines table (append-only), so it errors regardless of tenant scope.
     let mut tx = store.pool().begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -277,7 +277,7 @@ async fn posted_voucher_is_immutable(owner_pool: PgPool) {
             .bind(*posted_id.as_uuid())
             .execute(tx.as_mut())
             .await;
-    assert!(mutate.is_err(), "mnt_rt must not UPDATE posted lines");
+    assert!(mutate.is_err(), "console_rt must not UPDATE posted lines");
     let _ = tx.rollback().await;
 }
 
@@ -293,7 +293,7 @@ async fn reversal_links_and_nets_to_zero(owner_pool: PgPool) {
 
     let posted_id = seed_posted_voucher(&store, org, actor, approver, branch).await;
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let contra = store
             .reverse(ReverseVoucherCommand {
                 actor,
@@ -355,7 +355,7 @@ async fn cross_org_isolation_and_fail_closed(owner_pool: PgPool) {
     let org_b = OrgId::from_uuid(ORG_B);
 
     // Each tenant posts one voucher on distinct accounts.
-    let a_id = mnt_platform_request_context::scope_org(org_a, async {
+    let a_id = console_platform_request_context::scope_org(org_a, async {
         store
             .create_draft(draft(
                 actor_a,
@@ -370,7 +370,7 @@ async fn cross_org_isolation_and_fail_closed(owner_pool: PgPool) {
             .id
     })
     .await;
-    let b_id = mnt_platform_request_context::scope_org(org_b, async {
+    let b_id = console_platform_request_context::scope_org(org_b, async {
         store
             .create_draft(draft(
                 actor_b,
@@ -387,11 +387,11 @@ async fn cross_org_isolation_and_fail_closed(owner_pool: PgPool) {
     .await;
 
     // Under org A's armed GUC, org B's voucher is NOT visible.
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         assert!(store.get(a_id).await.is_ok(), "A sees its own voucher");
         assert!(
             store.get(b_id).await.is_err(),
-            "A must not see B's voucher under RLS as mnt_rt"
+            "A must not see B's voucher under RLS as console_rt"
         );
         // The account drill for B's account returns nothing under A's scope.
         let drill = store.account_drill("7000").await.unwrap();
@@ -425,7 +425,7 @@ async fn self_approval_rejected_and_distinct_approver_posts(owner_pool: PgPool) 
     let store = PgVoucherStore::new(rt);
     let org = OrgId::from_uuid(ORG_A);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let created = store
             .create_draft(draft(
                 creator,
@@ -506,7 +506,7 @@ async fn advancing_without_approver_rejected_by_db(owner_pool: PgPool) {
     let store = PgVoucherStore::new(rt);
     let org = OrgId::from_uuid(ORG_A);
 
-    let balance_checked_id = mnt_platform_request_context::scope_org(org, async {
+    let balance_checked_id = console_platform_request_context::scope_org(org, async {
         let created = store
             .create_draft(draft(
                 creator,
@@ -551,7 +551,7 @@ async fn hand_keyed_source_rejected_but_derive_path_allowed(owner_pool: PgPool) 
     let store = PgVoucherStore::new(rt);
     let org = OrgId::from_uuid(ORG_A);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         // A hand-keyed create that fabricates a "derived from approved expense"
         // linkage is rejected outright.
         let mut forged = draft(
@@ -647,7 +647,7 @@ async fn voucher_summary_resolves_branch_and_user_display_names(owner_pool: PgPo
     let store = PgVoucherStore::new(rt);
     let org = OrgId::from_uuid(ORG_A);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let created = store
             .create_draft(draft(
                 creator,

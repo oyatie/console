@@ -77,11 +77,11 @@ const tables = [
 
 for (const table of tables) {
   requireSqlIncludes(sql, `create table ${table}`, `${table}: created`);
-  requireIncludes(migrationPath, `-- mnt-gate: audited-table ${table}`, `${table}: audited marker`);
+  requireIncludes(migrationPath, `-- console-gate: audited-table ${table}`, `${table}: audited marker`);
   requireSqlIncludes(sql, `alter table ${table} enable row level security`, `${table}: RLS enabled`);
   requireSqlIncludes(sql, `alter table ${table} force row level security`, `${table}: RLS forced`);
   requireSqlIncludes(sql, `create policy org_isolation on ${table}`, `${table}: org isolation policy`);
-  requireSqlIncludes(sql, `grant select, insert, update on ${table} to mnt_rt`, `${table}: table-qualified grants present`);
+  requireSqlIncludes(sql, `grant select, insert, update on ${table} to console_rt`, `${table}: table-qualified grants present`);
   requireSqlIncludes(sql, `trg_${table}_org_immutable`, `${table}: org immutable trigger`);
   requireSqlIncludes(sql, `trg_${table}_no_delete`, `${table}: no-delete trigger`);
 }

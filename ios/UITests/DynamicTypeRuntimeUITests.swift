@@ -3,7 +3,7 @@ import XCTest
 /// Runtime geometry contracts complement XCTest's Dynamic Type audit. They use
 /// the shell-preconditioned simulator sizes and prove the adaptive layouts that
 /// Xcode 26's synthesized SwiftUI audit nodes cannot represent faithfully.
-final class DynamicTypeRuntimeUITests: FieldUITestCase {
+final class DynamicTypeRuntimeUITests: ConsoleUITestCase {
     func testLargeDynamicTypeRuntimeContract() async throws {
         _ = try await launchApp(.standard)
         waitForAuthenticatedShell()

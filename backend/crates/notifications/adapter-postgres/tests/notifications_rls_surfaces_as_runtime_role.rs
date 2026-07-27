@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + recipient-isolation gate for the notification center.
 //!
-//! Proven as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — NOT the default `#[sqlx::test]` BYPASSRLS
 //! superuser pool, which sees every row and would green-light a broken
 //! recipient filter. There is no per-person GUC, so recipient scoping is
@@ -9,16 +9,16 @@
 //! cannot list or read-mark user A's notifications, and that another tenant
 //! sees nothing.
 
-use mnt_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_notifications_application::{
+use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_notifications_application::{
     DeleteNotificationPolicyCommand, EmitNotificationCommand, ListNotificationObjectGroupsQuery,
     ListNotificationPoliciesQuery, ListNotificationsQuery, MarkAllNotificationsReadCommand,
     MarkNotificationReadCommand, MarkNotificationUnreadCommand, NotificationCountsSummaryQuery,
     NotificationCreatedNotification, NotificationNotifier, NotificationNotifyFuture,
     UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
 };
-use mnt_notifications_domain::{NotificationCategory, NotificationLink, NotificationPolicyScope};
+use console_notifications_domain::{NotificationCategory, NotificationLink, NotificationPolicyScope};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::{Arc, Mutex};
@@ -47,10 +47,10 @@ impl NotificationNotifier for RecordingNotifier {
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -59,7 +59,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -136,12 +136,12 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     let store = PgNotificationStore::new(rt_pool.clone()).with_notifier(notifier.clone());
 
     // Emit one to A and one to B (all under knl).
-    let a_notif = mnt_platform_request_context::scope_org(knl, async {
+    let a_notif = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
     .expect("emit to A");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_b, "멘션", None)).await
     })
     .await
@@ -152,7 +152,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     assert_eq!(a_notif.recipient_user_id, user_a);
 
     // (a) recipient isolation: A sees only A's; B sees only B's.
-    let a_list = mnt_platform_request_context::scope_org(knl, async {
+    let a_list = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -160,7 +160,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     assert_eq!(a_list.items.len(), 1, "A sees exactly one notification");
     assert_eq!(a_list.items[0].id, a_notif.id);
 
-    let b_list = mnt_platform_request_context::scope_org(knl, async {
+    let b_list = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_b)).await
     })
     .await
@@ -173,7 +173,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
 
     // (b) cross-user read-mark: B marking A's notification is NotFound, not a
     //     silent success — and A's notification stays unread.
-    let cross = mnt_platform_request_context::scope_org(knl, async {
+    let cross = console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_b,
@@ -192,7 +192,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     );
 
     // A marks its own read -> unread=false, read_at set.
-    let marked = mnt_platform_request_context::scope_org(knl, async {
+    let marked = console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_a,
@@ -207,7 +207,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     assert!(!marked.unread);
     assert!(marked.read_at.is_some());
 
-    let a_unread_after = mnt_platform_request_context::scope_org(knl, async {
+    let a_unread_after = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -219,7 +219,7 @@ async fn recipient_isolation_and_read_marking_as_runtime_role(owner_pool: PgPool
     );
 
     // (c) cross-tenant: under another org's GUC, A's rows are invisible (RLS).
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -240,7 +240,7 @@ async fn unread_count_is_recipient_scoped_as_runtime_role(owner_pool: PgPool) {
     let store = PgNotificationStore::new(rt_pool.clone());
 
     // Zero unread to start.
-    let zero = mnt_platform_request_context::scope_org(knl, async {
+    let zero = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_a)).await
     })
     .await
@@ -248,23 +248,23 @@ async fn unread_count_is_recipient_scoped_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(zero, 0, "no notifications => zero unread");
 
     // Two for A, one for B.
-    let a_first = mnt_platform_request_context::scope_org(knl, async {
+    let a_first = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
     .expect("emit A#1");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "멘션", None)).await
     })
     .await
     .expect("emit A#2");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_b, "공지", None)).await
     })
     .await
     .expect("emit B#1");
 
-    let a_count = mnt_platform_request_context::scope_org(knl, async {
+    let a_count = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_a)).await
     })
     .await
@@ -272,7 +272,7 @@ async fn unread_count_is_recipient_scoped_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(a_count, 2, "A has exactly its own two unread");
 
     // Cross-user isolation: B's count is unaffected by A's rows.
-    let b_count = mnt_platform_request_context::scope_org(knl, async {
+    let b_count = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_b)).await
     })
     .await
@@ -280,7 +280,7 @@ async fn unread_count_is_recipient_scoped_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(b_count, 1, "B sees only its own unread");
 
     // Read rows are excluded: marking one of A's read drops the count to one.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_a,
@@ -292,7 +292,7 @@ async fn unread_count_is_recipient_scoped_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("A marks one read");
-    let a_after = mnt_platform_request_context::scope_org(knl, async {
+    let a_after = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_a)).await
     })
     .await
@@ -311,14 +311,14 @@ async fn mark_all_read_and_dedup_idempotency_as_runtime_role(owner_pool: PgPool)
 
     // Three unread notifications.
     for cat in ["결재", "근태", "급여"] {
-        mnt_platform_request_context::scope_org(knl, async {
+        console_platform_request_context::scope_org(knl, async {
             store.emit_notification(emit_to(user, cat, None)).await
         })
         .await
         .expect("emit");
     }
 
-    let marked = mnt_platform_request_context::scope_org(knl, async {
+    let marked = console_platform_request_context::scope_org(knl, async {
         store
             .mark_all_read(MarkAllNotificationsReadCommand {
                 recipient: user,
@@ -332,7 +332,7 @@ async fn mark_all_read_and_dedup_idempotency_as_runtime_role(owner_pool: PgPool)
     assert_eq!(marked, 3, "all three unread are marked");
 
     let unread_after =
-        mnt_platform_request_context::scope_org(knl, async { store.list(list_unread(user)).await })
+        console_platform_request_context::scope_org(knl, async { store.list(list_unread(user)).await })
             .await
             .expect("list");
     assert!(unread_after.items.is_empty());
@@ -340,14 +340,14 @@ async fn mark_all_read_and_dedup_idempotency_as_runtime_role(owner_pool: PgPool)
     // Dedup: two emits with the same key produce ONE row and fire the realtime
     // notifier ONCE (the redelivery is a no-op returning the existing row).
     let notifier_calls_before = notifier.calls.lock().unwrap().len();
-    let first = mnt_platform_request_context::scope_org(knl, async {
+    let first = console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_to(user, "공지", Some("outbox-evt-1")))
             .await
     })
     .await
     .expect("first dedup emit");
-    let second = mnt_platform_request_context::scope_org(knl, async {
+    let second = console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_to(user, "공지", Some("outbox-evt-1")))
             .await
@@ -380,17 +380,17 @@ async fn summary_is_grouped_by_category_as_runtime_role(owner_pool: PgPool) {
     let store = PgNotificationStore::new(rt_pool.clone());
 
     for cat in ["결재", "결재", "공지"] {
-        mnt_platform_request_context::scope_org(knl, async {
+        console_platform_request_context::scope_org(knl, async {
             store.emit_notification(emit_to(user, cat, None)).await
         })
         .await
         .expect("emit");
     }
 
-    let summary = mnt_platform_request_context::scope_org(knl, async {
+    let summary = console_platform_request_context::scope_org(knl, async {
         store
             .summary(
-                mnt_notifications_application::NotificationCountsSummaryQuery { recipient: user },
+                console_notifications_application::NotificationCountsSummaryQuery { recipient: user },
             )
             .await
     })
@@ -446,17 +446,17 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
 
     // Two people got notified of the same coverage breach; plus an unrelated
     // notification that must NOT be touched by the resolve sweep.
-    let notif_a = mnt_platform_request_context::scope_org(knl, async {
+    let notif_a = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(slo_notification(user_a)).await
     })
     .await
     .expect("emit to A");
-    let notif_b = mnt_platform_request_context::scope_org(knl, async {
+    let notif_b = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(slo_notification(user_b)).await
     })
     .await
     .expect("emit to B");
-    let unrelated = mnt_platform_request_context::scope_org(knl, async {
+    let unrelated = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
@@ -465,10 +465,10 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
     // Another tenant's identical-shaped link must stay untouched (RLS).
     seed_user(&owner_pool, OTHER_ORG, "Other Tenant User").await;
 
-    let resolved_count = mnt_platform_request_context::scope_org(knl, async {
+    let resolved_count = console_platform_request_context::scope_org(knl, async {
         store
             .resolve_notifications_by_link(
-                mnt_notifications_application::ResolveNotificationsByLinkCommand {
+                console_notifications_application::ResolveNotificationsByLinkCommand {
                     link: breach_link.clone(),
                     resolved_by: Some(user_b),
                     trace: TraceContext::generate(),
@@ -484,7 +484,7 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
         "both open notifications for the breach resolve"
     );
 
-    let a_after = mnt_platform_request_context::scope_org(knl, async {
+    let a_after = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -510,7 +510,7 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
         "the unrelated notification must NOT be auto-resolved"
     );
 
-    let b_after = mnt_platform_request_context::scope_org(knl, async {
+    let b_after = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_b)).await
     })
     .await
@@ -526,10 +526,10 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
     );
 
     // Re-resolving the same link is idempotent-friendly: nothing left open.
-    let second_sweep = mnt_platform_request_context::scope_org(knl, async {
+    let second_sweep = console_platform_request_context::scope_org(knl, async {
         store
             .resolve_notifications_by_link(
-                mnt_notifications_application::ResolveNotificationsByLinkCommand {
+                console_notifications_application::ResolveNotificationsByLinkCommand {
                     link: breach_link.clone(),
                     resolved_by: None,
                     trace: TraceContext::generate(),
@@ -543,10 +543,10 @@ async fn resolve_by_link_closes_every_open_notification_for_that_target_as_runti
     assert_eq!(second_sweep, 0, "nothing left open to resolve");
 
     // Cross-tenant: the other org never sees or resolves knl's rows.
-    let cross_tenant_sweep = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant_sweep = console_platform_request_context::scope_org(other, async {
         store
             .resolve_notifications_by_link(
-                mnt_notifications_application::ResolveNotificationsByLinkCommand {
+                console_notifications_application::ResolveNotificationsByLinkCommand {
                     link: breach_link,
                     resolved_by: None,
                     trace: TraceContext::generate(),
@@ -574,13 +574,13 @@ async fn mark_unread_toggles_but_preserves_first_read_as_runtime_role(owner_pool
     let user_b = seed_user(&owner_pool, *knl.as_uuid(), "Toggle B").await;
     let store = PgNotificationStore::new(rt_pool.clone());
 
-    let notif = mnt_platform_request_context::scope_org(knl, async {
+    let notif = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
     .expect("emit");
 
-    let read = mnt_platform_request_context::scope_org(knl, async {
+    let read = console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_a,
@@ -595,7 +595,7 @@ async fn mark_unread_toggles_but_preserves_first_read_as_runtime_role(owner_pool
     let first_read_at = read.read_at.expect("read_at set on first read");
 
     // Toggle back to unread: unread=true, read_at UNCHANGED.
-    let unread = mnt_platform_request_context::scope_org(knl, async {
+    let unread = console_platform_request_context::scope_org(knl, async {
         store
             .mark_unread(MarkNotificationUnreadCommand {
                 recipient: user_a,
@@ -615,7 +615,7 @@ async fn mark_unread_toggles_but_preserves_first_read_as_runtime_role(owner_pool
     );
 
     // Re-reading keeps the original first-read stamp (COALESCE), too.
-    let reread = mnt_platform_request_context::scope_org(knl, async {
+    let reread = console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_a,
@@ -630,7 +630,7 @@ async fn mark_unread_toggles_but_preserves_first_read_as_runtime_role(owner_pool
     assert_eq!(reread.read_at, Some(first_read_at));
 
     // Cross-user toggle is NotFound, indistinguishable from absent.
-    let cross = mnt_platform_request_context::scope_org(knl, async {
+    let cross = console_platform_request_context::scope_org(knl, async {
         store
             .mark_unread(MarkNotificationUnreadCommand {
                 recipient: user_b,
@@ -672,12 +672,12 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     let notifier = Arc::new(RecordingNotifier::default());
     let store = PgNotificationStore::new(rt_pool.clone()).with_notifier(notifier.clone());
 
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
     .expect("emit 결재");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "멘션", None)).await
     })
     .await
@@ -685,7 +685,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(notifier.calls.lock().unwrap().len(), 2);
 
     // Category mute: badge counts drop, summary tallies the hidden unread.
-    let policy = mnt_platform_request_context::scope_org(knl, async {
+    let policy = console_platform_request_context::scope_org(knl, async {
         store
             .upsert_policy(UpsertNotificationPolicyCommand {
                 recipient: user_a,
@@ -703,14 +703,14 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(policy.category.as_deref(), Some("결재"));
     assert_eq!(policy.action, "mute");
 
-    let count = mnt_platform_request_context::scope_org(knl, async {
+    let count = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_a)).await
     })
     .await
     .expect("count under category mute");
     assert_eq!(count, 1, "muted 결재 row leaves only 멘션 in the badge");
 
-    let summary = mnt_platform_request_context::scope_org(knl, async {
+    let summary = console_platform_request_context::scope_org(knl, async {
         store
             .summary(NotificationCountsSummaryQuery { recipient: user_a })
             .await
@@ -725,7 +725,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     );
 
     // The list is NEVER filtered — rows only get annotated.
-    let listed = mnt_platform_request_context::scope_org(knl, async {
+    let listed = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -748,7 +748,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
 
     // Emit-time routing: a muted emit persists + audits but stays silent.
     let calls_before = notifier.calls.lock().unwrap().len();
-    let muted_emit = mnt_platform_request_context::scope_org(knl, async {
+    let muted_emit = console_platform_request_context::scope_org(knl, async {
         store.emit_notification(emit_to(user_a, "결재", None)).await
     })
     .await
@@ -759,7 +759,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
         calls_before,
         "realtime notifier stays silent for a muted row"
     );
-    let listed_after = mnt_platform_request_context::scope_org(knl, async {
+    let listed_after = console_platform_request_context::scope_org(knl, async {
         store.list(list_unread(user_a)).await
     })
     .await
@@ -767,7 +767,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(listed_after.items.len(), 3, "the muted row IS persisted");
 
     // PUT is an upsert: same target returns the same policy row.
-    let again = mnt_platform_request_context::scope_org(knl, async {
+    let again = console_platform_request_context::scope_org(knl, async {
         store
             .upsert_policy(UpsertNotificationPolicyCommand {
                 recipient: user_a,
@@ -784,7 +784,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(again.id, policy.id, "same target upserts the same row");
 
     // Recipient isolation: B sees no policies, and B deleting A's is NotFound.
-    let b_policies = mnt_platform_request_context::scope_org(knl, async {
+    let b_policies = console_platform_request_context::scope_org(knl, async {
         store
             .list_policies(ListNotificationPoliciesQuery { recipient: user_b })
             .await
@@ -792,7 +792,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     .await
     .expect("B lists policies");
     assert!(b_policies.is_empty());
-    let cross_delete = mnt_platform_request_context::scope_org(knl, async {
+    let cross_delete = console_platform_request_context::scope_org(knl, async {
         store
             .delete_policy(DeleteNotificationPolicyCommand {
                 recipient: user_b,
@@ -811,7 +811,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     );
 
     // RLS: under another tenant's GUC the policy is invisible.
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store
             .list_policies(ListNotificationPoliciesQuery { recipient: user_a })
             .await
@@ -824,7 +824,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     );
 
     // Scope=all is the same mechanism (DND): every count goes quiet.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .upsert_policy(UpsertNotificationPolicyCommand {
                 recipient: user_a,
@@ -836,7 +836,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("upsert all-scope mute");
-    let dnd_count = mnt_platform_request_context::scope_org(knl, async {
+    let dnd_count = console_platform_request_context::scope_org(knl, async {
         store.unread_count(unread_count_of(user_a)).await
     })
     .await
@@ -844,7 +844,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(dnd_count, 0, "scope=all silences the whole badge");
 
     // Delete = unmute: category policy removal restores its rows' attention.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .delete_policy(DeleteNotificationPolicyCommand {
                 recipient: user_a,
@@ -856,7 +856,7 @@ async fn mute_policies_route_attention_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("A deletes own policy");
-    let a_policies = mnt_platform_request_context::scope_org(knl, async {
+    let a_policies = console_platform_request_context::scope_org(knl, async {
         store
             .list_policies(ListNotificationPoliciesQuery { recipient: user_a })
             .await
@@ -921,28 +921,28 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
 
     // A: two rows on the approval, then one newer row on the workorder.
     // B: one row on the SAME approval link (must never leak into A's groups).
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_link(user_a, "결재", &approval_link))
             .await
     })
     .await
     .expect("emit A approval #1");
-    let approval_latest = mnt_platform_request_context::scope_org(knl, async {
+    let approval_latest = console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_link(user_a, "멘션", &approval_link))
             .await
     })
     .await
     .expect("emit A approval #2");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_link(user_a, "근태", &workorder_link))
             .await
     })
     .await
     .expect("emit A workorder");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .emit_notification(emit_link(user_b, "결재", &approval_link))
             .await
@@ -959,7 +959,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
         }
     };
 
-    let page = mnt_platform_request_context::scope_org(knl, async {
+    let page = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, false, None, 50))
             .await
@@ -988,7 +988,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(cats, vec![("결재", 1), ("멘션", 1)]);
 
     // Reading a row updates the group's unread + category breakdown.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .mark_read(MarkNotificationReadCommand {
                 recipient: user_a,
@@ -1000,7 +1000,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("read latest approval row");
-    let after_read = mnt_platform_request_context::scope_org(knl, async {
+    let after_read = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, false, None, 50))
             .await
@@ -1022,7 +1022,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(approval_after.categories[0].category, "결재");
 
     // unread_only: a fully-read group disappears from the filtered view.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .mark_all_read(MarkAllNotificationsReadCommand {
                 recipient: user_a,
@@ -1033,7 +1033,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("read everything");
-    let unread_view = mnt_platform_request_context::scope_org(knl, async {
+    let unread_view = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, true, None, 50))
             .await
@@ -1044,7 +1044,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
 
     // Object-mute flips the group's bell; a category policy must NOT (the
     // bell could never un-toggle it), though rows still annotate.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .upsert_policy(UpsertNotificationPolicyCommand {
                 recipient: user_a,
@@ -1056,7 +1056,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("mute the approval object");
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         store
             .upsert_policy(UpsertNotificationPolicyCommand {
                 recipient: user_a,
@@ -1070,7 +1070,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     })
     .await
     .expect("mute the 근태 category");
-    let muted_view = mnt_platform_request_context::scope_org(knl, async {
+    let muted_view = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, false, None, 50))
             .await
@@ -1098,7 +1098,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     );
 
     // Keyset pagination behind the opaque cursor.
-    let first = mnt_platform_request_context::scope_org(knl, async {
+    let first = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, false, None, 1))
             .await
@@ -1108,7 +1108,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(first.items.len(), 1);
     assert_eq!(first.items[0].link, workorder_link);
     let cursor = first.next_cursor.expect("full page carries a cursor");
-    let second = mnt_platform_request_context::scope_org(knl, async {
+    let second = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(user_a, false, Some(cursor), 1))
             .await
@@ -1119,7 +1119,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(second.items[0].link, approval_link);
 
     // A cursor this server never issued fails CLOSED: empty page, no error.
-    let forged = mnt_platform_request_context::scope_org(knl, async {
+    let forged = console_platform_request_context::scope_org(knl, async {
         store
             .list_object_groups(groups_of(
                 user_a,
@@ -1135,7 +1135,7 @@ async fn object_groups_aggregate_by_link_as_runtime_role(owner_pool: PgPool) {
     assert!(forged.next_cursor.is_none());
 
     // Cross-tenant: another org's GUC sees no groups at all.
-    let cross_tenant = mnt_platform_request_context::scope_org(other, async {
+    let cross_tenant = console_platform_request_context::scope_org(other, async {
         store
             .list_object_groups(groups_of(user_a, false, None, 50))
             .await

@@ -17,23 +17,23 @@
 //! the runtime writes a run/draft under an OFF tenant, assertions (3) fail.
 //!
 //! ## Runtime fidelity (mandatory)
-//! Everything that matters runs as the genuine non-owner `mnt_rt` role
+//! Everything that matters runs as the genuine non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) with `app.current_org` armed — never a
 //! BYPASSRLS superuser, which would mask a broken RLS/flag path. Only the base
-//! fixtures that `mnt_rt` provably cannot create (an `organizations` row; child
+//! fixtures that `console_rt` provably cannot create (an `organizations` row; child
 //! rows are seeded with org_id set) are inserted via the owner pool, exactly as
 //! the sibling runtime-role gate (`rls_read_surfaces_as_runtime_role.rs`) does.
 //! The whole lifecycle (create → assign → start → report → admin approve →
 //! executive approve), the completion-evidence write, the strangler resolution,
-//! and every assertion read execute as `mnt_rt`.
+//! and every assertion read execute as `console_rt`.
 
-use mnt_kernel_core::{BranchId, OrgId, TraceContext, UserId, WorkOrderId};
-use mnt_workorder_adapter_postgres::PgWorkOrderStore;
-use mnt_workorder_application::{
+use console_kernel_core::{BranchId, OrgId, TraceContext, UserId, WorkOrderId};
+use console_workorder_adapter_postgres::PgWorkOrderStore;
+use console_workorder_application::{
     AssignmentInput, CreateWorkOrderCommand, SubmitReportCommand, WorkOrderApprovalCommand,
     WorkOrderAssignmentCommand, WorkOrderStartCommand,
 };
-use mnt_workorder_domain::{AssignmentRole, AttachmentStage, WorkOrderStatus, WorkResultType};
+use console_workorder_domain::{AssignmentRole, AttachmentStage, WorkOrderStatus, WorkResultType};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -44,7 +44,7 @@ use uuid::Uuid;
 const STRANGLER_FLAG: &str = "workflow_runtime_m2_strangler";
 
 // ===========================================================================
-// Runtime-role pool: every connection assumes the genuine non-owner `mnt_rt`.
+// Runtime-role pool: every connection assumes the genuine non-owner `console_rt`.
 // Copied verbatim from the sibling runtime-role gate so RLS is ACTUALLY
 // enforced (BYPASSRLS does not apply, FORCE RLS does) — exactly as production.
 // ===========================================================================
@@ -54,7 +54,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -74,7 +74,7 @@ async fn arm_org(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: OrgId) {
 }
 
 // ===========================================================================
-// Base fixtures (OWNER pool). `mnt_rt` is SELECT-only on `organizations` and a
+// Base fixtures (OWNER pool). `console_rt` is SELECT-only on `organizations` and a
 // fresh org's id matches no armed GUC, so the org row must be minted by the
 // owner; every child row carries an explicit org_id so it lands in the tenant.
 // ===========================================================================
@@ -191,12 +191,12 @@ async fn seed_equipment(owner_pool: &PgPool, org: Uuid, branch_id: BranchId, man
 }
 
 // ===========================================================================
-// mnt_rt-armed helpers (reads + completion-evidence write).
+// console_rt-armed helpers (reads + completion-evidence write).
 // ===========================================================================
 
 /// Resolve the strangler flag exactly as the application resolves whether a
 /// tenant is routed through the M2 runtime: the `org_runtime_flag_enabled()`
-/// SECURITY INVOKER resolver, run as `mnt_rt` with the tenant GUC armed.
+/// SECURITY INVOKER resolver, run as `console_rt` with the tenant GUC armed.
 async fn strangler_enabled(rt_pool: &PgPool, org: OrgId) -> bool {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -209,7 +209,7 @@ async fn strangler_enabled(rt_pool: &PgPool, org: OrgId) -> bool {
     enabled
 }
 
-/// Insert one WORM-VERIFIED `REPORT` evidence row as `mnt_rt`, satisfying the
+/// Insert one WORM-VERIFIED `REPORT` evidence row as `console_rt`, satisfying the
 /// completion-evidence interlock (`lock_work_order` computes `evidence_verified`
 /// as: a VERIFIED AFTER/REPORT row exists AND no non-VERIFIED AFTER/REPORT row
 /// exists). Runs under the armed GUC so RLS WITH CHECK accepts the tenant row.
@@ -245,7 +245,7 @@ async fn insert_verified_report_evidence(
     tx.commit().await.unwrap();
 }
 
-/// The ordered `audit_events.action` sequence for a work order, read as `mnt_rt`
+/// The ordered `audit_events.action` sequence for a work order, read as `console_rt`
 /// under the armed GUC — the byte-identical legacy audit trail is the contract.
 async fn audit_actions(rt_pool: &PgPool, org: OrgId, work_order_id: WorkOrderId) -> Vec<String> {
     let mut tx = rt_pool.begin().await.unwrap();
@@ -266,7 +266,7 @@ async fn audit_actions(rt_pool: &PgPool, org: OrgId, work_order_id: WorkOrderId)
     actions
 }
 
-/// A tenant-scoped `SELECT count(*)` run as `mnt_rt` under the armed GUC. The
+/// A tenant-scoped `SELECT count(*)` run as `console_rt` under the armed GUC. The
 /// query is a static literal so no injection-audit override is needed.
 async fn count_as_runtime(rt_pool: &PgPool, org: OrgId, count_query: &'static str) -> i64 {
     let mut tx = rt_pool.begin().await.unwrap();
@@ -279,7 +279,7 @@ async fn count_as_runtime(rt_pool: &PgPool, org: OrgId, count_query: &'static st
     count
 }
 
-/// The persisted `work_orders.status` for a work order, read as `mnt_rt`.
+/// The persisted `work_orders.status` for a work order, read as `console_rt`.
 async fn work_order_status(rt_pool: &PgPool, org: OrgId, work_order_id: WorkOrderId) -> String {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -322,9 +322,9 @@ async fn flag_off_executive_approval_to_final_completed_is_byte_identical_to_leg
     );
 
     // --- Drive the FULL executive-approval → FINAL_COMPLETED lifecycle as the
-    // --- genuine non-owner mnt_rt role (the store arms the GUC per mutation).
+    // --- genuine non-owner console_rt role (the store arms the GUC per mutation).
     let store = PgWorkOrderStore::new(rt_pool.clone());
-    let work_order = mnt_platform_request_context::scope_org(knl, async {
+    let work_order = console_platform_request_context::scope_org(knl, async {
         let created = store
             .create_work_order(CreateWorkOrderCommand {
                 maintenance_type: None,
@@ -339,7 +339,7 @@ async fn flag_off_executive_approval_to_final_completed_is_byte_identical_to_leg
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await
-            .expect("create_work_order must succeed as mnt_rt under armed GUC");
+            .expect("create_work_order must succeed as console_rt under armed GUC");
         assert_eq!(created.status, WorkOrderStatus::Received);
 
         let assigned = store
@@ -401,10 +401,10 @@ async fn flag_off_executive_approval_to_final_completed_is_byte_identical_to_leg
     .await;
 
     // Completion-evidence interlock: one WORM-VERIFIED REPORT row, written as
-    // mnt_rt, unblocks the FINAL_COMPLETED transition (legacy behavior).
+    // console_rt, unblocks the FINAL_COMPLETED transition (legacy behavior).
     insert_verified_report_evidence(&rt_pool, knl, work_order.id, mechanic).await;
 
-    let completed = mnt_platform_request_context::scope_org(knl, async {
+    let completed = console_platform_request_context::scope_org(knl, async {
         store
             .approve_work_order(WorkOrderApprovalCommand {
                 actor: executive,

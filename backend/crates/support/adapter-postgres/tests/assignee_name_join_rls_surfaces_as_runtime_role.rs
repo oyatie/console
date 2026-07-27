@@ -4,13 +4,13 @@
 //! `list_tickets` / `get_ticket` resolve `assignee_name` and `author_name` via a
 //! same-org correlated subquery on `users` (semantically a LEFT JOIN on a unique
 //! key — NULL when absent). This test proves the lookup WORKS and stays RLS-SAFE
-//! when the read runs as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! when the read runs as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser, which sees every row regardless of `app.current_org` and
 //! would green-light a name JOIN that silently reaches across tenants. We SEED as
-//! the owner (raw inserts, row_security off) and READ as `mnt_rt`.
+//! the owner (raw inserts, row_security off) and READ as `console_rt`.
 //!
 //! Asserts, with two tenants A (KNL) and B:
 //!   * under A's armed GUC, A's ticket lists with `assignee_name` resolved to A's
@@ -21,19 +21,19 @@
 //!     `users` row in the caller's tenant, so it can never leak another org's
 //!     display_name even if an id matched.
 
-use mnt_kernel_core::{BranchScope, ErrorKind, OrgId, SupportTicketId};
-use mnt_platform_request_context::CURRENT_ORG;
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_support_application::{CommentAudience, ListTicketsQuery};
+use console_kernel_core::{BranchScope, ErrorKind, OrgId, SupportTicketId};
+use console_platform_request_context::CURRENT_ORG;
+use console_support_adapter_postgres::PgSupportStore;
+use console_support_application::{CommentAudience, ListTicketsQuery};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x3333_3333_3333_3333_3333_3333_3333_3333);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -41,7 +41,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -128,7 +128,7 @@ async fn seed_user(owner_pool: &PgPool, org: Uuid, branch: Uuid, display_name: &
 /// Seed an INTERNAL ticket already ASSIGNED to `assignee`, directly as the owner
 /// (RLS off). This isolates the verification to the display-name JOIN on the READ
 /// path: we seed the row deterministically and then exercise `list_tickets` /
-/// `get_ticket` as the real `mnt_rt` runtime role under each tenant's GUC.
+/// `get_ticket` as the real `console_rt` runtime role under each tenant's GUC.
 async fn seed_assigned_ticket(
     owner_pool: &PgPool,
     org: Uuid,
@@ -170,7 +170,7 @@ async fn seed_assigned_ticket(
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn assignee_name_join_resolves_in_tenant_and_never_leaks_as_mnt_rt(owner_pool: PgPool) {
+async fn assignee_name_join_resolves_in_tenant_and_never_leaks_as_console_rt(owner_pool: PgPool) {
     let org_a = OrgId::knl();
     let org_a_uuid = *org_a.as_uuid();
     let org_b = OrgId::from_uuid(ORG_B);

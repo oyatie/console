@@ -23,7 +23,7 @@ The corrected product architecture is simpler: maintenance owns identity locally
 ## Decision
 Supersede this ADR. Do not define or restore the retired `IdentityProviderPort`, provider DTOs, boxed futures, provider error type, or contract-only tests.
 
-`mnt-identity-application` remains an application-layer crate for local org/account administration commands, read models, and audit builders. Any future HR, attendance, payroll, or roster integration must start from a new ADR or implementation issue that names the real provider, owner, validated contract, production configuration path, privacy/security review, adapter, and tests.
+`console-identity-application` remains an application-layer crate for local org/account administration commands, read models, and audit builders. Any future HR, attendance, payroll, or roster integration must start from a new ADR or implementation issue that names the real provider, owner, validated contract, production configuration path, privacy/security review, adapter, and tests.
 
 ## Consequences
 + The codebase no longer implies a nonexistent external identity provider.

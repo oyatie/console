@@ -25,7 +25,7 @@
       "action": "regenerate after the openapi edit",
       "blocking": true,
       "gates": [
-        "cargo test -p mnt-app --test openapi_drift",
+        "cargo test -p console-app --test openapi_drift",
         "npm run check:api-drift:portable",
         "npm run check:api-drift:swift"
       ]
@@ -35,7 +35,7 @@
     "backend/crates/platform/db/migrations/**": "no migration is added or edited; 0184 is already on the spine and is used as-is",
     "backend/app/src/lib.rs": "unchanged — no new register line",
     "backend/app/src/objects.rs": "unchanged",
-    "**/BUCK, tools/buck/generated_face_registry.json": "unchanged — no Cargo.toml dependency edge is added, so gen_first_party.py does NOT need to run (this is the one place this lane deliberately diverges from codex/equipment-evidence-custody-20260724, which added mnt-docs-* edges to mnt-equipment-adapter-postgres)",
+    "**/BUCK, tools/buck/generated_face_registry.json": "unchanged — no Cargo.toml dependency edge is added, so gen_first_party.py does NOT need to run (this is the one place this lane deliberately diverges from codex/equipment-evidence-custody-20260724, which added console-docs-* edges to console-equipment-adapter-postgres)",
     "web/src/i18n/ko.ts, nav.ts, screens/registry.ts": "unchanged"
   },
   "out_of_root_defect_reported_not_fixed": {
@@ -59,7 +59,7 @@
       "the concealment-shaped custody story test and its four rejection classes"
     ],
     "departed": [
-      "its mnt-equipment-adapter-postgres -> mnt-docs-adapter-postgres dependency: mnt-gate-layer-boundary FAILS on adapter->adapter",
+      "its console-equipment-adapter-postgres -> console-docs-adapter-postgres dependency: console-gate-layer-boundary FAILS on adapter->adapter",
       "its evidence fixture: bound created_by to the disposed_by parameter (NULL unless disposed) and forged worm_status='VERIFIED', which migration 0195's storage-attestation trigger overwrites"
     ]
   }

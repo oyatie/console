@@ -1,4 +1,4 @@
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { describe, expect, it } from "vitest";
 
 import { deriveFacilitiesCapabilities, type FacilitiesFeature } from "./facilitiesCapabilities";

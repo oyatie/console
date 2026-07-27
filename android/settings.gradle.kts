@@ -14,11 +14,11 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "maintenance-field-android"
+rootProject.name = "console-android"
 include(":app")
 
 includeBuild("../clients/kotlin") {
     dependencySubstitution {
-        substitute(module("com.maintenance:maintenance-api-client")).using(project(":"))
+        substitute(module("com.console:console-api-client")).using(project(":"))
     }
 }

@@ -9,19 +9,19 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-policy-adapter-postgres",
+    name = "console-policy-adapter-postgres",
     mapped_srcs = repo_mapped_srcs("backend/crates/policy/adapter-postgres", glob(["src/**/*.rs"])),
-    crate = "mnt_policy_adapter_postgres",
+    crate = "console_policy_adapter_postgres",
     edition = "2024",
     crate_root = "backend/crates/policy/adapter-postgres/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/policy/adapter-postgres"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/policy/application:mnt-policy-application",
-        "//backend/crates/policy/domain:mnt-policy-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/policy/application:console-policy-application",
+        "//backend/crates/policy/domain:console-policy-domain",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
         "//third-party/rust:thiserror",
@@ -31,7 +31,7 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-policy-adapter-postgres-itest-draft_storage",
+    name = "console-policy-adapter-postgres-itest-draft_storage",
     mapped_srcs = repo_mapped_srcs("backend/crates/policy/adapter-postgres", ["tests/draft_storage.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -42,17 +42,17 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/policy/adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.policy.adapter-postgres", "domain.policy", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/policy/application:mnt-policy-application",
-        "//backend/crates/policy/domain:mnt-policy-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/policy/application:console-policy-application",
+        "//backend/crates/policy/domain:console-policy-domain",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
         "//third-party/rust:thiserror",
         "//third-party/rust:time",
         "//third-party/rust:tokio",
         "//third-party/rust:uuid",
-        ":mnt-policy-adapter-postgres",
+        ":console-policy-adapter-postgres",
     ],
 )

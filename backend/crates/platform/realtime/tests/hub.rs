@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{BranchId, BranchScope, MessageId, OrgId, ThreadId, UserId};
-use mnt_messenger_application::MessageSummary;
-use mnt_platform_realtime::{
+use console_kernel_core::{BranchId, BranchScope, MessageId, OrgId, ThreadId, UserId};
+use console_messenger_application::MessageSummary;
+use console_platform_realtime::{
     DisconnectReason, PgRealtimeHub, RealtimeEvent, RealtimeHubConfig, RealtimePrincipal,
 };
 use time::OffsetDateTime;
@@ -73,8 +73,8 @@ async fn bounded_mpsc_disconnects_lagging_connection_with_resume_cursor_policy()
 
 #[tokio::test]
 async fn notification_fans_out_only_to_its_recipient() {
-    use mnt_notifications_application::NotificationSummary;
-    use mnt_notifications_domain::NotificationLink;
+    use console_notifications_application::NotificationSummary;
+    use console_notifications_domain::NotificationLink;
 
     let hub = std::sync::Arc::new(PgRealtimeHub::for_tests(RealtimeHubConfig {
         connection_buffer: 8,
@@ -106,7 +106,7 @@ async fn notification_fans_out_only_to_its_recipient() {
         .unwrap();
 
     let summary = NotificationSummary {
-        id: mnt_kernel_core::NotificationId::new(),
+        id: console_kernel_core::NotificationId::new(),
         recipient_user_id: recipient,
         category: "결재".to_owned(),
         kind: "info".to_owned(),

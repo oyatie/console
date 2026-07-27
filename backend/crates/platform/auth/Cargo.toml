@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-auth"
+name = "console-platform-auth"
 version = "0.1.0"
 description = "Passkey ceremonies, ES256 access JWTs, and rotating refresh-token families."
 edition.workspace = true
@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { path = "../db" }
+console-kernel-core = { workspace = true }
+console-platform-db = { path = "../db" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

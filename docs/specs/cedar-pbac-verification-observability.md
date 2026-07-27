@@ -67,4 +67,4 @@ A pilot action may not leave `legacy_only` until all of the following evidence i
 3. Observation tests prove metric labels and audit payload include mode, reason, freshness, expected bundle
    versions, evaluated bundle identity for stale-policy cases, and raw Cedar deny/error details for diagnostics.
 4. UI tests prove non-authoritative Cedar/JWT projections cannot expose RoleManage-tier pages.
-5. RLS proof shows Cedar allow cannot bypass `mnt_rt` / tenant row boundaries.
+5. RLS proof shows Cedar allow cannot bypass `console_rt` / tenant row boundaries.

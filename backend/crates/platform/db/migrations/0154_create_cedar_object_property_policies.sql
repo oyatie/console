@@ -102,7 +102,7 @@ END
 $$;
 
 -- Runtime role: attach (INSERT) + read only. No hard delete anywhere.
-GRANT SELECT, INSERT ON ont_object_policies   TO mnt_rt;
-GRANT SELECT, INSERT ON ont_property_policies TO mnt_rt;
-REVOKE UPDATE, DELETE ON ont_object_policies   FROM mnt_rt;
-REVOKE UPDATE, DELETE ON ont_property_policies FROM mnt_rt;
+GRANT SELECT, INSERT ON ont_object_policies   TO console_rt;
+GRANT SELECT, INSERT ON ont_property_policies TO console_rt;
+REVOKE UPDATE, DELETE ON ont_object_policies   FROM console_rt;
+REVOKE UPDATE, DELETE ON ont_property_policies FROM console_rt;

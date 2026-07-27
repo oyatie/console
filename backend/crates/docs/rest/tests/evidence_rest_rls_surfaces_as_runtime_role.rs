@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME RLS + integrity gate for the console EvidenceCard REST surface.
 //!
-//! Every assertion runs as the genuine non-owner runtime role `mnt_rt`
+//! Every assertion runs as the genuine non-owner runtime role `console_rt`
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) — NOT the default `#[sqlx::test]`
 //! BYPASSRLS superuser pool, which would see every tenant's rows and green-light
 //! a cross-org read. It proves the four contract points the EvidenceCard rests
@@ -18,32 +18,32 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use mnt_docs_adapter_postgres::PgDocsStore;
-use mnt_docs_application::{
+use console_docs_adapter_postgres::PgDocsStore;
+use console_docs_application::{
     ApplyLegalHoldCommand, CreateEvidenceObjectCommand, DisposeEvidenceObjectCommand,
     ListEvidenceObjectsQuery, RegisterEvidenceCopyCommand, RegisterEvidenceCopyInput,
     ReleaseLegalHoldCommand,
 };
-use mnt_docs_domain::{
+use console_docs_domain::{
     DerivativeKind, EvidenceClassification, EvidenceCopyEvidentiaryStatus, EvidenceCopyKind,
     EvidenceSourceRef, EvidenceSourceType, EvidenceStorageRef, Sha256Digest, WormStorageStatus,
 };
-use mnt_docs_rest::{DocsRestState, FixityStatus, HoldError, VerifyOutcome};
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, DecideApprovalCommand};
-use mnt_kernel_core::{EvidenceId, EvidenceObjectId, OrgId, TraceContext, UserId};
-use mnt_platform_storage::{
+use console_docs_rest::{DocsRestState, FixityStatus, HoldError, VerifyOutcome};
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, DecideApprovalCommand};
+use console_kernel_core::{EvidenceId, EvidenceObjectId, OrgId, TraceContext, UserId};
+use console_platform_storage::{
     CopyObjectRequest, ObjectHead, PresignGetRequest, PresignPutRequest, PresignedUpload,
     RetentionInfo, S3ObjectStore, StorageFuture,
 };
-use mnt_platform_test_support::{
-    grant_mnt_rt, runtime_role_pool, seed_admin_user_rls_off, seed_org_rls_off,
+use console_platform_test_support::{
+    grant_console_rt, runtime_role_pool, seed_admin_user_rls_off, seed_org_rls_off,
 };
 use sqlx::PgPool;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-const WORM_BUCKET: &str = "mnt-worm";
+const WORM_BUCKET: &str = "console-worm";
 const ORG_A: Uuid = Uuid::from_u128(0xA1A1_A1A1_A1A1_A1A1_A1A1_A1A1_A1A1_A1A1);
 const ORG_B: Uuid = Uuid::from_u128(0xB2B2_B2B2_B2B2_B2B2_B2B2_B2B2_B2B2_B2B2);
 const MIGRATION_0195: &str = include_str!("../../../platform/db/migrations/0195_docs_gaps.sql");
@@ -137,20 +137,20 @@ fn list_all() -> ListEvidenceObjectsQuery {
 // Harness
 // ---------------------------------------------------------------------------
 
-/// A `mnt_rt`-role pool (statements run under FORCE RLS), after granting the
+/// A `console_rt`-role pool (statements run under FORCE RLS), after granting the
 /// base-table privileges that default grants don't cover under the
 /// `#[sqlx::test]` superuser. The grant loop itself lives in
-/// `mnt_platform_test_support::grant_mnt_rt` (an unscanned crate); the static
+/// `console_platform_test_support::grant_console_rt` (an unscanned crate); the static
 /// GRANT literals stay here.
 async fn rt_pool(owner_pool: &PgPool) -> PgPool {
-    grant_mnt_rt(
+    grant_console_rt(
         owner_pool,
         &[
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-            "GRANT SELECT, INSERT ON gov_approvals TO mnt_rt",
-            "GRANT SELECT ON users TO mnt_rt",
-            "GRANT SELECT ON organizations TO mnt_rt",
-            "GRANT SELECT ON evidence_media TO mnt_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
+            "GRANT SELECT, INSERT ON gov_approvals TO console_rt",
+            "GRANT SELECT ON users TO console_rt",
+            "GRANT SELECT ON organizations TO console_rt",
+            "GRANT SELECT ON evidence_media TO console_rt",
         ],
     )
     .await;
@@ -197,7 +197,7 @@ async fn restore_pre_0195_docs_shape(owner_pool: &PgPool) {
         ALTER TABLE docs_evidence_copies
             DROP COLUMN IF EXISTS evidentiary_status;
 
-        GRANT UPDATE ON docs_evidence_copies TO mnt_rt;
+        GRANT UPDATE ON docs_evidence_copies TO console_rt;
         "#,
     )
     .execute(owner_pool)
@@ -404,7 +404,7 @@ async fn register_object_at(
             occurred_at,
         })
         .await
-        .expect("create_object under armed org as mnt_rt");
+        .expect("create_object under armed org as console_rt");
     detail.object.id
 }
 
@@ -421,20 +421,20 @@ async fn list_is_rls_scoped_and_detail_carries_custody_chain(owner_pool: PgPool)
     let st = state(rt, StubWormStore::default());
 
     let digest = "11".repeat(32);
-    let id = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let id = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         register_object(st.docs_store(), actor, &digest, "worm/a-1", "Contract A").await
     })
     .await;
 
     // (1) list is visible in the SAME org, invisible under a DIFFERENT org.
-    let in_a = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let in_a = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         st.docs_store().list_objects(list_all()).await
     })
     .await
     .unwrap();
     assert_eq!(in_a.total, 1, "the object is visible to its own tenant");
 
-    let in_b = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_B), async {
+    let in_b = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_B), async {
         st.docs_store().list_objects(list_all()).await
     })
     .await
@@ -445,7 +445,7 @@ async fn list_is_rls_scoped_and_detail_carries_custody_chain(owner_pool: PgPool)
     );
 
     // (2) detail carries the custody-event chain (REGISTERED present).
-    let detail = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let detail = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         st.docs_store().get_object(id).await
     })
     .await
@@ -512,7 +512,7 @@ async fn migration_0195_backfills_legacy_register_order_and_reseeds_identity(own
     assert_eq!(next_sequence, 3);
 
     let rt = rt_pool(&owner_pool).await;
-    let listed = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let listed = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         PgDocsStore::new(rt).list_objects(list_all()).await
     })
     .await
@@ -528,7 +528,7 @@ async fn cursor_scan_is_stable_across_the_immutable_register(owner_pool: PgPool)
     let st = state(rt, StubWormStore::default());
     let org = OrgId::from_uuid(ORG_A);
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         register_object(
             st.docs_store(),
             actor,
@@ -548,7 +548,7 @@ async fn cursor_scan_is_stable_across_the_immutable_register(owner_pool: PgPool)
     })
     .await;
 
-    let first = mnt_platform_request_context::scope_org(org, async {
+    let first = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .list_objects(ListEvidenceObjectsQuery {
                 limit: Some(1),
@@ -565,7 +565,7 @@ async fn cursor_scan_is_stable_across_the_immutable_register(owner_pool: PgPool)
     // The third registration occurs after the first page captured its DB
     // sequence boundary, but its business timestamp is deliberately backdated.
     // It must not enter the already-open scan.
-    let backdated_id = mnt_platform_request_context::scope_org(org, async {
+    let backdated_id = console_platform_request_context::scope_org(org, async {
         register_object_at(
             st.docs_store(),
             actor,
@@ -578,7 +578,7 @@ async fn cursor_scan_is_stable_across_the_immutable_register(owner_pool: PgPool)
     })
     .await;
 
-    let second = mnt_platform_request_context::scope_org(org, async {
+    let second = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .list_objects(ListEvidenceObjectsQuery {
                 limit: Some(1),
@@ -596,7 +596,7 @@ async fn cursor_scan_is_stable_across_the_immutable_register(owner_pool: PgPool)
     assert_ne!(first.items[0].id, second.items[0].id);
     assert_ne!(second.items[0].id, backdated_id);
 
-    let fresh = mnt_platform_request_context::scope_org(org, async {
+    let fresh = console_platform_request_context::scope_org(org, async {
         st.docs_store().list_objects(list_all()).await
     })
     .await
@@ -621,7 +621,7 @@ async fn verify_detects_a_tampered_hash(owner_pool: PgPool) {
     let st = state(rt, stub);
 
     let (good_id, bad_id) =
-        mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+        console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
             let good =
                 register_object(st.docs_store(), actor, &good_digest, "worm/good", "Good").await;
             let bad = register_object(
@@ -636,7 +636,7 @@ async fn verify_detects_a_tampered_hash(owner_pool: PgPool) {
         })
         .await;
 
-    let good_report = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let good_report = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         st.verify_object_fixity(actor, good_id, TraceContext::generate(), now())
             .await
     })
@@ -645,7 +645,7 @@ async fn verify_detects_a_tampered_hash(owner_pool: PgPool) {
     assert_eq!(good_report.outcome, VerifyOutcome::Verified);
     assert_eq!(good_report.copies[0].status, FixityStatus::Match);
 
-    let bad_report = mnt_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
+    let bad_report = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_A), async {
         st.verify_object_fixity(actor, bad_id, TraceContext::generate(), now())
             .await
     })
@@ -669,13 +669,13 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
     let org = OrgId::from_uuid(ORG_A);
 
     let digest = "dd".repeat(32);
-    let id = mnt_platform_request_context::scope_org(org, async {
+    let id = console_platform_request_context::scope_org(org, async {
         register_object(st.docs_store(), requester, &digest, "worm/h-1", "Held").await
     })
     .await;
 
     // Apply a legal hold, then disposal must be BLOCKED.
-    let hold = mnt_platform_request_context::scope_org(org, async {
+    let hold = console_platform_request_context::scope_org(org, async {
         st.apply_hold(ApplyLegalHoldCommand {
             actor: requester,
             evidence_object_id: id,
@@ -690,7 +690,7 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
     .await
     .expect("apply_hold succeeds");
 
-    let dispose_blocked = mnt_platform_request_context::scope_org(org, async {
+    let dispose_blocked = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .dispose_object(DisposeEvidenceObjectCommand {
                 actor: requester,
@@ -708,7 +708,7 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
     );
 
     // Release with NO four-eyes approval is refused (fail-closed).
-    let refused = mnt_platform_request_context::scope_org(org, async {
+    let refused = console_platform_request_context::scope_org(org, async {
         st.release_hold(
             Uuid::new_v4(),
             ReleaseLegalHoldCommand {
@@ -730,7 +730,7 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
 
     // Record a DISTINCT approver's approval, then release succeeds.
     let request_ref = Uuid::new_v4();
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         st.governance_store()
             .decide_approval(DecideApprovalCommand {
                 approver,
@@ -749,7 +749,7 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
     .await
     .expect("a distinct approver records an approval");
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         st.release_hold(
             request_ref,
             ReleaseLegalHoldCommand {
@@ -767,7 +767,7 @@ async fn hold_blocks_disposal_and_release_requires_a_distinct_approver(owner_poo
     .expect("release succeeds once a distinct approver has approved");
 
     // With the hold released, disposal is now permitted.
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .dispose_object(DisposeEvidenceObjectCommand {
                 actor: requester,
@@ -794,7 +794,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
 
     // RED regression: command-provided VERIFIED + verified_at without an
     // authoritative storage attestation cannot create a verified original.
-    let unproven_id = mnt_platform_request_context::scope_org(org, async {
+    let unproven_id = console_platform_request_context::scope_org(org, async {
         register_object(
             st.docs_store(),
             actor,
@@ -805,7 +805,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
         .await
     })
     .await;
-    let unproven = mnt_platform_request_context::scope_org(org, async {
+    let unproven = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .get_object(unproven_id)
             .await
@@ -839,7 +839,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
     .bind(*unproven.id.as_uuid())
     .execute(&mut *forged_update_tx)
     .await
-    .expect_err("mnt_rt must not be able to forge PENDING to VERIFIED");
+    .expect_err("console_rt must not be able to forge PENDING to VERIFIED");
     assert!(
         forged_update.to_string().contains("permission denied"),
         "direct runtime UPDATE must fail by privilege before a mutable status can be forged: {forged_update}"
@@ -847,7 +847,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
     drop(forged_update_tx);
 
     let has_update: bool = sqlx::query_scalar(
-        "SELECT has_table_privilege('mnt_rt', 'docs_evidence_copies', 'UPDATE')",
+        "SELECT has_table_privilege('console_rt', 'docs_evidence_copies', 'UPDATE')",
     )
     .fetch_one(&owner_pool)
     .await
@@ -862,7 +862,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
         r#"
             SELECT p.prosecdef,
                    p.proconfig,
-                   has_function_privilege('mnt_rt', p.oid, 'EXECUTE')
+                   has_function_privilege('console_rt', p.oid, 'EXECUTE')
             FROM pg_proc AS p
             WHERE p.oid = 'docs_evidence_copy_bind_storage_attestation()'::regprocedure
             "#,
@@ -884,7 +884,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
     );
     assert!(
         !runtime_can_execute,
-        "mnt_rt has no direct EXECUTE capability on the attestation trigger function"
+        "console_rt has no direct EXECUTE capability on the attestation trigger function"
     );
 
     // Existing storage-service proof path: replicate_once writes a VERIFIED
@@ -899,7 +899,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
         &original_digest,
     )
     .await;
-    let attested_id = mnt_platform_request_context::scope_org(org, async {
+    let attested_id = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .create_object(CreateEvidenceObjectCommand {
                 actor,
@@ -942,7 +942,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
             .id
     })
     .await;
-    let attested_original = mnt_platform_request_context::scope_org(org, async {
+    let attested_original = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .get_object(attested_id)
             .await
@@ -970,7 +970,7 @@ async fn storage_attestation_controls_original_verification_and_derivative_meani
         &derivative_digest,
     )
     .await;
-    let derivative = mnt_platform_request_context::scope_org(org, async {
+    let derivative = console_platform_request_context::scope_org(org, async {
         st.docs_store()
             .register_copy(RegisterEvidenceCopyCommand {
                 actor,

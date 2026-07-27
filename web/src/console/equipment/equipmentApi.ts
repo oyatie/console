@@ -6,7 +6,7 @@
  * deviation here is a defect against that contract, not a style choice.
  *
  * ponytail: raw fetch, not the generated openapi client, because the
- * equipment-3r paths are not in `@maintenance/api-client-ts` yet (openapi.yaml
+ * equipment-3r paths are not in `@console/api-client-ts` yet (openapi.yaml
  * is integrator-owned). Swap to `api.GET/POST` once the client is regenerated.
  */
 

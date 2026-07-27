@@ -6,8 +6,8 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_compliance_adapter_postgres::{PgComplianceError, PgComplianceStore};
-use mnt_compliance_application::{
+use console_compliance_adapter_postgres::{PgComplianceError, PgComplianceStore};
+use console_compliance_application::{
     AcceptEvidenceBindingCommand, ArrivalEventPage, ArrivalEventQuery, AuditStreamPage,
     AuditStreamQuery, AuditStreamReadKind, CEO_COVERT_AUDIT_STREAM_KEY, ComplianceControlQuery,
     ComplianceFrameworkQuery, ComplianceObligationQuery, ConsentTransitionCommand,
@@ -17,19 +17,19 @@ use mnt_compliance_application::{
     LocationConsentLedgerEntry, LocationConsentLedgerPage, LocationConsentLedgerQuery, PageRequest,
     RegulationImpactQuery,
 };
-use mnt_compliance_domain::{
+use console_compliance_domain::{
     ComplianceRiskLevel, ComplianceScope, ComplianceScopeKind, ControlCadence, ControlStatus,
     ControlType, CoverageLevel, EvidenceBindingStatus, EvidenceConfidence, EvidenceTargetType,
     FrameworkKind, FrameworkStatus, LocationConsent, LocationConsentState, LocationPing,
     ObligationRegulationRelationship, ObligationStatus, ObligationType, RegulationImpactStatus,
     ReviewCadence,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, KernelError, LocationPingId, Timestamp, TraceContext, UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::cedar_pbac::engine;
-use mnt_platform_authz::{
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::cedar_pbac::engine;
+use console_platform_authz::{
     Action, AuthorizationContext, AuthorizationRequest, AuthorizationResource, CoexistenceMapEntry,
     DualEngineMode, Feature, Principal, RlsScopeProof, SubjectFreshnessRequirement, authorize,
     authorize_org_wide, evaluate_cedar_pbac_boundary,
@@ -131,7 +131,7 @@ pub fn router(state: ComplianceRestState) -> Router {
             get(list_ceo_covert_audit_access_events),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 /// All compliance catalog writes derive the actor, trace, timestamp, and tenant
@@ -160,7 +160,7 @@ struct ObligationQuery {
     severity: Option<ComplianceRiskLevel>,
     scope_type: Option<ComplianceScopeKind>,
     branch_id: Option<BranchId>,
-    site_id: Option<mnt_kernel_core::SiteId>,
+    site_id: Option<console_kernel_core::SiteId>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -424,7 +424,7 @@ async fn list_regulations(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Query(query): Query<RegulationQuery>,
-) -> Result<Json<mnt_compliance_application::RegulationImpactPage>, RestError> {
+) -> Result<Json<console_compliance_application::RegulationImpactPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
     let q = query.page.q.clone();
@@ -446,7 +446,7 @@ async fn create_regulation(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<CreateRegulationRequest>,
-) -> Result<Json<mnt_compliance_domain::RegulationImpact>, RestError> {
+) -> Result<Json<console_compliance_domain::RegulationImpact>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_manage(&principal)?;
     let result = state
@@ -478,7 +478,7 @@ async fn list_obligations(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Query(query): Query<ObligationQuery>,
-) -> Result<Json<mnt_compliance_application::ComplianceObligationPage>, RestError> {
+) -> Result<Json<console_compliance_application::ComplianceObligationPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     if let Some(branch_id) = query.branch_id {
         require_branch_compliance_feature(&principal, Feature::ComplianceDomainRead, branch_id)?;
@@ -510,14 +510,14 @@ async fn create_obligation(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<CreateObligationRequest>,
-) -> Result<Json<mnt_compliance_domain::ComplianceObligation>, RestError> {
+) -> Result<Json<console_compliance_domain::ComplianceObligation>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_obligation_scope_manage(&principal, body.scope)?;
     let regulation_links = body
         .regulation_links
         .into_iter()
         .map(|link| {
-            Ok(mnt_compliance_application::CreateObligationRegulationLink {
+            Ok(console_compliance_application::CreateObligationRegulationLink {
                 regulation_impact_id: link.regulation_impact_id.parse().map_err(|_| {
                     RestError::from_kernel(KernelError::validation(
                         "regulation_impact_id must be a UUID",
@@ -556,7 +556,7 @@ async fn link_obligation_regulation(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<LinkObligationRegulationRequest>,
-) -> Result<Json<mnt_compliance_domain::ObligationRegulationLink>, RestError> {
+) -> Result<Json<console_compliance_domain::ObligationRegulationLink>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_manage(&principal)?;
     let result = state
@@ -585,7 +585,7 @@ async fn list_frameworks(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Query(query): Query<FrameworkQuery>,
-) -> Result<Json<mnt_compliance_application::ComplianceFrameworkPage>, RestError> {
+) -> Result<Json<console_compliance_application::ComplianceFrameworkPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
     let q = query.page.q.clone();
@@ -607,7 +607,7 @@ async fn create_framework(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<CreateFrameworkRequest>,
-) -> Result<Json<mnt_compliance_domain::ComplianceFramework>, RestError> {
+) -> Result<Json<console_compliance_domain::ComplianceFramework>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_manage(&principal)?;
     let result = state
@@ -633,7 +633,7 @@ async fn list_framework_controls(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Query(query): Query<ControlQuery>,
-) -> Result<Json<mnt_compliance_application::ComplianceControlPage>, RestError> {
+) -> Result<Json<console_compliance_application::ComplianceControlPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
     let framework_id = query.framework_id.parse().map_err(|_| {
@@ -658,7 +658,7 @@ async fn create_framework_control(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<CreateControlRequest>,
-) -> Result<Json<mnt_compliance_domain::ComplianceControl>, RestError> {
+) -> Result<Json<console_compliance_domain::ComplianceControl>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_manage(&principal)?;
     let result = state
@@ -687,7 +687,7 @@ async fn link_control_obligation(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<LinkControlObligationRequest>,
-) -> Result<Json<mnt_compliance_domain::ControlObligationCoverage>, RestError> {
+) -> Result<Json<console_compliance_domain::ControlObligationCoverage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_manage(&principal)?;
     let result = state
@@ -714,7 +714,7 @@ async fn list_evidence_bindings(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Query(query): Query<EvidenceQuery>,
-) -> Result<Json<mnt_compliance_application::EvidenceBindingPage>, RestError> {
+) -> Result<Json<console_compliance_application::EvidenceBindingPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
     let control_id = query
@@ -755,7 +755,7 @@ async fn accept_evidence_binding(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Path(id): Path<String>,
-) -> Result<Json<mnt_compliance_domain::EvidenceBinding>, RestError> {
+) -> Result<Json<console_compliance_domain::EvidenceBinding>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_evidence_accept_with_read(&principal)?;
     let id = id.parse().map_err(|_| {
@@ -780,7 +780,7 @@ async fn create_evidence_binding(
     State(state): State<ComplianceRestState>,
     headers: HeaderMap,
     Json(body): Json<CreateEvidenceBindingRequest>,
-) -> Result<Json<mnt_compliance_domain::EvidenceBinding>, RestError> {
+) -> Result<Json<console_compliance_domain::EvidenceBinding>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_evidence_link_with_read(&principal)?;
     let result = state
@@ -1147,7 +1147,7 @@ async fn authorize_ceo_covert_audit_stream(
     query: &AuditStreamQuery,
 ) -> Result<(), RestError> {
     let org =
-        mnt_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
+        console_platform_request_context::current_org().map_err(rest_error_from_request_context)?;
     let facts = state
         .store
         .audit_stream_authorization_facts(principal.user_id, CEO_COVERT_AUDIT_STREAM_KEY)
@@ -1272,40 +1272,40 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for compliance API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for compliance API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
+        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
             KernelError::internal("no tenant context is bound to the current request"),
         ),
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -1404,8 +1404,8 @@ mod tests {
         require_evidence_link_with_read,
     };
     use axum::{http::StatusCode, response::IntoResponse};
-    use mnt_kernel_core::{BranchScope, KernelError, OrgId, UserId};
-    use mnt_platform_authz::{EffectiveFeatureGrant, Feature, PermissionLevel, Principal};
+    use console_kernel_core::{BranchScope, KernelError, OrgId, UserId};
+    use console_platform_authz::{EffectiveFeatureGrant, Feature, PermissionLevel, Principal};
     use std::collections::BTreeSet;
 
     fn principal_with(feature: Feature) -> Principal {

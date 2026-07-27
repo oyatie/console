@@ -9,20 +9,20 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-orgchange-rest",
+    name = "console-orgchange-rest",
     mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/rest", glob(["src/**/*.rs"])),
-    crate = "mnt_orgchange_rest",
+    crate = "console_orgchange_rest",
     edition = "2024",
     crate_root = "backend/crates/orgchange/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/rest"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/orgchange/adapter-postgres:mnt-orgchange-adapter-postgres",
-        "//backend/crates/orgchange/domain:mnt-orgchange-domain",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/orgchange/adapter-postgres:console-orgchange-adapter-postgres",
+        "//backend/crates/orgchange/domain:console-orgchange-domain",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:axum",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",

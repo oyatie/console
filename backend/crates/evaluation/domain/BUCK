@@ -9,30 +9,30 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-evaluation-domain",
+    name = "console-evaluation-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/evaluation/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_evaluation_domain",
+    crate = "console_evaluation_domain",
     edition = "2024",
     crate_root = "backend/crates/evaluation/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/evaluation/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-evaluation-domain-unit",
+    name = "console-evaluation-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/evaluation/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_evaluation_domain",
+    crate = "console_evaluation_domain",
     edition = "2024",
     crate_root = "backend/crates/evaluation/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/evaluation/domain"},
     labels = ["owner.backend.crates.evaluation.domain", "domain.evaluation", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )

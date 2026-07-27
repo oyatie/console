@@ -2,7 +2,7 @@
 --
 -- Use ONLY during a failed multi-tenant cutover (see
 -- ops/launch/multi-tenant-cutover-runbook.md §3, option 2), when a full CNPG
--- PITR restore would be too slow. Run as the database OWNER (mnt_app) through the
+-- PITR restore would be too slow. Run as the database OWNER (console_app) through the
 -- admin tunnel.
 --
 -- Why this is needed: migrations 0030/0035 set FORCE ROW LEVEL SECURITY, which
@@ -14,7 +14,7 @@
 -- the cutover later without redoing the schema work.
 --
 -- After running this: revert the prod overlay image digest to the previous
--- (pre-cutover) mnt-app/mnt-web and let Argo sync the old app back.
+-- (pre-cutover) console-app/console-web and let Argo sync the old app back.
 --
 -- This is dynamic (covers every RLS-enabled table, including the rollout's ~50)
 -- so it cannot drift from the migrations.

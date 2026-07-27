@@ -18,7 +18,7 @@ CREATE TABLE compliance_code_counters (
     PRIMARY KEY (org_id, object_prefix)
 );
 
--- mnt-gate: audited-table compliance_regulation_impacts
+-- console-gate: audited-table compliance_regulation_impacts
 CREATE TABLE compliance_regulation_impacts (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -53,7 +53,7 @@ CREATE INDEX idx_compliance_regulation_impacts_review_due
     ON compliance_regulation_impacts (org_id, review_due_on)
     WHERE review_due_on IS NOT NULL AND status = 'ACTIVE';
 
--- mnt-gate: audited-table compliance_obligations
+-- console-gate: audited-table compliance_obligations
 CREATE TABLE compliance_obligations (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id           UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -98,7 +98,7 @@ CREATE INDEX idx_compliance_obligations_branch
 CREATE INDEX idx_compliance_obligations_site
     ON compliance_obligations (org_id, site_id, status) WHERE site_id IS NOT NULL;
 
--- mnt-gate: audited-table compliance_obligation_regulations
+-- console-gate: audited-table compliance_obligation_regulations
 CREATE TABLE compliance_obligation_regulations (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -115,7 +115,7 @@ CREATE TABLE compliance_obligation_regulations (
     FOREIGN KEY (created_by, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT
 );
 
--- mnt-gate: audited-table compliance_frameworks
+-- console-gate: audited-table compliance_frameworks
 CREATE TABLE compliance_frameworks (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -142,7 +142,7 @@ CREATE TABLE compliance_frameworks (
 CREATE INDEX idx_compliance_frameworks_status
     ON compliance_frameworks (org_id, status, updated_at DESC);
 
--- mnt-gate: audited-table compliance_controls
+-- console-gate: audited-table compliance_controls
 CREATE TABLE compliance_controls (
     id                     UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -169,7 +169,7 @@ CREATE TABLE compliance_controls (
 CREATE INDEX idx_compliance_controls_framework_status
     ON compliance_controls (org_id, framework_id, status, control_key);
 
--- mnt-gate: audited-table compliance_control_obligations
+-- console-gate: audited-table compliance_control_obligations
 CREATE TABLE compliance_control_obligations (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -194,7 +194,7 @@ CREATE INDEX idx_compliance_control_obligations_obligation
 CREATE INDEX idx_compliance_control_obligations_control
     ON compliance_control_obligations (org_id, control_id, status);
 
--- mnt-gate: audited-table compliance_evidence_bindings
+-- console-gate: audited-table compliance_evidence_bindings
 CREATE TABLE compliance_evidence_bindings (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -300,20 +300,20 @@ CREATE TRIGGER trg_compliance_obligation_regulations_no_delete
     BEFORE DELETE ON compliance_obligation_regulations
     FOR EACH ROW EXECUTE FUNCTION compliance_append_only_relation();
 
-GRANT SELECT, INSERT, UPDATE ON compliance_code_counters TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_regulation_impacts TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_obligations TO mnt_rt;
-GRANT SELECT, INSERT ON compliance_obligation_regulations TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_frameworks TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_controls TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_control_obligations TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON compliance_evidence_bindings TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_code_counters TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_regulation_impacts TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_obligations TO console_rt;
+GRANT SELECT, INSERT ON compliance_obligation_regulations TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_frameworks TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_controls TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_control_obligations TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON compliance_evidence_bindings TO console_rt;
 
-REVOKE DELETE ON compliance_code_counters FROM mnt_rt;
-REVOKE DELETE ON compliance_regulation_impacts FROM mnt_rt;
-REVOKE DELETE ON compliance_obligations FROM mnt_rt;
-REVOKE UPDATE, DELETE ON compliance_obligation_regulations FROM mnt_rt;
-REVOKE DELETE ON compliance_frameworks FROM mnt_rt;
-REVOKE DELETE ON compliance_controls FROM mnt_rt;
-REVOKE DELETE ON compliance_control_obligations FROM mnt_rt;
-REVOKE DELETE ON compliance_evidence_bindings FROM mnt_rt;
+REVOKE DELETE ON compliance_code_counters FROM console_rt;
+REVOKE DELETE ON compliance_regulation_impacts FROM console_rt;
+REVOKE DELETE ON compliance_obligations FROM console_rt;
+REVOKE UPDATE, DELETE ON compliance_obligation_regulations FROM console_rt;
+REVOKE DELETE ON compliance_frameworks FROM console_rt;
+REVOKE DELETE ON compliance_controls FROM console_rt;
+REVOKE DELETE ON compliance_control_obligations FROM console_rt;
+REVOKE DELETE ON compliance_evidence_bindings FROM console_rt;

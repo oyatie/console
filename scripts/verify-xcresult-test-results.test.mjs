@@ -10,11 +10,11 @@ const tests = {
   devices: [{
     testPlanConfigurations: [{
       testableSummaries: [{
-        testableName: "MaintenanceFieldUITests.xctest",
-        tests: [{ nodeType: "Test Suite", name: "MaintenanceFieldUITests", children: [
-          { nodeType: "Test Case", identifier: "MaintenanceFieldUITests/AccessibilityAuditUITests/testAudit", name: "testAudit()", testStatus: "Success" },
-          { nodeType: "Test Case", identifier: "MaintenanceFieldUITests/FieldCriticalPathUITests/testPostLogin", name: "testPostLogin()", testStatus: "Success" },
-          { nodeType: "Test Case", identifier: "MaintenanceFieldUITests/LoginValidationUITests/testValidation", name: "testValidation()", testStatus: "Success" },
+        testableName: "ConsoleUITests.xctest",
+        tests: [{ nodeType: "Test Suite", name: "ConsoleUITests", children: [
+          { nodeType: "Test Case", identifier: "ConsoleUITests/AccessibilityAuditUITests/testAudit", name: "testAudit()", testStatus: "Success" },
+          { nodeType: "Test Case", identifier: "ConsoleUITests/ConsoleCriticalPathUITests/testPostLogin", name: "testPostLogin()", testStatus: "Success" },
+          { nodeType: "Test Case", identifier: "ConsoleUITests/LoginValidationUITests/testValidation", name: "testValidation()", testStatus: "Success" },
         ] }],
       }],
     }],
@@ -76,7 +76,7 @@ describe("structured xcresult verifier", () => {
     assert.match(verifyStructuredXcresult({
       summary: { ...summary, passedTests: 4 },
       tests: duplicate,
-      expectedTests: ["AccessibilityAuditUITests/testAudit", "FieldCriticalPathUITests/testPostLogin", "LoginValidationUITests/testValidation"],
+      expectedTests: ["AccessibilityAuditUITests/testAudit", "ConsoleCriticalPathUITests/testPostLogin", "LoginValidationUITests/testValidation"],
     }).failures.join("\n"), /exactly once/);
   });
 
@@ -150,7 +150,7 @@ final class XCTestPrewarmUITests: XCTestCase {
   it("rejects a partial structured result missing an expected source test", () => {
     const expected = [
       "AccessibilityAuditUITests/testAudit",
-      "FieldCriticalPathUITests/testPostLogin",
+      "ConsoleCriticalPathUITests/testPostLogin",
       "LoginValidationUITests/testValidation",
       "LoginValidationUITests/testMissing",
     ];
@@ -164,21 +164,21 @@ final class XCTestPrewarmUITests: XCTestCase {
   it("canonicalizes parity-test class names that end in Tests rather than UITests", () => {
     const parity = structuredClone(tests);
     const leaf = parity.devices[0].testPlanConfigurations[0].testableSummaries[0].tests[0].children[0];
-    leaf.identifier = "MaintenanceFieldUITests.FieldAccessibilityIDParityTests/testAllAccessibilityIDs";
+    leaf.identifier = "ConsoleUITests.ConsoleAccessibilityIDParityTests/testAllAccessibilityIDs";
     leaf.name = "testAllAccessibilityIDs()";
-    assert.match(verifyStructuredXcresult({ summary, tests: parity, expectedTests: ["FieldAccessibilityIDParityTests/testAllAccessibilityIDs"] }).failures.join("\n"), /unexpected XCTest case/);
-    assert.doesNotMatch(verifyStructuredXcresult({ summary: { ...summary, passedTests: 1 }, tests: { devices: [{ testPlanConfigurations: [{ testableSummaries: [{ tests: [{ nodeType: "Test Case", identifier: leaf.identifier, name: leaf.name, testStatus: "Success" }] }] }] }] }, expectedTests: ["FieldAccessibilityIDParityTests/testAllAccessibilityIDs"] }).failures.join("\n"), /expected XCTest case|unexpected XCTest case/);
+    assert.match(verifyStructuredXcresult({ summary, tests: parity, expectedTests: ["ConsoleAccessibilityIDParityTests/testAllAccessibilityIDs"] }).failures.join("\n"), /unexpected XCTest case/);
+    assert.doesNotMatch(verifyStructuredXcresult({ summary: { ...summary, passedTests: 1 }, tests: { devices: [{ testPlanConfigurations: [{ testableSummaries: [{ tests: [{ nodeType: "Test Case", identifier: leaf.identifier, name: leaf.name, testStatus: "Success" }] }] }] }] }, expectedTests: ["ConsoleAccessibilityIDParityTests/testAllAccessibilityIDs"] }).failures.join("\n"), /expected XCTest case|unexpected XCTest case/);
   });
 
   it("canonicalizes a real Xcode 16 nodeIdentifier that starts with the test class", () => {
     const realShape = {
-      testNodes: [{ nodeType: "Test Case", nodeIdentifier: "FieldAccessibilityIDParityTests/testMirroredIdentifiersMatchProductionValues()", name: "testMirroredIdentifiersMatchProductionValues()", result: "Passed" }],
+      testNodes: [{ nodeType: "Test Case", nodeIdentifier: "ConsoleAccessibilityIDParityTests/testMirroredIdentifiersMatchProductionValues()", name: "testMirroredIdentifiersMatchProductionValues()", result: "Passed" }],
     };
     assert.doesNotMatch(
       verifyStructuredXcresult({
         summary: { passedTests: 1, failedTests: 0, skippedTests: 0, totalTestCount: 1, result: "Passed", testFailures: [], topInsights: [] },
         tests: realShape,
-        expectedTests: ["FieldAccessibilityIDParityTests/testMirroredIdentifiersMatchProductionValues"],
+        expectedTests: ["ConsoleAccessibilityIDParityTests/testMirroredIdentifiersMatchProductionValues"],
       }).failures.join("\n"),
       /expected XCTest case|unexpected XCTest case/,
     );
@@ -194,7 +194,7 @@ final class XCTestPrewarmUITests: XCTestCase {
       runs,
       expectedTests: [
         "AccessibilityAuditUITests/testAudit",
-        "FieldCriticalPathUITests/testPostLogin",
+        "ConsoleCriticalPathUITests/testPostLogin",
         "LoginValidationUITests/testValidation",
       ],
     }).failures, []);
@@ -210,7 +210,7 @@ final class XCTestPrewarmUITests: XCTestCase {
       runs: [shard(leaves[0]), shard(leaves[0]), shard(leaves[2])],
       expectedTests: [
         "AccessibilityAuditUITests/testAudit",
-        "FieldCriticalPathUITests/testPostLogin",
+        "ConsoleCriticalPathUITests/testPostLogin",
         "LoginValidationUITests/testValidation",
       ],
     }).failures.join("\n");
@@ -242,7 +242,7 @@ final class XCTestPrewarmUITests: XCTestCase {
         runs: loaded.runs,
         expectedTests: [
           "AccessibilityAuditUITests/testAudit",
-          "FieldCriticalPathUITests/testPostLogin",
+          "ConsoleCriticalPathUITests/testPostLogin",
         ],
       });
       assert.match(verification.failures.join("\n"), /testPostLogin.*0 times/);

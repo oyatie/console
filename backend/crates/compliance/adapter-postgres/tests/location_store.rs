@@ -1,14 +1,14 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_compliance_adapter_postgres::PgComplianceStore;
-use mnt_compliance_application::{
+use console_compliance_adapter_postgres::PgComplianceStore;
+use console_compliance_application::{
     AcceptEvidenceBindingCommand, ArrivalEventQuery, ConsentTransitionCommand,
     ConsentTransitionKind, CreateEvidenceBindingCommand,
 };
-use mnt_compliance_domain::{
+use console_compliance_domain::{
     EvidenceConfidence, EvidenceTargetType, LocationPing, PingVolumeBound,
 };
-use mnt_kernel_core::{BranchId, BranchScope, LocationPingId, OrgId, TraceContext, UserId};
+use console_kernel_core::{BranchId, BranchScope, LocationPingId, OrgId, TraceContext, UserId};
 use sqlx::{PgPool, Row};
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -17,7 +17,7 @@ use tokio::sync::Barrier;
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn withdrawal_destroys_pings_and_logs_while_auditing_only_consent(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let (user_id, branch_id) = seed_user_and_branch(&pool, "Consent User").await;
         let store = PgComplianceStore::new(pool.clone());
 
@@ -99,7 +99,7 @@ async fn withdrawal_destroys_pings_and_logs_while_auditing_only_consent(pool: Pg
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn retention_purge_drops_expired_day_partitions(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let (user_id, branch_id) = seed_user_and_branch(&pool, "Retention User").await;
         let store = PgComplianceStore::new(pool.clone());
 
@@ -151,7 +151,7 @@ async fn retention_purge_drops_expired_day_partitions(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn ping_volume_stays_within_on_duty_window_rate_bound(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let (first_user, branch_id) = seed_user_and_branch(&pool, "Volume User 1").await;
         let (second_user, _) = seed_user_in_branch(&pool, branch_id, "Volume User 2").await;
         let store = PgComplianceStore::new(pool.clone());
@@ -195,7 +195,7 @@ async fn ping_volume_stays_within_on_duty_window_rate_bound(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_first_pings_for_same_day_share_partition_creation(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let (user_id, branch_id) = seed_user_and_branch(&pool, "Concurrent User").await;
         let store = Arc::new(PgComplianceStore::new(pool.clone()));
 
@@ -213,7 +213,7 @@ async fn concurrent_first_pings_for_same_day_share_partition_creation(pool: PgPo
         for offset in 0..32 {
             let store = Arc::clone(&store);
             handles.push(tokio::spawn(async move {
-                mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+                console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
                     let ping = LocationPing::new(
                         LocationPingId::new(),
                         user_id,
@@ -244,7 +244,7 @@ async fn concurrent_first_pings_for_same_day_share_partition_creation(pool: PgPo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn consented_user_can_ping_a_different_branch(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         // Consent is per-user (location_consents UNIQUE (user_id)). A multi-branch
         // mechanic who granted consent in branch A must still be able to ping while
         // on duty in branch B without a spurious 403.
@@ -292,7 +292,7 @@ async fn consented_user_can_ping_a_different_branch(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn accepting_proposed_evidence_is_tenant_scoped_audited_and_not_replayable(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let (actor, _branch) = seed_user_and_branch(&pool, "Evidence Approver").await;
         let control_id = seed_compliance_control(&pool, actor).await;
         let store = PgComplianceStore::new(pool.clone());
@@ -352,7 +352,7 @@ async fn accepting_proposed_evidence_is_tenant_scoped_audited_and_not_replayable
             })
             .await
             .unwrap_err();
-        assert_eq!(replay.kind(), mnt_kernel_core::ErrorKind::Conflict);
+        assert_eq!(replay.kind(), console_kernel_core::ErrorKind::Conflict);
         let accept_audits: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM audit_events WHERE action = 'compliance.evidence_binding.accept' AND target_id = $1",
         )
@@ -367,7 +367,7 @@ async fn accepting_proposed_evidence_is_tenant_scoped_audited_and_not_replayable
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_evidence_acceptors_produce_one_accept_one_conflict_and_one_audit(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let (actor, _branch) = seed_user_and_branch(&pool, "Concurrent Evidence Approver").await;
         let control_id = seed_compliance_control(&pool, actor).await;
         let store = PgComplianceStore::new(pool.clone());
@@ -398,7 +398,7 @@ async fn concurrent_evidence_acceptors_produce_one_accept_one_conflict_and_one_a
             let store = store.clone();
             tokio::spawn(async move {
                 barrier.wait().await;
-                mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+                console_platform_request_context::scope_org(OrgId::knl(), async move {
                     store
                         .accept_evidence_binding(AcceptEvidenceBindingCommand {
                             actor,
@@ -418,7 +418,7 @@ async fn concurrent_evidence_acceptors_produce_one_accept_one_conflict_and_one_a
         assert_eq!(
             results
                 .iter()
-                .filter(|result| result.as_ref().is_err_and(|error| error.kind() == mnt_kernel_core::ErrorKind::Conflict))
+                .filter(|result| result.as_ref().is_err_and(|error| error.kind() == console_kernel_core::ErrorKind::Conflict))
                 .count(),
             1,
             "the loser must observe the committed state transition as a conflict"
@@ -587,7 +587,7 @@ async fn partition_exists(pool: &PgPool, partition: &str) -> bool {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn geofence_arrival_departure_is_audited_and_survives_withdrawal(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let (user_id, branch_id) = seed_user_and_branch(&pool, "Geofence Mechanic").await;
         let customer_id = seed_customer(&pool, branch_id).await;
         // Site at Seoul City Hall; default 300 m geofence (no per-site override).
@@ -857,7 +857,7 @@ async fn count_presence(pool: &PgPool, user_id: UserId) -> i64 {
 /// branch-A supervisor's branch-scoped read would never see the event.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn attendance_is_filed_under_the_work_order_branch_not_the_ping_branch(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let (user_id, branch_a) = seed_user_and_branch(&pool, "Multi-Branch Mechanic").await;
         let branch_b = seed_second_branch(&pool, user_id, "Mechanic Branch B").await;
         let customer_id = seed_customer(&pool, branch_a).await;
@@ -916,7 +916,7 @@ async fn attendance_is_filed_under_the_work_order_branch_not_the_ping_branch(poo
 /// dropped, never flip the geofence state or emit a phantom crossing.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn out_of_order_stale_ping_does_not_emit_a_phantom_crossing(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let (user_id, branch_id) = seed_user_and_branch(&pool, "Out Of Order Mechanic").await;
         let customer_id = seed_customer(&pool, branch_id).await;
         let site_id = seed_site(&pool, branch_id, customer_id, 37.5665, 126.9780).await;

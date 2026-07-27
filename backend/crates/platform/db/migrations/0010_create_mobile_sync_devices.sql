@@ -2,7 +2,7 @@
 -- Raw client device identifiers are never stored; REST hashes X-Device-Id
 -- server-side before writing these tables.
 
--- mnt-gate: audited-table offline_sync_requests
+-- console-gate: audited-table offline_sync_requests
 CREATE TABLE offline_sync_requests (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id           UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -30,7 +30,7 @@ CREATE INDEX idx_offline_sync_requests_work_order
     ON offline_sync_requests (work_order_id, received_at DESC)
     WHERE work_order_id IS NOT NULL;
 
--- mnt-gate: audited-table registered_devices
+-- console-gate: audited-table registered_devices
 CREATE TABLE registered_devices (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id            UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,

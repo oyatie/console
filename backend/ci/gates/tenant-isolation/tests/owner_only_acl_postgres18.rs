@@ -1,6 +1,6 @@
 #![allow(clippy::panic)]
 
-use mnt_gate_tenant_isolation::owner_only_table_allowlist;
+use console_gate_tenant_isolation::owner_only_table_allowlist;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgConnection, PgPool};
 
@@ -19,12 +19,12 @@ async fn effective_runtime_privileges(
             'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
             'REFERENCES', 'TRIGGER', 'MAINTAIN'
         ]::text[]) AS candidate(privilege)
-        WHERE has_table_privilege('mnt_rt', $1, privilege)
+        WHERE has_table_privilege('console_rt', $1, privilege)
         UNION ALL
         SELECT 'column:' || privilege
         FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']::text[])
             AS candidate(privilege)
-        WHERE has_any_column_privilege('mnt_rt', $1, privilege)
+        WHERE has_any_column_privilege('console_rt', $1, privilege)
         ORDER BY 1
         "#,
     )
@@ -59,8 +59,8 @@ async fn settable_runtime_roles(connection: &mut PgConnection) -> Result<Vec<Str
         r#"
         SELECT candidate.rolname::text
         FROM pg_catalog.pg_roles AS candidate
-        WHERE candidate.rolname <> 'mnt_rt'
-          AND pg_catalog.pg_has_role('mnt_rt', candidate.oid, 'SET')
+        WHERE candidate.rolname <> 'console_rt'
+          AND pg_catalog.pg_has_role('console_rt', candidate.oid, 'SET')
         ORDER BY candidate.rolname
         "#,
     )
@@ -81,14 +81,14 @@ async fn assert_acl_mutation_is_detected(
     let privileges = effective_runtime_privileges(&mut transaction, OWNER_ONLY_PROBE).await?;
     assert!(
         !privileges.is_empty(),
-        "{label} must produce effective mnt_rt access"
+        "{label} must produce effective console_rt access"
     );
     transaction.rollback().await?;
     Ok(())
 }
 
 #[tokio::test]
-#[ignore = "requires PostgreSQL 18 migrated directly as mnt_app"]
+#[ignore = "requires PostgreSQL 18 migrated directly as console_app"]
 async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
     let database_url = std::env::var("DATABASE_URL")?;
     let pool = PgPoolOptions::new()
@@ -100,7 +100,7 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
         .fetch_one(&pool)
         .await?;
     assert_eq!(
-        current_user, "mnt_app",
+        current_user, "console_app",
         "ACL proof must use the production migration owner"
     );
 
@@ -117,7 +117,7 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
     let settable_roles = settable_runtime_roles(&mut connection).await?;
     assert!(
         settable_roles.is_empty(),
-        "mnt_rt can SET ROLE to privilege-bearing identities: {settable_roles:?}"
+        "console_rt can SET ROLE to privilege-bearing identities: {settable_roles:?}"
     );
 
     for &(table, _) in owner_only_table_allowlist() {
@@ -132,7 +132,7 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
         let privileges = effective_runtime_privileges(&mut connection, &relation).await?;
         assert!(
             privileges.is_empty(),
-            "mnt_rt has effective access to owner-only {relation}: {privileges:?}"
+            "console_rt has effective access to owner-only {relation}: {privileges:?}"
         );
     }
     drop(connection);
@@ -140,31 +140,31 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
     for (label, statements) in [
         (
             "mixed runtime grantee",
-            &["GRANT SELECT ON public.ont_builtin_catalog_allowlist TO mnt_app, mnt_rt"]
+            &["GRANT SELECT ON public.ont_builtin_catalog_allowlist TO console_app, console_rt"]
                 as &[&str],
         ),
         (
             "PUBLIC grantee",
-            &["GRANT SELECT ON public.ont_builtin_catalog_allowlist TO mnt_app, PUBLIC"],
+            &["GRANT SELECT ON public.ont_builtin_catalog_allowlist TO console_app, PUBLIC"],
         ),
         (
             "Unicode-escaped runtime grantee",
-            &[r#"GRANT SELECT ON public.ont_builtin_catalog_allowlist TO U&"mnt\005frt""#],
+            &[r#"GRANT SELECT ON public.ont_builtin_catalog_allowlist TO U&"console\005frt""#],
         ),
         (
             "Unicode-escaped owner-only target",
-            &[r#"GRANT SELECT ON public.U&"ont\005fbuiltin\005fcatalog\005fallowlist" TO mnt_rt"#],
+            &[r#"GRANT SELECT ON public.U&"ont\005fbuiltin\005fcatalog\005fallowlist" TO console_rt"#],
         ),
         (
             "quoted-semicolon column privilege",
             &[
                 r#"ALTER TABLE public.ont_builtin_catalog_allowlist ADD COLUMN "x;y" text"#,
-                r#"GRANT SELECT ("x;y") ON public.ont_builtin_catalog_allowlist TO mnt_rt"#,
+                r#"GRANT SELECT ("x;y") ON public.ont_builtin_catalog_allowlist TO console_rt"#,
             ],
         ),
         (
             "schema-wide table privilege",
-            &["GRANT SELECT ON ALL TABLES IN SCHEMA public TO mnt_rt"],
+            &["GRANT SELECT ON ALL TABLES IN SCHEMA public TO console_rt"],
         ),
     ] {
         assert_acl_mutation_is_detected(&pool, label, statements).await?;
@@ -172,22 +172,22 @@ async fn owner_only_acl_is_effectively_private_on_postgres18() -> TestResult {
 
     let mut default_acl = pool.begin().await?;
     sqlx::query(
-        "ALTER DEFAULT PRIVILEGES FOR ROLE mnt_app IN SCHEMA public \
-         REVOKE ALL PRIVILEGES ON TABLES FROM mnt_rt, PUBLIC",
+        "ALTER DEFAULT PRIVILEGES FOR ROLE console_app IN SCHEMA public \
+         REVOKE ALL PRIVILEGES ON TABLES FROM console_rt, PUBLIC",
     )
     .execute(&mut *default_acl)
     .await?;
     sqlx::query(
-        "ALTER DEFAULT PRIVILEGES FOR ROLE mnt_app IN SCHEMA public \
-         GRANT SELECT ON TABLES TO mnt_rt",
+        "ALTER DEFAULT PRIVILEGES FOR ROLE console_app IN SCHEMA public \
+         GRANT SELECT ON TABLES TO console_rt",
     )
     .execute(&mut *default_acl)
     .await?;
-    sqlx::query("CREATE TABLE public.mnt_owner_only_default_acl_probe (id bigint)")
+    sqlx::query("CREATE TABLE public.console_owner_only_default_acl_probe (id bigint)")
         .execute(&mut *default_acl)
         .await?;
     let inherited =
-        effective_runtime_privileges(&mut default_acl, "public.mnt_owner_only_default_acl_probe")
+        effective_runtime_privileges(&mut default_acl, "public.console_owner_only_default_acl_probe")
             .await?;
     assert!(
         inherited

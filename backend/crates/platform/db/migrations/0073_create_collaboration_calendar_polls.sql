@@ -4,7 +4,7 @@
 -- polls are tenant-owned business objects with explicit audience scope,
 -- optional source-object links, lifecycle evidence, and forced RLS.
 
--- mnt-gate: audited-table collaboration_calendar_events
+-- console-gate: audited-table collaboration_calendar_events
 CREATE TABLE collaboration_calendar_events (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -32,7 +32,7 @@ CREATE INDEX idx_collaboration_calendar_events_object
     ON collaboration_calendar_events (org_id, object_type, object_id)
     WHERE object_type IS NOT NULL;
 
--- mnt-gate: audited-table collaboration_calendar_event_events
+-- console-gate: audited-table collaboration_calendar_event_events
 CREATE TABLE collaboration_calendar_event_events (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -48,7 +48,7 @@ CREATE TABLE collaboration_calendar_event_events (
 CREATE INDEX idx_collaboration_calendar_event_events_history
     ON collaboration_calendar_event_events (org_id, event_id, created_at DESC);
 
--- mnt-gate: audited-table collaboration_polls
+-- console-gate: audited-table collaboration_polls
 CREATE TABLE collaboration_polls (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -75,7 +75,7 @@ CREATE INDEX idx_collaboration_polls_object
     ON collaboration_polls (org_id, object_type, object_id)
     WHERE object_type IS NOT NULL;
 
--- mnt-gate: audited-table collaboration_poll_options
+-- console-gate: audited-table collaboration_poll_options
 CREATE TABLE collaboration_poll_options (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -89,7 +89,7 @@ CREATE TABLE collaboration_poll_options (
 CREATE INDEX idx_collaboration_poll_options_poll
     ON collaboration_poll_options (org_id, poll_id, position);
 
--- mnt-gate: audited-table collaboration_poll_votes
+-- console-gate: audited-table collaboration_poll_votes
 CREATE TABLE collaboration_poll_votes (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -105,7 +105,7 @@ CREATE TABLE collaboration_poll_votes (
 CREATE INDEX idx_collaboration_poll_votes_poll
     ON collaboration_poll_votes (org_id, poll_id);
 
--- mnt-gate: audited-table collaboration_poll_events
+-- console-gate: audited-table collaboration_poll_events
 CREATE TABLE collaboration_poll_events (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -154,12 +154,12 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON collaboration_calendar_events TO mnt_rt;
-GRANT SELECT, INSERT ON collaboration_calendar_event_events TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON collaboration_polls TO mnt_rt;
-GRANT SELECT, INSERT ON collaboration_poll_options TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON collaboration_poll_votes TO mnt_rt;
-GRANT SELECT, INSERT ON collaboration_poll_events TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON collaboration_calendar_events TO console_rt;
+GRANT SELECT, INSERT ON collaboration_calendar_event_events TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON collaboration_polls TO console_rt;
+GRANT SELECT, INSERT ON collaboration_poll_options TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON collaboration_poll_votes TO console_rt;
+GRANT SELECT, INSERT ON collaboration_poll_events TO console_rt;
 
 CREATE TRIGGER trg_collaboration_calendar_events_org_immutable
     BEFORE UPDATE ON collaboration_calendar_events

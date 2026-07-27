@@ -1,16 +1,16 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! CAP-MAINTENANCE-CONSOLE runtime proof: the maintenance story chain
 //! (request → assign → execute → report → cost settlement → close) driven
-//! through the deployed router on a genuine non-owner `mnt_rt` pool, so FORCE
+//! through the deployed router on a genuine non-owner `console_rt` pool, so FORCE
 //! RLS, PBAC denial without leakage, cross-tenant isolation, idempotent
 //! settlement creation, four-eyes review, and audit readback are all proved
 //! against the real enforcement path.
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{BranchId, OrgId, UserId, WorkOrderId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{BranchId, OrgId, UserId, WorkOrderId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const IDEMPOTENCY_KEY: &str = "maintenance-settlement-0001";
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -43,7 +43,7 @@ async fn settlement_chain_closes_order_into_cost_with_audit_readback(owner_pool:
     let admin = keys.token(admin_id, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
     let service = build_router(app_state(
-        mnt_rt_pool(&owner_pool).await,
+        console_rt_pool(&owner_pool).await,
         keys.public_pem.clone(),
     ));
 
@@ -223,7 +223,7 @@ async fn settlement_enforces_eligibility_four_eyes_and_void_discipline(owner_poo
     let token_b = keys.token(admin_b, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
     let service = build_router(app_state(
-        mnt_rt_pool(&owner_pool).await,
+        console_rt_pool(&owner_pool).await,
         keys.public_pem.clone(),
     ));
 
@@ -392,7 +392,7 @@ async fn pbac_denies_and_cross_tenant_reads_are_isolated_without_leakage(owner_p
     let member = keys.token(member_id, OrgId::knl(), "MEMBER", vec![branch_id]);
     let outsider = keys.token(outsider_id, other_org, "ADMIN", vec![other_branch]);
     let service = build_router(app_state(
-        mnt_rt_pool(&owner_pool).await,
+        console_rt_pool(&owner_pool).await,
         keys.public_pem.clone(),
     ));
 
@@ -512,7 +512,7 @@ async fn lens_and_filters_expose_maintenance_classification_truthfully(owner_poo
     let admin = keys.token(admin_id, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
     let service = build_router(app_state(
-        mnt_rt_pool(&owner_pool).await,
+        console_rt_pool(&owner_pool).await,
         keys.public_pem.clone(),
     ));
 
@@ -751,7 +751,7 @@ async fn audit_count(pool: &PgPool, action: &str) -> i64 {
         .unwrap()
 }
 
-// --- fixtures (seeded via the owner pool; the router runs as mnt_rt) ---
+// --- fixtures (seeded via the owner pool; the router runs as console_rt) ---
 
 struct Keys {
     private_pem: String,
@@ -806,17 +806,17 @@ impl Keys {
 
 fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
     AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
 }
 
-async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
+async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set for sqlx::test");
     let db_name: String = sqlx::query_scalar("SELECT current_database()")
         .fetch_one(owner_pool)
@@ -830,7 +830,7 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|connection, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt").execute(connection).await?;
                 Ok(())
             })
         })

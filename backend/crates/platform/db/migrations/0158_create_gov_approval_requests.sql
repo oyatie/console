@@ -43,5 +43,5 @@ CREATE TRIGGER trg_gov_approval_requests_no_delete
     FOR EACH ROW EXECUTE FUNCTION governance_append_only_record();
 
 -- Append-only record: SELECT + INSERT only, never UPDATE/DELETE.
-GRANT SELECT, INSERT ON gov_approval_requests TO mnt_rt;
-REVOKE UPDATE, DELETE ON gov_approval_requests FROM mnt_rt;
+GRANT SELECT, INSERT ON gov_approval_requests TO console_rt;
+REVOKE UPDATE, DELETE ON gov_approval_requests FROM console_rt;

@@ -3,18 +3,18 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, EquipmentId, EquipmentSubstitutionId, OrgId, SiteId, TraceContext,
     UserId,
 };
-use mnt_registry_adapter_postgres::{
+use console_registry_adapter_postgres::{
     PgRegistryError, PgRegistryStore, parse_master_list, parse_master_list_bytes,
 };
-use mnt_registry_application::{
+use console_registry_application::{
     SubstituteAssignmentCommand, SubstituteReturnCommand, SubstituteSearch, UpdateSiteCommand,
     UpdateSiteFields,
 };
-use mnt_registry_domain::{EquipmentNo, Ton};
+use console_registry_domain::{EquipmentNo, Ton};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -25,7 +25,7 @@ fn master_list_path() -> PathBuf {
 }
 
 fn registry_import_staging_paths_for_this_process() -> BTreeSet<PathBuf> {
-    let prefix = format!("mnt-registry-import-{}-", std::process::id());
+    let prefix = format!("console-registry-import-{}-", std::process::id());
     std::fs::read_dir(std::env::temp_dir())
         .unwrap()
         .filter_map(Result::ok)
@@ -43,7 +43,7 @@ fn assert_no_new_registry_import_staging_paths(before: &BTreeSet<PathBuf>) {
     let new_paths = after.difference(before).collect::<Vec<_>>();
     assert!(
         new_paths.is_empty(),
-        "uploaded workbook parsing/import must not leave mnt-registry-import-* staging files: {new_paths:#?}"
+        "uploaded workbook parsing/import must not leave console-registry-import-* staging files: {new_paths:#?}"
     );
 }
 
@@ -87,7 +87,7 @@ fn byte_parser_rejects_invalid_workbook_bytes_without_echoing_payload() {
 async fn invalid_uploaded_bytes_return_workbook_error_without_temp_staging_residue() {
     let before = registry_import_staging_paths_for_this_process();
     let pool = PgPoolOptions::new()
-        .connect_lazy("postgres://mnt_rt:***@127.0.0.1/mnt_registry_import_unused")
+        .connect_lazy("postgres://console_rt:***@127.0.0.1/console_registry_import_unused")
         .unwrap();
 
     let result = PgRegistryStore::new(pool)
@@ -103,7 +103,7 @@ async fn invalid_uploaded_bytes_return_workbook_error_without_temp_staging_resid
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn real_master_list_import_is_idempotent_queryable_and_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
 
         let first = store.import_master_list(&master_list_path()).await.unwrap();
@@ -148,7 +148,7 @@ async fn real_master_list_import_is_idempotent_queryable_and_audited(pool: PgPoo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn modified_copy_reports_single_update(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
         store.import_master_list(&master_list_path()).await.unwrap();
 
@@ -174,7 +174,7 @@ async fn modified_copy_reports_single_update(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn dirty_rows_are_reported_without_writing_the_failed_row(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let dirty = copy_master_list("registry-dirty-copy.xlsx");
         rewrite_cell(&dirty, "K&L 지게차 Master list", "F4", "");
 
@@ -199,7 +199,7 @@ async fn dirty_rows_are_reported_without_writing_the_failed_row(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn substitute_candidates_filter_rank_branch_scope_and_unknown_ton(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
         let branch = seed_branch(&pool, "Substitute Region", "Substitute Branch").await;
         let other_branch =
@@ -336,7 +336,7 @@ async fn substitute_candidates_filter_rank_branch_scope_and_unknown_ton(pool: Pg
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn substitute_assignment_lifecycle_is_audited_and_controls_availability(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
         let branch = seed_branch(&pool, "Assignment Region", "Assignment Branch").await;
         let actor = seed_user(&pool, branch, "ADMIN").await;
@@ -423,7 +423,7 @@ async fn substitute_assignment_lifecycle_is_audited_and_controls_availability(po
 
 fn copy_master_list(filename: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "mnt-registry-test-{}-{}",
+        "console-registry-test-{}-{}",
         std::process::id(),
         filename
     ));
@@ -446,7 +446,7 @@ fn rewrite_cell(path: &Path, sheet: &str, cell: &str, value: &str) {
     umya_spreadsheet::writer::xlsx::write(&workbook, path).unwrap();
 }
 
-fn equipment_numbers(candidates: &[mnt_registry_application::SubstituteCandidate]) -> Vec<&str> {
+fn equipment_numbers(candidates: &[console_registry_application::SubstituteCandidate]) -> Vec<&str> {
     candidates
         .iter()
         .map(|candidate| candidate.equipment_no.as_str())
@@ -490,7 +490,7 @@ impl EquipmentFixture {
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn site_contact_update_persists_and_is_audited(pool: PgPool) {
     // Issue #13: PATCH /sites/{id} now also writes the representative contact.
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
         let branch_id = seed_branch(&pool, "수도권", "본사").await;
         let actor = seed_user(&pool, branch_id, "ADMIN").await;
@@ -559,7 +559,7 @@ async fn site_contact_update_persists_and_is_audited(pool: PgPool) {
 async fn site_update_rejects_a_site_outside_the_actor_branch_scope(pool: PgPool) {
     // Issue #13 review: sites are branch-scoped (unlike org-global equipment), so
     // a branch-limited actor must not edit a site in another branch of the org.
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let store = PgRegistryStore::new(pool.clone());
         let branch_id = seed_branch(&pool, "수도권", "본사").await;
         let actor = seed_user(&pool, branch_id, "ADMIN").await;

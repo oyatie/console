@@ -25,7 +25,7 @@
 --      does not full-scan `email_accounts` at scale.
 --
 -- Posture unchanged: id-only across tenants under SECURITY DEFINER (REVOKE PUBLIC,
--- GRANT mnt_rt); only the claim stamp is written and only identity + claim-token
+-- GRANT console_rt); only the claim stamp is written and only identity + claim-token
 -- are returned. No credential/host/business field crosses the tenant boundary. No
 -- Korean copy.
 
@@ -81,7 +81,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) TO console_rt;
 
 -- compat shim — remove one release after all pods run the 3-arg path.
 -- During a rolling deploy, pre-0116 pods still call the OLD 2-arg signature (0116
@@ -103,4 +103,4 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) TO console_rt;

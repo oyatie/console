@@ -8,7 +8,7 @@
 //! evidence (열람 = 법적 수령).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
 const TITLE_MAX: usize = 300;

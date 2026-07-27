@@ -9,20 +9,20 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-orgchange-adapter-postgres",
+    name = "console-orgchange-adapter-postgres",
     mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/adapter-postgres", glob(["src/**/*.rs"])),
-    crate = "mnt_orgchange_adapter_postgres",
+    crate = "console_orgchange_adapter_postgres",
     edition = "2024",
     crate_root = "backend/crates/orgchange/adapter-postgres/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/adapter-postgres"},
     deps = [
-        "//backend/crates/governance/domain:mnt-governance-domain",
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/orgchange/domain:mnt-orgchange-domain",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/group:mnt-platform-group",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/governance/domain:console-governance-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/orgchange/domain:console-orgchange-domain",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/group:console-platform-group",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import { ko } from "../../i18n/ko";
 import { formatKoreanDateTime } from "../../lib/datetime";
 import { Button } from "../../components/ui/button";

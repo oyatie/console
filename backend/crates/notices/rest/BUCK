@@ -9,20 +9,20 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-notices-rest",
+    name = "console-notices-rest",
     mapped_srcs = repo_mapped_srcs("backend/crates/notices/rest", glob(["src/**/*.rs"])),
-    crate = "mnt_notices_rest",
+    crate = "console_notices_rest",
     edition = "2024",
     crate_root = "backend/crates/notices/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notices/rest"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/notices/adapter-postgres:mnt-notices-adapter-postgres",
-        "//backend/crates/notices/application:mnt-notices-application",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/notices/adapter-postgres:console-notices-adapter-postgres",
+        "//backend/crates/notices/application:console-notices-application",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:axum",
         "//third-party/rust:serde",
         "//third-party/rust:time",
@@ -31,7 +31,7 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-notices-rest-itest-api",
+    name = "console-notices-rest-itest-api",
     mapped_srcs = repo_mapped_srcs("backend/crates/notices/rest", ["tests/api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -42,16 +42,16 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notices/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.notices.rest", "domain.notices", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/notices/adapter-postgres:mnt-notices-adapter-postgres",
-        "//backend/crates/notices/application:mnt-notices-application",
-        "//backend/crates/notices/domain:mnt-notices-domain",
-        "//backend/crates/notifications/adapter-postgres:mnt-notifications-adapter-postgres",
-        "//backend/crates/platform/auth:mnt-platform-auth",
-        "//backend/crates/platform/authz:mnt-platform-authz",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
-        "//backend/crates/platform/test-support:mnt-platform-test-support",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/notices/adapter-postgres:console-notices-adapter-postgres",
+        "//backend/crates/notices/application:console-notices-application",
+        "//backend/crates/notices/domain:console-notices-domain",
+        "//backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:axum",
         "//third-party/rust:http",
         "//third-party/rust:p256",
@@ -62,6 +62,6 @@ rust_test(
         "//third-party/rust:tower",
         "//third-party/rust:tracing",
         "//third-party/rust:uuid",
-        ":mnt-notices-rest",
+        ":console-notices-rest",
     ],
 )

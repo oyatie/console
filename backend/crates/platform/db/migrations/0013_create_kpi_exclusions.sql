@@ -2,7 +2,7 @@
 -- Work orders still carry the legacy fast-path boolean `work_orders.kpi_excluded`;
 -- this table records revokable WORK_ORDER/OUTSOURCE exclusions with scope.
 
--- mnt-gate: audited-table kpi_exclusions
+-- console-gate: audited-table kpi_exclusions
 CREATE TABLE kpi_exclusions (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id    UUID        NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,

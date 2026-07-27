@@ -7,20 +7,20 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post, put};
 use axum::{Extension, Json, Router};
 use calamine::{Data, DataType, Reader, Xlsx};
-use mnt_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
-use mnt_kernel_core::{
+use console_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeaveStore};
-use mnt_leave_domain::LeaveBalanceAmount;
-use mnt_payroll_domain::{
+use console_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeaveStore};
+use console_leave_domain::LeaveBalanceAmount;
+use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
@@ -179,7 +179,7 @@ pub fn router(state: HrState) -> Router {
             put(set_employee_home_branch),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -896,7 +896,7 @@ async fn create_employee(
             .as_bytes(),
     );
     let employee_id = Uuid::new_v4();
-    let result = mnt_platform_request_context::scope_org(org, async move {
+    let result = console_platform_request_context::scope_org(org, async move {
         command_store
             .create_employee(CreateEmployeeCommand {
                 employee_id,
@@ -1071,7 +1071,7 @@ pub(crate) async fn create_employee_core(
     }
 
     // home_branch_id is intentionally NOT inserted: since 0166 the branch
-    // routing authority is command-only (the mnt_rt guard rejects it), so the
+    // routing authority is command-only (the console_rt guard rejects it), so the
     // caller establishes it post-commit via [`assign_home_branch_if_unset`].
     sqlx::query(
         r#"INSERT INTO employees (
@@ -1270,11 +1270,11 @@ async fn set_employee_home_branch(
     }
 
     // Sensitive employee routing columns are mechanically protected from
-    // direct `mnt_rt` UPDATE. The adapter routes this mutation through the
+    // direct `console_rt` UPDATE. The adapter routes this mutation through the
     // separately credentialed command pool; the database re-checks tenant,
     // actor, branch authority, active-branch state, and optimistic version and
     // owns the one atomic before/after audit.
-    let updated = mnt_platform_request_context::scope_org(org, async move {
+    let updated = console_platform_request_context::scope_org(org, async move {
         command_store
             .set_employee_home_branch(
                 employee_id,
@@ -1703,9 +1703,9 @@ async fn create_my_attendance_record(
                     "attendance work_date unparseable: {e}"
                 )))
             })?;
-            mnt_platform_db::assert_period_open(
+            console_platform_db::assert_period_open(
                 tx,
-                mnt_platform_db::PeriodLockDomain::Payroll,
+                console_platform_db::PeriodLockDomain::Payroll,
                 work_date_parsed,
             )
             .await
@@ -5205,7 +5205,7 @@ async fn apply_employee_import_batch(
     })?;
     let batch_rows = employee_import_batch_rows(&rows);
     let trace = TraceContext::generate();
-    let result = mnt_platform_request_context::scope_org(org, async {
+    let result = console_platform_request_context::scope_org(org, async {
         command_store
             .apply_employee_import_batch(
                 run_id,
@@ -8883,7 +8883,7 @@ E-001,홍길동,본사,2026-07-01,25:99
             .begin()
             .await
             .map_err(|err| format!("begin rls transaction failed: {err}"))?;
-        sqlx::query("SET LOCAL ROLE mnt_rt")
+        sqlx::query("SET LOCAL ROLE console_rt")
             .execute(rls_tx.as_mut())
             .await
             .map_err(|err| format!("set runtime role failed: {err}"))?;
@@ -9288,8 +9288,8 @@ E-001,홍길동,본사,2026-07-01,abc
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn org_wide_hr_authorization_rejects_branch_scoped_principals() -> Result<(), String> {
-        use mnt_kernel_core::{BranchId, OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{BranchId, OrgId, UserId};
+        use console_platform_authz::Role;
         use std::collections::BTreeSet;
 
         let principal = Principal::new(
@@ -9314,8 +9314,8 @@ E-001,홍길동,본사,2026-07-01,abc
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn org_wide_hr_authorization_uses_core_org_wide_gate() -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{OrgId, UserId};
+        use console_platform_authz::Role;
         use std::collections::BTreeSet;
 
         let admin = Principal::new(
@@ -9350,8 +9350,8 @@ E-001,홍길동,본사,2026-07-01,abc
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn home_branch_assignment_requires_org_wide_authority_when_unassigned() -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{OrgId, UserId};
+        use console_platform_authz::Role;
         use std::collections::BTreeSet;
 
         let branch = BranchId::new();
@@ -9379,8 +9379,8 @@ E-001,홍길동,본사,2026-07-01,abc
     #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn home_branch_assignment_fails_closed_without_command_pool() -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{OrgId, UserId};
+        use console_platform_authz::Role;
         use sqlx::postgres::PgPoolOptions;
         use std::collections::BTreeSet;
 
@@ -9415,8 +9415,8 @@ E-001,홍길동,본사,2026-07-01,abc
     #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn home_branch_reassignment_requires_authority_over_old_and_new_branch() {
-        use mnt_kernel_core::{OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{OrgId, UserId};
+        use console_platform_authz::Role;
         use std::collections::BTreeSet;
 
         let old_branch = BranchId::new();
@@ -9459,7 +9459,7 @@ E-001,홍길동,본사,2026-07-01,abc
     async fn employee_import_batch_rolls_back_mid_batch_then_retries_atomically(
         pool: sqlx::PgPool,
     ) -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
+        use console_kernel_core::{OrgId, UserId};
 
         let org_id = Uuid::new_v4();
         let actor_id = Uuid::new_v4();
@@ -9561,7 +9561,7 @@ E-001,홍길동,본사,2026-07-01,abc
         .map_err(|error| error.to_string())?;
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(mnt_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
         )
         .with_leave_command_pool(pool.clone());
         let state = HrState::new(pool.clone(), None).with_leave_command_store(command_store);
@@ -9700,7 +9700,7 @@ E-001,홍길동,본사,2026-07-01,abc
     async fn legacy_employee_import_audits_roster_only_apply_and_skips_exact_replay(
         pool: sqlx::PgPool,
     ) -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
+        use console_kernel_core::{OrgId, UserId};
 
         let org_id = Uuid::new_v4();
         let actor_id = Uuid::new_v4();
@@ -9737,7 +9737,7 @@ E-001,홍길동,본사,2026-07-01,abc
         };
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(mnt_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
         )
         .with_leave_command_pool(pool.clone());
         let state = HrState::new(pool.clone(), None).with_leave_command_store(command_store);
@@ -9801,8 +9801,8 @@ E-001,홍길동,본사,2026-07-01,abc
     async fn home_branch_assignment_is_explicit_versioned_and_audited(
         pool: sqlx::PgPool,
     ) -> Result<(), String> {
-        use mnt_kernel_core::{OrgId, UserId};
-        use mnt_platform_authz::Role;
+        use console_kernel_core::{OrgId, UserId};
+        use console_platform_authz::Role;
         use std::collections::BTreeSet;
 
         let org_id = Uuid::new_v4();
@@ -9866,7 +9866,7 @@ E-001,홍길동,본사,2026-07-01,abc
         );
         let command_store = PgLeaveStore::new(
             pool.clone(),
-            std::sync::Arc::new(mnt_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
+            std::sync::Arc::new(console_inbox_adapter_postgres::PgInboxStore::new(pool.clone())),
         )
         .with_leave_command_pool(pool.clone());
         let response = set_employee_home_branch(
@@ -10003,11 +10003,11 @@ E-001,홍길동,본사,2026-07-01,abc
     }
 
     #[allow(dead_code)]
-    async fn arm_mnt_rt(
+    async fn arm_console_rt(
         tx: &mut sqlx::Transaction<'_, Postgres>,
         org_id: Uuid,
     ) -> Result<(), String> {
-        sqlx::query("SET LOCAL ROLE mnt_rt")
+        sqlx::query("SET LOCAL ROLE console_rt")
             .execute(tx.as_mut())
             .await
             .map_err(|err| format!("set runtime role failed: {err}"))?;
@@ -10221,9 +10221,9 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
-        // Build the settlement package via the real code path, as mnt_rt.
+        // Build the settlement package via the real code path, as console_rt.
         let package_id = upsert_exit_settlement_package(
             &mut tx,
             org_id,
@@ -10234,7 +10234,7 @@ E-001,홍길동,본사,2026-07-01,abc
         .map_err(|err| format!("initial upsert failed: {err:?}"))?;
 
         // Simulate the (deferred) 노무사 recording action: mark CERTIFIED with a
-        // valid artifact + digest as mnt_rt.
+        // valid artifact + digest as console_rt.
         let validation = ProfessionalValidation {
             reviewer_kind: ProfessionalReviewerKind::LaborAttorney,
             reviewed_on: time::macros::date!(2026 - 07 - 03),
@@ -10310,7 +10310,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
         let package_id = upsert_exit_settlement_package(
             &mut tx,
@@ -10464,7 +10464,7 @@ E-001,홍길동,본사,2026-07-01,abc
     }
 
     /// 0093 review HIGH #1: certification invalidation is a TABLE invariant, not
-    /// an app convention. A DIRECT covered-field SQL UPDATE (as the real `mnt_rt`
+    /// an app convention. A DIRECT covered-field SQL UPDATE (as the real `console_rt`
     /// runtime role) on a CERTIFIED row must leave the STORED
     /// certification_status = UNCERTIFIED_DRAFT with artifact/digest cleared —
     /// proving migration 0094's `enforce_settlement_certification_reset()` BEFORE
@@ -10480,7 +10480,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
         let package_id = upsert_exit_settlement_package(
             &mut tx,
@@ -10491,7 +10491,7 @@ E-001,홍길동,본사,2026-07-01,abc
         .await
         .map_err(|err| format!("upsert failed: {err:?}"))?;
 
-        // Certify as mnt_rt: this UPDATE touches ONLY the three certification
+        // Certify as console_rt: this UPDATE touches ONLY the three certification
         // columns (none certification-covered), so the trigger leaves it intact.
         let validation = ProfessionalValidation {
             reviewer_kind: ProfessionalReviewerKind::LaborAttorney,
@@ -10604,7 +10604,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
         let package_id = upsert_exit_settlement_package(
             &mut tx,
@@ -10837,21 +10837,21 @@ E-001,홍길동,본사,2026-07-01,abc
     }
 
     /// US-005 per-endpoint capability matrix, checked as capabilities against a
-    /// real case's branch as `mnt_rt`: a role lacking each new capability is
+    /// real case's branch as `console_rt`: a role lacking each new capability is
     /// rejected on the corresponding endpoint's gate.
     #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn exit_endpoints_reject_roles_lacking_the_new_capabilities(
         pool: sqlx::PgPool,
     ) -> Result<(), String> {
-        use mnt_platform_authz::Role;
+        use console_platform_authz::Role;
 
         let (org_id, case_id) = seed_exit_case(&pool).await?;
         let mut tx = pool
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
         let context = load_exit_case_context(&mut tx, org_id, case_id, false)
             .await
@@ -10914,7 +10914,7 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
-    /// US-005 two-tier enforcement against REAL stored state read as `mnt_rt`:
+    /// US-005 two-tier enforcement against REAL stored state read as `console_rt`:
     /// the decision derives from the persisted status + `hr_confirmed_by`, not
     /// the client flag. Covers (a) same-actor HQ rejected, (b) out-of-order HQ
     /// (still REPORTED) rejected, (c) a distinct HQ actor allowed.
@@ -10931,10 +10931,10 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
 
         // Record the first-tier (HR) confirmation on the seeded HR_CONFIRMED case
-        // as mnt_rt (proves the runtime role can write the case under RLS).
+        // as console_rt (proves the runtime role can write the case under RLS).
         sqlx::query(
             r#"
             UPDATE employee_exit_cases
@@ -10949,7 +10949,7 @@ E-001,홍길동,본사,2026-07-01,abc
         .await
         .map_err(|err| format!("record HR confirmer failed: {err}"))?;
 
-        // Read the authoritative state back as mnt_rt (proves RLS + the new
+        // Read the authoritative state back as console_rt (proves RLS + the new
         // hr_confirmed_by column read on the load path).
         let confirmed = load_exit_case_context(&mut tx, org_id, case_id, true)
             .await
@@ -11019,9 +11019,9 @@ E-001,홍길동,본사,2026-07-01,abc
     // US-006: tenant isolation, audit coverage, and materializer discipline.
     // ---------------------------------------------------------------------
 
-    /// Begin a transaction already dropped to the `mnt_rt` runtime role with the
+    /// Begin a transaction already dropped to the `console_rt` runtime role with the
     /// org GUC armed — the ONLY correct way to exercise RLS here, since the test
-    /// pool logs in as the superuser/BYPASSRLS migration role and `mnt_rt` is
+    /// pool logs in as the superuser/BYPASSRLS migration role and `console_rt` is
     /// NOLOGIN (cannot be a login pool).
     #[allow(dead_code)]
     async fn armed_tx(
@@ -11032,14 +11032,14 @@ E-001,홍길동,본사,2026-07-01,abc
             .begin()
             .await
             .map_err(|err| format!("begin failed: {err}"))?;
-        arm_mnt_rt(&mut tx, org_id).await?;
+        arm_console_rt(&mut tx, org_id).await?;
         Ok(tx)
     }
 
     /// Seed one fully-formed org (region + branch + ACTIVE employee + a user) as
     /// the superuser pool role. Returns `(org_id, branch_id, employee_id,
     /// user_id)`. Seeding deliberately bypasses RLS; the isolation checks run in
-    /// a separate `mnt_rt` transaction.
+    /// a separate `console_rt` transaction.
     #[allow(dead_code)]
     async fn seed_g009_base(pool: &sqlx::PgPool) -> Result<(Uuid, Uuid, Uuid, Uuid), String> {
         let org_id = Uuid::new_v4();
@@ -11156,20 +11156,20 @@ E-001,홍길동,본사,2026-07-01,abc
     }
 
     /// Every G009 tenant table is invisible AND un-writable across orgs when
-    /// queried as the real `mnt_rt` runtime role armed to a different tenant.
+    /// queried as the real `console_rt` runtime role armed to a different tenant.
     /// Seeding runs as the superuser pool role; the assertions run strictly as
-    /// `mnt_rt` (via `arm_mnt_rt`), so a broken `org_isolation` policy cannot be
+    /// `console_rt` (via `arm_console_rt`), so a broken `org_isolation` policy cannot be
     /// masked by BYPASSRLS.
     #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
-    async fn g009_tables_isolate_tenants_as_mnt_rt(pool: sqlx::PgPool) -> Result<(), String> {
+    async fn g009_tables_isolate_tenants_as_console_rt(pool: sqlx::PgPool) -> Result<(), String> {
         let (org_a, branch_a, emp_a, user_a) = seed_g009_base(&pool).await?;
         seed_g009_rows(&pool, org_a, branch_a, emp_a, user_a).await?;
         let (org_b, branch_b, emp_b, user_b) = seed_g009_base(&pool).await?;
         let (alert_b, case_b, pkg_b) =
             seed_g009_rows(&pool, org_b, branch_b, emp_b, user_b).await?;
 
-        // Reads + filtered updates, as mnt_rt armed to org A.
+        // Reads + filtered updates, as console_rt armed to org A.
         let mut tx = armed_tx(&pool, org_a).await?;
         for (table, b_id) in [
             ("employee_absence_alerts", alert_b),
@@ -11183,7 +11183,7 @@ E-001,홍길동,본사,2026-07-01,abc
                     .build_query_scalar()
                     .fetch_one(tx.as_mut())
                     .await
-                    .map_err(|err| format!("{table}: count as mnt_rt failed: {err}"))?;
+                    .map_err(|err| format!("{table}: count as console_rt failed: {err}"))?;
             assert_eq!(
                 visible, 1,
                 "{table}: org A must see only its own row under RLS"
@@ -11235,7 +11235,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .await;
             assert!(
                 res.is_err(),
-                "org A (mnt_rt) must not INSERT an org B absence alert"
+                "org A (console_rt) must not INSERT an org B absence alert"
             );
             let _ = tx.rollback().await;
         }
@@ -11252,7 +11252,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .await;
             assert!(
                 res.is_err(),
-                "org A (mnt_rt) must not INSERT an org B exit case"
+                "org A (console_rt) must not INSERT an org B exit case"
             );
             let _ = tx.rollback().await;
         }
@@ -11268,7 +11268,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .await;
             assert!(
                 res.is_err(),
-                "org A (mnt_rt) must not INSERT an org B settlement package"
+                "org A (console_rt) must not INSERT an org B settlement package"
             );
             let _ = tx.rollback().await;
         }
@@ -11283,11 +11283,11 @@ E-001,홍길동,본사,2026-07-01,abc
     /// certification-bearing approval-draft event captures the resulting
     /// certification state. This drives the real handlers through the test pool
     /// role (audit emission is role-independent); the RLS proof is the dedicated
-    /// `mnt_rt` test above.
+    /// `console_rt` test above.
     #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn exit_workflow_handlers_emit_audit_events(pool: sqlx::PgPool) -> Result<(), String> {
-        use mnt_platform_authz::Role;
+        use console_platform_authz::Role;
 
         let (org_id, branch_id, employee_id, hr_user) = seed_g009_base(&pool).await?;
         let hq_user = seed_exit_confirmer(&pool, org_id, "EXECUTIVE").await?;
@@ -11459,7 +11459,7 @@ E-001,홍길동,본사,2026-07-01,abc
 
     /// The dashboard-path absence-alert materializer is idempotent AND
     /// write-bounded. Run twice over the SAME imported attendance facts (as
-    /// `mnt_rt`): the second pass creates no duplicate alert (UNIQUE(org_id,
+    /// `console_rt`): the second pass creates no duplicate alert (UNIQUE(org_id,
     /// employee_id, work_date, source)) AND rewrites no existing row (the
     /// IS DISTINCT FROM guard on the ON CONFLICT UPDATE), proving a repeated
     /// dashboard GET cannot write-storm.
@@ -11544,7 +11544,7 @@ E-001,홍길동,본사,2026-07-01,abc
             .map_err(|err| format!("fingerprint failed: {err}"))
         };
 
-        // First materialization pass, as mnt_rt.
+        // First materialization pass, as console_rt.
         {
             let mut tx = armed_tx(&pool, org_id).await?;
             materialize_absence_alerts_from_imports(&mut tx, org_id, &BranchScope::All)
@@ -11563,7 +11563,7 @@ E-001,홍길동,본사,2026-07-01,abc
         assert_eq!(count_first, 2, "one alert per absent work-date");
         let fingerprint_first = fingerprint(pool.clone(), org_id).await?;
 
-        // Second pass over the identical facts, as mnt_rt.
+        // Second pass over the identical facts, as console_rt.
         {
             let mut tx = armed_tx(&pool, org_id).await?;
             materialize_absence_alerts_from_imports(&mut tx, org_id, &BranchScope::All)
@@ -11601,7 +11601,7 @@ E-001,홍길동,본사,2026-07-01,abc
     async fn dashboard_materializer_emits_audit_on_changed_facts(
         pool: sqlx::PgPool,
     ) -> Result<(), String> {
-        use mnt_platform_authz::Role;
+        use console_platform_authz::Role;
 
         let (org_id, branch_id, employee_id, user_id) = seed_g009_base(&pool).await?;
 

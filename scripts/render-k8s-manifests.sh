@@ -4,7 +4,7 @@
 # Argo CD reconciles it into the live cluster.
 set -euo pipefail
 
-OUT_DIR="${1:-${RUNNER_TEMP:-/tmp}/maintenance-rendered-k8s}"
+OUT_DIR="${1:-${RUNNER_TEMP:-/tmp}/console-rendered-k8s}"
 mkdir -p "${OUT_DIR}"
 
 require() {
@@ -16,20 +16,20 @@ require() {
 
 require kubectl
 
-PROD_RENDER="${OUT_DIR}/maintenance-prod.yaml"
+PROD_RENDER="${OUT_DIR}/console-prod.yaml"
 ARGO_RENDER="${OUT_DIR}/argocd-apps.yaml"
 
-kubectl kustomize deploy/apps/maintenance/overlays/prod > "${PROD_RENDER}"
+kubectl kustomize deploy/apps/console/overlays/prod > "${PROD_RENDER}"
 cat deploy/argocd/project.yaml deploy/argocd/root.yaml deploy/argocd/apps/*.yaml > "${ARGO_RENDER}"
 
 # Production images must be immutable digest-pinned artifacts. The image-release
 # workflow scans/signs the digest, then this overlay is the single Argo source.
-if grep -R "newTag:" deploy/apps/maintenance/overlays/prod >/dev/null; then
+if grep -R "newTag:" deploy/apps/console/overlays/prod >/dev/null; then
   echo "render-k8s: prod overlay must not use mutable newTag values" >&2
   exit 1
 fi
-if [[ "$(grep -c 'digest: sha256:' deploy/apps/maintenance/overlays/prod/kustomization.yaml)" -lt 2 ]]; then
-  echo "render-k8s: expected mnt-app and mnt-web sha256 digest pins in prod overlay" >&2
+if [[ "$(grep -c 'digest: sha256:' deploy/apps/console/overlays/prod/kustomization.yaml)" -lt 2 ]]; then
+  echo "render-k8s: expected console-app and console-web sha256 digest pins in prod overlay" >&2
   exit 1
 fi
 
@@ -40,7 +40,7 @@ if grep -R "targetRevision: feat/" deploy/argocd >/dev/null; then
   grep -R "targetRevision: feat/" deploy/argocd >&2
   exit 1
 fi
-for app in deploy/argocd/root.yaml deploy/argocd/apps/maintenance.yaml; do
+for app in deploy/argocd/root.yaml deploy/argocd/apps/console.yaml; do
   if ! grep -q "targetRevision: main" "${app}"; then
     echo "render-k8s: ${app} must target main" >&2
     exit 1

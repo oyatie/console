@@ -1,6 +1,6 @@
 -- Cross-domain employee/day serialization for attendance substitute eligibility.
 -- The key is a compatibility contract shared by attendance and leave writers.
-CREATE FUNCTION public.mnt_employee_day_eligibility_lock(
+CREATE FUNCTION public.console_employee_day_eligibility_lock(
     p_org_id UUID,
     p_employee_id UUID,
     p_work_date DATE
@@ -20,11 +20,11 @@ BEGIN
     );
 END;
 $$;
-REVOKE ALL ON FUNCTION public.mnt_employee_day_eligibility_lock(UUID, UUID, DATE) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.mnt_employee_day_eligibility_lock(UUID, UUID, DATE)
-    TO mnt_rt, mnt_leave_definer;
+REVOKE ALL ON FUNCTION public.console_employee_day_eligibility_lock(UUID, UUID, DATE) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.console_employee_day_eligibility_lock(UUID, UUID, DATE)
+    TO console_rt, console_leave_definer;
 
-CREATE FUNCTION public.mnt_attendance_exception_eligibility_lock()
+CREATE FUNCTION public.console_attendance_exception_eligibility_lock()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog
@@ -33,16 +33,16 @@ BEGIN
     IF (TG_OP = 'INSERT' AND NEW.kind = 'NO_SHOW' AND NEW.status = 'OPEN')
        OR (TG_OP = 'UPDATE' AND OLD.kind = 'NO_SHOW' AND OLD.status = 'OPEN'
            AND NEW.status = 'RESOLVED') THEN
-        PERFORM public.mnt_employee_day_eligibility_lock(NEW.org_id, NEW.employee_id, NEW.work_date);
+        PERFORM public.console_employee_day_eligibility_lock(NEW.org_id, NEW.employee_id, NEW.work_date);
     END IF;
     RETURN NEW;
 END;
 $$;
 CREATE TRIGGER trg_attendance_exceptions_eligibility_lock
     BEFORE INSERT OR UPDATE OF status ON public.attendance_exceptions
-    FOR EACH ROW EXECUTE FUNCTION public.mnt_attendance_exception_eligibility_lock();
+    FOR EACH ROW EXECUTE FUNCTION public.console_attendance_exception_eligibility_lock();
 
-CREATE FUNCTION public.mnt_attendance_substitution_eligibility_guard()
+CREATE FUNCTION public.console_attendance_substitution_eligibility_guard()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog
@@ -54,7 +54,7 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    PERFORM public.mnt_employee_day_eligibility_lock(
+    PERFORM public.console_employee_day_eligibility_lock(
         NEW.org_id, NEW.worker_employee_id, NEW.cover_date
     );
 
@@ -96,9 +96,9 @@ END;
 $$;
 CREATE TRIGGER trg_attendance_substitutions_eligibility_guard
     BEFORE INSERT OR UPDATE OF status ON public.attendance_substitutions
-    FOR EACH ROW EXECUTE FUNCTION public.mnt_attendance_substitution_eligibility_guard();
+    FOR EACH ROW EXECUTE FUNCTION public.console_attendance_substitution_eligibility_guard();
 
-CREATE FUNCTION public.mnt_leave_request_eligibility_lock()
+CREATE FUNCTION public.console_leave_request_eligibility_lock()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog
@@ -113,7 +113,7 @@ BEGIN
               FROM pg_catalog.generate_series(NEW.start_date, NEW.end_date, INTERVAL '1 day') AS work_date
              ORDER BY work_date
         LOOP
-            PERFORM public.mnt_employee_day_eligibility_lock(
+            PERFORM public.console_employee_day_eligibility_lock(
                 NEW.org_id, NEW.subject_employee_id, v_work_date
             );
         END LOOP;
@@ -123,7 +123,7 @@ END;
 $$;
 CREATE TRIGGER trg_leave_requests_eligibility_lock
     BEFORE UPDATE OF status ON public.leave_requests
-    FOR EACH ROW EXECUTE FUNCTION public.mnt_leave_request_eligibility_lock();
+    FOR EACH ROW EXECUTE FUNCTION public.console_leave_request_eligibility_lock();
 
 CREATE OR REPLACE FUNCTION leave_api.decide_request(
     p_org_id UUID, p_request_id UUID, p_decider UUID, p_expected_version BIGINT,
@@ -197,7 +197,7 @@ BEGIN
               FROM pg_catalog.generate_series(v_request.start_date, v_request.end_date, INTERVAL '1 day') AS work_date
              ORDER BY work_date
         LOOP
-            PERFORM public.mnt_employee_day_eligibility_lock(
+            PERFORM public.console_employee_day_eligibility_lock(
                 v_request.org_id, v_request.subject_employee_id, v_work_date
             );
         END LOOP;
@@ -257,8 +257,8 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 REVOKE ALL ON FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT)
-    FROM PUBLIC, mnt_rt;
+    FROM PUBLIC, console_rt;
 GRANT EXECUTE ON FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT)
-    TO mnt_leave_cmd;
+    TO console_leave_cmd;

@@ -10,20 +10,20 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Json, Router};
-use mnt_benefit_adapter_postgres::{PgBenefitCatalogError, PgBenefitCatalogStore};
-use mnt_benefit_application::{
+use console_benefit_adapter_postgres::{PgBenefitCatalogError, PgBenefitCatalogStore};
+use console_benefit_application::{
     BenefitCatalogItemView, BenefitCatalogScopeDraft, BenefitConditionDraft, BenefitTierDraft,
     CreateBenefitCatalogItemCommand, GetBenefitCatalogItemQuery, ListBenefitCatalogItemsQuery,
     ReplaceBenefitConditionsCommand, ReplaceBenefitTiersCommand, UpdateBenefitCatalogItemCommand,
     UpdateBenefitCatalogItemFields,
 };
-use mnt_benefit_domain::BenefitCategory;
-use mnt_kernel_core::{
+use console_benefit_domain::BenefitCategory;
+use console_kernel_core::{
     BenefitCatalogItemId, BranchId, BranchScope, ErrorKind, KernelError, SiteId, TraceContext,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_request_context::RequestContextError;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::Date;
@@ -108,7 +108,7 @@ pub fn router(state: BenefitRestState) -> Router {
             axum::routing::put(replace_conditions),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -127,7 +127,7 @@ async fn list_items(
     State(state): State<BenefitRestState>,
     headers: HeaderMap,
     Query(params): Query<ListParams>,
-) -> Result<Json<mnt_benefit_application::BenefitCatalogItemPage>, RestError> {
+) -> Result<Json<console_benefit_application::BenefitCatalogItemPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_feature(&principal, Feature::BenefitCatalogRead)?;
     let category = params
@@ -487,7 +487,7 @@ async fn principal_from_headers(
             "JWT verification is not configured for the benefit API",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(|error| match error {
             RequestContextError::MissingBearer
@@ -522,13 +522,13 @@ async fn principal_from_headers(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::OrgId;
-    use mnt_platform_authz::Role;
+    use console_kernel_core::OrgId;
+    use console_platform_authz::Role;
     use std::collections::BTreeSet;
 
     fn principal(role: Role) -> Principal {
         Principal::new(
-            mnt_kernel_core::UserId::new(),
+            console_kernel_core::UserId::new(),
             OrgId::knl(),
             BTreeSet::from([role]),
             BranchScope::All,

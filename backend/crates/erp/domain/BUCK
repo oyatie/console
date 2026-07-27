@@ -9,30 +9,30 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-erp-domain",
+    name = "console-erp-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/erp/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_erp_domain",
+    crate = "console_erp_domain",
     edition = "2024",
     crate_root = "backend/crates/erp/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/erp/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:time",
     ],
 )
 
 rust_test(
-    name = "mnt-erp-domain-unit",
+    name = "console-erp-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/erp/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_erp_domain",
+    crate = "console_erp_domain",
     edition = "2024",
     crate_root = "backend/crates/erp/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/erp/domain"},
     labels = ["owner.backend.crates.erp.domain", "domain.erp", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:time",
     ],
 )

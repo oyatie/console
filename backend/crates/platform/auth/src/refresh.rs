@@ -1,5 +1,5 @@
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_platform_db::with_audit;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_platform_db::with_audit;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
@@ -158,7 +158,7 @@ impl RefreshTokenStore {
 
         // Resolve the family's tenant from the token hash FIRST, then arm the
         // GUC, THEN do the RLS-gated read. `auth_refresh_tokens` is FORCE RLS
-        // (migration 0035), so as the non-owner `mnt_rt` role a lookup-by-hash
+        // (migration 0035), so as the non-owner `console_rt` role a lookup-by-hash
         // returns ZERO rows until `app.current_org` is set — but the org is what
         // we need to set it. The narrow SECURITY DEFINER resolver
         // `platform_resolve_token_org` returns only the family's org_id, breaking
@@ -373,7 +373,7 @@ impl RefreshTokenStore {
         let mut tx = pool.begin().await?;
 
         // Resolve the family's tenant from the token hash and arm the GUC BEFORE
-        // the RLS-gated read, so logout works under `mnt_rt` for any tenant.
+        // the RLS-gated read, so logout works under `console_rt` for any tenant.
         // See `rotate_inner` for the chicken-and-egg rationale.
         let Some(org_uuid) = resolve_token_org(&mut tx, &token_hash).await? else {
             tx.rollback().await?;
@@ -460,7 +460,7 @@ impl RefreshTokenStore {
 /// Resolve a refresh-token family's tenant from a token hash, via the narrow
 /// SECURITY DEFINER resolver `platform_resolve_token_org` (migration 0036).
 ///
-/// `auth_refresh_tokens` is FORCE RLS, so the app's non-owner `mnt_rt` role
+/// `auth_refresh_tokens` is FORCE RLS, so the app's non-owner `console_rt` role
 /// cannot read a token row by hash until `app.current_org` is armed — but the
 /// org is exactly what we need to arm it. This resolver returns ONLY the org_id
 /// (nothing else), breaking that chicken-and-egg without widening any read
@@ -565,7 +565,7 @@ fn generate_refresh_token() -> String {
     let mut bytes = [0u8; 32];
     bytes[..16].copy_from_slice(Uuid::new_v4().as_bytes());
     bytes[16..].copy_from_slice(Uuid::new_v4().as_bytes());
-    format!("mnt_rt_{}", hex_encode(&bytes))
+    format!("console_rt_{}", hex_encode(&bytes))
 }
 
 fn hash_token(token: &str) -> Vec<u8> {

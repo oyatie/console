@@ -22,7 +22,7 @@ live Argo CD control plane until the prerequisites below are satisfied.
 
 Primary clusters continue to source the existing app-of-apps path:
 
-- `repoURL: https://github.com/jason931225/maintenance.git`
+- `repoURL: https://github.com/jason931225/console.git`
 - `targetRevision: main`
 - `path: deploy/argocd/apps`
 
@@ -64,28 +64,28 @@ cluster Secret:
 | Label | Required value / example | Purpose |
 | --- | --- | --- |
 | `argocd.argoproj.io/secret-type` | `cluster` | Makes the Secret an Argo CD cluster registration. |
-| `maintenance.io/federation` | `enabled` | Opts into this ApplicationSet. Remove or change this label to hold a cluster out. |
-| `maintenance.io/environment` | `prod` | Keeps production federation separate from dev/test registrations. |
-| `maintenance.io/site` | `oci-iad`, `onprem-kr-a`, `onprem-kr-b` | Stable site/cell slug used in generated app labels and runbooks. |
-| `maintenance.io/dr-role` | `primary` or `warm-standby` | Chooses the primary app-of-apps path or the standby app group. |
-| `maintenance.io/residency` | `kr`, `us-east`, `eu` | Prevents accidental cross-residency failover. |
+| `console.io/federation` | `enabled` | Opts into this ApplicationSet. Remove or change this label to hold a cluster out. |
+| `console.io/environment` | `prod` | Keeps production federation separate from dev/test registrations. |
+| `console.io/site` | `oci-iad`, `onprem-kr-a`, `onprem-kr-b` | Stable site/cell slug used in generated app labels and runbooks. |
+| `console.io/dr-role` | `primary` or `warm-standby` | Chooses the primary app-of-apps path or the standby app group. |
+| `console.io/residency` | `kr`, `us-east`, `eu` | Prevents accidental cross-residency failover. |
 
 Recommended optional labels:
 
 | Label | Example | Purpose |
 | --- | --- | --- |
-| `maintenance.io/traffic` | `active` or `held` | Traffic must be `active` only for the site primary. |
-| `maintenance.io/standby-mode` | `warm` or `none` | Documents whether standby controllers/workloads should be ready. |
-| `maintenance.io/storage-profile` | `local-path`, `replicated`, `restored-replica` | Helps failover reviewers verify the data plane. |
-| `maintenance.io/registration-source` | `external-secrets-openbao` | Proves the Secret is reconciled from an approved source. |
+| `console.io/traffic` | `active` or `held` | Traffic must be `active` only for the site primary. |
+| `console.io/standby-mode` | `warm` or `none` | Documents whether standby controllers/workloads should be ready. |
+| `console.io/storage-profile` | `local-path`, `replicated`, `restored-replica` | Helps failover reviewers verify the data plane. |
+| `console.io/registration-source` | `external-secrets-openbao` | Proves the Secret is reconciled from an approved source. |
 
 Validity rules:
 
-1. During activation, each `maintenance.io/site` may have exactly one
-   `maintenance.io/dr-role=primary` cluster.
+1. During activation, each `console.io/site` may have exactly one
+   `console.io/dr-role=primary` cluster.
 2. A site may have zero or more `warm-standby` clusters, but standby clusters must
    not receive production traffic before the failover runbook promotes them.
-3. A failover pair should share `maintenance.io/residency` unless the tenant or
+3. A failover pair should share `console.io/residency` unless the tenant or
    site residency policy explicitly permits the move. Residency conflicts fail
    closed: do not promote and do not move traffic.
 4. Cluster credential data is not documentation. Only labels, Secret names,
@@ -101,19 +101,19 @@ applyable as a real cluster registration.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: maintenance-onprem-kr-a
+  name: console-onprem-kr-a
   namespace: argocd
   labels:
     argocd.argoproj.io/secret-type: cluster
-    maintenance.io/federation: enabled
-    maintenance.io/environment: prod
-    maintenance.io/site: onprem-kr-a
-    maintenance.io/dr-role: primary
-    maintenance.io/residency: kr
-    maintenance.io/traffic: active
-    maintenance.io/standby-mode: none
-    maintenance.io/storage-profile: replicated
-    maintenance.io/registration-source: external-secrets-openbao
+    console.io/federation: enabled
+    console.io/environment: prod
+    console.io/site: onprem-kr-a
+    console.io/dr-role: primary
+    console.io/residency: kr
+    console.io/traffic: active
+    console.io/standby-mode: none
+    console.io/storage-profile: replicated
+    console.io/registration-source: external-secrets-openbao
 # Real Argo CD cluster Secrets also contain name/server/config data. That data
 # must come from External-Secrets/OpenBao or another approved secret path and must
 # never be committed.
@@ -130,13 +130,13 @@ are recorded in the activation ticket/runbook:
 1. The manifest implementation and validation cards are complete, including a
    render check for one primary and for primary + warm-standby registrations.
 2. `npm run check:production-hardening` still passes, and
-   `deploy/argocd/root.yaml` plus `deploy/argocd/apps/maintenance.yaml` still
+   `deploy/argocd/root.yaml` plus `deploy/argocd/apps/console.yaml` still
    track `targetRevision: main`.
 3. No real cluster credentials, kubeconfigs, bearer tokens, certificate keys, or
    base64-encoded Secret payloads are present in the git diff.
 4. At least one primary cluster registration exists for the site being activated.
    A standby registration may exist, but it must be labeled
-   `maintenance.io/traffic=held` until the failover runbook promotes it.
+   `console.io/traffic=held` until the failover runbook promotes it.
 5. The current hand-applied `root` Application and the generated primary root are
    not both allowed to own the same child Applications in the same Argo CD control
    plane. The activation plan must choose one owner and avoid duplicate ownership.
@@ -198,7 +198,7 @@ Choose the narrowest safe rollback for the activation stage reached:
   health-check evidence.
 
 A deactivated cluster can be held out of federation by removing
-`maintenance.io/federation=enabled` or setting `maintenance.io/traffic=held`, then
+`console.io/federation=enabled` or setting `console.io/traffic=held`, then
 reconciling the ApplicationSet and verifying no generated root remains for that
 cluster.
 
@@ -209,13 +209,13 @@ The short form is:
 
 1. Declare an incident or planned failover and freeze writes on the current
    primary unless the storage layer proves single-writer promotion safety.
-2. Verify the candidate standby shares an allowed `maintenance.io/residency`, has
+2. Verify the candidate standby shares an allowed `console.io/residency`, has
    fresh approved secrets, and has current backup/replication evidence.
 3. Promote or restore the database/storage layer first; do not move Argo labels
    while the standby is still data-stale.
-4. Relabel the old primary to `maintenance.io/dr-role=warm-standby` or hold it out
-   with `maintenance.io/federation!=enabled`; relabel exactly one standby to
-   `maintenance.io/dr-role=primary` and `maintenance.io/traffic=active`.
+4. Relabel the old primary to `console.io/dr-role=warm-standby` or hold it out
+   with `console.io/federation!=enabled`; relabel exactly one standby to
+   `console.io/dr-role=primary` and `console.io/traffic=active`.
 5. Reconcile the ApplicationSet and verify the generated root for the new primary
    sources `deploy/argocd/apps` at `targetRevision: main`.
 6. Move DNS/VIP/GeoDNS traffic only after app, database, ingress, and audit checks

@@ -7,11 +7,11 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, EvidenceId, KernelError, MessageId, ThreadId,
     Timestamp, TraceContext, UserId, WorkOrderId,
 };
-use mnt_messenger_domain::{PresenceStatus, ThreadKind, ThreadVisibility};
+use console_messenger_domain::{PresenceStatus, ThreadKind, ThreadVisibility};
 use serde::{Deserialize, Serialize};
 
 pub type MessageNotifyFuture<'a> = Pin<Box<dyn Future<Output = ()> + Send + 'a>>;
@@ -317,7 +317,7 @@ pub fn messenger_audit_event(
 #[cfg(test)]
 mod tests {
     use super::ReadReceiptSummary;
-    use mnt_kernel_core::{MessageId, ThreadId, UserId};
+    use console_kernel_core::{MessageId, ThreadId, UserId};
 
     #[test]
     fn read_receipt_serializes_fractional_timestamps_as_rfc3339_strings() {

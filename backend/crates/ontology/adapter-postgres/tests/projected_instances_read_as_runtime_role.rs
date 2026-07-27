@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proofs for BE-semantic-backfill's `projected` read path, exercised
-//! as the genuine non-owner `mnt_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE
+//! as the genuine non-owner `console_rt` role (NOSUPERUSER, NOBYPASSRLS, FORCE
 //! RLS) — the only faithful exercise of the domain tables' org_isolation
 //! policy. The default `#[sqlx::test]` pool is a BYPASSRLS superuser that
 //! would green-light a broken policy.
@@ -14,15 +14,15 @@
 //!   (c) cross-tenant rows are invisible under another org's GUC (RLS), same
 //!       as the owned instance store.
 
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::instances::PgInstanceStore;
-use mnt_ontology_adapter_postgres::seed::{
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_adapter_postgres::seed::{
     EMPLOYEE_KEY, SITE_KEY, WORK_ORDER_KEY, WORKFLOW_DEFINITION_KEY,
     seed_projected_domain_object_types,
 };
-use mnt_ontology_domain::{BackingKind, ObjectTypeId};
+use console_ontology_domain::{BackingKind, ObjectTypeId};
 
-use mnt_kernel_core::{OrgId, UserId};
+use console_kernel_core::{OrgId, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -36,7 +36,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -51,7 +51,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -129,7 +129,7 @@ async fn seed_projected_types(
     org: OrgId,
     actor: UserId,
 ) -> (ObjectTypeId, ObjectTypeId) {
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(runtime_role_pool(owner_pool).await)
             .with_command_pool(command_role_pool(owner_pool).await);
         let published =
@@ -178,7 +178,7 @@ async fn projected_list_returns_real_domain_rows(owner_pool: PgPool) {
     insert_employee(&owner_pool, org_uuid, "이영희").await;
     insert_workflow_definition(&owner_pool, org_uuid, "wo.escalate", "에스컬레이션").await;
 
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgInstanceStore::new(rt.clone());
 
         // (b) employee: 2 real rows, attributes carry the real column values,
@@ -207,7 +207,7 @@ async fn projected_list_returns_real_domain_rows(owner_pool: PgPool) {
 
     // Projected fk_links carry the reverse title (the console relationship
     // tab's "← arrow"), same as the C-chain links — not left blank.
-    mnt_platform_request_context::scope_org(org, async {
+    console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone());
         let site = store.get_object_type(SITE_KEY, None).await.unwrap();
         let site_customer = site
@@ -246,7 +246,7 @@ async fn projected_list_is_cross_tenant_isolated(owner_pool: PgPool) {
 
     // Under org-A's GUC, only A's employee is visible — B's row (and B's
     // distinct object-type version) never leaks in.
-    mnt_platform_request_context::scope_org(org_a, async {
+    console_platform_request_context::scope_org(org_a, async {
         let store = PgInstanceStore::new(rt.clone());
         let list = store.list_instances(employee_type_a).await.unwrap();
         assert_eq!(list.len(), 1, "org A must see only its own employee row");

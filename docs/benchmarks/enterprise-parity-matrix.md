@@ -3,7 +3,7 @@
 Date reviewed: 2026-06-28
 
 Scope: current web console/public/mobile-adjacent product surface in `web/src/AppRouter.tsx`, with follow-up backlog for console, mobile apps, backend ontology/workflow, and imports.
-Primary issue: [#55 Enterprise collaboration suite](https://github.com/jason931225/maintenance/issues/55).
+Primary issue: [#55 Enterprise collaboration suite](https://github.com/jason931225/console/issues/55).
 
 ## Quality gates for every future slice
 

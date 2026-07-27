@@ -3,23 +3,23 @@
 ## Scope
 
 This drill exercises the **production** disaster-recovery path: a CloudNativePG
-`Cluster` recovered from the `mnt-backups` Barman Cloud `ObjectStore` in OCI
+`Cluster` recovered from the `console-backups` Barman Cloud `ObjectStore` in OCI
 Object Storage. It is the Kubernetes/CNPG analogue of the Compose-stack drills in
 `ops/backup/restore-drill.sh` and `ops/dr/pitr-drill.sh` — those test the local
 Docker Compose Postgres + SeaweedFS stack, **not** the CNPG → Barman → OCI path
 that production actually runs.
 
 Run this against the live cluster (single-node Talos on OCI Ampere A1) declared
-in `deploy/apps/maintenance/base/database.yaml`.
+in `deploy/apps/console/base/database.yaml`.
 
 | Production object | Value | Source of truth |
 |---|---|---|
-| Live `Cluster` | `mnt-db` (namespace `maintenance`) | `base/database.yaml` |
-| Database / owner | `maintenance` / `mnt_app` | `base/database.yaml` bootstrap.initdb |
-| `ObjectStore` | `mnt-backups` (namespace `maintenance`) | `base/database.yaml` |
+| Live `Cluster` | `console-db` (namespace `maintenance`) | `base/database.yaml` |
+| Database / owner | `maintenance` / `console_app` | `base/database.yaml` bootstrap.initdb |
+| `ObjectStore` | `console-backups` (namespace `maintenance`) | `base/database.yaml` |
 | Barman plugin | `barman-cloud.cloudnative-pg.io` | Barman Cloud Plugin 0.13 |
 | OCI creds secret | `oci-objectstore-creds` (keys `ACCESS_KEY_ID`, `ACCESS_SECRET_KEY`) | `deploy/SECRETS.md` |
-| `serverName` for recovery | `mnt-db` (the source cluster's name = its folder in the bucket) | CNPG recovery API |
+| `serverName` for recovery | `console-db` (the source cluster's name = its folder in the bucket) | CNPG recovery API |
 
 CNPG/plugin versions this drill targets: **CloudNativePG 1.29**, **Barman Cloud
 Plugin 0.13**. The recovery uses the plugin-based `externalClusters` +
@@ -28,18 +28,18 @@ Plugin 0.13**. The recovery uses the plugin-based `externalClusters` +
 
 ## What the drill proves
 
-1. The base backups and archived WAL in `s3://mnt-db-backups/mnt-db/` are
+1. The base backups and archived WAL in `s3://mnt-db-backups/console-db/` are
    readable with the production OCI credentials.
 2. CNPG can bootstrap a brand-new `Cluster` from them (`bootstrap.recovery`).
 3. The recovered database promotes (`pg_is_in_recovery() = false`), the schema
    and row counts are intact, and a **PITR target time** stops replay where
    expected.
-4. None of this touches the live `mnt-db` cluster — the recovery runs in a
+4. None of this touches the live `console-db` cluster — the recovery runs in a
    throwaway namespace with its own PVCs and is deleted at the end.
 
 ## Safety model
 
-- A scratch namespace (`mnt-dr-<timestamp>`) is created, used, and deleted.
+- A scratch namespace (`console-dr-<timestamp>`) is created, used, and deleted.
 - The recovery `Cluster` is **read-only** against the object store: it does
   **not** declare `.spec.plugins`, so it never archives WAL and cannot write to,
   rotate, or expire the production backups. It only declares the
@@ -47,7 +47,7 @@ Plugin 0.13**. The recovery uses the plugin-based `externalClusters` +
 - The OCI credentials secret and a recovery-scoped `ObjectStore` are copied into
   the scratch namespace (both kinds are namespaced; the recovery Cluster reads
   them from its own namespace).
-- The live `mnt-db` Cluster, its PVCs, and the `mnt-backups` ObjectStore in
+- The live `console-db` Cluster, its PVCs, and the `console-backups` ObjectStore in
   `maintenance` are never modified.
 
 ## Cadence
@@ -87,7 +87,7 @@ Required success markers in the log:
    expects:
 
    ```sh
-   ns="mnt-dr-$(date -u +%Y%m%dT%H%M%SZ)"
+   ns="console-dr-$(date -u +%Y%m%dT%H%M%SZ)"
    kubectl create namespace "$ns"
    kubectl label namespace "$ns" \
      pod-security.kubernetes.io/enforce=restricted \
@@ -98,7 +98,7 @@ Required success markers in the log:
    reads the secret from its own namespace):
 
    ```sh
-   kubectl get secret oci-objectstore-creds -n maintenance -o yaml \
+   kubectl get secret oci-objectstore-creds -n console -o yaml \
      | sed "s/namespace: maintenance/namespace: ${ns}/" \
      | kubectl apply -n "$ns" -f -
    ```
@@ -115,7 +115,7 @@ Required success markers in the log:
    apiVersion: barmancloud.cnpg.io/v1
    kind: ObjectStore
    metadata:
-     name: mnt-backups-recovery
+     name: console-backups-recovery
      namespace: <scratch-namespace>
    spec:
      configuration:
@@ -136,7 +136,7 @@ Required success markers in the log:
    apiVersion: postgresql.cnpg.io/v1
    kind: Cluster
    metadata:
-     name: mnt-db-recovery
+     name: console-db-recovery
      namespace: <scratch-namespace>
    spec:
      instances: 1
@@ -145,17 +145,17 @@ Required success markers in the log:
        size: 5Gi
      bootstrap:
        recovery:
-         source: mnt-db-origin
+         source: console-db-origin
          # PITR (optional). Format: 'YYYY-MM-DD HH:MM:SS+00'.
          recoveryTarget:
            targetTime: "<target-time>"
      externalClusters:
-       - name: mnt-db-origin
+       - name: console-db-origin
          plugin:
            name: barman-cloud.cloudnative-pg.io
            parameters:
-             barmanObjectName: mnt-backups-recovery
-             serverName: mnt-db   # the live cluster's folder in the bucket
+             barmanObjectName: console-backups-recovery
+             serverName: console-db   # the live cluster's folder in the bucket
    ```
 
    Note: there is **no** `.spec.plugins` block — that would turn on WAL archiving
@@ -165,16 +165,16 @@ Required success markers in the log:
 5. **Wait for recovery to finish and the cluster to be ready:**
 
    ```sh
-   kubectl wait --for=condition=Ready cluster/mnt-db-recovery -n "$ns" --timeout=20m
-   kubectl exec -n "$ns" mnt-db-recovery-1 -c postgres -- \
-     psql -U postgres -d maintenance -tAc 'SELECT pg_is_in_recovery();'   # expect: f
+   kubectl wait --for=condition=Ready cluster/console-db-recovery -n "$ns" --timeout=20m
+   kubectl exec -n "$ns" console-db-recovery-1 -c postgres -- \
+     psql -U postgres -d console -tAc 'SELECT pg_is_in_recovery();'   # expect: f
    ```
 
 6. **Verify schema + row counts** against the recovered database:
 
    ```sh
-   kubectl exec -n "$ns" mnt-db-recovery-1 -c postgres -- \
-     psql -U postgres -d maintenance -tAc \
+   kubectl exec -n "$ns" console-db-recovery-1 -c postgres -- \
+     psql -U postgres -d console -tAc \
      "SELECT format('%I.%I', schemaname, relname) AS t, n_live_tup
         FROM pg_stat_user_tables ORDER BY 1;"
    ```
@@ -189,16 +189,16 @@ Required success markers in the log:
    ```
 
    Deleting the namespace removes the recovery Cluster, its PVCs, the copied
-   secret, and the recovery ObjectStore. The live `mnt-db` cluster and the
-   `mnt-backups` ObjectStore in `maintenance` are untouched.
+   secret, and the recovery ObjectStore. The live `console-db` cluster and the
+   `console-backups` ObjectStore in `maintenance` are untouched.
 
 ## Failure modes
 
 - **Recovery job cannot list the object store**: the copied
   `oci-objectstore-creds` secret is wrong/absent in the scratch namespace, or
-  `serverName` does not match the live cluster name (`mnt-db`). Check the
+  `serverName` does not match the live cluster name (`console-db`). Check the
   recovery job and plugin sidecar logs:
-  `kubectl logs -n "$ns" job/mnt-db-recovery-1-full-recovery` and the
+  `kubectl logs -n "$ns" job/console-db-recovery-1-full-recovery` and the
   `plugin-barman-cloud` container.
 - **Cluster never leaves recovery**: the requested `recoveryTarget.targetTime`
   is earlier than the oldest base backup, or WAL is missing for the window.

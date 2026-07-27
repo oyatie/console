@@ -15,7 +15,7 @@
 -- migration adds NO new policy, trigger, or org column — only the contact columns
 -- and their bounded-text CHECKs.
 --
--- mnt-gate: audited-table registry_sites
+-- console-gate: audited-table registry_sites
 ALTER TABLE registry_sites
     ADD COLUMN contact_name  TEXT,   -- 담당자명 (representative-in-charge name)
     ADD COLUMN contact_phone TEXT,   -- 연락처 (phone, free-form: 010-0000-0000)

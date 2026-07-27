@@ -6,10 +6,10 @@
 //! node; the port arms `app.current_org` and writes audit rows in the same
 //! transaction as each mutation.
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, OrgId, Timestamp, TraceContext, UserId,
 };
-use mnt_workflow_domain::{
+use console_workflow_domain::{
     NewNodeRun, NewRun, NodeStatus, NodeStepCommit, RunStatus, RunTransition, TriggerType,
     WorkflowRuntimePort, validate_node_transition, validate_run_transition,
 };
@@ -365,8 +365,8 @@ mod tests {
     use std::sync::Mutex;
     use std::task::{Context, Poll, Waker};
 
-    use mnt_kernel_core::ErrorKind;
-    use mnt_workflow_domain::{
+    use console_kernel_core::ErrorKind;
+    use console_workflow_domain::{
         FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
         NodeStepCommit, PortFuture, PostFinalizationRejection, PostFinalizationRejectionCommand,
         RunRecord,

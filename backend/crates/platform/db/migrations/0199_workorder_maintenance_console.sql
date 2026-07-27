@@ -79,5 +79,5 @@ END $$;
 
 -- Runtime role: settlements transition in place (status/submitted/approved
 -- columns), lines are immutable once written; nothing is ever hard-deleted.
-GRANT SELECT, INSERT, UPDATE ON work_order_settlements TO mnt_rt;
-GRANT SELECT, INSERT ON work_order_settlement_lines TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON work_order_settlements TO console_rt;
+GRANT SELECT, INSERT ON work_order_settlement_lines TO console_rt;

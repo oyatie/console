@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import { useAuth } from "../../context/auth";
 import { ko } from "../../i18n/ko";

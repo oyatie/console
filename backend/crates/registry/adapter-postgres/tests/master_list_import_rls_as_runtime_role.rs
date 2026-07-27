@@ -2,7 +2,7 @@
 //! RUNTIME RLS gate for the equipment master-list import.
 //!
 //! The reference-fixture import (`import_master_list_bytes`) is exercised here as
-//! the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE
+//! the genuine non-owner runtime role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE
 //! RLS), the only faithful exercise of the tenant policy and the role production
 //! actually connects as. The existing `master_list_import.rs` tests run on the
 //! default `#[sqlx::test]` pool, which connects as a BYPASSRLS superuser and so
@@ -13,17 +13,17 @@
 //! This is the documented rls-verify-as-runtime-role failure mode: the whole
 //! import path — `ensure_default_hq_branch` (HQ region/branch creation) plus the
 //! customer/site/equipment upserts and the audit row — must run inside an
-//! org-armed transaction so the FORCE-RLS WITH CHECK passes as `mnt_rt`.
+//! org-armed transaction so the FORCE-RLS WITH CHECK passes as `console_rt`.
 //!
 //! Asserts that, under org-KNL's armed GUC, the full reference fixture imports
 //! every valid row into `registry_equipment` for the armed org, with an audit
-//! row, as `mnt_rt`. Before the arming fix this import 500s (every upsert
+//! row, as `console_rt`. Before the arming fix this import 500s (every upsert
 //! rejected by FORCE RLS); after it, it succeeds.
 
 use std::path::PathBuf;
 
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_registry_adapter_postgres::PgRegistryStore;
+use console_kernel_core::{OrgId, UserId};
+use console_registry_adapter_postgres::PgRegistryStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 
@@ -37,7 +37,7 @@ fn master_list_path() -> PathBuf {
 /// in sync with `master_list_import.rs`'s superuser assertion.
 const EXPECTED_ROWS: i64 = 445;
 
-/// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`
+/// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`
 /// (NOBYPASSRLS, subject to FORCE RLS), exactly like production. Mirrors the
 /// financial/workorder runtime-role RLS tests.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -46,7 +46,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -75,7 +75,7 @@ async fn count_as_armed_tenant(pool: &PgPool, org: OrgId, sql: &'static str) -> 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn import_master_list_as_runtime_role(owner_pool: PgPool) {
     // Seed the tenant org + the importing admin as the BYPASSRLS owner; the
-    // import itself runs as mnt_rt. The audit row's `actor` FKs to `users`, so the
+    // import itself runs as console_rt. The audit row's `actor` FKs to `users`, so the
     // actor must be a real user in the org (exactly as the REST handler passes
     // `principal.user_id`).
     sqlx::query(
@@ -99,14 +99,14 @@ async fn import_master_list_as_runtime_role(owner_pool: PgPool) {
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let bytes = std::fs::read(master_list_path()).unwrap();
 
-    let report = mnt_platform_request_context::scope_org(OrgId::knl(), async {
+    let report = console_platform_request_context::scope_org(OrgId::knl(), async {
         let store = PgRegistryStore::new(rt_pool.clone());
         store
             .import_master_list_bytes(actor, "master-list_251120.xlsx", &bytes)
             .await
     })
     .await
-    .expect("import must succeed as mnt_rt under org-KNL's armed GUC (FORCE RLS)");
+    .expect("import must succeed as console_rt under org-KNL's armed GUC (FORCE RLS)");
 
     assert_eq!(
         i64::try_from(report.added).unwrap(),
@@ -117,7 +117,7 @@ async fn import_master_list_as_runtime_role(owner_pool: PgPool) {
     assert_eq!(report.unchanged, 0);
     assert!(report.errors.is_empty(), "{:#?}", report.errors);
 
-    // The rows must be visible to the armed tenant as mnt_rt (RLS allows own org).
+    // The rows must be visible to the armed tenant as console_rt (RLS allows own org).
     let count = count_as_armed_tenant(
         &rt_pool,
         OrgId::knl(),

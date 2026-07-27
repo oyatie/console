@@ -11,7 +11,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- sales_listings — a used forklift offered for sale and/or rental
 -- ─────────────────────────────────────────────────────────────────────────────
--- mnt-gate: audited-table sales_listings
+-- console-gate: audited-table sales_listings
 CREATE TABLE sales_listings (
     id              UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -63,7 +63,7 @@ CREATE INDEX idx_sales_listings_org_kind
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Bytes live in the object store (RustFS/S3) keyed by s3_key; this row is the
 -- metadata + ordering, mirroring evidence_media (migration 0009).
--- mnt-gate: audited-table sales_listing_media
+-- console-gate: audited-table sales_listing_media
 CREATE TABLE sales_listing_media (
     id           UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -94,7 +94,7 @@ CREATE INDEX idx_sales_listing_media_listing
 -- ─────────────────────────────────────────────────────────────────────────────
 -- name + phone are PII (위치정보법/개인정보보호법): stored here, NEVER logged
 -- (the pii-no-logs gate is literal-only; handlers must not log these values).
--- mnt-gate: audited-table customer_inquiries
+-- console-gate: audited-table customer_inquiries
 CREATE TABLE customer_inquiries (
     id           UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,

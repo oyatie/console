@@ -79,15 +79,15 @@ requireSqlMatches(migration, /enabled\s+boolean\s+not\s+null\s+default\s+false/,
 requireSqlIncludes(migration, "enable row level security", "org_runtime_flags enables RLS");
 requireSqlIncludes(migration, "force row level security", "org_runtime_flags forces RLS (owner cannot bypass)");
 requireSqlIncludes(migration, "create policy org_isolation on org_runtime_flags", "org_runtime_flags has org isolation policy");
-requireSqlMatches(migration, /org_id\s*=\s*nullif\(current_setting\('app\.current_org', true\), ''\)::uuid/, "RLS keys off app.current_org (mnt_rt row boundary)");
+requireSqlMatches(migration, /org_id\s*=\s*nullif\(current_setting\('app\.current_org', true\), ''\)::uuid/, "RLS keys off app.current_org (console_rt row boundary)");
 
-// Explicit runtime grants for the real mnt_rt role — never superuser/BYPASSRLS.
-requireIncludes(migrationPath, "GRANT SELECT, INSERT, UPDATE ON org_runtime_flags TO mnt_rt", "explicit mnt_rt grants on org_runtime_flags");
-// Migration 0031 auto-grants DELETE to mnt_rt on every mnt_app-created table via
+// Explicit runtime grants for the real console_rt role — never superuser/BYPASSRLS.
+requireIncludes(migrationPath, "GRANT SELECT, INSERT, UPDATE ON org_runtime_flags TO console_rt", "explicit console_rt grants on org_runtime_flags");
+// Migration 0031 auto-grants DELETE to console_rt on every console_app-created table via
 // ALTER DEFAULT PRIVILEGES, so the switchboard must explicitly REVOKE it — else
 // the runtime role could delete its own flag row under RLS, erasing governance
 // history and reverting an enabled flag to the absent-row OFF default.
-requireIncludes(migrationPath, "REVOKE DELETE ON org_runtime_flags FROM mnt_rt", "mnt_rt cannot DELETE governance flags (append/update-only; inherited DELETE revoked)");
+requireIncludes(migrationPath, "REVOKE DELETE ON org_runtime_flags FROM console_rt", "console_rt cannot DELETE governance flags (append/update-only; inherited DELETE revoked)");
 
 // --- Dark-by-default resolver: absent row => OFF, under app.current_org / RLS. ---
 requireSqlIncludes(migration, "create or replace function org_runtime_flag_enabled", "dark-by-default resolver function exists");
@@ -101,7 +101,7 @@ requireSqlMatches(
   /org_runtime_flag_enabled[\s\S]*coalesce\([\s\S]*select f\.enabled[\s\S]*from org_runtime_flags f[\s\S]*where f\.org_id = nullif\(current_setting\('app\.current_org', true\), ''\)::uuid[\s\S]*false[\s\S]*\)/,
   "resolver COALESCEs an absent row to FALSE under app.current_org (absent row => OFF)",
 );
-requireIncludes(migrationPath, "GRANT EXECUTE ON FUNCTION org_runtime_flag_enabled(TEXT) TO mnt_rt", "mnt_rt may call the dark-by-default resolver");
+requireIncludes(migrationPath, "GRANT EXECUTE ON FUNCTION org_runtime_flag_enabled(TEXT) TO console_rt", "console_rt may call the dark-by-default resolver");
 
 // The strangler flag is a first-class, named concept in the migration.
 requireIncludes(migrationPath, STRANGLER_FLAG, `${STRANGLER_FLAG} is a recognized flag key`);

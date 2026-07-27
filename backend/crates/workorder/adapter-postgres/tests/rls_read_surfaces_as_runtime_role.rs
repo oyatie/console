@@ -3,14 +3,14 @@
 //!
 //! Phase 1 wrapped ~31 previously-bare-pool reads in `with_org_conn(current_org()?, ..)`
 //! so `app.current_org` is armed for the RLS-gated query. A *static* gate
-//! (`mnt-gate-rls-arming`) proves the wrapping is STRUCTURALLY present in the
+//! (`console-gate-rls-arming`) proves the wrapping is STRUCTURALLY present in the
 //! source. This test proves it WORKS AT RUNTIME: that `current_org()` / the GUC
 //! is actually armed when these reads execute as the genuine non-owner runtime
-//! role `mnt_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS).
+//! role `console_rt` (NOSUPERUSER, NOBYPASSRLS, FORCE RLS).
 //!
 //! The bug class it guards against: a read that runs on the BARE pool (no
 //! `with_org_conn`, so `app.current_org` is UNSET) returns ZERO rows under
-//! `mnt_rt` — yet the legacy tests passed because `sqlx::test` connects as a
+//! `console_rt` — yet the legacy tests passed because `sqlx::test` connects as a
 //! BYPASSRLS superuser, which sees every row regardless of the GUC and masks the
 //! defect entirely.
 //!
@@ -19,8 +19,8 @@
 //!     writes (`create_work_order`, `create_thread`) run inside
 //!     `scope_org(OrgId::knl(), ..)` so they arm the GUC exactly as the org
 //!     middleware does in production.
-//!   * READ as `mnt_rt` (a second pool whose every connection does `SET ROLE
-//!     mnt_rt`, copied verbatim from the auth-chain harness) by calling the SAME
+//!   * READ as `console_rt` (a second pool whose every connection does `SET ROLE
+//!     console_rt`, copied verbatim from the auth-chain harness) by calling the SAME
 //!     wrapped store read functions the GET handlers call, inside
 //!     `scope_org(OrgId::knl(), ..)`. Those functions do `current_org()?` ->
 //!     `with_org_conn(..)`, so if the arming chain is intact the rows come back;
@@ -28,18 +28,18 @@
 //!
 //! Surfaces proven (highest value):
 //!   (1) WORK-ORDER DETAIL  — `PgWorkOrderStore::work_order(id)` returns the
-//!       seeded KNL work order (non-empty) as `mnt_rt`.
+//!       seeded KNL work order (non-empty) as `console_rt`.
 //!   (2) MESSENGER THREAD LIST — `PgMessengerStore::list_threads(..)` returns the
-//!       seeded KNL thread (non-empty) as `mnt_rt`.
+//!       seeded KNL thread (non-empty) as `console_rt`.
 //!   (3) CROSS-TENANT ISOLATION — a second org's work order is NOT visible while
 //!       KNL's org is armed (RLS still isolates tenants under the fix).
 
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
-use mnt_messenger_adapter_postgres::PgMessengerStore;
-use mnt_messenger_application::{CreateThreadCommand, ListThreadsQuery};
-use mnt_messenger_domain::ThreadKind;
-use mnt_workorder_adapter_postgres::{PgWorkOrderError, PgWorkOrderStore};
-use mnt_workorder_application::{
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext, UserId};
+use console_messenger_adapter_postgres::PgMessengerStore;
+use console_messenger_application::{CreateThreadCommand, ListThreadsQuery};
+use console_messenger_domain::ThreadKind;
+use console_workorder_adapter_postgres::{PgWorkOrderError, PgWorkOrderStore};
+use console_workorder_application::{
     CreateDailyPlanCommand, CreateWorkOrderCommand, DailyPlanItemInput, DailyPlanListQuery,
     DailyPlanStatus, SendDailyPlanForReviewCommand, WorkOrderSummary,
 };
@@ -50,11 +50,11 @@ use time::Date;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_T2: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 // ===========================================================================
-// Runtime-role pool: every connection becomes the genuine non-owner `mnt_rt`.
+// Runtime-role pool: every connection becomes the genuine non-owner `console_rt`.
 // Copied verbatim from the auth-chain harness
 // (provisioning/tests/rls_auth_chain_as_runtime_role.rs) so RLS is ACTUALLY
 // enforced — BYPASSRLS does not apply, FORCE RLS does — exactly as production.
@@ -66,9 +66,9 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .after_connect(|conn, _meta| {
             Box::pin(async move {
                 // SET ROLE (session-scoped) makes every subsequent statement on
-                // this connection run as `mnt_rt`. The connection started as the
+                // this connection run as `console_rt`. The connection started as the
                 // superuser, so it has the privilege to assume the role.
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -208,7 +208,7 @@ async fn seed_work_order(owner_pool: &PgPool, org: OrgId) -> (BranchId, WorkOrde
     seed_equipment(owner_pool, org_uuid, branch_id, management_no).await;
 
     // The CREATE handler arms the GUC; mirror that with scope_org on the owner pool.
-    let summary = mnt_platform_request_context::scope_org(org, async {
+    let summary = console_platform_request_context::scope_org(org, async {
         let store = PgWorkOrderStore::new(owner_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
@@ -232,7 +232,7 @@ async fn seed_work_order(owner_pool: &PgPool, org: OrgId) -> (BranchId, WorkOrde
 }
 
 // ===========================================================================
-// (1) WORK-ORDER DETAIL must return the seeded KNL work order AS `mnt_rt`.
+// (1) WORK-ORDER DETAIL must return the seeded KNL work order AS `console_rt`.
 // This is the headline read the GET /api/work-orders/{id} detail path performs
 // (`current_org()?` -> `with_org_conn`). Before the fix it returned zero rows.
 // ===========================================================================
@@ -243,24 +243,24 @@ async fn work_order_detail_returns_tenant_row_as_runtime_role(owner_pool: PgPool
     let (_branch, seeded) = seed_work_order(&owner_pool, knl).await;
 
     // Read through the REAL wrapped store function, with the org armed exactly as
-    // the middleware arms it, but as the genuine non-owner `mnt_rt` role.
-    let found = mnt_platform_request_context::scope_org(knl, async {
+    // the middleware arms it, but as the genuine non-owner `console_rt` role.
+    let found = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store.work_order(seeded.id).await
     })
     .await
-    .expect("work-order detail must return the seeded KNL row as mnt_rt (GUC armed)");
+    .expect("work-order detail must return the seeded KNL row as console_rt (GUC armed)");
 
     assert_eq!(
         found.id, seeded.id,
-        "the wrapped detail read must surface the seeded work order as mnt_rt"
+        "the wrapped detail read must surface the seeded work order as console_rt"
     );
 }
 
 // ===========================================================================
-// (2) MESSENGER THREAD LIST must return the seeded KNL thread AS `mnt_rt`.
+// (2) MESSENGER THREAD LIST must return the seeded KNL thread AS `console_rt`.
 // `list_threads` is a multi-row wrapped read; before the fix the bare-pool list
-// returned zero rows under `mnt_rt`.
+// returned zero rows under `console_rt`.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn messenger_thread_list_returns_tenant_rows_as_runtime_role(owner_pool: PgPool) {
@@ -274,7 +274,7 @@ async fn messenger_thread_list_returns_tenant_rows_as_runtime_role(owner_pool: P
     let recipient = seed_user(&owner_pool, knl_uuid, "ADMIN", branch).await;
 
     // Create the thread (a wrapped write) under the armed owner pool.
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         let store = PgMessengerStore::new(owner_pool.clone());
         store
             .create_thread(CreateThreadCommand {
@@ -294,8 +294,8 @@ async fn messenger_thread_list_returns_tenant_rows_as_runtime_role(owner_pool: P
     })
     .await;
 
-    // List threads through the REAL wrapped read as `mnt_rt`.
-    let threads = mnt_platform_request_context::scope_org(knl, async {
+    // List threads through the REAL wrapped read as `console_rt`.
+    let threads = console_platform_request_context::scope_org(knl, async {
         let store = PgMessengerStore::new(rt_pool.clone());
         store
             .list_threads(ListThreadsQuery {
@@ -306,17 +306,17 @@ async fn messenger_thread_list_returns_tenant_rows_as_runtime_role(owner_pool: P
             .await
     })
     .await
-    .expect("messenger thread list must succeed as mnt_rt (GUC armed)");
+    .expect("messenger thread list must succeed as console_rt (GUC armed)");
 
     assert!(
         !threads.is_empty(),
-        "the wrapped thread list must surface the seeded KNL thread as mnt_rt"
+        "the wrapped thread list must surface the seeded KNL thread as console_rt"
     );
 }
 
 // ===========================================================================
 // (4) #19.13a — WORK-ORDER CREATE resolves a `호기`/`#`-decorated, leading-zero
-// management number AS `mnt_rt`. Equipment is stored as the bare `3`; the
+// management number AS `console_rt`. Equipment is stored as the bare `3`; the
 // receptionist files `3호기`. Before the fix the adapter stripped only `#` and
 // matched exactly, so `3호기` failed the create. After the fix the adapter
 // normalizer strips `#` AND `호기` and matches leading-zero-insensitively, so all
@@ -335,8 +335,8 @@ async fn create_work_order_resolves_hogi_decorated_management_no_as_runtime_role
     // Equipment stored as the bare `3` (no leading zero, no 호기 suffix).
     seed_equipment(&owner_pool, knl_uuid, branch, "3").await;
 
-    // File the order with the decorated `3호기` as the genuine non-owner mnt_rt.
-    let summary = mnt_platform_request_context::scope_org(knl, async {
+    // File the order with the decorated `3호기` as the genuine non-owner console_rt.
+    let summary = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
@@ -354,7 +354,7 @@ async fn create_work_order_resolves_hogi_decorated_management_no_as_runtime_role
             .await
     })
     .await
-    .expect("create_work_order must resolve `3호기` to equipment `3` as mnt_rt");
+    .expect("create_work_order must resolve `3호기` to equipment `3` as console_rt");
 
     assert_eq!(
         summary.branch_id, branch,
@@ -377,7 +377,7 @@ async fn create_work_order_missing_equipment_is_not_found_as_runtime_role(owner_
     let receptionist = seed_user(&owner_pool, knl_uuid, "RECEPTIONIST", branch).await;
     // Deliberately seed NO equipment in this branch.
 
-    let result = mnt_platform_request_context::scope_org(knl, async {
+    let result = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
@@ -411,7 +411,7 @@ async fn create_work_order_missing_equipment_is_not_found_as_runtime_role(owner_
 // NOT a member of, while a branch-scoped reader whose scope EXCLUDES that branch
 // sees zero. Exercises the EXACT list COUNT predicate the GET /api/v1/work-orders
 // handler runs (`push_branch_scope_filter` on `w.branch_id`) under RLS as
-// `mnt_rt`: org-wide scope = `All`, branch reader = `Branches`.
+// `console_rt`: org-wide scope = `All`, branch reader = `Branches`.
 //
 // POLICY NOTE (codex G001 HIGH-1): org-wide queue visibility is now gated on the
 // `OrgWideQueueTriage` capability — EXECUTIVE + SUPER_ADMIN only — NOT plain
@@ -434,7 +434,7 @@ async fn admin_list_scope_surfaces_off_branch_work_order_as_runtime_role(owner_p
     let other_branch = seed_branch(&owner_pool, knl_uuid).await;
     let receptionist = seed_user(&owner_pool, knl_uuid, "RECEPTIONIST", branch_b).await;
     seed_equipment(&owner_pool, knl_uuid, branch_b, "77").await;
-    let wo = mnt_platform_request_context::scope_org(knl, async {
+    let wo = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(owner_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {
@@ -480,7 +480,7 @@ async fn admin_list_scope_surfaces_off_branch_work_order_as_runtime_role(owner_p
 
 /// Replicate the EXACT count predicate `list_work_orders` runs — a branch-scope
 /// filter on `w.branch_id` for the given work order — inside `with_org_conn` as
-/// the armed `mnt_rt` role, so the assertion exercises the real RLS + branch
+/// the armed `console_rt` role, so the assertion exercises the real RLS + branch
 /// path the handler depends on. `BranchScope::All` -> `TRUE`,
 /// `BranchScope::Branches` -> `w.branch_id = ANY($branches)`.
 async fn count_work_orders_for_scope(
@@ -491,8 +491,8 @@ async fn count_work_orders_for_scope(
 ) -> i64 {
     use sqlx::{Postgres, QueryBuilder};
     let scope = scope.clone();
-    mnt_platform_request_context::scope_org(org, async move {
-        mnt_platform_db::with_org_conn::<_, i64, PgWorkOrderError>(rt_pool, org, move |tx| {
+    console_platform_request_context::scope_org(org, async move {
+        console_platform_db::with_org_conn::<_, i64, PgWorkOrderError>(rt_pool, org, move |tx| {
             Box::pin(async move {
                 let mut builder =
                     QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM work_orders w WHERE ");
@@ -521,13 +521,13 @@ async fn count_work_orders_for_scope(
         .await
     })
     .await
-    .expect("count_work_orders_for_scope must run as mnt_rt under the armed GUC")
+    .expect("count_work_orders_for_scope must run as console_rt under the armed GUC")
 }
 
 // ===========================================================================
 // (7) #19.17 — DAILY-PLAN APPROVAL QUEUE surfaces a DRAFT plan (and keeps it
 // after it becomes REQUESTED) to an approver in the SAME org but a different
-// user, AS `mnt_rt`. Before the fix there was NO list endpoint and the only read
+// user, AS `console_rt`. Before the fix there was NO list endpoint and the only read
 // filtered APPROVED/FINAL_CONFIRMED, so a freshly-created DRAFT/REQUESTED plan
 // was invisible to the very admin who must approve it. Cross-tenant: a second
 // org's plan must NOT appear under KNL's armed GUC.
@@ -542,8 +542,8 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
     let plan_date = OffsetDateTime::now_utc().date();
 
     // The mechanic FILES the plan (a wrapped write) as the genuine non-owner
-    // mnt_rt — the create path arms the GUC exactly as the middleware does.
-    let created = mnt_platform_request_context::scope_org(knl, async {
+    // console_rt — the create path arms the GUC exactly as the middleware does.
+    let created = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_daily_plan(CreateDailyPlanCommand {
@@ -561,11 +561,11 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
             .await
     })
     .await
-    .expect("create_daily_plan must succeed as mnt_rt under the armed GUC");
+    .expect("create_daily_plan must succeed as console_rt under the armed GUC");
     assert_eq!(created.status, DailyPlanStatus::Draft);
 
     // An APPROVER (org-wide `All` scope, as an admin would carry for the queue)
-    // lists daily plans as mnt_rt and MUST see the DRAFT plan.
+    // lists daily plans as console_rt and MUST see the DRAFT plan.
     let draft_listed = list_daily_plan_ids(&rt_pool, knl, &BranchScope::All, Some(plan_date)).await;
     assert!(
         draft_listed.contains(&created.id),
@@ -573,7 +573,7 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
     );
 
     // Move it to REQUESTED — it must STILL appear (no status filter hides it).
-    mnt_platform_request_context::scope_org(knl, async {
+    console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .request_daily_plan_review(SendDailyPlanForReviewCommand {
@@ -583,7 +583,7 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
                 occurred_at: OffsetDateTime::now_utc(),
             })
             .await
-            .expect("request_daily_plan_review must succeed as mnt_rt");
+            .expect("request_daily_plan_review must succeed as console_rt");
     })
     .await;
     let requested_listed = list_daily_plan_ids(&rt_pool, knl, &BranchScope::All, None).await;
@@ -597,7 +597,7 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
     let org2_uuid = *org2.as_uuid();
     let (branch2, work_order2) = seed_work_order(&owner_pool, org2).await;
     let mechanic2 = seed_user(&owner_pool, org2_uuid, "MECHANIC", branch2).await;
-    let other = mnt_platform_request_context::scope_org(org2, async {
+    let other = console_platform_request_context::scope_org(org2, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_daily_plan(CreateDailyPlanCommand {
@@ -624,15 +624,15 @@ async fn daily_plan_list_surfaces_draft_and_requested_as_runtime_role(owner_pool
 }
 
 /// List daily-plan ids through the REAL wrapped `list_daily_plans` read as the
-/// armed `mnt_rt` role.
+/// armed `console_rt` role.
 async fn list_daily_plan_ids(
     rt_pool: &PgPool,
     org: OrgId,
     scope: &BranchScope,
     plan_date: Option<Date>,
-) -> Vec<mnt_kernel_core::DailyPlanId> {
+) -> Vec<console_kernel_core::DailyPlanId> {
     let scope = scope.clone();
-    mnt_platform_request_context::scope_org(org, async move {
+    console_platform_request_context::scope_org(org, async move {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .list_daily_plans(DailyPlanListQuery {
@@ -640,7 +640,7 @@ async fn list_daily_plan_ids(
                 plan_date,
             })
             .await
-            .expect("list_daily_plans must succeed as mnt_rt under the armed GUC")
+            .expect("list_daily_plans must succeed as console_rt under the armed GUC")
             .items
             .into_iter()
             .map(|item| item.id)
@@ -652,7 +652,7 @@ async fn list_daily_plan_ids(
 // ===========================================================================
 // (3) CROSS-TENANT ISOLATION: a SECOND org's work order must NOT be visible
 // while KNL's org is armed. Proves the fix arms the RIGHT tenant (not a blanket
-// "see everything") — RLS still isolates tenants under `mnt_rt`.
+// "see everything") — RLS still isolates tenants under `console_rt`.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn cross_tenant_work_order_is_invisible_as_runtime_role(owner_pool: PgPool) {
@@ -665,25 +665,25 @@ async fn cross_tenant_work_order_is_invisible_as_runtime_role(owner_pool: PgPool
     let (_t2_branch, t2_wo) = seed_work_order(&owner_pool, org2).await;
 
     // Under KNL's armed GUC, KNL's work order is visible...
-    let knl_visible = mnt_platform_request_context::scope_org(knl, async {
+    let knl_visible = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store.work_order(knl_wo.id).await
     })
     .await;
     assert!(
         knl_visible.is_ok(),
-        "KNL work order must be visible under KNL's armed GUC as mnt_rt"
+        "KNL work order must be visible under KNL's armed GUC as console_rt"
     );
 
     // ...but the OTHER tenant's work order is NOT (RLS returns not-found).
-    let t2_under_knl = mnt_platform_request_context::scope_org(knl, async {
+    let t2_under_knl = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store.work_order(t2_wo.id).await
     })
     .await;
     assert!(
         t2_under_knl.is_err(),
-        "a second tenant's work order must be INVISIBLE under KNL's GUC as mnt_rt \
+        "a second tenant's work order must be INVISIBLE under KNL's GUC as console_rt \
          (cross-tenant isolation must hold)"
     );
 }
@@ -716,7 +716,7 @@ async fn management_no_lookup_is_exact_then_unique_normalized_as_runtime_role(ow
         let value = management_no.to_owned();
         let rt_pool = rt_pool.clone();
         async move {
-            mnt_platform_request_context::scope_org(knl, async {
+            console_platform_request_context::scope_org(knl, async {
                 let store = PgWorkOrderStore::new(rt_pool.clone());
                 store
                     .create_work_order(CreateWorkOrderCommand {
@@ -771,11 +771,11 @@ async fn management_no_lookup_is_exact_then_unique_normalized_as_runtime_role(ow
 //   * typed `42`  → no exact hit → unique normalized → returns `0042` row
 //
 // Tests run the SAME two-phase query the REST handler executes (exact LIMIT 2,
-// then ltrim-normalized LIMIT 2) inside with_org_conn as genuine mnt_rt.
+// then ltrim-normalized LIMIT 2) inside with_org_conn as genuine console_rt.
 // ===========================================================================
 
 /// Run the two-phase equipment-preview lookup (exact-first, then normalized
-/// fallback) as the genuine non-owner `mnt_rt` role inside `with_org_conn`,
+/// fallback) as the genuine non-owner `console_rt` role inside `with_org_conn`,
 /// exactly mirroring what the REST `lookup_equipment` handler now executes.
 ///
 /// Returns `Ok(management_no)` when exactly one row is found, `Err("conflict")`
@@ -786,13 +786,13 @@ async fn preview_lookup(
     branch_scope: &BranchScope,
     typed: &str,
 ) -> Result<String, &'static str> {
-    use mnt_platform_db::with_org_conn;
+    use console_platform_db::with_org_conn;
     use sqlx::{Postgres, QueryBuilder, Row};
 
     let typed = typed.to_owned();
     let scope = branch_scope.clone();
 
-    mnt_platform_request_context::scope_org(org, async move {
+    console_platform_request_context::scope_org(org, async move {
         // Phase 1: exact match, LIMIT 2.
         let exact = {
             let typed = typed.clone();
@@ -943,7 +943,7 @@ async fn create_work_order_exact_duplicate_management_no_is_conflict_as_runtime_
     seed_equipment(&owner_pool, knl_uuid, branch, "10").await;
     seed_equipment(&owner_pool, knl_uuid, branch, "10").await;
 
-    let result = mnt_platform_request_context::scope_org(knl, async {
+    let result = console_platform_request_context::scope_org(knl, async {
         let store = PgWorkOrderStore::new(rt_pool.clone());
         store
             .create_work_order(CreateWorkOrderCommand {

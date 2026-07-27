@@ -33,7 +33,7 @@ use cedar_policy::{
 };
 
 use super::engine::compile_bundle_from_sources;
-use mnt_kernel_core::{KernelError, OrgId};
+use console_kernel_core::{KernelError, OrgId};
 
 /// Schema identity for the generic ontology object/property authoring bundle.
 /// Bump when [`AUTHORING_SCHEMA`] changes so validated digests never collide.
@@ -553,8 +553,8 @@ pub fn submit_draft(
 pub fn review_draft(
     current: ReviewStatus,
     decision: ReviewDecision,
-    author: mnt_kernel_core::UserId,
-    reviewer: mnt_kernel_core::UserId,
+    author: console_kernel_core::UserId,
+    reviewer: console_kernel_core::UserId,
 ) -> Result<ReviewStatus, KernelError> {
     if author == reviewer {
         return Err(KernelError::forbidden(
@@ -946,7 +946,7 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::*;
-    use mnt_kernel_core::UserId;
+    use console_kernel_core::UserId;
 
     fn owner_view_permit(resource_type: &str) -> NoCodeBlocks {
         NoCodeBlocks {

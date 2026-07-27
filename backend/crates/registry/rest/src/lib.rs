@@ -11,17 +11,17 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     ADDRESS_MAX_CHARS, AuditEventId, BranchId, BranchScope, CITY_MAX_CHARS,
     CONTACT_EMAIL_MAX_CHARS, CONTACT_NAME_MAX_CHARS, CONTACT_PHONE_MAX_CHARS,
     CUSTOMER_SITE_NAME_MAX_CHARS, CustomerId, EquipmentId, EquipmentSubstitutionId, ErrorKind,
     KernelError, POSTAL_CODE_MAX_CHARS, PROVINCE_MAX_CHARS, SiteId, TraceContext, UserId,
     validate_bounded_text, validate_coordinate_pair,
 };
-use mnt_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use mnt_platform_authz::{Action, Feature, Principal, Role, authorize};
-use mnt_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
-use mnt_registry_application::{
+use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_authz::{Action, Feature, Principal, Role, authorize};
+use console_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
+use console_registry_application::{
     CreateCustomerCommand, CreateEquipmentCommand, CreateEquipmentOwnershipTransferCommand,
     CreateSiteCommand, CreatedCustomer, CreatedSite, DecideEquipmentOwnershipTransferCommand,
     DeleteEquipmentCommand, EquipmentByLocationQuery, EquipmentListItem, EquipmentListQuery,
@@ -32,7 +32,7 @@ use mnt_registry_application::{
     SubstituteCandidate, SubstituteReturnCommand, SubstituteSearch, UpdateEquipmentCommand,
     UpdateEquipmentFields, UpdateSiteCommand, UpdateSiteFields,
 };
-use mnt_registry_domain::{EquipmentNo, EquipmentStatus, MoneyWon, SubstituteMatchKind, Ton};
+use console_registry_domain::{EquipmentNo, EquipmentStatus, MoneyWon, SubstituteMatchKind, Ton};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::Date;
@@ -172,7 +172,7 @@ pub fn router(state: RegistryRestState) -> Router {
         .route(SITES_PATH, post(create_site))
         .route(SITE_ID_PATH_TEMPLATE, axum::routing::patch(update_site))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -1943,38 +1943,38 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for registry API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for registry API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::forbidden("token tier is not valid for this route")
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::internal(message)
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => {
+        console_platform_request_context::RequestContextError::MissingOrg => {
             RestError::internal("no tenant context is bound to the current request")
         }
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }

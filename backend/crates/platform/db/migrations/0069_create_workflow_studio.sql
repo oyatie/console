@@ -5,7 +5,7 @@
 -- appends evidence instead of rewriting prior business logic. Runtime execution
 -- can later bind object events to a specific (definition_id, version) pair.
 
--- mnt-gate: audited-table workflow_definitions
+-- console-gate: audited-table workflow_definitions
 CREATE TABLE workflow_definitions (
     id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -25,7 +25,7 @@ CREATE TABLE workflow_definitions (
 CREATE INDEX idx_workflow_definitions_org_status
     ON workflow_definitions (org_id, status, object_type, updated_at DESC);
 
--- mnt-gate: audited-table workflow_definition_versions
+-- console-gate: audited-table workflow_definition_versions
 CREATE TABLE workflow_definition_versions (
     id                     UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -47,7 +47,7 @@ CREATE TABLE workflow_definition_versions (
 CREATE INDEX idx_workflow_definition_versions_definition
     ON workflow_definition_versions (org_id, definition_id, version DESC);
 
--- mnt-gate: audited-table workflow_definition_events
+-- console-gate: audited-table workflow_definition_events
 CREATE TABLE workflow_definition_events (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -94,9 +94,9 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON workflow_definitions TO mnt_rt;
-GRANT SELECT, INSERT ON workflow_definition_versions TO mnt_rt;
-GRANT SELECT, INSERT ON workflow_definition_events TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON workflow_definitions TO console_rt;
+GRANT SELECT, INSERT ON workflow_definition_versions TO console_rt;
+GRANT SELECT, INSERT ON workflow_definition_events TO console_rt;
 
 CREATE TRIGGER trg_workflow_definitions_org_immutable
     BEFORE UPDATE ON workflow_definitions

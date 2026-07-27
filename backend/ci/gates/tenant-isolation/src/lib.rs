@@ -109,7 +109,7 @@ pub fn global_table_allowlist() -> &'static [(&'static str, &'static str)] {
 /// intentionally have no `org_id`, no RLS policy, and no runtime-role raw table
 /// grants. They are not "global read" tables; access is limited to the migration
 /// owner or a narrow NOLOGIN/SECURITY DEFINER capability. A table listed here is
-/// classified for the tenant gate, and a direct GRANT to mnt_rt/PUBLIC is a
+/// classified for the tenant gate, and a direct GRANT to console_rt/PUBLIC is a
 /// violation.
 #[must_use]
 pub fn owner_only_table_allowlist() -> &'static [(&'static str, &'static str)] {
@@ -667,7 +667,7 @@ fn check_owner_only_table_grants(file: &Path, sanitized: &str, result: &mut Gate
         }
         let grants_to_runtime = tokens
             .windows(2)
-            .any(|w| w[0] == "to" && (w[1] == "mnt_rt" || w[1] == "public"));
+            .any(|w| w[0] == "to" && (w[1] == "console_rt" || w[1] == "public"));
         if !grants_to_runtime {
             continue;
         }
@@ -677,7 +677,7 @@ fn check_owner_only_table_grants(file: &Path, sanitized: &str, result: &mut Gate
                     kind: ViolationKind::OwnerOnlyTableGrant,
                     file: file.to_path_buf(),
                     detail: format!(
-                        "owner-only table '{table}' must not be granted directly to mnt_rt/PUBLIC; \
+                        "owner-only table '{table}' must not be granted directly to console_rt/PUBLIC; \
                          expose a narrow SECURITY DEFINER resolver instead"
                     ),
                 });
@@ -1150,7 +1150,7 @@ mod tests {
 
     fn tmpdir(tag: &str) -> PathBuf {
         let base =
-            std::env::temp_dir().join(format!("mnt-gate-tenant-isolation-{tag}-{}", uuid_like()));
+            std::env::temp_dir().join(format!("console-gate-tenant-isolation-{tag}-{}", uuid_like()));
         fs::create_dir_all(&base).unwrap();
         base
     }
@@ -1493,7 +1493,7 @@ mod tests {
         write(
             &dir,
             "0002_bad_grant.sql",
-            "GRANT SELECT ON ont_builtin_catalog_allowlist TO mnt_rt;\n",
+            "GRANT SELECT ON ont_builtin_catalog_allowlist TO console_rt;\n",
         );
         let result = check_migrations_root(&dir);
         assert!(
@@ -1552,7 +1552,7 @@ mod tests {
         write(
             &dir,
             "0002_bad_grant.sql",
-            "GRANT SELECT ON group_memberships TO mnt_rt;\n",
+            "GRANT SELECT ON group_memberships TO console_rt;\n",
         );
         let result = check_migrations_root(&dir);
         assert!(

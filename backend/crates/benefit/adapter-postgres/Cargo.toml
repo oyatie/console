@@ -1,5 +1,5 @@
 [package]
-name = "mnt-benefit-adapter-postgres"
+name = "console-benefit-adapter-postgres"
 version = "0.1.0"
 description = "Postgres adapter for tenant-scoped benefit-catalog storage and mutations."
 edition.workspace = true
@@ -8,11 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-benefit-application = { workspace = true }
-mnt-benefit-domain = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
+console-benefit-application = { workspace = true }
+console-benefit-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
@@ -23,4 +23,4 @@ uuid = { workspace = true }
 workspace = true
 
 [dev-dependencies]
-mnt-platform-test-support = { workspace = true }
+console-platform-test-support = { workspace = true }

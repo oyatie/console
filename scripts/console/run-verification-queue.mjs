@@ -11,7 +11,7 @@ const BUCK_LABEL = /^(?:[A-Za-z0-9_.-]+)?\/\/[A-Za-z0-9_./-]+:[A-Za-z0-9_.-]+$/;
 const POSTGRES_WRAPPER = /^\/\/tools\/buck:[A-Za-z0-9_.-]+$/;
 const EXECUTION = 'canonical_shared_daemon_combined_targets';
 const SCHEMA = 'console-fanout-epoch-v2';
-const FORBIDDEN_WRAPPER_ENV = ['BUCK_ISOLATION_DIR', 'MNT_BUCK_NEEDS_POSTGRES_ISOLATION_DIR', 'MNT_BUCK_NEEDS_POSTGRES_TEST_BUCK', 'MNT_BUCK_NEEDS_POSTGRES_TEST_EXACT'];
+const FORBIDDEN_WRAPPER_ENV = ['BUCK_ISOLATION_DIR', 'CONSOLE_BUCK_NEEDS_POSTGRES_ISOLATION_DIR', 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK', 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT'];
 const RESOURCE_KEYS = ['writer', 'postgres', 'browser', 'ios', 'graph', 'cas'];
 
 function stable(value) {

@@ -14,7 +14,7 @@ const env = {
 const args = [
   "test",
   "-p",
-  "mnt-registry-rest",
+  "console-registry-rest",
   "--test",
   "equipment_admin",
   "ownership_transfer_requires_ordered_legal_and_accounting_signoff",

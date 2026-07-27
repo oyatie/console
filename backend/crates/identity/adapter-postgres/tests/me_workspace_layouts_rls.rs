@@ -2,7 +2,7 @@
 //! RUNTIME RLS for `me_workspace_layouts` (Oyatie Console workspace persistence,
 //! UI-M1b, migration 0098).
 //!
-//! Proven as the GENUINE non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! Proven as the GENUINE non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — never the BYPASSRLS superuser the default
 //! `#[sqlx::test]` pool connects as, which would green-light a broken or leaking
 //! policy:
@@ -11,20 +11,20 @@
 //!   2. Tenant isolation: under org A's armed GUC, a caller cannot read org B's
 //!      workspace row — neither via the store (empty `{}` default) nor a direct
 //!      by-user query (invisible).
-//!   3. Governance: `mnt_rt` may NEVER DELETE a workspace row (REVOKE DELETE).
+//!   3. Governance: `console_rt` may NEVER DELETE a workspace row (REVOKE DELETE).
 
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_identity_adapter_postgres::PgOrgStore;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x3333_3333_3333_3333_3333_3333_3333_3333);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -32,7 +32,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -112,7 +112,7 @@ async fn put_get_roundtrip_and_overwrite_via_store_as_runtime_role(owner_pool: P
     let initial = CURRENT_ORG
         .scope(org, store.get_workspace_layout(user))
         .await
-        .expect("get must succeed as mnt_rt under the armed GUC");
+        .expect("get must succeed as console_rt under the armed GUC");
     assert_eq!(
         initial,
         serde_json::json!({}),
@@ -135,7 +135,7 @@ async fn put_get_roundtrip_and_overwrite_via_store_as_runtime_role(owner_pool: P
             ),
         )
         .await
-        .expect("put must succeed as mnt_rt under the armed GUC");
+        .expect("put must succeed as console_rt under the armed GUC");
     assert_eq!(stored, layout, "put returns the stored layout verbatim");
     assert_eq!(
         CURRENT_ORG
@@ -256,7 +256,7 @@ async fn isolate_tenants_and_deny_delete_as_runtime_role(owner_pool: PgPool) {
         );
     }
 
-    // (3) mnt_rt may NEVER DELETE a workspace row (REVOKE DELETE governance guard).
+    // (3) console_rt may NEVER DELETE a workspace row (REVOKE DELETE governance guard).
     {
         let mut tx = rt_pool.begin().await.unwrap();
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -267,11 +267,11 @@ async fn isolate_tenants_and_deny_delete_as_runtime_role(owner_pool: PgPool) {
         let err = sqlx::query("DELETE FROM me_workspace_layouts")
             .execute(&mut *tx)
             .await
-            .expect_err("mnt_rt must not DELETE me_workspace_layouts")
+            .expect_err("console_rt must not DELETE me_workspace_layouts")
             .to_string();
         assert!(
             err.contains("permission denied"),
-            "DELETE as mnt_rt must be denied by the REVOKE, got: {err}"
+            "DELETE as console_rt must be denied by the REVOKE, got: {err}"
         );
         let _ = tx.rollback().await;
     }

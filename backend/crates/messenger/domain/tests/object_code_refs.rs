@@ -3,7 +3,7 @@
 //! message-ref amplification guards: `MessageBody`'s length cap and the
 //! per-message ref count cap.
 
-use mnt_messenger_domain::{
+use console_messenger_domain::{
     MAX_MESSAGE_BODY_CHARS, MAX_OBJECT_CODE_REFS, MessageBody, extract_object_code_refs,
 };
 

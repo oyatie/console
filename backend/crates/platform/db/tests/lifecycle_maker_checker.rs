@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Maker–checker (four-eyes / SoD) proofs for the shared lifecycle chokepoint,
-//! executed as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! executed as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — a superuser session would BYPASSRLS and mask both
 //! the tenant policy and the `governance_findings` write.
 //!
@@ -16,8 +16,8 @@
 //!    pending→finalized is gated by the same rule.
 //! 5. A checker transition with no recorded 기안 fails closed.
 
-use mnt_kernel_core::{ErrorKind, OrgId};
-use mnt_platform_db::{lifecycle, with_org_conn};
+use console_kernel_core::{ErrorKind, OrgId};
+use console_platform_db::{lifecycle, with_org_conn};
 use sqlx::PgPool;
 use sqlx::Row;
 use sqlx::postgres::PgPoolOptions;
@@ -32,7 +32,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -72,7 +72,7 @@ async fn seed_user(
     .unwrap()
 }
 
-/// One transition through the shared chokepoint, as `mnt_rt` with the tenant
+/// One transition through the shared chokepoint, as `console_rt` with the tenant
 /// GUC armed, in its own transaction.
 async fn transition(
     rt_pool: &PgPool,
@@ -81,8 +81,8 @@ async fn transition(
     object_id: Uuid,
     to_state: &'static str,
     actor: Option<Uuid>,
-) -> Result<lifecycle::LifecycleRecord, mnt_kernel_core::KernelError> {
-    with_org_conn::<_, _, mnt_platform_db::DbError>(rt_pool, OrgId::from_uuid(org), move |tx| {
+) -> Result<lifecycle::LifecycleRecord, console_kernel_core::KernelError> {
+    with_org_conn::<_, _, console_platform_db::DbError>(rt_pool, OrgId::from_uuid(org), move |tx| {
         Box::pin(async move {
             Ok(lifecycle::transition_lifecycle(
                 tx,
@@ -148,7 +148,7 @@ async fn checker_transition_refuses_the_maker_and_accepts_a_second_actor(owner_p
     );
 
     // The refusal left no trace of an approval: still `submitted`.
-    let state = with_org_conn::<_, _, mnt_platform_db::DbError>(
+    let state = with_org_conn::<_, _, console_platform_db::DbError>(
         &rt_pool,
         OrgId::from_uuid(org),
         move |tx| {
@@ -252,7 +252,7 @@ async fn org_lead_and_super_admin_self_approval_is_allowed_and_recorded(owner_po
 
         // The override is recorded as an OPEN governance finding, readable by
         // the same runtime role that wrote it (RLS-scoped).
-        let row = with_org_conn::<_, _, mnt_platform_db::DbError>(
+        let row = with_org_conn::<_, _, console_platform_db::DbError>(
             &rt_pool,
             OrgId::from_uuid(org),
             move |tx| {
@@ -266,7 +266,7 @@ async fn org_lead_and_super_admin_self_approval_is_allowed_and_recorded(owner_po
                     .bind(format!("document:{object_id}"))
                     .fetch_one(tx.as_mut())
                     .await
-                    .map_err(mnt_platform_db::DbError::Sqlx)
+                    .map_err(console_platform_db::DbError::Sqlx)
                 })
             },
         )

@@ -5,10 +5,10 @@
 --
 -- This is the expand half of a two-release employee-import cutover. The f6ff236
 -- runtime can be active while 0166 migrates, and can be restored during the
--- rollback window, so mnt_rt must temporarily retain its exact legacy employee
+-- rollback window, so console_rt must temporarily retain its exact legacy employee
 -- import writes. The new binary never falls back to those writes: it uses the
 -- additive leave_api command functions and intrinsic receipts/audit below. A
--- later numbered contract migration may close the legacy mnt_rt import surface
+-- later numbered contract migration may close the legacy console_rt import surface
 -- only after this release is the proven rollback floor.
 
 ALTER TABLE employees
@@ -114,7 +114,7 @@ CREATE UNIQUE INDEX leave_requests_requester_submission_key_uq
     ON leave_requests (org_id, requester_user_id, submission_key)
     WHERE submission_key IS NOT NULL;
 
--- mnt-gate: audited-table leave_charge_resolutions
+-- console-gate: audited-table leave_charge_resolutions
 CREATE TABLE leave_charge_resolutions (
     id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -262,7 +262,7 @@ CREATE TRIGGER trg_leave_requests_charge_pointer_consistent
 -- Complete single-writer command boundary for leave intent, charge evidence,
 -- decisions, ledger movements, and employee approval routing.
 --
--- mnt_rt cannot call these routines even after spoofing arbitrary app.* GUCs.
+-- console_rt cannot call these routines even after spoofing arbitrary app.* GUCs.
 -- During this expand phase it retains only the guarded legacy request
 -- INSERT/UPDATE bridge documented below so a pre-0166 binary can be restored;
 -- exact-charge and all other writes remain command-only. A separate NOLOGIN
@@ -273,13 +273,13 @@ CREATE TRIGGER trg_leave_requests_charge_pointer_consistent
 -- on every successful command.
 -- Cluster-global roles are infrastructure-owned and must exist before this
 -- non-CREATEROLE migration runs. Fail closed on any attribute or membership
--- drift instead of attempting CREATE/ALTER/REVOKE ROLE from mnt_app.
+-- drift instead of attempting CREATE/ALTER/REVOKE ROLE from console_app.
 DO $$
 DECLARE
-    v_migrator OID := pg_catalog.to_regrole('mnt_app');
-    v_runtime OID := pg_catalog.to_regrole('mnt_rt');
-    v_writer OID := pg_catalog.to_regrole('mnt_leave_definer');
-    v_command OID := pg_catalog.to_regrole('mnt_leave_cmd');
+    v_migrator OID := pg_catalog.to_regrole('console_app');
+    v_runtime OID := pg_catalog.to_regrole('console_rt');
+    v_writer OID := pg_catalog.to_regrole('console_leave_definer');
+    v_command OID := pg_catalog.to_regrole('console_leave_cmd');
     v_applier_is_superuser BOOLEAN;
 BEGIN
     IF v_migrator IS NULL OR v_runtime IS NULL OR v_writer IS NULL OR v_command IS NULL THEN
@@ -288,29 +288,29 @@ BEGIN
     SELECT rolsuper INTO v_applier_is_superuser
       FROM pg_catalog.pg_roles WHERE rolname=CURRENT_USER;
     IF NOT v_applier_is_superuser
-       AND (CURRENT_USER <> 'mnt_app' OR SESSION_USER <> 'mnt_app') THEN
-        RAISE EXCEPTION 'leave role precondition failed: mnt_app must apply directly';
+       AND (CURRENT_USER <> 'console_app' OR SESSION_USER <> 'console_app') THEN
+        RAISE EXCEPTION 'leave role precondition failed: console_app must apply directly';
     END IF;
     IF EXISTS (
         SELECT 1 FROM pg_catalog.pg_roles WHERE oid=v_migrator
           AND (NOT rolcanlogin OR NOT rolinherit OR rolsuper OR NOT rolbypassrls OR rolcreatedb
                OR rolcreaterole OR rolreplication)
     ) THEN
-        RAISE EXCEPTION 'leave role precondition failed: mnt_app is unsafe';
+        RAISE EXCEPTION 'leave role precondition failed: console_app is unsafe';
     END IF;
     IF EXISTS (
         SELECT 1 FROM pg_catalog.pg_roles WHERE oid=v_writer
           AND (rolcanlogin OR rolsuper OR rolbypassrls OR rolinherit
                OR rolcreatedb OR rolcreaterole OR rolreplication)
     ) THEN
-        RAISE EXCEPTION 'leave role precondition failed: mnt_leave_definer is missing or unsafe';
+        RAISE EXCEPTION 'leave role precondition failed: console_leave_definer is missing or unsafe';
     END IF;
     IF EXISTS (
         SELECT 1 FROM pg_catalog.pg_roles WHERE oid=v_command
           AND (NOT rolcanlogin OR rolsuper OR rolbypassrls OR rolinherit
                OR rolcreatedb OR rolcreaterole OR rolreplication)
     ) THEN
-        RAISE EXCEPTION 'leave role precondition failed: mnt_leave_cmd is missing or unsafe';
+        RAISE EXCEPTION 'leave role precondition failed: console_leave_cmd is missing or unsafe';
     END IF;
     IF NOT EXISTS (
         SELECT 1 FROM pg_catalog.pg_auth_members
@@ -328,21 +328,21 @@ BEGIN
 END
 $$;
 
-CREATE SCHEMA leave_api AUTHORIZATION mnt_leave_definer;
-REVOKE ALL ON SCHEMA leave_api FROM PUBLIC, mnt_rt;
-GRANT USAGE ON SCHEMA leave_api TO mnt_leave_cmd;
-GRANT USAGE ON SCHEMA public TO mnt_leave_definer;
+CREATE SCHEMA leave_api AUTHORIZATION console_leave_definer;
+REVOKE ALL ON SCHEMA leave_api FROM PUBLIC, console_rt;
+GRANT USAGE ON SCHEMA leave_api TO console_leave_cmd;
+GRANT USAGE ON SCHEMA public TO console_leave_definer;
 
 GRANT SELECT ON public.organizations, public.users, public.user_branches,
     public.branches, public.employees, public.leave_requests,
     public.leave_charge_resolutions, public.leave_balance_import_receipts,
     public.data_import_runs, public.data_import_rows, public.policy_roles,
     public.policy_role_permissions, public.policy_role_conditions,
-    public.user_role_assignments, public.audit_events TO mnt_leave_definer;
-GRANT INSERT, UPDATE ON public.employees, public.leave_requests TO mnt_leave_definer;
-GRANT UPDATE ON public.data_import_runs TO mnt_leave_definer;
+    public.user_role_assignments, public.audit_events TO console_leave_definer;
+GRANT INSERT, UPDATE ON public.employees, public.leave_requests TO console_leave_definer;
+GRANT UPDATE ON public.data_import_runs TO console_leave_definer;
 GRANT INSERT ON public.leave_charge_resolutions, public.leave_balance_import_receipts,
-    public.audit_events TO mnt_leave_definer;
+    public.audit_events TO console_leave_definer;
 
 -- The general runtime identity may read leave data. During this expand phase
 -- it also retains the pre-0166 binary's create/decide surface so an application
@@ -351,20 +351,20 @@ GRANT INSERT ON public.leave_charge_resolutions, public.leave_balance_import_rec
 -- decision; exact-charge and other writes remain behind the command
 -- capability. A later contract migration may remove this bridge
 -- only after rollback to every pre-0166 binary is no longer supported.
-GRANT SELECT ON public.leave_requests, public.leave_charge_resolutions TO mnt_rt;
-GRANT INSERT ON public.leave_requests TO mnt_rt;
-GRANT UPDATE ON public.leave_requests TO mnt_rt;
-REVOKE DELETE, TRUNCATE ON public.leave_requests FROM mnt_rt, mnt_leave_cmd, PUBLIC;
+GRANT SELECT ON public.leave_requests, public.leave_charge_resolutions TO console_rt;
+GRANT INSERT ON public.leave_requests TO console_rt;
+GRANT UPDATE ON public.leave_requests TO console_rt;
+REVOKE DELETE, TRUNCATE ON public.leave_requests FROM console_rt, console_leave_cmd, PUBLIC;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.leave_charge_resolutions
-    FROM mnt_rt, mnt_leave_cmd, PUBLIC;
+    FROM console_rt, console_leave_cmd, PUBLIC;
 
 -- These invoker-rights guards fail closed if any future grant accidentally
 -- restores an alternate write path. The command routines execute table DML as
--- mnt_leave_definer; neither mnt_rt nor mnt_leave_cmd can impersonate it.
+-- console_leave_definer; neither console_rt nor console_leave_cmd can impersonate it.
 CREATE FUNCTION leave_api.protected_request_writer_guard()
 RETURNS TRIGGER LANGUAGE plpgsql SET search_path = pg_catalog AS $$
 BEGIN
-    IF current_user = 'mnt_rt' AND TG_OP = 'INSERT' THEN
+    IF current_user = 'console_rt' AND TG_OP = 'INSERT' THEN
         IF NEW.days IS NULL
            OR NEW.status <> 'pending'
            OR NEW.decided_by IS NOT NULL
@@ -384,7 +384,7 @@ BEGIN
             RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'leave_write.command_required';
         END IF;
         RETURN NEW;
-    ELSIF current_user = 'mnt_rt' AND TG_OP = 'UPDATE' THEN
+    ELSIF current_user = 'console_rt' AND TG_OP = 'UPDATE' THEN
         IF OLD.status <> 'pending'
            OR NEW.status NOT IN ('approved', 'returned', 'rejected')
            OR NEW.status IS NOT DISTINCT FROM OLD.status
@@ -425,14 +425,14 @@ BEGIN
             NEW.charge_units := NULL;
         END IF;
         RETURN NEW;
-    ELSIF current_user <> 'mnt_leave_definer' THEN
+    ELSIF current_user <> 'console_leave_definer' THEN
         RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'leave_write.command_required';
     END IF;
     IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.protected_request_writer_guard() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.protected_request_writer_guard() OWNER TO console_leave_definer;
 
 CREATE TRIGGER trg_leave_requests_command_only
     BEFORE INSERT OR UPDATE OR DELETE ON public.leave_requests
@@ -447,8 +447,8 @@ CREATE TRIGGER trg_leave_balance_import_receipts_command_only
 CREATE FUNCTION leave_api.employee_leave_writer_guard()
 RETURNS TRIGGER LANGUAGE plpgsql SET search_path = pg_catalog AS $$
 BEGIN
-    IF current_user <> 'mnt_leave_definer' THEN
-        IF current_user = 'mnt_rt' THEN
+    IF current_user <> 'console_leave_definer' THEN
+        IF current_user = 'console_rt' THEN
             -- Expand compatibility is intentionally limited to the surface the
             -- f6ff236 binary already owned. Its immediate and staged employee
             -- imports INSERT/UPSERT the protected balance columns directly, and
@@ -456,7 +456,7 @@ BEGIN
             -- It never writes the additive home-branch authority introduced by
             -- 0166, which remains command-only throughout the mixed-version
             -- window. There is no trustworthy marker in the old SQL that can
-            -- distinguish an import balance write from another mnt_rt balance
+            -- distinguish an import balance write from another console_rt balance
             -- write; pretending otherwise would break rollback or create a
             -- bypassable guard. The later contract migration removes this
             -- compatibility branch after f6ff236 is outside the rollback set.
@@ -484,12 +484,12 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.employee_leave_writer_guard() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.employee_leave_writer_guard() OWNER TO console_leave_definer;
 CREATE TRIGGER trg_employees_leave_command_only
     BEFORE INSERT OR UPDATE ON public.employees
     FOR EACH ROW EXECUTE FUNCTION leave_api.employee_leave_writer_guard();
 
--- mnt_rt still owns the preview/dry-run workflow created in migration 0070.
+-- console_rt still owns the preview/dry-run workflow created in migration 0070.
 -- During this expand release, the exact f6ff236 DRY_RUN -> APPLIED statement is
 -- also retained so old replicas and rollback can finish staged employee imports.
 -- The new binary uses leave_api.apply_employee_import_batch instead. A later
@@ -502,7 +502,7 @@ BEGIN
     IF TG_OP = 'UPDATE' AND NEW.entity_type IS DISTINCT FROM OLD.entity_type THEN
         RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'data_import_run.entity_type_immutable';
     END IF;
-    IF current_user <> 'mnt_leave_definer' THEN
+    IF current_user <> 'console_leave_definer' THEN
         IF TG_OP = 'INSERT' AND NEW.entity_type = 'employee_hr' AND (
             NEW.status = 'APPLIED'
             OR NEW.apply_summary IS DISTINCT FROM '{}'::JSONB
@@ -519,7 +519,7 @@ BEGIN
                 OR NEW.applied_by IS DISTINCT FROM OLD.applied_by
                 OR NEW.applied_at IS DISTINCT FROM OLD.applied_at
            ) THEN
-            IF current_user <> 'mnt_rt'
+            IF current_user <> 'console_rt'
                OR OLD.entity_type <> 'employee_hr'
                OR NEW.entity_type <> 'employee_hr'
                OR OLD.status <> 'DRY_RUN'
@@ -539,7 +539,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.employee_import_run_writer_guard() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.employee_import_run_writer_guard() OWNER TO console_leave_definer;
 CREATE TRIGGER trg_data_import_runs_employee_hr_command_only
     BEFORE INSERT OR UPDATE ON public.data_import_runs
     FOR EACH ROW EXECUTE FUNCTION leave_api.employee_import_run_writer_guard();
@@ -583,14 +583,14 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.employee_import_apply_audit_required() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.employee_import_apply_audit_required() OWNER TO console_leave_definer;
 CREATE CONSTRAINT TRIGGER trg_data_import_runs_employee_hr_audit_required
     AFTER UPDATE ON public.data_import_runs
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE FUNCTION leave_api.employee_import_apply_audit_required();
 
 -- Protected leave audit actions are appendable only by the same pinned
--- command definer. This closes the tempting alternate path where mnt_rt forges
+-- command definer. This closes the tempting alternate path where console_rt forges
 -- a success or blocked-decision event without executing the guarded command.
 CREATE FUNCTION leave_api.protected_audit_writer_guard()
 RETURNS TRIGGER LANGUAGE plpgsql SET search_path = pg_catalog AS $$
@@ -599,7 +599,7 @@ BEGIN
     -- It may attest only the legacy create/decide mutation already visible in
     -- the same transaction; exact-charge and employee-import actions remain
     -- exclusive to the command definer.
-    IF current_user = 'mnt_rt' AND NEW.action = 'leave_request.create'
+    IF current_user = 'console_rt' AND NEW.action = 'leave_request.create'
        AND NEW.target_type = 'leave_request'
        AND EXISTS (
            SELECT 1 FROM public.leave_requests lr
@@ -612,7 +612,7 @@ BEGIN
              AND lr.xmin = pg_catalog.pg_current_xact_id()::xid
        ) THEN
         RETURN NEW;
-    ELSIF current_user = 'mnt_rt' AND NEW.action = 'leave_request.decide'
+    ELSIF current_user = 'console_rt' AND NEW.action = 'leave_request.decide'
        AND NEW.target_type = 'leave_request'
        AND EXISTS (
            SELECT 1 FROM public.leave_requests lr
@@ -624,7 +624,7 @@ BEGIN
              AND lr.xmin = pg_catalog.pg_current_xact_id()::xid
        ) THEN
         RETURN NEW;
-    ELSIF current_user = 'mnt_rt' AND NEW.action = 'data_import.apply'
+    ELSIF current_user = 'console_rt' AND NEW.action = 'data_import.apply'
        AND NEW.target_type = 'data_import_run'
        AND NEW.target_id ~ '^[0-9a-fA-F-]{36}$'
        AND NEW.branch_id IS NULL
@@ -688,13 +688,13 @@ BEGIN
         'leave_request.charge_resolve',
         'leave_request.decide',
         'leave_request.approval_blocked'
-    ]::TEXT[]) AND current_user <> 'mnt_leave_definer' THEN
+    ]::TEXT[]) AND current_user <> 'console_leave_definer' THEN
         RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'leave_audit.command_required';
     END IF;
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.protected_audit_writer_guard() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.protected_audit_writer_guard() OWNER TO console_leave_definer;
 CREATE TRIGGER trg_audit_events_leave_command_only
     BEFORE INSERT ON public.audit_events
     FOR EACH ROW EXECUTE FUNCTION leave_api.protected_audit_writer_guard();
@@ -745,12 +745,12 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-ALTER FUNCTION leave_api.legacy_leave_audit_required() OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.legacy_leave_audit_required() OWNER TO console_leave_definer;
 CREATE CONSTRAINT TRIGGER trg_leave_requests_legacy_audit_required
     AFTER INSERT OR UPDATE ON public.leave_requests
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
-    WHEN (current_user = 'mnt_rt')
+    WHEN (current_user = 'console_rt')
     EXECUTE FUNCTION leave_api.legacy_leave_audit_required();
 
 CREATE FUNCTION leave_api.assert_context(
@@ -774,7 +774,7 @@ BEGIN
     END IF;
 END;
 $$;
-ALTER FUNCTION leave_api.assert_context(UUID, UUID, TEXT, TEXT) OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.assert_context(UUID, UUID, TEXT, TEXT) OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.assert_manager(
     p_org_id UUID, p_actor UUID, p_branch_id UUID
@@ -795,7 +795,7 @@ BEGIN
     END IF;
 END;
 $$;
-ALTER FUNCTION leave_api.assert_manager(UUID, UUID, UUID) OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.assert_manager(UUID, UUID, UUID) OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.assert_org_admin(
     p_org_id UUID, p_actor UUID
@@ -812,7 +812,7 @@ BEGIN
     END IF;
 END;
 $$;
-ALTER FUNCTION leave_api.assert_org_admin(UUID, UUID) OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.assert_org_admin(UUID, UUID) OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.assert_employee_importer(
     p_org_id UUID, p_actor UUID
@@ -877,7 +877,7 @@ BEGIN
     END IF;
 END;
 $$;
-ALTER FUNCTION leave_api.assert_employee_importer(UUID, UUID) OWNER TO mnt_leave_definer;
+ALTER FUNCTION leave_api.assert_employee_importer(UUID, UUID) OWNER TO console_leave_definer;
 
 -- Validate and canonicalize charge evidence entirely in the database. The
 -- caller supplies source evidence, never the authoritative total, branch,
@@ -995,7 +995,7 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.canonical_charge_snapshot(UUID, TEXT, TEXT, DATE, DATE, JSONB, JSONB, JSONB, JSONB)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.create_request(
     p_org_id UUID, p_request_id UUID, p_requester UUID,
@@ -1175,7 +1175,7 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.create_request(UUID, UUID, UUID, TEXT, DATE, DATE, TEXT, TEXT, TEXT[], UUID, JSONB, JSONB, JSONB, JSONB, UUID, TEXT, TEXT)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.resolve_charge(
     p_org_id UUID, p_request_id UUID, p_resolver UUID, p_expected_version BIGINT,
@@ -1254,7 +1254,7 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.resolve_charge(UUID, UUID, UUID, BIGINT, JSONB, JSONB, JSONB, JSONB, TEXT, TEXT)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.decide_request(
     p_org_id UUID, p_request_id UUID, p_decider UUID, p_expected_version BIGINT,
@@ -1380,7 +1380,7 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.import_employee_leave_balance(
     p_org_id UUID, p_employee_id UUID, p_expected_updated_at TIMESTAMPTZ,
@@ -1487,7 +1487,7 @@ END;
 $$;
 ALTER FUNCTION leave_api.import_employee_leave_balance(
     UUID, UUID, TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, TEXT, TEXT
-) OWNER TO mnt_leave_definer;
+) OWNER TO console_leave_definer;
 
 -- Apply one complete employee import as one database transaction. The command
 -- owns ordinary roster fields and delegates each protected balance snapshot to
@@ -1775,7 +1775,7 @@ END;
 $$;
 ALTER FUNCTION leave_api.apply_employee_import_batch(
     UUID, UUID, TEXT, JSONB, UUID, JSONB, TEXT, TEXT
-) OWNER TO mnt_leave_definer;
+) OWNER TO console_leave_definer;
 
 CREATE FUNCTION leave_api.set_employee_home_branch(
     p_org_id UUID, p_employee_id UUID, p_home_branch_id UUID,
@@ -1832,12 +1832,12 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION leave_api.set_employee_home_branch(UUID, UUID, UUID, TIMESTAMPTZ, UUID, TEXT, TEXT)
-    OWNER TO mnt_leave_definer;
+    OWNER TO console_leave_definer;
 
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA leave_api FROM PUBLIC, mnt_rt;
-GRANT EXECUTE ON FUNCTION leave_api.create_request(UUID, UUID, UUID, TEXT, DATE, DATE, TEXT, TEXT, TEXT[], UUID, JSONB, JSONB, JSONB, JSONB, UUID, TEXT, TEXT) TO mnt_leave_cmd;
-GRANT EXECUTE ON FUNCTION leave_api.resolve_charge(UUID, UUID, UUID, BIGINT, JSONB, JSONB, JSONB, JSONB, TEXT, TEXT) TO mnt_leave_cmd;
-GRANT EXECUTE ON FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT) TO mnt_leave_cmd;
-GRANT EXECUTE ON FUNCTION leave_api.import_employee_leave_balance(UUID, UUID, TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, TEXT, TEXT) TO mnt_leave_cmd;
-GRANT EXECUTE ON FUNCTION leave_api.apply_employee_import_batch(UUID, UUID, TEXT, JSONB, UUID, JSONB, TEXT, TEXT) TO mnt_leave_cmd;
-GRANT EXECUTE ON FUNCTION leave_api.set_employee_home_branch(UUID, UUID, UUID, TIMESTAMPTZ, UUID, TEXT, TEXT) TO mnt_leave_cmd;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA leave_api FROM PUBLIC, console_rt;
+GRANT EXECUTE ON FUNCTION leave_api.create_request(UUID, UUID, UUID, TEXT, DATE, DATE, TEXT, TEXT, TEXT[], UUID, JSONB, JSONB, JSONB, JSONB, UUID, TEXT, TEXT) TO console_leave_cmd;
+GRANT EXECUTE ON FUNCTION leave_api.resolve_charge(UUID, UUID, UUID, BIGINT, JSONB, JSONB, JSONB, JSONB, TEXT, TEXT) TO console_leave_cmd;
+GRANT EXECUTE ON FUNCTION leave_api.decide_request(UUID, UUID, UUID, BIGINT, TEXT, TEXT, TEXT, TEXT) TO console_leave_cmd;
+GRANT EXECUTE ON FUNCTION leave_api.import_employee_leave_balance(UUID, UUID, TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, TEXT, TEXT) TO console_leave_cmd;
+GRANT EXECUTE ON FUNCTION leave_api.apply_employee_import_batch(UUID, UUID, TEXT, JSONB, UUID, JSONB, TEXT, TEXT) TO console_leave_cmd;
+GRANT EXECUTE ON FUNCTION leave_api.set_employee_home_branch(UUID, UUID, UUID, TIMESTAMPTZ, UUID, TEXT, TEXT) TO console_leave_cmd;

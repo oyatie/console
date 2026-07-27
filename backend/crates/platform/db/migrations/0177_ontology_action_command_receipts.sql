@@ -29,4 +29,4 @@ CREATE TRIGGER trg_ont_action_command_receipts_immutable
     FOR EACH ROW EXECUTE FUNCTION ont_action_command_receipts_immutable();
 
 REVOKE ALL ON ont_action_command_receipts FROM PUBLIC;
-GRANT SELECT, INSERT ON ont_action_command_receipts TO mnt_rt;
+GRANT SELECT, INSERT ON ont_action_command_receipts TO console_rt;

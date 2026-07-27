@@ -11,7 +11,7 @@
 -- no per-person GUC, so recipient scoping is enforced in application code from
 -- the authenticated principal, never from request input.
 
--- mnt-gate: audited-table notifications
+-- console-gate: audited-table notifications
 CREATE TABLE notifications (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -54,6 +54,6 @@ CREATE POLICY org_isolation ON notifications
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Notifications are recipient-owned and never hard-deleted from the runtime
--- role; read-marking is an UPDATE. mnt_rt gets SELECT/INSERT/UPDATE, no DELETE.
-GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt;
-REVOKE DELETE ON notifications FROM mnt_rt;
+-- role; read-marking is an UPDATE. console_rt gets SELECT/INSERT/UPDATE, no DELETE.
+GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt;
+REVOKE DELETE ON notifications FROM console_rt;

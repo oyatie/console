@@ -18,7 +18,7 @@ This contract defines the narrow API and native-client shape needed for issue #4
   - Android `MobileOperationsRepository.approveWorkOrder(... stepUpAssertion: PasskeyStepUpAssertion?)` queues when null and discards non-null assertions before calling `approveWorkOrder`.
   - Android poll voting creates `stepUpEnvelope(...)` and ignores it before `votePoll`.
   - Android replay accepts one nullable assertion for all queued actions.
-  - iOS mirrors these placeholder/null paths in `FieldViewModel.swift` and `MobileOperationsRepository.swift`.
+  - iOS mirrors these placeholder/null paths in `ConsoleViewModel.swift` and `MobileOperationsRepository.swift`.
 
 ## Generated OpenAPI contract
 
@@ -240,18 +240,18 @@ Client behavior:
 
 Android:
 
-- `android/app/src/main/kotlin/com/maintenance/field/auth/PasskeyCredentialClient.kt`: existing `getLoginCredential(context, challengeJson)` can be generalized/renamed or wrapped as `getStepUpCredential` because the challenge/assertion JSON shape is the same.
-- `android/app/src/main/kotlin/com/maintenance/field/auth/PasskeyAuthRepository.kt`: keep login as-is; expose a small step-up service that calls the new generated `startMobilePasskeyStepUp` operation and returns `MobilePasskeyStepUpEnvelope`.
-- `android/app/src/main/kotlin/com/maintenance/field/data/api/MaintenanceApiGateway.kt`: generated calls must use the mobile-scoped approval and poll-vote operations and pass `step_up`.
-- `android/app/src/main/kotlin/com/maintenance/field/data/collaboration/MobileOperationsRepository.kt`: replace nullable `PasskeyStepUpAssertion?` parameters with the generated `MobilePasskeyStepUpEnvelope`, add poll replay payload and `nextReplayAttempt`, and make replay per action.
-- `android/app/src/main/kotlin/com/maintenance/field/ui/FieldApp.kt`: request a fresh step-up envelope before approval, poll vote, and each queued replay item.
+- `android/app/src/main/kotlin/com/console/app/auth/PasskeyCredentialClient.kt`: existing `getLoginCredential(context, challengeJson)` can be generalized/renamed or wrapped as `getStepUpCredential` because the challenge/assertion JSON shape is the same.
+- `android/app/src/main/kotlin/com/console/app/auth/PasskeyAuthRepository.kt`: keep login as-is; expose a small step-up service that calls the new generated `startMobilePasskeyStepUp` operation and returns `MobilePasskeyStepUpEnvelope`.
+- `android/app/src/main/kotlin/com/console/app/data/api/ConsoleApiGateway.kt`: generated calls must use the mobile-scoped approval and poll-vote operations and pass `step_up`.
+- `android/app/src/main/kotlin/com/console/app/data/collaboration/MobileOperationsRepository.kt`: replace nullable `PasskeyStepUpAssertion?` parameters with the generated `MobilePasskeyStepUpEnvelope`, add poll replay payload and `nextReplayAttempt`, and make replay per action.
+- `android/app/src/main/kotlin/com/console/app/ui/ConsoleApp.kt`: request a fresh step-up envelope before approval, poll vote, and each queued replay item.
 
 iOS:
 
-- `ios/Sources/MaintenanceFieldCore/AuthRepository.swift`: keep login as-is; add a step-up repository/service that calls the new generated start operation and returns `MobilePasskeyStepUpEnvelope`.
-- `ios/Sources/MaintenanceFieldApp/AuthorizationPasskeyCredentialProvider.swift`: existing `credentialAssertion(challengeJSON:)` can be reused for step-up because the native assertion JSON is the same. Ensure it unwraps the `publicKey.challenge` form used by WebAuthn `RequestChallengeResponse`.
-- `ios/Sources/MaintenanceFieldCore/MobileOperationsRepository.swift`: mirror Android queue metadata, generated envelope, and per-action replay behavior.
-- `ios/Sources/MaintenanceFieldApp/FieldViewModel.swift`: replace placeholder `stepUpEnvelope(...)` calls and nil `stepUpAssertion` arguments with a real ceremony before approval, poll vote, and replay.
+- `ios/Sources/ConsoleCore/AuthRepository.swift`: keep login as-is; add a step-up repository/service that calls the new generated start operation and returns `MobilePasskeyStepUpEnvelope`.
+- `ios/Sources/ConsoleApp/AuthorizationPasskeyCredentialProvider.swift`: existing `credentialAssertion(challengeJSON:)` can be reused for step-up because the native assertion JSON is the same. Ensure it unwraps the `publicKey.challenge` form used by WebAuthn `RequestChallengeResponse`.
+- `ios/Sources/ConsoleCore/MobileOperationsRepository.swift`: mirror Android queue metadata, generated envelope, and per-action replay behavior.
+- `ios/Sources/ConsoleApp/ConsoleViewModel.swift`: replace placeholder `stepUpEnvelope(...)` calls and nil `stepUpAssertion` arguments with a real ceremony before approval, poll vote, and replay.
 
 Backend/API:
 

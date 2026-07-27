@@ -11,7 +11,7 @@ ALTER TABLE notices
     ADD COLUMN audience_scope TEXT NOT NULL DEFAULT 'org'
         CHECK (audience_scope IN ('org', 'branches'));
 
--- mnt-gate: audited-table notice_audience_branches
+-- console-gate: audited-table notice_audience_branches
 CREATE TABLE notice_audience_branches (
     org_id     UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
     notice_id  UUID NOT NULL,
@@ -35,9 +35,9 @@ CREATE POLICY org_isolation ON notice_audience_branches
 -- once published); receipts stay the immutable record. UPDATE is revoked
 -- explicitly because 0031's ALTER DEFAULT PRIVILEGES auto-grants full DML in
 -- production — a row is inserted or deleted whole, never edited.
-GRANT SELECT, INSERT, DELETE ON notice_audience_branches TO mnt_rt;
-REVOKE UPDATE ON notice_audience_branches FROM mnt_rt;
+GRANT SELECT, INSERT, DELETE ON notice_audience_branches TO console_rt;
+REVOKE UPDATE ON notice_audience_branches FROM console_rt;
 
 -- The branch-scoped publish snapshot joins user_branches (created in 0002,
 -- before the 0031 default-privileges cutover — no runtime grant exists yet).
-GRANT SELECT ON user_branches TO mnt_rt;
+GRANT SELECT ON user_branches TO console_rt;

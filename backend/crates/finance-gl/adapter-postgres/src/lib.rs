@@ -9,18 +9,18 @@
 //! a reversal creates a NEW contra voucher.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_finance_gl_application::{
+use console_finance_gl_application::{
     AccountDrillEntry, CreateVoucherDraftCommand, CreateVoucherDraftFromSourceCommand,
     ReverseVoucherCommand, VoucherLineInput, VoucherLineSummary, VoucherSourceRef, VoucherSummary,
     VoucherTransitionCommand, voucher_audit_event,
 };
-use mnt_finance_gl_domain::{
+use console_finance_gl_domain::{
     DebitCredit, VoucherId, VoucherStatus, compute_balance, ensure_balanced,
     validate_voucher_transition,
 };
-use mnt_kernel_core::{BranchId, KernelError, TraceContext, UserId};
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_kernel_core::{BranchId, KernelError, TraceContext, UserId};
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use time::OffsetDateTime;
 use uuid::Uuid;

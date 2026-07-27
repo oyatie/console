@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_kernel_core::{BranchId, ErrorKind, UserId, WorkOrderId};
-use mnt_workorder_domain::{
+use console_kernel_core::{BranchId, ErrorKind, UserId, WorkOrderId};
+use console_workorder_domain::{
     ApprovalLine, ApprovalRole, ApprovalStatus, AssignmentRole, CompletionEvidence,
     CompletionEvidenceInterlock, WorkOrder, WorkOrderAssignment, WorkOrderAssignments,
     WorkOrderStatus, WorkResultType,

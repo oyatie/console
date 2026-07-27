@@ -16,7 +16,7 @@ CREATE TABLE benefit_code_counters (
     PRIMARY KEY (org_id, object_prefix)
 );
 
--- mnt-gate: audited-table benefit_catalog_items
+-- console-gate: audited-table benefit_catalog_items
 CREATE TABLE benefit_catalog_items (
     id                        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                    UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -74,7 +74,7 @@ CREATE UNIQUE INDEX idx_benefit_catalog_items_natural_unique
         COALESCE(scope_ref, '00000000-0000-0000-0000-000000000000'::uuid)
     );
 
--- mnt-gate: audited-table benefit_catalog_tiers
+-- console-gate: audited-table benefit_catalog_tiers
 CREATE TABLE benefit_catalog_tiers (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -103,7 +103,7 @@ CREATE UNIQUE INDEX idx_benefit_catalog_tiers_active_basis_key
     ON benefit_catalog_tiers (org_id, benefit_id, tier_basis, tier_key)
     WHERE status = 'ACTIVE';
 
--- mnt-gate: audited-table benefit_catalog_conditions
+-- console-gate: audited-table benefit_catalog_conditions
 CREATE TABLE benefit_catalog_conditions (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id           UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -160,14 +160,14 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON benefit_code_counters TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON benefit_catalog_items TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON benefit_catalog_tiers TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON benefit_catalog_conditions TO mnt_rt;
-REVOKE DELETE ON benefit_code_counters FROM mnt_rt;
-REVOKE DELETE ON benefit_catalog_items FROM mnt_rt;
-REVOKE DELETE ON benefit_catalog_tiers FROM mnt_rt;
-REVOKE DELETE ON benefit_catalog_conditions FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON benefit_code_counters TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON benefit_catalog_items TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON benefit_catalog_tiers TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON benefit_catalog_conditions TO console_rt;
+REVOKE DELETE ON benefit_code_counters FROM console_rt;
+REVOKE DELETE ON benefit_catalog_items FROM console_rt;
+REVOKE DELETE ON benefit_catalog_tiers FROM console_rt;
+REVOKE DELETE ON benefit_catalog_conditions FROM console_rt;
 
 -- BE-LC may land on another branch before this migration. Seed the canonical
 -- benefit object rules when the generic lifecycle table is present, but do not

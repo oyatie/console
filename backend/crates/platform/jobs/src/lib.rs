@@ -1,8 +1,8 @@
-//! `mnt-platform-jobs` - job queue port plus the apalis-postgres adapter.
+//! `console-platform-jobs` - job queue port plus the apalis-postgres adapter.
 //!
 //! ADR-0011 keeps apalis isolated behind [`JobQueue`]. The adapter owns apalis'
 //! timestamped migrations and `apalis.*` schema; numbered project migrations
-//! remain in `mnt-platform-db`.
+//! remain in `console-platform-db`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::{future::Future, pin::Pin, sync::Arc, time::Duration as StdDuration};
@@ -11,7 +11,7 @@ use apalis::prelude::{BoxDynError, Data, TaskSink, WorkerBuilder, WorkerContext}
 use apalis_postgres::{Config, PgPool as ApalisPgPool, PostgresStorage};
 use apalis_sql::ext::TaskBuilderExt as _;
 use apalis_sqlx::Row as _;
-use mnt_kernel_core::{Clock, EvidenceId, OrgId, P1DispatchId, Timestamp};
+use console_kernel_core::{Clock, EvidenceId, OrgId, P1DispatchId, Timestamp};
 use serde::{Deserialize, Serialize};
 use sqlx::{Connection as _, Row as _};
 use thiserror::Error;
@@ -326,8 +326,8 @@ async fn validate_apalis_runtime_connection(
     let row = apalis_sqlx::query(
         r#"
         SELECT
-            session_user = 'mnt_rt'
-            AND current_user = 'mnt_rt'
+            session_user = 'console_rt'
+            AND current_user = 'console_rt'
             AND authenticated.rolcanlogin
             AND NOT authenticated.rolsuper
             AND NOT authenticated.rolbypassrls
@@ -360,7 +360,7 @@ async fn validate_apalis_runtime_connection(
         Ok(())
     } else {
         Err(apalis_sqlx::Error::Protocol(
-            "Apalis pool must authenticate directly as hardened mnt_rt with exact 30s/30s/45s timeouts and no membership edges".to_owned(),
+            "Apalis pool must authenticate directly as hardened console_rt with exact 30s/30s/45s timeouts and no membership edges".to_owned(),
         ))
     }
 }
@@ -390,9 +390,9 @@ async fn run_apalis_owner_reconciliation(
 ) -> Result<(), JobQueueError> {
     let owner_identity_is_exact: bool = sqlx::query_scalar(
         r#"
-        SELECT session_user = 'mnt_app'
-           AND current_user = 'mnt_app'
-           AND pg_get_userbyid(database.datdba) = 'mnt_app'
+        SELECT session_user = 'console_app'
+           AND current_user = 'console_app'
+           AND pg_get_userbyid(database.datdba) = 'console_app'
         FROM pg_catalog.pg_database AS database
         WHERE database.datname = current_database()
         "#,
@@ -401,18 +401,18 @@ async fn run_apalis_owner_reconciliation(
     .await?;
     if !owner_identity_is_exact {
         return Err(JobQueueError::ApalisPostgres(
-            "Apalis owner reconciliation requires the directly authenticated mnt_app database owner"
+            "Apalis owner reconciliation requires the directly authenticated console_app database owner"
                 .to_owned(),
         ));
     }
 
     let runtime_role_exists: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mnt_rt')")
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_rt')")
             .fetch_one(&mut *conn)
             .await?;
     if !runtime_role_exists {
         return Err(JobQueueError::ApalisPostgres(
-            "required Apalis runtime role mnt_rt does not exist".to_owned(),
+            "required Apalis runtime role console_rt does not exist".to_owned(),
         ));
     }
 
@@ -422,21 +422,21 @@ async fn run_apalis_owner_reconciliation(
             EXISTS (
                 SELECT 1 FROM pg_catalog.pg_namespace AS namespace
                 WHERE namespace.nspname = 'apalis'
-                  AND pg_get_userbyid(namespace.nspowner) <> 'mnt_app'
+                  AND pg_get_userbyid(namespace.nspowner) <> 'console_app'
             )
             OR EXISTS (
                 SELECT 1
                 FROM pg_catalog.pg_class AS object
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = object.relnamespace
                 WHERE namespace.nspname = 'apalis'
-                  AND pg_get_userbyid(object.relowner) <> 'mnt_app'
+                  AND pg_get_userbyid(object.relowner) <> 'console_app'
             )
             OR EXISTS (
                 SELECT 1
                 FROM pg_catalog.pg_proc AS function
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = function.pronamespace
                 WHERE namespace.nspname = 'apalis'
-                  AND pg_get_userbyid(function.proowner) <> 'mnt_app'
+                  AND pg_get_userbyid(function.proowner) <> 'console_app'
             )
             OR EXISTS (
                 SELECT 1
@@ -444,7 +444,7 @@ async fn run_apalis_owner_reconciliation(
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = ledger.relnamespace
                 WHERE namespace.nspname = 'public'
                   AND ledger.relname = 'platform_jobs_apalis_migrations'
-                  AND pg_get_userbyid(ledger.relowner) <> 'mnt_app'
+                  AND pg_get_userbyid(ledger.relowner) <> 'console_app'
             )
             OR EXISTS (
                 SELECT 1
@@ -453,7 +453,7 @@ async fn run_apalis_owner_reconciliation(
                 WHERE namespace.nspname = 'public'
                   AND function.proname = 'generate_ulid'
                   AND function.pronargs = 0
-                  AND pg_get_userbyid(function.proowner) <> 'mnt_app'
+                  AND pg_get_userbyid(function.proowner) <> 'console_app'
             )
         "#,
     )
@@ -461,7 +461,7 @@ async fn run_apalis_owner_reconciliation(
     .await?;
     if has_foreign_owned_apalis_objects {
         return Err(JobQueueError::ApalisPostgres(
-            "refusing to adopt or mutate Apalis objects not owned by mnt_app".to_owned(),
+            "refusing to adopt or mutate Apalis objects not owned by console_app".to_owned(),
         ));
     }
 
@@ -807,28 +807,28 @@ async fn reconcile_apalis_runtime_acl(conn: &mut sqlx::PgConnection) -> Result<(
         DO $acl$
         BEGIN
             EXECUTE format(
-                'REVOKE CREATE ON DATABASE %I FROM mnt_rt',
+                'REVOKE CREATE ON DATABASE %I FROM console_rt',
                 current_database()
             );
         END
         $acl$;
 
         REVOKE ALL PRIVILEGES ON SCHEMA apalis FROM PUBLIC;
-        REVOKE ALL PRIVILEGES ON SCHEMA apalis FROM mnt_rt;
-        GRANT USAGE ON SCHEMA apalis TO mnt_rt;
+        REVOKE ALL PRIVILEGES ON SCHEMA apalis FROM console_rt;
+        GRANT USAGE ON SCHEMA apalis TO console_rt;
 
-        REVOKE ALL PRIVILEGES ON TABLE apalis.jobs FROM PUBLIC, mnt_rt;
-        REVOKE ALL PRIVILEGES ON TABLE apalis.workers FROM PUBLIC, mnt_rt;
-        REVOKE ALL PRIVILEGES ON TABLE apalis.platform_jobs_apalis_migrations FROM PUBLIC, mnt_rt;
-        GRANT SELECT, INSERT, UPDATE ON TABLE apalis.jobs TO mnt_rt;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE apalis.workers TO mnt_rt;
-        GRANT SELECT ON TABLE apalis.platform_jobs_apalis_migrations TO mnt_rt;
+        REVOKE ALL PRIVILEGES ON TABLE apalis.jobs FROM PUBLIC, console_rt;
+        REVOKE ALL PRIVILEGES ON TABLE apalis.workers FROM PUBLIC, console_rt;
+        REVOKE ALL PRIVILEGES ON TABLE apalis.platform_jobs_apalis_migrations FROM PUBLIC, console_rt;
+        GRANT SELECT, INSERT, UPDATE ON TABLE apalis.jobs TO console_rt;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE apalis.workers TO console_rt;
+        GRANT SELECT ON TABLE apalis.platform_jobs_apalis_migrations TO console_rt;
 
-        REVOKE ALL PRIVILEGES ON FUNCTION apalis.get_jobs(TEXT, TEXT, INTEGER) FROM PUBLIC, mnt_rt;
-        REVOKE ALL PRIVILEGES ON FUNCTION apalis.notify_new_jobs() FROM PUBLIC, mnt_rt;
-        REVOKE ALL PRIVILEGES ON FUNCTION apalis.push_job(TEXT, JSON, TEXT, TIMESTAMPTZ, INTEGER, INTEGER) FROM PUBLIC, mnt_rt;
-        REVOKE ALL PRIVILEGES ON FUNCTION public.generate_ulid() FROM PUBLIC, mnt_rt;
-        GRANT EXECUTE ON FUNCTION apalis.get_jobs(TEXT, TEXT, INTEGER) TO mnt_rt;
+        REVOKE ALL PRIVILEGES ON FUNCTION apalis.get_jobs(TEXT, TEXT, INTEGER) FROM PUBLIC, console_rt;
+        REVOKE ALL PRIVILEGES ON FUNCTION apalis.notify_new_jobs() FROM PUBLIC, console_rt;
+        REVOKE ALL PRIVILEGES ON FUNCTION apalis.push_job(TEXT, JSON, TEXT, TIMESTAMPTZ, INTEGER, INTEGER) FROM PUBLIC, console_rt;
+        REVOKE ALL PRIVILEGES ON FUNCTION public.generate_ulid() FROM PUBLIC, console_rt;
+        GRANT EXECUTE ON FUNCTION apalis.get_jobs(TEXT, TEXT, INTEGER) TO console_rt;
         "#,
     )
     .execute(&mut *conn)
@@ -842,27 +842,27 @@ async fn validate_apalis_owner_state(conn: &mut sqlx::PgConnection) -> Result<()
             "Apalis schema does not match the adapter-owned structure".to_owned(),
         ));
     }
-    let all_objects_owned_by_mnt_app: bool = sqlx::query_scalar(
+    let all_objects_owned_by_console_app: bool = sqlx::query_scalar(
         r#"
         SELECT
-            (SELECT pg_get_userbyid(nspowner) = 'mnt_app'
+            (SELECT pg_get_userbyid(nspowner) = 'console_app'
              FROM pg_catalog.pg_namespace WHERE nspname = 'apalis')
             AND NOT EXISTS (
                 SELECT 1
                 FROM pg_catalog.pg_class AS object
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = object.relnamespace
                 WHERE namespace.nspname = 'apalis'
-                  AND pg_get_userbyid(object.relowner) <> 'mnt_app'
+                  AND pg_get_userbyid(object.relowner) <> 'console_app'
             )
             AND NOT EXISTS (
                 SELECT 1
                 FROM pg_catalog.pg_proc AS function
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = function.pronamespace
                 WHERE namespace.nspname = 'apalis'
-                  AND pg_get_userbyid(function.proowner) <> 'mnt_app'
+                  AND pg_get_userbyid(function.proowner) <> 'console_app'
             )
             AND (
-                SELECT pg_get_userbyid(function.proowner) = 'mnt_app'
+                SELECT pg_get_userbyid(function.proowner) = 'console_app'
                 FROM pg_catalog.pg_proc AS function
                 JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = function.pronamespace
                 WHERE namespace.nspname = 'public'
@@ -873,25 +873,25 @@ async fn validate_apalis_owner_state(conn: &mut sqlx::PgConnection) -> Result<()
     )
     .fetch_one(&mut *conn)
     .await?;
-    if !all_objects_owned_by_mnt_app {
+    if !all_objects_owned_by_console_app {
         return Err(JobQueueError::ApalisPostgres(
-            "Apalis schema, relations, and functions must all be owned by mnt_app".to_owned(),
+            "Apalis schema, relations, and functions must all be owned by console_app".to_owned(),
         ));
     }
     validate_owner_migration_ledger(conn).await?;
 
     let acl_is_exact: bool = sqlx::query_scalar(APALIS_EXPLICIT_ROLE_ACL_QUERY)
-        .bind("mnt_rt")
+        .bind("console_rt")
         .fetch_one(&mut *conn)
         .await?;
     if !acl_is_exact {
         return Err(JobQueueError::ApalisPostgres(
-            "Apalis mnt_rt privileges do not match the least-privilege runtime contract".to_owned(),
+            "Apalis console_rt privileges do not match the least-privilege runtime contract".to_owned(),
         ));
     }
     let public_helper_acl_is_exact: bool = sqlx::query_scalar(
         r#"
-        SELECT NOT has_function_privilege('mnt_rt', 'public.generate_ulid()', 'EXECUTE')
+        SELECT NOT has_function_privilege('console_rt', 'public.generate_ulid()', 'EXECUTE')
            AND NOT EXISTS (
                SELECT 1
                FROM pg_catalog.pg_proc AS function,
@@ -1440,7 +1440,7 @@ fn normalized_apalis_migration_sql(migration: &apalis_sqlx::migrate::Migration) 
 impl JobQueue for ApalisPostgresJobQueue {
     fn enqueue<'a>(&'a self, request: JobRequest) -> BoxFuture<'a, Result<JobId, JobQueueError>> {
         Box::pin(async move {
-            self.schedule_at(request, mnt_kernel_core::SystemClock.now())
+            self.schedule_at(request, console_kernel_core::SystemClock.now())
                 .await
         })
     }
@@ -1644,7 +1644,7 @@ fn is_unique_idempotency_conflict(message: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_kernel_core::FixedClock;
+    use console_kernel_core::FixedClock;
 
     #[test]
     fn schedule_after_uses_injected_clock() {

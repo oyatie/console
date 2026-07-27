@@ -7,7 +7,7 @@
 -- token/system matrix, while this tenant-scoped, RLS-protected substrate adds
 -- audited, FK-validated, versioned feature grants.
 
--- mnt-gate: global-table feature_catalog (rationale: canonical feature keys only; no tenant data)
+-- console-gate: global-table feature_catalog (rationale: canonical feature keys only; no tenant data)
 CREATE TABLE feature_catalog (
     feature_key TEXT PRIMARY KEY CHECK (feature_key ~ '^[a-z][a-z0-9_]*$'),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -62,9 +62,9 @@ INSERT INTO feature_catalog (feature_key) VALUES
 ON CONFLICT (feature_key) DO NOTHING;
 
 REVOKE ALL ON feature_catalog FROM PUBLIC;
-GRANT SELECT ON feature_catalog TO mnt_rt;
+GRANT SELECT ON feature_catalog TO console_rt;
 
--- mnt-gate: audited-table policy_roles
+-- console-gate: audited-table policy_roles
 CREATE TABLE policy_roles (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -84,7 +84,7 @@ CREATE TABLE policy_roles (
 );
 CREATE INDEX idx_policy_roles_org ON policy_roles (org_id, status, role_key);
 
--- mnt-gate: audited-table policy_role_permissions
+-- console-gate: audited-table policy_role_permissions
 CREATE TABLE policy_role_permissions (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id           UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -101,7 +101,7 @@ CREATE INDEX idx_policy_role_permissions_org_role ON policy_role_permissions (or
 -- The runtime resolver currently consumes branch equals/in conditions as
 -- fail-closed scope narrowers; unsupported conditions remain review/audit
 -- metadata until a richer evaluator lands.
--- mnt-gate: audited-table policy_role_conditions
+-- console-gate: audited-table policy_role_conditions
 CREATE TABLE policy_role_conditions (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -137,7 +137,7 @@ CREATE INDEX idx_policy_role_conditions_org_role ON policy_role_conditions (org_
 -- Custom-role assignments. ACTIVE assigned roles are runtime-effective via the
 -- central authz resolver; DRAFT/RETIRED assigned roles do not grant authority.
 -- Assignments do not change users.roles.
--- mnt-gate: audited-table user_role_assignments
+-- console-gate: audited-table user_role_assignments
 CREATE TABLE user_role_assignments (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -155,7 +155,7 @@ CREATE INDEX idx_user_role_assignments_org_user ON user_role_assignments (org_id
 -- Short-lived server-side receipts proving the actor reviewed an assignment
 -- impact preview for the exact target user and role set before attempting the
 -- passkey-gated replacement write.
--- mnt-gate: audited-table policy_assignment_preview_receipts
+-- console-gate: audited-table policy_assignment_preview_receipts
 CREATE TABLE policy_assignment_preview_receipts (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -201,7 +201,7 @@ BEGIN
             || 'WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)',
             t
         );
-        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO mnt_rt', t);
+        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO console_rt', t);
     END LOOP;
 END
 $$;

@@ -5,7 +5,7 @@
 //! gate can prove inventory's operational stock model is independent.
 #![cfg_attr(test, allow(clippy::unwrap_used))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, InventoryItemId, InventoryStockLocationId, KernelError, P1DispatchId, WorkOrderId,
 };
 

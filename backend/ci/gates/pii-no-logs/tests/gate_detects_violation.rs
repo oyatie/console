@@ -1,9 +1,9 @@
-use mnt_gate_pii_no_logs::{ViolationKind, check_source_tree};
+use console_gate_pii_no_logs::{ViolationKind, check_source_tree};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 fn temp_workspace(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let dir = std::env::temp_dir().join(format!("mnt-pii-gate-test-{name}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("console-pii-gate-test-{name}-{}", std::process::id()));
     if dir.exists() {
         fs::remove_dir_all(&dir)?;
     }

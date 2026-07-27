@@ -9,31 +9,31 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-finance-gl-domain",
+    name = "console-finance-gl-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/finance-gl/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_finance_gl_domain",
+    crate = "console_finance_gl_domain",
     edition = "2024",
     crate_root = "backend/crates/finance-gl/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/finance-gl/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:uuid",
     ],
 )
 
 rust_test(
-    name = "mnt-finance-gl-domain-unit",
+    name = "console-finance-gl-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/finance-gl/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_finance_gl_domain",
+    crate = "console_finance_gl_domain",
     edition = "2024",
     crate_root = "backend/crates/finance-gl/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/finance-gl/domain"},
     labels = ["owner.backend.crates.finance-gl.domain", "domain.finance-gl", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:uuid",
     ],

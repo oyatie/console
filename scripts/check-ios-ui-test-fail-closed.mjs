@@ -69,7 +69,7 @@ function steps(job) {
 
 function hasCandidateShaBeforeBackendBuild(job) {
   const sha = job.search(/git\s+rev-parse\s+HEAD[\s\S]{0,240}GITHUB_SHA|GITHUB_SHA[\s\S]{0,240}git\s+rev-parse\s+HEAD/);
-  const build = job.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+mnt-app/);
+  const build = job.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+console-app/);
   return sha !== -1 && build !== -1 && sha < build;
 }
 
@@ -77,16 +77,16 @@ function hasOptimizedBehavioralBackendBuild(job) {
   const activeJob = stripInertShellData(job);
   const command = "cargo" + " build";
   return /CARGO_PROFILE_DEV_DEBUG:\s*"0"/.test(activeJob)
-    && activeJob.includes(`${command} --locked -p mnt-app`)
-    && /MNT_APP_BIN="\$CARGO_TARGET_DIR\/debug\/mnt-app"/.test(activeJob)
+    && activeJob.includes(`${command} --locked -p console-app`)
+    && /CONSOLE_APP_BIN="\$CARGO_TARGET_DIR\/debug\/console-app"/.test(activeJob)
     && !new RegExp(`${command}[^\n]*--release`).test(activeJob)
-    && !/MNT_APP_BIN="\$CARGO_TARGET_DIR\/release\/mnt-app"/.test(activeJob);
+    && !/CONSOLE_APP_BIN="\$CARGO_TARGET_DIR\/release\/console-app"/.test(activeJob);
 }
 
 function hasHostedUntrustedBoundary(job) {
   return /runs-on:\s*macos-26\b/.test(job)
     && !/\bself-hosted\b/i.test(job.replace(/#.*$/gm, ""))
-    && !/vars\.MNT_IOS_CI_RUNNER/.test(job)
+    && !/vars\.CONSOLE_IOS_CI_RUNNER/.test(job)
     && !/\bruns-on:\s*\$\{\{/.test(job);
 }
 
@@ -96,12 +96,12 @@ function hasExactShaBatchIsolation(job) {
     && /fetch-depth:\s*1/.test(job)
     && /persist-credentials:\s*false/.test(job)
     && /test\s+"\$\(git rev-parse HEAD\)"\s*=\s*"\$GITHUB_SHA"/.test(job)
-    && /D="\$RUNNER_TEMP\/ios-ui-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{MNT_IOS_BATCH_NAME\}"/.test(job)
-    && /MNT_IOS_JOB_ROOT=\$D/.test(job)
+    && /D="\$RUNNER_TEMP\/ios-ui-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{CONSOLE_IOS_BATCH_NAME\}"/.test(job)
+    && /CONSOLE_IOS_JOB_ROOT=\$D/.test(job)
     && /RAW_RESULTS="\$D\/raw-xcresults"/.test(job)
     && /ARTIFACTS="\$D\/artifacts"/.test(job)
     && /XCTESTRUN="\$\(find\s+"\$DERIVED\/Build\/Products"/.test(job)
-    && /simctl\s+create\s+"Maintenance CI \$\{MNT_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
+    && /simctl\s+create\s+"Maintenance CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
     && /name:\s*"ios-ui-test-results-\$\{\{ matrix\.batch \}\}"/.test(job)
     && /path:\s*"\$\{\{ runner\.temp \}\}\/ios-ui-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ matrix\.batch \}\}\/artifacts"/.test(job);
 }
@@ -135,7 +135,7 @@ function hasCompleteFailSlowRuntimeBudget(job) {
     && maximumBatchSeconds === 840
     && maximumBatchSeconds + setupAndCleanupReserveSeconds <= 45 * 60
     && /strategy:\s*\n[ ]{6}fail-fast:\s*false\s*\n[ ]{6}max-parallel:\s*5\b/.test(job)
-    && /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$MNT_IOS_SHARD_BATCH"/.test(job)
+    && /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$CONSOLE_IOS_SHARD_BATCH"/.test(job)
     && /-parallel-testing-enabled\s+NO\b/.test(job);
 }
 
@@ -157,8 +157,8 @@ function hasFunctionalColdStartProof(files) {
     && !/xctest-prewarm|XCTestPrewarmUITests|testRunnerAndHostLaunch/.test(activeJob)
     && coreShards.join(" ") === "authenticated-shell preflight-restore preflight-session preflight-fixtures login-validation accessibility-id-parity critical-location"
     && messengerShards.join(" ") === "messenger-mutation messenger-render audit-dynamic-today audit-dynamic-detail"
-    && /authenticated-shell\)\s*\n\s*SHARD_TIMEOUT_SECONDS=150\s*\n\s*SHARD_SELECTORS=\(MaintenanceFieldUITests\/FieldCriticalPathUITests\/testAuthenticatedLaunchShowsTodayTabInKorean\)/.test(activeJob)
-    && /preflight-restore\)\s*\n\s*SHARD_TIMEOUT_SECONDS=150\s*\n\s*SHARD_SELECTORS=\(MaintenanceFieldUITests\/PreflightUITests\/testSeederRestoresThenClearsRealSession\)/.test(activeJob)
+    && /authenticated-shell\)\s*\n\s*SHARD_TIMEOUT_SECONDS=150\s*\n\s*SHARD_SELECTORS=\(ConsoleUITests\/ConsoleCriticalPathUITests\/testAuthenticatedLaunchShowsTodayTabInKorean\)/.test(activeJob)
+    && /preflight-restore\)\s*\n\s*SHARD_TIMEOUT_SECONDS=150\s*\n\s*SHARD_SELECTORS=\(ConsoleUITests\/PreflightUITests\/testSeederRestoresThenClearsRealSession\)/.test(activeJob)
     && /critical-today\)\s*\n\s*SHARD_TIMEOUT_SECONDS=240\s*\n\s*SHARD_SELECTORS=\([\s\S]{0,240}testDispatchListRendersDeterministicMechanicWorkOrder[\s\S]{0,160}testFullFixtureRowsRemainReachableAboveTabBar[\s\S]{0,80}\)/.test(activeJob)
     && !/critical-today\)[\s\S]{0,360}testAuthenticatedLaunchShowsTodayTabInKorean/.test(activeJob)
     && /messenger-mutation\)\s*\n\s*SHARD_TIMEOUT_SECONDS=240\s*\n\s*SHARD_SELECTORS=\([\s\S]{0,240}testMessengerSendSurvivesBackendRefresh[\s\S]{0,160}testMessengerSearchUnmatchedQueryShowsRealNoResults[\s\S]{0,80}\)/.test(activeJob)
@@ -200,17 +200,17 @@ function hasPinnedToolchain(job, workflow) {
   const protectedStartupVariableNames = ["BASH_ENV", "ENV", "NODE_OPTIONS", "NODE_PATH", "DYLD_INSERT_LIBRARIES", "DYLD_LIBRARY_PATH", "DYLD_FRAMEWORK_PATH", "LD_PRELOAD"];
   const protectedStartupVariables = protectedStartupVariableNames.join(" ");
   const emptyStartupExpansion = protectedStartupVariableNames.map((name) => `\\$\\{${name}-\\}`).join("");
-  const trustedNodePrelude = new RegExp(`run:\\s*\\|\\s*\\n[ \\t]*set -euo pipefail\\s*\\n[ \\t]*unset ${protectedStartupVariables}\\s*\\n[ \\t]*test -z "${emptyStartupExpansion}"\\s*\\n[ \\t]*readonly ${protectedStartupVariables}\\s*\\n[ \\t]*case "\\$RUNNER_ARCH" in X64\\) NODE_ARCH=x64 ;; ARM64\\) NODE_ARCH=arm64 ;; \\*\\) echo "unsupported runner architecture: \\$RUNNER_ARCH" >&2; exit 1 ;; esac\\s*\\n[ \\t]*readonly RUNNER_TOOL_CACHE RUNNER_ARCH NODE_ARCH\\s*\\n[ \\t]*readonly MNT_IOS_NODE_BIN="\\$RUNNER_TOOL_CACHE/node/24\\.16\\.0/\\$NODE_ARCH/bin/node"\\s*\\n[ \\t]*test -x "\\$MNT_IOS_NODE_BIN"; test ! -L "\\$MNT_IOS_NODE_BIN"; test "\\$\\("\\$MNT_IOS_NODE_BIN" --version\\)" = v24\\.16\\.0`);
-  const nodeAssignments = activeJob.match(/^[ \t]*(?:readonly[ \t]+)?MNT_IOS_NODE_BIN=/gm) ?? [];
-  const protectedEnvironmentName = "(?:MNT_IOS_NODE_BIN|RUNNER_TOOL_CACHE|RUNNER_ARCH|BASH_ENV|ENV|NODE_OPTIONS|NODE_PATH|DYLD_INSERT_LIBRARIES|DYLD_LIBRARY_PATH|DYLD_FRAMEWORK_PATH|LD_PRELOAD)";
+  const trustedNodePrelude = new RegExp(`run:\\s*\\|\\s*\\n[ \\t]*set -euo pipefail\\s*\\n[ \\t]*unset ${protectedStartupVariables}\\s*\\n[ \\t]*test -z "${emptyStartupExpansion}"\\s*\\n[ \\t]*readonly ${protectedStartupVariables}\\s*\\n[ \\t]*case "\\$RUNNER_ARCH" in X64\\) NODE_ARCH=x64 ;; ARM64\\) NODE_ARCH=arm64 ;; \\*\\) echo "unsupported runner architecture: \\$RUNNER_ARCH" >&2; exit 1 ;; esac\\s*\\n[ \\t]*readonly RUNNER_TOOL_CACHE RUNNER_ARCH NODE_ARCH\\s*\\n[ \\t]*readonly CONSOLE_IOS_NODE_BIN="\\$RUNNER_TOOL_CACHE/node/24\\.16\\.0/\\$NODE_ARCH/bin/node"\\s*\\n[ \\t]*test -x "\\$CONSOLE_IOS_NODE_BIN"; test ! -L "\\$CONSOLE_IOS_NODE_BIN"; test "\\$\\("\\$CONSOLE_IOS_NODE_BIN" --version\\)" = v24\\.16\\.0`);
+  const nodeAssignments = activeJob.match(/^[ \t]*(?:readonly[ \t]+)?CONSOLE_IOS_NODE_BIN=/gm) ?? [];
+  const protectedEnvironmentName = "(?:CONSOLE_IOS_NODE_BIN|RUNNER_TOOL_CACHE|RUNNER_ARCH|BASH_ENV|ENV|NODE_OPTIONS|NODE_PATH|DYLD_INSERT_LIBRARIES|DYLD_LIBRARY_PATH|DYLD_FRAMEWORK_PATH|LD_PRELOAD)";
   const poisonedEnvironment = new RegExp(`${protectedEnvironmentName}=[^\\n]*(?:GITHUB_ENV|GITHUB_PATH)|(?:GITHUB_ENV|GITHUB_PATH)[^\\n]*${protectedEnvironmentName}=`).test(activeJob);
   const overriddenRunnerEnvironment = /(?:^|\n)[ \t]*(?:["'])?(?:RUNNER_TOOL_CACHE|RUNNER_ARCH)(?:["'])?[ \t]*:|[,{][ \t]*(?:["'])?(?:RUNNER_TOOL_CACHE|RUNNER_ARCH)(?:["'])?[ \t]*:/.test(workflow);
   const injectedStartupEnvironment = /(?:^|\n)[ \t]*(?:["'])?(?:BASH_ENV|ENV|NODE_OPTIONS|NODE_PATH|DYLD_INSERT_LIBRARIES|DYLD_LIBRARY_PATH|DYLD_FRAMEWORK_PATH|LD_PRELOAD)(?:["'])?[ \t]*:|[,{][ \t]*(?:["'])?(?:BASH_ENV|ENV|NODE_OPTIONS|NODE_PATH|DYLD_INSERT_LIBRARIES|DYLD_LIBRARY_PATH|DYLD_FRAMEWORK_PATH|LD_PRELOAD)(?:["'])?[ \t]*:/.test(workflow);
   const yamlEnvironmentSections = workflow.match(/^[ \t]*env:[^\n]*$/gm) ?? [];
-  const exactJobEnvironment = /^[ ]{4}env:\n[ ]{6}DEVELOPER_DIR: \/Applications\/Xcode_26\.6\.app\/Contents\/Developer\n[ ]{6}MNT_IOS_BATCH_NAME: \$\{\{ matrix\.batch \}\}\n[ ]{6}MNT_IOS_SHARD_BATCH: \$\{\{ matrix\.shards \}\}\n(?=^[ ]{4}steps:)/m.test(job);
+  const exactJobEnvironment = /^[ ]{4}env:\n[ ]{6}DEVELOPER_DIR: \/Applications\/Xcode_26\.6\.app\/Contents\/Developer\n[ ]{6}CONSOLE_IOS_BATCH_NAME: \$\{\{ matrix\.batch \}\}\n[ ]{6}CONSOLE_IOS_SHARD_BATCH: \$\{\{ matrix\.shards \}\}\n(?=^[ ]{4}steps:)/m.test(job);
   const exactBackendEnvironment = /^[ ]{8}env: \{CARGO_INCREMENTAL: "0", CARGO_PROFILE_DEV_DEBUG: "0", SQLX_OFFLINE: "true"\}$/m.test(activeBackendStep);
   const backendShellEntries = activeBackendStep.match(/^[ ]{8}shell:[^\n]*$/gm) ?? [];
-  const exactEnvironmentFileWrite = /printf '%s\\n' "MNT_IOS_JOB_ROOT=\$D" "CARGO_HOME=\$D\/cargo-home" "RUSTUP_HOME=\$D\/rustup-home" "CARGO_TARGET_DIR=\$D\/cargo-target" >> "\$GITHUB_ENV"/.test(activeJob);
+  const exactEnvironmentFileWrite = /printf '%s\\n' "CONSOLE_IOS_JOB_ROOT=\$D" "CARGO_HOME=\$D\/cargo-home" "RUSTUP_HOME=\$D\/rustup-home" "CARGO_TARGET_DIR=\$D\/cargo-target" >> "\$GITHUB_ENV"/.test(activeJob);
   return setupNodeStep !== -1
     && backendStep === setupNodeStep + 1
     && trustedNodePrelude.test(activeBackendStep)
@@ -226,7 +226,7 @@ function hasPinnedToolchain(job, workflow) {
     && exactEnvironmentFileWrite
     && (activeJob.match(/\bGITHUB_ENV\b/g) ?? []).length === 1
     && (activeJob.match(/\bGITHUB_PATH\b/g) ?? []).length === 1
-    && /"\$MNT_IOS_NODE_BIN"\s+--test\s+scripts\/boot-backend-port-conflict\.test\.mjs[\s\S]{0,400}"\$MNT_IOS_NODE_BIN"\s+scripts\/check-ios-ui-test-fail-closed\.mjs/.test(activeBackendStep)
+    && /"\$CONSOLE_IOS_NODE_BIN"\s+--test\s+scripts\/boot-backend-port-conflict\.test\.mjs[\s\S]{0,400}"\$CONSOLE_IOS_NODE_BIN"\s+scripts\/check-ios-ui-test-fail-closed\.mjs/.test(activeBackendStep)
     && /actions\/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e/.test(job)
     && /node-version:\s*"24\.16\.0"/.test(job)
     && /DEVELOPER_DIR:\s*\/Applications\/Xcode_26\.6\.app\/Contents\/Developer/.test(job)
@@ -236,7 +236,7 @@ function hasPinnedToolchain(job, workflow) {
     && /SIM_RUNTIME=com\.apple\.CoreSimulator\.SimRuntime\.iOS-26-5/.test(job)
     && /SIM_DEVICE_TYPE=com\.apple\.CoreSimulator\.SimDeviceType\.iPhone-17-Pro/.test(job)
     && /simctl\s+list\s+devicetypes\s+-j[\s\S]{0,400}identifier[\s\S]{0,400}==\s*target[\s\S]{0,240}"\$SIM_DEVICE_TYPE"/.test(job)
-    && /MNT_IOS_JOB_ROOT=\$D/.test(job)
+    && /CONSOLE_IOS_JOB_ROOT=\$D/.test(job)
     && /CARGO_HOME=\$D\/cargo-home/.test(job)
     && /RUSTUP_HOME=\$D\/rustup-home/.test(job)
     && /CARGO_TARGET_DIR=\$D\/cargo-target/.test(job)
@@ -363,7 +363,7 @@ function hasRequiredPostgresExtensions(job) {
   const pgTrgmInstall = activeJob.search(/\bmake\s+-C\s+contrib\/pg_trgm\s+install\b/);
   const postgresStart = activeJob.search(/"\$PG_PREFIX\/bin\/pg_ctl"[\s\S]{0,240}\s-w\s+start\b/);
   const extensionLoadTest = activeJob.search(/PGPASSWORD="\$UP"[\s\S]{0,160}"\$PG_PREFIX\/bin\/psql"[\s\S]{0,320}-v\s+ON_ERROR_STOP=1[\s\S]{0,160}-c\s+'CREATE EXTENSION pgcrypto;'[\s\S]{0,160}-c\s+'CREATE EXTENSION pg_trgm;'[\s\S]{0,160}-c\s+'DROP EXTENSION pg_trgm;'[\s\S]{0,160}-c\s+'DROP EXTENSION pgcrypto;'/);
-  const backendBuild = activeJob.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+mnt-app/);
+  const backendBuild = activeJob.search(/cargo\s+build\b[\s\S]{0,100}(?:-p|--package)\s+console-app/);
   return opensslPrefix !== -1
     && opensslCppFlags > opensslPrefix
     && opensslLdFlags >= opensslCppFlags
@@ -382,7 +382,7 @@ function hasRequiredPostgresExtensions(job) {
 function hasValidLoopbackWebauthnPolicy(job, launcher) {
   const backendStep = steps(job).find((step) => /Hermetic exact-SHA backend and UI test/.test(step)) ?? "";
   const activeJob = stripInertShellData(job).replace(/\\\r?\n\s*/g, " ");
-  const invocation = /^[ \t]*MNT_IOS_COLDSTART_OTP="\$COLDSTART_OTP"\s+"\$MNT_IOS_NODE_BIN"\s+"\$ROOT\/scripts\/boot-ios-ui-backend\.mjs"\s+"\$ROOT"\s+"\$AUTH_DIR"\s+"\$BP"[ \t]*$/gm;
+  const invocation = /^[ \t]*CONSOLE_IOS_COLDSTART_OTP="\$COLDSTART_OTP"\s+"\$CONSOLE_IOS_NODE_BIN"\s+"\$ROOT\/scripts\/boot-ios-ui-backend\.mjs"\s+"\$ROOT"\s+"\$AUTH_DIR"\s+"\$BP"[ \t]*$/gm;
   const matches = [...activeJob.matchAll(invocation)];
   const dbCommand = '"$ROOT/e2e/harness/db.sh"';
   const db = activeJob.indexOf(dbCommand);
@@ -392,11 +392,11 @@ function hasValidLoopbackWebauthnPolicy(job, launcher) {
   // Reseal whenever the backend step legitimately changes; the pin exists to
   // force that change through review, not to freeze the step. Last resealed to
   // raise the critical-location shard budget 150 -> 240 seconds.
-  const approvedBackendStepSha256 = "114b60766c17bf063bc481733e723c641aa003060c44c34fee16e28d53541e85";
-  const approvedLauncherSha256 = "a153fab32c9f4ca597605ec126d40e3bfc106c0ce17c368078e22c265ca9f1ad";
+  const approvedBackendStepSha256 = "fd85722f40a6a0b543c6ea5cdfe27b07faa7dde30943ebadc6f46dc7383535e8";
+  const approvedLauncherSha256 = "f18a155f6f3d093087f5c52bd185e46f628bdf78066ca2abc204f2ccb1ee591c";
   const backendStepSha256 = createHash("sha256").update(backendStep).digest("hex");
   const launcherSha256 = createHash("sha256").update(launcher).digest("hex");
-  const trustedNodeInvocations = activeJob.match(/"\$MNT_IOS_NODE_BIN"/g) ?? [];
+  const trustedNodeInvocations = activeJob.match(/"\$CONSOLE_IOS_NODE_BIN"/g) ?? [];
   return matches.length === 1
     && (activeJob.match(/scripts\/boot-ios-ui-backend\.mjs/g) ?? []).length === 1
     && trustedNodeInvocations.length === 6
@@ -411,7 +411,7 @@ function hasValidLoopbackWebauthnPolicy(job, launcher) {
 
 function hasPinnedJobLocalXcodegen(job) {
   return !/\bbrew\s+install\s+xcodegen\b/.test(job)
-    && /\bTOOLS="\$MNT_IOS_JOB_ROOT\/tools"/.test(job)
+    && /\bTOOLS="\$CONSOLE_IOS_JOB_ROOT\/tools"/.test(job)
     && /github\.com\/yonaskolb\/XcodeGen\/releases\/download\/2\.46\.0\/xcodegen\.zip/.test(job)
     && /4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806/.test(job)
     && /shasum\s+-a\s+256\s+--check\s+-/.test(job)
@@ -423,7 +423,7 @@ function hasPinnedJobLocalXcodegen(job) {
 }
 
 function hasJobLocalPostgres(job) {
-  return /\bD="\$MNT_IOS_JOB_ROOT"/.test(job)
+  return /\bD="\$CONSOLE_IOS_JOB_ROOT"/.test(job)
     && /\bPGDATA="\$D\/postgres-data"/.test(job)
     && /install\s+-d\s+-m\s+700\s+"\$D"[\s\S]{0,180}"\$PGDATA"/.test(job)
     && /\binitdb\b/.test(job)
@@ -435,17 +435,17 @@ function hasJobLocalPostgres(job) {
 function hasPerClassSessions(job) {
   const activeJob = stripInertShellData(job);
   const fixtures = ["f00004", "f00003", "f00005", "f00007", "f00008", "c10001", "c20001"];
-  return /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$MNT_IOS_SHARD_BATCH"/.test(activeJob)
+  return /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$CONSOLE_IOS_SHARD_BATCH"/.test(activeJob)
     && /secret\s*\(\)\s*\{\s*openssl\s+rand\s+-hex\s+\d+;\s*\}/.test(activeJob)
-    && /mint_shard_session\s*\(\)\s*\{[\s\S]{0,240}local\s+fixture_profile="\$1"\s+otp\s+hash[\s\S]{0,400}unset\s+MNT_UITEST_ACCESS_TOKEN\s+MNT_UITEST_REFRESH_TOKEN[\s\S]{0,240}rm\s+-f\s+"\$AUTH_DIR\/otp\.json"\s+"\$AUTH_DIR\/tokens\.json"[\s\S]{0,240}otp="\$\(secret\)"\s+\|\|\s+return\s+1/.test(activeJob)
+    && /mint_shard_session\s*\(\)\s*\{[\s\S]{0,240}local\s+fixture_profile="\$1"\s+otp\s+hash[\s\S]{0,400}unset\s+CONSOLE_UITEST_ACCESS_TOKEN\s+CONSOLE_UITEST_REFRESH_TOKEN[\s\S]{0,240}rm\s+-f\s+"\$AUTH_DIR\/otp\.json"\s+"\$AUTH_DIR\/tokens\.json"[\s\S]{0,240}otp="\$\(secret\)"\s+\|\|\s+return\s+1/.test(activeJob)
     && /echo\s+"::add-mask::\$otp"/.test(activeJob)
     && /hash="\$\([\s\S]{0,160}shasum\s+-a\s+256[\s\S]{0,120}\)"\s+\|\|\s+return\s+1/.test(activeJob)
     && /seed-mobile-ci\.sql"\s+\|\|\s+return\s+1/.test(activeJob)
     && /auth\/otp\/redeem[\s\S]{0,400}\|\|\s+\{\s*rm\s+-f[\s\S]{0,160}return\s+1;\s*\}/.test(activeJob)
-    && /MNT_UITEST_ACCESS_TOKEN/.test(activeJob)
-    && /MNT_UITEST_REFRESH_TOKEN/.test(activeJob)
-    && /echo\s+"::add-mask::\$MNT_UITEST_ACCESS_TOKEN"/.test(activeJob)
-    && /echo\s+"::add-mask::\$MNT_UITEST_REFRESH_TOKEN"/.test(activeJob)
+    && /CONSOLE_UITEST_ACCESS_TOKEN/.test(activeJob)
+    && /CONSOLE_UITEST_REFRESH_TOKEN/.test(activeJob)
+    && /echo\s+"::add-mask::\$CONSOLE_UITEST_ACCESS_TOKEN"/.test(activeJob)
+    && /echo\s+"::add-mask::\$CONSOLE_UITEST_REFRESH_TOKEN"/.test(activeJob)
     && /for\s+shard_name\s+in\s+"\$\{SHARD_MANIFEST\[@\]\}";\s*do[\s\S]{0,900}configure_shard\s+"\$shard_name"[\s\S]{0,900}mint_shard_session\s+"\$SHARD_FIXTURE_PROFILE"/.test(activeJob)
     && /SHARD_SELECTORS=\(\)/.test(activeJob)
     && /for\s+selector\s+in\s+"\$@";\s*do\s*xcode_command\+=\("-only-testing:\$selector"\);\s*done/.test(activeJob)
@@ -535,8 +535,8 @@ function hasMode600Xctestrun(job) {
   const derived = job.search(/\bDERIVED="\$D\/derived-data"/);
   const discovered = job.search(/\bXCTESTRUN="\$\(find\s+"\$DERIVED\/Build\/Products"[\s\S]{0,160}-name\s+'\*\.xctestrun'[\s\S]{0,160}-print\s+-quit\)"/);
   const protectedFile = job.search(/chmod\s+600\s+"\$XCTESTRUN"/);
-  const staticPatch = job.search(/patch-ios-xctestrun\.py\s+"\$XCTESTRUN"\s+--target\s+MaintenanceFieldUITests\s+--ui-target-app-path\s+'__TESTROOT__\/Debug-iphonesimulator\/MaintenanceFieldApp\.app'\s*\)/);
-  const perShardPatch = /mint_shard_session\s*\(\s*\)[\s\S]{0,4000}patch-ios-xctestrun\.py\s+"\$XCTESTRUN"[\s\S]{0,480}--ui-target-app-path\s+'__TESTROOT__\/Debug-iphonesimulator\/MaintenanceFieldApp\.app'[\s\S]{0,1200}--env\s+MNT_UITEST_ACCESS_TOKEN[\s\S]{0,240}--env\s+MNT_UITEST_REFRESH_TOKEN/.test(job);
+  const staticPatch = job.search(/patch-ios-xctestrun\.py\s+"\$XCTESTRUN"\s+--target\s+ConsoleUITests\s+--ui-target-app-path\s+'__TESTROOT__\/Debug-iphonesimulator\/ConsoleApp\.app'\s*\)/);
+  const perShardPatch = /mint_shard_session\s*\(\s*\)[\s\S]{0,4000}patch-ios-xctestrun\.py\s+"\$XCTESTRUN"[\s\S]{0,480}--ui-target-app-path\s+'__TESTROOT__\/Debug-iphonesimulator\/ConsoleApp\.app'[\s\S]{0,1200}--env\s+CONSOLE_UITEST_ACCESS_TOKEN[\s\S]{0,240}--env\s+CONSOLE_UITEST_REFRESH_TOKEN/.test(job);
   const executed = job.search(/test-without-building[\s\S]{0,160}-xctestrun\s+"\$XCTESTRUN"/);
   return derived !== -1 && discovered > derived && protectedFile > discovered
     && staticPatch === -1 && perShardPatch && executed > protectedFile;
@@ -562,9 +562,9 @@ function hasExactFailSlowExecution(job) {
     && /kill\s+-KILL\s+--\s+"-\$test_pid"[\s\S]{0,260}for\s+_\s+in\s+\{1\.\.20\};\s*do\s+kill\s+-0\s+--\s+"-\$test_pid"[\s\S]{0,220}if\s+kill\s+-0\s+--\s+"-\$test_pid"[\s\S]{0,220}status=125/.test(activeJob);
 
   return resultDeclaration !== null
-    && /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$MNT_IOS_SHARD_BATCH"/.test(activeJob)
+    && /read\s+-r\s+-a\s+SHARD_MANIFEST\s+<<<\s+"\$CONSOLE_IOS_SHARD_BATCH"/.test(activeJob)
     && /\(\(\$\{#SHARD_MANIFEST\[@\]\}\s*>\s*0\)\)/.test(activeJob)
-    && /printf\s+'%s\\n'\s+"\$MNT_IOS_BATCH_NAME"\s+>\s+"\$ARTIFACTS\/batch-name\.txt"/.test(activeJob)
+    && /printf\s+'%s\\n'\s+"\$CONSOLE_IOS_BATCH_NAME"\s+>\s+"\$ARTIFACTS\/batch-name\.txt"/.test(activeJob)
     && /printf\s+'%s\\n'\s+"\$\{SHARD_MANIFEST\[@\]\}"\s+>\s+"\$ARTIFACTS\/shard-manifest\.txt"/.test(activeJob)
     && /for\s+shard_name\s+in\s+"\$\{SHARD_MANIFEST\[@\]\}";\s*do/.test(activeJob)
     && /if\s+!\s+configure_shard\s+"\$shard_name";\s*then[\s\S]{0,720}named shard manifest invalid[\s\S]{0,420}continue/.test(activeJob)
@@ -634,7 +634,7 @@ function hasArtifactSecretScan(job) {
     && /install\s+-d\s+-m\s+700\s+"\$D"\s+"\$D\/auth"\s+"\$D\/raw-xcresults"\s+"\$D\/artifacts"/.test(job)
     && /install\s+-d\s+-m\s+700\s+"\$D"\s+"\$AUTH_DIR"\s+"\$PGDATA"\s+"\$RAW_RESULTS"\s+"\$ARTIFACTS"/.test(job)
     && /SESSION_MINTED_MARKER="\$AUTH_DIR\/session-material-minted"/.test(job)
-    && /printf\s+'%s\\n'\s+"\$otp"\s+"\$MNT_UITEST_ACCESS_TOKEN"\s+"\$MNT_UITEST_REFRESH_TOKEN"\s+>>\s+"\$SECRETS_FILE"[\s\S]{0,180}>\s+"\$SESSION_MINTED_MARKER"/.test(job)
+    && /printf\s+'%s\\n'\s+"\$otp"\s+"\$CONSOLE_UITEST_ACCESS_TOKEN"\s+"\$CONSOLE_UITEST_REFRESH_TOKEN"\s+>>\s+"\$SECRETS_FILE"[\s\S]{0,180}>\s+"\$SESSION_MINTED_MARKER"/.test(job)
     && /result="\$RAW_RESULTS\/\$shard_name\.xcresult"/.test(job)
     && !/result="\$ARTIFACTS\/\$shard_name\.xcresult"/.test(job)
     && /\[\[\s+-d\s+"\$UPLOAD_DIR"\s+\]\]\s+\|\|\s+exit\s+0/.test(scan)
@@ -658,11 +658,11 @@ function hasOwnedCleanup(job) {
   const cleanup = job.search(/name:\s*Always prove cleanup of exact owned resources[\s\S]*if:\s*always\(\)/);
   return scan !== -1 && upload > scan && cleanup > upload
     && /path:\s*"\$\{\{ runner\.temp \}\}\/ios-ui-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ matrix\.batch \}\}\/artifacts"/.test(job)
-    && /D="\$RUNNER_TEMP\/ios-ui-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{MNT_IOS_BATCH_NAME\}"/.test(job)
-    && /simctl\s+create\s+"Maintenance CI \$\{MNT_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
+    && /D="\$RUNNER_TEMP\/ios-ui-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{CONSOLE_IOS_BATCH_NAME\}"/.test(job)
+    && /simctl\s+create\s+"Maintenance CI \$\{CONSOLE_IOS_BATCH_NAME\}-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}"/.test(job)
     && /name:\s*"ios-ui-test-results-\$\{\{ matrix\.batch \}\}"/.test(job)
     && /if-no-files-found:\s*error/.test(job)
-    && !/\$\{\{ env\.MNT_IOS_JOB_ROOT \}\}/.test(job.replace(/#.*$/gm, ""))
+    && !/\$\{\{ env\.CONSOLE_IOS_JOB_ROOT \}\}/.test(job.replace(/#.*$/gm, ""))
     && /BACKEND_COMMAND_FILE/.test(job)
     && /ps\s+-p\s+"\$BACKEND_PID"\s+-o\s+command=\s+>\s+"\$BACKEND_COMMAND_FILE"/.test(job)
     && /backend PID identity changed; refusing cross-process cleanup/.test(job)
@@ -673,7 +673,7 @@ function hasOwnedCleanup(job) {
 }
 
 function hasStrictAccessibility(files) {
-  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "", false);
+  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "", false);
   const auditTests = stripSwiftCommentsAndStrings(files["ios/UITests/AccessibilityAuditUITests.swift"] ?? "", false);
   const dynamicType = extractFunctionBody(fieldCase, /func\s+assertDynamicTypeAccessibilitySupport\s*\(/);
   const nonDynamicType = extractFunctionBody(fieldCase, /func\s+assertNoNonDynamicTypeAccessibilityIssues\s*\(/);
@@ -744,7 +744,7 @@ function hasStrictAccessibility(files) {
     && hasExactCompatibilityLedger(auditBody("testLoginScreenPassesDynamicTypeAudit"), []);
   return continuationScope(dynamicType) && continuationScope(nonDynamicType)
     && exactLedger && exactSetEquality && exactAuditLedgers && failClosedDiagnostics && sanitizedDiagnostics
-    && !/issueHandler|MNT_ACCESSIBILITY_DIAGNOSTIC|MNT_UITEST_AUDIT_STRICT/.test(fieldCase + auditTests)
+    && !/issueHandler|CONSOLE_ACCESSIBILITY_DIAGNOSTIC|CONSOLE_UITEST_AUDIT_STRICT/.test(fieldCase + auditTests)
     && (fieldCase.match(/performAccessibilityAudit\s*\(/g) ?? []).length === 2
     && !/performAccessibilityAudit\s*\(\s*for:\s*\.all\s*\)/.test(fieldCase)
     && /static\s+let\s+compactDescription\s*=\s*"Dynamic Type font sizes are partially unsupported"/.test(issue)
@@ -755,10 +755,10 @@ function hasStrictAccessibility(files) {
 
 function hasDeterministicAccessibilityPresentations(files) {
   const workflow = files[".github/workflows/ios-ui-tests.yml"] ?? "";
-  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "", false);
+  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "", false);
   const auditTests = stripSwiftCommentsAndStrings(files["ios/UITests/AccessibilityAuditUITests.swift"] ?? "");
   const runtimeTests = stripSwiftCommentsAndStrings(files["ios/UITests/DynamicTypeRuntimeUITests.swift"] ?? "");
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "");
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "");
   const setPresentation = /set_simulator_presentation\s*\(\)\s*\{[\s\S]{0,680}xcrun\s+simctl\s+ui\s+"\$UUID"\s+appearance\s+"\$expected_appearance"[\s\S]{0,260}content_size\s+"\$expected_content_size"[\s\S]{0,300}actual_appearance="\$\(xcrun\s+simctl\s+ui\s+"\$UUID"\s+appearance\)"[\s\S]{0,240}actual_content_size="\$\(xcrun\s+simctl\s+ui\s+"\$UUID"\s+content_size\)"[\s\S]{0,240}\[\[\s+"\$actual_appearance"\s+==\s+"\$expected_appearance"\s+&&\s+"\$actual_content_size"\s+==\s+"\$expected_content_size"\s+\]\]/.test(workflow);
   const resetPresentation = /clean_runtime\s*\(\)\s*\{[\s\S]{0,1800}simctl\s+ui\s+"\$UUID"\s+appearance\s+light[\s\S]{0,180}content_size\s+large[\s\S]{0,300}actual_appearance="\$\(xcrun\s+simctl\s+ui\s+"\$UUID"\s+appearance[\s\S]{0,280}actual_content_size="\$\(xcrun\s+simctl\s+ui\s+"\$UUID"\s+content_size[\s\S]{0,300}\[\[\s+"\$actual_appearance"\s+==\s+light\s+&&\s+"\$actual_content_size"\s+==\s+large\s+\]\]/.test(workflow);
   const configure = /configure_shard\s*\(\)\s*\{([\s\S]*?)\n[ \t]*\}/.exec(workflow)?.[1] ?? "";
@@ -799,7 +799,7 @@ function hasDeterministicAccessibilityPresentations(files) {
 }
 
 function hasAdaptiveTodayLocationConsent(files) {
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "", false);
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "", false);
   const today = extractFunctionBody(views, /struct\s+TodayListView\b/) ?? "";
   const detail = extractFunctionBody(views, /struct\s+WorkOrderDetailView\b/) ?? "";
   if (!today || !detail) return false;
@@ -808,10 +808,10 @@ function hasAdaptiveTodayLocationConsent(files) {
   // same complete section into a dedicated sheet so neither the List nor its
   // system chrome clips the consent state/action controls.
   const inlineAtNonAccessibilitySize = /if\s+dynamicTypeSize\.isAccessibilitySize\s*==\s*false\s*\{\s*LocationConsentSection\s*\(\s*viewModel:\s*viewModel\s*\)/.test(today);
-  const accessibilityToolbarButton = /if\s+dynamicTypeSize\.isAccessibilitySize\s*\{[\s\S]{0,480}Button\s*\{\s*isLocationConsentPresented\s*=\s*true[\s\S]{0,320}accessibilityIdentifier\s*\(\s*FieldAccessibilityID\.todayLocationConsentButton\s*\)/.test(today);
-  const dedicatedSheet = /\.sheet\s*\(\s*isPresented:\s*\$isLocationConsentPresented\s*\)\s*\{[\s\S]{0,960}NavigationStack\s*\{[\s\S]{0,520}Form\s*\{\s*LocationConsentSection\s*\(\s*viewModel:\s*viewModel\s*\)[\s\S]{0,640}Button\s*\{\s*isLocationConsentPresented\s*=\s*false[\s\S]{0,320}accessibilityIdentifier\s*\(\s*FieldAccessibilityID\.todayLocationConsentCloseButton\s*\)/.test(today);
-  const stableIdentifiers = /todayLocationConsentButton/.test(files["ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift"] ?? "")
-    && /todayLocationConsentCloseButton/.test(files["ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift"] ?? "");
+  const accessibilityToolbarButton = /if\s+dynamicTypeSize\.isAccessibilitySize\s*\{[\s\S]{0,480}Button\s*\{\s*isLocationConsentPresented\s*=\s*true[\s\S]{0,320}accessibilityIdentifier\s*\(\s*ConsoleAccessibilityID\.todayLocationConsentButton\s*\)/.test(today);
+  const dedicatedSheet = /\.sheet\s*\(\s*isPresented:\s*\$isLocationConsentPresented\s*\)\s*\{[\s\S]{0,960}NavigationStack\s*\{[\s\S]{0,520}Form\s*\{\s*LocationConsentSection\s*\(\s*viewModel:\s*viewModel\s*\)[\s\S]{0,640}Button\s*\{\s*isLocationConsentPresented\s*=\s*false[\s\S]{0,320}accessibilityIdentifier\s*\(\s*ConsoleAccessibilityID\.todayLocationConsentCloseButton\s*\)/.test(today);
+  const stableIdentifiers = /todayLocationConsentButton/.test(files["ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift"] ?? "")
+    && /todayLocationConsentCloseButton/.test(files["ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift"] ?? "");
   const detailRetainsFullSection = /Form\s*\{\s*LocationConsentSection\s*\(\s*viewModel:\s*viewModel\s*\)/.test(detail);
 
   return inlineAtNonAccessibilitySize
@@ -823,7 +823,7 @@ function hasAdaptiveTodayLocationConsent(files) {
 }
 
 function hasUnobscuredTabContentHost(files) {
-  const views = files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "";
+  const views = files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "";
   return views.includes("TabBarContentLayoutGuideHost(content: content)")
     && views.includes("TabBarContentLayoutGuideHostController(content: content)")
     && views.includes("let guide = tabBarController.contentLayoutGuide")
@@ -837,7 +837,7 @@ function hasUnobscuredTabContentHost(files) {
 }
 
 function hasScalableInlineMessengerSectionHeaders(files) {
-  const views = files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "";
+  const views = files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "";
   const messenger = extractFunctionBody(views, /struct\s+MessengerTabView\b/) ?? "";
   const inlineHeader = (key) => new RegExp(
     `Section\\s*\\{\\s*Text\\s*\\(\\s*"${key}"\\s*\\)`
@@ -883,7 +883,7 @@ function swiftListBlock(view) {
  * re-mask exactly this defect.
  */
 function hasPersistentMessengerComposer(files) {
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "", false);
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "", false);
   const messenger = extractFunctionBody(views, /struct\s+MessengerTabView\b/) ?? "";
   // Comment-stripped: a future doc comment or XCTFail message naming an
   // identifier must not trip the exactly-once rule below.
@@ -903,7 +903,7 @@ function hasPersistentMessengerComposer(files) {
     && messenger.indexOf("safeAreaInset(edge: .top")
        < messenger.indexOf("selectedThreadID != nil");
   const barCarriesBothControls = /private\s+var\s+messengerComposerBar:\s*some\s+View[\s\S]{0,2400}messengerComposerField[\s\S]{0,1200}messengerSendButton/.test(messenger);
-  const opaqueUnobscuredSurface = /private\s+var\s+messengerComposerBar:\s*some\s+View[\s\S]{0,2600}Divider\s*\(\s*\)[\s\S]{0,2200}\.background\s*\(\s*Color\.opaqueFieldNavigationBackground\s*\)/.test(messenger);
+  const opaqueUnobscuredSurface = /private\s+var\s+messengerComposerBar:\s*some\s+View[\s\S]{0,2600}Divider\s*\(\s*\)[\s\S]{0,2200}\.background\s*\(\s*Color\.opaqueConsoleNavigationBackground\s*\)/.test(messenger);
   // Each control identifier may appear exactly once, inside its own accessor. A
   // second occurrence means a test re-acquired the control by hand, which is how
   // scrolling for it creeps back and re-masks this defect.
@@ -919,41 +919,41 @@ function hasPersistentMessengerComposer(files) {
 }
 
 function hasContrastSafeMessengerComposerPlaceholder(files) {
-  const views = files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "";
+  const views = files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "";
   const messenger = extractFunctionBody(views, /struct\s+MessengerTabView\b/) ?? "";
-  return /ZStack\s*\(\s*alignment:\s*\.leading\s*\)\s*\{[\s\S]{0,180}if\s+viewModel\.messengerDraft\.isEmpty\s*\{[\s\S]{0,140}Text\s*\(\s*"messenger_composer"\s*\)[\s\S]{0,120}\.foregroundStyle\s*\(\s*\.primary\s*\)[\s\S]{0,120}\.accessibilityHidden\s*\(\s*true\s*\)[\s\S]{0,120}\.allowsHitTesting\s*\(\s*false\s*\)[\s\S]{0,180}TextField\s*\(\s*""\s*,\s*text:\s*\$viewModel\.messengerDraft\s*,\s*axis:\s*\.vertical\s*\)[\s\S]{0,180}\.accessibilityLabel\s*\(\s*Text\s*\(\s*"messenger_composer"\s*\)\s*\)[\s\S]{0,180}\.accessibilityIdentifier\s*\(\s*FieldAccessibilityID\.messengerComposerField\s*\)/.test(messenger)
+  return /ZStack\s*\(\s*alignment:\s*\.leading\s*\)\s*\{[\s\S]{0,180}if\s+viewModel\.messengerDraft\.isEmpty\s*\{[\s\S]{0,140}Text\s*\(\s*"messenger_composer"\s*\)[\s\S]{0,120}\.foregroundStyle\s*\(\s*\.primary\s*\)[\s\S]{0,120}\.accessibilityHidden\s*\(\s*true\s*\)[\s\S]{0,120}\.allowsHitTesting\s*\(\s*false\s*\)[\s\S]{0,180}TextField\s*\(\s*""\s*,\s*text:\s*\$viewModel\.messengerDraft\s*,\s*axis:\s*\.vertical\s*\)[\s\S]{0,180}\.accessibilityLabel\s*\(\s*Text\s*\(\s*"messenger_composer"\s*\)\s*\)[\s\S]{0,180}\.accessibilityIdentifier\s*\(\s*ConsoleAccessibilityID\.messengerComposerField\s*\)/.test(messenger)
     && !/TextField\s*\([\s\S]{0,180}text:\s*\$viewModel\.messengerDraft[\s\S]{0,180}prompt:\s*Text\s*\(\s*"messenger_composer"\s*\)/.test(messenger);
 }
 
 function hasAccessibleMessengerThreadAndNavigationContrast(files) {
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "", false);
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "", false);
   const runtimeTests = files["ios/UITests/DynamicTypeRuntimeUITests.swift"] ?? "";
   const messenger = extractFunctionBody(views, /struct\s+MessengerTabView\b/) ?? "";
   const thread = extractFunctionBody(views, /struct\s+MessengerThreadRow:\s*View/) ?? "";
   const viewModifiers = extractFunctionBody(views, /private\s+extension\s+View\b/) ?? "";
   const semanticColors = extractFunctionBody(views, /private\s+extension\s+Color\b/) ?? "";
-  const accessibilityLayout = /@Environment\s*\(\s*\\\.dynamicTypeSize\s*\)\s+private\s+var\s+dynamicTypeSize[\s\S]{0,420}if\s+dynamicTypeSize\.isAccessibilitySize\s*\{[\s\S]{0,780}VStack\s*\(\s*alignment:\s*\.leading[\s\S]{0,520}Text\s*\(\s*messengerThreadDisplayTitle\(thread\)\s*\)[\s\S]{0,520}FieldChip\s*\(\s*key:\s*thread\.kind\.fieldLabelKey\s*\)[\s\S]{0,520}Text\s*\(\s*localizedString\(\s*"messenger_member_count_format"\s*,\s*thread\.memberCount\s*\)\s*\)/.test(thread);
-  const standardLayout = /else\s*\{[\s\S]{0,460}HStack\s*\(\s*alignment:\s*\.firstTextBaseline[\s\S]{0,360}Text\s*\(\s*messengerThreadDisplayTitle\(thread\)\s*\)[\s\S]{0,360}FieldChip\s*\(\s*key:\s*thread\.kind\.fieldLabelKey\s*\)/.test(thread);
+  const accessibilityLayout = /@Environment\s*\(\s*\\\.dynamicTypeSize\s*\)\s+private\s+var\s+dynamicTypeSize[\s\S]{0,420}if\s+dynamicTypeSize\.isAccessibilitySize\s*\{[\s\S]{0,780}VStack\s*\(\s*alignment:\s*\.leading[\s\S]{0,520}Text\s*\(\s*messengerThreadDisplayTitle\(thread\)\s*\)[\s\S]{0,520}ConsoleChip\s*\(\s*key:\s*thread\.kind\.fieldLabelKey\s*\)[\s\S]{0,520}Text\s*\(\s*localizedString\(\s*"messenger_member_count_format"\s*,\s*thread\.memberCount\s*\)\s*\)/.test(thread);
+  const standardLayout = /else\s*\{[\s\S]{0,460}HStack\s*\(\s*alignment:\s*\.firstTextBaseline[\s\S]{0,360}Text\s*\(\s*messengerThreadDisplayTitle\(thread\)\s*\)[\s\S]{0,360}ConsoleChip\s*\(\s*key:\s*thread\.kind\.fieldLabelKey\s*\)/.test(thread);
   const noContentSuppression = !/\.lineLimit\s*\(|\.minimumScaleFactor\s*\(|\.allowsTightening\s*\(|\.fixedSize\s*\(|\.textCase\s*\(|\.frame\s*\(\s*(?:width|maxWidth|minWidth)\s*:/.test(thread);
-  const opaqueNavigationSurface = /static\s+var\s+opaqueFieldNavigationBackground:\s*Color[\s\S]{0,180}Color\s*\(\s*uiColor:\s*\.systemBackground\s*\)/.test(semanticColors);
+  const opaqueNavigationSurface = /static\s+var\s+opaqueConsoleNavigationBackground:\s*Color[\s\S]{0,180}Color\s*\(\s*uiColor:\s*\.systemBackground\s*\)/.test(semanticColors);
   const scopedNavigationBackground = /\.messengerNavigationBarBackground\s*\(\s*\)/.test(messenger)
-    && /func\s+messengerNavigationBarBackground\s*\(\s*\)\s*->\s*some\s+View\s*\{[\s\S]{0,120}#if\s+os\s*\(\s*iOS\s*\)[\s\S]{0,120}self[\s\S]{0,120}\.toolbarBackground\s*\(\s*Color\.opaqueFieldNavigationBackground\s*,\s*for:\s*\.navigationBar\s*\)[\s\S]{0,180}\.toolbarBackground\s*\(\s*\.visible\s*,\s*for:\s*\.navigationBar\s*\)[\s\S]{0,120}#else[\s\S]{0,80}self[\s\S]{0,80}#endif/.test(viewModifiers);
+    && /func\s+messengerNavigationBarBackground\s*\(\s*\)\s*->\s*some\s+View\s*\{[\s\S]{0,120}#if\s+os\s*\(\s*iOS\s*\)[\s\S]{0,120}self[\s\S]{0,120}\.toolbarBackground\s*\(\s*Color\.opaqueConsoleNavigationBackground\s*,\s*for:\s*\.navigationBar\s*\)[\s\S]{0,180}\.toolbarBackground\s*\(\s*\.visible\s*,\s*for:\s*\.navigationBar\s*\)[\s\S]{0,120}#else[\s\S]{0,80}self[\s\S]{0,80}#endif/.test(viewModifiers);
   const accessibilityViewportReservation = /\.safeAreaInset\s*\(\s*edge:\s*\.top\s*,\s*spacing:\s*0\s*\)[\s\S]{0,260}if\s+dynamicTypeSize\s*==\s*\.accessibility5\s*\{[\s\S]{0,180}Color\.clear[\s\S]{0,120}\.frame\s*\(\s*height:\s*56\s*\)/.test(messenger);
   const runtimeGeometry = /testAccessibilityExtraExtraExtraLargeRuntimeContract[\s\S]{0,2500}let\s+navigationBar\s*=\s*app\.navigationBars\.firstMatch[\s\S]{0,600}XCTAssertTrue\s*\(\s*navigationBar\.waitForExistence\s*\([\s\S]{0,1200}thread\.frame\.minY\s*,\s*navigationBar\.frame\.maxY[\s\S]{0,2800}thread\.descendants\s*\(\s*matching:\s*\.staticText\s*\)[\s\S]{0,840}XCTAssertGreaterThan\s*\(\s*member\.frame\.minY\s*,\s*max\s*\(\s*title\.frame\.maxY\s*,\s*chip\.frame\.maxY\s*\)/.test(runtimeTests);
   return accessibilityLayout && standardLayout && noContentSuppression && opaqueNavigationSurface && scopedNavigationBackground && accessibilityViewportReservation && runtimeGeometry;
 }
 
 function hasContrastStableCapsules(files) {
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "");
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "");
   const messageRow = extractFunctionBody(views, /struct\s+MessengerMessageRow:\s*View/) ?? "";
-  const fieldChip = extractFunctionBody(views, /struct\s+FieldChip:\s*View/) ?? "";
+  const fieldChip = extractFunctionBody(views, /struct\s+ConsoleChip:\s*View/) ?? "";
   const detail = extractFunctionBody(views, /struct\s+WorkOrderDetailView:\s*View/) ?? "";
-  const opaqueSemanticSurface = /\.background\(\s*Color\.opaqueFieldCapsuleBackground\s*,\s*in:\s*Capsule\(\s*\)\s*\)/;
-  const iOSSemanticColors = /static\s+var\s+opaqueFieldCapsuleBackground:\s*Color[\s\S]{0,180}Color\(uiColor:\s*\.systemGray5\)[\s\S]{0,360}static\s+var\s+opaqueFieldDetailBackground:\s*Color[\s\S]{0,180}Color\(uiColor:\s*\.systemGroupedBackground\)/.test(views);
+  const opaqueSemanticSurface = /\.background\(\s*Color\.opaqueConsoleCapsuleBackground\s*,\s*in:\s*Capsule\(\s*\)\s*\)/;
+  const iOSSemanticColors = /static\s+var\s+opaqueConsoleCapsuleBackground:\s*Color[\s\S]{0,180}Color\(uiColor:\s*\.systemGray5\)[\s\S]{0,360}static\s+var\s+opaqueConsoleDetailBackground:\s*Color[\s\S]{0,180}Color\(uiColor:\s*\.systemGroupedBackground\)/.test(views);
   return opaqueSemanticSurface.test(messageRow)
     && opaqueSemanticSurface.test(fieldChip)
     && /\.font\(\s*\.caption\s*\)[\s\S]{0,100}\.foregroundStyle\(\s*\.primary\s*\)[\s\S]{0,220}\.background\(/.test(messageRow)
-    && /scrollContentBackground\(\.hidden\)[\s\S]{0,160}background\(Color\.opaqueFieldDetailBackground\)/.test(detail)
+    && /scrollContentBackground\(\.hidden\)[\s\S]{0,160}background\(Color\.opaqueConsoleDetailBackground\)/.test(detail)
     && /scrollContentBackground\(\.hidden\)[\s\S]{0,220}\.tint\(\s*\.primary\s*\)/.test(detail)
     && iOSSemanticColors
     && !/\.(?:ultraThin|thin|regular|thick|ultraThick)Material\b/.test(messageRow + fieldChip);
@@ -1120,24 +1120,24 @@ function plistKeychainAccessGroups(source) {
 }
 
 function hasSharedKeychainEntitlementContract(files) {
-  const expectedGroup = "$(AppIdentifierPrefix)com.maintenance.field.shared";
-  const appGroups = plistKeychainAccessGroups(files["ios/Config/MaintenanceFieldApp.entitlements"] ?? "");
-  const seederGroups = plistKeychainAccessGroups(files["ios/Config/MaintenanceFieldUITestSeeder.entitlements"] ?? "");
+  const expectedGroup = "$(AppIdentifierPrefix)com.console.app.shared";
+  const appGroups = plistKeychainAccessGroups(files["ios/Config/ConsoleApp.entitlements"] ?? "");
+  const seederGroups = plistKeychainAccessGroups(files["ios/Config/ConsoleUITestSeeder.entitlements"] ?? "");
   const project = files["ios/project.yml"] ?? "";
   const config = files["ios/Config/App.xcconfig"] ?? "";
-  const seederTarget = /MaintenanceFieldUITestSeeder:\s*\n\s*type:\s*application\b[\s\S]*?\n\s{2}(?=\S|schemes:)/.exec(project)?.[0] ?? "";
-  const uiTarget = /MaintenanceFieldUITests:\s*\n\s*type:\s*bundle\.ui-testing\b[\s\S]*?\n\s{2}(?=\S|schemes:)/.exec(project)?.[0] ?? "";
+  const seederTarget = /ConsoleUITestSeeder:\s*\n\s*type:\s*application\b[\s\S]*?\n\s{2}(?=\S|schemes:)/.exec(project)?.[0] ?? "";
+  const uiTarget = /ConsoleUITests:\s*\n\s*type:\s*bundle\.ui-testing\b[\s\S]*?\n\s{2}(?=\S|schemes:)/.exec(project)?.[0] ?? "";
   return appGroups.length === 1
     && seederGroups.length === 1
     && appGroups[0] === expectedGroup
     && seederGroups[0] === expectedGroup
-    && (project.match(/CODE_SIGN_ENTITLEMENTS:\s*Config\/MaintenanceFieldApp\.entitlements/g) ?? []).length === 1
-    && (project.match(/CODE_SIGN_ENTITLEMENTS:\s*Config\/MaintenanceFieldUITestSeeder\.entitlements/g) ?? []).length === 1
-    && /-\s*path:\s*Sources\/MaintenanceFieldUITestSeeder\b/.test(seederTarget)
-    && /PRODUCT_BUNDLE_IDENTIFIER:\s*"\$\(MNT_IOS_BUNDLE_ID\)\.UITestSeeder"/.test(seederTarget)
-    && /-\s*target:\s*MaintenanceFieldUITestSeeder\b/.test(uiTarget)
-    && !/CODE_SIGN_ENTITLEMENTS:\s*Config\/MaintenanceFieldUITests\.entitlements/.test(uiTarget)
-    && !/MaintenanceFieldUITests\.entitlements/.test(project)
+    && (project.match(/CODE_SIGN_ENTITLEMENTS:\s*Config\/ConsoleApp\.entitlements/g) ?? []).length === 1
+    && (project.match(/CODE_SIGN_ENTITLEMENTS:\s*Config\/ConsoleUITestSeeder\.entitlements/g) ?? []).length === 1
+    && /-\s*path:\s*Sources\/ConsoleUITestSeeder\b/.test(seederTarget)
+    && /PRODUCT_BUNDLE_IDENTIFIER:\s*"\$\(CONSOLE_IOS_BUNDLE_ID\)\.UITestSeeder"/.test(seederTarget)
+    && /-\s*target:\s*ConsoleUITestSeeder\b/.test(uiTarget)
+    && !/CODE_SIGN_ENTITLEMENTS:\s*Config\/ConsoleUITests\.entitlements/.test(uiTarget)
+    && !/ConsoleUITests\.entitlements/.test(project)
     && /configFiles:\s*\n\s*Debug:\s*Config\/App\.xcconfig\s*\n\s*Release:\s*Config\/App\.xcconfig/.test(project)
     && /^CODE_SIGN_STYLE\s*=\s*Manual\s*$/m.test(config)
     && /^CODE_SIGNING_REQUIRED\s*=\s*YES\s*$/m.test(config)
@@ -1146,14 +1146,14 @@ function hasSharedKeychainEntitlementContract(files) {
 }
 
 function hasDefaultSharedKeychainResolution(files) {
-  const persistence = files["ios/Sources/MaintenanceFieldCore/PersistenceStores.swift"] ?? "";
+  const persistence = files["ios/Sources/ConsoleCore/PersistenceStores.swift"] ?? "";
   const productionBody = extractFunctionBody(
     persistence,
     /public\s+static\s+func\s+resolveShared\s*\([\s\S]*?\n\s*\)\s*->\s*String\?\s*/,
   );
   const addProbe = extractFunctionBody(persistence, /public\s+func\s+addProbe\s*\(/);
   const deleteProbe = extractFunctionBody(persistence, /public\s+func\s+deleteProbe\s*\(/);
-  const helper = files["ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift"] ?? "";
+  const helper = files["ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift"] ?? "";
   const uiTestSupport = files["ios/UITests/Support/RealSessionSeed.swift"] ?? "";
   if (productionBody === null || addProbe === null || deleteProbe === null) return false;
   const addSucceeded = productionBody.search(/guard\s+let\s+result\s*=\s*try\?\s*probe\.addProbe/);
@@ -1179,11 +1179,11 @@ function hasDefaultSharedKeychainResolution(files) {
 }
 
 function hasMainActorUiAutomationContract(files) {
-  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
+  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
   const seeder = stripSwiftCommentsAndStrings(files["ios/UITests/Support/RealSessionSeed.swift"] ?? "");
   const preflight = stripSwiftCommentsAndStrings(files["ios/UITests/PreflightUITests.swift"] ?? "");
   const login = stripSwiftCommentsAndStrings(files["ios/UITests/LoginValidationUITests.swift"] ?? "");
-  const declaration = /@MainActor\s+(?:final\s+)?class\s+FieldUITestCase\s*:\s*XCTestCase\b/.exec(field);
+  const declaration = /@MainActor\s+(?:final\s+)?class\s+ConsoleUITestCase\s*:\s*XCTestCase\b/.exec(field);
   if (!declaration) return false;
   const openingBrace = field.indexOf("{", declaration.index + declaration[0].length);
   const body = openingBrace === -1 ? null : extractBalancedBlock(field, openingBrace);
@@ -1208,7 +1208,7 @@ function hasMainActorUiAutomationContract(files) {
 }
 
 function hasBoundedExactWorkOrderScroll(files) {
-  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
+  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
   const activationPoint = extractFunctionBody(
     field,
     /@MainActor\s+func\s+workOrderRowActivationPoint\s*\(\s*in\s+app:\s*XCUIApplication,\s*row:\s*XCUIElement,\s*list:\s*XCUIElement\s*\)\s*->\s*XCUICoordinate\?/,
@@ -1259,7 +1259,7 @@ function hasBoundedExactWorkOrderScroll(files) {
 }
 
 function hasBoundedExactElementScroll(files) {
-  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
+  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
   const audit = stripSwiftCommentsAndStrings(files["ios/UITests/AccessibilityAuditUITests.swift"] ?? "");
   const messenger = stripSwiftCommentsAndStrings(files["ios/UITests/MessengerUITests.swift"] ?? "");
   const helper = extractFunctionBody(
@@ -1297,9 +1297,9 @@ function hasBoundedExactElementScroll(files) {
 }
 
 function hasDetailLazyControlScroll(files) {
-  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "");
-  const critical = stripSwiftCommentsAndStrings(files["ios/UITests/FieldCriticalPathUITests.swift"] ?? "");
+  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "");
+  const critical = stripSwiftCommentsAndStrings(files["ios/UITests/ConsoleCriticalPathUITests.swift"] ?? "");
   const camera = stripSwiftCommentsAndStrings(files["ios/UITests/CameraCaptureUITests.swift"] ?? "");
   const detailStart = views.indexOf("struct WorkOrderDetailView");
   const detailEnd = views.indexOf("struct LocationConsentSection", detailStart);
@@ -1321,7 +1321,7 @@ function hasDetailLazyControlScroll(files) {
 }
 
 function hasDetailScopedReportTerminalEvidence(files) {
-  const critical = stripSwiftCommentsAndStrings(files["ios/UITests/FieldCriticalPathUITests.swift"] ?? "");
+  const critical = stripSwiftCommentsAndStrings(files["ios/UITests/ConsoleCriticalPathUITests.swift"] ?? "");
   const report = extractFunctionBody(
     critical,
     /func\s+testReportSubmissionPersistsVisibleTerminalOutcome\s*\(\s*\)\s+async\s+throws/,
@@ -1339,21 +1339,21 @@ function hasDetailScopedReportTerminalEvidence(files) {
 }
 
 function hasReportFeedbackAdjacentToSubmit(files) {
-  const views = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "");
+  const views = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "");
   const detailStart = views.indexOf("struct WorkOrderDetailView");
   const detailEnd = views.indexOf("struct LocationConsentSection", detailStart);
   const detailView = detailStart === -1 || detailEnd === -1 ? "" : views.slice(detailStart, detailEnd);
-  const submit = detailView.indexOf("FieldAccessibilityID.detailSubmitReportButton");
-  const feedback = detailView.indexOf("FieldAccessibilityID.detailMessage");
-  const camera = detailView.indexOf("FieldAccessibilityID.detailCaptureEvidenceButton");
+  const submit = detailView.indexOf("ConsoleAccessibilityID.detailSubmitReportButton");
+  const feedback = detailView.indexOf("ConsoleAccessibilityID.detailMessage");
+  const camera = detailView.indexOf("ConsoleAccessibilityID.detailCaptureEvidenceButton");
   return submit !== -1
     && feedback > submit
     && camera > feedback
-    && /if\s+let\s+messageKey\s*=\s*viewModel\.messageKey\s*\{\s*Text\s*\(\s*LocalizedStringKey\s*\(\s*messageKey\s*\)\s*\)\s*\.accessibilityIdentifier\s*\(\s*FieldAccessibilityID\.detailMessage\s*\)\s*\}/.test(detailView);
+    && /if\s+let\s+messageKey\s*=\s*viewModel\.messageKey\s*\{\s*Text\s*\(\s*LocalizedStringKey\s*\(\s*messageKey\s*\)\s*\)\s*\.accessibilityIdentifier\s*\(\s*ConsoleAccessibilityID\.detailMessage\s*\)\s*\}/.test(detailView);
 }
 
 function hasActionableDetailReadiness(files) {
-  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
+  const field = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
   const helper = extractFunctionBody(
     field,
     /func\s+openSeededWorkOrder\s*\(\s*fixtureKey:\s*String,\s*timeout:\s*TimeInterval\s*=\s*60\s*\)\s+throws/,
@@ -1387,8 +1387,8 @@ function hasDecodedTodayPreflight(files) {
 }
 
 function hasFullFixtureTabBarGeometryEvidence(files) {
-  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
-  const criticalPath = stripSwiftCommentsAndStrings(files["ios/UITests/FieldCriticalPathUITests.swift"] ?? "");
+  const fieldCase = stripSwiftCommentsAndStrings(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
+  const criticalPath = stripSwiftCommentsAndStrings(files["ios/UITests/ConsoleCriticalPathUITests.swift"] ?? "");
   const geometry = extractFunctionBody(fieldCase, /func\s+assertTodayListEndsAtOrAboveTabBar\s*\(/);
   const traversal = extractFunctionBody(criticalPath, /func\s+testFullFixtureRowsRemainReachableAboveTabBar\s*\(\s*\)\s+async\s+throws/);
   if (geometry === null || traversal === null) return false;
@@ -1405,22 +1405,22 @@ function hasFullFixtureTabBarGeometryEvidence(files) {
     && ["startWorkOrderID", "reportWorkOrderID", "reportSuccessWorkOrderID", "adminApproveWorkOrderID", "adminRejectWorkOrderID"].every((fixture) => traversal.includes(`UITestFixture.${fixture}`))
     && /scrollToWorkOrderRow\s*\(\s*in:\s*app\s*,\s*id:\s*fixtureID/.test(traversal)
     && /workOrderRowActivationPoint\s*\(\s*in:\s*app\s*,\s*row:\s*row\s*,\s*list:\s*list\s*\)/.test(traversal)
-    && !/TODAY_DIAGNOSTIC/.test(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "");
+    && !/TODAY_DIAGNOSTIC/.test(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "");
 }
 
 function hasEntitledSimulatorSeederContract(job) {
   const activeJob = stripInertShellData(job);
   const rawJob = stripShellComments(job);
   const build = activeJob.indexOf("xcodebuild build-for-testing");
-  const app = activeJob.indexOf('BUILT_APP="$(find "$DERIVED/Build/Products" -type d -name \'MaintenanceFieldApp.app\' -print -quit)"');
-  const seeder = activeJob.indexOf('SEEDER_APP="$(find "$DERIVED/Build/Products" -type d -name \'MaintenanceFieldUITestSeeder.app\' -print -quit)"');
+  const app = activeJob.indexOf('BUILT_APP="$(find "$DERIVED/Build/Products" -type d -name \'ConsoleApp.app\' -print -quit)"');
+  const seeder = activeJob.indexOf('SEEDER_APP="$(find "$DERIVED/Build/Products" -type d -name \'ConsoleUITestSeeder.app\' -print -quit)"');
   const runner = activeJob.indexOf('UITEST_RUNNER_APP="$(find "$DERIVED/Build/Products"');
   const sectionParser = rawJob.indexOf('missing __TEXT,__entitlements section');
   const verifyApp = activeJob.indexOf('/usr/bin/codesign --verify --deep --strict "$BUILT_APP"');
   const verifySeeder = activeJob.indexOf('/usr/bin/codesign --verify --deep --strict "$SEEDER_APP"');
   const verifyRunner = activeJob.indexOf('/usr/bin/codesign --verify --deep --strict "$UITEST_RUNNER_APP"');
-  const appGroup = activeJob.indexOf('APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/MaintenanceFieldApp")"');
-  const seederGroup = activeJob.indexOf('SEEDER_KEYCHAIN_GROUP="$(mach_o_keychain_group "$SEEDER_APP/MaintenanceFieldUITestSeeder")"');
+  const appGroup = activeJob.indexOf('APP_KEYCHAIN_GROUP="$(mach_o_keychain_group "$BUILT_APP/ConsoleApp")"');
+  const seederGroup = activeJob.indexOf('SEEDER_KEYCHAIN_GROUP="$(mach_o_keychain_group "$SEEDER_APP/ConsoleUITestSeeder")"');
   const execute = activeJob.indexOf("xcodebuild test-without-building");
   return build !== -1
     && app > build
@@ -1446,7 +1446,7 @@ function hasEntitledSimulatorSeederContract(job) {
     && activeJob.indexOf('test "$APP_KEYCHAIN_GROUP" = "$SEEDER_KEYCHAIN_GROUP"') > seederGroup
     && execute > seederGroup
     && !/codesign\s+--force\s+--sign\b/.test(activeJob)
-    && !/MNT_IOS_KEYCHAIN_GROUP/.test(activeJob)
+    && !/CONSOLE_IOS_KEYCHAIN_GROUP/.test(activeJob)
     && !/codesign\s+--display\s+--entitlements/.test(activeJob);
 }
 
@@ -1490,35 +1490,35 @@ function equivalentAccessibilityMembers(production, uiTests) {
 }
 
 function hasAccessibilityIDParity(files) {
-  const production = extractAccessibilityMembers(files["ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift"] ?? "", "FieldAccessibilityID");
-  const uiTests = extractAccessibilityMembers(files["ios/UITests/Support/FieldUITestCase.swift"] ?? "", "AID");
+  const production = extractAccessibilityMembers(files["ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift"] ?? "", "ConsoleAccessibilityID");
+  const uiTests = extractAccessibilityMembers(files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "", "AID");
   if (production.error || uiTests.error) return false;
   return equivalentAccessibilityMembers(production, uiTests).length === 0;
 }
 
 function hasSectionScopedMessengerMessageRows(files) {
-  const views = files["ios/Sources/MaintenanceFieldApp/FieldViews.swift"] ?? "";
-  const searchResults = /ForEach\(viewModel\.messengerState\.searchResults\)\s*\{\s*message\s+in[\s\S]{0,360}MessengerMessageRow\s*\([\s\S]{0,240}accessibilityIdentifier:\s*FieldAccessibilityID\.messengerSearchResultRow\(message\.id\)/;
-  const selectedThreadMessages = /ForEach\(messages\)\s*\{\s*message\s+in[\s\S]{0,360}MessengerMessageRow\s*\([\s\S]{0,240}accessibilityIdentifier:\s*FieldAccessibilityID\.messengerMessageRow\(message\.id\)/;
+  const views = files["ios/Sources/ConsoleApp/ConsoleViews.swift"] ?? "";
+  const searchResults = /ForEach\(viewModel\.messengerState\.searchResults\)\s*\{\s*message\s+in[\s\S]{0,360}MessengerMessageRow\s*\([\s\S]{0,240}accessibilityIdentifier:\s*ConsoleAccessibilityID\.messengerSearchResultRow\(message\.id\)/;
+  const selectedThreadMessages = /ForEach\(messages\)\s*\{\s*message\s+in[\s\S]{0,360}MessengerMessageRow\s*\([\s\S]{0,240}accessibilityIdentifier:\s*ConsoleAccessibilityID\.messengerMessageRow\(message\.id\)/;
   const directBodyIdentifier = /struct\s+MessengerMessageRow:\s+View\s*\{[\s\S]{0,300}let\s+accessibilityIdentifier:\s+String[\s\S]{0,1800}Text\(message\.body\)[\s\S]{0,240}\.accessibilityIdentifier\(accessibilityIdentifier\)/.test(views);
   const noOuterContainerIdentifier = !/MessengerMessageRow\s*\([\s\S]{0,360}\)\s*\.accessibilityIdentifier\s*\(/.test(views);
   return searchResults.test(views) && selectedThreadMessages.test(views) && directBodyIdentifier && noOuterContainerIdentifier;
 }
 
 function hasCiOnlyLocalAts(files) {
-  const production = files["ios/Sources/MaintenanceFieldApp/Info.plist"] ?? "";
+  const production = files["ios/Sources/ConsoleApp/Info.plist"] ?? "";
   const workflow = files[".github/workflows/ios-ui-tests.yml"] ?? "";
   const hasCiPlist = /\bCI_PLIST="\$D\/Info\.ci\.plist"/.test(workflow)
-    && /\bcp\s+Sources\/MaintenanceFieldApp\/Info\.plist\s+"\$CI_PLIST"/.test(workflow)
+    && /\bcp\s+Sources\/ConsoleApp\/Info\.plist\s+"\$CI_PLIST"/.test(workflow)
     && /PlistBuddy[\s\S]{0,240}Add\s+:NSAppTransportSecurity\s+dict[\s\S]{0,320}"\$CI_PLIST"/.test(workflow)
     && /PlistBuddy[\s\S]{0,320}Add\s+:NSAppTransportSecurity:NSAllowsLocalNetworking\s+bool\s+true[\s\S]{0,320}"\$CI_PLIST"/.test(workflow);
   const hasAppTargetOnlySpec = /python3\s+-\s+"\$CI_PLIST"\s+"\$CI_PROJECT_SPEC"/.test(workflow)
-    && /needle\s*=\s*"INFOPLIST_FILE:\s*Sources\/MaintenanceFieldApp\/Info\.plist"/.test(workflow)
+    && /needle\s*=\s*"INFOPLIST_FILE:\s*Sources\/ConsoleApp\/Info\.plist"/.test(workflow)
     && /source\.count\(needle\)\s*!=\s*1/.test(workflow)
     && /source\.replace\(needle,\s*f?"INFOPLIST_FILE:\s*\{sys\.argv\[1\]\}"\)/.test(workflow)
     && /xcodegen\s+generate\s+--spec\s+"\$CI_PROJECT_SPEC"/.test(workflow)
     && !/xcodebuild[^\n]*\bINFOPLIST_FILE=(?:"\$CI_PLIST"|\$CI_PLIST)/.test(workflow);
-  const verifiesBuiltAppOnly = /BUILT_PLIST="\$\(find\s+"\$DERIVED\/Build\/Products"[\s\S]{0,240}MaintenanceFieldApp\.app\/Info\.plist[\s\S]{0,160}-print\s+-quit\)"/.test(workflow)
+  const verifiesBuiltAppOnly = /BUILT_PLIST="\$\(find\s+"\$DERIVED\/Build\/Products"[\s\S]{0,240}ConsoleApp\.app\/Info\.plist[\s\S]{0,160}-print\s+-quit\)"/.test(workflow)
     && /PlistBuddy[\s\S]{0,240}Print\s+:NSAppTransportSecurity:NSAllowsLocalNetworking[\s\S]{0,240}"\$BUILT_PLIST"/.test(workflow)
     && /production Info\.plist must remain ATS-free/.test(workflow);
   return !/NSAllowsArbitraryLoads|NSExceptionAllowsInsecureHTTPLoads|NSExceptionDomains/.test(production)
@@ -1530,24 +1530,24 @@ function hasCiOnlyLocalAts(files) {
 }
 
 function hasModernFullScreenLaunch(files) {
-  const production = files["ios/Sources/MaintenanceFieldApp/Info.plist"] ?? "";
+  const production = files["ios/Sources/ConsoleApp/Info.plist"] ?? "";
   const workflow = files[".github/workflows/ios-ui-tests.yml"] ?? "";
   return /<key>\s*UILaunchScreen\s*<\/key>\s*<dict(?:\s*\/>|>[\s\S]*?<\/dict>)/.test(production)
     && /PlistBuddy[\s\S]{0,240}Print\s+:UILaunchScreen[\s\S]{0,240}"\$BUILT_PLIST"/.test(workflow);
 }
 
 function hasCameraAuthorizationReactivation(files) {
-  const camera = stripSwiftCommentsAndStrings(files["ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift"] ?? "");
+  const camera = stripSwiftCommentsAndStrings(files["ios/Sources/ConsoleApp/CameraCaptureView.swift"] ?? "");
   return /@Environment\s*\(\s*\\\.scenePhase\s*\)\s+private\s+var\s+scenePhase/.test(camera)
     && /\.onChange\s*\(\s*of:\s*scenePhase\s*\)\s*\{\s*_,\s*newPhase\s+in[\s\S]{0,160}guard\s+newPhase\s*==\s*\.active\s+else\s*\{\s*return\s*\}[\s\S]{0,160}authorizationStatus\s*=\s*AVCaptureDevice\.authorizationStatus\s*\(\s*for:\s*\.video\s*\)/.test(camera);
 }
 
 function hasDurableCriticalPathEvidence(files) {
-  const critical = files["ios/UITests/FieldCriticalPathUITests.swift"] ?? "";
+  const critical = files["ios/UITests/ConsoleCriticalPathUITests.swift"] ?? "";
   const messenger = files["ios/UITests/MessengerUITests.swift"] ?? "";
   const camera = files["ios/UITests/CameraCaptureUITests.swift"] ?? "";
   const login = files["ios/UITests/LoginValidationUITests.swift"] ?? "";
-  const support = files["ios/UITests/Support/FieldUITestCase.swift"] ?? "";
+  const support = files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "";
 
   const startTap = critical.indexOf("startWork.tap()");
   const scopedStatus = critical.indexOf("AID.detailStatus", startTap);
@@ -1583,8 +1583,8 @@ function hasDurableCriticalPathEvidence(files) {
 }
 
 function hasFreshLocationConsentQueries(files) {
-  const support = files["ios/UITests/Support/FieldUITestCase.swift"] ?? "";
-  const critical = files["ios/UITests/FieldCriticalPathUITests.swift"] ?? "";
+  const support = files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "";
+  const critical = files["ios/UITests/ConsoleCriticalPathUITests.swift"] ?? "";
   const waitForLabel = extractFunctionBody(support, /func\s+waitForLabel\s*\(/);
   const detailButton = extractFunctionBody(support, /func\s+detailButton\s*\(/);
   const locationLifecycle = extractFunctionBody(
@@ -1630,10 +1630,10 @@ export function evaluateIosUiTestFailClosedChecks(files) {
   checks.push([aggregateJob.length > 0, "iOS UI CI must define an always-running fail-closed ios-ui-results aggregate job"]);
   checks.push([hasPinnedToolchain(job, workflow), "iOS UI CI must pin Xcode 26.6 build 17F113, Apple Swift 6.3.3, and iOS 26.5, bind Node 24.16.0 directly from the setup-node toolcache, and keep all Rust paths under its job root"]);
   checks.push([hasStrictSwift6LanguageMode(files), "iOS app, seeder, and UI-test targets must all compile in strict Swift 6 language mode without a Swift 5 compatibility override"]);
-  checks.push([! /\bsecrets\./.test(job) && /URL="http:\/\/127\.0\.0\.1:\$BP"/.test(job) && /MNT_UITEST_BASE_URL="\$URL"/.test(job), "iOS UI CI must not depend on GitHub secrets or an external backend session"]);
+  checks.push([! /\bsecrets\./.test(job) && /URL="http:\/\/127\.0\.0\.1:\$BP"/.test(job) && /CONSOLE_UITEST_BASE_URL="\$URL"/.test(job), "iOS UI CI must not depend on GitHub secrets or an external backend session"]);
   checks.push([hasValidLoopbackWebauthnPolicy(job, files["scripts/boot-ios-ui-backend.mjs"] ?? ""), "iOS UI CI must bind the backend to 127.0.0.1 while using localhost as the valid WebAuthn relying-party origin and ID through the exact approved backend step and structured launcher"]);
-  checks.push([hasCandidateShaBeforeBackendBuild(job), "iOS UI CI must verify git rev-parse HEAD against GITHUB_SHA before building candidate mnt-app"]);
-  checks.push([hasOptimizedBehavioralBackendBuild(job), "iOS UI CI must use the measured stripped-debug mnt-app build for behavioral E2E and reject release optimization overhead"]);
+  checks.push([hasCandidateShaBeforeBackendBuild(job), "iOS UI CI must verify git rev-parse HEAD against GITHUB_SHA before building candidate console-app"]);
+  checks.push([hasOptimizedBehavioralBackendBuild(job), "iOS UI CI must use the measured stripped-debug console-app build for behavioral E2E and reject release optimization overhead"]);
   checks.push([hasPipelineTimingTelemetry(job), "iOS UI CI must emit durable phase and per-shard timings so slow stages are diagnosed before budgets change"]);
   checks.push([hasFunctionalColdStartProof(files), "iOS UI CI must start cold-sensitive workers with complete functional proofs under unchanged watchdogs, including core restore and Messenger persisted-send/search before focused render, never a standalone XCTest prewarm or result substitute"]);
   checks.push([hasPinnedJobLocalXcodegen(job), "iOS UI CI must install checksum-pinned XcodeGen 2.46.0 under its job root without mutating Homebrew"]);
@@ -1654,13 +1654,13 @@ export function evaluateIosUiTestFailClosedChecks(files) {
   checks.push([hasReportFeedbackAdjacentToSubmit(files), "iOS work-order detail must place live report response feedback adjacent to submit-report controls before the unrelated camera section"]);
   checks.push([hasEntitledSimulatorSeederContract(job), "iOS UI CI must preserve the Xcode-created Simulator Runner and prove matching app/seeder Mach-O keychain entitlements before test execution"]);
   checks.push([hasMode600Xctestrun(job), "iOS UI CI must inject the UI host path and renewable session material only per functional shard through a mode-0600 job-root xctestrun"]);
-  checks.push([!/-skip-testing|XCTSkip|optional\/skipped|HAS_REAL_SESSION_SOURCE/.test(workflow + (files["ios/UITests/Support/FieldUITestCase.swift"] ?? "") + (files["ios/UITests/Support/RealSessionSeed.swift"] ?? "")), "iOS UI CI and its test support must not include skip-testing, XCTSkip, or fail-open session branches"]);
-  checks.push([! /MNT_UITEST_AUDIT_STRICT/.test(workflow), "iOS UI CI must not make strict accessibility conditional through an environment toggle"]);
+  checks.push([!/-skip-testing|XCTSkip|optional\/skipped|HAS_REAL_SESSION_SOURCE/.test(workflow + (files["ios/UITests/Support/ConsoleUITestCase.swift"] ?? "") + (files["ios/UITests/Support/RealSessionSeed.swift"] ?? "")), "iOS UI CI and its test support must not include skip-testing, XCTSkip, or fail-open session branches"]);
+  checks.push([! /CONSOLE_UITEST_AUDIT_STRICT/.test(workflow), "iOS UI CI must not make strict accessibility conditional through an environment toggle"]);
   checks.push([hasStrictAccessibility(files), "iOS UI CI must enforce strict accessibility auditing"]);
   checks.push([hasDeterministicAccessibilityPresentations(files), "iOS accessibility audits must precondition supported Simulator appearance and content size per named shard, then enforce Dynamic Type compatibility ledgers and non-Dynamic-Type audits without process-local presentation mutation"]);
   checks.push([hasAdaptiveTodayLocationConsent(files), "iOS Today must retain inline location consent outside accessibility Dynamic Type and present the complete consent section in a stable-ID sheet with a stable-ID close control at accessibility sizes, while work-order detail retains the full section"]);
   checks.push([hasUnobscuredTabContentHost(files), "every authenticated iOS tab must use the direct UIKit content-layout-guide host seam with lifecycle-safe containment and no private hierarchy coupling"]);
-  checks.push([hasAccessibilityIDParity(files), "iOS UI CI must mirror every FieldAccessibilityID static and dynamic identifier in UITests AID"]);
+  checks.push([hasAccessibilityIDParity(files), "iOS UI CI must mirror every ConsoleAccessibilityID static and dynamic identifier in UITests AID"]);
   checks.push([hasSectionScopedMessengerMessageRows(files), "iOS messenger search results and selected-thread messages must use section-scoped dynamic accessibility IDs"]);
   checks.push([hasScalableInlineMessengerSectionHeaders(files), "iOS Messenger thread and message sections must use scalable semantic in-row headers without pinned translucent section chrome"]);
   checks.push([hasPersistentMessengerComposer(files), "iOS Messenger composer and send action must be a selected-thread-gated opaque VStack sibling of the List, never rows inside it and never an ad-hoc bottom safe-area inset, with UI tests asserting both controls directly rather than scrolling to reach them"]);
@@ -1694,24 +1694,24 @@ function main() {
   const paths = [
     ".github/workflows/ios-ui-tests.yml",
     "scripts/boot-ios-ui-backend.mjs",
-    "ios/Sources/MaintenanceFieldApp/Info.plist",
-    "ios/Sources/MaintenanceFieldApp/FieldApp.swift",
-    "ios/Sources/MaintenanceFieldCore/PersistenceStores.swift",
-    "ios/Sources/MaintenanceFieldApp/FieldAccessibilityID.swift",
-    "ios/Sources/MaintenanceFieldApp/FieldViews.swift",
-    "ios/Sources/MaintenanceFieldApp/CameraCaptureView.swift",
+    "ios/Sources/ConsoleApp/Info.plist",
+    "ios/Sources/ConsoleApp/ConsoleApp.swift",
+    "ios/Sources/ConsoleCore/PersistenceStores.swift",
+    "ios/Sources/ConsoleApp/ConsoleAccessibilityID.swift",
+    "ios/Sources/ConsoleApp/ConsoleViews.swift",
+    "ios/Sources/ConsoleApp/CameraCaptureView.swift",
     "ios/Config/App.xcconfig",
-    "ios/Config/MaintenanceFieldApp.entitlements",
-    "ios/Config/MaintenanceFieldUITestSeeder.entitlements",
-    "ios/Sources/MaintenanceFieldUITestSeeder/UITestSeederApp.swift",
+    "ios/Config/ConsoleApp.entitlements",
+    "ios/Config/ConsoleUITestSeeder.entitlements",
+    "ios/Sources/ConsoleUITestSeeder/UITestSeederApp.swift",
     "ios/project.yml",
-    "ios/UITests/Support/FieldUITestCase.swift",
+    "ios/UITests/Support/ConsoleUITestCase.swift",
     "ios/UITests/Support/RealSessionSeed.swift",
     "ios/UITests/AccessibilityAuditUITests.swift",
     "ios/UITests/DynamicTypeRuntimeUITests.swift",
     "ios/UITests/PreflightUITests.swift",
     "ios/UITests/XCTestPrewarmUITests.swift",
-    "ios/UITests/FieldCriticalPathUITests.swift",
+    "ios/UITests/ConsoleCriticalPathUITests.swift",
     "ios/UITests/MessengerUITests.swift",
     "ios/UITests/CameraCaptureUITests.swift",
     "ios/UITests/LoginValidationUITests.swift",

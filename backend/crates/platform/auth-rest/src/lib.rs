@@ -1,7 +1,7 @@
 //! Auth REST API.
 //!
 //! This layer exposes the passkey ceremony and token-family primitives from
-//! `mnt-platform-auth` over HTTP. It does not own ceremony or refresh storage;
+//! `console-platform-auth` over HTTP. It does not own ceremony or refresh storage;
 //! those remain in the platform auth/provisioning crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
@@ -14,27 +14,27 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_platform_auth::{
+use console_platform_auth::{
     AccessClaims, AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier,
     MobilePasskeyStepUpBinding, PasskeyAuthenticationCredential, PasskeyRegistrationCredential,
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, RefreshTokenUseError,
     WebauthnSettings,
 };
-use mnt_platform_authz::{
+use console_platform_authz::{
     Action, Feature, Principal, Role, authorize, resolve_branch_scope_in_org,
     resolve_effective_feature_grants_in_org,
 };
-use mnt_platform_db::{
+use console_platform_db::{
     DbError, read_subject_authz_freshness, with_audit, with_audits, with_org_conn,
 };
-use mnt_platform_email::{DisabledEmailSender, EmailSender};
-use mnt_platform_group::GroupMemberOrg;
-use mnt_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
-use mnt_platform_request_context::TrustedClientIp;
+use console_platform_email::{DisabledEmailSender, EmailSender};
+use console_platform_group::GroupMemberOrg;
+use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
+use console_platform_request_context::TrustedClientIp;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
@@ -54,7 +54,7 @@ const AUTH_TRANSPORT_HEADER: &str = "x-auth-transport";
 /// The single recognized value of [`AUTH_TRANSPORT_HEADER`].
 const AUTH_TRANSPORT_COOKIE: &str = "cookie";
 /// Name of the HttpOnly refresh-token cookie used by the web transport.
-const REFRESH_COOKIE_NAME: &str = "mnt_refresh";
+const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// Path scope of the refresh cookie. Restricting it to the auth namespace means
 /// the browser never attaches the refresh token to ordinary API calls — only to
 /// the refresh/logout endpoints that need it.
@@ -168,10 +168,10 @@ pub struct AuthRestConfig {
     /// Absolute lifetime cap on a refresh-token family, measured from the
     /// family's creation. Past this ceiling a rotation is rejected and the family
     /// revoked, forcing a fresh primary authentication (NIST 800-63B AAL2).
-    /// Sourced from `MNT_REFRESH_FAMILY_ABSOLUTE_TTL_SECS` (default 24h).
+    /// Sourced from `CONSOLE_REFRESH_FAMILY_ABSOLUTE_TTL_SECS` (default 24h).
     pub refresh_family_absolute_ttl: Duration,
     /// Whether the web refresh cookie carries the `Secure` attribute (`true` in
-    /// production over HTTPS). Disabled (`MNT_COOKIE_SECURE=false`) only for local
+    /// production over HTTPS). Disabled (`CONSOLE_COOKIE_SECURE=false`) only for local
     /// http dev where the browser would otherwise drop a `Secure` cookie on
     /// `http://localhost`.
     pub cookie_secure: bool,
@@ -284,7 +284,7 @@ pub enum AuthRestConfigError {
     Url(#[from] url::ParseError),
 
     #[error("auth service configuration error: {0}")]
-    Auth(#[from] mnt_platform_auth::AuthError),
+    Auth(#[from] console_platform_auth::AuthError),
 }
 
 pub fn router(state: AuthRestState) -> Router {
@@ -575,7 +575,7 @@ struct PrivacyConsentStatusResponse {
 }
 
 /// A minted access/refresh pair. `refresh_token` is `null` in the cookie
-/// transport (web) — the refresh token rides in the HttpOnly `mnt_refresh`
+/// transport (web) — the refresh token rides in the HttpOnly `console_refresh`
 /// cookie instead — and `Some` in the body transport (mobile). The access token
 /// is ALWAYS in the body: it stays a short-lived in-memory bearer token, never a
 /// cookie. `requires_passkey_setup` is true only for an ordinary session whose
@@ -641,13 +641,13 @@ struct GroupAdminTenantContextExitResponse {
 }
 
 /// The refresh-token body is OPTIONAL: web (cookie transport) sends the token in
-/// the `mnt_refresh` cookie and an empty/absent body, while mobile sends it here.
+/// the `console_refresh` cookie and an empty/absent body, while mobile sends it here.
 #[derive(Debug, Deserialize, Default)]
 struct RefreshTokenRequest {
     refresh_token: Option<String>,
 }
 
-/// Logout accepts the refresh token from the `mnt_refresh` cookie (web) or from
+/// Logout accepts the refresh token from the `console_refresh` cookie (web) or from
 /// this body (mobile); the field is therefore optional.
 #[derive(Debug, Deserialize, Default)]
 struct LogoutRequest {
@@ -1606,8 +1606,8 @@ async fn enroll_handoff(
         .await
         .map_err(RestError::from_provisioning)?;
     let handoff_id = Uuid::new_v4();
-    let poll_token = generate_device_login_token("mnt_dlp_");
-    let approve_token = generate_device_login_token("mnt_dla_");
+    let poll_token = generate_device_login_token("console_dlp_");
+    let approve_token = generate_device_login_token("console_dla_");
 
     sqlx::query(
         r#"
@@ -1670,8 +1670,8 @@ async fn start_device_login(
     .await?;
 
     let handoff_id = Uuid::new_v4();
-    let poll_token = generate_device_login_token("mnt_dlp_");
-    let approve_token = generate_device_login_token("mnt_dla_");
+    let poll_token = generate_device_login_token("console_dlp_");
+    let approve_token = generate_device_login_token("console_dla_");
     let expires_at = now + DEVICE_LOGIN_HANDOFF_TTL;
 
     sqlx::query(
@@ -1725,7 +1725,7 @@ async fn poll_device_login(
     )
     .await?;
 
-    let poll_token = normalize_device_login_token(&body.poll_token, "mnt_dlp_")?;
+    let poll_token = normalize_device_login_token(&body.poll_token, "console_dlp_")?;
     let poll_hash = hash_device_login_token(&poll_token);
 
     let status = sqlx::query(
@@ -1834,7 +1834,7 @@ async fn approve_device_login(
     )
     .await?;
 
-    let approve_token = normalize_device_login_token(&body.approve_token, "mnt_dla_")?;
+    let approve_token = normalize_device_login_token(&body.approve_token, "console_dla_")?;
     let approve_hash = hash_device_login_token(&approve_token);
 
     let pending_id: Option<Uuid> = sqlx::query_scalar(
@@ -1926,7 +1926,7 @@ async fn approve_device_login_session(
     .await?;
     let (user_id, org_id) = authenticated_user_context(services, &headers)?;
 
-    let approve_token = normalize_device_login_token(&body.approve_token, "mnt_dla_")?;
+    let approve_token = normalize_device_login_token(&body.approve_token, "console_dla_")?;
     let approve_hash = hash_device_login_token(&approve_token);
     let existing_passkeys = services
         .passkeys
@@ -2130,7 +2130,7 @@ async fn refresh_token(
         now,
     )
     .await?;
-    // Dual transport: web reads the rotating token from the `mnt_refresh` cookie;
+    // Dual transport: web reads the rotating token from the `console_refresh` cookie;
     // mobile sends it in the JSON body. The cookie takes precedence so a web
     // client never has to (and never should) echo the token in the body.
     let cookie_mode = wants_cookie_transport(&headers);
@@ -2360,12 +2360,12 @@ async fn exit_group_admin_tenant_context(
 
 // ---------------------------------------------------------------------------
 // dev-auth: local role-switch endpoint (feature-gated, NOT in default/release
-// builds — see `mnt-gate-dev-auth-absence` and `Cargo.toml`'s `[features]`).
+// builds — see `console-gate-dev-auth-absence` and `Cargo.toml`'s `[features]`).
 //
 // # Why not `platform-rest`'s `view_as.rs`
 //
 // `view_as.rs` already mints real signed tokens through the same
-// `mnt_platform_auth` issuance this endpoint uses, so its underlying primitive
+// `console_platform_auth` issuance this endpoint uses, so its underlying primitive
 // IS reused (see below) — but its HANDLER is the wrong shape for dev-auth, and
 // deliberately not reused, for two independent reasons:
 //
@@ -2387,7 +2387,7 @@ async fn exit_group_admin_tenant_context(
 // What IS reused: the one JWT issuance path every session-minting endpoint in
 // this file already shares (`issue_token_pair` / `AccessTokenInput`, same
 // signing keys, same `AccessClaims`) — no parallel signer, no new claim shape.
-// The other reused piece is the `mnt-platform-provisioning` crate's user
+// The other reused piece is the `console-platform-provisioning` crate's user
 // upsert pattern (`DevPrincipalProvisioner`, modeled on `apply_roster_tx`),
 // because unlike `view_as` (which targets a REAL existing tenant role) a
 // role-switch persona may not exist yet, and branch scope is re-resolved from
@@ -2485,10 +2485,10 @@ async fn dev_auth_session(
         .map(BranchId::from_uuid)
         .collect();
     let now = OffsetDateTime::now_utc();
-    let principal = mnt_platform_provisioning::DevPrincipalProvisioner
+    let principal = console_platform_provisioning::DevPrincipalProvisioner
         .upsert(
             &state.pool,
-            mnt_platform_provisioning::DevPrincipalRequest {
+            console_platform_provisioning::DevPrincipalRequest {
                 org_id,
                 display_name: display_name.to_owned(),
                 role: role.as_str().to_owned(),
@@ -2695,7 +2695,7 @@ fn issue_access_token(
 
 /// Load a user's auth context when the caller already holds the request's tenant
 /// (e.g. from the verified JWT `org` claim, before the org middleware arms the
-/// GUC). `users` and `user_branches` are FORCE RLS, so as the non-owner `mnt_rt`
+/// GUC). `users` and `user_branches` are FORCE RLS, so as the non-owner `console_rt`
 /// role these reads return ZERO rows unless the GUC is armed; this variant arms
 /// it from `org` for the read transaction. A user whose row is not visible under
 /// `org` (wrong tenant, or no such user) is an unauthorized request.
@@ -3101,40 +3101,40 @@ async fn principal_from_headers(
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    mnt_platform_request_context::resolve_principal(&services.jwt_verifier, pool, headers)
+    console_platform_request_context::resolve_principal(&services.jwt_verifier, pool, headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
-        mnt_platform_request_context::RequestContextError::VerifierUnavailable => {
+        console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for auth API")
         }
-        mnt_platform_request_context::RequestContextError::WrongTokenTier => {
+        console_platform_request_context::RequestContextError::WrongTokenTier => {
             RestError::from_kernel(KernelError::forbidden(
                 "token tier is not valid for this route",
             ))
         }
-        mnt_platform_request_context::RequestContextError::AccessScope(error) => {
+        console_platform_request_context::RequestContextError::AccessScope(error) => {
             RestError::from_kernel(error)
         }
-        mnt_platform_request_context::RequestContextError::BranchScope(message)
-        | mnt_platform_request_context::RequestContextError::EffectivePolicy(message) => {
+        console_platform_request_context::RequestContextError::BranchScope(message)
+        | console_platform_request_context::RequestContextError::EffectivePolicy(message) => {
             RestError::from_kernel(KernelError::internal(message))
         }
-        mnt_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
+        console_platform_request_context::RequestContextError::MissingOrg => RestError::from_kernel(
             KernelError::internal("no tenant context is bound to the current request"),
         ),
-        mnt_platform_request_context::RequestContextError::MissingBearer => {
+        console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken => {
             RestError::unauthorized("invalid bearer token")
         }
-        mnt_platform_request_context::RequestContextError::InvalidClaim(message) => {
+        console_platform_request_context::RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
     }
@@ -3218,7 +3218,7 @@ async fn load_group_admin_groups(
         "#,
     )
     .bind(&group_ids)
-    // rls-arming: ok global identity metadata; mnt_rt has SELECT on safe columns only
+    // rls-arming: ok global identity metadata; console_rt has SELECT on safe columns only
     .fetch_all(pool)
     .await
     .map_err(|err| RestError::internal(err.to_string()))?;
@@ -3245,7 +3245,7 @@ async fn load_group_admin_groups(
 
     let mut responses = Vec::with_capacity(groups.len());
     for group in groups {
-        let members = mnt_platform_group::group_member_orgs(pool, group.id, actor).await?;
+        let members = console_platform_group::group_member_orgs(pool, group.id, actor).await?;
         responses.push(GroupAdminGroupResponse {
             id: group.id,
             slug: group.slug,
@@ -3291,7 +3291,7 @@ async fn resolve_group_admin_target_org(
     }
 
     for group_id in group_ids {
-        let members = mnt_platform_group::group_member_orgs(pool, group_id, actor).await?;
+        let members = console_platform_group::group_member_orgs(pool, group_id, actor).await?;
         if let Some(member) = members
             .into_iter()
             .find(|member| member.org_id == target_org)
@@ -3498,7 +3498,7 @@ fn wants_cookie_transport(headers: &HeaderMap) -> bool {
         .is_some_and(|value| value.eq_ignore_ascii_case(AUTH_TRANSPORT_COOKIE))
 }
 
-/// Read the refresh token from the `mnt_refresh` cookie, parsing the raw `Cookie`
+/// Read the refresh token from the `console_refresh` cookie, parsing the raw `Cookie`
 /// header (`a=b; c=d`). Returns `None` when the header or the cookie is absent or
 /// the value is empty. Used by the web transport; mobile reads it from the body.
 fn refresh_cookie_value(headers: &HeaderMap) -> Option<String> {
@@ -3661,8 +3661,8 @@ mod tests {
     };
     use axum::http::HeaderMap;
     use axum::http::StatusCode;
-    use mnt_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-    use mnt_platform_request_context::TrustedClientIp;
+    use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+    use console_platform_request_context::TrustedClientIp;
     use sqlx::PgPool;
     use sqlx::postgres::PgPoolOptions;
     use std::collections::BTreeSet;
@@ -3786,7 +3786,7 @@ mod tests {
             .max_connections(2)
             .after_connect(|conn, _meta| {
                 Box::pin(async move {
-                    sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                    sqlx::query("SET ROLE console_rt").execute(conn).await?;
                     Ok(())
                 })
             })

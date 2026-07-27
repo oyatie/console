@@ -23,7 +23,7 @@ const generatorBin = resolve(
 );
 const outputDir = resolve(
   root,
-  "clients/swift/Sources/MaintenanceAPIClient/Generated",
+  "clients/swift/Sources/ConsoleAPIClient/Generated",
 );
 const config = resolve(root, "clients/swift/openapi-generator-config.yaml");
 const inputSpec = resolve(root, "backend/openapi/openapi.yaml");

@@ -4,8 +4,8 @@
 //! the use-case inputs/outputs and stamps audit events.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_governance_domain::{LifecycleState, TransitionRequirements};
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext, UserId};
+use console_governance_domain::{LifecycleState, TransitionRequirements};
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext, UserId};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;

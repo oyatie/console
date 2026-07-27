@@ -16,7 +16,7 @@ export async function waitForChildReady({
   observed,
   checkReady,
   getOutput,
-  name = "mnt-app",
+  name = "console-app",
   timeoutMs = 300_000,
   probeTimeoutMs = 10_000,
   pollIntervalMs = 500,

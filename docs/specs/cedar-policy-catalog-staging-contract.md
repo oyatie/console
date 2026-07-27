@@ -53,7 +53,7 @@ All three B16 endpoints are tenant/org scoped by the authenticated principal and
   or any other authority-bearing scope field.
 - REST handlers derive org scope from `current_org()` / the resolved `Principal` and call storage through
   `with_org_conn` for reads or `with_audit` / `with_audits` for audited writes.
-- Postgres tables must carry `org_id`, enable and force RLS, grant only the intended operations to `mnt_rt`, and use the
+- Postgres tables must carry `org_id`, enable and force RLS, grant only the intended operations to `console_rt`, and use the
   standard `org_id = current_setting('app.current_org')::uuid` policy shape.
 - Cross-org subject, role, team, branch, object, resource, or draft references are either invisible under RLS or rejected
   as validation/not-found errors. They are never silently resolved by owner/superuser connections.
@@ -75,7 +75,7 @@ backend/crates/policy/rest
 
 If the workspace naming convention changes before implementation, keep the boundary equivalent: a domain model for Cedar
 policy rows/drafts, an application service that owns validation and commands, a Postgres adapter that owns RLS/audit-safe
-persistence, and a REST crate that owns DTO/OpenAPI wiring. Reuse `mnt_platform_authz` types such as `Feature`,
+persistence, and a REST crate that owns DTO/OpenAPI wiring. Reuse `console_platform_authz` types such as `Feature`,
 `AuthorizationRequest`, `AuthorizationResource`, `DecisionEffect`, `DecisionReason`, `DualEngineMode`,
 `SubjectFreshness`, and `CompiledBundleCacheKey` where they model the same concept; do not leak identity custom-role DTOs
 into the Cedar contract.
@@ -274,7 +274,7 @@ Server behavior:
 - Authenticate and resolve `Principal`.
 - Require `RoleManage` or later explicit Cedar policy-read capability.
 - Derive org from request context; ignore/reject any client org field.
-- Read catalog/draft rows through `with_org_conn` under `mnt_rt`.
+- Read catalog/draft rows through `with_org_conn` under `console_rt`.
 - Return rows the caller is allowed to see; branch-scoped policy managers see only rows whose selectors/resources are
   inside delegated scope. Omitted rows are not disclosed.
 - Include `policy_version`/bundle identity only for rows backed by a current shadow/enforced bundle.
@@ -474,7 +474,7 @@ Response shape:
 - `action.action_key` must resolve to a canonical action in the server action registry. For v1 this should be the existing
   `Feature` / coexistence-map vocabulary unless a domain explicitly owns a richer action registry.
 - The server reloads referenced users, roles, teams, branches, object rows, classifications, and lifecycle attributes under
-  `mnt_rt` RLS. Not visible means not eligible; do not disclose whether the row exists in another org.
+  `console_rt` RLS. Not visible means not eligible; do not disclose whether the row exists in another org.
 - Client-supplied `resource_id` identifies a candidate resource only. The server reloads the resource's org, branch/team,
   classification, lifecycle state, and other policy attributes.
 - The server generates natural-language rule text and Cedar policy text from normalized blocks. Raw Cedar authoring is not
@@ -541,7 +541,7 @@ Suggested sequencing for the existing B16 Kanban children:
 1. Storage/domain child (`t_78327b21`): add domain/application models, migrations, RLS, audit builders, and Postgres
    adapter methods for catalog/draft persistence. Keep draft saves from changing runtime policy versions.
 2. REST/OpenAPI child (`t_5916c5d7`): add REST routes/DTOs, OpenAPI schemas, generated clients, and request validation.
-3. Verification child (`t_8634bda1`): prove tenant isolation, `mnt_rt` RLS, audit coverage, deny-by-omission simulation,
+3. Verification child (`t_8634bda1`): prove tenant isolation, `console_rt` RLS, audit coverage, deny-by-omission simulation,
    draft-save non-enforcement, and OpenAPI/client drift.
 4. Frontend consumer (#343 / policy screen) remains blocked from using legacy `/api/v1/policy/*` as a Cedar substitute
    until the B16 REST endpoints exist.
@@ -550,13 +550,13 @@ Minimum backend verification commands for implementation PRs:
 
 ```text
 cd backend
-SQLX_OFFLINE=true cargo test -p mnt_policy_domain -p mnt_policy_application -p mnt_policy_adapter_postgres -p mnt_policy_rest
-SQLX_OFFLINE=true cargo test -p mnt_platform_authz cedar
-cargo run -p mnt-gate-tenant-isolation
-cargo run -p mnt-gate-rls-arming
-cargo run -p mnt-gate-audit-coverage
-cargo run -p mnt-gate-migration-safety
-cargo run -p mnt-gate-layer-boundary
+SQLX_OFFLINE=true cargo test -p console_policy_domain -p console_policy_application -p console_policy_adapter_postgres -p console_policy_rest
+SQLX_OFFLINE=true cargo test -p console_platform_authz cedar
+cargo run -p console-gate-tenant-isolation
+cargo run -p console-gate-rls-arming
+cargo run -p console-gate-audit-coverage
+cargo run -p console-gate-migration-safety
+cargo run -p console-gate-layer-boundary
 ```
 
 Adjust package names to the actual crate names if the implementation chooses a different `policy` crate prefix.

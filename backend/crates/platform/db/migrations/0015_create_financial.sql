@@ -2,7 +2,7 @@
 -- Formula defaults are configuration snapshots pending 경리 validation; values
 -- are intentionally stored per quote/request rather than hard-coded.
 
--- mnt-gate: audited-table financial_rental_quotes
+-- console-gate: audited-table financial_rental_quotes
 CREATE TABLE financial_rental_quotes (
     id                              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id                       UUID        NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
@@ -41,7 +41,7 @@ CREATE TABLE financial_rental_quote_lines (
     UNIQUE (quote_id, code)
 );
 
--- mnt-gate: audited-table equipment_cost_ledger
+-- console-gate: audited-table equipment_cost_ledger
 CREATE TABLE equipment_cost_ledger (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id            UUID        NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
@@ -61,7 +61,7 @@ CREATE TABLE equipment_cost_ledger (
 CREATE INDEX idx_equipment_cost_ledger_equipment
     ON equipment_cost_ledger (branch_id, equipment_id, entry_at DESC);
 
--- mnt-gate: audited-table financial_purchase_requests
+-- console-gate: audited-table financial_purchase_requests
 CREATE TABLE financial_purchase_requests (
     id                              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id                       UUID        NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
@@ -108,7 +108,7 @@ ALTER TABLE equipment_cost_ledger
 CREATE INDEX idx_financial_purchase_requests_branch_status
     ON financial_purchase_requests (branch_id, status, updated_at DESC);
 
--- mnt-gate: audited-table financial_purchase_history
+-- console-gate: audited-table financial_purchase_history
 CREATE TABLE financial_purchase_history (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_request_id  UUID        NOT NULL REFERENCES financial_purchase_requests(id) ON DELETE CASCADE,

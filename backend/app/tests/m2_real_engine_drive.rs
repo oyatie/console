@@ -4,9 +4,9 @@
 //! ## What this proves (the AC + review findings)
 //! The sibling `m2_flag_on_runtime_drain.rs` (in `platform/db`) models the spine
 //! writes with hand-written SQL. This test instead drives the REAL engine end to
-//! end — `mnt_workorder_rest::m2_strangler::drive_completion_tail` on a genuine
+//! end — `console_workorder_rest::m2_strangler::drive_completion_tail` on a genuine
 //! `PgWorkflowRuntimeStore` (which routes every write through the domain
-//! `WorkflowRuntimePort` + `mnt_workflow_runtime::{start_run, process_node}`) — so
+//! `WorkflowRuntimePort` + `console_workflow_runtime::{start_run, process_node}`) — so
 //! the production code paths, not a test re-implementation, are exercised:
 //!   1. one completion tail (`start_run` → `apply_completion` object_mutation →
 //!      `emit_payroll` job) creates EXACTLY one `workflow_runs` row that lands
@@ -28,20 +28,20 @@
 //! is now SUCCEEDED, so it is never re-selected).
 //!
 //! ## Runtime fidelity (mandatory)
-//! Every runtime write + read runs as the genuine non-owner `mnt_rt` role
+//! Every runtime write + read runs as the genuine non-owner `console_rt` role
 //! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) with `app.current_org` armed — never a
 //! BYPASSRLS superuser, which would mask a broken RLS path. Only minting the
-//! `organizations` row (owner-only; `mnt_rt` is SELECT-only there) uses the owner
+//! `organizations` row (owner-only; `console_rt` is SELECT-only there) uses the owner
 //! pool; the definition seed, the tail drive, the drain, and every assertion read
-//! execute as `mnt_rt` under the armed tenant GUC, exactly as production does.
+//! execute as `console_rt` under the armed tenant GUC, exactly as production does.
 //!
 //! No `work_orders` row is needed: the runtime tail records a run keyed on the work
 //! order id but does not itself write `work_orders` (`workflow_runs.object_id` has
 //! no FK to it), so a synthetic id exercises the tail without the full WO chain.
 
-use mnt_kernel_core::{OrgId, WorkOrderId};
-use mnt_workflow_runtime_adapter_postgres::{M2_STRANGLER_FLAG, PgWorkflowRuntimeStore};
-use mnt_workorder_rest::m2_strangler::{drive_completion_tail, reconcile_completion_tails};
+use console_kernel_core::{OrgId, WorkOrderId};
+use console_workflow_runtime_adapter_postgres::{M2_STRANGLER_FLAG, PgWorkflowRuntimeStore};
+use console_workorder_rest::m2_strangler::{drive_completion_tail, reconcile_completion_tails};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
@@ -57,7 +57,7 @@ const PARTIAL_TEST_TENANT: Uuid = Uuid::from_u128(0x4d32_11c4_0000_0000_0000_000
 const DRAIN_LIMIT: i64 = 100;
 
 // ===========================================================================
-// Runtime-role pool: every connection assumes the genuine non-owner `mnt_rt`, so
+// Runtime-role pool: every connection assumes the genuine non-owner `console_rt`, so
 // RLS is ACTUALLY enforced (BYPASSRLS does not apply, FORCE RLS does). Copied from
 // the sibling flag-off parity gate.
 // ===========================================================================
@@ -67,7 +67,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -76,7 +76,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-/// Arm `app.current_org` transaction-locally (the pool is already `mnt_rt` via
+/// Arm `app.current_org` transaction-locally (the pool is already `console_rt` via
 /// `after_connect`), exactly as the org middleware / `with_org_conn` do.
 async fn arm_org(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: OrgId) {
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -86,7 +86,7 @@ async fn arm_org(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, org: OrgId) {
         .unwrap();
 }
 
-/// Mint the `organizations` row via the OWNER pool (`mnt_rt` is SELECT-only there).
+/// Mint the `organizations` row via the OWNER pool (`console_rt` is SELECT-only there).
 async fn seed_org(owner_pool: &PgPool, org: OrgId) {
     sqlx::query(
         "INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3) \
@@ -101,7 +101,7 @@ async fn seed_org(owner_pool: &PgPool, org: OrgId) {
 }
 
 /// Seed the canonical work-order completion definition (`work_order.completion`,
-/// object_type `work_order`, ACTIVE, one PUBLISHED `wf.exec.v1` version) as `mnt_rt`
+/// object_type `work_order`, ACTIVE, one PUBLISHED `wf.exec.v1` version) as `console_rt`
 /// under the armed tenant GUC, returning `(definition_id, version)` for the run to
 /// bind to. Matches what `resolve_completion_definition` pins to.
 async fn seed_definition(rt_pool: &PgPool, org: OrgId) -> (Uuid, i32) {
@@ -138,7 +138,7 @@ async fn seed_definition(rt_pool: &PgPool, org: OrgId) -> (Uuid, i32) {
     (definition_id, 1)
 }
 
-/// Tenant-scoped `SELECT count(*)` as `mnt_rt` under the armed GUC.
+/// Tenant-scoped `SELECT count(*)` as `console_rt` under the armed GUC.
 async fn count(rt_pool: &PgPool, org: OrgId, count_query: &'static str) -> i64 {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -150,7 +150,7 @@ async fn count(rt_pool: &PgPool, org: OrgId, count_query: &'static str) -> i64 {
     n
 }
 
-/// The single run's status, read as `mnt_rt` (exactly one run exists for the tenant).
+/// The single run's status, read as `console_rt` (exactly one run exists for the tenant).
 async fn single_run_status(rt_pool: &PgPool, org: OrgId) -> String {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -162,7 +162,7 @@ async fn single_run_status(rt_pool: &PgPool, org: OrgId) -> String {
     status
 }
 
-/// The single staged draft's `(status, calculation_enabled)`, read as `mnt_rt`.
+/// The single staged draft's `(status, calculation_enabled)`, read as `console_rt`.
 async fn single_draft(rt_pool: &PgPool, org: OrgId) -> (String, bool) {
     let mut tx = rt_pool.begin().await.unwrap();
     arm_org(&mut tx, org).await;
@@ -313,7 +313,7 @@ async fn real_engine_completion_tail_drives_one_succeeded_run_and_one_blocked_dr
 // Partial-run recovery fixtures (codex HIGH round 2).
 // ===========================================================================
 
-/// Enroll the tenant in the M2 runtime (flag ON) as `mnt_rt` under the armed GUC —
+/// Enroll the tenant in the M2 runtime (flag ON) as `console_rt` under the armed GUC —
 /// the reconciler is dark-safe and does nothing for an un-enrolled tenant, so it must
 /// be flipped ON to exercise the recovery. No shipped migration/seed writes this row.
 async fn enroll_tenant(rt_pool: &PgPool, org: OrgId) {
@@ -335,9 +335,9 @@ async fn enroll_tenant(rt_pool: &PgPool, org: OrgId) {
 /// single `FINAL_COMPLETED` work order with an EXPLICIT id, so its deterministic
 /// completion key `run:work_order:{id}:completion:v1` is known to the test. Minted via
 /// the OWNER pool (the registry/work-order chain is console-owned in production and
-/// `mnt_rt` cannot write it; the owner mint is the established fixture pattern, same as
+/// `console_rt` cannot write it; the owner mint is the established fixture pattern, same as
 /// `seed_org`). Every row carries `org_id = org` so RLS + the composite same-org FKs
-/// are satisfied and the reconciler (as `mnt_rt` under the armed GUC) can see it.
+/// are satisfied and the reconciler (as `console_rt` under the armed GUC) can see it.
 async fn seed_final_completed_work_order(owner_pool: &PgPool, org: OrgId, work_order_uuid: Uuid) {
     let org_uuid = *org.as_uuid();
     let region_id: Uuid =
@@ -423,7 +423,7 @@ async fn seed_final_completed_work_order(owner_pool: &PgPool, org: OrgId, work_o
 /// Simulate the crash the reconciler must recover: `start_run` committed the
 /// `workflow_runs` row (STARTING → RUNNING) under the deterministic completion key,
 /// then the process died before `emit_payroll` — so the run sits RUNNING with NO node
-/// runs and NO outbox event. Written as `mnt_rt` under the armed GUC (mirrors the
+/// runs and NO outbox event. Written as `console_rt` under the armed GUC (mirrors the
 /// sibling flag-on gate's `start_run` DB-state model), keyed on `completion_key` so the
 /// reconciler's re-drive collides on `UNIQUE(org_id, idempotency_key)` and RESUMES it.
 async fn seed_partial_run(

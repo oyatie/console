@@ -9,16 +9,16 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-messenger-application",
+    name = "console-messenger-application",
     mapped_srcs = repo_mapped_srcs("backend/crates/messenger/application", glob(["src/**/*.rs"])),
-    crate = "mnt_messenger_application",
+    crate = "console_messenger_application",
     edition = "2024",
     crate_root = "backend/crates/messenger/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/messenger/application"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/messenger/domain:mnt-messenger-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/messenger/domain:console-messenger-domain",
         "//third-party/rust:serde",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
@@ -26,17 +26,17 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-messenger-application-unit",
+    name = "console-messenger-application-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/messenger/application", glob(["src/**/*.rs"])),
-    crate = "mnt_messenger_application",
+    crate = "console_messenger_application",
     edition = "2024",
     crate_root = "backend/crates/messenger/application/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/messenger/application"},
     labels = ["owner.backend.crates.messenger.application", "domain.messenger", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/messenger/domain:mnt-messenger-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/messenger/domain:console-messenger-domain",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

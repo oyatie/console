@@ -9,17 +9,17 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-test-support",
+    name = "console-platform-test-support",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/test-support", glob(["src/**/*.rs"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
-    crate = "mnt_platform_test_support",
+    crate = "console_platform_test_support",
     edition = "2024",
     crate_root = "backend/crates/platform/test-support/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/test-support", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:sqlx",
         "//third-party/rust:uuid",
     ],

@@ -1,4 +1,4 @@
-import { createMaintenanceApiClient } from "@maintenance/api-client-ts";
+import { createConsoleApiClient } from "@console/api-client-ts";
 
 import { getDeviceId } from "./device";
 import { isAuthPath, shouldSkipAuthRefresh, singleFlightRefresh } from "./refresh";
@@ -287,7 +287,7 @@ export function createConsoleApiClient(
     }
   }
 
-  const client = createMaintenanceApiClient({
+  const client = createConsoleApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL ?? window.location.origin,
     bearerToken,
   });
@@ -295,7 +295,7 @@ export function createConsoleApiClient(
   client.use({
     async onRequest({ request }) {
       // Opt this (web) client into the cookie transport for the refresh token:
-      // the backend then sets `mnt_refresh` as an HttpOnly cookie and omits the
+      // the backend then sets `console_refresh` as an HttpOnly cookie and omits the
       // refresh token from response bodies. Mobile clients never send this header
       // and keep the body-based refresh token.
       request.headers.set("X-Auth-Transport", "cookie");
@@ -314,7 +314,7 @@ export function createConsoleApiClient(
         request.headers.set("X-Device-Id", deviceId);
       }
 
-      // Send and accept the HttpOnly refresh cookie (`mnt_refresh`). The browser
+      // Send and accept the HttpOnly refresh cookie (`console_refresh`). The browser
       // attaches it only to /api/v1/auth requests (the cookie's Path scope), so
       // ordinary API calls still carry just the Authorization bearer header.
       // openapi-fetch builds the Request before middleware runs, and a Request's

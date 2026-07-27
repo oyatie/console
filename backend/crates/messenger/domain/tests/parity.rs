@@ -1,7 +1,7 @@
 //! Parity taxonomy + presence derivation (pure domain logic).
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_messenger_domain::{
+use console_messenger_domain::{
     PRESENCE_AWAY_SECONDS, PRESENCE_ONLINE_SECONDS, PresenceStatus, ThreadKind, ThreadVisibility,
     presence_status_for_age,
 };

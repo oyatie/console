@@ -4,13 +4,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: maintenance-onprem
+  name: console-onprem
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: maintenance-onprem
-  namespace: maintenance-onprem
+  name: console-onprem
+  namespace: console-onprem
 spec:
   clusterNetwork:
     pods:
@@ -23,17 +23,17 @@ spec:
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: Metal3Cluster
-    name: maintenance-onprem
+    name: console-onprem
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
     kind: TalosControlPlane
-    name: maintenance-onprem-controlplane
+    name: console-onprem-controlplane
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3Cluster
 metadata:
-  name: maintenance-onprem
-  namespace: maintenance-onprem
+  name: console-onprem
+  namespace: console-onprem
 spec:
   controlPlaneEndpoint:
     host: "10.0.0.240"
@@ -43,15 +43,15 @@ spec:
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
 kind: TalosControlPlane
 metadata:
-  name: maintenance-onprem-controlplane
-  namespace: maintenance-onprem
+  name: console-onprem-controlplane
+  namespace: console-onprem
 spec:
   replicas: 3
   version: "v1.36.2"
   infrastructureTemplate:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: Metal3MachineTemplate
-    name: maintenance-onprem-controlplane
+    name: console-onprem-controlplane
   controlPlaneConfig:
     controlplane:
       generateType: controlplane
@@ -83,7 +83,7 @@ spec:
               endpoint: "https://10.0.0.240:6443"
             apiServer:
               certSANs:
-                - "api.maintenance-onprem.example.invalid"
+                - "api.console-onprem.example.invalid"
                 - "10.0.0.240"
         - |
           # controlplane.patch.yaml
@@ -100,8 +100,8 @@ spec:
           # application workloads belong on dedicated worker nodes.
           machine:
             nodeLabels:
-              maintenance.nousresearch.com/substrate: on-prem
-              maintenance.nousresearch.com/node-role: control-plane
+              console.nousresearch.com/substrate: on-prem
+              console.nousresearch.com/node-role: control-plane
   rolloutStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -110,8 +110,8 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3MachineTemplate
 metadata:
-  name: maintenance-onprem-controlplane
-  namespace: maintenance-onprem
+  name: console-onprem-controlplane
+  namespace: console-onprem
 spec:
   nodeReuse: false
   template:
@@ -119,24 +119,24 @@ spec:
       automatedCleaningMode: metadata
       hostSelector:
         matchLabels:
-          cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-          maintenance.nousresearch.com/onprem-role: "control-plane"
-          maintenance.nousresearch.com/substrate: "on-prem"
+          cluster.x-k8s.io/cluster-name: "console-onprem"
+          console.nousresearch.com/onprem-role: "control-plane"
+          console.nousresearch.com/substrate: "on-prem"
       image:
         url: "https://images.example.invalid/talos-metal-amd64-v1.13.4.raw.xz"
         checksum: "https://images.example.invalid/talos-metal-amd64-v1.13.4.raw.xz.sha256"
         checksumType: "sha256"
         format: "raw"
       dataTemplate:
-        name: maintenance-onprem-controlplane-template
+        name: console-onprem-controlplane-template
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3DataTemplate
 metadata:
-  name: maintenance-onprem-controlplane-template
-  namespace: maintenance-onprem
+  name: console-onprem-controlplane-template
+  namespace: console-onprem
 spec:
-  clusterName: maintenance-onprem
+  clusterName: console-onprem
   metaData:
     objectNames:
       - key: machine_name
@@ -163,41 +163,41 @@ spec:
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
-  name: maintenance-onprem-workers
-  namespace: maintenance-onprem
+  name: console-onprem-workers
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: maintenance-onprem
+    cluster.x-k8s.io/cluster-name: console-onprem
     nodepool: workers
 spec:
-  clusterName: maintenance-onprem
+  clusterName: console-onprem
   replicas: 2
   selector:
     matchLabels:
-      cluster.x-k8s.io/cluster-name: maintenance-onprem
+      cluster.x-k8s.io/cluster-name: console-onprem
       nodepool: workers
   template:
     metadata:
       labels:
-        cluster.x-k8s.io/cluster-name: maintenance-onprem
+        cluster.x-k8s.io/cluster-name: console-onprem
         nodepool: workers
     spec:
-      clusterName: maintenance-onprem
+      clusterName: console-onprem
       version: "v1.36.2"
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
           kind: TalosConfigTemplate
-          name: maintenance-onprem-workers
+          name: console-onprem-workers
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: Metal3MachineTemplate
-        name: maintenance-onprem-workers
+        name: console-onprem-workers
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
 kind: TalosConfigTemplate
 metadata:
-  name: maintenance-onprem-workers
-  namespace: maintenance-onprem
+  name: console-onprem-workers
+  namespace: console-onprem
 spec:
   template:
     spec:
@@ -230,7 +230,7 @@ spec:
               endpoint: "https://10.0.0.240:6443"
             apiServer:
               certSANs:
-                - "api.maintenance-onprem.example.invalid"
+                - "api.console-onprem.example.invalid"
                 - "10.0.0.240"
         - |
           # worker.patch.yaml
@@ -242,14 +242,14 @@ spec:
           # role patch in TalosConfigTemplate for generated worker bootstrap data.
           machine:
             nodeLabels:
-              maintenance.nousresearch.com/substrate: on-prem
-              maintenance.nousresearch.com/node-role: worker
+              console.nousresearch.com/substrate: on-prem
+              console.nousresearch.com/node-role: worker
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3MachineTemplate
 metadata:
-  name: maintenance-onprem-workers
-  namespace: maintenance-onprem
+  name: console-onprem-workers
+  namespace: console-onprem
 spec:
   nodeReuse: false
   template:
@@ -257,24 +257,24 @@ spec:
       automatedCleaningMode: metadata
       hostSelector:
         matchLabels:
-          cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-          maintenance.nousresearch.com/onprem-role: "worker"
-          maintenance.nousresearch.com/substrate: "on-prem"
+          cluster.x-k8s.io/cluster-name: "console-onprem"
+          console.nousresearch.com/onprem-role: "worker"
+          console.nousresearch.com/substrate: "on-prem"
       image:
         url: "https://images.example.invalid/talos-metal-amd64-v1.13.4.raw.xz"
         checksum: "https://images.example.invalid/talos-metal-amd64-v1.13.4.raw.xz.sha256"
         checksumType: "sha256"
         format: "raw"
       dataTemplate:
-        name: maintenance-onprem-workers-template
+        name: console-onprem-workers-template
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3DataTemplate
 metadata:
-  name: maintenance-onprem-workers-template
-  namespace: maintenance-onprem
+  name: console-onprem-workers-template
+  namespace: console-onprem
 spec:
-  clusterName: maintenance-onprem
+  clusterName: console-onprem
   metaData:
     objectNames:
       - key: machine_name
@@ -302,12 +302,12 @@ spec:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: mnt-cp-1
-  namespace: maintenance-onprem
+  name: console-cp-1
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-    maintenance.nousresearch.com/onprem-role: "control-plane"
-    maintenance.nousresearch.com/substrate: "on-prem"
+    cluster.x-k8s.io/cluster-name: "console-onprem"
+    console.nousresearch.com/onprem-role: "control-plane"
+    console.nousresearch.com/substrate: "on-prem"
     topology.kubernetes.io/zone: "rack-a"
 spec:
   online: true
@@ -315,7 +315,7 @@ spec:
   bootMode: "UEFI"
   bmc:
     address: "redfish-virtualmedia://192.0.2.11/redfish/v1/Systems/1"
-    credentialsName: "mnt-cp-1-bmc"
+    credentialsName: "console-cp-1-bmc"
   rootDeviceHints:
     deviceName: "/dev/sda"
 ---
@@ -323,12 +323,12 @@ spec:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: mnt-cp-2
-  namespace: maintenance-onprem
+  name: console-cp-2
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-    maintenance.nousresearch.com/onprem-role: "control-plane"
-    maintenance.nousresearch.com/substrate: "on-prem"
+    cluster.x-k8s.io/cluster-name: "console-onprem"
+    console.nousresearch.com/onprem-role: "control-plane"
+    console.nousresearch.com/substrate: "on-prem"
     topology.kubernetes.io/zone: "rack-b"
 spec:
   online: true
@@ -336,7 +336,7 @@ spec:
   bootMode: "UEFI"
   bmc:
     address: "redfish-virtualmedia://192.0.2.12/redfish/v1/Systems/1"
-    credentialsName: "mnt-cp-2-bmc"
+    credentialsName: "console-cp-2-bmc"
   rootDeviceHints:
     deviceName: "/dev/sda"
 ---
@@ -344,12 +344,12 @@ spec:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: mnt-cp-3
-  namespace: maintenance-onprem
+  name: console-cp-3
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-    maintenance.nousresearch.com/onprem-role: "control-plane"
-    maintenance.nousresearch.com/substrate: "on-prem"
+    cluster.x-k8s.io/cluster-name: "console-onprem"
+    console.nousresearch.com/onprem-role: "control-plane"
+    console.nousresearch.com/substrate: "on-prem"
     topology.kubernetes.io/zone: "rack-c"
 spec:
   online: true
@@ -357,7 +357,7 @@ spec:
   bootMode: "UEFI"
   bmc:
     address: "redfish-virtualmedia://192.0.2.13/redfish/v1/Systems/1"
-    credentialsName: "mnt-cp-3-bmc"
+    credentialsName: "console-cp-3-bmc"
   rootDeviceHints:
     deviceName: "/dev/sda"
 ---
@@ -365,12 +365,12 @@ spec:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: mnt-worker-1
-  namespace: maintenance-onprem
+  name: console-worker-1
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-    maintenance.nousresearch.com/onprem-role: "worker"
-    maintenance.nousresearch.com/substrate: "on-prem"
+    cluster.x-k8s.io/cluster-name: "console-onprem"
+    console.nousresearch.com/onprem-role: "worker"
+    console.nousresearch.com/substrate: "on-prem"
     topology.kubernetes.io/zone: "rack-a"
 spec:
   online: true
@@ -378,7 +378,7 @@ spec:
   bootMode: "UEFI"
   bmc:
     address: "redfish-virtualmedia://192.0.2.21/redfish/v1/Systems/1"
-    credentialsName: "mnt-worker-1-bmc"
+    credentialsName: "console-worker-1-bmc"
   rootDeviceHints:
     deviceName: "/dev/sda"
 ---
@@ -386,12 +386,12 @@ spec:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: mnt-worker-2
-  namespace: maintenance-onprem
+  name: console-worker-2
+  namespace: console-onprem
   labels:
-    cluster.x-k8s.io/cluster-name: "maintenance-onprem"
-    maintenance.nousresearch.com/onprem-role: "worker"
-    maintenance.nousresearch.com/substrate: "on-prem"
+    cluster.x-k8s.io/cluster-name: "console-onprem"
+    console.nousresearch.com/onprem-role: "worker"
+    console.nousresearch.com/substrate: "on-prem"
     topology.kubernetes.io/zone: "rack-b"
 spec:
   online: true
@@ -399,6 +399,6 @@ spec:
   bootMode: "UEFI"
   bmc:
     address: "redfish-virtualmedia://192.0.2.22/redfish/v1/Systems/1"
-    credentialsName: "mnt-worker-2-bmc"
+    credentialsName: "console-worker-2-bmc"
   rootDeviceHints:
     deviceName: "/dev/sda"

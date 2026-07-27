@@ -10,7 +10,7 @@ use std::collections::BTreeSet;
 use std::io::Cursor;
 use std::path::PathBuf;
 
-use mnt_platform_excel::{
+use console_platform_excel::{
     CellWrite, DAILY_STATUS_TEMPLATE, DailyStatusSection, SectionFill, TemplateRow,
     fill_template_bytes, roundtrip_workbook_bytes, umya_spreadsheet,
 };

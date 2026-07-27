@@ -5,7 +5,7 @@
 //! the adapter derives the tenant from the authenticated request context.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_evaluation_domain::{
+use console_evaluation_domain::{
     CycleKind, CycleStage, CycleTransition, EvidenceKind, Grade, MetricKind, ReviewKind,
     ReviewStatus, SubjectState,
 };
@@ -261,7 +261,7 @@ pub struct PreflightReport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_evaluation_domain::{CycleKind, Grade, ReviewKind};
+    use console_evaluation_domain::{CycleKind, Grade, ReviewKind};
     use time::Month;
 
     #[test]

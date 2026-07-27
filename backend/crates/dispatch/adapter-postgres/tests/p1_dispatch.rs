@@ -1,20 +1,20 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_dispatch_adapter_postgres::{PgDispatchStore, dispatch_response};
-use mnt_dispatch_application::{
+use console_dispatch_adapter_postgres::{PgDispatchStore, dispatch_response};
+use console_dispatch_application::{
     DispatchQueueStatus, ExpireP1DispatchCommand, ForceAssignP1DispatchCommand,
     IncidentLocationInput, ListDispatchQueueQuery, RespondP1DispatchCommand,
     StartP1DispatchCommand,
 };
-use mnt_dispatch_domain::{DispatchResponseKind, DispatchStatus, DispatchTimerConfig};
-use mnt_kernel_core::{BranchId, ErrorKind, OrgId, TraceContext, UserId, WorkOrderId};
-use mnt_platform_test_support::{grant_mnt_rt, runtime_role_pool};
+use console_dispatch_domain::{DispatchResponseKind, DispatchStatus, DispatchTimerConfig};
+use console_kernel_core::{BranchId, ErrorKind, OrgId, TraceContext, UserId, WorkOrderId};
+use console_platform_test_support::{grant_console_rt, runtime_role_pool};
 use sqlx::{PgPool, Row};
 use time::macros::datetime;
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn two_accepts_auto_assign_best_gps_candidate_and_audit(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -148,7 +148,7 @@ async fn two_accepts_auto_assign_best_gps_candidate_and_audit(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn same_response_retry_is_idempotent_without_duplicate_audit(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -230,7 +230,7 @@ async fn same_response_retry_is_idempotent_without_duplicate_audit(pool: PgPool)
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn no_accept_path_escalates_and_manager_force_assigns(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let work_order_id = seed_work_order(&pool, seeded.branch_id, seeded.receptionist, 2).await;
         let store = PgDispatchStore::new(pool.clone());
@@ -320,7 +320,7 @@ async fn no_accept_path_escalates_and_manager_force_assigns(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn cross_branch_consented_responder_is_gps_ranked(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         // Consent is per-user (location_consents UNIQUE (user_id)). A mechanic who
         // is a valid target in the dispatch branch but whose consent row was recorded
         // in a *different* branch must still be GPS-ranked, not silently demoted to
@@ -427,7 +427,7 @@ async fn cross_branch_consented_responder_is_gps_ranked(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn start_replay_is_audit_once_and_changed_intent_conflicts(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -482,7 +482,7 @@ async fn start_replay_is_audit_once_and_changed_intent_conflicts(pool: PgPool) {
 async fn declined_target_cannot_be_force_assigned_and_candidate_read_is_side_effect_free(
     pool: PgPool,
 ) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone()); let now = datetime!(2026-06-12 09:00 UTC);
         let started = store.start_dispatch(StartP1DispatchCommand { actor: seeded.receptionist, work_order_id: seeded.work_order_id, incident_location: Some(IncidentLocationInput { latitude: 37.5651, longitude: 126.9895 }), include_region: false, trace: TraceContext::generate(), occurred_at: now }, DispatchTimerConfig::default()).await.unwrap();
@@ -507,7 +507,7 @@ async fn declined_target_cannot_be_force_assigned_and_candidate_read_is_side_eff
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn responses_are_ordered_and_force_replay_audits_once(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -613,7 +613,7 @@ async fn responses_are_ordered_and_force_replay_audits_once(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_same_start_replays_one_dispatch_and_one_audit(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -646,7 +646,7 @@ async fn concurrent_same_start_replays_one_dispatch_and_one_audit(pool: PgPool) 
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn escalation_replays_are_audit_once_and_do_not_mutate_timestamps(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -720,7 +720,7 @@ async fn escalation_replays_are_audit_once_and_do_not_mutate_timestamps(pool: Pg
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_identical_force_assignment_replays_once(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -736,7 +736,7 @@ async fn concurrent_identical_force_assignment_replays_once(pool: PgPool) {
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn queue_is_branch_scoped_and_cursor_pages_are_disjoint(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let second = seed_work_order(&pool, seeded.branch_id, seeded.receptionist, 2).await;
         let other_branch = seed_branch(&pool).await;
@@ -748,7 +748,7 @@ async fn queue_is_branch_scoped_and_cursor_pages_are_disjoint(pool: PgPool) {
         let store = PgDispatchStore::new(pool);
         let page1 = store
             .list_dispatch_queue(ListDispatchQueueQuery {
-                branch_scope: mnt_kernel_core::BranchScope::Branches(
+                branch_scope: console_kernel_core::BranchScope::Branches(
                     [seeded.branch_id].into_iter().collect(),
                 ),
                 statuses: DispatchQueueStatus::parse_csv(None).unwrap(),
@@ -766,13 +766,13 @@ async fn queue_is_branch_scoped_and_cursor_pages_are_disjoint(pool: PgPool) {
             .expect("second item requires a cursor");
         let page2 = store
             .list_dispatch_queue(ListDispatchQueueQuery {
-                branch_scope: mnt_kernel_core::BranchScope::Branches(
+                branch_scope: console_kernel_core::BranchScope::Branches(
                     [seeded.branch_id].into_iter().collect(),
                 ),
                 statuses: DispatchQueueStatus::parse_csv(None).unwrap(),
                 limit: 1,
                 after: Some(
-                    mnt_dispatch_application::DispatchQueueCursor::decode(&cursor, now).unwrap(),
+                    console_dispatch_application::DispatchQueueCursor::decode(&cursor, now).unwrap(),
                 ),
                 now,
             })
@@ -1118,7 +1118,7 @@ async fn seed_work_order(
 
 async fn audit_actions_for_dispatch(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     work_order_id: WorkOrderId,
 ) -> Vec<String> {
     sqlx::query_scalar(
@@ -1136,7 +1136,7 @@ async fn audit_actions_for_dispatch(
     .unwrap()
 }
 
-async fn alert_counts(pool: &PgPool, dispatch_id: mnt_kernel_core::P1DispatchId) -> AlertCounts {
+async fn alert_counts(pool: &PgPool, dispatch_id: console_kernel_core::P1DispatchId) -> AlertCounts {
     let row = sqlx::query(
         r#"
         SELECT
@@ -1158,7 +1158,7 @@ async fn alert_counts(pool: &PgPool, dispatch_id: mnt_kernel_core::P1DispatchId)
 
 async fn target_exists(
     pool: &PgPool,
-    dispatch_id: mnt_kernel_core::P1DispatchId,
+    dispatch_id: console_kernel_core::P1DispatchId,
     user_id: UserId,
 ) -> bool {
     sqlx::query_scalar::<_, bool>(
@@ -1179,7 +1179,7 @@ async fn target_exists(
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn my_pending_offers_lists_only_unanswered_targets(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let seeded = seed_dispatch_context(&pool).await;
         let store = PgDispatchStore::new(pool.clone());
         let now = datetime!(2026-06-12 09:00 UTC);
@@ -1264,7 +1264,7 @@ async fn dispatch_summary_returns_same_tenant_and_hides_cross_tenant_as_runtime_
     let seeded = seed_dispatch_context(&owner_pool).await;
     let owner_store = PgDispatchStore::new(owner_pool.clone());
     let now = datetime!(2026-06-12 09:00 UTC);
-    let started = mnt_platform_request_context::scope_org(
+    let started = console_platform_request_context::scope_org(
         org,
         owner_store.start_dispatch(
             StartP1DispatchCommand {
@@ -1281,9 +1281,9 @@ async fn dispatch_summary_returns_same_tenant_and_hides_cross_tenant_as_runtime_
     .await
     .unwrap();
 
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
-        &["GRANT SELECT ON p1_dispatches, p1_dispatch_targets, p1_dispatch_responses TO mnt_rt"],
+        &["GRANT SELECT ON p1_dispatches, p1_dispatch_targets, p1_dispatch_responses TO console_rt"],
     )
     .await;
     let runtime_pool = runtime_role_pool(&owner_pool).await;
@@ -1291,20 +1291,20 @@ async fn dispatch_summary_returns_same_tenant_and_hides_cross_tenant_as_runtime_
         .fetch_one(&runtime_pool)
         .await
         .unwrap();
-    assert_eq!(current_user, "mnt_rt");
+    assert_eq!(current_user, "console_rt");
     let runtime_store = PgDispatchStore::new(runtime_pool);
 
     let same_tenant =
-        mnt_platform_request_context::scope_org(org, runtime_store.dispatch(started.id))
+        console_platform_request_context::scope_org(org, runtime_store.dispatch(started.id))
             .await
-            .expect("same-tenant dispatch lookup must succeed as mnt_rt");
+            .expect("same-tenant dispatch lookup must succeed as console_rt");
     assert_eq!(same_tenant.id, started.id);
     assert_eq!(same_tenant.work_order_id, seeded.work_order_id);
     assert_eq!(same_tenant.target_count, started.target_count);
 
     let cross_tenant =
-        mnt_platform_request_context::scope_org(OrgId::new(), runtime_store.dispatch(started.id))
+        console_platform_request_context::scope_org(OrgId::new(), runtime_store.dispatch(started.id))
             .await
-            .expect_err("cross-tenant dispatch must be invisible as mnt_rt");
+            .expect_err("cross-tenant dispatch must be invisible as console_rt");
     assert_eq!(cross_tenant.kind(), ErrorKind::NotFound);
 }

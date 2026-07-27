@@ -11,15 +11,15 @@
 //! auto-confirms. Confirmation is a separate, audited, idempotent UPDATE.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_inbox_application::{
+use console_inbox_application::{
     ConfirmReceiptCommand, EmitInboxDocCommand, EmitInboxDocFuture, GetInboxDocQuery,
     InboxDocDetail, InboxDocFilter, InboxDocPage, InboxDocSink, InboxDocSummary,
     ListInboxDocsQuery, inbox_doc_audit_event,
 };
-use mnt_inbox_domain::InboxDocKind;
-use mnt_kernel_core::{ErrorKind, InboxDocId, KernelError, OrgId, UserId};
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_inbox_domain::InboxDocKind;
+use console_kernel_core::{ErrorKind, InboxDocId, KernelError, OrgId, UserId};
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
 
 /// The summary column list (no `payload`). `get` appends `, payload` for the
@@ -89,7 +89,7 @@ impl PgInboxStore {
     }
 
     /// Deliver a document into a recipient's vault. Validates the domain
-    /// invariants (done by [`NewInboxDoc`](mnt_inbox_domain::NewInboxDoc)),
+    /// invariants (done by [`NewInboxDoc`](console_inbox_domain::NewInboxDoc)),
     /// inserts one audited row, and — only for a genuinely new row — returns it.
     /// A `dedup_key` redelivery is a no-op returning the existing row without
     /// re-auditing.

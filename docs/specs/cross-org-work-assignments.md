@@ -412,7 +412,7 @@ Before a code lane starts, the synthesized plan should create separate PR lanes 
    revoke, and simulation.
 
 Each lane must keep `app.current_org` real-org-only, use capability/PBAC decisions rather than role-string
-shortcuts, and provide real `mnt_rt` tests plus browser/user-story evidence when user-facing.
+shortcuts, and provide real `console_rt` tests plus browser/user-story evidence when user-facing.
 
 ## 17. Acceptance-criteria mapping for this spec
 

@@ -27,8 +27,8 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-use mnt_platform_authz::{
+use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, CedarEvaluation, CoexistenceMapEntry,
     CompiledBundleCacheKey, DecisionEffect, DecisionEngine, DecisionReason, DualEngineMode,
     Feature, Principal, Role, evaluate_cedar_pbac_boundary, evaluate_legacy_contract,

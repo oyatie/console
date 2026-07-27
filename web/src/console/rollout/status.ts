@@ -1,4 +1,4 @@
-import type { operations } from "@maintenance/api-client-ts";
+import type { operations } from "@console/api-client-ts";
 
 export type ConsoleRolloutStatus =
   operations["getConsoleRollout"]["responses"][200]["content"]["application/json"];

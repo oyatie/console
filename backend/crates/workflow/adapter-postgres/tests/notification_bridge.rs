@@ -2,23 +2,23 @@
 //! Compensation-bridge gate: a `NOTIFICATION` outbox event (the approval-line
 //! notify the post-finalization-rejection flow enqueues) is drained into real
 //! notification-center rows, once per recipient, idempotently — proven as the
-//! genuine non-owner `mnt_rt` role under FORCE RLS.
+//! genuine non-owner `console_rt` role under FORCE RLS.
 
-use mnt_kernel_core::OrgId;
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_platform_request_context::scope_org;
-use mnt_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use console_kernel_core::OrgId;
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_platform_request_context::scope_org;
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     for grant in [
-        "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
-        "GRANT SELECT, UPDATE ON workflow_outbox_events TO mnt_rt",
-        "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
-        "GRANT SELECT ON users TO mnt_rt",
-        "GRANT SELECT ON organizations TO mnt_rt",
+        "GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt",
+        "GRANT SELECT, UPDATE ON workflow_outbox_events TO console_rt",
+        "GRANT SELECT, INSERT ON audit_events TO console_rt",
+        "GRANT SELECT ON users TO console_rt",
+        "GRANT SELECT ON organizations TO console_rt",
     ] {
         sqlx::query(grant).execute(owner_pool).await.unwrap();
     }
@@ -27,7 +27,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -38,7 +38,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
 
 /// Seed org + user + a minimal published definition + a RUNNING run + one PENDING
 /// NOTIFICATION outbox event addressed to `recipient`. Seeded via the owner pool
-/// (mnt_rt is SELECT-only on organizations); the drain under test runs as mnt_rt.
+/// (console_rt is SELECT-only on organizations); the drain under test runs as console_rt.
 async fn seed(owner_pool: &PgPool, org: Uuid, recipient: Uuid) -> Uuid {
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, 'bridge', 'Bridge Org') ON CONFLICT (id) DO NOTHING")
         .bind(org)

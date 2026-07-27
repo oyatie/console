@@ -45,7 +45,7 @@
   "verification": {
     "stage3": "fresh-eyes adversarial pass 2026-07-24 — 3 findings fixed (field read gate Login→work_order_read_all matching the nav gate; link_ticket work-order lookup scope-confined 404; Idempotency-Key bounds in chars); see backend-verification.md",
     "field_read_gate": "GET /api/v1/field/sites[/{id}] require work_order_read_all (MEMBER 403) — frontend canRead must derive from work_order_read_all, not login",
-    "integration_test": "backend/app/tests/field_visit_api.rs — 3 tests green as mnt_rt (full story incl. accept/decline/idempotency; deny-without-leakage 404/403 incl. MEMBER read denial + out-of-scope work-order 404; cross-tenant RLS isolation; audit readback with PII-free snapshots)",
+    "integration_test": "backend/app/tests/field_visit_api.rs — 3 tests green as console_rt (full story incl. accept/decline/idempotency; deny-without-leakage 404/403 incl. MEMBER read denial + out-of-scope work-order 404; cross-tenant RLS isolation; audit readback with PII-free snapshots)",
     "unit_tests": "support domain/application/adapter/rest all green (incl. adapter RLS-as-runtime-role suites)",
     "lint": "cargo fmt + clippy --tests -D warnings clean on all four support crates",
     "spine_breakage_not_ours": "worktree HEAD does not compile: platform/auth jwt.rs (b0d31af8 missed 2 call sites + clippy 8/7 args), logistics adapter sha2 hex, facilities/rest (4 errors), production/rest (4 errors) — patched LOCALLY UNCOMMITTED to verify; owning lanes must land real fixes"

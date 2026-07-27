@@ -6,7 +6,7 @@
 //! layer and fans out one notification per snapshotted recipient.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, KernelError, NoticeId, Timestamp, TraceContext, UserId,
 };
 use serde::{Deserialize, Serialize};

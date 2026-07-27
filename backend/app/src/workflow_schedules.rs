@@ -6,7 +6,7 @@
 //! ## Poller (mirrors `workflow_drain`)
 //! A single background task ticks on a fixed cadence; per tick it enumerates
 //! every tenant via the `platform_list_organizations()` SECURITY DEFINER
-//! function (the one legitimate cross-tenant read for a `mnt_rt` loop), then
+//! function (the one legitimate cross-tenant read for a `console_rt` loop), then
 //! re-enters each tenant scope with `scope_org` and polls that org's due
 //! schedules (`enabled AND next_run_at <= now`).
 //!
@@ -37,11 +37,11 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use chrono::TimeZone;
-use mnt_kernel_core::{KernelError, OrgId, TraceContext};
-use mnt_platform_request_context::scope_org;
-use mnt_workflow_domain::TriggerType;
-use mnt_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
-use mnt_workflow_runtime_adapter_postgres::{DueScheduleRow, PgWorkflowRuntimeStore};
+use console_kernel_core::{KernelError, OrgId, TraceContext};
+use console_platform_request_context::scope_org;
+use console_workflow_domain::TriggerType;
+use console_workflow_runtime::{AuditContext, StartRunRequest, TriggeredStart, start_bound_run};
+use console_workflow_runtime_adapter_postgres::{DueScheduleRow, PgWorkflowRuntimeStore};
 use serde_json::json;
 use time::OffsetDateTime;
 use tokio::sync::watch;

@@ -2,7 +2,7 @@
 
 > Existing surface read completely: `backend/crates/payroll/{domain,adapter-postgres,rest}`,
 > migration `0074_create_payroll_readiness.sql`, authz `Feature::PayrollRunRead`,
-> `/api/v1/period-locks` (PeriodLockManage), inbox vault (`mnt-inbox-rest`,
+> `/api/v1/period-locks` (PeriodLockManage), inbox vault (`console-inbox-rest`,
 > `GET /api/v1/me/inbox-docs?filter=kind:payslip`). Latest migration on this branch: 0180;
 > this lane's provisional number: **0186**.
 
@@ -11,11 +11,11 @@
 | Asset | Where | Notes |
 |---|---|---|
 | Readiness tables `payroll_draft_runs` / `payroll_draft_lines` (+`annual_leave_obligations`) | mig 0074 | RLS forced, org_id only (no branch_id), run FSM CHECK `STAGED/BLOCKED_LEGAL_GATE/READY_FOR_REVIEW/APPROVED/ISSUED/VOID`, `calculation_enabled` requires review states, lines store counts + `*_source_present` booleans + `nts_tax_row_status` + `blockers` — **no won amounts by design** |
-| Read-only REST | `mnt-payroll-rest` | `GET /api/v1/payroll/runs` (list, audited `payroll_run.list_read`), `GET /runs/{id}` (audited `payroll_run.read`, miss not audited), `GET /payslips/me` (self-scoped readiness lines, never audited, empty page for unlinked accounts). Org-wide gate `authorize_org_wide(PayrollRunRead)`: built-in EXECUTIVE/SUPER_ADMIN only; ADMIN (any scope) denied; branch-scoped denied rather than widened |
-| Domain kernel (W1) | `mnt-payroll-domain` | 2026 statutory rates (NPS/NHIS/LTC/EI, industrial-accident = external tariff, refuses to guess), pension base limits (effective-dated), minimum wage, `build_employee_payroll_draft` (requires supplied NTS tax row — **refuses to estimate income tax**), `build_severance_pay_draft` (average-vs-ordinary wage floor, fail-loud), `validate_release_gate` (rate-table version + official sources + professionally-validated golden cases + 노무사/세무사 artifact sha256) |
+| Read-only REST | `console-payroll-rest` | `GET /api/v1/payroll/runs` (list, audited `payroll_run.list_read`), `GET /runs/{id}` (audited `payroll_run.read`, miss not audited), `GET /payslips/me` (self-scoped readiness lines, never audited, empty page for unlinked accounts). Org-wide gate `authorize_org_wide(PayrollRunRead)`: built-in EXECUTIVE/SUPER_ADMIN only; ADMIN (any scope) denied; branch-scoped denied rather than widened |
+| Domain kernel (W1) | `console-payroll-domain` | 2026 statutory rates (NPS/NHIS/LTC/EI, industrial-accident = external tariff, refuses to guess), pension base limits (effective-dated), minimum wage, `build_employee_payroll_draft` (requires supplied NTS tax row — **refuses to estimate income tax**), `build_severance_pay_draft` (average-vs-ordinary wage floor, fail-loud), `validate_release_gate` (rate-table version + official sources + professionally-validated golden cases + 노무사/세무사 artifact sha256) |
 | Freeze windows | `/api/v1/period-locks` | domain=payroll lock/unlock, close-authority gated, date-stamped writes inside a locked window 409 — the §3.9.1 변경 동결창 |
-| Payslip delivery vault | `mnt-inbox-rest` | Personal inbox docs, `kind: payslip`, `confirmed{by,at}` ack, passkey gate for legal docs, self-view non-audited |
-| RLS test discipline | `payroll_rls_surfaces_as_runtime_role.rs` | as-`mnt_rt` pattern to copy for new tables |
+| Payslip delivery vault | `console-inbox-rest` | Personal inbox docs, `kind: payslip`, `confirmed{by,at}` ack, passkey gate for legal docs, self-view non-audited |
+| RLS test discipline | `payroll_rls_surfaces_as_runtime_role.rs` | as-`console_rt` pattern to copy for new tables |
 
 ## 2. Story-step gap table
 
@@ -36,7 +36,7 @@
   `Feature` enum lives in `backend/crates/platform/authz` — shared root; entry recorded in
   `integration-manifest.json`, not edited here.
 - **Deny-by-omission**: run/line/exception reads already indistinguishable cross-org via
-  RLS (404 == not-yours). New tables must repeat the 0074 RLS block + `mnt_rt` grants +
+  RLS (404 == not-yours). New tables must repeat the 0074 RLS block + `console_rt` grants +
   as-runtime-role tests (BYPASSRLS masking hazard).
 - **Audit**: every admin read stays audited (`with_audits` atomic pattern); every mutation
   audits actor/action/target/reason; decision + close receipts persist as JSONB evidence.

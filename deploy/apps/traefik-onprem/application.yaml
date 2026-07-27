@@ -8,10 +8,10 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "0" # VIP provider wave -1 must be synced first.
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
-  project: maintenance-onprem-traefik-ingress
+  project: console-onprem-traefik-ingress
   sources:
     - repoURL: https://traefik.github.io/charts
       chart: traefik
@@ -23,7 +23,7 @@ spec:
         releaseName: traefik
         valueFiles:
           - $values/deploy/apps/traefik-onprem/values.yaml
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       ref: values
   destination:

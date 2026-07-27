@@ -13,9 +13,9 @@ copy, verify, and evidence during a planned failover rehearsal or an incident.
 
 Use this runbook when a Maintenance site has:
 
-- one Argo CD cluster Secret labeled `maintenance.io/dr-role=primary`;
-- one or more cluster Secrets labeled `maintenance.io/dr-role=warm-standby`;
-- matching or explicitly approved `maintenance.io/residency` labels;
+- one Argo CD cluster Secret labeled `console.io/dr-role=primary`;
+- one or more cluster Secrets labeled `console.io/dr-role=warm-standby`;
+- matching or explicitly approved `console.io/residency` labels;
 - a documented database/object-storage restore or replication path; and
 - a DNS/VIP/ingress owner ready to move traffic after health checks pass.
 
@@ -49,13 +49,13 @@ Before promotion, record these VIP prerequisites in the incident/rehearsal log:
 3. `deploy/apps/vip-ingress/manifests/metallb-l2-config.yaml` has the real
    reserved on-prem VIP or pool instead of the documentation-only
    `10.0.0.240/32` placeholder, and it does not contain `140.245.68.253`.
-4. Any `interfaces` or `nodeSelectors` on the `maintenance-onprem-l2`
+4. Any `interfaces` or `nodeSelectors` on the `console-onprem-l2`
    `L2Advertisement` match the real worker NICs/labels.
 5. `vip-ingress-metallb-onprem` and `traefik-onprem` render and are manually
    applied/synced only after operator approval; neither is under
    `deploy/argocd/apps/` or automated by the app-of-apps root.
 6. The `traefik` Service receives the reserved VIP from the
-   `maintenance-onprem-ingress` pool, and a health check through the VIP succeeds
+   `console-onprem-ingress` pool, and a health check through the VIP succeeds
    before DNS/upstream routing moves.
 
 Validate VIP failover before claiming the on-prem ingress path is production
@@ -96,7 +96,7 @@ ready:
    after the ARP convergence window, and Argo CD reports the VIP and Traefik apps
    Healthy/Synced.
 5. Troubleshoot failures before moving traffic: check the Service annotation names
-   `maintenance-onprem-ingress`, the pool has `autoAssign: false`, worker labels
+   `console-onprem-ingress`, the pool has `autoAssign: false`, worker labels
    and L2 interfaces match the advertisement, NetworkPolicy/Cilium permits
    ingress, `externalTrafficPolicy: Local` has local endpoints on the advertising
    node, and cert-manager/Ingress resources are Healthy.
@@ -119,7 +119,7 @@ hostPort/reserved-IP overlay, not the on-prem VIP files.
    proven single-writer promotion safety. For an incident, record whether writes
    may have been lost or split.
 5. Verify the candidate standby is allowed by residency policy. If the standby's
-   `maintenance.io/residency` conflicts with the primary and no explicit policy
+   `console.io/residency` conflicts with the primary and no explicit policy
    exception exists, stop and fail closed.
 6. Verify cluster credentials are fresh and sourced from External-Secrets/OpenBao
    or the repo-approved secret-management path. Do not paste or log credentials.
@@ -147,13 +147,13 @@ hostPort/reserved-IP overlay, not the on-prem VIP files.
    path and that the old primary cannot still accept writes.
 4. Update Argo CD cluster Secret labels through the approved secret-management
    path, not by committing Secret payloads:
-   - old primary: set `maintenance.io/traffic=held` and either
-     `maintenance.io/dr-role=warm-standby` or remove
-     `maintenance.io/federation=enabled` while it is quarantined;
-   - new primary: set `maintenance.io/dr-role=primary` and
-     `maintenance.io/traffic=active`;
-   - all other standbys: keep `maintenance.io/dr-role=warm-standby` and
-     `maintenance.io/traffic=held`.
+   - old primary: set `console.io/traffic=held` and either
+     `console.io/dr-role=warm-standby` or remove
+     `console.io/federation=enabled` while it is quarantined;
+   - new primary: set `console.io/dr-role=primary` and
+     `console.io/traffic=active`;
+   - all other standbys: keep `console.io/dr-role=warm-standby` and
+     `console.io/traffic=held`.
 5. Reconcile the ApplicationSet. Verify exactly one generated root for the site
    sources `deploy/argocd/apps` at `targetRevision: main`; standby roots must
    source `deploy/apps/appset-federation/app-groups/warm-standby`.
@@ -189,7 +189,7 @@ hostPort/reserved-IP overlay, not the on-prem VIP files.
   database/object-storage recovery owner. Prevent split brain first; user-facing
   recovery waits for the data decision.
 - If the old primary was damaged, keep it out of federation by removing
-  `maintenance.io/federation=enabled` until rebuilt.
+  `console.io/federation=enabled` until rebuilt.
 
 ## Drill evidence checklist
 

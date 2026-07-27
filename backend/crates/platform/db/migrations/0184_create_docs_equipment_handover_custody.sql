@@ -32,7 +32,7 @@ ALTER TABLE equipment_3r_rental_cases
 ALTER TABLE equipment_3r_rental_cases
     DROP COLUMN handover_evidence_reference;
 
--- mnt-gate: audited-table docs_equipment_handover_custody
+-- console-gate: audited-table docs_equipment_handover_custody
 CREATE TABLE docs_equipment_handover_custody (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -108,8 +108,8 @@ ALTER TABLE docs_equipment_handover_custody FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON docs_equipment_handover_custody
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT ON docs_equipment_handover_custody TO mnt_rt;
-REVOKE UPDATE, DELETE ON docs_equipment_handover_custody FROM mnt_rt;
+GRANT SELECT, INSERT ON docs_equipment_handover_custody TO console_rt;
+REVOKE UPDATE, DELETE ON docs_equipment_handover_custody FROM console_rt;
 CREATE TRIGGER trg_docs_equipment_handover_custody_org_immutable
     BEFORE UPDATE ON docs_equipment_handover_custody
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();

@@ -2,7 +2,7 @@ import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink } from "react-router";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { AuthSession } from "../../context/auth";
 import { useAuth } from "../../context/auth";
 import { ko } from "../../i18n/ko";

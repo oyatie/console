@@ -7,13 +7,13 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Json, Router};
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchScope, ErrorKind, KernelError, OrgId, UserId,
 };
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::{RequestContextError, current_audit_context, current_org};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::{RequestContextError, current_audit_context, current_org};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row};
@@ -83,7 +83,7 @@ pub fn router(state: ConsultingRestState) -> Router {
         )
         .route(CONSULTING_HISTORY_PATH, get(list_history))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Deserialize)]
@@ -819,7 +819,7 @@ async fn principal(
             "JWT verification is not configured for consulting",
         )
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, &state.pool, headers)
+    console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -892,24 +892,24 @@ impl RestError {
             error.message,
         )
     }
-    fn db(_: mnt_platform_db::DbError) -> Self {
+    fn db(_: console_platform_db::DbError) -> Self {
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal",
             "internal server error",
         )
     }
-    fn conflict_or_db(error: mnt_platform_db::DbError) -> Self {
+    fn conflict_or_db(error: console_platform_db::DbError) -> Self {
         match error {
-            mnt_platform_db::DbError::Sqlx(sqlx::Error::RowNotFound) => Self::new(
+            console_platform_db::DbError::Sqlx(sqlx::Error::RowNotFound) => Self::new(
                 StatusCode::CONFLICT,
                 "conflict",
                 "engagement changed or was not found; reload before retrying",
             ),
-            mnt_platform_db::DbError::Sqlx(sqlx::Error::Protocol(message)) => {
+            console_platform_db::DbError::Sqlx(sqlx::Error::Protocol(message)) => {
                 Self::new(StatusCode::CONFLICT, "conflict", message)
             }
-            mnt_platform_db::DbError::Sqlx(sqlx::Error::Database(database))
+            console_platform_db::DbError::Sqlx(sqlx::Error::Database(database))
                 if database.code().as_deref() == Some("P0001")
                     && database.constraint() == Some("consulting_terminal_immutable")
                     && database.message() == "terminal consulting engagement is immutable" =>

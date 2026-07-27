@@ -13,8 +13,8 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_inbox_domain::{InboxDocKind, NewInboxDoc};
-use mnt_kernel_core::{
+use console_inbox_domain::{InboxDocKind, NewInboxDoc};
+use console_kernel_core::{
     AuditAction, AuditEvent, InboxDocId, KernelError, Timestamp, TraceContext, UserId,
 };
 use serde::{Deserialize, Serialize};

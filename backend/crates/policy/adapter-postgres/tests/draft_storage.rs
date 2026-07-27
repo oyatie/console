@@ -1,10 +1,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
-use mnt_policy_adapter_postgres::PgPolicyStore;
-use mnt_policy_application::{CedarPolicyDraftSaveCommand, CedarPolicyDraftSaveMode};
-use mnt_policy_domain::{
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
+use console_policy_adapter_postgres::PgPolicyStore;
+use console_policy_application::{CedarPolicyDraftSaveCommand, CedarPolicyDraftSaveMode};
+use console_policy_domain::{
     CedarActionSelector, CedarPolicyEffect, CedarPrincipalKind, CedarPrincipalSelector,
     CedarResourceScope, CedarResourceSelector,
 };
@@ -19,7 +19,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -97,7 +97,7 @@ async fn draft_save_is_audited_tenant_isolated_and_not_enforced(owner_pool: PgPo
     let store = PgPolicyStore::new(rt_pool.clone());
     let saved = scope_org(org_a, store.save_draft(draft_command(actor_a)))
         .await
-        .expect("draft save as mnt_rt under org A");
+        .expect("draft save as console_rt under org A");
 
     assert_eq!(saved.enforcement_effect(), "none");
     assert_eq!(saved.draft.review_status.as_db_str(), "draft");

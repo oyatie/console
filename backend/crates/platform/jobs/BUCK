@@ -9,15 +9,15 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-platform-jobs",
+    name = "console-platform-jobs",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_jobs",
+    crate = "console_platform_jobs",
     edition = "2024",
     crate_root = "backend/crates/platform/jobs/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:apalis",
         "//third-party/rust:apalis-postgres",
         "//third-party/rust:apalis-sql",
@@ -36,16 +36,16 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-platform-jobs-unit",
+    name = "console-platform-jobs-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", glob(["src/**/*.rs"])),
-    crate = "mnt_platform_jobs",
+    crate = "console_platform_jobs",
     edition = "2024",
     crate_root = "backend/crates/platform/jobs/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
     labels = ["owner.backend.crates.platform.jobs", "domain.platform", "test.unit", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:apalis",
         "//third-party/rust:apalis-postgres",
         "//third-party/rust:apalis-sql",
@@ -64,7 +64,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-platform-jobs-itest-apalis_adapter",
+    name = "console-platform-jobs-itest-apalis_adapter",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_adapter.rs"]),
     crate = "apalis_adapter",
     edition = "2024",
@@ -73,7 +73,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
     labels = ["owner.backend.crates.platform.jobs", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:apalis",
         "//third-party/rust:apalis-postgres",
         "//third-party/rust:apalis-sql",
@@ -85,7 +85,7 @@ rust_test(
         "//third-party/rust:tokio",
         "//third-party/rust:tracing",
         "//third-party/rust:uuid",
-        ":mnt-platform-jobs",
+        ":console-platform-jobs",
     ],
     named_deps = {
         "apalis_sqlx": "//third-party/rust:sqlx-0_8",
@@ -93,7 +93,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-platform-jobs-itest-apalis_schema_contract",
+    name = "console-platform-jobs-itest-apalis_schema_contract",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_schema_contract.rs"]),
     crate = "apalis_schema_contract",
     edition = "2024",
@@ -102,7 +102,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
     labels = ["owner.backend.crates.platform.jobs", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:apalis",
         "//third-party/rust:apalis-postgres",
         "//third-party/rust:apalis-sql",
@@ -114,7 +114,7 @@ rust_test(
         "//third-party/rust:tokio",
         "//third-party/rust:tracing",
         "//third-party/rust:uuid",
-        ":mnt-platform-jobs",
+        ":console-platform-jobs",
     ],
     named_deps = {
         "apalis_sqlx": "//third-party/rust:sqlx-0_8",

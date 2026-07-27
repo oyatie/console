@@ -11,14 +11,14 @@ use axum::{
     response::{IntoResponse, Response},
     routing::post,
 };
-use mnt_kernel_core::{ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::{DbError, with_audits};
-use mnt_recruiting_adapter_postgres::{
+use console_kernel_core::{ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::{DbError, with_audits};
+use console_recruiting_adapter_postgres::{
     PgRecruitingError, apply_hire, audit, hire_context, load_applicant, load_posting,
 };
-use mnt_recruiting_domain::AmountPeriod;
+use console_recruiting_domain::AmountPeriod;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sqlx::PgPool;
@@ -49,7 +49,7 @@ pub(crate) fn router(state: RecruitingHireState) -> Router {
     let router = Router::new()
         .route(RECRUITING_HIRE_PATH, post(hire))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Deserialize)]

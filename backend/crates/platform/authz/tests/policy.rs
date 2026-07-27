@@ -2,8 +2,8 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, UserId};
-use mnt_platform_authz::{
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, UserId};
+use console_platform_authz::{
     Action, AuthorizationContext, AuthorizationRequest, AuthorizationResource, BranchColumn,
     CedarEvaluation, CoexistenceMapEntry, CompiledBundleCacheKey, DecisionEffect, DecisionEngine,
     DecisionReason, DualEngineMode, EffectiveFeatureGrant, Feature, PermissionLevel, Principal,

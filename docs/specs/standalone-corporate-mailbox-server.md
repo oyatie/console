@@ -16,10 +16,10 @@ This is not just the existing tenant-configured webmail mirror. The existing web
 
 ## Current repo baseline
 - Existing mail crates are `backend/crates/comms/*`:
-  - `mnt-comms-rest`: webmail REST API under `/api/v1/mail/*`.
-  - `mnt-comms-adapter-smtp`: outbound SMTP client to a configured tenant SMTP server.
-  - `mnt-comms-adapter-imap`: inbound IMAP sync client from a configured tenant IMAP server.
-  - `mnt-comms-adapter-postgres`: stores mirrored mail accounts/folders/threads/messages.
+  - `console-comms-rest`: webmail REST API under `/api/v1/mail/*`.
+  - `console-comms-adapter-smtp`: outbound SMTP client to a configured tenant SMTP server.
+  - `console-comms-adapter-imap`: inbound IMAP sync client from a configured tenant IMAP server.
+  - `console-comms-adapter-postgres`: stores mirrored mail accounts/folders/threads/messages.
 - Existing migrations `0053..0057` create `email_accounts`, `email_folders`, `email_threads`, `email_messages`, and related webmail support.
 - That model is **external-account webmail**, not authoritative mailbox hosting. A standalone server needs domain/mailbox/routing/queue/protocol tables and service roles. The old SMTP/IMAP server-settings UI must be treated as legacy/migration-only and removed from normal navigation; product users should see an automatically provisioned mailbox or a platform readiness state, not a server configuration form.
 
@@ -42,7 +42,7 @@ We should measure our mailbox server against these capability groups:
 | Admin | Domains, aliases, users, policies, DNS status | Group/org-aware domain, mailbox, alias, shared-mailbox, DNS-readiness, retention, delegation, and ownership UI. No tenant SMTP/IMAP server configuration UI. | P0 |
 | Collaboration | Contacts/calendar/file sharing protocols | Mail first. Calendar/contact integration via platform calendar/people modules; protocol parity later if needed | P2 |
 | Observability | Metrics, logs, queue/admin visibility | Prometheus metrics, structured redacted logs, audit trail, queue depth, delivery rejection reasons, alerting | P0 |
-| Kubernetes/HA | Cloud/orchestrator support | Dedicated `mnt-mailbox` workload, health/readiness, safe rollouts, internal-only until gates pass | P0 |
+| Kubernetes/HA | Cloud/orchestrator support | Dedicated `console-mailbox` workload, health/readiness, safe rollouts, internal-only until gates pass | P0 |
 
 ## Adoption candidates
 
@@ -75,7 +75,7 @@ If the business needs a public MX faster than our native JMAP server can mature,
 ## Target architecture
 
 ### Services
-- `mnt-mailbox` service role, disabled from public ingress until gates pass.
+- `console-mailbox` service role, disabled from public ingress until gates pass.
 - SMTP listener:
   - `25` for MX inbound only after production gates.
   - `2525`/internal port for tests and cluster-only smoke.
@@ -121,7 +121,7 @@ Required metrics and logs before production MX:
 ## Delivery phases
 
 ### Phase 0: safety gates and schema foundation
-- Add spec/ADR, migrations for domain/mailbox/routing/queue metadata, and a disabled `mnt-mailbox` service config.
+- Add spec/ADR, migrations for domain/mailbox/routing/queue metadata, and a disabled `console-mailbox` service config.
 - No public port 25 exposure.
 - Tests for address/domain validation, no-open-relay routing, quotas, and audit-required admin commands.
 

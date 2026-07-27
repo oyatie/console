@@ -11,15 +11,15 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{ErrorKind, KernelError, TodoId, TraceContext};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::Principal;
-use mnt_platform_request_context::RequestContextError;
-use mnt_todos_adapter_postgres::{PgTodoError, PgTodoStore};
-use mnt_todos_application::{
+use console_kernel_core::{ErrorKind, KernelError, TodoId, TraceContext};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::Principal;
+use console_platform_request_context::RequestContextError;
+use console_todos_adapter_postgres::{PgTodoError, PgTodoStore};
+use console_todos_application::{
     CreateTodoCommand, DeleteTodoCommand, ListTodosQuery, SetTodoDoneCommand,
 };
-use mnt_todos_domain::TodoRef;
+use console_todos_domain::TodoRef;
 use serde::{Deserialize, Serialize};
 
 pub const ME_TODOS_PATH: &str = "/api/v1/me/todos";
@@ -56,7 +56,7 @@ pub fn router(state: TodoRestState) -> Router {
         .route(ME_TODO_DONE_PATH_TEMPLATE, post(set_done))
         .route(ME_TODO_PATH_TEMPLATE, delete(delete_todo))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -247,7 +247,7 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for todos API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }

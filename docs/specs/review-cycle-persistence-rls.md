@@ -28,20 +28,20 @@ backend/crates/review/rest/
 Rust packages should follow the workspace naming convention:
 
 ```text
-mnt-review-domain
-mnt-review-application
-mnt-review-adapter-postgres
-mnt-review-rest
+console-review-domain
+console-review-application
+console-review-adapter-postgres
+console-review-rest
 ```
 
 Rationale:
 - The repo has no existing `backend/crates/hr*` owner, and adjacent gaps are being designed as their own thin domain crates.
 - A narrow `review` root keeps UI-M12's bespoke review-cycle FSM from absorbing recruit/benefit/payroll concerns.
-- The layer-boundary gate remains simple: domain depends only on `mnt-kernel-core` and `serde`; application depends on domain/kernel; adapter depends on application/domain plus `mnt-platform-db` and request context; rest depends on application/adapter/auth/authz.
+- The layer-boundary gate remains simple: domain depends only on `console-kernel-core` and `serde`; application depends on domain/kernel; adapter depends on application/domain plus `console-platform-db` and request context; rest depends on application/adapter/auth/authz.
 
 Workspace wiring when implemented:
 - `backend/Cargo.toml` already uses explicit domain member globs; add `"crates/review/*"` if not covered on the implementation branch.
-- Add workspace dependencies for `mnt-review-domain`, `mnt-review-application`, `mnt-review-adapter-postgres`, and `mnt-review-rest`.
+- Add workspace dependencies for `console-review-domain`, `console-review-application`, `console-review-adapter-postgres`, and `console-review-rest`.
 - Add kernel ID newtypes in `backend/crates/kernel/core/src/ids.rs`: `ReviewCycleId`, `ReviewCycleTeamId`, `ReviewTaskId`, `ReviewScoreEntryId`, `ReviewCommentId`, and `ReviewEventId`.
 
 ## 2. Domain model
@@ -193,7 +193,7 @@ Runtime grants: `SELECT, INSERT, UPDATE`; no `DELETE`.
 Suggested DDL shape:
 
 ```sql
--- mnt-gate: audited-table review_cycles
+-- console-gate: audited-table review_cycles
 CREATE TABLE review_cycles (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -227,7 +227,7 @@ Indexes:
 ### 3.3 `review_cycle_teams`
 
 ```sql
--- mnt-gate: audited-table review_cycle_teams
+-- console-gate: audited-table review_cycle_teams
 CREATE TABLE review_cycle_teams (
     id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -260,7 +260,7 @@ Indexes:
 ### 3.4 `review_tasks`
 
 ```sql
--- mnt-gate: audited-table review_tasks
+-- console-gate: audited-table review_tasks
 CREATE TABLE review_tasks (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -314,7 +314,7 @@ Indexes:
 ### 3.5 `review_task_score_entries`
 
 ```sql
--- mnt-gate: audited-table review_task_score_entries
+-- console-gate: audited-table review_task_score_entries
 CREATE TABLE review_task_score_entries (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -346,7 +346,7 @@ Indexes:
 ### 3.6 `review_task_comments`
 
 ```sql
--- mnt-gate: audited-table review_task_comments
+-- console-gate: audited-table review_task_comments
 CREATE TABLE review_task_comments (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -374,7 +374,7 @@ Indexes:
 Append-only domain timeline for cycle/task transitions and score/comment commits. This is not a replacement for `audit_events`; every write that inserts `review_events` must also insert the corresponding shared audit event in the same `with_audits` transaction.
 
 ```sql
--- mnt-gate: audited-table review_events
+-- console-gate: audited-table review_events
 CREATE TABLE review_events (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -429,7 +429,7 @@ Runtime-role grants:
 - `review_events`: `SELECT, INSERT`; no update/delete.
 
 Deny-by-omission rules:
-- Unset `app.current_org` sees zero review rows and rejects writes under `mnt_rt`.
+- Unset `app.current_org` sees zero review rows and rejects writes under `console_rt`.
 - A platform/operator principal without an entered tenant context sees zero review rows.
 - Cross-org ids in request paths or bodies are indistinguishable from missing rows; return 404/empty lists, not cross-tenant 403 detail.
 - Branch/site/team visibility is applied after org RLS using the existing `BranchScope` / PBAC boundary. Unauthorized branch/team rows are omitted from lists and direct reads return not found.
@@ -438,8 +438,8 @@ Deny-by-omission rules:
 Tenant-isolation allowlist impact:
 - No new entries are required in `global_table_allowlist`, `owner_only_table_allowlist`, or `nullable_org_allowlist` because every new review table is tenant-scoped with non-null `org_id` and RLS.
 - The migration may insert feature keys into existing global `feature_catalog`; that table is already globally allowlisted and stores canonical keys only.
-- Do not introduce a global `review_score_criteria_catalog` in v1. If a future shared catalog is truly global, it needs an explicit tenant-gate allowlist rationale and must not grant broad raw-table access to `mnt_rt` unless it is deliberately public metadata.
-- Mark mutable review tables with `-- mnt-gate: audited-table ...` comments so the audit-coverage gate treats them as state-changing tables that require audit evidence.
+- Do not introduce a global `review_score_criteria_catalog` in v1. If a future shared catalog is truly global, it needs an explicit tenant-gate allowlist rationale and must not grant broad raw-table access to `console_rt` unless it is deliberately public metadata.
+- Mark mutable review tables with `-- console-gate: audited-table ...` comments so the audit-coverage gate treats them as state-changing tables that require audit evidence.
 
 ## 5. Principal-derived org scope and adapter rules
 
@@ -472,9 +472,9 @@ with_audits::<_, _, PgReviewError>(&self.pool, org, move |tx| {
 
 Adapter rules:
 - Reads run through `with_org_conn`; writes run through `with_audit` or `with_audits`.
-- No production code may execute review-table SQL on a bare pool. `mnt-gate-rls-arming` should flag that.
+- No production code may execute review-table SQL on a bare pool. `console-gate-rls-arming` should flag that.
 - Use runtime `sqlx::query` / `QueryBuilder` + typed row mapping, or commit fresh `.sqlx` metadata if the implementation chooses compile-time macros. Runtime SQL keeps `SQLX_OFFLINE=true` friendly for new review crates.
-- Do not assume PostgreSQL is on port 5432. DB tests and local commands must read `DATABASE_URL`, `TEST_DATABASE_URL`, or the repo's dev-deps environment. Runtime-role test helpers should change role with `SET ROLE mnt_rt` on the opened test connection/pool rather than constructing hard-coded URLs.
+- Do not assume PostgreSQL is on port 5432. DB tests and local commands must read `DATABASE_URL`, `TEST_DATABASE_URL`, or the repo's dev-deps environment. Runtime-role test helpers should change role with `SET ROLE console_rt` on the opened test connection/pool rather than constructing hard-coded URLs.
 
 ## 6. Authz and feature seeds
 
@@ -619,9 +619,9 @@ Domain/unit tests:
 - comment validation rejects empty/overlong bodies and unsupported visibility/kind values.
 - team progress calculation handles zero tasks, cancelled tasks, returned tasks, submitted/accepted tasks, and optional target denominator.
 
-Adapter DB tests as real `mnt_rt` / FORCE RLS:
-- runtime-role pool uses the same migrated database but executes as `mnt_rt` (`SET ROLE mnt_rt` or app runtime URL), not a superuser/BYPASSRLS owner.
-- without `app.current_org`, `mnt_rt` sees zero review rows and writes fail/affect zero rows.
+Adapter DB tests as real `console_rt` / FORCE RLS:
+- runtime-role pool uses the same migrated database but executes as `console_rt` (`SET ROLE console_rt` or app runtime URL), not a superuser/BYPASSRLS owner.
+- without `app.current_org`, `console_rt` sees zero review rows and writes fail/affect zero rows.
 - with org A armed, org B cycles/tasks/scores/comments/events are invisible and direct lookups return not found.
 - client-supplied org fields are rejected before persistence.
 - create cycle/team/task derives `org_id` from `current_org()` and writes composite FKs inside that org only.
@@ -647,13 +647,13 @@ Gate commands for implementation PRs:
 ```text
 cd backend
 SQLX_OFFLINE=true cargo fmt --check
-SQLX_OFFLINE=true cargo test -p mnt-review-domain -p mnt-review-application -p mnt-review-adapter-postgres -p mnt-review-rest
-SQLX_OFFLINE=true cargo clippy -p mnt-review-domain -p mnt-review-application -p mnt-review-adapter-postgres -p mnt-review-rest --all-targets -- -D warnings
-cargo run -p mnt-gate-tenant-isolation
-cargo run -p mnt-gate-rls-arming
-cargo run -p mnt-gate-audit-coverage
-cargo run -p mnt-gate-migration-safety
-cargo run -p mnt-gate-layer-boundary
+SQLX_OFFLINE=true cargo test -p console-review-domain -p console-review-application -p console-review-adapter-postgres -p console-review-rest
+SQLX_OFFLINE=true cargo clippy -p console-review-domain -p console-review-application -p console-review-adapter-postgres -p console-review-rest --all-targets -- -D warnings
+cargo run -p console-gate-tenant-isolation
+cargo run -p console-gate-rls-arming
+cargo run -p console-gate-audit-coverage
+cargo run -p console-gate-migration-safety
+cargo run -p console-gate-layer-boundary
 ```
 
 Use the repo's current DB bootstrap/dev-deps command to supply `DATABASE_URL` for dynamic DB tests; do not hard-code host ports in tests or docs. If local Docker or macOS environment differs, the test harness should fail with a clear missing-DSN message rather than assuming a default port.
@@ -669,5 +669,5 @@ Use the repo's current DB bootstrap/dev-deps command to supply `DATABASE_URL` fo
 - All reads/writes derive org from the principal/current request context and use `with_org_conn` / `with_audit` / `with_audits`.
 - No client body or query parameter can set `org_id` or completion authority fields.
 - All transitions and score/comment saves are audited atomically and visible in both `review_events` and `audit_events`.
-- Tests prove `mnt_rt` RLS behavior, deny-by-omission, no bare-pool access, audit rollback, no delete grants, and `SQLX_OFFLINE=true` compatibility.
+- Tests prove `console_rt` RLS behavior, deny-by-omission, no bare-pool access, audit rollback, no delete grants, and `SQLX_OFFLINE=true` compatibility.
 - The implementation picks the migration number only at merge time and does not assume PostgreSQL port 5432.

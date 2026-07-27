@@ -2,7 +2,7 @@
 --
 -- 0201 was pre-assigned as a "reserved gap" for a future evidence-retention
 -- subject and left unwritten. That reservation was itself the defect: the
--- sequence ran 0200 -> 0202, and `mnt-gate-migration-safety` reports
+-- sequence ran 0200 -> 0202, and `console-gate-migration-safety` reports
 -- NonContiguousMigrationVersion for exactly this shape. The gate is right to.
 -- A hole on the main line is a live hazard, not a bookkeeping wart: any
 -- database that has already applied 0202 will REJECT a migration that later

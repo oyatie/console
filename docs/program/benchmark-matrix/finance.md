@@ -92,7 +92,7 @@ Legend: **[V]** verified w/ source · **[I]** inferred · **N/A** genuinely out 
 
 | Ours | SAP | Rippling | Palantir | n8n | Slack | Teams | Asana |
 |---|---|---|---|---|---|---|---|
-| Native field app exists (com.maintenance.field) but finance voucher UI not on it yet. [code] | Fiori mobile + S/4 mobile approve; JE entry is desk-work. [I] | Strong mobile: snap receipt, approve on phone. [I] | Mobile/Workshop apps; JE approval possible. [I] | No first-party mobile authoring. [I] | Full mobile approvals. [I] | Full mobile approvals. [I] | Full mobile app. [I] |
+| Native field app exists (com.console.app) but finance voucher UI not on it yet. [code] | Fiori mobile + S/4 mobile approve; JE entry is desk-work. [I] | Strong mobile: snap receipt, approve on phone. [I] | Mobile/Workshop apps; JE approval possible. [I] | No first-party mobile authoring. [I] | Full mobile approvals. [I] | Full mobile approvals. [I] | Full mobile app. [I] |
 
 ### 11. Extensibility (chart of accounts, dimensions, custom fields)
 

@@ -5,19 +5,19 @@
 //! the group-admin tenant-context) used to stamp a hardcoded ZERO freshness,
 //! which a promoted Cedar guard would deny as `MissingSubjectFreshness` /
 //! `StaleSubject`. They now source REAL freshness for the token's own
-//! `(org, user)` via `mnt_platform_db::read_subject_authz_freshness`.
+//! `(org, user)` via `console_platform_db::read_subject_authz_freshness`.
 //!
 //! These live under `backend/app/tests/` (not the `rest/`-path crates) so the
 //! `audit-coverage` CI gate does not scan the TEST-ONLY seed helpers as if they
 //! were state-changing handlers — the same relocation `cedar_shadow_role_manage`
 //! and `m2_real_engine_drive` use.
 //!
-//! Everything runs as the REAL `mnt_rt` runtime role (NOSUPERUSER, NOBYPASSRLS)
+//! Everything runs as the REAL `console_rt` runtime role (NOSUPERUSER, NOBYPASSRLS)
 //! under FORCE RLS — never a BYPASSRLS superuser pool, which would mask a broken
 //! read path (rls-verify-as-runtime-role).
 //!
 //! Coverage:
-//!   * the shared freshness read returns the DB-current values under mnt_rt RLS,
+//!   * the shared freshness read returns the DB-current values under console_rt RLS,
 //!     and reads absent rows as the safe 0 baseline;
 //!   * the group-admin tenant-context issuer (site 3) carries the sourced
 //!     freshness onto the verified token claims (the construction seam the two
@@ -30,16 +30,16 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::{BranchScope, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_authz::cedar_pbac::engine;
-use mnt_platform_authz::{
+use console_kernel_core::{BranchScope, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_authz::cedar_pbac::engine;
+use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, CedarEvaluation, CoexistenceMapEntry,
     CompiledBundleCacheKey, DecisionEffect, DecisionReason, DualEngineMode, Feature, Principal,
     RlsScopeProof, Role, SubjectFreshness, SubjectFreshnessRequirement,
     evaluate_cedar_pbac_boundary,
 };
-use mnt_platform_db::read_subject_authz_freshness;
+use console_platform_db::read_subject_authz_freshness;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -52,10 +52,10 @@ const ORG_A: Uuid = Uuid::from_u128(0x1111_1111_1111_1111_1111_1111_1111_1111);
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 const RESOURCE_TYPE: &str = "identity.policy_role";
 const DOMAIN: &str = "identity.policy";
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
-/// A pool whose every connection runs `SET ROLE mnt_rt` — the production runtime
+/// A pool whose every connection runs `SET ROLE console_rt` — the production runtime
 /// role under FORCE RLS, never the BYPASSRLS superuser the default `#[sqlx::test]`
 /// pool connects as.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -64,7 +64,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -224,7 +224,7 @@ fn guard_request(
 }
 
 // ===========================================================================
-// The shared freshness read returns the DB-current values under mnt_rt RLS, and
+// The shared freshness read returns the DB-current values under console_rt RLS, and
 // reads absent rows as the safe 0 baseline.
 // ===========================================================================
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -238,7 +238,7 @@ async fn read_returns_db_current_freshness_as_runtime_role(owner_pool: PgPool) {
 
     let rt_pool = runtime_role_pool(&owner_pool).await;
 
-    // Org A has real rows → non-zero DB-current, read under mnt_rt RLS.
+    // Org A has real rows → non-zero DB-current, read under console_rt RLS.
     let a = read_subject_authz_freshness(&rt_pool, OrgId::from_uuid(ORG_A), user_a)
         .await
         .unwrap();
@@ -434,7 +434,7 @@ async fn fresh_token_satisfies_guard_and_stale_after_bump(owner_pool: PgPool) {
         .unwrap();
     assert_eq!(
         bumped.policy_version, 6,
-        "the bump must be observed under mnt_rt"
+        "the bump must be observed under console_rt"
     );
     let required_after = SubjectFreshnessRequirement {
         min_policy_version: bumped.policy_version,

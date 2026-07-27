@@ -24,7 +24,7 @@ use cedar_policy::{
     Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid,
     PolicySet, Request, RestrictedExpression, Schema, ValidationMode, Validator,
 };
-use mnt_kernel_core::{KernelError, OrgId};
+use console_kernel_core::{KernelError, OrgId};
 use sha2::{Digest, Sha256};
 
 use super::{AuthorizationRequest, CedarEvaluation, CompiledBundleCacheKey};
@@ -501,7 +501,7 @@ mod tests {
 
     use std::collections::BTreeSet;
 
-    use mnt_kernel_core::{BranchScope, OrgId, UserId};
+    use console_kernel_core::{BranchScope, OrgId, UserId};
 
     use super::{
         ROLE_MANAGE_SCHEMA, ROLE_MANAGE_SCHEMA_VERSION, compile_bundle, compile_bundle_for_feature,

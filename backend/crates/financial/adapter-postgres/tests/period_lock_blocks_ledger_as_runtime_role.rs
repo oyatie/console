@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! BE-LC period-lock enforcement on the REAL financial write path, executed as
-//! the genuine non-owner runtime role `mnt_rt`:
+//! the genuine non-owner runtime role `console_rt`:
 //!
 //!   (a) an active `accounting` period lock makes `append_cost_ledger_entry`
 //!       (the shared insert both manual admin entries and purchase execution
@@ -9,12 +9,12 @@
 //!   (b) unlocking restores the write path — while a DIFFERENT tenant's active
 //!       lock over the same window stays irrelevant (RLS isolation).
 
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_application::{
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_application::{
     AppendCostLedgerEntryCommand, CostLedgerSource, FinancialConfigSnapshot,
 };
-use mnt_financial_domain::DepreciationMethod;
-use mnt_kernel_core::{BranchId, EquipmentId, OrgId, TraceContext, UserId};
+use console_financial_domain::DepreciationMethod;
+use console_kernel_core::{BranchId, EquipmentId, OrgId, TraceContext, UserId};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
@@ -28,7 +28,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -208,7 +208,7 @@ async fn accounting_period_lock_blocks_cost_ledger_and_unlock_restores(owner_poo
     let store = PgFinancialStore::new(rt_pool.clone());
 
     // (a) Locked period → the REAL mutation fails closed with a conflict.
-    let blocked = mnt_platform_request_context::scope_org(org, async {
+    let blocked = console_platform_request_context::scope_org(org, async {
         store
             .append_cost_ledger_entry(ledger_command(admin, branch_id, equipment_id))
             .await
@@ -239,7 +239,7 @@ async fn accounting_period_lock_blocks_cost_ledger_and_unlock_restores(owner_poo
     .await
     .unwrap();
 
-    let entry = mnt_platform_request_context::scope_org(org, async {
+    let entry = console_platform_request_context::scope_org(org, async {
         store
             .append_cost_ledger_entry(ledger_command(admin, branch_id, equipment_id))
             .await

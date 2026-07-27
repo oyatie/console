@@ -47,7 +47,7 @@ export function runDockerWithCopiedWorkspace({
   outputs = [],
   stagingRoot,
   workingDirectory,
-  containerName = `mnt-openapi-codegen-${randomUUID()}`,
+  containerName = `console-openapi-codegen-${randomUUID()}`,
   spawn = spawnSync,
   ...unsupportedOptions
 }) {

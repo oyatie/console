@@ -1,12 +1,12 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_kernel_core::{CustomerInquiryId, OrgId, SalesListingId, TraceContext, UserId};
-use mnt_sales_adapter_postgres::PgSalesStore;
-use mnt_sales_application::{
+use console_kernel_core::{CustomerInquiryId, OrgId, SalesListingId, TraceContext, UserId};
+use console_sales_adapter_postgres::PgSalesStore;
+use console_sales_application::{
     CatalogQuery, CreateListingCommand, DeleteListingCommand, InquiryInboxQuery, ListingInput,
     SubmitInquiryCommand, UpdateInquiryStatusCommand, UpdateListingCommand, UpdateListingFields,
 };
-use mnt_sales_domain::{
+use console_sales_domain::{
     InquiryStatus, InquiryTopic, ListingCondition, ListingKind, ListingStatus, ListingType,
 };
 use sqlx::PgPool;
@@ -14,7 +14,7 @@ use time::macros::datetime;
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn listing_and_inquiry_lifecycle_is_tenant_scoped_and_audited(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let actor = seed_user(&pool).await;
         let store = PgSalesStore::new(pool.clone());
 
@@ -200,7 +200,7 @@ async fn listing_and_inquiry_lifecycle_is_tenant_scoped_and_audited(pool: PgPool
 // survive so the object graph never dangles and history stays reconstructable.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn deleting_a_listing_archives_it_instead_of_hard_deleting(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let actor = seed_user(&pool).await;
         let store = PgSalesStore::new(pool.clone());
 

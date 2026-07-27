@@ -3,12 +3,12 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
-const appRoot = join(repoRoot, "ios/Sources/MaintenanceFieldApp");
-const coreLabelPath = join(repoRoot, "ios/Sources/MaintenanceFieldCore/FieldLabels.swift");
-const coreMessengerPath = join(repoRoot, "ios/Sources/MaintenanceFieldCore/Messenger.swift");
+const appRoot = join(repoRoot, "ios/Sources/ConsoleApp");
+const coreLabelPath = join(repoRoot, "ios/Sources/ConsoleCore/ConsoleLabels.swift");
+const coreMessengerPath = join(repoRoot, "ios/Sources/ConsoleCore/Messenger.swift");
 const stringsPath = join(
   repoRoot,
-  "ios/Sources/MaintenanceFieldApp/Resources/ko.lproj/Localizable.strings",
+  "ios/Sources/ConsoleApp/Resources/ko.lproj/Localizable.strings",
 );
 const swiftStringLiteral = /"(?:\\.|[^"\\])*"/g;
 const hangul = /[\u3131-\uD79D]/;

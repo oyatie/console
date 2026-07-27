@@ -11,20 +11,20 @@ use std::collections::BTreeSet;
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_identity_adapter_postgres::PgOrgStore;
-use mnt_identity_application::ReplacePolicyRoleAssignmentsCommand;
-use mnt_identity_rest::{IdentityRestState, router};
-use mnt_kernel_core::{
+use console_identity_adapter_postgres::PgOrgStore;
+use console_identity_application::ReplacePolicyRoleAssignmentsCommand;
+use console_identity_rest::{IdentityRestState, router};
+use console_kernel_core::{
     AccessScope, AccessScopeLevel, AuditAction, AuditEvent, BranchId, OrgId, ScopeNodeId,
     TraceContext, UserId,
 };
-use mnt_platform_auth::{
+use console_platform_auth::{
     AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier, PasskeyRegistrationStart,
     PasskeyService, WebauthnSettings,
 };
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::runtime_role_pool;
+use console_platform_db::{DbError, with_audit};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -36,8 +36,8 @@ use url::Url;
 use webauthn_authenticator_rs::prelude::{RequestChallengeResponse, WebauthnAuthenticator};
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Harness {
     private_pem: String,
@@ -47,7 +47,7 @@ struct Harness {
 
 impl Harness {
     /// `pool` is the `#[sqlx::test]` owner pool: still fine for the caller's
-    /// own seeding, but the router itself is built on a non-owner `mnt_rt`
+    /// own seeding, but the router itself is built on a non-owner `console_rt`
     /// pool so requests actually go through RLS instead of BYPASSRLS.
     async fn new(pool: PgPool) -> Self {
         let signing_key = SigningKey::random(&mut OsRng);
@@ -167,7 +167,7 @@ fn passkey_service() -> PasskeyService {
     PasskeyService::new(WebauthnSettings {
         rp_id: "example.com".to_owned(),
         rp_origin: Url::parse("https://auth.example.com").unwrap(),
-        rp_name: "MNT Maintenance".to_owned(),
+        rp_name: "Console".to_owned(),
         extra_allowed_origins: vec![],
         ceremony_ttl: Duration::minutes(5),
     })
@@ -3058,7 +3058,7 @@ fn json_string_set(value: &Value) -> BTreeSet<String> {
 
 /// GET /api/v1/me/authz (charter G-a): the caller's NON-AUTHORITATIVE
 /// authorization projection — org/branch scope, roles-as-attributes, and the
-/// legacy-matrix capability grants (deny-by-omission). Runs on the real `mnt_rt`
+/// legacy-matrix capability grants (deny-by-omission). Runs on the real `console_rt`
 /// router pool (RLS armed), and proves a branch-scoped MEMBER gets a strictly
 /// narrower grant set than ADMIN — the structural replacement for the frontend
 /// hardcoding role lists.

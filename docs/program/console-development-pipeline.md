@@ -43,17 +43,17 @@ verification evidence.
 
 - **`HOLD-CI-BUCK2-001` — Cargo remains in required CI.**
   `.github/workflows/ci.yml:372-399` directly runs `cargo fmt`, `cargo clippy`,
-  and eight `cargo run -p mnt-gate-*` binaries.
+  and eight `cargo run -p console-gate-*` binaries.
   `scripts/check-ci-preflight.mjs` and its tests currently require those Cargo
   steps. Buck targets already exist for the gate crates, including
-  `//backend/ci/gates/layer-boundary:mnt-gate-layer-boundary`,
-  `//backend/ci/gates/audit-coverage:mnt-gate-audit-coverage`,
-  `//backend/ci/gates/migration-safety:mnt-gate-migration-safety`,
-  `//backend/ci/gates/tenant-isolation:mnt-gate-tenant-isolation`,
-  `//backend/ci/gates/pii-no-logs:mnt-gate-pii-no-logs`,
-  `//backend/ci/gates/rls-arming:mnt-gate-rls-arming`,
-  `//backend/ci/gates/dev-auth-absence:mnt-gate-dev-auth-absence`, and
-  `//backend/ci/gates/iac-tier:mnt-gate-iac-tier`; their generated BUCK files
+  `//backend/ci/gates/layer-boundary:console-gate-layer-boundary`,
+  `//backend/ci/gates/audit-coverage:console-gate-audit-coverage`,
+  `//backend/ci/gates/migration-safety:console-gate-migration-safety`,
+  `//backend/ci/gates/tenant-isolation:console-gate-tenant-isolation`,
+  `//backend/ci/gates/pii-no-logs:console-gate-pii-no-logs`,
+  `//backend/ci/gates/rls-arming:console-gate-rls-arming`,
+  `//backend/ci/gates/dev-auth-absence:console-gate-dev-auth-absence`, and
+  `//backend/ci/gates/iac-tier:console-gate-iac-tier`; their generated BUCK files
   also declare applicable unit/integration targets. The workflow and checker
   must migrate to Buck2-owned fmt, clippy, and gate execution, with equivalent
   fail-closed tests, before any Buck2-only Rust completion or release claim.

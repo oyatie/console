@@ -76,9 +76,9 @@ Workspace wiring:
   - `BenefitCatalogItemId`
   - `BenefitCatalogTierId`
   - `BenefitCatalogConditionId`
-- Domain crate depends only on `mnt-kernel-core` and `serde`.
+- Domain crate depends only on `console-kernel-core` and `serde`.
 - Application crate depends on domain + kernel and owns DTOs/commands/read models/audit builders.
-- Adapter crate depends on domain/application + `mnt-platform-db` + `mnt-platform-request-context`; it derives org from `current_org()` and never accepts `org_id` from client input.
+- Adapter crate depends on domain/application + `console-platform-db` + `console-platform-request-context`; it derives org from `current_org()` and never accepts `org_id` from client input.
 - REST crate depends on application/adapter + auth/authz; `backend/app` mounts it like other domain REST modules.
 
 Domain layer types:
@@ -447,7 +447,7 @@ Domain/unit:
 - tier and condition validators reject blank labels, unsupported operators/kinds, and invalid JSON shapes.
 - scope invariant tests for `ORG`, `BRANCH`, `SITE`, `TEAM`, `ROLE`, and invalid combinations.
 
-Adapter DB tests, all against runtime role `mnt_rt` and FORCE RLS:
+Adapter DB tests, all against runtime role `console_rt` and FORCE RLS:
 
 - create/list/get benefit rows in one tenant.
 - cross-tenant rows are invisible under RLS.
@@ -471,12 +471,12 @@ Gate commands:
 
 - `SQLX_OFFLINE=true cargo fmt --check` from `backend/`.
 - `SQLX_OFFLINE=true cargo clippy --workspace --all-targets -- -D warnings` from `backend/` when scope permits.
-- Focused DB tests for benefit adapter/rest as `mnt_rt` against dev Postgres on `127.0.0.1:55432`.
-- `cargo run -p mnt-gate-tenant-isolation`.
-- `cargo run -p mnt-gate-rls-arming`.
-- `cargo run -p mnt-gate-audit-coverage`.
-- `cargo run -p mnt-gate-migration-safety`.
-- `cargo run -p mnt-gate-layer-boundary`.
+- Focused DB tests for benefit adapter/rest as `console_rt` against dev Postgres on `127.0.0.1:55432`.
+- `cargo run -p console-gate-tenant-isolation`.
+- `cargo run -p console-gate-rls-arming`.
+- `cargo run -p console-gate-audit-coverage`.
+- `cargo run -p console-gate-migration-safety`.
+- `cargo run -p console-gate-layer-boundary`.
 - OpenAPI/client drift checks after client regeneration.
 
 ## 10. Acceptance checklist for the implementation card

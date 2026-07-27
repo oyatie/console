@@ -6,7 +6,7 @@
 --     is critical: the application may connect as the table owner, and without
 --     FORCE the owner silently bypasses every policy. (Superusers and BYPASSRLS
 --     roles still bypass RLS — that is why the app, and the isolation test,
---     run as the unprivileged `mnt_app` role.)
+--     run as the unprivileged `console_app` role.)
 --   * POLICY org_isolation gates BOTH visibility (USING) and writes (WITH
 --     CHECK) on org_id = the per-transaction GUC `app.current_org`.
 --
@@ -21,13 +21,13 @@
 -- The GUC is set transaction-locally (set_config(..., true)) by the
 -- with_audit / tenant_scoped_read helpers immediately after BEGIN.
 
--- Runtime-role privileges live in 0031 and target `mnt_rt` (the non-owner role
--- the application actually connects as) — NOT the owner `mnt_app`. Granting the
+-- Runtime-role privileges live in 0031 and target `console_rt` (the non-owner role
+-- the application actually connects as) — NOT the owner `console_app`. Granting the
 -- owner privileges on its own tables is a no-op, and worse, conflates the
 -- migration identity with the runtime identity. This file only turns RLS on.
 
 -- organizations itself is tenant data: a tenant may only see its own org row.
--- (Provisioning a new tenant is a privileged/owner operation, not an mnt_app one.)
+-- (Provisioning a new tenant is a privileged/owner operation, not an console_app one.)
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organizations FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON organizations

@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 /**
  * UI-M1a chrome drawer guard.
  *
- * Runs under the `dev-auth` Playwright project (`MNT_DEV_AUTH_E2E=1`) because it
+ * Runs under the `dev-auth` Playwright project (`CONSOLE_DEV_AUTH_E2E=1`) because it
  * needs the authenticated AppShell but does not need the WebAuthn harness. The
  * default `chromium` project ignores this file so public preview-only runs stay
  * backend-free.

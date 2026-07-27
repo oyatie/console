@@ -13,7 +13,7 @@
 //!
 //! A bounded [`Semaphore`] caps concurrent passes so a burst of due accounts
 //! cannot exhaust connections/CPU. The whole worker is GRACEFUL: it only starts
-//! when the master KEK is present, storage is configured, and `MNT_MAIL_ENABLED`
+//! when the master KEK is present, storage is configured, and `CONSOLE_MAIL_ENABLED`
 //! is truthy — otherwise it is a no-op (the app boots normally, mail endpoints
 //! still mount and return 503/empty as appropriate).
 //!
@@ -23,15 +23,15 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use mnt_comms_adapter_imap::AsyncImapClient;
-use mnt_comms_adapter_postgres::PgMailStore;
-use mnt_comms_application::{
+use console_comms_adapter_imap::AsyncImapClient;
+use console_comms_adapter_postgres::PgMailStore;
+use console_comms_application::{
     MailAttachmentStore, MailFuture, MailReadStore, MailServiceError, MailStore, SyncService,
 };
-use mnt_comms_credential_cipher::EnvelopeCredentialCipher;
-use mnt_kernel_core::Timestamp;
-use mnt_platform_request_context::scope_org;
-use mnt_platform_storage::{PresignGetRequest, S3ObjectStore, SeaweedS3Storage};
+use console_comms_credential_cipher::EnvelopeCredentialCipher;
+use console_kernel_core::Timestamp;
+use console_platform_request_context::scope_org;
+use console_platform_storage::{PresignGetRequest, S3ObjectStore, SeaweedS3Storage};
 use tokio::sync::{Semaphore, watch};
 
 /// Default seconds between scheduler ticks. Each tick dispatches the due batch;
@@ -74,7 +74,7 @@ impl MailSyncHandle {
     }
 }
 
-/// The object-storage adapter bridging `mnt-platform-storage`'s `S3ObjectStore`
+/// The object-storage adapter bridging `console-platform-storage`'s `S3ObjectStore`
 /// to the application's [`MailAttachmentStore`] port. Uploads inbound attachment
 /// bytes under org-prefixed keys and issues short-lived presigned GETs.
 #[derive(Clone)]
@@ -135,12 +135,12 @@ pub fn spawn(
     enabled: bool,
 ) -> Option<MailSyncHandle> {
     if !enabled {
-        tracing::info!("MNT_MAIL_ENABLED is not set; the inbound webmail sync worker is OFF");
+        tracing::info!("CONSOLE_MAIL_ENABLED is not set; the inbound webmail sync worker is OFF");
         return None;
     }
     let Some(cipher) = cipher else {
         tracing::info!(
-            "MNT_MAIL_MASTER_KEY absent; the inbound webmail sync worker is OFF (no credential cipher)"
+            "CONSOLE_MAIL_MASTER_KEY absent; the inbound webmail sync worker is OFF (no credential cipher)"
         );
         return None;
     };
@@ -252,7 +252,7 @@ async fn sync_one_account(
     store: PgMailStore,
     attachments: S3MailAttachmentStore,
     cipher: Arc<EnvelopeCredentialCipher>,
-    account: mnt_comms_application::DueAccount,
+    account: console_comms_application::DueAccount,
 ) {
     let org = account.org_id;
     let token = account.claim_token;

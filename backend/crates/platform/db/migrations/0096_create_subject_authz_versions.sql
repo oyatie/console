@@ -35,16 +35,16 @@ CREATE POLICY org_isolation ON subject_authz_versions
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON subject_authz_versions TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON subject_authz_versions TO console_rt;
 -- Migration 0031's ALTER DEFAULT PRIVILEGES auto-grants FULL DML (incl. DELETE)
--- to mnt_rt on every table mnt_app creates, so the SELECT/INSERT/UPDATE grant
+-- to console_rt on every table console_app creates, so the SELECT/INSERT/UPDATE grant
 -- above is not sufficient: without this REVOKE the runtime role could DELETE a
 -- subject's freshness row under RLS, silently reverting session_generation/
 -- version to the absent-row "0" baseline and defeating a stale-subject deny.
 -- Freshness counters are monotonic bump-only for the app role — never deletable
--- by mnt_rt (mirrors 0065/0095). The owner (mnt_app) retains DELETE so DEFINER
+-- by console_rt (mirrors 0065/0095). The owner (console_app) retains DELETE so DEFINER
 -- tenant/user-removal functions can still cascade.
-REVOKE DELETE ON subject_authz_versions FROM mnt_rt;
+REVOKE DELETE ON subject_authz_versions FROM console_rt;
 
 -- org_id is part of the primary key and never rewritten by the bump helpers, but
 -- keep the shared immutability guard so a future UPDATE can never move a row

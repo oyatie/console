@@ -9,7 +9,7 @@
 >
 > **QUALITY BAR = PALANTIR-GRADE, ENTERPRISE-PRODUCTION (non-negotiable, every story).** No MVP, no
 > shortcuts, no "good for now". Every increment is fully wired (no stubs/placeholders/dummy data),
-> error-handled, RLS+authz+audited, covered by real `mnt_rt` tests, AA-accessible, rendered in the
+> error-handled, RLS+authz+audited, covered by real `console_rt` tests, AA-accessible, rendered in the
 > dense/legible Blueprint system at **visual-verdict ≥90**, slop-cleaned + independently reviewed —
 > BEFORE any ultragoal checkpoint. A slice is an increment of a complete system, never a stopping point.
 
@@ -29,7 +29,7 @@ no-code). KNL's forklift FSM is the first configured instance proving the generi
 
 React 19 + Vite + Tailwind v4 (`@theme`) + react-router 7 + Pretendard, typed client `@maintenance/
 api-client-ts`. Rust (axum) bounded-context crates (`domain/application/adapter-*/rest`), sqlx, multi-
-tenant Postgres 18 RLS (runtime role `mnt_rt` NOBYPASSRLS + FORCE RLS; owner `mnt_app` runs migrations
+tenant Postgres 18 RLS (runtime role `console_rt` NOBYPASSRLS + FORCE RLS; owner `console_app` runs migrations
 out-of-band). OpenAPI single source (`backend/openapi/openapi.yaml`, served via `include_str`) covers tenant
 and `/api/platform/*` platform-admin routes; generated clients and the web platform API types derive from
 that file. OCI/Talos k8s, CNPG, Argo Rollouts, image-release auto-deploy on push, secrets in OCI Vault.
@@ -45,11 +45,11 @@ npm run build       # tsc -b + vite build
 npm test            # vitest; until #31: npx vitest run --exclude '**/PlatformConsole.test.tsx'
 npm run gen:api:ts  # regen TS client from OpenAPI, including platform-admin DTOs
 
-# Backend (cd backend; SQLX_OFFLINE=true; DATABASE_URL=postgres://<user>@localhost/mnt_ci — user REQUIRED)
+# Backend (cd backend; SQLX_OFFLINE=true; DATABASE_URL=postgres://<user>@localhost/console_ci — user REQUIRED)
 cargo fmt --all --check
 cargo clippy --all-targets -- -D warnings
 cargo test -p <crate>                    # #[sqlx::test] applies migrations
-cargo run -p mnt-gate-{rls-arming,tenant-isolation,layer-boundary,audit-coverage,migration-safety}
+cargo run -p console-gate-{rls-arming,tenant-isolation,layer-boundary,audit-coverage,migration-safety}
 npm run check:openapi-app                # platform route inventory + served openapi == committed file
 npm run gen:api:swift
 ```
@@ -69,7 +69,7 @@ SPEC.md (this) · docs/specs/             # master spec + JIT domain sub-specs (
 
 ## Code Style
 
-Match surrounding code. **Every tenant read/write arms `app.current_org`; tests run as real `mnt_rt`.**
+Match surrounding code. **Every tenant read/write arms `app.current_org`; tests run as real `console_rt`.**
 ```rust
 // READ: armed, org-scoped, fail-closed under FORCE RLS.
 let org = current_org().map_err(KernelError::from)?;           // never a default tenant
@@ -83,7 +83,7 @@ ids/₩ in `Mono`. New objects = one `ObjectViewConfig<T>` over `ObjectViewScaff
 
 ## Testing Strategy
 
-- **TDD**: failing test first. **Backend**: a real `mnt_rt` RLS test per tenant flow (seed via the ARMED
+- **TDD**: failing test first. **Backend**: a real `console_rt` RLS test per tenant flow (seed via the ARMED
   path, not the BYPASSRLS owner pool) proving create→read round-trip, org-scoping, cross-tenant
   invisibility, fail-closed-unarmed. **Web**: vitest per page + shared kit; **visual-verdict ≥90** on every
   path before a UI phase is "done". **Regulated** (payroll/회계): golden-case tests vs 노무사/세무사-validated
@@ -93,7 +93,7 @@ ids/₩ in `Mono`. New objects = one `ObjectViewConfig<T>` over `ObjectViewScaff
 
 ## Boundaries
 
-- **Always**: arm `app.current_org` + a real `mnt_rt` test for every tenant read/write · openapi-first
+- **Always**: arm `app.current_org` + a real `console_rt` test for every tenant read/write · openapi-first
   (including `/api/platform/*`) + regen clients · incremental (≤~5 files/task) · gates+fmt+clippy+tests green + evidence before "done" ·
   authoring and review are separate passes (code-reviewer/security-reviewer; never self-approve) ·
   operational/business mutations through the audited console API (never direct SQL).
@@ -105,7 +105,7 @@ ids/₩ in `Mono`. New objects = one `ObjectViewConfig<T>` over `ObjectViewScaff
 
 ## Success Criteria
 
-1. **FSM loop closes** end-to-end as real `mnt_rt`: intake→plan→dispatch→execute(evidence)→approve→close;
+1. **FSM loop closes** end-to-end as real `console_rt`: intake→plan→dispatch→execute(evidence)→approve→close;
    nothing "created but invisible" (issue #19 #13/#17/#18/#21/#22 fixed + tested).
 2. **Object-centric**: ≥6 core objects have an Object View reachable via ⌘K + inter-object links; triage
    home is the post-login landing for operator roles; raw UUIDs never shown.

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { UserSummary, WorkOrderListItem } from "../api/types";
 import type { PendingDispatchOffersLoadResult } from "../features/dispatch/MechanicDispatchOffers";
 type WorkResultType = components["schemas"]["WorkResultType"];

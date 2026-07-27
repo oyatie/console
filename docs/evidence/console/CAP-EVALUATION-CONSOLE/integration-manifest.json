@@ -36,7 +36,7 @@
       "note": "every operation needs the per-domain tags: entry (kotlin client OOM guard, PR #261)"
     },
     "clients": "regenerate ts/kotlin/swift after openapi lands (3 CI drift gates)",
-    "backend/app/src (build_router)": "mount mnt_evaluation_rest::router(...) under the tenant middleware in the same change as the openapi paths (openapi drift test couples them); until then the crate stays dark and app-test-mounted",
+    "backend/app/src (build_router)": "mount console_evaluation_rest::router(...) under the tenant middleware in the same change as the openapi paths (openapi drift test couples them); until then the crate stays dark and app-test-mounted",
     "migrations": "0190_create_evaluation.sql per design-contract.md §6; renumber to next free slot at push time if 0181-0189 lanes collide"
   },
   "features_added_in_lane": ["evaluation_read", "evaluation_manage", "evaluation_submit"],

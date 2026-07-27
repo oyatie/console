@@ -25,9 +25,9 @@ written, no DELETE anywhere — VOID is the correction state).
 
 ### 2. The integration test runs as the real runtime role
 `backend/app/tests/maintenance_chain_api.rs` builds the router on a second pool
-whose `after_connect` runs `SET ROLE mnt_rt`; the sqlx-owner pool is used ONLY
+whose `after_connect` runs `SET ROLE console_rt`; the sqlx-owner pool is used ONLY
 for seeding and audit readback. All four tests passed against scratch DBs
-(migrations include 0193): `cargo test -p mnt-app --test maintenance_chain_api`
+(migrations include 0193): `cargo test -p console-app --test maintenance_chain_api`
 → 4/4 ok (7.4s).
 
 ### 3. Tenant isolation without leakage (count-leak-free)
@@ -113,8 +113,8 @@ history (`equipment_id` filter), and lens KPIs.
 - Canonical envelope everywhere (asserted on denials).
 
 ### 12. Static gates
-- `cargo fmt --check` — clean (workorder crates + mnt-app tests).
-- `cargo clippy -p mnt-workorder-{domain,application,adapter-postgres,rest}
+- `cargo fmt --check` — clean (workorder crates + console-app tests).
+- `cargo clippy -p console-workorder-{domain,application,adapter-postgres,rest}
   --all-targets -- -D warnings` — clean (exit 0).
 - Zero TODO/FIXME/unimplemented!/todo!/#[ignore] in the lane's files.
 
@@ -126,9 +126,9 @@ history (`equipment_id` filter), and lens KPIs.
 | application | 3/3 |
 | rest unit (incl. mobile_evidence, mobile_sync) | 16+ all ok |
 | adapter m2_flag_off_parity | 1/1 |
-| adapter rls_read_surfaces_as_runtime_role (mnt_rt) | 10/10 |
+| adapter rls_read_surfaces_as_runtime_role (console_rt) | 10/10 |
 | adapter use_cases | 6/6 |
-| app maintenance_chain_api (mnt_rt router) | 4/4 |
+| app maintenance_chain_api (console_rt router) | 4/4 |
 
 ## Findings and dispositions
 
@@ -154,7 +154,7 @@ history (`equipment_id` filter), and lens KPIs.
    the five working-tree-only fixes (platform/auth, logistics adapter,
    production rest, facilities rest, duplicate migration 0170) documented in
    `integration-manifest.json`. These remain uncommitted and outside lane
-   ownership; owning lanes/integrator must land real fixes. Full `-p mnt-app`
+   ownership; owning lanes/integrator must land real fixes. Full `-p console-app`
    clippy is still blocked by other crates' pre-existing `expect_used`
    violations at base.
 

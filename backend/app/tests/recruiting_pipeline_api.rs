@@ -1,5 +1,5 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
-//! Real `mnt_rt` coverage for the recruiting pipeline (STORY-RECRUITING-001).
+//! Real `console_rt` coverage for the recruiting pipeline (STORY-RECRUITING-001).
 //! It crosses the assembled HTTP router: posting draft → preflight-gated
 //! publish → applicant stages → assessment-gated offer → accepted-offer hire
 //! through the HR-owned employee core — plus PBAC denial without leakage,
@@ -7,9 +7,9 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -20,8 +20,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const POSTINGS: &str = "/api/v1/recruiting/postings";
 const APPLICANTS: &str = "/api/v1/recruiting/applicants";
 const OFFERS: &str = "/api/v1/recruiting/offers";
@@ -715,13 +715,13 @@ impl Keys {
 }
 
 async fn runtime_role_pool(owner: &PgPool) -> PgPool {
-    role_pool(owner, "SET ROLE mnt_rt").await
+    role_pool(owner, "SET ROLE console_rt").await
 }
 
 /// The isolated leave command capability (home-branch authority), armed the
 /// way production arms LEAVE_COMMAND_DATABASE_URL.
 async fn leave_command_role_pool(owner: &PgPool) -> PgPool {
-    role_pool(owner, "SET ROLE mnt_leave_cmd").await
+    role_pool(owner, "SET ROLE console_leave_cmd").await
 }
 
 async fn role_pool(owner: &PgPool, set_role: &'static str) -> PgPool {
@@ -742,14 +742,14 @@ fn app_state(
     pool: PgPool,
     leave_command_pool: PgPool,
     public_key: String,
-) -> Result<AppState, mnt_app::AppError> {
+) -> Result<AppState, console_app::AppError> {
     Ok(AppState::new(
         AppConfig::from_pairs([
-            ("MNT_APP_ROLE", AppRole::Api.to_string()),
-            ("MNT_HTTP_ADDR", "127.0.0.1:0".into()),
-            ("MNT_JWT_ISSUER", ISSUER.into()),
-            ("MNT_JWT_AUDIENCE", AUDIENCE.into()),
-            ("MNT_JWT_PUBLIC_KEY_PEM", public_key),
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
+            ("CONSOLE_JWT_ISSUER", ISSUER.into()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.into()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key),
         ])?,
         DatabaseDependency::Postgres(pool),
     )?

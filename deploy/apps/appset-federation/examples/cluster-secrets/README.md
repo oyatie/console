@@ -26,19 +26,19 @@ Metadata-only example for the current primary in a Korean on-prem site:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: maintenance-onprem-kr-a
+  name: console-onprem-kr-a
   namespace: argocd
   labels:
     argocd.argoproj.io/secret-type: cluster
-    maintenance.io/federation: enabled
-    maintenance.io/environment: prod
-    maintenance.io/site: onprem-kr-a
-    maintenance.io/dr-role: primary
-    maintenance.io/residency: kr
-    maintenance.io/traffic: active
-    maintenance.io/standby-mode: none
-    maintenance.io/storage-profile: replicated
-    maintenance.io/registration-source: external-secrets-openbao
+    console.io/federation: enabled
+    console.io/environment: prod
+    console.io/site: onprem-kr-a
+    console.io/dr-role: primary
+    console.io/residency: kr
+    console.io/traffic: active
+    console.io/standby-mode: none
+    console.io/storage-profile: replicated
+    console.io/registration-source: external-secrets-openbao
 # credential data intentionally omitted
 ```
 
@@ -50,19 +50,19 @@ Metadata-only example for a warm standby in the same residency boundary:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: maintenance-onprem-kr-b
+  name: console-onprem-kr-b
   namespace: argocd
   labels:
     argocd.argoproj.io/secret-type: cluster
-    maintenance.io/federation: enabled
-    maintenance.io/environment: prod
-    maintenance.io/site: onprem-kr-a
-    maintenance.io/dr-role: warm-standby
-    maintenance.io/residency: kr
-    maintenance.io/traffic: held
-    maintenance.io/standby-mode: warm
-    maintenance.io/storage-profile: restored-replica
-    maintenance.io/registration-source: external-secrets-openbao
+    console.io/federation: enabled
+    console.io/environment: prod
+    console.io/site: onprem-kr-a
+    console.io/dr-role: warm-standby
+    console.io/residency: kr
+    console.io/traffic: held
+    console.io/standby-mode: warm
+    console.io/storage-profile: restored-replica
+    console.io/registration-source: external-secrets-openbao
 # credential data intentionally omitted
 ```
 
@@ -76,41 +76,41 @@ in OpenBao, not in git.
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
-  name: maintenance-onprem-kr-a-cluster
+  name: console-onprem-kr-a-cluster
   namespace: argocd
 spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
-    name: openbao-maintenance
+    name: openbao-console
   target:
-    name: maintenance-onprem-kr-a
+    name: console-onprem-kr-a
     creationPolicy: Owner
     template:
       metadata:
         labels:
           argocd.argoproj.io/secret-type: cluster
-          maintenance.io/federation: enabled
-          maintenance.io/environment: prod
-          maintenance.io/site: onprem-kr-a
-          maintenance.io/dr-role: primary
-          maintenance.io/residency: kr
-          maintenance.io/traffic: active
-          maintenance.io/standby-mode: none
-          maintenance.io/storage-profile: replicated
-          maintenance.io/registration-source: external-secrets-openbao
+          console.io/federation: enabled
+          console.io/environment: prod
+          console.io/site: onprem-kr-a
+          console.io/dr-role: primary
+          console.io/residency: kr
+          console.io/traffic: active
+          console.io/standby-mode: none
+          console.io/storage-profile: replicated
+          console.io/registration-source: external-secrets-openbao
   data:
     - secretKey: name
       remoteRef:
-        key: maintenance/argocd/clusters/onprem-kr-a
+        key: console/argocd/clusters/onprem-kr-a
         property: name
     - secretKey: server
       remoteRef:
-        key: maintenance/argocd/clusters/onprem-kr-a
+        key: console/argocd/clusters/onprem-kr-a
         property: server
     - secretKey: config
       remoteRef:
-        key: maintenance/argocd/clusters/onprem-kr-a
+        key: console/argocd/clusters/onprem-kr-a
         property: config
 ```
 

@@ -7,13 +7,13 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
-use mnt_notices_adapter_postgres::PgNoticeStore;
-use mnt_notices_rest::{NoticeRestState, router};
-use mnt_notifications_adapter_postgres::PgNotificationStore;
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::{grant_mnt_rt, runtime_role_pool};
+use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
+use console_notices_adapter_postgres::PgNoticeStore;
+use console_notices_rest::{NoticeRestState, router};
+use console_notifications_adapter_postgres::PgNotificationStore;
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::{grant_console_rt, runtime_role_pool};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -23,12 +23,12 @@ use std::sync::Arc;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -51,14 +51,14 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
         )
         .unwrap();
 
-        grant_mnt_rt(
+        grant_console_rt(
             &pool,
             &[
-                "GRANT SELECT, INSERT, UPDATE ON notices TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO mnt_rt",
-                "GRANT SELECT ON object_types TO mnt_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notices TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO console_rt",
+                "GRANT SELECT ON object_types TO console_rt",
             ],
         )
         .await;
@@ -192,7 +192,7 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool) {
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_key_pem = signing_key
@@ -222,14 +222,14 @@ async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool)
         )
         .unwrap();
 
-        grant_mnt_rt(
+        grant_console_rt(
             &pool,
             &[
-                "GRANT SELECT, INSERT, UPDATE ON notices TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON notifications TO mnt_rt",
-                "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO mnt_rt",
-                "GRANT SELECT ON object_types TO mnt_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notices TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notice_receipts TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON notifications TO console_rt",
+                "GRANT SELECT, INSERT, UPDATE ON object_code_counters TO console_rt",
+                "GRANT SELECT ON object_types TO console_rt",
             ],
         )
         .await;

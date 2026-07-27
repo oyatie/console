@@ -2,7 +2,7 @@
 --
 -- The stream is tenant-scoped and deny-by-omission: no clearance assignment row
 -- means no Cedar entity fact, and no stream label means an audit row is absent
--- from the covert stream. Runtime reads/writes still run as mnt_rt under
+-- from the covert stream. Runtime reads/writes still run as console_rt under
 -- app.current_org, so Cedar capability checks never replace Postgres RLS.
 
 INSERT INTO feature_catalog (feature_key) VALUES
@@ -10,7 +10,7 @@ INSERT INTO feature_catalog (feature_key) VALUES
     ('audit_stream_access_log_read')
 ON CONFLICT (feature_key) DO NOTHING;
 
--- mnt-gate: audited-table clearance_assignments
+-- console-gate: audited-table clearance_assignments
 CREATE TABLE clearance_assignments (
     id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -43,7 +43,7 @@ CREATE INDEX idx_clearance_assignments_lookup
 ALTER TABLE audit_events
     ADD CONSTRAINT audit_events_org_id_id_key UNIQUE (org_id, id);
 
--- mnt-gate: audited-table audit_stream_event_labels
+-- console-gate: audited-table audit_stream_event_labels
 CREATE TABLE audit_stream_event_labels (
     org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
     audit_event_id UUID        NOT NULL,
@@ -82,11 +82,11 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON clearance_assignments TO mnt_rt;
-REVOKE DELETE ON clearance_assignments FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON clearance_assignments TO console_rt;
+REVOKE DELETE ON clearance_assignments FROM console_rt;
 
-GRANT SELECT, INSERT ON audit_stream_event_labels TO mnt_rt;
-REVOKE UPDATE, DELETE ON audit_stream_event_labels FROM mnt_rt;
+GRANT SELECT, INSERT ON audit_stream_event_labels TO console_rt;
+REVOKE UPDATE, DELETE ON audit_stream_event_labels FROM console_rt;
 
 CREATE OR REPLACE FUNCTION audit_stream_event_labels_append_only()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$

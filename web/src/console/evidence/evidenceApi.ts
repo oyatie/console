@@ -1,7 +1,7 @@
 // Real EV- evidence REST wiring (BE2 evidence, docs-rest, openapi §11.6xx) —
 // list/detail/verify/hold(apply+release). Wire-shape → domain-shape mapping
 // lives here so EvidenceCard/EvidenceRecords never touch the raw payload.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "../../api/client";
 import { ApiCallError } from "../../api/ontologyActions";

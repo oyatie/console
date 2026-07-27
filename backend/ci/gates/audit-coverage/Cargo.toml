@@ -1,5 +1,5 @@
 [package]
-name = "mnt-gate-audit-coverage"
+name = "console-gate-audit-coverage"
 version = "0.1.0"
 description = "CI gate: verifies state-changing handlers use with_audit, with only the LocationPing ingestion carve-out."
 edition.workspace = true
@@ -8,11 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "mnt-gate-audit-coverage"
+name = "console-gate-audit-coverage"
 path = "src/main.rs"
 
 [lib]
-name = "mnt_gate_audit_coverage"
+name = "console_gate_audit_coverage"
 path = "src/lib.rs"
 
 [lints]

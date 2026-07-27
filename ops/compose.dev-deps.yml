@@ -1,10 +1,10 @@
 services:
   # DEV-ONLY: publish the OTEL collector's OTLP/gRPC port so a host-launched
-  # (bacon) mnt-app can export traces without joining the compose network.
+  # (bacon) console-app can export traces without joining the compose network.
   # ops/compose.yml only `expose`s this internally; not for production.
   otel-collector:
     ports:
-      - "127.0.0.1:${MNT_OTEL_PORT:-54317}:4317"
+      - "127.0.0.1:${CONSOLE_OTEL_PORT:-54317}:4317"
 
   # DEV-ONLY: fake SMTP catcher so transactional email (open-signup OTP, etc.)
   # can be sent and inspected locally instead of hitting a real relay. Never
@@ -12,8 +12,8 @@ services:
   mailpit:
     image: axllent/mailpit:v1.27.5
     ports:
-      - "127.0.0.1:${MNT_MAILPIT_SMTP_PORT:-1025}:1025"
-      - "127.0.0.1:${MNT_MAILPIT_UI_PORT:-8025}:8025"
+      - "127.0.0.1:${CONSOLE_MAILPIT_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${CONSOLE_MAILPIT_UI_PORT:-8025}:8025"
     volumes:
       - mailpit-data:/data
     environment:
@@ -41,24 +41,24 @@ services:
         condition: service_healthy
     entrypoint:
       - bash
-      - /usr/local/bin/mnt-dev-wal-archive-prune
+      - /usr/local/bin/console-dev-wal-archive-prune
     volumes:
       - postgres-wal-archive:/wal-archive
-      - ./dev/wal-archive-prune.sh:/usr/local/bin/mnt-dev-wal-archive-prune:ro
+      - ./dev/wal-archive-prune.sh:/usr/local/bin/console-dev-wal-archive-prune:ro
     environment:
       # Default policy: prune dev archived WAL older than 72h and cap retained
       # matching archive files at 1 GiB, while preserving the newest 8 files as a
       # local PITR safety margin. Set either bound to `off`/`0` only for a local
       # PITR drill where older WAL must be retained temporarily.
-      MNT_DEV_WAL_ARCHIVE_RETENTION_HOURS: ${MNT_DEV_WAL_ARCHIVE_RETENTION_HOURS:-72}
-      MNT_DEV_WAL_ARCHIVE_MAX_BYTES: ${MNT_DEV_WAL_ARCHIVE_MAX_BYTES:-1073741824}
-      MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS: ${MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS:-8}
-      MNT_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS: ${MNT_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS:-300}
+      CONSOLE_DEV_WAL_ARCHIVE_RETENTION_HOURS: ${CONSOLE_DEV_WAL_ARCHIVE_RETENTION_HOURS:-72}
+      CONSOLE_DEV_WAL_ARCHIVE_MAX_BYTES: ${CONSOLE_DEV_WAL_ARCHIVE_MAX_BYTES:-1073741824}
+      CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS: ${CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS:-8}
+      CONSOLE_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS: ${CONSOLE_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS:-300}
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "test -d /wal-archive && test -r /usr/local/bin/mnt-dev-wal-archive-prune",
+          "test -d /wal-archive && test -r /usr/local/bin/console-dev-wal-archive-prune",
         ]
       interval: 30s
       timeout: 5s
@@ -89,10 +89,10 @@ services:
         fi
         exec /bin/mox localserve -ip 0.0.0.0 -dir /mox-data/localserve
     ports:
-      - "127.0.0.1:${MNT_MOX_WEBAPI_PORT:-1080}:1080"
-      - "127.0.0.1:${MNT_MOX_SUBMISSION_PORT:-1587}:1587"
-      - "127.0.0.1:${MNT_MOX_IMAP_PORT:-1143}:1143"
-      - "127.0.0.1:${MNT_MOX_IMAPS_PORT:-1993}:1993"
+      - "127.0.0.1:${CONSOLE_MOX_WEBAPI_PORT:-1080}:1080"
+      - "127.0.0.1:${CONSOLE_MOX_SUBMISSION_PORT:-1587}:1587"
+      - "127.0.0.1:${CONSOLE_MOX_IMAP_PORT:-1143}:1143"
+      - "127.0.0.1:${CONSOLE_MOX_IMAPS_PORT:-1993}:1993"
     volumes:
       # localserve requires -ip only when creating its config; the Docker volume
       # mount pre-creates /mox-data, so let mox create a child dir and omit -ip
@@ -112,21 +112,21 @@ services:
 
   # DEV-ONLY: ONLYOFFICE DocumentServer for the in-console office editor
   # (HANDOFF §12). OPT-IN: dev-up.mjs only lists this service in the `up -d`
-  # call (and only injects the MNT_OFFICE_* backend env) when MNT_DEV_OFFICE=1
+  # call (and only injects the CONSOLE_OFFICE_* backend env) when CONSOLE_DEV_OFFICE=1
   # is set — the image is ~2GB and most dev-up sessions never touch the office
   # editor. The OFFICIAL, UNMODIFIED community image, consumed purely
   # through its editor + callback API — no fork, so no AGPL source-publication
   # obligation is triggered yet (the heavy-fork epic will; flagged for
   # compliance review). JWT is enabled with the same shared secret the host
-  # signs/verifies with (MNT_OFFICE_JWT_SECRET). The host runs on the bacon HOST,
+  # signs/verifies with (CONSOLE_OFFICE_JWT_SECRET). The host runs on the bacon HOST,
   # so DocumentServer reaches its callback via host.docker.internal.
   onlyoffice:
     image: onlyoffice/documentserver:9.4.0.1
     ports:
-      - "127.0.0.1:${MNT_OFFICE_DOCSERVER_PORT:-8888}:80"
+      - "127.0.0.1:${CONSOLE_OFFICE_DOCSERVER_PORT:-8888}:80"
     environment:
       JWT_ENABLED: "true"
-      JWT_SECRET: ${MNT_OFFICE_JWT_SECRET:-office-dev-shared-secret}
+      JWT_SECRET: ${CONSOLE_OFFICE_JWT_SECRET:-office-dev-shared-secret}
       JWT_HEADER: Authorization
       JWT_IN_BODY: "true"
     extra_hosts:

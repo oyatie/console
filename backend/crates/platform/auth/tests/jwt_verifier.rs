@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -16,8 +16,8 @@ fn public_key_verifier_accepts_es256_access_token() {
         .to_public_key_pem(LineEnding::LF)
         .unwrap();
     let settings = JwtSettings {
-        issuer: "mnt-platform-auth".to_owned(),
-        audience: "mnt-api".to_owned(),
+        issuer: "console-platform-auth".to_owned(),
+        audience: "console-api".to_owned(),
         access_token_ttl: Duration::minutes(15),
     };
     let issuer = JwtIssuer::from_es256_pem(

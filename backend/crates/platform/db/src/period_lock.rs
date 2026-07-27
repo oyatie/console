@@ -11,7 +11,7 @@
 //! domain error mapper), naming the domain and the locked window so the caller
 //! can render an actionable "period closed" error.
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use sqlx::{Postgres, Row, Transaction};
 use time::Date;
 

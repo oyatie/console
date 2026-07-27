@@ -2,8 +2,8 @@
 //! builder. Persistence and HTTP concerns live in the outer crates.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_finance_gl_domain::{DebitCredit, VoucherId, VoucherStatus};
-use mnt_kernel_core::{
+use console_finance_gl_domain::{DebitCredit, VoucherId, VoucherStatus};
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, KernelError, Timestamp, TraceContext, UserId,
 };
 use serde::{Deserialize, Serialize};

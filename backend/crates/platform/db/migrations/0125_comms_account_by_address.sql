@@ -2,7 +2,7 @@
 -- mox integration (slice 1): the mox delivery WEBHOOK ingests an incoming message
 -- pushed by our own mail server. That request carries NO tenant principal — the
 -- only tenant selector is the recipient address on the delivery. The runtime role
--- `mnt_rt` is NOBYPASSRLS + FORCE RLS, so a plain SELECT against `email_accounts`
+-- `console_rt` is NOBYPASSRLS + FORCE RLS, so a plain SELECT against `email_accounts`
 -- keyed on the address returns ZERO rows (fail-closed) unless an org is already
 -- armed — which the webhook cannot do before it knows the org.
 --
@@ -12,7 +12,7 @@
 -- any business field. The webhook then ARMS app.current_org to that org and
 -- performs the audited inbound UPSERT under RLS. The function pins search_path,
 -- toggles row_security only for the id-only read, and is EXECUTE-granted to
--- mnt_rt alone (REVOKE FROM PUBLIC). Match is case-insensitive on the address
+-- console_rt alone (REVOKE FROM PUBLIC). Match is case-insensitive on the address
 -- (email is case-insensitive in practice for the local delivery path).
 --
 -- Returns ALL matching rows (not LIMIT 1): `email_accounts` is unique only on
@@ -49,4 +49,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION comms_account_by_address(TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION comms_account_by_address(TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION comms_account_by_address(TEXT) TO console_rt;

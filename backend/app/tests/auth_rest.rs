@@ -3,17 +3,17 @@
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_application::{
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_application::{
     CreatePurchaseRequestCommand, FinancialConfigSnapshot, PrepareExpenditureCommand,
     PurchaseApprovalCommand, PurchaseRequestLineInput, PurchaseSubmitCommand, PurchaseType,
 };
-use mnt_financial_domain::DepreciationMethod;
-use mnt_kernel_core::{
+use console_financial_domain::DepreciationMethod;
+use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, PurchaseRequestId, TraceContext, UserId, WorkOrderId,
 };
-use mnt_platform_provisioning::BootstrapCredentialStore;
+use console_platform_provisioning::BootstrapCredentialStore;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -29,8 +29,8 @@ use webauthn_authenticator_rs::prelude::WebauthnAuthenticator;
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 use webauthn_rs::prelude::{CreationChallengeResponse, RequestChallengeResponse};
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
 
 #[derive(Debug, Deserialize)]
@@ -1612,7 +1612,7 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
 }
 
 /// WEB dual-transport: when `X-Auth-Transport: cookie` is present, an OTP redeem
-/// sets the refresh token as an HttpOnly `mnt_refresh` cookie and OMITS it from
+/// sets the refresh token as an HttpOnly `console_refresh` cookie and OMITS it from
 /// the JSON body, while the access token stays in the body. The cookie carries
 /// the CSRF-safe attributes (HttpOnly, SameSite=Strict, Path=/api/v1/auth).
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -1655,13 +1655,13 @@ async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: Pg
     .await;
     assert_eq!(response.status(), StatusCode::OK);
 
-    let set_cookie = mnt_refresh_set_cookie(&response)
-        .expect("cookie-mode redeem must set an mnt_refresh cookie");
+    let set_cookie = console_refresh_set_cookie(&response)
+        .expect("cookie-mode redeem must set an console_refresh cookie");
     assert!(set_cookie.contains("HttpOnly"), "{set_cookie}");
     assert!(set_cookie.contains("SameSite=Strict"), "{set_cookie}");
     assert!(set_cookie.contains("Path=/api/v1/auth"), "{set_cookie}");
     assert!(set_cookie.contains("Max-Age="), "{set_cookie}");
-    // Local-dev config leaves MNT_COOKIE_SECURE at its default (true) in this
+    // Local-dev config leaves CONSOLE_COOKIE_SECURE at its default (true) in this
     // test harness, so Secure must be present.
     assert!(set_cookie.contains("Secure"), "{set_cookie}");
     assert!(
@@ -1733,7 +1733,7 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     // Cookie-mode usernameless passkey login -> cookie set, body refresh null.
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
     let login_cookie =
-        mnt_refresh_set_cookie(&login).expect("cookie-mode login must set an mnt_refresh cookie");
+        console_refresh_set_cookie(&login).expect("cookie-mode login must set an console_refresh cookie");
     let cookie_value = cookie_token(&login_cookie).to_owned();
     let login_body = body_json(login).await;
     assert!(login_body["refresh_token"].is_null());
@@ -1748,8 +1748,8 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     )
     .await;
     assert_eq!(refreshed.status(), StatusCode::OK);
-    let rotated_cookie = mnt_refresh_set_cookie(&refreshed)
-        .expect("cookie-mode refresh must rotate the mnt_refresh cookie");
+    let rotated_cookie = console_refresh_set_cookie(&refreshed)
+        .expect("cookie-mode refresh must rotate the console_refresh cookie");
     let rotated_value = cookie_token(&rotated_cookie).to_owned();
     assert_ne!(
         rotated_value, cookie_value,
@@ -1770,7 +1770,7 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     .await;
     assert_eq!(logout.status(), StatusCode::NO_CONTENT);
     let clear_cookie =
-        mnt_refresh_set_cookie(&logout).expect("logout must emit a clearing mnt_refresh cookie");
+        console_refresh_set_cookie(&logout).expect("logout must emit a clearing console_refresh cookie");
     assert!(clear_cookie.contains("Max-Age=0"), "{clear_cookie}");
     assert!(clear_cookie.contains("Path=/api/v1/auth"), "{clear_cookie}");
 
@@ -1841,7 +1841,7 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
 
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
     let login_cookie =
-        mnt_refresh_set_cookie(&login).expect("cookie-mode login must set an mnt_refresh cookie");
+        console_refresh_set_cookie(&login).expect("cookie-mode login must set an console_refresh cookie");
     let mut cookie_value = cookie_token(&login_cookie).to_owned();
 
     for attempt in 1..=12 {
@@ -1858,8 +1858,8 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
             StatusCode::OK,
             "refresh attempt {attempt} should stay within the normal browser navigation budget"
         );
-        let rotated_cookie = mnt_refresh_set_cookie(&refreshed)
-            .expect("cookie-mode refresh must rotate the mnt_refresh cookie");
+        let rotated_cookie = console_refresh_set_cookie(&refreshed)
+            .expect("cookie-mode refresh must rotate the console_refresh cookie");
         cookie_value = cookie_token(&rotated_cookie).to_owned();
         assert!(body_json(refreshed).await["refresh_token"].is_null());
     }
@@ -2242,7 +2242,7 @@ async fn submitted_financial_purchase(
 ) -> PurchaseRequestId {
     let purchase_id = create_financial_purchase(pool, fixture, amount_won).await;
     let pool = pool.clone();
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         PgFinancialStore::new(pool)
             .submit_purchase_request(PurchaseSubmitCommand {
                 actor: fixture.receptionist,
@@ -2264,7 +2264,7 @@ async fn admin_approved_financial_purchase(
 ) -> PurchaseRequestId {
     let purchase_id = submitted_financial_purchase(pool, fixture, amount_won).await;
     let pool = pool.clone();
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         PgFinancialStore::new(pool)
             .approve_purchase_admin(PurchaseApprovalCommand {
                 actor: fixture.admin,
@@ -2285,7 +2285,7 @@ async fn executive_pending_financial_purchase(
 ) -> PurchaseRequestId {
     let purchase_id = admin_approved_financial_purchase(pool, fixture, 3_000_000).await;
     let pool = pool.clone();
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         PgFinancialStore::new(pool)
             .prepare_expenditure(PrepareExpenditureCommand {
                 actor: fixture.admin,
@@ -2307,7 +2307,7 @@ async fn ready_to_execute_financial_purchase(
 ) -> PurchaseRequestId {
     let purchase_id = admin_approved_financial_purchase(pool, fixture, 900_000).await;
     let pool = pool.clone();
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         PgFinancialStore::new(pool)
             .prepare_expenditure(PrepareExpenditureCommand {
                 actor: fixture.admin,
@@ -2329,7 +2329,7 @@ async fn create_financial_purchase(
     amount_won: i64,
 ) -> PurchaseRequestId {
     let pool = pool.clone();
-    mnt_platform_request_context::scope_org(OrgId::knl(), async move {
+    console_platform_request_context::scope_org(OrgId::knl(), async move {
         let purchase = PgFinancialStore::new(pool)
             .create_purchase_request(CreatePurchaseRequestCommand {
                 actor: fixture.requester,
@@ -2681,7 +2681,7 @@ async fn post_raw_with_trusted_ip(
 }
 
 /// POST as a WEB client: sends `X-Auth-Transport: cookie` and, optionally, a
-/// `Cookie` header carrying `mnt_refresh=<token>` (what a browser would replay).
+/// `Cookie` header carrying `console_refresh=<token>` (what a browser would replay).
 async fn post_cookie_mode(
     service: axum::Router,
     uri: &str,
@@ -2694,7 +2694,7 @@ async fn post_cookie_mode(
         .header(header::CONTENT_TYPE, "application/json")
         .header("x-auth-transport", "cookie");
     if let Some(cookie) = cookie {
-        builder = builder.header(header::COOKIE, format!("mnt_refresh={cookie}"));
+        builder = builder.header(header::COOKIE, format!("console_refresh={cookie}"));
     }
     service
         .oneshot(builder.body(Body::from(body.to_string())).unwrap())
@@ -2719,7 +2719,7 @@ async fn post_cookie_mode_with_device_id(
         .header("x-auth-transport", "cookie")
         .header("x-device-id", device_id);
     if let Some(cookie) = cookie {
-        builder = builder.header(header::COOKIE, format!("mnt_refresh={cookie}"));
+        builder = builder.header(header::COOKIE, format!("console_refresh={cookie}"));
     }
     service
         .oneshot(builder.body(Body::from(body.to_string())).unwrap())
@@ -2737,18 +2737,18 @@ fn set_cookie_values(response: &http::Response<Body>) -> Vec<String> {
         .collect()
 }
 
-/// Find the `mnt_refresh` Set-Cookie attribute string, returning its full
-/// directive (e.g. `mnt_refresh=abc; HttpOnly; SameSite=Strict; ...`).
-fn mnt_refresh_set_cookie(response: &http::Response<Body>) -> Option<String> {
+/// Find the `console_refresh` Set-Cookie attribute string, returning its full
+/// directive (e.g. `console_refresh=abc; HttpOnly; SameSite=Strict; ...`).
+fn console_refresh_set_cookie(response: &http::Response<Body>) -> Option<String> {
     set_cookie_values(response)
         .into_iter()
-        .find(|value| value.starts_with("mnt_refresh="))
+        .find(|value| value.starts_with("console_refresh="))
 }
 
-/// Pull the cookie's value (the substring between `mnt_refresh=` and the first `;`).
+/// Pull the cookie's value (the substring between `console_refresh=` and the first `;`).
 fn cookie_token(set_cookie: &str) -> &str {
     set_cookie
-        .strip_prefix("mnt_refresh=")
+        .strip_prefix("console_refresh=")
         .and_then(|rest| rest.split(';').next())
         .unwrap()
 }
@@ -2762,19 +2762,19 @@ fn app_state_with_trusted_proxy(
     pool: PgPool,
     private_key_pem: String,
     public_key_pem: String,
-) -> Result<AppState, mnt_app::AppError> {
+) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PRIVATE_KEY_PEM", private_key_pem),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
-        ("MNT_WEBAUTHN_RP_ID", "example.com".to_owned()),
-        ("MNT_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
-        ("MNT_WEBAUTHN_RP_NAME", "MNT Maintenance".to_owned()),
-        ("MNT_TRUSTED_PROXY_COUNT", "1".to_owned()),
-        ("MNT_TRUSTED_PROXY_CIDRS", "10.0.0.0/8".to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PRIVATE_KEY_PEM", private_key_pem),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
+        ("CONSOLE_TRUSTED_PROXY_COUNT", "1".to_owned()),
+        ("CONSOLE_TRUSTED_PROXY_CIDRS", "10.0.0.0/8".to_owned()),
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
@@ -2784,17 +2784,17 @@ fn app_state(
     pool: PgPool,
     private_key_pem: String,
     public_key_pem: String,
-) -> Result<AppState, mnt_app::AppError> {
+) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PRIVATE_KEY_PEM", private_key_pem),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
-        ("MNT_WEBAUTHN_RP_ID", "example.com".to_owned()),
-        ("MNT_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
-        ("MNT_WEBAUTHN_RP_NAME", "MNT Maintenance".to_owned()),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PRIVATE_KEY_PEM", private_key_pem),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))

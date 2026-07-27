@@ -17,7 +17,7 @@ function requiredPort(value) {
 }
 
 function requiredColdstartOtp(value) {
-  if (typeof value !== "string" || !/^[0-9a-f]{64}$/.test(value)) throw new Error("MNT_IOS_COLDSTART_OTP must be a 32-byte lowercase hex value");
+  if (typeof value !== "string" || !/^[0-9a-f]{64}$/.test(value)) throw new Error("CONSOLE_IOS_COLDSTART_OTP must be a 32-byte lowercase hex value");
   return value;
 }
 
@@ -28,7 +28,7 @@ export function buildIosBackendLaunch({ root, authDir, port, coldstartOtp, baseE
   const checkedOtp = requiredColdstartOtp(coldstartOtp);
   const executable = resolve(checkedRoot, "e2e/harness/boot-backend.sh");
   const env = { ...baseEnv };
-  delete env.MNT_IOS_COLDSTART_OTP;
+  delete env.CONSOLE_IOS_COLDSTART_OTP;
   Object.assign(env, {
     E2E_AUTH_DIR: checkedAuthDir,
     E2E_HTTP_ADDR: `127.0.0.1:${checkedPort}`,
@@ -46,7 +46,7 @@ export function runIosBackend(argv = process.argv.slice(2), environment = proces
     root: argv[0],
     authDir: argv[1],
     port: argv[2],
-    coldstartOtp: environment.MNT_IOS_COLDSTART_OTP,
+    coldstartOtp: environment.CONSOLE_IOS_COLDSTART_OTP,
     baseEnv: environment,
   });
   accessSync(executable, constants.X_OK);

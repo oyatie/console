@@ -4,7 +4,7 @@
 -- update. The registry row's org_id stays immutable; this workflow changes the
 -- legal owner label/fact only after signoff.
 
--- mnt-gate: audited-table equipment_ownership_transfer_requests
+-- console-gate: audited-table equipment_ownership_transfer_requests
 CREATE TABLE equipment_ownership_transfer_requests (
     id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id         UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -31,7 +31,7 @@ CREATE INDEX idx_equipment_ownership_transfer_equipment
 CREATE INDEX idx_equipment_ownership_transfer_status
     ON equipment_ownership_transfer_requests (org_id, status, requested_at DESC);
 
--- mnt-gate: audited-table equipment_ownership_transfer_events
+-- console-gate: audited-table equipment_ownership_transfer_events
 CREATE TABLE equipment_ownership_transfer_events (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id      UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -60,8 +60,8 @@ CREATE POLICY org_isolation ON equipment_ownership_transfer_events
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON equipment_ownership_transfer_requests TO mnt_rt;
-GRANT SELECT, INSERT ON equipment_ownership_transfer_events TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON equipment_ownership_transfer_requests TO console_rt;
+GRANT SELECT, INSERT ON equipment_ownership_transfer_events TO console_rt;
 
 CREATE OR REPLACE FUNCTION equipment_ownership_transfer_requests_no_delete()
 RETURNS trigger

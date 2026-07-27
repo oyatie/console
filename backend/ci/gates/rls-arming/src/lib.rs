@@ -1,6 +1,6 @@
 //! rls-arming gate.
 //!
-//! The application connects to Postgres as the non-owner `mnt_rt` role, which is
+//! The application connects to Postgres as the non-owner `console_rt` role, which is
 //! `NOBYPASSRLS` and subject to `FORCE ROW LEVEL SECURITY`. Every tenant-scoped
 //! table's `org_isolation` policy keys on the per-transaction GUC
 //! `app.current_org`, fail-closed (unset GUC -> zero rows / rejected writes). The

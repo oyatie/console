@@ -1,15 +1,15 @@
 //! DB-backed tests for the support-ticket Postgres adapter.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, OrgId, SupportTicketId, TraceContext, UserId,
 };
-use mnt_support_adapter_postgres::PgSupportStore;
-use mnt_support_application::{
+use console_support_adapter_postgres::PgSupportStore;
+use console_support_application::{
     AddCommentCommand, AssignTicketCommand, CommentAudience, CreateCustomerIntakeCommand,
     CreateInternalTicketCommand, ListTicketsQuery, TicketNotificationKind, TransitionTicketCommand,
 };
-use mnt_support_domain::{TicketCategory, TicketOrigin, TicketPriority, TicketStatus};
+use console_support_domain::{TicketCategory, TicketOrigin, TicketPriority, TicketStatus};
 use sqlx::{PgPool, Row};
 use time::macros::datetime;
 
@@ -18,7 +18,7 @@ use time::macros::datetime;
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_internal_ticket_is_branch_scoped_audited_and_sla_derived(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let actor = seed_user(&pool, "Staff", branch).await;
         let store = PgSupportStore::new(pool.clone());
@@ -56,7 +56,7 @@ async fn create_internal_ticket_is_branch_scoped_audited_and_sla_derived(pool: P
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_customer_intake_is_branchless_and_audited_without_pii(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgSupportStore::new(pool.clone());
         let now = datetime!(2026-06-13 09:00 UTC);
 
@@ -109,7 +109,7 @@ async fn create_customer_intake_is_branchless_and_audited_without_pii(pool: PgPo
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn assign_ticket_audits_and_enqueues_assignee_notification(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let requester = seed_user(&pool, "Requester", branch).await;
         let assignee = seed_user(&pool, "Assignee", branch).await;
@@ -185,7 +185,7 @@ async fn assign_ticket_audits_and_enqueues_assignee_notification(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn assign_triages_untriaged_customer_ticket_into_branch(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let assignee = seed_user(&pool, "Triager", branch).await;
         let store = PgSupportStore::new(pool.clone());
@@ -243,7 +243,7 @@ async fn assign_triages_untriaged_customer_ticket_into_branch(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn transition_status_enforces_fsm_and_audits(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let requester = seed_user(&pool, "Requester", branch).await;
         let assignee = seed_user(&pool, "Assignee", branch).await;
@@ -335,7 +335,7 @@ async fn transition_status_enforces_fsm_and_audits(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn add_comment_audits_and_respects_internal_note_visibility(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let requester = seed_user(&pool, "Requester", branch).await;
         let assignee = seed_user(&pool, "Assignee", branch).await;
@@ -435,7 +435,7 @@ async fn add_comment_audits_and_respects_internal_note_visibility(pool: PgPool) 
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn list_tickets_respects_branch_scope_and_filters(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_a = seed_branch(&pool).await;
         let branch_b = seed_branch(&pool).await;
         let staff_a = seed_user(&pool, "Staff A", branch_a).await;
@@ -551,7 +551,7 @@ async fn list_tickets_respects_branch_scope_and_filters(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn untriaged_intake_is_only_visible_cross_branch(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let store = PgSupportStore::new(pool.clone());
         let now = datetime!(2026-06-13 09:00 UTC);
@@ -617,7 +617,7 @@ async fn untriaged_intake_is_only_visible_cross_branch(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn rate_limit_counter_increments_and_exceeds_cap(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgSupportStore::new(pool.clone());
         let window = datetime!(2026-06-13 09:00 UTC);
         let cap: i64 = 5;
@@ -648,7 +648,7 @@ async fn rate_limit_counter_increments_and_exceeds_cap(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn get_ticket_is_not_found_outside_branch_scope(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let other_branch = seed_branch(&pool).await;
         let staff = seed_user(&pool, "Staff", branch).await;
@@ -698,7 +698,7 @@ async fn get_ticket_is_not_found_outside_branch_scope(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn list_tickets_caps_and_pages_by_keyset_cursor(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch = seed_branch(&pool).await;
         let staff = seed_user(&pool, "Staff", branch).await;
         let store = PgSupportStore::new(pool.clone());
@@ -789,7 +789,7 @@ async fn list_tickets_caps_and_pages_by_keyset_cursor(pool: PgPool) {
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn customer_intake_rejects_over_length_fields(pool: PgPool) {
-    mnt_platform_request_context::scope_org(mnt_kernel_core::OrgId::knl(), async move {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let store = PgSupportStore::new(pool.clone());
         let now = datetime!(2026-06-13 09:00 UTC);
 

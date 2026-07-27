@@ -13,10 +13,10 @@
 -- 0035/0042/0012/0050: single-column `id UUID PRIMARY KEY`, `org_id NOT NULL
 -- REFERENCES organizations(id) ON DELETE RESTRICT`, and a trailing DO $$ loop
 -- that ENABLEs + FORCEs RLS, creates the `org_isolation` policy, GRANTs to the
--- runtime role `mnt_rt`, and attaches the `enforce_org_id_immutable()` trigger
+-- runtime role `console_rt`, and attaches the `enforce_org_id_immutable()` trigger
 -- for EVERY table. Composite (org_id, hot-key) indexes follow. No Korean copy.
 
--- mnt-gate: audited-table email_accounts
+-- console-gate: audited-table email_accounts
 CREATE TABLE email_accounts (
     id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                    UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -58,7 +58,7 @@ CREATE TABLE email_accounts (
     UNIQUE (org_id, email_address)
 );
 
--- mnt-gate: audited-table email_folders
+-- console-gate: audited-table email_folders
 CREATE TABLE email_folders (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id         UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -78,7 +78,7 @@ CREATE TABLE email_folders (
     UNIQUE (org_id, account_id, imap_path)
 );
 
--- mnt-gate: audited-table email_threads
+-- console-gate: audited-table email_threads
 CREATE TABLE email_threads (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id               UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -97,7 +97,7 @@ CREATE TABLE email_threads (
     updated_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- mnt-gate: audited-table email_messages
+-- console-gate: audited-table email_messages
 CREATE TABLE email_messages (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id            UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -137,7 +137,7 @@ CREATE TABLE email_messages (
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- mnt-gate: audited-table email_attachments
+-- console-gate: audited-table email_attachments
 CREATE TABLE email_attachments (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -168,7 +168,7 @@ BEGIN
             'CREATE POLICY org_isolation ON %I '
             || 'USING (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid) '
             || 'WITH CHECK (org_id = NULLIF(current_setting(''app.current_org'', true), '''')::uuid)', t);
-        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO mnt_rt', t);
+        EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO console_rt', t);
         EXECUTE format(
             'CREATE TRIGGER trg_%s_org_immutable BEFORE UPDATE ON %I '
             || 'FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable()', t, t);

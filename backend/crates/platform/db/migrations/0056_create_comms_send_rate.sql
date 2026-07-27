@@ -32,7 +32,7 @@
 -- armed app.current_org must equal the row's org_id on both read and write). No
 -- Korean copy.
 
--- mnt-gate: audited-table comms_send_rate
+-- console-gate: audited-table comms_send_rate
 CREATE TABLE comms_send_rate (
     org_id          UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
     actor_user_id   UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -55,7 +55,7 @@ ALTER TABLE comms_send_rate FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON comms_send_rate
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, UPDATE, DELETE ON comms_send_rate TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE, DELETE ON comms_send_rate TO console_rt;
 
 -- Sweep index for pruning expired windows (a later janitor deletes old rows).
 CREATE INDEX idx_comms_send_rate_window ON comms_send_rate (window_start);

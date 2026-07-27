@@ -7,16 +7,16 @@
 //!
 //! Only compiled with `--features dev-auth` (this whole file is cfg'd out
 //! otherwise — see `dev_auth_absence.rs` for the default-build proof). Runs
-//! against the real, non-owner `mnt_rt` role (rls-verify-as-runtime-role): a
+//! against the real, non-owner `console_rt` role (rls-verify-as-runtime-role): a
 //! superuser test pool would let a broken FORCE-RLS insert pass silently.
 #![cfg(feature = "dev-auth")]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_kernel_core::OrgId;
-use mnt_platform_auth::RefreshTokenStore;
-use mnt_platform_auth_rest::{AuthRestConfig, AuthRestState, router};
+use console_kernel_core::OrgId;
+use console_platform_auth::RefreshTokenStore;
+use console_platform_auth_rest::{AuthRestConfig, AuthRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -28,8 +28,8 @@ use time::Duration;
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[derive(Debug, Deserialize)]
 struct SessionResponse {
@@ -44,7 +44,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -68,7 +68,7 @@ fn test_state(pool: PgPool) -> AuthRestState {
         AuthRestConfig {
             rp_id: "example.com".to_owned(),
             rp_origin: "https://auth.example.com".to_owned(),
-            rp_name: "MNT Maintenance".to_owned(),
+            rp_name: "Console".to_owned(),
             ceremony_ttl: Duration::minutes(5),
             jwt_issuer: TEST_ISSUER.to_owned(),
             jwt_audience: TEST_AUDIENCE.to_owned(),
@@ -324,7 +324,7 @@ async fn cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user(po
         .await
         .unwrap();
     let app = router(test_state(rt_pool));
-    let cookie = format!("mnt_refresh={}", issued.token.as_str());
+    let cookie = format!("console_refresh={}", issued.token.as_str());
 
     let refreshed = post_cookie_refresh(app, &cookie).await;
     assert_eq!(refreshed.status(), StatusCode::OK);

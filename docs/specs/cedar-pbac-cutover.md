@@ -115,7 +115,7 @@ projection:
 
 - The readiness fixture `backend/crates/platform/authz/tests/fixtures/cedar_pbac_readiness_cases.json`
   names the required fail-closed cases and is covered by executable boundary tests.
-- Real `mnt_rt` tests prove Cedar allow cannot bypass org/branch/object RLS.
+- Real `console_rt` tests prove Cedar allow cannot bypass org/branch/object RLS.
 - Stale policy bundle fixture denies.
 - Stale subject freshness fixture denies.
 - Missing/malformed coexistence map entry denies for enrolled domains.

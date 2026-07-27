@@ -1,5 +1,5 @@
 [package]
-name = "mnt-analytics-quant-service"
+name = "console-analytics-quant-service"
 version = "0.1.0"
 description = "Deterministic statistical projection service (point estimate, CI95, CVaR95) with seeded Monte-Carlo and EVT tail-fit."
 edition.workspace = true

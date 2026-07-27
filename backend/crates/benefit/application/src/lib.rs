@@ -5,10 +5,10 @@
 //! `with_org_conn`/`with_audits`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_benefit_domain::{
+use console_benefit_domain::{
     BenefitCategory, BenefitConditionKind, BenefitConditionOperator, BenefitScopeKind,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BenefitCatalogConditionId, BenefitCatalogItemId, BenefitCatalogTierId,
     BranchId, BranchScope, KernelError, SiteId, Timestamp, TraceContext, UserId,
 };

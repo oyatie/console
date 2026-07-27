@@ -200,8 +200,8 @@ def get_image(capi: dict) -> dict:
 def node_role_labels(cluster_name: str, role: str) -> dict[str, str]:
     return {
         "cluster.x-k8s.io/cluster-name": cluster_name,
-        "maintenance.nousresearch.com/substrate": "on-prem",
-        "maintenance.nousresearch.com/onprem-role": role,
+        "console.nousresearch.com/substrate": "on-prem",
+        "console.nousresearch.com/onprem-role": role,
     }
 
 

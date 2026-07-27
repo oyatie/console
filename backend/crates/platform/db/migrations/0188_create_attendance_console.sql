@@ -7,7 +7,7 @@ INSERT INTO object_types (kind, description, code_prefix) VALUES
     ('attendance_exception', 'Employee attendance exception', 'AT-')
 ON CONFLICT (kind) DO NOTHING;
 
--- mnt-gate: audited-table attendance_exceptions
+-- console-gate: audited-table attendance_exceptions
 CREATE TABLE attendance_exceptions (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -35,7 +35,7 @@ CREATE TABLE attendance_exceptions (
 CREATE INDEX attendance_exceptions_day_idx ON attendance_exceptions (org_id, work_date, status);
 CREATE INDEX attendance_exceptions_emp_idx ON attendance_exceptions (org_id, employee_id, work_date DESC);
 
--- mnt-gate: audited-table attendance_exception_resolutions
+-- console-gate: audited-table attendance_exception_resolutions
 CREATE TABLE attendance_exception_resolutions (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -53,7 +53,7 @@ CREATE TABLE attendance_exception_resolutions (
     CHECK (action <> 'APPROVE_OVERTIME' OR linked_work_ref IS NOT NULL)
 );
 
--- mnt-gate: audited-table attendance_substitutions
+-- console-gate: audited-table attendance_substitutions
 CREATE TABLE attendance_substitutions (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -91,7 +91,7 @@ CREATE TABLE attendance_substitutions (
 CREATE INDEX attendance_substitutions_date_idx ON attendance_substitutions (org_id, cover_date, status);
 CREATE INDEX attendance_substitutions_cov_idx ON attendance_substitutions (org_id, covered_employee_id, cover_date);
 
--- mnt-gate: audited-table attendance_month_closes
+-- console-gate: audited-table attendance_month_closes
 CREATE TABLE attendance_month_closes (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -111,7 +111,7 @@ CREATE TABLE attendance_month_closes (
 );
 CREATE INDEX attendance_month_closes_month_idx ON attendance_month_closes (org_id, month DESC, branch_id);
 
--- mnt-gate: audited-table attendance_close_amendments
+-- console-gate: audited-table attendance_close_amendments
 CREATE TABLE attendance_close_amendments (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -130,7 +130,7 @@ CREATE TABLE attendance_close_amendments (
 );
 CREATE INDEX attendance_close_amendments_close_idx ON attendance_close_amendments (org_id, close_id, created_at DESC);
 
--- mnt-gate: audited-table attendance_week52_acknowledgements
+-- console-gate: audited-table attendance_week52_acknowledgements
 CREATE TABLE attendance_week52_acknowledgements (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -357,10 +357,10 @@ CREATE TRIGGER trg_attendance_week52_acknowledgements_append_only
     BEFORE UPDATE OR DELETE ON attendance_week52_acknowledgements
     FOR EACH ROW EXECUTE FUNCTION platform_append_only_immutable();
 
-GRANT SELECT, INSERT, UPDATE ON attendance_exceptions, attendance_substitutions TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON attendance_exceptions, attendance_substitutions TO console_rt;
 GRANT SELECT, INSERT ON attendance_exception_resolutions, attendance_month_closes,
-    attendance_close_amendments, attendance_week52_acknowledgements TO mnt_rt;
+    attendance_close_amendments, attendance_week52_acknowledgements TO console_rt;
 REVOKE DELETE ON attendance_exceptions, attendance_substitutions, attendance_exception_resolutions,
-    attendance_month_closes, attendance_close_amendments, attendance_week52_acknowledgements FROM mnt_rt;
+    attendance_month_closes, attendance_close_amendments, attendance_week52_acknowledgements FROM console_rt;
 REVOKE UPDATE ON attendance_exception_resolutions, attendance_month_closes,
-    attendance_close_amendments, attendance_week52_acknowledgements FROM mnt_rt;
+    attendance_close_amendments, attendance_week52_acknowledgements FROM console_rt;

@@ -5,8 +5,8 @@
 //! design: the adapter derives it from the authenticated request context.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::KernelError;
-use mnt_recruiting_domain::{
+use console_kernel_core::KernelError;
+use console_recruiting_domain::{
     AmountPeriod, AssessmentScore, EmploymentType, PostingScope, RejectReason,
 };
 use time::{Date, macros::format_description};

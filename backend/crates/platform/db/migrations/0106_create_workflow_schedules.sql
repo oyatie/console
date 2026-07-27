@@ -14,7 +14,7 @@
 -- default Asia/Seoul — a Korean operations platform's "매일 아침 9시" must
 -- mean 09:00 KST, not UTC).
 
--- mnt-gate: audited-table workflow_schedules
+-- console-gate: audited-table workflow_schedules
 CREATE TABLE workflow_schedules (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id        UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -57,7 +57,7 @@ CREATE POLICY org_isolation ON workflow_schedules
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON workflow_schedules TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON workflow_schedules TO console_rt;
 
 -- Additive provenance column: which schedule started a run (NULL for every
 -- non-scheduled run). Backs the per-schedule run-history REST surface.

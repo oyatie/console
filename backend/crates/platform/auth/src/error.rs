@@ -8,7 +8,7 @@ pub enum AuthError {
     Sqlx(#[from] sqlx::Error),
 
     #[error("database helper error: {0}")]
-    Db(#[from] mnt_platform_db::DbError),
+    Db(#[from] console_platform_db::DbError),
 
     #[error("json serialization error: {0}")]
     Serde(#[from] serde_json::Error),
@@ -20,7 +20,7 @@ pub enum AuthError {
     Webauthn(webauthn_rs::prelude::WebauthnError),
 
     #[error("kernel error: {0}")]
-    Kernel(#[from] mnt_kernel_core::KernelError),
+    Kernel(#[from] console_kernel_core::KernelError),
 
     #[error("refresh token use rejected: {0}")]
     Refresh(#[from] RefreshTokenUseError),

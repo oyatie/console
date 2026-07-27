@@ -1,5 +1,5 @@
 [package]
-name = "mnt-sales-application"
+name = "console-sales-application"
 version = "0.1.0"
 description = "Sales-catalog application use-case DTOs, commands, and audit helpers."
 edition.workspace = true
@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-sales-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-sales-domain = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }

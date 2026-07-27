@@ -19,7 +19,7 @@
 --      cleared by the sync pass on completion (`record_sync_result`).
 --
 -- Still id-only across tenants under SECURITY DEFINER (REVOKE PUBLIC, GRANT
--- mnt_rt): no credential/host/business field crosses the tenant boundary — only
+-- console_rt): no credential/host/business field crosses the tenant boundary — only
 -- the claim stamp is written, and only identity pairs are returned. No Korean copy.
 
 ALTER TABLE email_accounts ADD COLUMN IF NOT EXISTS claimed_until TIMESTAMPTZ;
@@ -64,4 +64,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER, INTEGER) TO console_rt;

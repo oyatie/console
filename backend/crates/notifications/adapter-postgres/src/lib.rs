@@ -11,10 +11,10 @@ use std::sync::Arc;
 
 use base64::Engine as _;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, ErrorKind, KernelError, NotificationId, Timestamp, UserId,
 };
-use mnt_notifications_application::{
+use console_notifications_application::{
     DeleteNotificationPolicyCommand, EmitNotificationCommand, EmitNotificationFuture,
     ListNotificationObjectGroupsQuery, ListNotificationPoliciesQuery, ListNotificationsQuery,
     MarkAllNotificationsReadCommand, MarkNotificationReadCommand, MarkNotificationUnreadCommand,
@@ -25,12 +25,12 @@ use mnt_notifications_application::{
     ResolveNotificationsFuture, UnreadNotificationCountQuery, UpsertNotificationPolicyCommand,
     notification_audit_event,
 };
-use mnt_notifications_domain::{
+use console_notifications_domain::{
     NotificationBody, NotificationCategory, NotificationKind, NotificationLink,
     NotificationPolicyId,
 };
-use mnt_platform_db::{DbError, with_audit, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row};
 
@@ -251,7 +251,7 @@ impl PgNotificationStore {
 
     async fn find_by_dedup(
         &self,
-        org: mnt_kernel_core::OrgId,
+        org: console_kernel_core::OrgId,
         recipient: UserId,
         dedup_key: &str,
     ) -> Result<Option<NotificationSummary>, PgNotificationError> {

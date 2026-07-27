@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! HTTP-level proofs over the real `mnt-payroll-rest` router, driven on a
-//! genuine non-owner `mnt_rt` pool (RLS actually enforced).
+//! HTTP-level proofs over the real `console-payroll-rest` router, driven on a
+//! genuine non-owner `console_rt` pool (RLS actually enforced).
 //!
 //! Proves:
 //!  * `GET /api/v1/payroll/payslips/me` is self-scoped, not role-gated,
@@ -13,12 +13,12 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use mnt_payroll_adapter_postgres::PgPayrollStore;
-use mnt_payroll_rest::{PAYROLL_MY_PAYSLIPS_PATH, PAYROLL_RUNS_PATH, PayrollRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_db::{DbError, with_audit};
-use mnt_platform_test_support::runtime_role_pool;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_payroll_adapter_postgres::PgPayrollStore;
+use console_payroll_rest::{PAYROLL_MY_PAYSLIPS_PATH, PAYROLL_RUNS_PATH, PayrollRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_db::{DbError, with_audit};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -29,8 +29,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Keys {
     private_pem: String,

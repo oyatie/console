@@ -5,10 +5,10 @@
 -- contiguous and renumber to the next free slot at merge.
 --
 -- A per-org, append-only, cryptographically-sealed hash chain over
--- `audit_events`. A background worker (mnt-platform-audit-chain) seals batches
+-- `audit_events`. A background worker (console-platform-audit-chain) seals batches
 -- of audit rows in `(created_at, id)` order; `verify_org_chain` recomputes and
 -- compares. Detection defends against a party with direct DB write access (the
--- mnt_app owner, a leaked superuser, an edited backup restore) who can bypass
+-- console_app owner, a leaked superuser, an edited backup restore) who can bypass
 -- the append-only triggers/grants on audit_events — a row edit/delete/insert or
 -- reorder recomputes a divergent batch_hash/seal_hash. It does NOT defend
 -- against a party who ALSO holds the seal signing key (custody boundary — the
@@ -16,7 +16,7 @@
 --
 -- Governance mirrors 0096_create_subject_authz_versions.sql EXACTLY (RLS +
 -- explicit GRANT + org-immutability trigger), tightened: seals are FULLY
--- immutable evidence, so mnt_rt gets SELECT+INSERT only and is REVOKEd both
+-- immutable evidence, so console_rt gets SELECT+INSERT only and is REVOKEd both
 -- UPDATE and DELETE (0096 kept UPDATE for its bump counters; seals never bump).
 
 CREATE TABLE audit_chain_seals (
@@ -47,17 +47,17 @@ CREATE POLICY org_isolation ON audit_chain_seals
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
 -- Seals are append-only evidence: SELECT + INSERT only. 0031's ALTER DEFAULT
--- PRIVILEGES auto-grants FULL DML (incl. UPDATE + DELETE) to mnt_rt on every
--- table mnt_app creates, so BOTH must be revoked here — without it the runtime
+-- PRIVILEGES auto-grants FULL DML (incl. UPDATE + DELETE) to console_rt on every
+-- table console_app creates, so BOTH must be revoked here — without it the runtime
 -- role that writes seals could silently rewrite a seal_hash/batch_hash or DELETE
 -- a seal and re-point the chain, laundering a tampered audit_events. The
 -- explicit positive GRANT is required in the test DB (tables owned by the test
 -- superuser, where the ALTER DEFAULT PRIVILEGES clause never fires); the REVOKE
 -- of a not-yet-held privilege is a harmless no-op there and the real tightening
--- in production. The owner (mnt_app) retains DELETE for ON DELETE CASCADE
+-- in production. The owner (console_app) retains DELETE for ON DELETE CASCADE
 -- tenant teardown.
-GRANT SELECT, INSERT ON audit_chain_seals TO mnt_rt;
-REVOKE UPDATE, DELETE ON audit_chain_seals FROM mnt_rt;
+GRANT SELECT, INSERT ON audit_chain_seals TO console_rt;
+REVOKE UPDATE, DELETE ON audit_chain_seals FROM console_rt;
 
 -- org_id is in the PK and never rewritten, but keep an immutability guard so a
 -- future owner UPDATE can never move a seal across tenants even if RLS WITH

@@ -11,8 +11,8 @@ restores into a scratch Compose project, replays archived WAL to the target, and
 verifies that the before row exists while the after row does not.
 
 Options:
-  --source-project NAME    Source compose project (default: mnt-prod)
-  --scratch-project NAME   Scratch compose project (default: mnt-pitr-scratch)
+  --source-project NAME    Source compose project (default: console-prod)
+  --scratch-project NAME   Scratch compose project (default: console-pitr-scratch)
   --compose-file PATH      Compose file, repeatable (default: ops/compose.yml)
   --backup-root PATH       Backup root (default: ops/backup/artifacts)
   --backup-timestamp VALUE Backup id (default: current YYYYMMDDTHHMMSSZ-pitr)
@@ -30,8 +30,8 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 cd "${repo_root}"
 
-source_project="${SOURCE_PROJECT:-mnt-prod}"
-scratch_project="${SCRATCH_PROJECT:-mnt-pitr-scratch}"
+source_project="${SOURCE_PROJECT:-console-prod}"
+scratch_project="${SCRATCH_PROJECT:-console-pitr-scratch}"
 backup_root="${BACKUP_ROOT:-ops/backup/artifacts}"
 backup_timestamp="${BACKUP_TIMESTAMP:-$(date -u +%Y%m%dT%H%M%SZ)-pitr}"
 target_timestamp="${PITR_TARGET_TIMESTAMP:-}"

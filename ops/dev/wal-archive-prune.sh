@@ -8,11 +8,11 @@ set -euo pipefail
 # production-like ops/compose.yml archive/PITR contract is intentionally left
 # untouched.
 
-WAL_ARCHIVE_DIR="${MNT_DEV_WAL_ARCHIVE_DIR:-/wal-archive}"
-RETENTION_HOURS_RAW="${MNT_DEV_WAL_ARCHIVE_RETENTION_HOURS:-72}"
-MAX_BYTES_RAW="${MNT_DEV_WAL_ARCHIVE_MAX_BYTES:-1073741824}"
-MIN_SEGMENTS_RAW="${MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS:-8}"
-PRUNE_INTERVAL_SECONDS_RAW="${MNT_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS:-300}"
+WAL_ARCHIVE_DIR="${CONSOLE_DEV_WAL_ARCHIVE_DIR:-/wal-archive}"
+RETENTION_HOURS_RAW="${CONSOLE_DEV_WAL_ARCHIVE_RETENTION_HOURS:-72}"
+MAX_BYTES_RAW="${CONSOLE_DEV_WAL_ARCHIVE_MAX_BYTES:-1073741824}"
+MIN_SEGMENTS_RAW="${CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS:-8}"
+PRUNE_INTERVAL_SECONDS_RAW="${CONSOLE_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS:-300}"
 
 log() {
   printf 'dev-wal-pruner: %s\n' "$*"
@@ -57,10 +57,10 @@ parse_positive_int() {
   printf '%s\n' "$raw"
 }
 
-RETENTION_HOURS="$(parse_nonnegative_bound MNT_DEV_WAL_ARCHIVE_RETENTION_HOURS "$RETENTION_HOURS_RAW")"
-MAX_BYTES="$(parse_nonnegative_bound MNT_DEV_WAL_ARCHIVE_MAX_BYTES "$MAX_BYTES_RAW")"
-MIN_SEGMENTS="$(parse_nonnegative_bound MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS "$MIN_SEGMENTS_RAW")"
-PRUNE_INTERVAL_SECONDS="$(parse_positive_int MNT_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS "$PRUNE_INTERVAL_SECONDS_RAW")"
+RETENTION_HOURS="$(parse_nonnegative_bound CONSOLE_DEV_WAL_ARCHIVE_RETENTION_HOURS "$RETENTION_HOURS_RAW")"
+MAX_BYTES="$(parse_nonnegative_bound CONSOLE_DEV_WAL_ARCHIVE_MAX_BYTES "$MAX_BYTES_RAW")"
+MIN_SEGMENTS="$(parse_nonnegative_bound CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS "$MIN_SEGMENTS_RAW")"
+PRUNE_INTERVAL_SECONDS="$(parse_positive_int CONSOLE_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS "$PRUNE_INTERVAL_SECONDS_RAW")"
 
 if [[ ! -d "$WAL_ARCHIVE_DIR" ]]; then
   printf 'WAL archive directory does not exist: %s\n' "$WAL_ARCHIVE_DIR" >&2
@@ -178,7 +178,7 @@ prune_by_size() {
   done
 
   if (( total_bytes > MAX_BYTES && remaining_count <= MIN_SEGMENTS )); then
-    warn "archive still exceeds max bytes (${total_bytes} > ${MAX_BYTES}) because MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS=${MIN_SEGMENTS} protects the newest files"
+    warn "archive still exceeds max bytes (${total_bytes} > ${MAX_BYTES}) because CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS=${MIN_SEGMENTS} protects the newest files"
   fi
 
   printf '%s\n' "$deleted"
@@ -205,7 +205,7 @@ if (( RETENTION_HOURS == 0 && MAX_BYTES == 0 )); then
   warn "both age and size retention are disabled; use only for local PITR drills"
 fi
 
-if [[ "${MNT_DEV_WAL_ARCHIVE_PRUNE_ONCE:-}" == "1" || "${1:-}" == "--once" ]]; then
+if [[ "${CONSOLE_DEV_WAL_ARCHIVE_PRUNE_ONCE:-}" == "1" || "${1:-}" == "--once" ]]; then
   prune_once
   exit 0
 fi

@@ -9,19 +9,19 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-notifications-adapter-postgres",
+    name = "console-notifications-adapter-postgres",
     mapped_srcs = repo_mapped_srcs("backend/crates/notifications/adapter-postgres", glob(["src/**/*.rs"])),
-    crate = "mnt_notifications_adapter_postgres",
+    crate = "console_notifications_adapter_postgres",
     edition = "2024",
     crate_root = "backend/crates/notifications/adapter-postgres/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notifications/adapter-postgres"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/notifications/application:mnt-notifications-application",
-        "//backend/crates/notifications/domain:mnt-notifications-domain",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/notifications/application:console-notifications-application",
+        "//backend/crates/notifications/domain:console-notifications-domain",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:base64",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
@@ -33,7 +33,7 @@ rust_library(
 )
 
 rust_test(
-    name = "mnt-notifications-adapter-postgres-itest-notifications_rls_surfaces_as_runtime_role",
+    name = "console-notifications-adapter-postgres-itest-notifications_rls_surfaces_as_runtime_role",
     mapped_srcs = repo_mapped_srcs("backend/crates/notifications/adapter-postgres", ["tests/notifications_rls_surfaces_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
@@ -44,11 +44,11 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notifications/adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.notifications.adapter-postgres", "domain.notifications", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
-        "//backend/crates/notifications/application:mnt-notifications-application",
-        "//backend/crates/notifications/domain:mnt-notifications-domain",
-        "//backend/crates/platform/db:mnt-platform-db",
-        "//backend/crates/platform/request-context:mnt-platform-request-context",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/notifications/application:console-notifications-application",
+        "//backend/crates/notifications/domain:console-notifications-domain",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:base64",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
@@ -57,6 +57,6 @@ rust_test(
         "//third-party/rust:time",
         "//third-party/rust:tokio",
         "//third-party/rust:uuid",
-        ":mnt-notifications-adapter-postgres",
+        ":console-notifications-adapter-postgres",
     ],
 )

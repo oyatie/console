@@ -9,7 +9,7 @@
 | Employee tables | `0063_create_employees.sql` (org RLS), `0172_create_employee_employment_profiles.sql` (compensation isolated from directory rows; `employee_create_idempotency` reservation table; advisory-lock trigger on employee_number). |
 | Authz | `platform/authz/src/lib.rs`: deny-by-default `Feature` matrix, 6 columns `[MEMBER, RECEPTIONIST, MECHANIC, ADMIN, EXECUTIVE, SUPER_ADMIN]`. `EmployeeDirectoryRead = [D,D,D,A,A,A]`, `EmployeeDirectoryManage = [D,D,D,A,D,A]`. |
 | Ontology spine | `ontology/adapter-postgres/src/seed.rs`: built-in catalog (`BUILTIN_CATALOG_VERSION 2026-07-19.1`) already ships `contract → position → posting` with `posting → employee` link **authored unresolved** (intentional null target until a governed compatibility change binds it). Posting type props: scope/fill_count/deadline, `BackingKind::Instance`. |
-| Router composition | `backend/app/src/lib.rs::build_router` merges per-domain routers (`hr::router`, `mnt_identity_rest::router`, …) under request-context middleware. |
+| Router composition | `backend/app/src/lib.rs::build_router` merges per-domain routers (`hr::router`, `console_identity_rest::router`, …) under request-context middleware. |
 | Migrations | `platform/db/migrations/` — highest is `0180_service_principal_auth.sql`. **0187 is provisional**; take the next free number immediately before push (numbers collide across lanes). |
 
 ## 2. Backend gaps → owning-crate decisions

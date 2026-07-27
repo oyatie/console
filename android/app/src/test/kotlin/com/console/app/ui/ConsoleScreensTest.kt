@@ -1,0 +1,587 @@
+package com.console.app.ui
+
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
+import com.console.app.data.api.TechnicianWorkOrder
+import com.console.app.data.collaboration.MobileOperationsSnapshotOrigin
+import com.console.app.ui.theme.ConsoleTheme
+import java.util.UUID
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+
+/**
+ * Robolectric-backed Compose UI tests for the real field screens.
+ *
+ * Each test renders a REAL composable (from ConsoleApp.kt) with REAL domain models from
+ * [ConsoleFixtures] — no fake gateway, no fake auth. The screens take plain data + callbacks,
+ * so this exercises the exact rendering path used on-device, including the Korean string
+ * resources resolved through the merged Android resources.
+ *
+ * Accessibility: every screen test calls enableAccessibilityChecks() (ATF), so the suite
+ * fails on contentDescription gaps, touch-target, and contrast violations.
+ */
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], qualifiers = "ko")
+class ConsoleScreensTest {
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    // --- TodayScreen ------------------------------------------------------------------
+
+    @Test
+    fun todayScreen_populated_rendersWorkOrdersWithKoreanLabels() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                TodayScreen(
+                    orders = ConsoleFixtures.todayOrders,
+                    busy = false,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onRefresh = {},
+                    onLogout = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onSelect = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("오늘 작업").assertIsDisplayed()
+        composeTestRule.onNodeWithText("WO-2026-0001").assertIsDisplayed()
+        composeTestRule.onNodeWithText("긴급").assertIsDisplayed()
+        composeTestRule.onNodeWithText("배정됨").assertIsDisplayed()
+        composeTestRule.onNodeWithText("새로고침").assertIsEnabled()
+        // The second card is below the fold in the list; scroll the lazy list to it,
+        // then it is both present and displayed with its pending-sync chip.
+        composeTestRule.onNode(hasScrollAction())
+            .performScrollToNode(hasText("WO-2026-0002"))
+        composeTestRule.onNodeWithText("WO-2026-0002").assertIsDisplayed()
+        composeTestRule.onNodeWithText("동기화 대기").assertIsDisplayed()
+    }
+
+    @Test
+    fun todayScreen_empty_rendersEmptyState() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                TodayScreen(
+                    orders = emptyList(),
+                    busy = false,
+                    locationConsent = ConsoleFixtures.noRecordConsent,
+                    onRefresh = {},
+                    onLogout = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onSelect = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("오늘 배정된 작업이 없습니다.").assertIsDisplayed()
+    }
+
+    @Test
+    fun todayScreen_busy_disablesRefreshAction() {
+        composeTestRule.setContent {
+            ConsoleTheme {
+                TodayScreen(
+                    orders = ConsoleFixtures.todayOrders,
+                    busy = true,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onRefresh = {},
+                    onLogout = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onSelect = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("새로고침").assertIsNotEnabled()
+    }
+
+    @Test
+    fun todayScreen_clickingOrder_invokesSelectWithThatOrder() {
+        var selected: TechnicianWorkOrder? = null
+        composeTestRule.setContent {
+            ConsoleTheme {
+                TodayScreen(
+                    orders = ConsoleFixtures.todayOrders,
+                    busy = false,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onRefresh = {},
+                    onLogout = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onSelect = { selected = it },
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("WO-2026-0001").performClick()
+        assertEquals(ConsoleFixtures.urgentWorkOrder, selected)
+    }
+
+
+    // --- WorkHubScreen ---------------------------------------------------------------
+
+    @Test
+    fun workHubScreen_rendersPolicyAwareCollaborationSummary() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                WorkHubScreen(
+                    summary = WorkHubSummary.build(
+                        today = ConsoleFixtures.todayOrders,
+                        messengerState = ConsoleFixtures.populatedMessengerState(),
+                        gpsMayCollect = true,
+                    ),
+                    busy = false,
+                    onRefresh = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("업무 허브").assertIsDisplayed()
+        composeTestRule.onNodeWithText("오늘 작업 2건").assertIsDisplayed()
+        composeTestRule.onNodeWithText("긴급 작업 1건").assertIsDisplayed()
+        composeTestRule.onNodeWithText("목표일 있는 작업 1건").assertIsDisplayed()
+        composeTestRule.onNodeWithText("민감한 승인·서명은 패스키 확인 후 처리").assertIsDisplayed()
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("알림 우선순위"))
+        composeTestRule.onNodeWithText("알림 우선순위").assertIsDisplayed()
+        composeTestRule.onNodeWithText("확인할 신호 2건").assertIsDisplayed()
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("대화방 1개"))
+        composeTestRule.onNodeWithText("대화방 1개").assertIsDisplayed()
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("보안 수신함 준비됨"))
+        composeTestRule.onNodeWithText("보안 수신함 준비됨").assertIsDisplayed()
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("대상·익명성 정책 준비됨"))
+        composeTestRule.onNodeWithText("대상·익명성 정책 준비됨").assertIsDisplayed()
+        composeTestRule.onNode(hasScrollAction())
+            .performScrollToNode(hasText("모든 항목은 권한 범위와 원천 업무 객체 기준으로 표시합니다."))
+        composeTestRule.onNodeWithText("모든 항목은 권한 범위와 원천 업무 객체 기준으로 표시합니다.").assertIsDisplayed()
+    }
+
+    @Test
+    fun workHubSummary_capturesVisibleNativeWorkContextOnly() {
+        val approvalOrder = ConsoleFixtures.urgentWorkOrder.copy(
+            status = com.console.api.client.model.WorkOrderStatus.ADMIN_REVIEW,
+        )
+        val summary = WorkHubSummary.build(
+            today = listOf(approvalOrder, ConsoleFixtures.pendingWorkOrder),
+            messengerState = ConsoleFixtures.populatedMessengerState(),
+            gpsMayCollect = true,
+        )
+
+        assertEquals(2, summary.todayWorkCount)
+        assertEquals(1, summary.urgentWorkCount)
+        assertEquals(1, summary.approvalRelatedCount)
+        assertEquals(1, summary.pendingSyncCount)
+        assertEquals(1, summary.messengerThreadCount)
+        assertEquals(1, summary.targetDueWorkCount)
+        assertEquals(
+            MobileCollaborationKind.entries.toList(),
+            summary.collaborationActions.map { it.kind },
+        )
+        assertEquals(3, summary.collaborationActions.first { it.kind == MobileCollaborationKind.NOTIFICATION }.count)
+        assertEquals(
+            MobileCollaborationStatus.ACTION_REQUIRED,
+            summary.collaborationActions.first { it.kind == MobileCollaborationKind.APPROVAL }.status,
+        )
+        assertEquals(
+            MobileCollaborationStatus.READY,
+            summary.collaborationActions.first { it.kind == MobileCollaborationKind.MAIL }.status,
+        )
+    }
+
+
+
+    // --- OperationsScreen -------------------------------------------------------------
+
+    @Test
+    fun operationsScreen_rendersApprovalMailCalendarPollAndInvokesActions() {
+        composeTestRule.enableAccessibilityChecks()
+        var queuedApproval = false
+        var markedThreadId: UUID? = null
+        var votedPollId: UUID? = null
+        var approvalComment = ""
+        composeTestRule.setContent {
+            ConsoleTheme {
+                OperationsScreen(
+                    dashboard = ConsoleFixtures.operationsDashboard(),
+                    origin = MobileOperationsSnapshotOrigin.LIVE,
+                    busy = false,
+                    approvalComment = approvalComment,
+                    onApprovalCommentChange = { approvalComment = it },
+                    onRefresh = {},
+                    onQueueApproval = { queuedApproval = true },
+                    onMarkThreadRead = { markedThreadId = it.id },
+                    onVotePoll = { votedPollId = it.id },
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("업무함").assertIsDisplayed()
+        composeTestRule.onNodeWithText("승인 센터").assertIsDisplayed()
+        composeTestRule.onNodeWithText("승인 대기 0건").assertIsDisplayed()
+        composeTestRule.onNodeWithText("승인/반려 의견").performTextInput("확인 후 승인")
+        composeTestRule.onNodeWithText("패스키 확인 대기열에 추가").performClick()
+        assertEquals(true, queuedApproval)
+
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("급여명세 확인 요청"))
+        composeTestRule.onNodeWithText("급여명세 확인 요청").assertIsDisplayed()
+        composeTestRule.onNodeWithText("읽음 처리").performScrollTo().performClick()
+        assertEquals("00000000-0000-0000-0000-000000000601", markedThreadId.toString())
+
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("정비팀 주간 회의"))
+        composeTestRule.onNodeWithText("정비팀 주간 회의").assertIsDisplayed()
+        composeTestRule.onNodeWithText("팀").assertIsDisplayed()
+
+        composeTestRule.onNode(hasScrollAction()).performScrollToNode(hasText("오전 정비 우선순위"))
+        composeTestRule.onNodeWithText("오전 정비 우선순위").assertIsDisplayed()
+        composeTestRule.onNodeWithText("찬성 선택").performScrollTo().performClick()
+        assertEquals(ConsoleFixtures.pollId, votedPollId)
+    }
+
+    // --- LoginScreen ------------------------------------------------------------------
+
+    @Test
+    fun loginScreen_rendersPasskeyPromptInKorean() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LoginScreen(busy = false, onLogin = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("패스키 로그인").assertIsDisplayed()
+        composeTestRule.onNodeWithText("로그인").assertIsEnabled()
+    }
+
+    @Test
+    fun loginScreen_invalidUserId_showsRequiredErrorAndDoesNotLogin() {
+        var loggedInWith: UUID? = null
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LoginScreen(busy = false, onLogin = { loggedInWith = it })
+            }
+        }
+
+        composeTestRule.onNodeWithText("로그인").performClick()
+        composeTestRule.onNodeWithText("필수 입력값입니다.").assertIsDisplayed()
+        assertNull(loggedInWith)
+    }
+
+    @Test
+    fun loginScreen_validUserId_invokesLoginWithParsedUuid() {
+        val userId = UUID.fromString("00000000-0000-0000-0000-000000000901")
+        var loggedInWith: UUID? = null
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LoginScreen(busy = false, onLogin = { loggedInWith = it })
+            }
+        }
+
+        composeTestRule.onNodeWithText("사용자 ID").performTextInput(userId.toString())
+        composeTestRule.onNodeWithText("로그인").performClick()
+        assertEquals(userId, loggedInWith)
+    }
+
+    @Test
+    fun loginScreen_busy_showsLoadingLabelAndDisablesButton() {
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LoginScreen(busy = true, onLogin = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("처리 중").assertIsNotEnabled()
+    }
+
+    // --- WorkOrderDetailScreen --------------------------------------------------------
+
+    @Test
+    fun detailScreen_populated_rendersReportFormInKorean() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                WorkOrderDetailScreen(
+                    order = ConsoleFixtures.urgentWorkOrder,
+                    busy = false,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onBack = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onStart = {},
+                    onReport = {},
+                    onCaptureEvidence = {},
+                    onCameraPermissionNeeded = {},
+                    onCameraPermissionDenied = {},
+                )
+            }
+        }
+
+        // The symptom passed in the fixture renders via symptom_format near the top.
+        composeTestRule.onNode(hasText("마스트 상승 불가", substring = true)).assertIsDisplayed()
+        // The form controls live in a scrollable column; scroll each into view to assert it.
+        composeTestRule.onNodeWithText("작업 시작").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("진단").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("조치 내용").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("증빙 촬영").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun detailScreen_submitWithEmptyReport_showsRequiredErrorAndDoesNotSubmit() {
+        var reported = false
+        composeTestRule.setContent {
+            ConsoleTheme {
+                WorkOrderDetailScreen(
+                    order = ConsoleFixtures.urgentWorkOrder,
+                    busy = false,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onBack = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onStart = {},
+                    onReport = { reported = true },
+                    onCaptureEvidence = {},
+                    onCameraPermissionNeeded = {},
+                    onCameraPermissionDenied = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("제출").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("필수 입력값입니다.").performScrollTo().assertIsDisplayed()
+        assertEquals(false, reported)
+    }
+
+    @Test
+    fun detailScreen_startWork_invokesCallback() {
+        var started = false
+        composeTestRule.setContent {
+            ConsoleTheme {
+                WorkOrderDetailScreen(
+                    order = ConsoleFixtures.urgentWorkOrder,
+                    busy = false,
+                    locationConsent = ConsoleFixtures.grantedConsent,
+                    onBack = {},
+                    onLocationGrant = {},
+                    onLocationSuspend = {},
+                    onLocationResume = {},
+                    onLocationWithdraw = {},
+                    onStart = { started = true },
+                    onReport = {},
+                    onCaptureEvidence = {},
+                    onCameraPermissionNeeded = {},
+                    onCameraPermissionDenied = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("작업 시작").performScrollTo().performClick()
+        assertEquals(true, started)
+    }
+
+    // --- MessengerScreen --------------------------------------------------------------
+
+    @Test
+    fun messengerScreen_populated_rendersThreadAndMessage() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                MessengerScreen(
+                    state = ConsoleFixtures.populatedMessengerState(),
+                    busy = false,
+                    searchQuery = "",
+                    draft = "",
+                    onSearchQueryChange = {},
+                    onDraftChange = {},
+                    onRefresh = {},
+                    onSelectThread = {},
+                    onLoadOlder = {},
+                    onSearch = {},
+                    onSend = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("메신저").assertIsDisplayed()
+        composeTestRule.onNodeWithText("WO-2026-0001 작업방").assertIsDisplayed()
+        // The selected thread's message is further down the lazy list; scroll to it.
+        composeTestRule.onNode(hasScrollAction())
+            .performScrollToNode(hasText("부품 도착 예정 시간 공유 부탁드립니다."))
+        composeTestRule.onNodeWithText("부품 도착 예정 시간 공유 부탁드립니다.").assertIsDisplayed()
+    }
+
+    @Test
+    fun messengerScreen_empty_rendersEmptyThreadAndSelectPrompts() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                MessengerScreen(
+                    state = ConsoleFixtures.emptyMessengerState(),
+                    busy = false,
+                    searchQuery = "",
+                    draft = "",
+                    onSearchQueryChange = {},
+                    onDraftChange = {},
+                    onRefresh = {},
+                    onSelectThread = {},
+                    onLoadOlder = {},
+                    onSearch = {},
+                    onSend = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("표시할 대화방이 없습니다.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("대화방을 선택하세요.").assertIsDisplayed()
+    }
+
+    @Test
+    fun messengerScreen_noThreadSelected_sendButtonDisabled() {
+        composeTestRule.setContent {
+            ConsoleTheme {
+                MessengerScreen(
+                    state = ConsoleFixtures.emptyMessengerState(),
+                    busy = false,
+                    searchQuery = "",
+                    draft = "본문",
+                    onSearchQueryChange = {},
+                    onDraftChange = {},
+                    onRefresh = {},
+                    onSelectThread = {},
+                    onLoadOlder = {},
+                    onSearch = {},
+                    onSend = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("전송").assertIsNotEnabled()
+    }
+
+    @Test
+    fun messengerScreen_threadSelected_sendInvokesCallback() {
+        var sent = false
+        composeTestRule.setContent {
+            ConsoleTheme {
+                MessengerScreen(
+                    state = ConsoleFixtures.populatedMessengerState(),
+                    busy = false,
+                    searchQuery = "",
+                    draft = "부품 도착했습니다.",
+                    onSearchQueryChange = {},
+                    onDraftChange = {},
+                    onRefresh = {},
+                    onSelectThread = {},
+                    onLoadOlder = {},
+                    onSearch = {},
+                    onSend = { sent = true },
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("전송").performClick()
+        assertEquals(true, sent)
+    }
+
+    // --- LocationConsentControls ------------------------------------------------------
+
+    @Test
+    fun locationConsent_granted_allowsSuspendAndWithdrawOnly() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LocationConsentControls(
+                    status = ConsoleFixtures.grantedConsent,
+                    busy = false,
+                    onGrant = {},
+                    onSuspend = {},
+                    onResume = {},
+                    onWithdraw = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("GPS 위치 동의").assertIsDisplayed()
+        composeTestRule.onNodeWithText("동의됨").assertIsDisplayed()
+        // When granted: grant disabled, suspend/withdraw enabled, resume disabled.
+        composeTestRule.onNodeWithText("동의").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("GPS 끄기").assertIsEnabled()
+        composeTestRule.onNodeWithText("동의 철회").assertIsEnabled()
+        composeTestRule.onNodeWithText("GPS 켜기").assertIsNotEnabled()
+    }
+
+    @Test
+    fun locationConsent_noRecord_allowsGrantOnly() {
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LocationConsentControls(
+                    status = ConsoleFixtures.noRecordConsent,
+                    busy = false,
+                    onGrant = {},
+                    onSuspend = {},
+                    onResume = {},
+                    onWithdraw = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("미동의").assertIsDisplayed()
+        composeTestRule.onNodeWithText("동의").assertIsEnabled()
+        composeTestRule.onNodeWithText("GPS 끄기").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("동의 철회").assertIsNotEnabled()
+    }
+
+    @Test
+    fun locationConsent_grant_invokesCallback() {
+        var granted = false
+        composeTestRule.setContent {
+            ConsoleTheme {
+                LocationConsentControls(
+                    status = ConsoleFixtures.noRecordConsent,
+                    busy = false,
+                    onGrant = { granted = true },
+                    onSuspend = {},
+                    onResume = {},
+                    onWithdraw = {},
+                )
+            }
+        }
+
+        composeTestRule.onAllNodesWithText("동의")[0].performClick()
+        assertEquals(true, granted)
+    }
+}

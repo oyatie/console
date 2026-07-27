@@ -2,12 +2,12 @@
 //! Shared object-code issuance (BE-OBJ slice 2, item 1): a per-(org, kind)
 //! monotonic counter generalized from the work-order request-number counter
 //! (`work_order_request_counters`), exercised as the genuine non-owner runtime
-//! role `mnt_rt` — FORCE RLS on `object_code_counters` is only meaningful
+//! role `console_rt` — FORCE RLS on `object_code_counters` is only meaningful
 //! against a non-owner/non-BYPASSRLS role (see `rls_isolation.rs`'s rationale;
 //! the default `#[sqlx::test]` pool is a BYPASSRLS superuser).
 
-use mnt_kernel_core::OrgId;
-use mnt_platform_db::{DbError, issue_code, with_org_conn};
+use console_kernel_core::OrgId;
+use console_platform_db::{DbError, issue_code, with_org_conn};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -25,7 +25,7 @@ async fn seed_org(pool: &PgPool, org: Uuid) {
         .unwrap();
 }
 
-/// A pool whose every connection drops to the genuine runtime role `mnt_rt`
+/// A pool whose every connection drops to the genuine runtime role `console_rt`
 /// (NOSUPERUSER, NOBYPASSRLS) before use, so FORCE RLS on
 /// `object_code_counters` is actually exercised. Copied pattern from
 /// `rls_isolation.rs` / `workorder/adapter-postgres` runtime-role tests.
@@ -35,7 +35,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -65,7 +65,7 @@ async fn issues_monotonic_per_org_codes_as_runtime_role(pool: PgPool) {
     assert_eq!(second, "AP-2", "sequence is monotonic per (org, kind)");
 
     // A different org starts its own sequence at 1 — no cross-tenant leakage,
-    // proven under mnt_rt's FORCE RLS (not merely app-level org_id scoping).
+    // proven under console_rt's FORCE RLS (not merely app-level org_id scoping).
     let org_b_first = with_org_conn::<_, _, DbError>(&rt, OrgId::from_uuid(ORG_B), |tx| {
         Box::pin(async move { issue_code(tx, OrgId::from_uuid(ORG_B), "approval_run").await })
     })

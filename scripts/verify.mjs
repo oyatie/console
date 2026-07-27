@@ -3,7 +3,7 @@
 //
 // Why this exists: those two jobs run ~35 commands in a specific order, several
 // of which need a PostgreSQL identity that migration 0196 restricts to
-// `mnt_buck_admin`. Nobody can hold that in their head, so defects were reaching
+// `console_buck_admin`. Nobody can hold that in their head, so defects were reaching
 // CI and costing a 45-minute round trip *each*, and because failures mask one
 // another the round trips serialise: one masked layer per run.
 //
@@ -79,21 +79,21 @@ const PLAN = new Map([
   ["Reconcile portable PostgreSQL role topology", {
     tier: "db",
     provision: true,
-    why: "replaced locally by a disposable container carrying the same seven roles plus mnt_buck_admin",
+    why: "replaced locally by a disposable container carrying the same seven roles plus console_buck_admin",
   }],
   ["PR 473 migration operational gate", { tier: "db" }],
   ["Boot smoke — migrate + serve + /readyz", {
     tier: "db",
-    run: "MNT_APP_ROLE=migrate SQLX_OFFLINE=true cargo run -q -p mnt-app",
+    run: "CONSOLE_APP_ROLE=migrate SQLX_OFFLINE=true cargo run -q -p console-app",
     why: "migrate half only; the serve/readyz half needs the full CI keypair fixture",
   }],
   // These suites moved off direct Cargo onto generator-owned Buck targets and
   // the disposable role-topology harness, which supplies the
-  // migration-0196-authorized `mnt_buck_admin` identity. The harness brings up
+  // migration-0196-authorized `console_buck_admin` identity. The harness brings up
   // its own PostgreSQL, so this needs Docker but not a provisioned database.
   ["Buck2 dev-auth feature PostgreSQL suites", { tier: "db" }],
-  ["Buck2 mnt-app unit suite", { tier: "fast" }],
-  ["Buck2 mnt-app inline PostgreSQL suites", { tier: "db" }],
+  ["Buck2 console-app unit suite", { tier: "fast" }],
+  ["Buck2 console-app inline PostgreSQL suites", { tier: "db" }],
 
   // ---- kubernetes-manifests ---------------------------------------------
   // Mirrored because `check:production-hardening` pins the exact text of the
@@ -171,7 +171,7 @@ function consoleTrainEnv() {
   const tip = capture("git rev-parse HEAD");
   const candidate = capture("git rev-parse HEAD^");
   const base = capture(
-    `git merge-base HEAD "${process.env.MNT_VERIFY_BASE ?? "origin/main"}"`,
+    `git merge-base HEAD "${process.env.CONSOLE_VERIFY_BASE ?? "origin/main"}"`,
   );
   const merge = capture(
     `git commit-tree "${tip}^{tree}" -p "${base}" -p "${tip}" -m verify-synthetic-merge`,
@@ -183,50 +183,50 @@ function consoleTrainEnv() {
   };
 }
 
-/** Disposable PostgreSQL carrying the seven app roles plus the `mnt_buck_admin`
+/** Disposable PostgreSQL carrying the seven app roles plus the `console_buck_admin`
  *  superuser that migration 0196 requires before any migration may be applied.
  *  Always `--rm`, always torn down: a previous incident left 707 orphaned
  *  volumes and filled the machine. */
 function withPostgres(body) {
-  const name = `mnt-verify-pg-${process.pid}`;
-  const scratch = mkdtempSync(join(tmpdir(), "mnt-verify-"));
+  const name = `console-verify-pg-${process.pid}`;
+  const scratch = mkdtempSync(join(tmpdir(), "console-verify-"));
   const adminPassword = capture("openssl rand -hex 16");
   const bootstrapPassword = capture("openssl rand -hex 16");
   try {
     capture(
       `docker run -d --rm --name ${name} -p 127.0.0.1:0:5432 ` +
-        `-e POSTGRES_DB=mnt_ci -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=${adminPassword} ` +
+        `-e POSTGRES_DB=console_ci -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=${adminPassword} ` +
         `${POSTGRES_IMAGE}`,
     );
     capture(
-      `for i in $(seq 1 60); do docker exec ${name} pg_isready -U postgres -d mnt_ci >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1`,
+      `for i in $(seq 1 60); do docker exec ${name} pg_isready -U postgres -d console_ci >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1`,
     );
     const port = capture(`docker port ${name} 5432/tcp | head -1 | sed 's/.*://'`);
 
     capture(`docker cp ops/postgres-reconcile-topology.sh ${name}:/topology.sh`);
     capture(
-      `docker exec -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=mnt_ci ` +
+      `docker exec -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci ` +
         `-e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=${adminPassword} ` +
-        `-e MNT_APP_POSTGRES_PASSWORD=${bootstrapPassword} -e MNT_RT_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e MNT_LEAVE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
+        `-e CONSOLE_APP_POSTGRES_PASSWORD=${bootstrapPassword} -e CONSOLE_RT_POSTGRES_PASSWORD=${bootstrapPassword} ` +
+        `-e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
+        `-e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
+        `-e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
         `${name} bash /topology.sh`,
     );
 
     // The password reaches psql through a mode-0600 file, never argv.
     const sql = join(scratch, "buck-admin.sql");
-    writeFileSync(sql, `CREATE ROLE mnt_buck_admin SUPERUSER LOGIN PASSWORD '${bootstrapPassword}';\n`);
+    writeFileSync(sql, `CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '${bootstrapPassword}';\n`);
     chmodSync(sql, 0o600);
     capture(`docker cp ${sql} ${name}:/buck-admin.sql`);
     capture(
       `docker exec -e PGPASSWORD=${adminPassword} ${name} psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /buck-admin.sql`,
     );
 
-    const buckAdminUrl = `postgres://mnt_buck_admin:${bootstrapPassword}@127.0.0.1:${port}/mnt_ci?${BOOTSTRAP_GUC}`;
+    const buckAdminUrl = `postgres://console_buck_admin:${bootstrapPassword}@127.0.0.1:${port}/console_ci?${BOOTSTRAP_GUC}`;
     return body({
       DATABASE_URL: buckAdminUrl,
-      MNT_BUCK_ADMIN_DATABASE_URL: buckAdminUrl,
+      CONSOLE_BUCK_ADMIN_DATABASE_URL: buckAdminUrl,
     });
   } finally {
     spawnSync("docker", ["rm", "-f", name], { stdio: "ignore" });

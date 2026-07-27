@@ -1,18 +1,18 @@
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 //! Deterministic two-connection regressions for attendance advisory locks.
 //!
-//! Each contender uses a max-one `mnt_rt` pool with a unique PostgreSQL
+//! Each contender uses a max-one `console_rt` pool with a unique PostgreSQL
 //! `application_name`. A control transaction holds the exact material used by
 //! production until PostgreSQL witnesses both contender sessions waiting on
 //! that same lock identity and reports the control backend in
 //! `pg_blocking_pids`. Deadlines fail a test; they are not synchronization.
 
-use mnt_attendance_adapter_postgres::{AttendanceStoreError, PgAttendanceStore};
-use mnt_attendance_application::{AmendClose, AssignSubstitute, CallerScope, CloseMonth};
-use mnt_attendance_domain::SubstitutionWindow;
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
+use console_attendance_adapter_postgres::{AttendanceStoreError, PgAttendanceStore};
+use console_attendance_application::{AmendClose, AssignSubstitute, CallerScope, CloseMonth};
+use console_attendance_domain::SubstitutionWindow;
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Postgres, Transaction};
 use time::{Date, Month};
@@ -338,7 +338,7 @@ async fn one_connection_runtime_pool(owner_pool: &PgPool, application_name: &str
                     .bind(application_name)
                     .execute(&mut *connection)
                     .await?;
-                sqlx::query("SET ROLE mnt_rt")
+                sqlx::query("SET ROLE console_rt")
                     .execute(&mut *connection)
                     .await?;
                 Ok(())
@@ -346,7 +346,7 @@ async fn one_connection_runtime_pool(owner_pool: &PgPool, application_name: &str
         })
         .connect_with(owner_pool.connect_options().as_ref().clone())
         .await
-        .expect("connect max-one mnt_rt contender pool")
+        .expect("connect max-one console_rt contender pool")
 }
 
 async fn contender_session(pool: &PgPool) -> DatabaseSession {
@@ -438,7 +438,7 @@ fn spawn_close(
     store: PgAttendanceStore,
     caller: CallerScope,
     command: CloseMonth,
-) -> tokio::task::JoinHandle<Result<mnt_attendance_application::MonthCloseRead, AttendanceStoreError>>
+) -> tokio::task::JoinHandle<Result<console_attendance_application::MonthCloseRead, AttendanceStoreError>>
 {
     tokio::spawn(async move { scope_org(OrgId::knl(), store.close_month(&caller, command)).await })
 }
@@ -448,7 +448,7 @@ fn spawn_substitution(
     caller: CallerScope,
     command: AssignSubstitute,
 ) -> tokio::task::JoinHandle<
-    Result<mnt_attendance_application::AttendanceSubstitutionRead, AttendanceStoreError>,
+    Result<console_attendance_application::AttendanceSubstitutionRead, AttendanceStoreError>,
 > {
     tokio::spawn(
         async move { scope_org(OrgId::knl(), store.assign_substitute(&caller, command)).await },
@@ -490,7 +490,7 @@ async fn seed_approved_leave(
     employee: Uuid,
 ) {
     let mut tx = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(tx.as_mut())
         .await
         .unwrap();
@@ -517,7 +517,7 @@ async fn seed_approved_leave(
 async fn seed_employee(pool: &PgPool, branch: BranchId, actor: UserId, name: &str) -> Uuid {
     let employee = Uuid::new_v4();
     let mut tx = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_cmd")
+    sqlx::query("SET LOCAL ROLE console_leave_cmd")
         .execute(tx.as_mut())
         .await
         .unwrap();

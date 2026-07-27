@@ -10,7 +10,7 @@ Files a directory module mirrors (ownership root for stage 3: `web/src/console/d
 | `ProductionConsoleRoute.tsx` | route adapter: `useAuth()` → api/session, authz hook → capabilities, passes `sessionKey = session?.client_session_incarnation ?? session?.access_token` | `DirectoryConsoleRoute.tsx` (if route-mounted) |
 | `useProductionConsoleAuthz.ts` | fetches `fetchAuthzProjection` from `../policy/authz`, fail-closed to `jwtFloorProjection` while loading, returns `makePolicyGate(projection, projection.source === "authz")` | same pattern |
 | `productionCapabilities.ts` | pure `derive*Capabilities(gate, branchId)` mapping backend feature keys → `{canRead, canX…}`; deny-by-omission (`canRead=false` renders only the denied state, no fetch) | `directoryCapabilities.ts` |
-| `productionApi.ts` | typed transport: `components["schemas"][…]` from `@maintenance/api-client-ts`, `createXxxApi(api: ConsoleApiClient)` closures, `requireData` throwing typed `XxxApiError(message, status)`; every call takes optional `AbortSignal` | `directoryApi.ts` |
+| `productionApi.ts` | typed transport: `components["schemas"][…]` from `@console/api-client-ts`, `createXxxApi(api: ConsoleApiClient)` closures, `requireData` throwing typed `XxxApiError(message, status)`; every call takes optional `AbortSignal` | `directoryApi.ts` |
 | `routeContract.ts` | `interface XxxRouteContract { branchId }` + structural fixture | same |
 | `production.css` | plain-class BEM-ish css using only tokens (`--sp-*`, `--surface`, `--ink`, `--teal`, `--danger-*`, `--radius-*`, `--shadow`, `--border-hairline`); focus-visible outlines; responsive `@media (max-width: 900px)` single column | `directory.css` |
 | `index.ts` | public exports only | same |

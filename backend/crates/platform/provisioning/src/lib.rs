@@ -4,10 +4,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, KernelError, OrgId, TraceContext, UserId,
 };
-use mnt_platform_db::{insert_audit_event, with_audit, with_audits};
+use console_platform_db::{insert_audit_event, with_audit, with_audits};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction, types::Json};
@@ -31,13 +31,13 @@ pub enum ProvisioningError {
     Sqlx(#[from] sqlx::Error),
 
     #[error("database helper error: {0}")]
-    Db(#[from] mnt_platform_db::DbError),
+    Db(#[from] console_platform_db::DbError),
 
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
 
     #[error("auth error: {0}")]
-    Auth(#[from] mnt_platform_auth::AuthError),
+    Auth(#[from] console_platform_auth::AuthError),
 
     #[error("kernel error: {0}")]
     Kernel(#[from] KernelError),
@@ -143,7 +143,7 @@ impl RosterProvisioner {
         // Roster import stamps every row with KNL today (single-tenant import).
         // Arm KNL as the GUC so the FORCE-RLS WITH CHECK on `users`,
         // `user_branches`, and `auth_bootstrap_credentials` accepts these writes
-        // under the non-owner `mnt_rt` role.
+        // under the non-owner `console_rt` role.
         .with_org(OrgId::knl())
         .with_snapshots(
             None,
@@ -218,7 +218,7 @@ impl BootstrapCredentialStore {
     ///
     /// In ONE transaction with `app.current_org` armed to KNL by [`with_audits`],
     /// so the `users` + `auth_bootstrap_credentials` inserts pass the FORCE-RLS
-    /// WITH CHECK as the non-owner `mnt_rt` role. Returns the one-time OTP exactly
+    /// WITH CHECK as the non-owner `console_rt` role. Returns the one-time OTP exactly
     /// like the admin path; the OTP value is NEVER audited or logged.
     pub async fn signup_open_member(
         &self,
@@ -511,7 +511,7 @@ impl BootstrapCredentialStore {
 
         // Resolve the credential's tenant from the token hash FIRST, then arm the
         // GUC, THEN do the RLS-gated read. `auth_bootstrap_credentials` is FORCE
-        // RLS (migration 0035), so as the non-owner `mnt_rt` role a lookup-by-hash
+        // RLS (migration 0035), so as the non-owner `console_rt` role a lookup-by-hash
         // returns ZERO rows until `app.current_org` is set — but the org is what we
         // need to set it. The narrow SECURITY DEFINER resolver
         // `platform_resolve_bootstrap_org` (migration 0038) returns only the
@@ -639,7 +639,7 @@ impl BootstrapCredentialStore {
     /// Seed a deploy-time cold-start OTP for the PLATFORM cold-start SUPER_ADMIN
     /// at app boot.
     ///
-    /// The global `MNT_COLDSTART_OTP` bootstraps the PLATFORM admin — the first
+    /// The global `CONSOLE_COLDSTART_OTP` bootstraps the PLATFORM admin — the first
     /// account ABOVE all tenants — NOT a tenant admin. The "Cold Start Admin"
     /// user is re-homed to the platform sentinel org [`OrgId::platform`] by
     /// migration 0036, so this arms that sentinel as the GUC; the seeded
@@ -695,7 +695,7 @@ impl BootstrapCredentialStore {
 // ---------------------------------------------------------------------------
 // dev-auth: local role-switch principal provisioning.
 //
-// Reached ONLY from the `dev-auth` cargo feature in `mnt-platform-auth-rest`
+// Reached ONLY from the `dev-auth` cargo feature in `console-platform-auth-rest`
 // (never compiled into a default/release build — see that crate's
 // `#[cfg(feature = "dev-auth")]` route). A dev persona needs a REAL `users` +
 // `user_branches` row: `resolve_branch_scope_in_org` re-resolves branch
@@ -1014,7 +1014,7 @@ impl PlatformProvisioner {
     ///
     /// The org row is INSERTed via the SECURITY DEFINER `platform_create_organization`
     /// (migration 0036): `organizations` is SELECT-only + FORCE RLS for the app's
-    /// `mnt_rt` role, so this is the ONLY path that can create an org. The function
+    /// `console_rt` role, so this is the ONLY path that can create an org. The function
     /// arms `app.current_org` to the new id, so the rest of the transaction (the
     /// admin user + the OTP credential, both stamped with the new org) passes the
     /// FORCE-RLS WITH CHECK on every tenant table as the non-owner role.
@@ -1107,7 +1107,7 @@ impl PlatformProvisioner {
 
     /// List all tenants (cross-tenant read) via the SECURITY DEFINER
     /// `platform_list_organizations` so the platform tier sees every org even
-    /// though `organizations` is RLS-gated for `mnt_rt`. Audited by the caller.
+    /// though `organizations` is RLS-gated for `console_rt`. Audited by the caller.
     pub async fn list_tenants(
         &self,
         pool: &PgPool,
@@ -1878,7 +1878,7 @@ impl PlatformProvisioner {
 
     /// Suspend / reactivate a tenant by setting its `status`. Audited to the
     /// TARGET org. Runs via the SECURITY DEFINER `platform_set_organization_status`
-    /// (organizations is not UPDATE-able by `mnt_rt`).
+    /// (organizations is not UPDATE-able by `console_rt`).
     pub async fn set_tenant_status(
         &self,
         pool: &PgPool,
@@ -2608,7 +2608,7 @@ async fn seed_cold_start_if_needed_tx(
 /// Resolve a bootstrap credential's tenant from its token hash, via the narrow
 /// SECURITY DEFINER resolver `platform_resolve_bootstrap_org` (migration 0038).
 ///
-/// `auth_bootstrap_credentials` is FORCE RLS, so the app's non-owner `mnt_rt`
+/// `auth_bootstrap_credentials` is FORCE RLS, so the app's non-owner `console_rt`
 /// role cannot read a credential row by hash until `app.current_org` is armed —
 /// but the org is exactly what we need to arm it. This resolver returns ONLY the
 /// org_id (nothing else), breaking that chicken-and-egg without widening any read

@@ -1,30 +1,30 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! RUNTIME governance gates, exercised as the genuine non-owner role `mnt_rt`.
+//! RUNTIME governance gates, exercised as the genuine non-owner role `console_rt`.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser and would see every tenant's rows regardless of
 //! `app.current_org`, green-lighting a totally broken isolation policy. We SEED
-//! as the owner and RUN every governance mutation/read as `mnt_rt` (NOSUPERUSER,
+//! as the owner and RUN every governance mutation/read as `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy.
 //!
 //! Proves:
 //!   (a) self-approval is rejected — in the store AND by the DB CHECK;
 //!   (b) a four-eyes decision by a distinct principal is appended and is
 //!       thereafter immutable (append-only: UPDATE/DELETE rejected);
-//!   (c) cross-org override rows are invisible under RLS as `mnt_rt`;
+//!   (c) cross-org override rows are invisible under RLS as `console_rt`;
 //!   (d) the §16 gate chain fail-closes: with a required four-eyes gate and NO
 //!       approval, the chain denies and nothing is written.
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{
     ApprovalDecision, ConfigureTransitionCommand, DecideApprovalCommand, OpenOverrideCommand,
 };
-use mnt_governance_domain::{
+use console_governance_domain::{
     AuthorityEffect, GateChainConfig, GateEvidence, LifecycleState, TransitionRequirements,
     evaluate_gate_chain,
 };
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -38,7 +38,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -181,7 +181,7 @@ async fn distinct_approval_is_appended_and_immutable(pool: PgPool) {
     assert!(delete.is_err(), "gov_approvals DELETE must be rejected");
 }
 
-// (c) Cross-org override rows are invisible under RLS as mnt_rt.
+// (c) Cross-org override rows are invisible under RLS as console_rt.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn cross_org_overrides_are_invisible(pool: PgPool) {
     seed_org(&pool, ORG_A, "org-alpha").await;
@@ -223,7 +223,7 @@ async fn cross_org_overrides_are_invisible(pool: PgPool) {
     .await
     .unwrap();
 
-    // As mnt_rt under org-A's armed GUC, only A's override is visible.
+    // As console_rt under org-A's armed GUC, only A's override is visible.
     let mut tx = rt.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(ORG_A.to_string())
@@ -317,7 +317,7 @@ async fn assess_dispose_gate(
     store: &PgGovernanceStore,
     object_type_id: Uuid,
     request_ref: Uuid,
-) -> mnt_governance_domain::GateChainOutcome {
+) -> console_governance_domain::GateChainOutcome {
     let reqs = scope_org(OrgId::from_uuid(ORG_A), async {
         store
             .transition_requirements(

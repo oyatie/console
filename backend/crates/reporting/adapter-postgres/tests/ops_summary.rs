@@ -7,9 +7,9 @@
 //!    when the summary runs bound to the first org's tenant context.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_kernel_core::OrgId;
-use mnt_reporting_adapter_postgres::PgKpiRepository;
-use mnt_reporting_application::{OpsSummary, OpsSummaryPort, OpsSummaryQuery};
+use console_kernel_core::OrgId;
+use console_reporting_adapter_postgres::PgKpiRepository;
+use console_reporting_application::{OpsSummary, OpsSummaryPort, OpsSummaryQuery};
 use sqlx::pool::PoolOptions;
 use sqlx::{Executor, PgConnection, PgPool};
 use time::{Duration, OffsetDateTime};
@@ -196,19 +196,19 @@ async fn assign(pool: &PgPool, org_id: Uuid, work_order_id: Uuid, mechanic_id: U
     .unwrap();
 }
 
-/// Build a pool that connects under the unprivileged `mnt_rt` runtime role —
+/// Build a pool that connects under the unprivileged `console_rt` runtime role —
 /// the SAME role the production app uses — so RLS is fully enforced for the
 /// repository read. The `#[sqlx::test]` pool connects as the owner (which
 /// bypasses non-FORCE RLS), so for an isolation-faithful read we must drop to
-/// `mnt_rt`, exactly as the deployed app's connection does.
-async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
+/// `console_rt`, exactly as the deployed app's connection does.
+async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options();
     PoolOptions::new()
         .max_connections(2)
         .after_connect(|conn: &mut PgConnection, _meta| {
             Box::pin(async move {
                 // Static literal role name; mirrors rls_rollout_isolation.rs.
-                conn.execute("SET ROLE mnt_rt").await?;
+                conn.execute("SET ROLE console_rt").await?;
                 Ok(())
             })
         })
@@ -218,9 +218,9 @@ async fn mnt_rt_pool(owner_pool: &PgPool) -> PgPool {
 }
 
 async fn summary_for(pool: &PgPool, org_id: Uuid) -> OpsSummary {
-    let rt_pool = mnt_rt_pool(pool).await;
+    let rt_pool = console_rt_pool(pool).await;
     let repo = PgKpiRepository::new(rt_pool.clone());
-    let summary = mnt_platform_request_context::scope_org(OrgId::from_uuid(org_id), async move {
+    let summary = console_platform_request_context::scope_org(OrgId::from_uuid(org_id), async move {
         repo.ops_summary(QUERY).await.unwrap()
     })
     .await;

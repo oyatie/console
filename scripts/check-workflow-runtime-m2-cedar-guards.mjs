@@ -199,7 +199,7 @@ const withAudits = fnBody(auditTx, /pub async fn with_audits<F, T, E>/);
 assert(withAudits.length > 0, "with_audits body is present", `${AUDIT_TX}: missing with_audits body`);
 assert(
   /set_current_org\(&mut tx, org\)/.test(withAudits),
-  "with_audits arms app.current_org on the same tx BEFORE the closure (RLS-scoped mnt_rt write)",
+  "with_audits arms app.current_org on the same tx BEFORE the closure (RLS-scoped console_rt write)",
   `${AUDIT_TX}: with_audits must arm app.current_org on the transaction`,
 );
 assert(

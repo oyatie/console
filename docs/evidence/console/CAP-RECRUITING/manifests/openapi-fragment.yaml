@@ -3,7 +3,7 @@
 # regenerate clients/{ts,kotlin,swift} (3 CI drift gates). Every operation
 # carries `tags: [recruiting]` (per-domain tag rule — kotlinc OOM otherwise).
 # Also add to backend/app/src/lib.rs CONFIGURED_ROUTE_SURFACES:
-#   { name: "recruiting", paths: mnt_recruiting_rest::RECRUITING_ROUTE_PATHS }
+#   { name: "recruiting", paths: console_recruiting_rest::RECRUITING_ROUTE_PATHS }
 #   plus the app-owned hire path "/api/v1/recruiting/applicants/{applicant_id}/hire"
 # and to backend/app/tests/openapi_drift.rs CONFIGURED_ROUTE_SOURCES:
 #   { name: "recruiting REST router", surface: "recruiting",

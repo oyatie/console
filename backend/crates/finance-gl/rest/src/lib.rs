@@ -13,15 +13,15 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_finance_gl_adapter_postgres::{PgVoucherError, PgVoucherStore};
-use mnt_finance_gl_application::{
+use console_finance_gl_adapter_postgres::{PgVoucherError, PgVoucherStore};
+use console_finance_gl_application::{
     CreateVoucherDraftCommand, ReverseVoucherCommand, VoucherLineInput, VoucherTransitionCommand,
 };
-use mnt_finance_gl_domain::{VoucherId, VoucherStatus};
-use mnt_kernel_core::{BranchId, ErrorKind, KernelError, TraceContext};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
-use mnt_platform_db::DbError;
+use console_finance_gl_domain::{VoucherId, VoucherStatus};
+use console_kernel_core::{BranchId, ErrorKind, KernelError, TraceContext};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_db::DbError;
 use serde::{Deserialize, Serialize};
 
 /// The capability gating voucher management (see module docs).
@@ -93,7 +93,7 @@ pub fn router(state: FinanceGlRestState) -> Router {
             get(account_entries),
         )
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 #[derive(Debug, Deserialize)]
@@ -306,15 +306,15 @@ async fn principal_from_headers(
     let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for finance-GL API")
     })?;
-    mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+    console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
         .await
         .map_err(rest_error_from_request_context)
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
-    use mnt_platform_request_context::RequestContextError as E;
+    use console_platform_request_context::RequestContextError as E;
     match err {
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for finance-GL API")

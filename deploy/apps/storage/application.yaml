@@ -8,10 +8,10 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-2" # replicated storage must exist before on-prem CNPG creates PVCs.
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
-  project: maintenance-onprem-storage
+  project: console-onprem-storage
   sources:
     - repoURL: https://charts.longhorn.io
       chart: longhorn
@@ -20,10 +20,10 @@ spec:
         releaseName: longhorn
         valueFiles:
           - $values/deploy/apps/storage/values.yaml
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       ref: values
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       path: deploy/apps/storage/manifests
   destination:

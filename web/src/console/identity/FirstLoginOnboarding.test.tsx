@@ -100,9 +100,9 @@ function phoneQrHandoffResponse(otp = "Abcd1234") {
     otp,
     expires_at: "2026-06-14T00:05:00Z",
     enroll_url:
-      `https://console.knllogistic.com/login#otp=${otp}&desktop_approve=mnt_dla_` +
+      `https://console.knllogistic.com/login#otp=${otp}&desktop_approve=console_dla_` +
       "d".repeat(64),
-    poll_token: `mnt_dlp_${"e".repeat(64)}`,
+    poll_token: `console_dlp_${"e".repeat(64)}`,
   };
 }
 

@@ -1,18 +1,18 @@
 apiVersion: openslo/v1
 kind: SLO
 metadata:
-  name: mnt-api-availability
-  displayName: MNT API availability
+  name: console-api-availability
+  displayName: Console API availability
   labels:
-    service: mnt-app-api
+    service: console-app-api
     tier: platform
 spec:
-  description: MNT API successful HTTP request ratio over a rolling 30 day window.
-  service: mnt-app-api
+  description: Console API successful HTTP request ratio over a rolling 30 day window.
+  service: console-app-api
   indicator:
     metadata:
-      name: mnt-api-http-availability
-      displayName: MNT API HTTP availability ratio
+      name: console-api-http-availability
+      displayName: Console API HTTP availability ratio
     spec:
       ratioMetric:
         counter: true
@@ -20,12 +20,12 @@ spec:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_server_request_duration_seconds_count{service_name="mnt-app-api",http_response_status_code!~"5.."}[5m]))
+              query: sum(rate(http_server_request_duration_seconds_count{service_name="console-app-api",http_response_status_code!~"5.."}[5m]))
         total:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_server_request_duration_seconds_count{service_name="mnt-app-api"}[5m]))
+              query: sum(rate(http_server_request_duration_seconds_count{service_name="console-app-api"}[5m]))
   timeWindow:
     - duration: 30d
       isRolling: true

@@ -26,7 +26,7 @@ Application until a separate operator-approved cutover replaces it.
 - `manifests/namespace.yaml` declares the `metallb-system` namespace and required
   privileged Pod Security labels for the speaker on Talos nodes.
 - `manifests/metallb-l2-config.yaml` declares the placeholder
-  `maintenance-onprem-ingress` `IPAddressPool` plus the `maintenance-onprem-l2`
+  `console-onprem-ingress` `IPAddressPool` plus the `console-onprem-l2`
   `L2Advertisement`.
 
 The sibling oyatie infra sources available locally provide Talos/Cilium/control-
@@ -49,20 +49,20 @@ Complete and record these before any manual sync:
    own the ingress VIP. Label intended VIP-capable workers if the site needs an
    explicit selector, for example:
    ```sh
-   kubectl label node <worker-a> maintenance.nousresearch.com/ingress-vip-node=true
-   kubectl label node <worker-b> maintenance.nousresearch.com/ingress-vip-node=true
+   kubectl label node <worker-a> console.nousresearch.com/ingress-vip-node=true
+   kubectl label node <worker-b> console.nousresearch.com/ingress-vip-node=true
    ```
 3. Reserve the ingress VIP or VIP pool outside DHCP and router-managed ranges.
    Record the VLAN/subnet, gateway, DNS name, and owner. Do **not** use the OCI
    reserved address `140.245.68.253`.
 4. Replace the documentation-only `10.0.0.240/32` address in
    `manifests/metallb-l2-config.yaml` with the reserved on-prem VIP or pool.
-   Add `interfaces` and/or `nodeSelectors` to `maintenance-onprem-l2` if the
+   Add `interfaces` and/or `nodeSelectors` to `console-onprem-l2` if the
    fabric should advertise only from specific NICs or workers.
 5. Confirm the on-prem Traefik variant in `deploy/apps/traefik-onprem/` is the
    intended consumer. It uses `Service type=LoadBalancer` and explicitly requests
-   the `maintenance-onprem-ingress` pool with
-   `metallb.universe.tf/address-pool: maintenance-onprem-ingress`.
+   the `console-onprem-ingress` pool with
+   `metallb.universe.tf/address-pool: console-onprem-ingress`.
 6. Keep the live OCI `traefik` Application intact until cutover. Do not sync
    `traefik-onprem` side-by-side with the live OCI hostPort Application in the
    same cluster.
@@ -128,7 +128,7 @@ Expected success signals:
    it from the expected pool:
    ```sh
    kubectl -n traefik get svc traefik -o wide
-   kubectl -n traefik describe svc traefik | grep -E "LoadBalancer Ingress|metallb|maintenance-onprem-ingress"
+   kubectl -n traefik describe svc traefik | grep -E "LoadBalancer Ingress|metallb|console-onprem-ingress"
    ```
 5. Move DNS or upstream routing to the VIP only after the service is healthy and
    the failover validation below passes. Record the DNS TTL, old target, new VIP,
@@ -190,7 +190,7 @@ from an operator shell with cluster admin access.
 Troubleshooting checks:
 
 - VIP does not assign: verify the Traefik Service annotation names
-  `maintenance-onprem-ingress`, the pool has `autoAssign: false`, and the Service
+  `console-onprem-ingress`, the pool has `autoAssign: false`, and the Service
   requests the pool explicitly.
 - VIP does not ARP: verify all selected workers are on the same L2 segment,
   `L2Advertisement` selectors/interfaces match real node labels/NIC names, and

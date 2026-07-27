@@ -10,13 +10,13 @@
 //! rather than a separate 4-crate hexagon — one vertical slice, no speculative
 //! ports. Split it out if a second consumer ever appears.
 
-use mnt_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext, UserId};
-use mnt_platform_authz::cedar_pbac::authoring::{
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext, UserId};
+use console_platform_authz::cedar_pbac::authoring::{
     self, AuthoredPolicy, DeclaredAttr, DraftValidation, NoCodeBlocks, ReviewDecision,
     ReviewStatus, SimRequest, SimulationOutcome,
 };
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sha2::{Digest, Sha256};
 use sqlx::{PgConnection, PgPool, Row};
 use time::OffsetDateTime;

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Live denied-traffic smoke for deploy/apps/maintenance/base/networkpolicy.yaml.
+# Live denied-traffic smoke for deploy/apps/console/base/networkpolicy.yaml.
 #
 # The smoke creates temporary pods in the target namespace:
-# - an app=mnt-web HTTP target on port 8080, which the checked-in ingress policy
+# - an app=console-web HTTP target on port 8080, which the checked-in ingress policy
 #   allows from same-namespace pods;
 # - an unlabeled control client, which should reach that target; and
-# - an app=mnt-app policy client, selected by default-deny-egress-app-tier, which
+# - an app=console-app policy client, selected by default-deny-egress-app-tier, which
 #   should resolve DNS, reach outbound HTTPS, optionally reach CNPG Postgres on
 #   TCP/5432 when the database Service exists, and be denied when it tries to
 #   reach the non-allowed same-namespace HTTP target on TCP/8080.
@@ -16,76 +16,76 @@
 set -euo pipefail
 
 KUBECTL="${KUBECTL:-kubectl}"
-NAMESPACE="${MNT_NETWORKPOLICY_NAMESPACE:-maintenance}"
-EXPECTED_ENFORCER="${MNT_NETWORKPOLICY_EXPECTED_ENFORCER:-auto}"
-CLIENT_IMAGE="${MNT_NETWORKPOLICY_SMOKE_CLIENT_IMAGE:-curlimages/curl:8.11.1}"
-TARGET_IMAGE="${MNT_NETWORKPOLICY_SMOKE_TARGET_IMAGE:-nginxinc/nginx-unprivileged:1.27-alpine}"
-POSTGRES_CLIENT_IMAGE="${MNT_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE:-postgres:18-alpine}"
-RUN_ID="${MNT_NETWORKPOLICY_SMOKE_RUN_ID:-$(date +%s)-$$}"
-NAME_PREFIX="${MNT_NETWORKPOLICY_SMOKE_NAME:-mnt-netpol-smoke}"
-WAIT_TIMEOUT="${MNT_NETWORKPOLICY_SMOKE_WAIT_TIMEOUT:-90s}"
-CURL_CONNECT_TIMEOUT="${MNT_NETWORKPOLICY_SMOKE_CONNECT_TIMEOUT_SECONDS:-3}"
-CURL_MAX_TIME="${MNT_NETWORKPOLICY_SMOKE_MAX_TIME_SECONDS:-8}"
-KEEP_RESOURCES="${MNT_NETWORKPOLICY_SMOKE_KEEP:-0}"
-DNS_NAME="${MNT_NETWORKPOLICY_SMOKE_DNS_NAME:-kubernetes.default.svc.cluster.local}"
-HTTPS_URL="${MNT_NETWORKPOLICY_SMOKE_HTTPS_URL:-https://example.com/}"
-POSTGRES_CHECK="${MNT_NETWORKPOLICY_SMOKE_POSTGRES:-auto}"
-POSTGRES_SERVICE="${MNT_NETWORKPOLICY_SMOKE_POSTGRES_SERVICE:-mnt-db-rw}"
-POSTGRES_PORT="${MNT_NETWORKPOLICY_SMOKE_POSTGRES_PORT:-5432}"
-LABEL_KEY="maintenance.nousresearch.com/networkpolicy-smoke"
+NAMESPACE="${CONSOLE_NETWORKPOLICY_NAMESPACE:-maintenance}"
+EXPECTED_ENFORCER="${CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER:-auto}"
+CLIENT_IMAGE="${CONSOLE_NETWORKPOLICY_SMOKE_CLIENT_IMAGE:-curlimages/curl:8.11.1}"
+TARGET_IMAGE="${CONSOLE_NETWORKPOLICY_SMOKE_TARGET_IMAGE:-nginxinc/nginx-unprivileged:1.27-alpine}"
+POSTGRES_CLIENT_IMAGE="${CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE:-postgres:18-alpine}"
+RUN_ID="${CONSOLE_NETWORKPOLICY_SMOKE_RUN_ID:-$(date +%s)-$$}"
+NAME_PREFIX="${CONSOLE_NETWORKPOLICY_SMOKE_NAME:-console-netpol-smoke}"
+WAIT_TIMEOUT="${CONSOLE_NETWORKPOLICY_SMOKE_WAIT_TIMEOUT:-90s}"
+CURL_CONNECT_TIMEOUT="${CONSOLE_NETWORKPOLICY_SMOKE_CONNECT_TIMEOUT_SECONDS:-3}"
+CURL_MAX_TIME="${CONSOLE_NETWORKPOLICY_SMOKE_MAX_TIME_SECONDS:-8}"
+KEEP_RESOURCES="${CONSOLE_NETWORKPOLICY_SMOKE_KEEP:-0}"
+DNS_NAME="${CONSOLE_NETWORKPOLICY_SMOKE_DNS_NAME:-kubernetes.default.svc.cluster.local}"
+HTTPS_URL="${CONSOLE_NETWORKPOLICY_SMOKE_HTTPS_URL:-https://example.com/}"
+POSTGRES_CHECK="${CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES:-auto}"
+POSTGRES_SERVICE="${CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_SERVICE:-console-db-rw}"
+POSTGRES_PORT="${CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_PORT:-5432}"
+LABEL_KEY="console.nousresearch.com/networkpolicy-smoke"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'USAGE'
 Usage: scripts/smoke-networkpolicy-deny.sh
 
-Runs a live denied-traffic smoke test for deploy/apps/maintenance/base/networkpolicy.yaml.
+Runs a live denied-traffic smoke test for deploy/apps/console/base/networkpolicy.yaml.
 This requires a real Kubernetes cluster where NetworkPolicy is enforced by a
 policy-capable CNI such as Cilium, Calico, Canal (flannel dataplane + Calico
 policy), Antrea, kube-router, or OVN-Kubernetes. Plain flannel is expected to
 fail the preflight and is not valid evidence.
 
 What the smoke proves:
-  1. an unlabeled same-namespace control pod can reach a temporary app=mnt-web
+  1. an unlabeled same-namespace control pod can reach a temporary app=console-web
      HTTP target on TCP/8080, proving the target Service and ingress allow path;
-  2. a temporary app=mnt-app pod can use kube-dns and outbound HTTPS on TCP/443,
+  2. a temporary app=console-app pod can use kube-dns and outbound HTTPS on TCP/443,
      matching allow-app-egress-dns and allow-app-egress-https;
-  3. when the CloudNativePG mnt-db Service exists, an app=mnt-app Postgres client
-     can reach mnt-db-rw:5432, matching allow-app-egress-postgres plus
+  3. when the CloudNativePG console-db Service exists, an app=console-app Postgres client
+     can reach console-db-rw:5432, matching allow-app-egress-postgres plus
      allow-postgres-from-app;
-  4. that same app=mnt-app pod cannot reach the HTTP target on TCP/8080,
+  4. that same app=console-app pod cannot reach the HTTP target on TCP/8080,
      proving default-deny-egress-app-tier denies non-allowed app-tier egress.
 
 Environment:
   KUBECTL=kubectl
       kubectl binary to use.
-  MNT_NETWORKPOLICY_NAMESPACE=maintenance
+  CONSOLE_NETWORKPOLICY_NAMESPACE=maintenance
       Namespace containing the applied Maintenance NetworkPolicies.
-  MNT_NETWORKPOLICY_EXPECTED_ENFORCER=auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes
+  CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes
       Expected live policy enforcer passed to check-networkpolicy-enforcement.sh.
-  MNT_NETWORKPOLICY_SMOKE_CLIENT_IMAGE=curlimages/curl:8.11.1
+  CONSOLE_NETWORKPOLICY_SMOKE_CLIENT_IMAGE=curlimages/curl:8.11.1
       Client image used for control and app-policy pods. Override to an internal
       registry mirror when the target cluster blocks public pulls.
-  MNT_NETWORKPOLICY_SMOKE_TARGET_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
+  CONSOLE_NETWORKPOLICY_SMOKE_TARGET_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
       Non-root HTTP target image. Override to an approved internal mirror when needed.
-  MNT_NETWORKPOLICY_SMOKE_DNS_NAME=kubernetes.default.svc.cluster.local
+  CONSOLE_NETWORKPOLICY_SMOKE_DNS_NAME=kubernetes.default.svc.cluster.local
       Name resolved from the app-labelled client to prove DNS egress is allowed.
-  MNT_NETWORKPOLICY_SMOKE_HTTPS_URL=https://example.com/
+  CONSOLE_NETWORKPOLICY_SMOKE_HTTPS_URL=https://example.com/
       HTTPS URL fetched from the app-labelled client to prove outbound TCP/443 is
       allowed. Override to an approved reachable HTTPS endpoint if egress is
       restricted to a site proxy or private mirror.
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES=auto|required|skip
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto|required|skip
       auto (default) runs the Postgres TCP check when the Service exists and skips
       it otherwise; required fails when the Service is missing; skip disables it.
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES_SERVICE=mnt-db-rw
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_SERVICE=console-db-rw
       CloudNativePG read/write Service used for the intra-namespace Postgres check.
-  MNT_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE=postgres:18-alpine
+  CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_CLIENT_IMAGE=postgres:18-alpine
       Client image used for pg_isready; override to an internal registry mirror.
-  MNT_NETWORKPOLICY_SMOKE_NAME=mnt-netpol-smoke
+  CONSOLE_NETWORKPOLICY_SMOKE_NAME=console-netpol-smoke
       DNS-label-safe resource name prefix. The script appends a unique run id.
-  MNT_NETWORKPOLICY_SMOKE_RUN_ID=<dns-label-suffix>
+  CONSOLE_NETWORKPOLICY_SMOKE_RUN_ID=<dns-label-suffix>
       Optional lowercase run suffix for reproducibility; default is timestamp-pid.
-  MNT_NETWORKPOLICY_SMOKE_KEEP=1
+  CONSOLE_NETWORKPOLICY_SMOKE_KEEP=1
       Keep temporary pods/service for debugging instead of cleaning them up.
 
 Pass/fail interpretation:
@@ -137,17 +137,17 @@ validate_positive_integer() {
 }
 
 require_command "${KUBECTL}"
-validate_dns_label "MNT_NETWORKPOLICY_SMOKE_NAME" "${NAME_PREFIX}"
-validate_dns_label "MNT_NETWORKPOLICY_SMOKE_RUN_ID" "${RUN_ID}"
-validate_positive_integer "MNT_NETWORKPOLICY_SMOKE_CONNECT_TIMEOUT_SECONDS" "${CURL_CONNECT_TIMEOUT}"
-validate_positive_integer "MNT_NETWORKPOLICY_SMOKE_MAX_TIME_SECONDS" "${CURL_MAX_TIME}"
-validate_positive_integer "MNT_NETWORKPOLICY_SMOKE_POSTGRES_PORT" "${POSTGRES_PORT}"
+validate_dns_label "CONSOLE_NETWORKPOLICY_SMOKE_NAME" "${NAME_PREFIX}"
+validate_dns_label "CONSOLE_NETWORKPOLICY_SMOKE_RUN_ID" "${RUN_ID}"
+validate_positive_integer "CONSOLE_NETWORKPOLICY_SMOKE_CONNECT_TIMEOUT_SECONDS" "${CURL_CONNECT_TIMEOUT}"
+validate_positive_integer "CONSOLE_NETWORKPOLICY_SMOKE_MAX_TIME_SECONDS" "${CURL_MAX_TIME}"
+validate_positive_integer "CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES_PORT" "${POSTGRES_PORT}"
 
 case "${POSTGRES_CHECK}" in
   auto|required|skip)
     ;;
   *)
-    fail "invalid MNT_NETWORKPOLICY_SMOKE_POSTGRES=${POSTGRES_CHECK}; expected auto, required, or skip"
+    fail "invalid CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=${POSTGRES_CHECK}; expected auto, required, or skip"
     ;;
 esac
 
@@ -162,7 +162,7 @@ APP_CLIENT_POD="${BASE_NAME}-app"
 POSTGRES_CLIENT_POD="${BASE_NAME}-pg"
 TARGET_SERVICE="${BASE_NAME}-target"
 TARGET_URL="http://${TARGET_SERVICE}.${NAMESPACE}.svc.cluster.local:8080/"
-MANIFEST="$(mktemp "${TMPDIR:-/tmp}/mnt-networkpolicy-smoke.XXXXXX.yaml")"
+MANIFEST="$(mktemp "${TMPDIR:-/tmp}/console-networkpolicy-smoke.XXXXXX.yaml")"
 CREATED=0
 
 cleanup() {
@@ -183,7 +183,7 @@ case "${EXPECTED_ENFORCER}" in
   auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes)
     ;;
   *)
-    fail "invalid MNT_NETWORKPOLICY_EXPECTED_ENFORCER=${EXPECTED_ENFORCER}"
+    fail "invalid CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=${EXPECTED_ENFORCER}"
     ;;
 esac
 
@@ -196,9 +196,9 @@ echo "networkpolicy-deny-smoke: context=${context} namespace=${NAMESPACE} expect
 
 echo "networkpolicy-deny-smoke: running policy-capable CNI/readback preflight"
 KUBECTL="${KUBECTL}" \
-MNT_NETWORKPOLICY_NAMESPACE="${NAMESPACE}" \
-MNT_NETWORKPOLICY_PREFLIGHT=require \
-MNT_NETWORKPOLICY_EXPECTED_ENFORCER="${EXPECTED_ENFORCER}" \
+CONSOLE_NETWORKPOLICY_NAMESPACE="${NAMESPACE}" \
+CONSOLE_NETWORKPOLICY_PREFLIGHT=require \
+CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER="${EXPECTED_ENFORCER}" \
   "${SCRIPT_DIR}/check-networkpolicy-enforcement.sh"
 
 required_policies=(
@@ -212,7 +212,7 @@ required_policies=(
 )
 for policy in "${required_policies[@]}"; do
   if ! "${KUBECTL}" -n "${NAMESPACE}" get networkpolicy "${policy}" >/dev/null 2>&1; then
-    fail "missing required NetworkPolicy ${NAMESPACE}/${policy}; apply deploy/apps/maintenance/base/networkpolicy.yaml before running the smoke"
+    fail "missing required NetworkPolicy ${NAMESPACE}/${policy}; apply deploy/apps/console/base/networkpolicy.yaml before running the smoke"
   fi
 done
 
@@ -221,9 +221,9 @@ if [[ "${POSTGRES_CHECK}" != "skip" ]]; then
   if "${KUBECTL}" -n "${NAMESPACE}" get service "${POSTGRES_SERVICE}" >/dev/null 2>&1; then
     POSTGRES_AVAILABLE=1
   elif [[ "${POSTGRES_CHECK}" == "required" ]]; then
-    fail "missing Postgres Service ${NAMESPACE}/${POSTGRES_SERVICE}; set MNT_NETWORKPOLICY_SMOKE_POSTGRES=skip only when the database is intentionally absent"
+    fail "missing Postgres Service ${NAMESPACE}/${POSTGRES_SERVICE}; set CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=skip only when the database is intentionally absent"
   else
-    echo "networkpolicy-deny-smoke: skipping Postgres path; Service ${NAMESPACE}/${POSTGRES_SERVICE} not found (set MNT_NETWORKPOLICY_SMOKE_POSTGRES=required to fail closed)"
+    echo "networkpolicy-deny-smoke: skipping Postgres path; Service ${NAMESPACE}/${POSTGRES_SERVICE} not found (set CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=required to fail closed)"
   fi
 fi
 
@@ -234,7 +234,7 @@ metadata:
   name: ${TARGET_POD}
   namespace: ${NAMESPACE}
   labels:
-    app: mnt-web
+    app: console-web
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   restartPolicy: Never
@@ -267,7 +267,7 @@ metadata:
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   selector:
-    app: mnt-web
+    app: console-web
     ${LABEL_KEY}: ${RUN_ID}
   ports:
     - name: http
@@ -307,7 +307,7 @@ metadata:
   name: ${APP_CLIENT_POD}
   namespace: ${NAMESPACE}
   labels:
-    app: mnt-app
+    app: console-app
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   restartPolicy: Never
@@ -338,7 +338,7 @@ metadata:
   name: ${POSTGRES_CLIENT_POD}
   namespace: ${NAMESPACE}
   labels:
-    app: mnt-app
+    app: console-app
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   restartPolicy: Never
@@ -387,7 +387,7 @@ run_dns_lookup() {
       elif command -v getent >/dev/null 2>&1; then
         getent hosts "$name"
       else
-        echo "client image lacks nslookup/getent; override MNT_NETWORKPOLICY_SMOKE_CLIENT_IMAGE" >&2
+        echo "client image lacks nslookup/getent; override CONSOLE_NETWORKPOLICY_SMOKE_CLIENT_IMAGE" >&2
         exit 127
       fi
     ' sh "${DNS_NAME}"
@@ -399,13 +399,13 @@ if ! control_output="$(run_curl "${CONTROL_POD}" "${TARGET_URL}" 2>&1)"; then
 fi
 echo "networkpolicy-deny-smoke: control path PASS (${#control_output} bytes from target)"
 
-echo "networkpolicy-deny-smoke: checking allowed DNS path ${APP_CLIENT_POD} (app=mnt-app) -> ${DNS_NAME}"
+echo "networkpolicy-deny-smoke: checking allowed DNS path ${APP_CLIENT_POD} (app=console-app) -> ${DNS_NAME}"
 if ! dns_output="$(run_dns_lookup 2>&1)"; then
   fail "app-labelled pod could not resolve ${DNS_NAME}; allow-app-egress-dns is not proven. Output: ${dns_output}"
 fi
 echo "networkpolicy-deny-smoke: DNS path PASS (${DNS_NAME})"
 
-echo "networkpolicy-deny-smoke: checking allowed outbound HTTPS path ${APP_CLIENT_POD} (app=mnt-app) -> ${HTTPS_URL}"
+echo "networkpolicy-deny-smoke: checking allowed outbound HTTPS path ${APP_CLIENT_POD} (app=console-app) -> ${HTTPS_URL}"
 if ! https_output="$(run_curl "${APP_CLIENT_POD}" "${HTTPS_URL}" 2>&1)"; then
   fail "app-labelled pod could not reach ${HTTPS_URL}; allow-app-egress-https is not proven. Output: ${https_output}"
 fi
@@ -413,14 +413,14 @@ echo "networkpolicy-deny-smoke: HTTPS path PASS (${#https_output} bytes from tar
 
 if [[ "${POSTGRES_AVAILABLE}" -eq 1 ]]; then
   POSTGRES_HOST="${POSTGRES_SERVICE}.${NAMESPACE}.svc.cluster.local"
-  echo "networkpolicy-deny-smoke: checking allowed Postgres path ${POSTGRES_CLIENT_POD} (app=mnt-app) -> ${POSTGRES_HOST}:${POSTGRES_PORT}"
+  echo "networkpolicy-deny-smoke: checking allowed Postgres path ${POSTGRES_CLIENT_POD} (app=console-app) -> ${POSTGRES_HOST}:${POSTGRES_PORT}"
   if ! postgres_output="$("${KUBECTL}" -n "${NAMESPACE}" exec "${POSTGRES_CLIENT_POD}" -- pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -t "${CURL_CONNECT_TIMEOUT}" 2>&1)"; then
     fail "app-labelled Postgres client could not reach ${POSTGRES_HOST}:${POSTGRES_PORT}; allow-app-egress-postgres/allow-postgres-from-app are not proven. Output: ${postgres_output}"
   fi
   echo "networkpolicy-deny-smoke: Postgres path PASS (${postgres_output})"
 fi
 
-echo "networkpolicy-deny-smoke: checking denied app-tier path ${APP_CLIENT_POD} (app=mnt-app) -> ${TARGET_SERVICE}:8080"
+echo "networkpolicy-deny-smoke: checking denied app-tier path ${APP_CLIENT_POD} (app=console-app) -> ${TARGET_SERVICE}:8080"
 set +e
 denied_output="$(run_curl "${APP_CLIENT_POD}" "${TARGET_URL}" 2>&1)"
 denied_ec=$?

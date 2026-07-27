@@ -2,12 +2,12 @@
 
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
-use mnt_kernel_core::{
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_kernel_core::{
     AuditAction, AuditClassification, AuditEvent, AuditRequestContext, BranchId, OrgId,
     TraceContext, UserId,
 };
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -17,8 +17,8 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn admin_reads_only_branch_scoped_audits_and_read_access_is_audited(pool: PgPool) {
@@ -359,7 +359,7 @@ async fn target_id_filter_isolates_one_object_and_trace_id_correlates_across_obj
 }
 
 /// Regression for the #206 audit finding: the `/api/audit` read path never
-/// armed `app.current_org`, so as the real `mnt_rt` role the FORCE-RLS
+/// armed `app.current_org`, so as the real `console_rt` role the FORCE-RLS
 /// `audit_events` SELECT failed CLOSED (zero rows). A SUPER_ADMIN has
 /// `BranchScope::All`, so the branch filter is `WHERE TRUE` and ONLY the org
 /// GUC/RLS separates tenants — making this the sharpest proof of the fix.
@@ -420,7 +420,7 @@ async fn super_admin_audit_read_arms_org_and_isolates_cross_org_as_runtime_role(
     )
     .unwrap();
 
-    // Build the router off the `mnt_rt` pool so FORCE RLS actually applies —
+    // Build the router off the `console_rt` pool so FORCE RLS actually applies —
     // an owner/BYPASSRLS pool would mask the unarmed-GUC break.
     let service =
         build_router(app_state(runtime_role_pool(&pool).await, public_key_pem.clone()).unwrap());
@@ -453,7 +453,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -569,13 +569,13 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, mnt_app::AppError> {
+fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
-        ("MNT_APP_ROLE", AppRole::Api.to_string()),
-        ("MNT_HTTP_ADDR", "127.0.0.1:0".to_owned()),
-        ("MNT_JWT_ISSUER", TEST_ISSUER.to_owned()),
-        ("MNT_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
-        ("MNT_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))

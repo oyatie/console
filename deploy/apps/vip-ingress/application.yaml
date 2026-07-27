@@ -8,10 +8,10 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1" # VIP provider must exist before an on-prem Traefik LoadBalancer sync.
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
-  project: maintenance-onprem-vip-ingress
+  project: console-onprem-vip-ingress
   sources:
     - repoURL: https://metallb.github.io/metallb
       chart: metallb
@@ -20,10 +20,10 @@ spec:
         releaseName: metallb
         valueFiles:
           - $values/deploy/apps/vip-ingress/values.yaml
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       ref: values
-    - repoURL: https://github.com/jason931225/maintenance.git
+    - repoURL: https://github.com/jason931225/console.git
       targetRevision: main
       path: deploy/apps/vip-ingress/manifests
   destination:

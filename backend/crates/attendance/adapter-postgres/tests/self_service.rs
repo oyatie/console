@@ -1,12 +1,12 @@
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 //! PostgreSQL/RLS regressions for linked-employee attendance self-service.
 
-use mnt_attendance_adapter_postgres::PgAttendanceStore;
-use mnt_attendance_application::{ListOwnExceptions, ReadOwnWeek52, SelfAttendanceScope};
-use mnt_attendance_domain::AttendanceDateRange;
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
+use console_attendance_adapter_postgres::PgAttendanceStore;
+use console_attendance_application::{ListOwnExceptions, ReadOwnWeek52, SelfAttendanceScope};
+use console_attendance_domain::AttendanceDateRange;
+use console_kernel_core::{OrgId, UserId};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{runtime_role_pool, seed_branch, seed_user};
 use sqlx::PgPool;
 use time::{Date, Month, UtcOffset};
 use uuid::Uuid;
@@ -145,13 +145,13 @@ async fn self_service_reads_only_the_linked_employee_and_ignores_other_malformed
 
 async fn seed_employee(
     pool: &PgPool,
-    branch: mnt_kernel_core::BranchId,
+    branch: console_kernel_core::BranchId,
     actor: UserId,
     name: &str,
 ) -> Uuid {
     let employee = Uuid::new_v4();
     let mut command = pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_cmd")
+    sqlx::query("SET LOCAL ROLE console_leave_cmd")
         .execute(&mut *command)
         .await
         .unwrap();

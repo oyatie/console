@@ -763,6 +763,2671 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-action-inbox-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-analytics-quant-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-analytics-quant-service",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "sqlx 0.9.0",
+]
+
+[[package]]
+name = "console-analytics-quant-service"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "console-app"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "calamine",
+ "chrono",
+ "chrono-tz",
+ "console-action-inbox-application",
+ "console-analytics-quant-rest",
+ "console-attendance-adapter-postgres",
+ "console-attendance-rest",
+ "console-benefit-adapter-postgres",
+ "console-benefit-rest",
+ "console-comms-adapter-imap",
+ "console-comms-adapter-postgres",
+ "console-comms-application",
+ "console-comms-credential-cipher",
+ "console-comms-rest",
+ "console-compliance-adapter-postgres",
+ "console-compliance-rest",
+ "console-consulting-rest",
+ "console-dispatch-adapter-postgres",
+ "console-dispatch-domain",
+ "console-dispatch-rest",
+ "console-dispatch-worker",
+ "console-docs-adapter-postgres",
+ "console-docs-rest",
+ "console-equipment-adapter-postgres",
+ "console-equipment-rest",
+ "console-erp-domain",
+ "console-evaluation-adapter-postgres",
+ "console-evaluation-rest",
+ "console-facilities-rest",
+ "console-finance-gl-adapter-postgres",
+ "console-finance-gl-rest",
+ "console-financial-adapter-postgres",
+ "console-financial-application",
+ "console-financial-domain",
+ "console-financial-rest",
+ "console-governance-adapter-postgres",
+ "console-governance-application",
+ "console-governance-domain",
+ "console-governance-rest",
+ "console-identity-adapter-postgres",
+ "console-identity-rest",
+ "console-inbox-adapter-postgres",
+ "console-inbox-rest",
+ "console-inspection-adapter-postgres",
+ "console-inspection-rest",
+ "console-integrity",
+ "console-inventory-adapter-postgres",
+ "console-inventory-rest",
+ "console-kernel-core",
+ "console-leave-adapter-postgres",
+ "console-leave-domain",
+ "console-leave-rest",
+ "console-logistics-adapter-postgres",
+ "console-logistics-rest",
+ "console-messenger-adapter-postgres",
+ "console-messenger-rest",
+ "console-notices-adapter-postgres",
+ "console-notices-rest",
+ "console-notifications-adapter-postgres",
+ "console-notifications-domain",
+ "console-notifications-rest",
+ "console-ontology-adapter-postgres",
+ "console-ontology-rest",
+ "console-orgchange-adapter-postgres",
+ "console-orgchange-rest",
+ "console-payroll-adapter-postgres",
+ "console-payroll-domain",
+ "console-payroll-rest",
+ "console-platform-audit-chain",
+ "console-platform-auth",
+ "console-platform-auth-rest",
+ "console-platform-authz",
+ "console-platform-authz-rest",
+ "console-platform-db",
+ "console-platform-email",
+ "console-platform-jobs",
+ "console-platform-provisioning",
+ "console-platform-push",
+ "console-platform-realtime",
+ "console-platform-request-context",
+ "console-platform-rest",
+ "console-platform-storage",
+ "console-production-rest",
+ "console-recruiting-adapter-postgres",
+ "console-recruiting-application",
+ "console-recruiting-domain",
+ "console-recruiting-rest",
+ "console-registry-adapter-postgres",
+ "console-registry-application",
+ "console-registry-domain",
+ "console-registry-rest",
+ "console-reporting-adapter-postgres",
+ "console-reporting-rest",
+ "console-sales-adapter-postgres",
+ "console-sales-rest",
+ "console-support-adapter-postgres",
+ "console-support-application",
+ "console-support-domain",
+ "console-support-rest",
+ "console-todos-adapter-postgres",
+ "console-todos-rest",
+ "console-workflow-domain",
+ "console-workflow-runtime",
+ "console-workflow-runtime-adapter-postgres",
+ "console-workorder-adapter-postgres",
+ "console-workorder-application",
+ "console-workorder-rest",
+ "croner",
+ "futures",
+ "hex",
+ "http",
+ "ipnet",
+ "jsonwebtoken",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "opentelemetry",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk",
+ "p256",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tower",
+ "tower-http 0.7.0",
+ "tracing",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+ "webauthn-authenticator-rs",
+ "webauthn-rs",
+]
+
+[[package]]
+name = "console-attendance-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-attendance-application",
+ "console-attendance-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-attendance-application"
+version = "0.1.0"
+dependencies = [
+ "console-attendance-domain",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-attendance-domain"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-attendance-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-attendance-adapter-postgres",
+ "console-attendance-application",
+ "console-attendance-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "metrics",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-benefit-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-benefit-application",
+ "console-benefit-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-benefit-application"
+version = "0.1.0"
+dependencies = [
+ "console-benefit-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-benefit-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-benefit-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-benefit-adapter-postgres",
+ "console-benefit-application",
+ "console-benefit-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-comms-adapter-imap"
+version = "0.1.0"
+dependencies = [
+ "async-imap",
+ "console-comms-application",
+ "console-comms-domain",
+ "console-kernel-core",
+ "futures",
+ "hickory-resolver",
+ "ipnet",
+ "mail-parser",
+ "rustls",
+ "secrecy",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tokio-rustls",
+ "tracing",
+ "webpki-roots 1.0.8",
+]
+
+[[package]]
+name = "console-comms-adapter-mox"
+version = "0.1.0"
+dependencies = [
+ "console-comms-application",
+ "console-comms-domain",
+ "console-kernel-core",
+ "reqwest",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "time",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "console-comms-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "console-comms-application",
+ "console-comms-credential-cipher",
+ "console-comms-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "secrecy",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-comms-adapter-smtp"
+version = "0.1.0"
+dependencies = [
+ "console-comms-application",
+ "console-comms-domain",
+ "console-kernel-core",
+ "hickory-resolver",
+ "ipnet",
+ "lettre",
+ "secrecy",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-comms-application"
+version = "0.1.0"
+dependencies = [
+ "console-comms-domain",
+ "console-kernel-core",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-comms-credential-cipher"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chacha20poly1305",
+ "console-comms-application",
+ "console-kernel-core",
+ "secrecy",
+ "zeroize",
+]
+
+[[package]]
+name = "console-comms-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-comms-mailbox"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "console-comms-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "console-comms-adapter-imap",
+ "console-comms-adapter-mox",
+ "console-comms-adapter-postgres",
+ "console-comms-adapter-smtp",
+ "console-comms-application",
+ "console-comms-credential-cipher",
+ "console-comms-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-storage",
+ "console-platform-test-support",
+ "p256",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "subtle",
+ "thiserror 2.0.18",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-compliance-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-compliance-application",
+ "console-compliance-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-compliance-application"
+version = "0.1.0"
+dependencies = [
+ "console-compliance-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-compliance-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-compliance-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-compliance-adapter-postgres",
+ "console-compliance-application",
+ "console-compliance-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "console-consulting-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "uuid",
+]
+
+[[package]]
+name = "console-dispatch-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-dispatch-application",
+ "console-dispatch-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "console-workorder-application",
+ "console-workorder-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-dispatch-application"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "console-dispatch-domain",
+ "console-kernel-core",
+ "console-workorder-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-dispatch-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "thiserror 2.0.18",
+ "time",
+]
+
+[[package]]
+name = "console-dispatch-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-dispatch-adapter-postgres",
+ "console-dispatch-application",
+ "console-dispatch-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-jobs",
+ "console-platform-push",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-dispatch-worker"
+version = "0.1.0"
+dependencies = [
+ "console-dispatch-adapter-postgres",
+ "console-dispatch-application",
+ "console-dispatch-domain",
+ "console-kernel-core",
+ "console-platform-jobs",
+ "console-platform-push",
+ "console-platform-request-context",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-docs-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-docs-application",
+ "console-docs-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-docs-application"
+version = "0.1.0"
+dependencies = [
+ "console-docs-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "console-docs-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-docs-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "console-docs-adapter-postgres",
+ "console-docs-application",
+ "console-docs-domain",
+ "console-governance-adapter-postgres",
+ "console-governance-application",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-storage",
+ "console-platform-test-support",
+ "hex",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-equipment-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-equipment-application",
+ "console-equipment-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-equipment-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-equipment-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-equipment-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-equipment-adapter-postgres",
+ "console-equipment-application",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-erp-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "time",
+]
+
+[[package]]
+name = "console-evaluation-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-evaluation-application",
+ "console-evaluation-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-evaluation-application"
+version = "0.1.0"
+dependencies = [
+ "console-evaluation-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-evaluation-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-evaluation-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-evaluation-adapter-postgres",
+ "console-evaluation-application",
+ "console-evaluation-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-facilities-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-finance-gl-adapter-postgres"
+version = "0.0.0"
+dependencies = [
+ "console-finance-gl-application",
+ "console-finance-gl-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-finance-gl-application"
+version = "0.0.0"
+dependencies = [
+ "console-finance-gl-domain",
+ "console-kernel-core",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-finance-gl-domain"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "uuid",
+]
+
+[[package]]
+name = "console-finance-gl-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-finance-gl-adapter-postgres",
+ "console-finance-gl-application",
+ "console-finance-gl-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "sqlx 0.9.0",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-financial-adapter-postgres"
+version = "0.0.0"
+dependencies = [
+ "console-financial-application",
+ "console-financial-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-financial-application"
+version = "0.0.0"
+dependencies = [
+ "console-financial-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-financial-domain"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-financial-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-financial-adapter-postgres",
+ "console-financial-application",
+ "console-financial-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-storage",
+ "console-platform-test-support",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-gate-audit-coverage"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-dev-auth-absence"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
+name = "console-gate-iac-tier"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-layer-boundary"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-gate-migration-safety"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-pii-no-logs"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-rls-arming"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-tenant-isolation"
+version = "0.1.0"
+dependencies = [
+ "sqlx 0.9.0",
+ "tokio",
+]
+
+[[package]]
+name = "console-gate-vendor-lockin"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-governance-adapter-postgres"
+version = "0.0.0"
+dependencies = [
+ "console-governance-application",
+ "console-governance-domain",
+ "console-kernel-core",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-governance-application"
+version = "0.0.0"
+dependencies = [
+ "console-governance-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-governance-domain"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-governance-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-governance-adapter-postgres",
+ "console-governance-application",
+ "console-governance-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-identity-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-identity-application",
+ "console-identity-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-identity-application"
+version = "0.1.0"
+dependencies = [
+ "console-identity-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "console-identity-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "time",
+]
+
+[[package]]
+name = "console-identity-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-identity-adapter-postgres",
+ "console-identity-application",
+ "console-identity-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "futures",
+ "http",
+ "metrics",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+ "webauthn-authenticator-rs",
+]
+
+[[package]]
+name = "console-inbox-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-inbox-application",
+ "console-inbox-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-inbox-application"
+version = "0.1.0"
+dependencies = [
+ "console-inbox-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-inbox-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-inbox-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-inbox-adapter-postgres",
+ "console-inbox-application",
+ "console-inbox-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+ "webauthn-authenticator-rs",
+]
+
+[[package]]
+name = "console-inspection-adapter-postgres"
+version = "0.0.0"
+dependencies = [
+ "console-inspection-application",
+ "console-inspection-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-inspection-application"
+version = "0.0.0"
+dependencies = [
+ "console-inspection-domain",
+ "console-kernel-core",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-inspection-domain"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-inspection-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-inspection-adapter-postgres",
+ "console-inspection-application",
+ "console-inspection-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "sqlx 0.9.0",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-integrity"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-inventory-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-inventory-application",
+ "console-inventory-domain",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-inventory-application"
+version = "0.1.0"
+dependencies = [
+ "console-inventory-domain",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-inventory-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-inventory-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-inventory-adapter-postgres",
+ "console-inventory-application",
+ "console-inventory-domain",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-kernel-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-leave-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-governance-domain",
+ "console-inbox-adapter-postgres",
+ "console-inbox-application",
+ "console-inbox-domain",
+ "console-kernel-core",
+ "console-leave-application",
+ "console-leave-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-leave-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-leave-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-leave-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-leave-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-inbox-adapter-postgres",
+ "console-kernel-core",
+ "console-leave-adapter-postgres",
+ "console-leave-application",
+ "console-leave-domain",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-logistics-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-logistics-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-logistics-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-logistics-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-logistics-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-logistics-adapter-postgres",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-messenger-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-messenger-application",
+ "console-messenger-domain",
+ "console-notifications-adapter-postgres",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-workorder-application",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-messenger-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-messenger-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-messenger-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-messenger-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-messenger-adapter-postgres",
+ "console-messenger-application",
+ "console-messenger-domain",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-notices-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-notices-application",
+ "console-notices-domain",
+ "console-notifications-adapter-postgres",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-notices-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-notices-domain",
+ "serde",
+ "time",
+]
+
+[[package]]
+name = "console-notices-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-notices-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-notices-adapter-postgres",
+ "console-notices-application",
+ "console-notices-domain",
+ "console-notifications-adapter-postgres",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-notifications-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "console-kernel-core",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-notifications-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-notifications-domain",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-notifications-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "console-notifications-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-notifications-adapter-postgres",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-ontology-adapter-postgres"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "console-ontology-domain",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-ontology-application"
+version = "0.0.0"
+dependencies = [
+ "console-governance-domain",
+ "console-kernel-core",
+ "console-ontology-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-ontology-domain"
+version = "0.0.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "uuid",
+]
+
+[[package]]
+name = "console-ontology-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-governance-adapter-postgres",
+ "console-governance-application",
+ "console-governance-domain",
+ "console-kernel-core",
+ "console-ontology-adapter-postgres",
+ "console-ontology-application",
+ "console-ontology-domain",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-authz-rest",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "console-registry-adapter-postgres",
+ "console-registry-application",
+ "console-registry-domain",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-orgchange-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-governance-domain",
+ "console-kernel-core",
+ "console-orgchange-domain",
+ "console-platform-db",
+ "console-platform-group",
+ "console-platform-request-context",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-orgchange-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-orgchange-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-orgchange-adapter-postgres",
+ "console-orgchange-domain",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-payroll-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-payroll-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-payroll-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "time",
+]
+
+[[package]]
+name = "console-payroll-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-inbox-adapter-postgres",
+ "console-inbox-application",
+ "console-inbox-domain",
+ "console-kernel-core",
+ "console-payroll-adapter-postgres",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-audit-chain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "futures",
+ "hex",
+ "ring",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-auth"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "jsonwebtoken",
+ "openssl",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "url",
+ "uuid",
+ "webauthn-authenticator-rs",
+ "webauthn-rs",
+]
+
+[[package]]
+name = "console-platform-auth-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-email",
+ "console-platform-group",
+ "console-platform-provisioning",
+ "console-platform-request-context",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-authz"
+version = "0.1.0"
+dependencies = [
+ "cedar-policy",
+ "console-kernel-core",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-authz-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-db"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-email"
+version = "0.1.0"
+dependencies = [
+ "lettre",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "console-platform-excel"
+version = "0.1.0"
+dependencies = [
+ "tempfile",
+ "umya-spreadsheet",
+]
+
+[[package]]
+name = "console-platform-group"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "serde",
+ "sqlx 0.9.0",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-jobs"
+version = "0.1.0"
+dependencies = [
+ "apalis",
+ "apalis-postgres",
+ "apalis-sql",
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "sqlx 0.8.6",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-provisioning"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-db",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "url",
+ "uuid",
+ "webauthn-authenticator-rs",
+]
+
+[[package]]
+name = "console-platform-push"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "hmac 0.13.0",
+ "jsonwebtoken",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-realtime"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-messenger-adapter-postgres",
+ "console-messenger-application",
+ "console-messenger-domain",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-auth",
+ "console-platform-db",
+ "console-platform-request-context",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-request-context"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-group",
+ "http",
+ "ipnet",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-ontology-adapter-postgres",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-provisioning",
+ "console-platform-request-context",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-storage"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-workorder-domain",
+ "hex",
+ "hmac 0.13.0",
+ "infer",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "console-platform-test-support"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "sqlx 0.9.0",
+ "uuid",
+]
+
+[[package]]
+name = "console-policy-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-policy-application",
+ "console-policy-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-policy-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-policy-domain",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-policy-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-production-rest"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "hmac 0.13.0",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "subtle",
+ "time",
+ "tokio",
+ "tower",
+ "uuid",
+]
+
+[[package]]
+name = "console-recruiting-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-recruiting-application",
+ "console-recruiting-domain",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-recruiting-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-recruiting-domain",
+ "time",
+]
+
+[[package]]
+name = "console-recruiting-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-recruiting-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "console-recruiting-adapter-postgres",
+ "console-recruiting-application",
+ "console-recruiting-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-registry-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "calamine",
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-registry-application",
+ "console-registry-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "umya-spreadsheet",
+ "uuid",
+]
+
+[[package]]
+name = "console-registry-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-registry-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-registry-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+]
+
+[[package]]
+name = "console-registry-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "console-registry-adapter-postgres",
+ "console-registry-application",
+ "console-registry-domain",
+ "http",
+ "metrics",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-reporting-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-excel",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "console-reporting-application",
+ "console-reporting-domain",
+ "console-workorder-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-reporting-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-reporting-domain",
+ "serde",
+ "thiserror 2.0.18",
+ "time",
+]
+
+[[package]]
+name = "console-reporting-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-reporting-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-reporting-adapter-postgres",
+ "console-reporting-application",
+ "console-reporting-domain",
+ "http",
+ "serde",
+ "sqlx 0.9.0",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-sales-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-sales-application",
+ "console-sales-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-sales-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-sales-domain",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "console-sales-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "console-sales-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-platform-storage",
+ "console-sales-adapter-postgres",
+ "console-sales-application",
+ "console-sales-domain",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-support-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-support-application",
+ "console-support-domain",
+ "hex",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-support-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-support-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-support-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "time",
+]
+
+[[package]]
+name = "console-support-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-push",
+ "console-platform-request-context",
+ "console-platform-test-support",
+ "console-support-adapter-postgres",
+ "console-support-application",
+ "console-support-domain",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-todos-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-todos-application",
+ "console-todos-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-todos-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-todos-domain",
+ "serde",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-todos-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "console-todos-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-request-context",
+ "console-todos-adapter-postgres",
+ "console-todos-application",
+ "console-todos-domain",
+ "serde",
+ "time",
+ "tracing",
+]
+
+[[package]]
+name = "console-workflow-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-workflow-runtime"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-authz",
+ "console-workflow-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-workflow-runtime-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-notifications-adapter-postgres",
+ "console-notifications-application",
+ "console-notifications-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-workflow-domain",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "console-workorder-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-messenger-adapter-postgres",
+ "console-messenger-application",
+ "console-messenger-domain",
+ "console-platform-db",
+ "console-platform-request-context",
+ "console-workorder-application",
+ "console-workorder-domain",
+ "serde",
+ "serde_json",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-workorder-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-workorder-domain",
+ "serde",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
+name = "console-workorder-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "console-workorder-rest"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "console-kernel-core",
+ "console-platform-auth",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-jobs",
+ "console-platform-request-context",
+ "console-platform-storage",
+ "console-platform-test-support",
+ "console-workflow-domain",
+ "console-workflow-runtime",
+ "console-workflow-runtime-adapter-postgres",
+ "console-workorder-adapter-postgres",
+ "console-workorder-application",
+ "console-workorder-domain",
+ "hex",
+ "http",
+ "p256",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "time",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2727,2671 +5392,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "mnt-action-inbox-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-analytics-quant-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-analytics-quant-service",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "sqlx 0.9.0",
-]
-
-[[package]]
-name = "mnt-analytics-quant-service"
-version = "0.1.0"
-dependencies = [
- "serde",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "mnt-app"
-version = "0.1.0"
-dependencies = [
- "axum",
- "base64 0.22.1",
- "calamine",
- "chrono",
- "chrono-tz",
- "croner",
- "futures",
- "hex",
- "http",
- "ipnet",
- "jsonwebtoken",
- "metrics",
- "metrics-exporter-prometheus",
- "mnt-action-inbox-application",
- "mnt-analytics-quant-rest",
- "mnt-attendance-adapter-postgres",
- "mnt-attendance-rest",
- "mnt-benefit-adapter-postgres",
- "mnt-benefit-rest",
- "mnt-comms-adapter-imap",
- "mnt-comms-adapter-postgres",
- "mnt-comms-application",
- "mnt-comms-credential-cipher",
- "mnt-comms-rest",
- "mnt-compliance-adapter-postgres",
- "mnt-compliance-rest",
- "mnt-consulting-rest",
- "mnt-dispatch-adapter-postgres",
- "mnt-dispatch-domain",
- "mnt-dispatch-rest",
- "mnt-dispatch-worker",
- "mnt-docs-adapter-postgres",
- "mnt-docs-rest",
- "mnt-equipment-adapter-postgres",
- "mnt-equipment-rest",
- "mnt-erp-domain",
- "mnt-evaluation-adapter-postgres",
- "mnt-evaluation-rest",
- "mnt-facilities-rest",
- "mnt-finance-gl-adapter-postgres",
- "mnt-finance-gl-rest",
- "mnt-financial-adapter-postgres",
- "mnt-financial-application",
- "mnt-financial-domain",
- "mnt-financial-rest",
- "mnt-governance-adapter-postgres",
- "mnt-governance-application",
- "mnt-governance-domain",
- "mnt-governance-rest",
- "mnt-identity-adapter-postgres",
- "mnt-identity-rest",
- "mnt-inbox-adapter-postgres",
- "mnt-inbox-rest",
- "mnt-inspection-adapter-postgres",
- "mnt-inspection-rest",
- "mnt-integrity",
- "mnt-inventory-adapter-postgres",
- "mnt-inventory-rest",
- "mnt-kernel-core",
- "mnt-leave-adapter-postgres",
- "mnt-leave-domain",
- "mnt-leave-rest",
- "mnt-logistics-adapter-postgres",
- "mnt-logistics-rest",
- "mnt-messenger-adapter-postgres",
- "mnt-messenger-rest",
- "mnt-notices-adapter-postgres",
- "mnt-notices-rest",
- "mnt-notifications-adapter-postgres",
- "mnt-notifications-domain",
- "mnt-notifications-rest",
- "mnt-ontology-adapter-postgres",
- "mnt-ontology-rest",
- "mnt-orgchange-adapter-postgres",
- "mnt-orgchange-rest",
- "mnt-payroll-adapter-postgres",
- "mnt-payroll-domain",
- "mnt-payroll-rest",
- "mnt-platform-audit-chain",
- "mnt-platform-auth",
- "mnt-platform-auth-rest",
- "mnt-platform-authz",
- "mnt-platform-authz-rest",
- "mnt-platform-db",
- "mnt-platform-email",
- "mnt-platform-jobs",
- "mnt-platform-provisioning",
- "mnt-platform-push",
- "mnt-platform-realtime",
- "mnt-platform-request-context",
- "mnt-platform-rest",
- "mnt-platform-storage",
- "mnt-production-rest",
- "mnt-recruiting-adapter-postgres",
- "mnt-recruiting-application",
- "mnt-recruiting-domain",
- "mnt-recruiting-rest",
- "mnt-registry-adapter-postgres",
- "mnt-registry-application",
- "mnt-registry-domain",
- "mnt-registry-rest",
- "mnt-reporting-adapter-postgres",
- "mnt-reporting-rest",
- "mnt-sales-adapter-postgres",
- "mnt-sales-rest",
- "mnt-support-adapter-postgres",
- "mnt-support-application",
- "mnt-support-domain",
- "mnt-support-rest",
- "mnt-todos-adapter-postgres",
- "mnt-todos-rest",
- "mnt-workflow-domain",
- "mnt-workflow-runtime",
- "mnt-workflow-runtime-adapter-postgres",
- "mnt-workorder-adapter-postgres",
- "mnt-workorder-application",
- "mnt-workorder-rest",
- "opentelemetry",
- "opentelemetry-otlp",
- "opentelemetry_sdk",
- "p256",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tower",
- "tower-http 0.7.0",
- "tracing",
- "tracing-opentelemetry",
- "tracing-subscriber",
- "url",
- "uuid",
- "webauthn-authenticator-rs",
- "webauthn-rs",
-]
-
-[[package]]
-name = "mnt-attendance-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-attendance-application",
- "mnt-attendance-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-attendance-application"
-version = "0.1.0"
-dependencies = [
- "mnt-attendance-domain",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-attendance-domain"
-version = "0.1.0"
-dependencies = [
- "serde",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-attendance-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "metrics",
- "mnt-attendance-adapter-postgres",
- "mnt-attendance-application",
- "mnt-attendance-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-benefit-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-benefit-application",
- "mnt-benefit-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-benefit-application"
-version = "0.1.0"
-dependencies = [
- "mnt-benefit-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-benefit-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-benefit-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-benefit-adapter-postgres",
- "mnt-benefit-application",
- "mnt-benefit-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-comms-adapter-imap"
-version = "0.1.0"
-dependencies = [
- "async-imap",
- "futures",
- "hickory-resolver",
- "ipnet",
- "mail-parser",
- "mnt-comms-application",
- "mnt-comms-domain",
- "mnt-kernel-core",
- "rustls",
- "secrecy",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tokio-rustls",
- "tracing",
- "webpki-roots 1.0.8",
-]
-
-[[package]]
-name = "mnt-comms-adapter-mox"
-version = "0.1.0"
-dependencies = [
- "mnt-comms-application",
- "mnt-comms-domain",
- "mnt-kernel-core",
- "reqwest",
- "secrecy",
- "serde",
- "serde_json",
- "time",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "mnt-comms-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "mnt-comms-application",
- "mnt-comms-credential-cipher",
- "mnt-comms-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "secrecy",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-comms-adapter-smtp"
-version = "0.1.0"
-dependencies = [
- "hickory-resolver",
- "ipnet",
- "lettre",
- "mnt-comms-application",
- "mnt-comms-domain",
- "mnt-kernel-core",
- "secrecy",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-comms-application"
-version = "0.1.0"
-dependencies = [
- "mnt-comms-domain",
- "mnt-kernel-core",
- "secrecy",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-comms-credential-cipher"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "chacha20poly1305",
- "mnt-comms-application",
- "mnt-kernel-core",
- "secrecy",
- "zeroize",
-]
-
-[[package]]
-name = "mnt-comms-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-comms-mailbox"
-version = "0.1.0"
-dependencies = [
- "serde",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "mnt-comms-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "base64 0.22.1",
- "mnt-comms-adapter-imap",
- "mnt-comms-adapter-mox",
- "mnt-comms-adapter-postgres",
- "mnt-comms-adapter-smtp",
- "mnt-comms-application",
- "mnt-comms-credential-cipher",
- "mnt-comms-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-storage",
- "mnt-platform-test-support",
- "p256",
- "secrecy",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "subtle",
- "thiserror 2.0.18",
- "time",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-compliance-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-compliance-application",
- "mnt-compliance-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-compliance-application"
-version = "0.1.0"
-dependencies = [
- "mnt-compliance-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-compliance-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-compliance-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-compliance-adapter-postgres",
- "mnt-compliance-application",
- "mnt-compliance-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
-]
-
-[[package]]
-name = "mnt-consulting-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "uuid",
-]
-
-[[package]]
-name = "mnt-dispatch-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-dispatch-application",
- "mnt-dispatch-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "mnt-workorder-application",
- "mnt-workorder-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-dispatch-application"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "mnt-dispatch-domain",
- "mnt-kernel-core",
- "mnt-workorder-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-dispatch-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "thiserror 2.0.18",
- "time",
-]
-
-[[package]]
-name = "mnt-dispatch-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-dispatch-adapter-postgres",
- "mnt-dispatch-application",
- "mnt-dispatch-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-jobs",
- "mnt-platform-push",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-dispatch-worker"
-version = "0.1.0"
-dependencies = [
- "mnt-dispatch-adapter-postgres",
- "mnt-dispatch-application",
- "mnt-dispatch-domain",
- "mnt-kernel-core",
- "mnt-platform-jobs",
- "mnt-platform-push",
- "mnt-platform-request-context",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-docs-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-docs-application",
- "mnt-docs-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-docs-application"
-version = "0.1.0"
-dependencies = [
- "mnt-docs-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
-]
-
-[[package]]
-name = "mnt-docs-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-docs-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "base64 0.22.1",
- "hex",
- "mnt-docs-adapter-postgres",
- "mnt-docs-application",
- "mnt-docs-domain",
- "mnt-governance-adapter-postgres",
- "mnt-governance-application",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-storage",
- "mnt-platform-test-support",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-equipment-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-equipment-application",
- "mnt-equipment-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-equipment-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-equipment-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-equipment-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-equipment-adapter-postgres",
- "mnt-equipment-application",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-erp-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "time",
-]
-
-[[package]]
-name = "mnt-evaluation-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-evaluation-application",
- "mnt-evaluation-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-evaluation-application"
-version = "0.1.0"
-dependencies = [
- "mnt-evaluation-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-evaluation-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-evaluation-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-evaluation-adapter-postgres",
- "mnt-evaluation-application",
- "mnt-evaluation-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-facilities-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "hex",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-finance-gl-adapter-postgres"
-version = "0.0.0"
-dependencies = [
- "mnt-finance-gl-application",
- "mnt-finance-gl-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-finance-gl-application"
-version = "0.0.0"
-dependencies = [
- "mnt-finance-gl-domain",
- "mnt-kernel-core",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-finance-gl-domain"
-version = "0.0.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "uuid",
-]
-
-[[package]]
-name = "mnt-finance-gl-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "mnt-finance-gl-adapter-postgres",
- "mnt-finance-gl-application",
- "mnt-finance-gl-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "sqlx 0.9.0",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-financial-adapter-postgres"
-version = "0.0.0"
-dependencies = [
- "mnt-financial-application",
- "mnt-financial-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-financial-application"
-version = "0.0.0"
-dependencies = [
- "mnt-financial-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-financial-domain"
-version = "0.0.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-financial-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "mnt-financial-adapter-postgres",
- "mnt-financial-application",
- "mnt-financial-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-storage",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-gate-audit-coverage"
-version = "0.1.0"
-
-[[package]]
-name = "mnt-gate-dev-auth-absence"
-version = "0.1.0"
-dependencies = [
- "serde_json",
-]
-
-[[package]]
-name = "mnt-gate-iac-tier"
-version = "0.1.0"
-
-[[package]]
-name = "mnt-gate-layer-boundary"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-gate-migration-safety"
-version = "0.1.0"
-
-[[package]]
-name = "mnt-gate-pii-no-logs"
-version = "0.1.0"
-
-[[package]]
-name = "mnt-gate-rls-arming"
-version = "0.1.0"
-
-[[package]]
-name = "mnt-gate-tenant-isolation"
-version = "0.1.0"
-dependencies = [
- "sqlx 0.9.0",
- "tokio",
-]
-
-[[package]]
-name = "mnt-gate-vendor-lockin"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-governance-adapter-postgres"
-version = "0.0.0"
-dependencies = [
- "mnt-governance-application",
- "mnt-governance-domain",
- "mnt-kernel-core",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-governance-application"
-version = "0.0.0"
-dependencies = [
- "mnt-governance-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-governance-domain"
-version = "0.0.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-governance-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "mnt-governance-adapter-postgres",
- "mnt-governance-application",
- "mnt-governance-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-identity-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-identity-application",
- "mnt-identity-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-identity-application"
-version = "0.1.0"
-dependencies = [
- "mnt-identity-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "uuid",
-]
-
-[[package]]
-name = "mnt-identity-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "time",
-]
-
-[[package]]
-name = "mnt-identity-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "futures",
- "http",
- "metrics",
- "mnt-identity-adapter-postgres",
- "mnt-identity-application",
- "mnt-identity-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tower",
- "tracing",
- "url",
- "uuid",
- "webauthn-authenticator-rs",
-]
-
-[[package]]
-name = "mnt-inbox-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-inbox-application",
- "mnt-inbox-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inbox-application"
-version = "0.1.0"
-dependencies = [
- "mnt-inbox-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inbox-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-inbox-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-inbox-adapter-postgres",
- "mnt-inbox-application",
- "mnt-inbox-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "tracing",
- "url",
- "uuid",
- "webauthn-authenticator-rs",
-]
-
-[[package]]
-name = "mnt-inspection-adapter-postgres"
-version = "0.0.0"
-dependencies = [
- "mnt-inspection-application",
- "mnt-inspection-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inspection-application"
-version = "0.0.0"
-dependencies = [
- "mnt-inspection-domain",
- "mnt-kernel-core",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inspection-domain"
-version = "0.0.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-inspection-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "mnt-inspection-adapter-postgres",
- "mnt-inspection-application",
- "mnt-inspection-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "sqlx 0.9.0",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-integrity"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inventory-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-inventory-application",
- "mnt-inventory-domain",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inventory-application"
-version = "0.1.0"
-dependencies = [
- "mnt-inventory-domain",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-inventory-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-inventory-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-inventory-adapter-postgres",
- "mnt-inventory-application",
- "mnt-inventory-domain",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-kernel-core"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-leave-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-governance-domain",
- "mnt-inbox-adapter-postgres",
- "mnt-inbox-application",
- "mnt-inbox-domain",
- "mnt-kernel-core",
- "mnt-leave-application",
- "mnt-leave-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-leave-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-leave-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-leave-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-leave-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-inbox-adapter-postgres",
- "mnt-kernel-core",
- "mnt-leave-adapter-postgres",
- "mnt-leave-application",
- "mnt-leave-domain",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-logistics-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-kernel-core",
- "mnt-logistics-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-logistics-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-logistics-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-logistics-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-logistics-adapter-postgres",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-messenger-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-messenger-application",
- "mnt-messenger-domain",
- "mnt-notifications-adapter-postgres",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-workorder-application",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-messenger-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-messenger-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-messenger-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-messenger-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-messenger-adapter-postgres",
- "mnt-messenger-application",
- "mnt-messenger-domain",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notices-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-notices-application",
- "mnt-notices-domain",
- "mnt-notifications-adapter-postgres",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notices-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-notices-domain",
- "serde",
- "time",
-]
-
-[[package]]
-name = "mnt-notices-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-notices-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-notices-adapter-postgres",
- "mnt-notices-application",
- "mnt-notices-domain",
- "mnt-notifications-adapter-postgres",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notifications-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "mnt-kernel-core",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notifications-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-notifications-domain",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notifications-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "uuid",
-]
-
-[[package]]
-name = "mnt-notifications-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-notifications-adapter-postgres",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-ontology-adapter-postgres"
-version = "0.0.0"
-dependencies = [
- "hex",
- "mnt-kernel-core",
- "mnt-ontology-domain",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-ontology-application"
-version = "0.0.0"
-dependencies = [
- "mnt-governance-domain",
- "mnt-kernel-core",
- "mnt-ontology-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-ontology-domain"
-version = "0.0.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "uuid",
-]
-
-[[package]]
-name = "mnt-ontology-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "mnt-governance-adapter-postgres",
- "mnt-governance-application",
- "mnt-governance-domain",
- "mnt-kernel-core",
- "mnt-ontology-adapter-postgres",
- "mnt-ontology-application",
- "mnt-ontology-domain",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-authz-rest",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "mnt-registry-adapter-postgres",
- "mnt-registry-application",
- "mnt-registry-domain",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-orgchange-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-governance-domain",
- "mnt-kernel-core",
- "mnt-orgchange-domain",
- "mnt-platform-db",
- "mnt-platform-group",
- "mnt-platform-request-context",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-orgchange-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-orgchange-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-orgchange-adapter-postgres",
- "mnt-orgchange-domain",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-payroll-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-payroll-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-payroll-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "time",
-]
-
-[[package]]
-name = "mnt-payroll-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-inbox-adapter-postgres",
- "mnt-inbox-application",
- "mnt-inbox-domain",
- "mnt-kernel-core",
- "mnt-payroll-adapter-postgres",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-audit-chain"
-version = "0.1.0"
-dependencies = [
- "futures",
- "hex",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "ring",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-auth"
-version = "0.1.0"
-dependencies = [
- "jsonwebtoken",
- "mnt-kernel-core",
- "mnt-platform-db",
- "openssl",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "url",
- "uuid",
- "webauthn-authenticator-rs",
- "webauthn-rs",
-]
-
-[[package]]
-name = "mnt-platform-auth-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-email",
- "mnt-platform-group",
- "mnt-platform-provisioning",
- "mnt-platform-request-context",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tower",
- "tracing",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-authz"
-version = "0.1.0"
-dependencies = [
- "cedar-policy",
- "hex",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-authz-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "hex",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-db"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-email"
-version = "0.1.0"
-dependencies = [
- "lettre",
- "thiserror 2.0.18",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "mnt-platform-excel"
-version = "0.1.0"
-dependencies = [
- "tempfile",
- "umya-spreadsheet",
-]
-
-[[package]]
-name = "mnt-platform-group"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "serde",
- "sqlx 0.9.0",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-jobs"
-version = "0.1.0"
-dependencies = [
- "apalis",
- "apalis-postgres",
- "apalis-sql",
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "sqlx 0.8.6",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-provisioning"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-db",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "url",
- "uuid",
- "webauthn-authenticator-rs",
-]
-
-[[package]]
-name = "mnt-platform-push"
-version = "0.1.0"
-dependencies = [
- "hmac 0.13.0",
- "jsonwebtoken",
- "mnt-kernel-core",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-realtime"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-messenger-adapter-postgres",
- "mnt-messenger-application",
- "mnt-messenger-domain",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-auth",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-request-context"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "ipnet",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-group",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "tokio",
- "tower",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-ontology-adapter-postgres",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-provisioning",
- "mnt-platform-request-context",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-storage"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "hex",
- "hmac 0.13.0",
- "infer",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-workorder-domain",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "mnt-platform-test-support"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "sqlx 0.9.0",
- "uuid",
-]
-
-[[package]]
-name = "mnt-policy-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-policy-application",
- "mnt-policy-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-policy-application"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-kernel-core",
- "mnt-policy-domain",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-policy-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-production-rest"
-version = "0.0.0"
-dependencies = [
- "axum",
- "base64 0.22.1",
- "hmac 0.13.0",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "subtle",
- "time",
- "tokio",
- "tower",
- "uuid",
-]
-
-[[package]]
-name = "mnt-recruiting-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-recruiting-application",
- "mnt-recruiting-domain",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-recruiting-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-recruiting-domain",
- "time",
-]
-
-[[package]]
-name = "mnt-recruiting-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-recruiting-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "mnt-recruiting-adapter-postgres",
- "mnt-recruiting-application",
- "mnt-recruiting-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-registry-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "calamine",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-registry-application",
- "mnt-registry-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "umya-spreadsheet",
- "uuid",
-]
-
-[[package]]
-name = "mnt-registry-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-registry-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-registry-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
-]
-
-[[package]]
-name = "mnt-registry-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "metrics",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "mnt-registry-adapter-postgres",
- "mnt-registry-application",
- "mnt-registry-domain",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-reporting-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-excel",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "mnt-reporting-application",
- "mnt-reporting-domain",
- "mnt-workorder-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-reporting-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-reporting-domain",
- "serde",
- "thiserror 2.0.18",
- "time",
-]
-
-[[package]]
-name = "mnt-reporting-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-reporting-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-reporting-adapter-postgres",
- "mnt-reporting-application",
- "mnt-reporting-domain",
- "serde",
- "sqlx 0.9.0",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-sales-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-sales-application",
- "mnt-sales-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-sales-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-sales-domain",
- "serde",
- "serde_json",
- "time",
-]
-
-[[package]]
-name = "mnt-sales-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
-]
-
-[[package]]
-name = "mnt-sales-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-platform-storage",
- "mnt-sales-adapter-postgres",
- "mnt-sales-application",
- "mnt-sales-domain",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-support-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "hex",
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-support-application",
- "mnt-support-domain",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-support-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-support-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-support-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "time",
-]
-
-[[package]]
-name = "mnt-support-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "http",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-push",
- "mnt-platform-request-context",
- "mnt-platform-test-support",
- "mnt-support-adapter-postgres",
- "mnt-support-application",
- "mnt-support-domain",
- "p256",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tower",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-todos-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-todos-application",
- "mnt-todos-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-todos-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-todos-domain",
- "serde",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-todos-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mnt-todos-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-request-context",
- "mnt-todos-adapter-postgres",
- "mnt-todos-application",
- "mnt-todos-domain",
- "serde",
- "time",
- "tracing",
-]
-
-[[package]]
-name = "mnt-workflow-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-workflow-runtime"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-platform-authz",
- "mnt-workflow-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-workflow-runtime-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-notifications-adapter-postgres",
- "mnt-notifications-application",
- "mnt-notifications-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-workflow-domain",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mnt-workorder-adapter-postgres"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-messenger-adapter-postgres",
- "mnt-messenger-application",
- "mnt-messenger-domain",
- "mnt-platform-db",
- "mnt-platform-request-context",
- "mnt-workorder-application",
- "mnt-workorder-domain",
- "serde",
- "serde_json",
- "sqlx 0.9.0",
- "thiserror 2.0.18",
- "time",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mnt-workorder-application"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "mnt-workorder-domain",
- "serde",
- "serde_json",
- "time",
- "uuid",
-]
-
-[[package]]
-name = "mnt-workorder-domain"
-version = "0.1.0"
-dependencies = [
- "mnt-kernel-core",
- "serde",
- "serde_json",
- "time",
-]
-
-[[package]]
-name = "mnt-workorder-rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "hex",
- "http",
- "mnt-kernel-core",
- "mnt-platform-auth",
- "mnt-platform-authz",
- "mnt-platform-db",
- "mnt-platform-jobs",
- "mnt-platform-request-context",
- "mnt-platform-storage",
- "mnt-platform-test-support",
- "mnt-workflow-domain",
- "mnt-workflow-runtime",
- "mnt-workflow-runtime-adapter-postgres",
- "mnt-workorder-adapter-postgres",
- "mnt-workorder-application",
- "mnt-workorder-domain",
- "p256",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx 0.9.0",
- "time",
- "tower",
- "tracing",
- "uuid",
 ]
 
 [[package]]

@@ -25,7 +25,7 @@ case "$(uname -s):$(uname -m)" in
     ;;
 esac
 
-bin_dir="${MNT_DOTSLASH_BIN_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}/mnt-dotslash}/bin}"
+bin_dir="${CONSOLE_DOTSLASH_BIN_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}/console-dotslash}/bin}"
 mkdir -p "${bin_dir}"
 archive="$(mktemp "${TMPDIR:-/tmp}/dotslash.XXXXXX.tar.gz")"
 trap 'rm -f "${archive}"' EXIT

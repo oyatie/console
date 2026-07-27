@@ -22,7 +22,7 @@ Grounded in a read of the actual tree, not the roadmap's aspirations:
   SHA-256, confidence, valid_from/to, PROPOSED→ACCEPTED FSM).
 - **Scoped governance controls are source-backed.** Server-issued **immutable codes** (trigger
   `enforce_compliance_code_immutable`), **FORCE ROW LEVEL SECURITY** org-isolation on every table,
-  **no-DELETE grants** to `mnt_rt` (append-oriented database retention), append-only relation triggers.
+  **no-DELETE grants** to `console_rt` (append-oriented database retention), append-only relation triggers.
   Domain enums fully typed in `backend/crates/compliance/domain/src/lib.rs`; use-cases + pagination in
   `.../application/src/lib.rs`.
 - **REST surface — PARTIAL.** `backend/crates/compliance/rest/src/lib.rs` currently wires the

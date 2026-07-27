@@ -1,5 +1,5 @@
 [package]
-name = "mnt-gate-migration-safety"
+name = "console-gate-migration-safety"
 version = "0.1.0"
 description = "CI gate: rejects unsafe schema changes against audited tables and audit_events immutability."
 edition.workspace = true
@@ -8,11 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "mnt-gate-migration-safety"
+name = "console-gate-migration-safety"
 path = "src/main.rs"
 
 [lib]
-name = "mnt_gate_migration_safety"
+name = "console_gate_migration_safety"
 path = "src/lib.rs"
 
 [lints]

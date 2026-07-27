@@ -11,7 +11,7 @@
 -- stored, so free-form `#hashtag` noise is dropped (the prefix is validated;
 -- the referenced target's existence is a read-time, deny-by-omission concern).
 
--- mnt-gate: audited-table message_refs
+-- console-gate: audited-table message_refs
 CREATE TABLE message_refs (
     id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id     UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -39,4 +39,4 @@ CREATE POLICY org_isolation ON message_refs
 
 -- Refs are written once with their message (parse-on-write) and read back; they
 -- are never mutated, and are removed only by the message's ON DELETE CASCADE.
-GRANT SELECT, INSERT ON message_refs TO mnt_rt;
+GRANT SELECT, INSERT ON message_refs TO console_rt;

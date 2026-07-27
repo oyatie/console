@@ -4,16 +4,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: maintenance-onprem-traefik-ingress
+  name: console-onprem-traefik-ingress
   namespace: argocd
   annotations:
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
   description: Dark ADR-0024 on-prem Traefik Service LoadBalancer variant; manual apply/sync only.
   sourceRepos:
     - https://traefik.github.io/charts
-    - https://github.com/jason931225/maintenance.git
+    - https://github.com/jason931225/console.git
   destinations:
     - server: https://kubernetes.default.svc
       namespace: traefik

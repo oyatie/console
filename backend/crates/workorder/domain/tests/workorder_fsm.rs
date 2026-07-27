@@ -2,8 +2,8 @@
 
 use std::collections::BTreeSet;
 
-use mnt_kernel_core::ErrorKind;
-use mnt_workorder_domain::{
+use console_kernel_core::ErrorKind;
+use console_workorder_domain::{
     ALL_WORK_ORDER_STATUSES, TransitionActor, TransitionGuardContext, WORK_ORDER_TRANSITIONS,
     WorkOrderStatus, validate_status_transition,
 };

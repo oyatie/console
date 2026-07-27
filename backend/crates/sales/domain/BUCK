@@ -9,31 +9,31 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-sales-domain",
+    name = "console-sales-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/sales/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_sales_domain",
+    crate = "console_sales_domain",
     edition = "2024",
     crate_root = "backend/crates/sales/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/sales/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
     ],
 )
 
 rust_test(
-    name = "mnt-sales-domain-unit",
+    name = "console-sales-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/sales/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_sales_domain",
+    crate = "console_sales_domain",
     edition = "2024",
     crate_root = "backend/crates/sales/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/sales/domain"},
     labels = ["owner.backend.crates.sales.domain", "domain.sales", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:time",

@@ -2,7 +2,7 @@
 -- B-mail-3: the webmail sync SCHEDULER must enumerate, across ALL tenants, which
 -- email_accounts are due for an incremental IMAP sync pass — a chicken-and-egg
 -- read that cannot itself be org-armed (the scheduler does not yet know which
--- orgs exist). The runtime role `mnt_rt` is NOBYPASSRLS + FORCE RLS, so a plain
+-- orgs exist). The runtime role `console_rt` is NOBYPASSRLS + FORCE RLS, so a plain
 -- cross-tenant SELECT against `email_accounts` returns ZERO rows (fail-closed).
 --
 -- A narrow SECURITY DEFINER function is the established pattern here (mirrors the
@@ -11,7 +11,7 @@
 -- the scheduler learns just enough to dispatch a per-(org, account) sync job that
 -- then ARMS app.current_org and re-reads the full sealed account under RLS. The
 -- function pins search_path, toggles row_security only for the id-only read, and
--- is EXECUTE-granted to mnt_rt alone (REVOKE FROM PUBLIC).
+-- is EXECUTE-granted to console_rt alone (REVOKE FROM PUBLIC).
 --
 -- "Due" = an ACTIVE account whose last_sync_at is NULL (never synced) or older
 -- than its own sync_cadence_secs. The result is bounded by p_limit so one tick
@@ -43,4 +43,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION comms_due_email_accounts(TIMESTAMPTZ, INTEGER) TO console_rt;

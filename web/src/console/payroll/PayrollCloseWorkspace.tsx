@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { ConsoleApiClient } from "../../api/client";
 import { ko } from "../../i18n/ko";
 import "../tokens.css";

@@ -5,19 +5,19 @@
 //! existence check, referential guard, UPDATE and audit-event INSERT inside ONE
 //! `with_audit(current_org()?, ..)` transaction. A *static* gate proves the
 //! wrapping is present in source; this test proves it WORKS AT RUNTIME when the
-//! mutation executes as the genuine non-owner runtime role `mnt_rt` (NOSUPERUSER,
+//! mutation executes as the genuine non-owner runtime role `console_rt` (NOSUPERUSER,
 //! NOBYPASSRLS, FORCE RLS) — the only faithful exercise of the tenant policy.
 //!
-//! Why `mnt_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
+//! Why `console_rt` and not the default `#[sqlx::test]` pool: that pool connects as a
 //! BYPASSRLS superuser, which sees every row regardless of `app.current_org` and
 //! would green-light a totally broken (or leaking) write. We SEED as the owner
-//! (raw inserts, row_security off) and MUTATE as `mnt_rt`.
+//! (raw inserts, row_security off) and MUTATE as `console_rt`.
 //!
 //! Asserts, with two tenants A (KNL) and B:
 //!   * update_region renames A's region under A's armed GUC, and writes a
 //!     `region.update` audit row;
 //!   * cross-tenant isolation: under A's GUC, B's region is NOT FOUND (404), so a
-//!     caller can never edit another org's region as `mnt_rt`;
+//!     caller can never edit another org's region as `console_rt`;
 //!   * deactivate_region SOFT-deletes an empty region (deactivated_at set) and
 //!     audits `region.deactivate`, but is REFUSED with a Conflict while the region
 //!     still has an active branch (referential guard, no orphaning);
@@ -27,21 +27,21 @@
 //!   * FAIL-CLOSED: with no GUC armed, update_region returns not-found, never a
 //!     leak/edit.
 
-use mnt_identity_adapter_postgres::{PgOrgError, PgOrgStore};
-use mnt_identity_application::{
+use console_identity_adapter_postgres::{PgOrgError, PgOrgStore};
+use console_identity_application::{
     DeactivateBranchCommand, DeactivateRegionCommand, UpdateRegionCommand,
 };
-use mnt_kernel_core::{BranchId, ErrorKind, OrgId, RegionId, TraceContext, UserId};
-use mnt_platform_request_context::CURRENT_ORG;
+use console_kernel_core::{BranchId, ErrorKind, OrgId, RegionId, TraceContext, UserId};
+use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-/// A second, non-KNL tenant id, to prove cross-tenant isolation under `mnt_rt`.
+/// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so statements execute as
+/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
 /// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -49,7 +49,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -224,7 +224,7 @@ async fn audit_count(owner_pool: &PgPool, action: &str, target_id: &str) -> i64 
 }
 
 // ===========================================================================
-// update_region: works as mnt_rt under the armed GUC + writes an audit row.
+// update_region: works as console_rt under the armed GUC + writes an audit row.
 // ===========================================================================
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn update_region_renames_and_audits_as_runtime_role(owner_pool: PgPool) {
@@ -248,7 +248,7 @@ async fn update_region_renames_and_audits_as_runtime_role(owner_pool: PgPool) {
             }),
         )
         .await
-        .expect("update_region must succeed as mnt_rt under the armed GUC");
+        .expect("update_region must succeed as console_rt under the armed GUC");
 
     assert_eq!(summary.name, "충청권");
     assert!(summary.deactivated_at.is_none());
@@ -351,7 +351,7 @@ async fn deactivate_region_soft_deletes_and_guards_active_branch_as_runtime_role
             }),
         )
         .await
-        .expect("deactivating an empty region must succeed as mnt_rt");
+        .expect("deactivating an empty region must succeed as console_rt");
     assert!(
         summary.deactivated_at.is_some(),
         "soft-delete sets deactivated_at"
@@ -365,7 +365,7 @@ async fn deactivate_region_soft_deletes_and_guards_active_branch_as_runtime_role
     let regions = CURRENT_ORG
         .scope(org, store.list_regions())
         .await
-        .expect("list_regions as mnt_rt");
+        .expect("list_regions as console_rt");
     assert!(
         !regions.iter().any(|r| r.id == empty_region),
         "a deactivated region is hidden from the org tree"
@@ -437,7 +437,7 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
             }),
         )
         .await
-        .expect("deactivating an empty branch must succeed as mnt_rt");
+        .expect("deactivating an empty branch must succeed as console_rt");
     assert!(summary.deactivated_at.is_some());
     assert_eq!(
         audit_count(&owner_pool, "branch.deactivate", &empty_branch.to_string()).await,
@@ -448,7 +448,7 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
     let branches = CURRENT_ORG
         .scope(org, store.list_branches())
         .await
-        .expect("list_branches as mnt_rt");
+        .expect("list_branches as console_rt");
     assert!(!branches.iter().any(|b| b.id == empty_branch));
 }
 

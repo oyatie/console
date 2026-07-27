@@ -7,12 +7,12 @@ This directory contains the Docker Compose production stack for the MNT FSM back
 Boot the production stack:
 
 ```sh
-export MNT_POSTGRES_ADMIN_PASSWORD="$(openssl rand -hex 32)"
-export MNT_APP_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-export MNT_RT_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-export MNT_LEAVE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-export MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-export MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_POSTGRES_ADMIN_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_APP_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_RT_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 docker compose -f ops/compose.yml config --quiet
 docker compose -f ops/compose.yml up -d
 ```
@@ -38,11 +38,11 @@ npm run dev:up
 ```
 
 `scripts/dev-up.mjs` layers `ops/compose.dev-deps.yml` on top of
-`ops/compose.yml` and `ops/compose.dev.yml`, using the `mnt-dev` Compose project
+`ops/compose.yml` and `ops/compose.dev.yml`, using the `console-dev` Compose project
 by default. It builds exactly one repository-pinned Buck2 app target per run,
 then executes that exact `buck-out` artifact for both migrations and the API:
-`//backend/app:mnt-app` normally, or `//backend/app:mnt-app-dev-auth` only when
-`MNT_DEV_AUTH_E2E=1`. It never falls back to a locally compiled backend binary.
+`//backend/app:console-app` normally, or `//backend/app:console-app-dev-auth` only when
+`CONSOLE_DEV_AUTH_E2E=1`. It never falls back to a locally compiled backend binary.
 The launcher rejects absolute, missing, non-executable, and non-`buck-out`
 outputs. Its local PID state also records the child command and OS start token;
 `dev:down` signals a process group only if that identity still matches, then
@@ -67,7 +67,7 @@ archive volume.
 
 - Where archives live: `ops/compose.yml` still archives Postgres WAL into the
   project-scoped `postgres-wal-archive` volume. In the normal dev wrapper this is
-  Docker volume `mnt-dev_postgres-wal-archive`, mounted at
+  Docker volume `console-dev_postgres-wal-archive`, mounted at
   `/var/lib/postgresql/wal-archive` in Postgres and `/wal-archive` in the pruner.
 - Retention limit: the default policy deletes matching WAL/timeline/backup
   history archive files older than 72 hours and also caps retained archive bytes
@@ -79,9 +79,9 @@ archive volume.
   for the dev Postgres container to become healthy, prunes once every 300
   seconds, and logs as `dev-wal-pruner`. A pruner failure must not make Postgres
   WAL archiving fail.
-- Overrides: `MNT_DEV_WAL_ARCHIVE_RETENTION_HOURS`,
-  `MNT_DEV_WAL_ARCHIVE_MAX_BYTES`, `MNT_DEV_WAL_ARCHIVE_MIN_SEGMENTS`, and
-  `MNT_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS` tune the dev policy. Set the age
+- Overrides: `CONSOLE_DEV_WAL_ARCHIVE_RETENTION_HOURS`,
+  `CONSOLE_DEV_WAL_ARCHIVE_MAX_BYTES`, `CONSOLE_DEV_WAL_ARCHIVE_MIN_SEGMENTS`, and
+  `CONSOLE_DEV_WAL_ARCHIVE_PRUNE_INTERVAL_SECONDS` tune the dev policy. Set the age
   or size bound to `0`/`off` only for a temporary local PITR drill that needs
   extra WAL history.
 
@@ -90,7 +90,7 @@ Docker volume mount paths:
 
 ```sh
 docker run --rm \
-  -v mnt-dev_postgres-wal-archive:/wal-archive:ro \
+  -v console-dev_postgres-wal-archive:/wal-archive:ro \
   postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56 \
   bash -ceu 'du -sh /wal-archive; find /wal-archive -maxdepth 1 -type f | wc -l'
 ```
@@ -99,9 +99,9 @@ If local WAL archive storage is already large, first run a one-shot prune throug
 the same service contract:
 
 ```sh
-docker compose -p mnt-dev \
+docker compose -p console-dev \
   -f ops/compose.yml -f ops/compose.dev.yml -f ops/compose.dev-deps.yml \
-  run --rm -e MNT_DEV_WAL_ARCHIVE_PRUNE_ONCE=1 postgres-wal-archive-pruner --once
+  run --rm -e CONSOLE_DEV_WAL_ARCHIVE_PRUNE_ONCE=1 postgres-wal-archive-pruner --once
 ```
 
 For an urgent local cleanup where no local PITR/debug archive needs to be kept,
@@ -109,7 +109,7 @@ stop the dev stack and remove only the dev WAL archive volume:
 
 ```sh
 npm run dev:down
-docker volume rm mnt-dev_postgres-wal-archive
+docker volume rm console-dev_postgres-wal-archive
 ```
 
 The next `npm run dev:up` recreates the archive volume and starts the pruner with
@@ -137,25 +137,25 @@ docker manifest inspect postgres:18.4
 3. Set production environment variables in the VM shell or a root-readable env file:
 
 ```sh
-export MNT_APP_HOST=api.example.com
-export MNT_POSTGRES_DB=mnt_prod
-export MNT_POSTGRES_ADMIN_USER=mnt_cluster_admin
-export MNT_POSTGRES_ADMIN_PASSWORD='<cluster bootstrap administrator password>'
-export MNT_APP_POSTGRES_PASSWORD='<migration owner password>'
-export MNT_RT_POSTGRES_PASSWORD='<runtime password>'
-export MNT_LEAVE_COMMAND_POSTGRES_PASSWORD='<distinct value from the production secret manager>'
-export MNT_ONTOLOGY_COMMAND_POSTGRES_PASSWORD='<another distinct value from the production secret manager>'
-export MNT_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD='<a third distinct command-only value from the production secret manager>'
+export CONSOLE_APP_HOST=api.example.com
+export CONSOLE_POSTGRES_DB=console_prod
+export CONSOLE_POSTGRES_ADMIN_USER=console_cluster_admin
+export CONSOLE_POSTGRES_ADMIN_PASSWORD='<cluster bootstrap administrator password>'
+export CONSOLE_APP_POSTGRES_PASSWORD='<migration owner password>'
+export CONSOLE_RT_POSTGRES_PASSWORD='<runtime password>'
+export CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD='<distinct value from the production secret manager>'
+export CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD='<another distinct value from the production secret manager>'
+export CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD='<a third distinct command-only value from the production secret manager>'
 ```
 
 All six passwords are mandatory and pairwise distinct. `postgres` starts with
 the cluster administrator, then the one-shot `postgres-topology` service runs
 `postgres-reconcile-topology.sh` on both fresh and existing volumes. It creates
-or pins the exact seven application roles, makes `mnt_app` the database/schema
+or pins the exact seven application roles, makes `console_app` the database/schema
 owner, gives that migration-only identity explicit `BYPASSRLS` for populated
 tenant-wide backfills, makes it a non-admin member of both NOLOGIN definers,
 and verifies readback. The `migrate` service then connects directly as
-`mnt_app`; API and worker connect directly as `mnt_rt`. Runtime, command, and
+`console_app`; API and worker connect directly as `console_rt`. Runtime, command, and
 definer roles remain `NOBYPASSRLS`. Reconciliation also pins exact serving-role
 defaults (`statement_timeout=30s`, `idle_in_transaction_session_timeout=30s`,
 and PostgreSQL 17+ `transaction_timeout=45s`), removes only those three keys
@@ -177,22 +177,22 @@ not rotate credentials: it first classifies each role's managed timeout catalog,
 repairs and drains only roles with drift, and preserves healthy sessions on an
 exact-state whole-Application sync.
 
-An existing volume where `mnt_app` is a superuser fails closed. After auditing
+An existing volume where `console_app` is a superuser fails closed. After auditing
 that volume, choose a new distinct cluster-admin credential and perform the
 one-time guarded conversion explicitly. Start only PostgreSQL first: the new
 admin does not exist in the old volume yet. The topology container then uses
-the shared local socket as the extant `mnt_app` bootstrap superuser. PostgreSQL
+the shared local socket as the extant `console_app` bootstrap superuser. PostgreSQL
 18 does not permit any role to remove `SUPERUSER` from that bootstrap identity,
 so the guarded conversion creates a temporary administrator, renames the
-bootstrap identity to the requested distinct admin, recreates `mnt_app` as the
+bootstrap identity to the requested distinct admin, recreates `console_app` as the
 non-superuser migration role, and transfers user-schema ownership to it. Every
 password-bearing statement runs with transaction-local logging suppression.
 
 ```sh
-export MNT_ALLOW_LEGACY_MNT_APP_SUPERUSER_CONVERSION=1
+export CONSOLE_ALLOW_LEGACY_CONSOLE_APP_SUPERUSER_CONVERSION=1
 docker compose -f ops/compose.yml up -d postgres
 docker compose -f ops/compose.yml run --rm postgres-topology
-unset MNT_ALLOW_LEGACY_MNT_APP_SUPERUSER_CONVERSION
+unset CONSOLE_ALLOW_LEGACY_CONSOLE_APP_SUPERUSER_CONVERSION
 ```
 
 The conversion flag must not remain in an environment file. No password belongs
@@ -204,7 +204,7 @@ cluster-admin or owner URL.
 ```sh
 docker compose -f ops/compose.yml up -d --build
 docker compose -f ops/compose.yml ps
-curl -k "https://${MNT_APP_HOST}/readyz"
+curl -k "https://${CONSOLE_APP_HOST}/readyz"
 ```
 
 5. Configure OCI firewall/security-list ingress for `80/tcp` and `443/tcp` only. Do not expose Postgres, SeaweedFS master/filer/admin ports, or the app container directly.

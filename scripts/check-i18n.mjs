@@ -54,7 +54,7 @@ function checkRequiredText(checklist, failures) {
     ["`node scripts/check-i18n.mjs`", "local i18n/parity gate command"],
     ["`cd ios && swift build`", "iOS Swift build evidence"],
     ["`cd ios && swift test`", "iOS Swift test evidence"],
-    ["`cd ios && swift run MaintenanceFieldCoreBehaviorTests`", "iOS behavior runner evidence"],
+    ["`cd ios && swift run ConsoleCoreBehaviorTests`", "iOS behavior runner evidence"],
     ["`ios/E2E-MANUAL-SMOKE.md`", "iOS manual passkey smoke evidence"],
     ["ios-ui-tests.yml", "iOS XCUITest workflow evidence"],
     ["`cd android && ./gradlew build -x testReleaseUnitTest -x testDebugUnitTest`", "Android Gradle build evidence"],
@@ -118,7 +118,7 @@ function checkStringKeyParity(failures) {
   const androidStringsPath = join(repoRoot, "android/app/src/main/res/values/strings.xml");
   const iosStringsPath = join(
     repoRoot,
-    "ios/Sources/MaintenanceFieldApp/Resources/ko.lproj/Localizable.strings",
+    "ios/Sources/ConsoleApp/Resources/ko.lproj/Localizable.strings",
   );
   const iosOnlyStringKeys = {
     camera_unavailable: "iOS camera capability fallback copy",

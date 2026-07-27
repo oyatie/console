@@ -15,7 +15,7 @@ handover writes the custody row, and the
 ## 1. Reproduction
 
 ```
-$ cargo test -p mnt-app --test equipment_3r_api        # at 4cabe239
+$ cargo test -p console-app --test equipment_3r_api        # at 4cabe239
 running 4 tests
 test capabilities_deny_without_leakage_across_branch_grant_and_org ... ok
 test concurrent_approvals_on_one_unit_have_exactly_one_winner ... ok
@@ -38,9 +38,9 @@ canonical-envelope 500.
 These story tests target the Buck2 disposable-Postgres harness. They were run
 against a disposable `postgres:18.4` reconciled with
 `ops/postgres-reconcile-topology.sh` — the same bootstrap
-`tools/buck/test_needs_postgres.sh` performs (`mnt_buck_admin` superuser +
+`tools/buck/test_needs_postgres.sh` performs (`console_buck_admin` superuser +
 `options[mnt.sqlx_test_bootstrap]`) — with every assertion still crossing the
-assembled router on a `SET ROLE mnt_rt` pool.
+assembled router on a `SET ROLE console_rt` pool.
 
 ## 2. Root cause
 
@@ -85,15 +85,15 @@ that branch's own verification never ran.
 
 ### 3.1 Its crate wiring fails a ship-blocking CI gate
 
-It adds `mnt-docs-adapter-postgres` + `mnt-docs-application` to
-`mnt-equipment-adapter-postgres` and calls
+It adds `console-docs-adapter-postgres` + `console-docs-application` to
+`console-equipment-adapter-postgres` and calls
 `PgDocsStore::bind_equipment_handover_evidence_tx`. Merged verbatim:
 
 ```
-$ cargo run -p mnt-gate-layer-boundary
-mnt-gate-layer-boundary: FAILED — 1 violation(s):
-  [ILLEGAL_LAYER_EDGE] mnt-equipment-adapter-postgres:
-    mnt-equipment-adapter-postgres (adapter) → mnt-docs-adapter-postgres (adapter) is forbidden
+$ cargo run -p console-gate-layer-boundary
+console-gate-layer-boundary: FAILED — 1 violation(s):
+  [ILLEGAL_LAYER_EDGE] console-equipment-adapter-postgres:
+    console-equipment-adapter-postgres (adapter) → console-docs-adapter-postgres (adapter) is forbidden
 ```
 
 `Layer::Adapter.allowed_deps()` is `[Application, Domain, Kernel, Platform]`
@@ -164,23 +164,23 @@ false statement. Its accurate content is this section.
 ## 4. Verification
 
 Run from `backend/` against a disposable topology-reconciled `postgres:18.4`;
-app assertions cross the assembled router on a `SET ROLE mnt_rt` pool.
+app assertions cross the assembled router on a `SET ROLE console_rt` pool.
 
 | Command | Result |
 |---|---|
-| `cargo test -p mnt-app --test equipment_3r_api` | **5 passed; 0 failed** (was 2 passed / 2 failed) |
-| `cargo test -p mnt-equipment-{domain,application,rest,adapter-postgres}` | 7 passed; 0 failed |
+| `cargo test -p console-app --test equipment_3r_api` | **5 passed; 0 failed** (was 2 passed / 2 failed) |
+| `cargo test -p console-equipment-{domain,application,rest,adapter-postgres}` | 7 passed; 0 failed |
 | `cargo fmt --all -- --check` | clean |
-| `cargo clippy -p mnt-equipment-{domain,application,adapter-postgres,rest} -p mnt-docs-adapter-postgres --all-targets -- -D warnings` | clean |
-| `cargo run -p mnt-gate-layer-boundary` | PASSED — 166 crates, 0 violations |
-| `cargo run -p mnt-gate-audit-coverage` | PASSED |
-| `cargo run -p mnt-gate-rls-arming` | PASSED |
-| `cargo run -p mnt-gate-tenant-isolation` | PASSED |
-| `cargo run -p mnt-gate-dev-auth-absence` | PASSED |
-| `cargo run -p mnt-gate-migration-safety` | FAILED — pre-existing, §5.3 |
-| `cargo test -p mnt-app --test openapi_drift` | 12 passed / 1 FAILED — pre-existing, §5.4 |
+| `cargo clippy -p console-equipment-{domain,application,adapter-postgres,rest} -p console-docs-adapter-postgres --all-targets -- -D warnings` | clean |
+| `cargo run -p console-gate-layer-boundary` | PASSED — 166 crates, 0 violations |
+| `cargo run -p console-gate-audit-coverage` | PASSED |
+| `cargo run -p console-gate-rls-arming` | PASSED |
+| `cargo run -p console-gate-tenant-isolation` | PASSED |
+| `cargo run -p console-gate-dev-auth-absence` | PASSED |
+| `cargo run -p console-gate-migration-safety` | FAILED — pre-existing, §5.3 |
+| `cargo test -p console-app --test openapi_drift` | 12 passed / 1 FAILED — pre-existing, §5.4 |
 
-The five story assertions now proven as `mnt_rt`:
+The five story assertions now proven as `console_rt`:
 
 - repair lifecycle: handover → 200 / `HANDED_OVER`, audits + history + no
   finance posting;
@@ -232,7 +232,7 @@ live exposure: `EXPOSED_SCREEN_KEYS` is `[]` and the equipment screen is DARK.
 The fix is not a rename — the field stops being text a user types and becomes a
 chosen Docs/Evidence object with an admissible, verified-WORM original.
 
-### 5.3 `mnt-gate-migration-safety` red on the spine
+### 5.3 `console-gate-migration-safety` red on the spine
 
 `[NonContiguousMigrationVersion] missing migration version 0201 before 0202`.
 This lane adds and edits no migration (`git status` shows nothing under

@@ -43,7 +43,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_update_group(UUID, TEXT, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_update_group(UUID, TEXT, TEXT, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_update_group(UUID, TEXT, TEXT, TEXT) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_list_group_accounts(p_group_id UUID)
 RETURNS TABLE (
@@ -122,7 +122,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_list_group_accounts(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_list_group_accounts(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_list_group_accounts(UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_create_group_account(
     p_group_id UUID,
@@ -203,7 +203,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_create_group_account(UUID, UUID, TEXT, TEXT, TEXT[], TEXT, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_create_group_account(UUID, UUID, TEXT, TEXT, TEXT[], TEXT, UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_create_group_account(UUID, UUID, TEXT, TEXT, TEXT[], TEXT, UUID) TO console_rt;
 
 CREATE OR REPLACE FUNCTION platform_revoke_group_role(
     p_group_id UUID,
@@ -246,4 +246,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 REVOKE ALL ON FUNCTION platform_revoke_group_role(UUID, UUID, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_revoke_group_role(UUID, UUID, TEXT) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_revoke_group_role(UUID, UUID, TEXT) TO console_rt;

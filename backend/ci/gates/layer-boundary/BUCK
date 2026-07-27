@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-layer-boundary-lib",
+    name = "console-gate-layer-boundary-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/layer-boundary", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_layer_boundary",
+    crate = "console_gate_layer_boundary",
     edition = "2024",
     crate_root = "backend/ci/gates/layer-boundary/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -23,9 +23,9 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-layer-boundary",
+    name = "console-gate-layer-boundary",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/layer-boundary", ["src/main.rs"]),
-    crate = "mnt_gate_layer_boundary",
+    crate = "console_gate_layer_boundary",
     edition = "2024",
     crate_root = "backend/ci/gates/layer-boundary/src/main.rs",
     visibility = ["PUBLIC"],
@@ -33,14 +33,14 @@ rust_binary(
     deps = [
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
-        ":mnt-gate-layer-boundary-lib",
+        ":console-gate-layer-boundary-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-layer-boundary-unit",
+    name = "console-gate-layer-boundary-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/layer-boundary", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_layer_boundary",
+    crate = "console_gate_layer_boundary",
     edition = "2024",
     crate_root = "backend/ci/gates/layer-boundary/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -53,7 +53,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-gate-layer-boundary-itest-gate_detects_violation",
+    name = "console-gate-layer-boundary-itest-gate_detects_violation",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/layer-boundary", ["tests/gate_detects_violation.rs"]),
     crate = "gate_detects_violation",
     edition = "2024",
@@ -64,6 +64,6 @@ rust_test(
     deps = [
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
-        ":mnt-gate-layer-boundary-lib",
+        ":console-gate-layer-boundary-lib",
     ],
 )

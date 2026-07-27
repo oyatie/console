@@ -6,18 +6,18 @@
 //! the two record tables are append-only (REVOKE UPDATE/DELETE).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_governance_application::{
+use console_governance_application::{
     ApprovalDecision, ApprovalRequestSummary, ApprovalSummary, ConfigureTransitionCommand,
     CreateApprovalCommand, DecideApprovalCommand, LifecycleTransitionConfig, OpenOverrideCommand,
     OverrideSummary, governance_audit_event,
 };
-use mnt_governance_domain::{
+use console_governance_domain::{
     AuthorityEffect, LifecycleState, TransitionRequirements, validate_lifecycle_transition,
 };
-use mnt_kernel_core::{KernelError, UserId};
-use mnt_platform_authz::cedar_pbac::DecisionEffect;
-use mnt_platform_db::{DbError, with_audit, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_kernel_core::{KernelError, UserId};
+use console_platform_authz::cedar_pbac::DecisionEffect;
+use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_request_context::current_org;
 use sqlx::{PgConnection, PgPool, Row};
 use uuid::Uuid;
 

@@ -7,28 +7,28 @@ export_file(
 
 export_file(
     name = "kotlin-p1-dispatches-api",
-    src = "kotlin/src/main/kotlin/com/maintenance/api/client/api/P1DispatchesApi.kt",
+    src = "kotlin/src/main/kotlin/com/console/api/client/api/P1DispatchesApi.kt",
     mode = "reference",
     visibility = ["PUBLIC"],
 )
 
 export_file(
     name = "kotlin-dispatch-queue-status",
-    src = "kotlin/src/main/kotlin/com/maintenance/api/client/model/DispatchQueueStatus.kt",
+    src = "kotlin/src/main/kotlin/com/console/api/client/model/DispatchQueueStatus.kt",
     mode = "reference",
     visibility = ["PUBLIC"],
 )
 
 export_file(
     name = "swift-client",
-    src = "swift/Sources/MaintenanceAPIClient/Generated/Client.swift",
+    src = "swift/Sources/ConsoleAPIClient/Generated/Client.swift",
     mode = "reference",
     visibility = ["PUBLIC"],
 )
 
 export_file(
     name = "swift-types",
-    src = "swift/Sources/MaintenanceAPIClient/Generated/Types.swift",
+    src = "swift/Sources/ConsoleAPIClient/Generated/Types.swift",
     mode = "reference",
     visibility = ["PUBLIC"],
 )

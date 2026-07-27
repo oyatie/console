@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! M1 security fix — four-eyes approvals must BIND to the action and be CONSUMED
-//! single-use. Exercised as the genuine non-owner role `mnt_rt` (NOSUPERUSER,
-//! NOBYPASSRLS, FORCE RLS): seed as owner, run every gate check/consume as `mnt_rt`
+//! single-use. Exercised as the genuine non-owner role `console_rt` (NOSUPERUSER,
+//! NOBYPASSRLS, FORCE RLS): seed as owner, run every gate check/consume as `console_rt`
 //! so the tenant policy and grants are faithfully exercised.
 //!
 //! Before this fix a gate resolved approval with only
@@ -15,10 +15,10 @@
 //!   * concurrent double-consume — two racing consumers, exactly one wins;
 //!   * peek — the preview check never consumes.
 
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_governance_application::{ApprovalDecision, DecideApprovalCommand};
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_platform_request_context::scope_org;
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_governance_application::{ApprovalDecision, DecideApprovalCommand};
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_platform_request_context::scope_org;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
@@ -32,7 +32,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(6)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })

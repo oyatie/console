@@ -21,7 +21,7 @@
   },
   "gate": "none at nav level; notice_manage capability gates manager affordances inside the surface",
   "clientRegen": {
-    "reason": "boardApi.ts types the gap-closure contract locally (BoardNotice extension fields, PATCH /api/v1/notices/{id}, GET /api/v1/notices/{id}/receipts) ahead of the generated @maintenance/api-client-ts schema",
+    "reason": "boardApi.ts types the gap-closure contract locally (BoardNotice extension fields, PATCH /api/v1/notices/{id}, GET /api/v1/notices/{id}/receipts) ahead of the generated @console/api-client-ts schema",
     "afterBackendLands": "regenerate clients/{ts,kotlin,swift} from openapi.yaml, then in web/src/console/board/boardApi.ts drop the `as unknown as BoardNotice` widenings and the `raw` GET/PATCH casts (marked with the ponytail comment) in favor of the generated types/paths"
   },
   "moduleGenericContractGaps": [

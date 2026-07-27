@@ -7,7 +7,7 @@
 //   1. SEND CONTRACT — POSTs the EXACT SendRequest shape our transport adapter
 //      emits to the live dev mox webapi (`POST /webapi/v0/Send`, HTTP Basic auth)
 //      and asserts mox accepts it and returns a Message-ID. This validates the
-//      wire contract of `mnt-comms-adapter-mox` against a real mox.
+//      wire contract of `console-comms-adapter-mox` against a real mox.
 //
 //   2. WEBHOOK AUTH — drives our running backend's delivery webhook with a WRONG
 //      secret (expect 401) and a well-formed UNKNOWN-recipient payload (expect
@@ -15,31 +15,31 @@
 //      HTTP surface.
 //
 // The seeded-recipient ingest + idempotency + notification path is proven in CI
-// by `backend/crates/comms/rest/tests/mox_webhook.rs` (real mnt_rt, FORCE RLS).
+// by `backend/crates/comms/rest/tests/mox_webhook.rs` (real console_rt, FORCE RLS).
 // localserve does not auto-emit webhooks; production mox is configured with the
 // account's IncomingWebhook {URL, Authorization}. Run `npm run dev` (or
 // scripts/dev-up.mjs up) first.
 //
 // Dark cluster smoke (no public MX required): port-forward the internal services
 // in two terminals, then run this script with explicit URLs and the webhook
-// secret from OCI Vault/mnt-secrets. Do not print the secret.
-//   kubectl -n maintenance port-forward svc/mnt-mox 1080:1080
-//   kubectl -n maintenance port-forward svc/mnt-app 8090:8080
-//   MNT_MOX_WEBAPI_URL=http://127.0.0.1:1080 \
-//   MNT_DEV_BACKEND_URL=http://127.0.0.1:8090 \
-//   MNT_MOX_USER=postmaster@knllogistic.com \
-//   MNT_MOX_PASS=<from OCI Vault, not logged> \
-//   MNT_MAIL_MOX_WEBHOOK_SECRET=<from mnt-secrets, not logged> \
+// secret from OCI Vault/console-secrets. Do not print the secret.
+//   kubectl -n console port-forward svc/console-mox 1080:1080
+//   kubectl -n console port-forward svc/console-app 8090:8080
+//   CONSOLE_MOX_WEBAPI_URL=http://127.0.0.1:1080 \
+//   CONSOLE_DEV_BACKEND_URL=http://127.0.0.1:8090 \
+//   CONSOLE_MOX_USER=postmaster@knllogistic.com \
+//   CONSOLE_MOX_PASS=<from OCI Vault, not logged> \
+//   CONSOLE_MAIL_MOX_WEBHOOK_SECRET=<from console-secrets, not logged> \
 //   node scripts/mox-e2e.mjs
 //
 // Usage: node scripts/mox-e2e.mjs
 
-const MOX = process.env.MNT_MOX_WEBAPI_URL ?? "http://127.0.0.1:1080";
-const MOX_USER = process.env.MNT_MOX_USER ?? "mox@localhost";
-const MOX_PASS = process.env.MNT_MOX_PASS ?? "moxmoxmox";
-const BACKEND = process.env.MNT_DEV_BACKEND_URL ?? "http://127.0.0.1:8090";
+const MOX = process.env.CONSOLE_MOX_WEBAPI_URL ?? "http://127.0.0.1:1080";
+const MOX_USER = process.env.CONSOLE_MOX_USER ?? "mox@localhost";
+const MOX_PASS = process.env.CONSOLE_MOX_PASS ?? "moxmoxmox";
+const BACKEND = process.env.CONSOLE_DEV_BACKEND_URL ?? "http://127.0.0.1:8090";
 const WEBHOOK_SECRET =
-  process.env.MNT_MAIL_MOX_WEBHOOK_SECRET ?? "mox-dev-webhook-secret-change-me";
+  process.env.CONSOLE_MAIL_MOX_WEBHOOK_SECRET ?? "mox-dev-webhook-secret-change-me";
 
 let failures = 0;
 function check(name, ok, detail) {

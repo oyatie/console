@@ -8,7 +8,7 @@
 #   (Unauthorized/Forbidden/NotFound/Conflict/ValidationError/ServiceUnavailable).
 # - The SAME integrator commit must also add the `orgchange` entry to
 #   `CONFIGURED_ROUTE_SURFACES` in backend/app/src/lib.rs (paths already
-#   exported as `mnt_orgchange_rest::ORG_CHANGE_ROUTE_PATHS`) and a
+#   exported as `console_orgchange_rest::ORG_CHANGE_ROUTE_PATHS`) and a
 #   RouteSource for crates/orgchange/rest to backend/app/tests/openapi_drift.rs
 #   — the census⊆openapi gate fails on any partial splice — then regenerate
 #   clients/{ts,kotlin,swift} (three CI drift gates).

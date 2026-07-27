@@ -2,11 +2,11 @@
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_financial_adapter_postgres::PgFinancialStore;
-use mnt_financial_rest::{FINANCIAL_PURCHASE_REQUESTS_PATH, FinancialRestState, router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_test_support::runtime_role_pool;
+use console_financial_adapter_postgres::PgFinancialStore;
+use console_financial_rest::{FINANCIAL_PURCHASE_REQUESTS_PATH, FinancialRestState, router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -16,8 +16,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
 struct Keys {

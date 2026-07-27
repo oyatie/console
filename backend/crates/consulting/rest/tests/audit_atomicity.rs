@@ -2,11 +2,11 @@
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_consulting_rest::{CONSULTING_ENGAGEMENTS_PATH, ConsultingRestState, router};
-use mnt_kernel_core::{BranchId, OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_request_context::TrustedClientIp;
-use mnt_platform_test_support::runtime_role_pool;
+use console_consulting_rest::{CONSULTING_ENGAGEMENTS_PATH, ConsultingRestState, router};
+use console_kernel_core::{BranchId, OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_request_context::TrustedClientIp;
+use console_platform_test_support::runtime_role_pool;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -16,25 +16,25 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const ISSUER: &str = "mnt-platform-auth";
-const AUDIENCE: &str = "mnt-api";
+const ISSUER: &str = "console-platform-auth";
+const AUDIENCE: &str = "console-api";
 const INBOUND_TRACEPARENT: &str = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 const INBOUND_TRACE_ID: &str = "4bf92f3577b34da6a3ce929d0e0e4736";
 const INBOUND_SPAN_ID: &str = "00f067aa0ba902b7";
 const CLIENT_IP: &str = "203.0.113.44";
-const USER_AGENT: &str = "mnt-consulting-integration/1.0";
+const USER_AGENT: &str = "console-consulting-integration/1.0";
 const DEVICE_ID: &str = "field-tablet-17";
 const CONCURRENT_A_TRACEPARENT: &str = "00-11111111111111111111111111111111-1111111111111111-01";
 const CONCURRENT_A_TRACE_ID: &str = "11111111111111111111111111111111";
 const CONCURRENT_A_SPAN_ID: &str = "1111111111111111";
 const CONCURRENT_A_IP: &str = "203.0.113.45";
-const CONCURRENT_A_USER_AGENT: &str = "mnt-consulting-concurrent-a/1.0";
+const CONCURRENT_A_USER_AGENT: &str = "console-consulting-concurrent-a/1.0";
 const CONCURRENT_A_DEVICE: &str = "field-tablet-a";
 const CONCURRENT_B_TRACEPARENT: &str = "00-22222222222222222222222222222222-2222222222222222-01";
 const CONCURRENT_B_TRACE_ID: &str = "22222222222222222222222222222222";
 const CONCURRENT_B_SPAN_ID: &str = "2222222222222222";
 const CONCURRENT_B_IP: &str = "203.0.113.46";
-const CONCURRENT_B_USER_AGENT: &str = "mnt-consulting-concurrent-b/1.0";
+const CONCURRENT_B_USER_AGENT: &str = "console-consulting-concurrent-b/1.0";
 const CONCURRENT_B_DEVICE: &str = "field-tablet-b";
 
 #[derive(Clone, Copy)]

@@ -35,8 +35,8 @@ The stack must already be running. The script intentionally fails instead of
 starting production services implicitly.
 
 ```sh
-docker-compose -p mnt-prod -f ops/compose.yml up -d postgres seaweedfs
-ops/backup/backup.sh --project mnt-prod --backup-root /var/backups/mnt
+docker-compose -p console-prod -f ops/compose.yml up -d postgres seaweedfs
+ops/backup/backup.sh --project console-prod --backup-root /var/backups/mnt
 ```
 
 The backup directory contains:
@@ -60,7 +60,7 @@ The backup directory contains:
 backup directory:
 
 ```sh
-ops/backup/backup.sh --project mnt-prod --backup-root /var/backups/mnt
+ops/backup/backup.sh --project console-prod --backup-root /var/backups/mnt
 ls /var/backups/mnt/daily/<timestamp>/postgres-basebackup.tar.gz
 ```
 
@@ -78,7 +78,7 @@ SeaweedFS file manifest, and tears the scratch project down with volumes.
 
 ```sh
 ops/backup/restore-drill.sh \
-  --scratch-project mnt-scratch \
+  --scratch-project console-scratch \
   --backup-root /var/backups/mnt
 ```
 
@@ -87,7 +87,7 @@ Record evidence with a timestamped log:
 ```sh
 mkdir -p ops/backup/drill-logs
 ops/backup/restore-drill.sh \
-  --scratch-project mnt-scratch \
+  --scratch-project console-scratch \
   --backup-root /var/backups/mnt \
   2>&1 | tee "ops/backup/drill-logs/$(date -u +%Y%m%dT%H%M%SZ)-restore-drill.log"
 ```
@@ -110,8 +110,8 @@ verifies the before row exists while the after row does not:
 
 ```sh
 ops/dr/pitr-drill.sh \
-  --source-project mnt-prod \
-  --scratch-project mnt-pitr-scratch \
+  --source-project console-prod \
+  --scratch-project console-pitr-scratch \
   --backup-root /var/backups/mnt \
   --target-timestamp "2026-06-12T12:34:56Z"
 ```
@@ -129,18 +129,18 @@ script is insufficient.
 3. Start a clean target Compose project:
 
    ```sh
-   docker-compose -p mnt-restore -f ops/compose.yml down -v --remove-orphans
-   docker-compose -p mnt-restore -f ops/compose.yml up -d postgres seaweedfs
+   docker-compose -p console-restore -f ops/compose.yml down -v --remove-orphans
+   docker-compose -p console-restore -f ops/compose.yml up -d postgres seaweedfs
    ```
 
 4. Restore Postgres:
 
    ```sh
-   docker-compose -p mnt-restore -f ops/compose.yml exec -T postgres \
+   docker-compose -p console-restore -f ops/compose.yml exec -T postgres \
      sh -ceu 'PGPASSWORD="${POSTGRES_PASSWORD}" dropdb -h 127.0.0.1 -U "${POSTGRES_USER}" --if-exists "${POSTGRES_DB}"'
-   docker-compose -p mnt-restore -f ops/compose.yml exec -T postgres \
+   docker-compose -p console-restore -f ops/compose.yml exec -T postgres \
      sh -ceu 'PGPASSWORD="${POSTGRES_PASSWORD}" createdb -h 127.0.0.1 -U "${POSTGRES_USER}" "${POSTGRES_DB}"'
-   docker-compose -p mnt-restore -f ops/compose.yml exec -T postgres \
+   docker-compose -p console-restore -f ops/compose.yml exec -T postgres \
      sh -ceu 'PGPASSWORD="${POSTGRES_PASSWORD}" pg_restore -h 127.0.0.1 -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" --exit-on-error --no-owner --role="${POSTGRES_USER}"' \
      < /path/to/postgres.dump
    ```

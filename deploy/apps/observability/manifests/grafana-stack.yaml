@@ -3,10 +3,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: grafana-data
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   accessModes: ["ReadWriteOnce"]
   resources:
@@ -17,10 +17,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-datasources
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 data:
   datasources.yaml: |
     apiVersion: 1
@@ -29,7 +29,7 @@ data:
         uid: victoriametrics
         type: prometheus
         access: proxy
-        url: http://victoriametrics.maintenance-observability.svc.cluster.local:8428
+        url: http://victoriametrics.console-observability.svc.cluster.local:8428
         isDefault: true
         editable: false
         jsonData:
@@ -38,13 +38,13 @@ data:
         uid: loki
         type: loki
         access: proxy
-        url: http://loki.maintenance-observability.svc.cluster.local:3100
+        url: http://loki.console-observability.svc.cluster.local:3100
         editable: false
       - name: Tempo
         uid: tempo
         type: tempo
         access: proxy
-        url: http://tempo.maintenance-observability.svc.cluster.local:3200
+        url: http://tempo.console-observability.svc.cluster.local:3200
         editable: false
         jsonData:
           tracesToLogsV2:
@@ -56,15 +56,15 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-provider
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 data:
   dashboards.yaml: |
     apiVersion: 1
     providers:
-      - name: maintenance-observability
+      - name: console-observability
         orgId: 1
         folder: Maintenance
         type: file
@@ -76,13 +76,13 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-maintenance-overview-dashboard
-  namespace: maintenance-observability
+  name: grafana-console-overview-dashboard
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 data:
-  maintenance-observability-overview.json: |
+  console-observability-overview.json: |
     {
       "annotations": { "list": [] },
       "editable": false,
@@ -98,7 +98,7 @@ data:
           "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single", "sort": "none" } },
           "targets": [
             {
-              "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"mnt-app-api\"}[5m]))",
+              "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"console-app-api\"}[5m]))",
               "legendFormat": "requests/sec",
               "refId": "A"
             }
@@ -114,7 +114,7 @@ data:
           "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single", "sort": "none" } },
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{service_name=\"mnt-app-api\"}[5m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{service_name=\"console-app-api\"}[5m])) by (le))",
               "legendFormat": "p99 latency",
               "refId": "A"
             }
@@ -130,7 +130,7 @@ data:
       "time": { "from": "now-1h", "to": "now" },
       "timezone": "browser",
       "title": "Maintenance Observability Overview",
-      "uid": "maintenance-observability-overview",
+      "uid": "console-observability-overview",
       "version": 1
     }
 ---
@@ -138,10 +138,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: grafana
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   replicas: 1
   strategy:
@@ -153,7 +153,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: grafana
-        app.kubernetes.io/part-of: maintenance-observability
+        app.kubernetes.io/part-of: console-observability
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -170,7 +170,7 @@ spec:
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: maintenance-grafana-admin
+                  name: console-grafana-admin
                   key: password
             - { name: GF_AUTH_ANONYMOUS_ENABLED, value: "false" }
             - { name: GF_ANALYTICS_REPORTING_ENABLED, value: "false" }
@@ -214,16 +214,16 @@ spec:
             name: grafana-dashboard-provider
         - name: dashboards
           configMap:
-            name: grafana-maintenance-overview-dashboard
+            name: grafana-console-overview-dashboard
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: grafana
-  namespace: maintenance-observability
+  namespace: console-observability
   labels:
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: maintenance-observability
+    app.kubernetes.io/part-of: console-observability
 spec:
   selector:
     app.kubernetes.io/name: grafana

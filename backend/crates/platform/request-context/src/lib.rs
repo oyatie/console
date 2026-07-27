@@ -1,6 +1,6 @@
 //! Per-request tenant context for the multi-tenant FSM.
 //!
-//! The application connects to Postgres as the non-owner, RLS-enforced `mnt_rt`
+//! The application connects to Postgres as the non-owner, RLS-enforced `console_rt`
 //! role. Every tenant-scoped query must arm the `app.current_org` GUC with the
 //! org of the *authenticated request*, or RLS returns zero rows (fail-closed).
 //!
@@ -30,16 +30,16 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use http::{HeaderMap, StatusCode};
 use ipnet::IpNet;
-use mnt_kernel_core::{
+use console_kernel_core::{
     AccessScope, AuditRequestContext, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use mnt_platform_auth::{JwtVerifier, TenantAccessContext};
-use mnt_platform_authz::{
+use console_platform_auth::{JwtVerifier, TenantAccessContext};
+use console_platform_authz::{
     PlatformPrincipal, Principal, Role, SubjectFreshness, effective_branch_scope_for_tenant,
     resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org,
 };
-use mnt_platform_group::group_admin_member_orgs;
+use console_platform_group::group_admin_member_orgs;
 use sqlx::PgPool;
 use std::collections::BTreeSet;
 
@@ -53,7 +53,7 @@ tokio::task_local! {
     static CURRENT_AUDIT_CONTEXT: RequestAuditContext;
 }
 
-/// Request-correlated metadata suitable for an [`mnt_kernel_core::AuditEvent`].
+/// Request-correlated metadata suitable for an [`console_kernel_core::AuditEvent`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RequestAuditContext {
     pub trace: TraceContext,
@@ -666,7 +666,7 @@ mod tests {
     use axum::body::Body;
     use axum::extract::Extension;
     use axum::routing::get;
-    use mnt_platform_authz::{Action, Feature, authorize_org_wide};
+    use console_platform_authz::{Action, Feature, authorize_org_wide};
     use tower::Service;
 
     fn forwarded_headers(value: &'static str) -> HeaderMap {

@@ -2,7 +2,7 @@
 //! Mention extraction (DESIGN §4.7-7): `@<uuid>` = mention, everything else
 //! (`#object-link`, `!code`, email local-parts, bare text) carries no mention.
 
-use mnt_messenger_domain::extract_mention_user_ids;
+use console_messenger_domain::extract_mention_user_ids;
 
 const ALICE: &str = "11111111-1111-4111-8111-111111111111";
 const BOB: &str = "22222222-2222-4222-8222-222222222222";

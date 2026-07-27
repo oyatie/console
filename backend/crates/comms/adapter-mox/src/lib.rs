@@ -27,11 +27,11 @@
 //! URL needs a `reqwest` rustls feature — deferred with the prod k8s manifests.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_comms_application::{
+use console_comms_application::{
     FetchedMessage, MailFuture, MailServiceError, SendMessageCommand, SmtpSender,
     SmtpTransportConfig, TestConnectionResult,
 };
-use mnt_comms_domain::MessageAddress;
+use console_comms_domain::MessageAddress;
 use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
@@ -377,9 +377,9 @@ fn trim_angle(raw: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mnt_comms_application::SendKind;
-    use mnt_comms_domain::MailSecurity;
-    use mnt_kernel_core::{TraceContext, UserId};
+    use console_comms_application::SendKind;
+    use console_comms_domain::MailSecurity;
+    use console_kernel_core::{TraceContext, UserId};
 
     fn command() -> SendMessageCommand {
         SendMessageCommand {

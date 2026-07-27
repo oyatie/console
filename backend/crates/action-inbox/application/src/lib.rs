@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::future::Future;
 use std::pin::Pin;
 
-use mnt_kernel_core::KernelError;
+use console_kernel_core::KernelError;
 use serde::Serialize;
 use time::{Duration, OffsetDateTime};
 

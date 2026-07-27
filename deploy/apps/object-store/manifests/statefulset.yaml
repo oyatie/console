@@ -1,29 +1,29 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mnt-object-store
-  namespace: maintenance-object-store
+  name: console-object-store
+  namespace: console-object-store
   labels:
     app.kubernetes.io/name: seaweedfs-s3
-    app.kubernetes.io/instance: mnt-object-store
-    app.kubernetes.io/part-of: maintenance-object-store
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
+    app.kubernetes.io/instance: console-object-store
+    app.kubernetes.io/part-of: console-object-store
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
 spec:
   replicas: 1
-  serviceName: mnt-object-store-headless
+  serviceName: console-object-store-headless
   selector:
     matchLabels:
       app.kubernetes.io/name: seaweedfs-s3
-      app.kubernetes.io/instance: mnt-object-store
+      app.kubernetes.io/instance: console-object-store
   template:
     metadata:
       labels:
         app.kubernetes.io/name: seaweedfs-s3
-        app.kubernetes.io/instance: mnt-object-store
-        app.kubernetes.io/part-of: maintenance-object-store
-        maintenance.nousresearch.com/dark-stage: "true"
-        maintenance.nousresearch.com/context: "onprem"
+        app.kubernetes.io/instance: console-object-store
+        app.kubernetes.io/part-of: console-object-store
+        console.nousresearch.com/dark-stage: "true"
+        console.nousresearch.com/context: "onprem"
     spec:
       terminationGracePeriodSeconds: 60
       securityContext:
@@ -41,12 +41,12 @@ spec:
           args:
             - server
             - -s3
-            - -ip=$(POD_NAME).mnt-object-store-headless.$(POD_NAMESPACE).svc.cluster.local
+            - -ip=$(POD_NAME).console-object-store-headless.$(POD_NAMESPACE).svc.cluster.local
             - -ip.bind=0.0.0.0
             - -dir=/data
             - -s3.port=8333
             - -s3.ip.bind=0.0.0.0
-            - -s3.externalUrl=http://mnt-object-store-s3.maintenance-object-store.svc.cluster.local:8333
+            - -s3.externalUrl=http://console-object-store-s3.console-object-store.svc.cluster.local:8333
           env:
             - name: POD_NAME
               valueFrom:
@@ -61,12 +61,12 @@ spec:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: mnt-object-store-credentials
+                  name: console-object-store-credentials
                   key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: mnt-object-store-credentials
+                  name: console-object-store-credentials
                   key: AWS_SECRET_ACCESS_KEY
           ports:
             - name: s3
@@ -119,10 +119,10 @@ spec:
         name: data
         labels:
           app.kubernetes.io/name: seaweedfs-s3
-          app.kubernetes.io/instance: mnt-object-store
-          app.kubernetes.io/part-of: maintenance-object-store
-          maintenance.nousresearch.com/dark-stage: "true"
-          maintenance.nousresearch.com/context: "onprem"
+          app.kubernetes.io/instance: console-object-store
+          app.kubernetes.io/part-of: console-object-store
+          console.nousresearch.com/dark-stage: "true"
+          console.nousresearch.com/context: "onprem"
       spec:
         accessModes: ["ReadWriteOnce"]
         # Deliberately omit storageClassName so the operator-approved on-prem

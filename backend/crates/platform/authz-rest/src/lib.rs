@@ -9,7 +9,7 @@
 //! and `approved_for_promotion` (never a live/shadow row), and simulate/authorize
 //! reuse one fail-closed evaluator ([`authoring::simulate`]).
 //!
-//! [`authoring::simulate`]: mnt_platform_authz::cedar_pbac::authoring::simulate
+//! [`authoring::simulate`]: console_platform_authz::cedar_pbac::authoring::simulate
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 mod store;
@@ -24,14 +24,14 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use mnt_kernel_core::{ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::cedar_pbac::authoring::{
+use console_kernel_core::{ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::cedar_pbac::authoring::{
     AuthoredPolicy, NoCodeBlocks, ReviewDecision, SimRequest, SimResource, SimSubject,
     SimulationOutcome, simulate as simulate_policies,
 };
-use mnt_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use mnt_platform_db::DbError;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
+use console_platform_db::DbError;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -95,7 +95,7 @@ pub fn router(state: CedarPolicyRestState) -> Router {
         .route(POLICY_AUTHORIZE_BULK_PATH, post(authorize_bulk))
         .route(POLICY_DECISIONS_PATH, get(list_decisions))
         .with_state(state);
-    mnt_platform_request_context::with_request_context(router, verifier, pool)
+    console_platform_request_context::with_request_context(router, verifier, pool)
 }
 
 // ---------------------------------------------------------------------------
@@ -469,7 +469,7 @@ async fn authorize_admin(
         RestError::unavailable("JWT verification is not configured for policy API")
     })?;
     let principal =
-        mnt_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
+        console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
             .await
             .map_err(rest_error_from_request_context)?;
     authorize_org_wide(&principal, Action::new(Feature::RoleManage))
@@ -569,9 +569,9 @@ impl RestError {
 }
 
 fn rest_error_from_request_context(
-    err: mnt_platform_request_context::RequestContextError,
+    err: console_platform_request_context::RequestContextError,
 ) -> RestError {
-    use mnt_platform_request_context::RequestContextError as E;
+    use console_platform_request_context::RequestContextError as E;
     match err {
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for policy API")

@@ -12,7 +12,7 @@ import {
 } from "./lib/app-process.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const appBinary = resolve(root, ".tmp/buck2/api-contract/mnt-app");
+const appBinary = resolve(root, ".tmp/buck2/api-contract/console-app");
 const port = process.env.OPENAPI_DRIFT_PORT
   ? Number(process.env.OPENAPI_DRIFT_PORT)
   : await findOpenPort();
@@ -29,18 +29,18 @@ console.error(
 await runCommand("tools/buck2", [
   "build",
   "--out",
-  ".tmp/buck2/api-contract/mnt-app",
-  "//backend/app:mnt-app",
+  ".tmp/buck2/api-contract/console-app",
+  "//backend/app:console-app",
 ], {
   cwd: root,
-  label: "Buck2 build //backend/app:mnt-app",
+  label: "Buck2 build //backend/app:console-app",
 });
 
 const observed = observeChild(spawn(appBinary, [], {
   cwd: root,
   env: {
-    MNT_HTTP_ADDR: `127.0.0.1:${port}`,
-    MNT_APP_ROLE: "api",
+    CONSOLE_HTTP_ADDR: `127.0.0.1:${port}`,
+    CONSOLE_APP_ROLE: "api",
   },
   stdio: ["ignore", "pipe", "pipe"],
 }));

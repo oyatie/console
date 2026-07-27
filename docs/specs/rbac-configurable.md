@@ -35,7 +35,7 @@ binding:
   `financial:1574-1586` (`purchase_actor_for_user_tx` role-string cascade that drives the purchase
   approval state machine), `financial:1675` (self-approval exemption), `registry/rest:166/1350`
   (`all_branches` substitute search). Plus the **~13 `BranchScope::All`-from-role producers** (see R6).
-  A new CI gate (sibling of `mnt-gate-rls-arming`) **fails on any `matches!(*, Role::…)` / `role ==
+  A new CI gate (sibling of `console-gate-rls-arming`) **fails on any `matches!(*, Role::…)` / `role ==
   "…"` / `.roles.contains(Role::…)` outside the authz resolver**.
 - **R2 (C2) — Escalation closure.** "Grant ≤ self" is checked over the **post-union effective
   capability set** at **assignment time**, against the **assigner's live resolved set** (never the
@@ -74,9 +74,9 @@ binding:
   `feature_catalog` table seeded from `Feature::ALL` (FK), single-sourcing the catalog; the resolver
   drops any unparseable `feature`/`level` to `Deny`.
 - **R8 (M2) — Prove the cache-warm read is armed.** The per-org policy warm-load must be armed in-tx and
-  tested as **real `mnt_rt`**; a bare-pool warm must yield deny-all (proving arming is load-bearing —
+  tested as **real `console_rt`**; a bare-pool warm must yield deny-all (proving arming is load-bearing —
   the `resolve_branch_scope_in_org` footgun). Add the 3 tables + `policy_version`/`feature_catalog` to
-  `mnt-gate-rls-arming`.
+  `console-gate-rls-arming`.
 - **R9 (M3) — `view_as` stays system-roles-only.** Operator impersonation
   (`platform/platform-rest/view_as.rs`) must never mint arbitrary custom-role tokens without re-deriving
   effective capabilities under the target org's RLS. Stated as an explicit guard.
@@ -173,7 +173,7 @@ Target model for the effective-policy resolver. G016-P0 implements the productio
 in §9 (`feature_catalog`, `policy_roles`, `policy_role_permissions`, reserved
 `user_role_assignments`, `policy_versions`) but **does not use it for live authorization yet**. All
 tenant tables are tenant-scoped, `FORCE ROW LEVEL SECURITY`, `org_id` column, owner-applied, `GRANT`ed
-to `mnt_rt`, RLS policy `org_id = current_setting('app.current_org')::uuid`.
+to `console_rt`, RLS policy `org_id = current_setting('app.current_org')::uuid`.
 
 ```
 roles
@@ -213,7 +213,7 @@ user_role_assignments
 **Cross-tenant reference is unrepresentable by construction** (review-gate finding #4): the children
 FK on `(org_id, role_id) → roles(org_id, id)` (and `(org_id, user_id) → users(org_id, id)`), so a row
 whose `org_id` differs from its role's/user's `org_id` is rejected at write — RLS confines the row, the
-composite FK confines the *reference*. An `mnt_rt` test must prove a mismatched-org assignment INSERT
+composite FK confines the *reference*. An `console_rt` test must prove a mismatched-org assignment INSERT
 fails.
 
 - **System roles** are seeded (migration) as `kind='system'` rows per org with `role_permissions`
@@ -232,7 +232,7 @@ fails.
 - Future P1/P2 target: move additional ABAC/PBAC attributes and no-lockout/escalation closure into the same
   resolver without changing call-site authorization semantics. The Cedar/PBAC target baseline is a typed
   `AuthzEngine` boundary: built-in/custom roles become subject inputs or generated policy-bundle material,
-  Cedar evaluates capabilities/actions, and Postgres `mnt_rt`/RLS remains the hard row boundary.
+  Cedar evaluates capabilities/actions, and Postgres `console_rt`/RLS remains the hard row boundary.
 - Current bridge resolution is **per-request, RLS-armed, and cached** with the cache keyed by **`(org_id,
   policy_version)`** (**R4** — *not* TTL/`org_id`-only): every `RoleManage` write bumps the per-org
   `policy_version` (an RLS-armed row) **synchronously before the write returns**; resolution reads the
@@ -248,7 +248,7 @@ fails.
 ## 4. Hard invariants (NON-NEGOTIABLE — a security-reviewer must verify each)
 
 1. **Tenant isolation is immutable.** No role, policy, or assignment can read/write across `org_id`.
-   All three new tables are FORCE RLS + armed + have `mnt_rt` tests proving cross-tenant invisibility.
+   All three new tables are FORCE RLS + armed + have `console_rt` tests proving cross-tenant invisibility.
    Policy configures *capabilities within a tenant*, never the tenant boundary.
 2. **No privilege escalation via configuration.** Defining/assigning a role can **never grant a
    capability the actor does not themselves hold** ("grant ≤ self"). Enforced server-side on every
@@ -345,7 +345,7 @@ This slice exists because tenants need to create many named roles (for example d
 **In scope now**
 
 - Add the tenant feature `RoleManage` to the canonical feature catalog. Only `SUPER_ADMIN` holds it initially (`[D,D,D,D,D,A]`).
-- Add tenant-scoped custom role tables with RLS, immutable `org_id`, mnt_rt grants, feature FK validation, and per-org `policy_version` bumps.
+- Add tenant-scoped custom role tables with RLS, immutable `org_id`, console_rt grants, feature FK validation, and per-org `policy_version` bumps.
 - Add `/api/v1/policy/features` and `/api/v1/policy/roles` so a RoleManage holder can see the capability catalog and create custom role definitions with explicit permission cells.
 - Surface the per-tenant `policy_version` in the role catalog response and Policy Studio UI. Version 0
   means no policy write has happened; every role/custom-assignment write bumps the monotonic version
@@ -382,7 +382,7 @@ The persisted role catalog, feature FK, audit row, RLS policy, policy-version bu
 0. **P0 — capability hygiene + HIGH-1 bridge (ships in G001/now, code-only, no new tables):** add
    `OrgWideQueueTriage`, route the workorder queue/daily-plan `BranchScope::All` widen through it (the
    `is_admin_like` today-holes), fix codex HIGH-2 (gate `list_daily_plans` on
-   `DailyPlanRequest`∪`DailyPlanReview`) — all with `mnt_rt` tests. Closes the live finding
+   `DailyPlanRequest`∪`DailyPlanReview`) — all with `console_rt` tests. Closes the live finding
    forward-compatibly. *(Scope here is only the workorder today-holes; the full R1/R6 conversion is P1.)*
 1. **P1 — de-string authorization + the `BranchScope::All` chokepoint (R1, R6) + data model + engine:**
    convert **all** 18 role-string sites to capability checks — especially the escalation/IDOR guards
@@ -391,8 +391,8 @@ The persisted role catalog, feature FK, audit row, RLS policy, policy-version bu
    forbidding role-string authz. Then: migration (3 tables + `feature_catalog` (R7) + per-org
    `policy_version` (R4), RLS, GRANTs, seed-from-`matrix_row()`), resolver + `(org_id,policy_version)`
    cache, fail-closed parse-or-deny (central additive resolver landed in G016-P1m; branch+team runtime
-   condition parity landed in G016-P1r; cache and richer data-backed ABAC/PBAC remain follow-up). `mnt_rt` RLS tests incl. the **armed cache-warm** proof (R8) and the
-   golden full-grid parity test (R5). Add the new tables to `mnt-gate-rls-arming`.
+   condition parity landed in G016-P1r; cache and richer data-backed ABAC/PBAC remain follow-up). `console_rt` RLS tests incl. the **armed cache-warm** proof (R8) and the
+   golden full-grid parity test (R5). Add the new tables to `console-gate-rls-arming`.
 2. **P2 — RoleManage API + escalation closure (R2) + no-lockout (R5):** create/edit/retire/assign
    endpoints (openapi-first, regen clients); grant-≤-self over the post-union effective set at assignment
    time; `RoleManage` self-bounded; named `[D,…,A]` allow-list gates assignment; holder-floor under
@@ -403,7 +403,7 @@ The persisted role catalog, feature FK, audit row, RLS policy, policy-version bu
    (Blueprint, AA, ≥90).
 4. **P4 — "org-admin" as first custom role** (`OrgWideQueueTriage=Allow`; proves the loop) + docs.
 
-**Test strategy (per slice):** real `mnt_rt` RLS round-trip + cross-tenant invisibility for each new
+**Test strategy (per slice):** real `console_rt` RLS round-trip + cross-tenant invisibility for each new
 table; golden parity test that seeded system policy == `matrix_row()`; adversarial escalation/lockout
 tests; gates + fmt + clippy + `check:openapi-app` green; security-review as a separate pass.
 

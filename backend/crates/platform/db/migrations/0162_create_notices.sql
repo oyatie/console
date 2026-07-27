@@ -9,7 +9,7 @@
 -- org member — narrower audience scoping is future work, ponytail: add a
 -- branch/region filter column when a producer needs it).
 
--- mnt-gate: audited-table notices
+-- console-gate: audited-table notices
 CREATE TABLE notices (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id           UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -34,10 +34,10 @@ CREATE POLICY org_isolation ON notices
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON notices TO mnt_rt;
-REVOKE DELETE ON notices FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON notices TO console_rt;
+REVOKE DELETE ON notices FROM console_rt;
 
--- mnt-gate: audited-table notice_receipts
+-- console-gate: audited-table notice_receipts
 CREATE TABLE notice_receipts (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id             UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -61,5 +61,5 @@ CREATE POLICY org_isolation ON notice_receipts
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
 
-GRANT SELECT, INSERT, UPDATE ON notice_receipts TO mnt_rt;
-REVOKE DELETE ON notice_receipts FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON notice_receipts TO console_rt;
+REVOKE DELETE ON notice_receipts FROM console_rt;

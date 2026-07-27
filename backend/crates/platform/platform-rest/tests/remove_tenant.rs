@@ -8,22 +8,22 @@
 //!       nothing is deleted (the transaction rolled back);
 //!   (c) a non-platform (tenant) principal is rejected with 403;
 //!   (d) cross-tenant: removing org A does not touch org B's rows;
-//!   (e) audit-immutability is intact — a direct `mnt_rt` UPDATE on audit_events
+//!   (e) audit-immutability is intact — a direct `console_rt` UPDATE on audit_events
 //!       still raises (the removal's re-home is the ONLY sanctioned path).
 //!
-//! The app router runs against a pool whose connections `SET ROLE mnt_rt`, so the
+//! The app router runs against a pool whose connections `SET ROLE console_rt`, so the
 //! removal exercises the production runtime role under FORCE RLS — a superuser
-//! pool would mask whether the SECURITY DEFINER escape actually works for `mnt_rt`
+//! pool would mask whether the SECURITY DEFINER escape actually works for `console_rt`
 //! (per the project's rls-verify-as-runtime-role discipline).
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_provisioning::PlatformProvisioner;
-use mnt_platform_rest::{PLATFORM_ORGS_PATH, PlatformRestState, router};
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_provisioning::PlatformProvisioner;
+use console_platform_rest::{PLATFORM_ORGS_PATH, PlatformRestState, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -34,13 +34,13 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Harness {
     private_pem: String,
     public_pem: String,
-    /// The runtime-role pool the app router uses (every connection is `mnt_rt`).
+    /// The runtime-role pool the app router uses (every connection is `console_rt`).
     rt_pool: PgPool,
     force_pool: PgPool,
 }
@@ -132,7 +132,7 @@ impl Harness {
     }
 }
 
-/// A pool whose every connection runs `SET ROLE mnt_rt`, so the app router's
+/// A pool whose every connection runs `SET ROLE console_rt`, so the app router's
 /// statements execute as the production runtime role (NOSUPERUSER, NOBYPASSRLS)
 /// under FORCE RLS — the same pattern the identity/auth runtime-RLS tests use.
 async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -141,7 +141,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(2)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_platform_force_cmd")
+                sqlx::query("SET ROLE console_platform_force_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -158,7 +158,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -702,7 +702,7 @@ async fn removing_one_tenant_does_not_touch_another(owner_pool: PgPool) {
 }
 
 // ---------------------------------------------------------------------------
-// (e) Audit-immutability is intact: a direct mnt_rt UPDATE still raises (the
+// (e) Audit-immutability is intact: a direct console_rt UPDATE still raises (the
 // removal re-home is the ONLY path that may release audit references).
 // ---------------------------------------------------------------------------
 #[sqlx::test(migrations = "../db/migrations")]
@@ -714,7 +714,7 @@ async fn direct_runtime_update_on_audit_events_is_still_rejected(owner_pool: PgP
 
     let org_id = onboard(&service, &platform_token, "audited").await;
 
-    // As mnt_rt, with the org armed, try to re-home an audit row WITHOUT the
+    // As console_rt, with the org armed, try to re-home an audit row WITHOUT the
     // sanctioned DEFINER GUC. The append-only trigger must reject it.
     let mut tx = harness.rt_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -728,7 +728,7 @@ async fn direct_runtime_update_on_audit_events_is_still_rejected(owner_pool: PgP
         .await;
     assert!(
         result.is_err(),
-        "a direct mnt_rt UPDATE on audit_events must be rejected by the append-only trigger"
+        "a direct console_rt UPDATE on audit_events must be rejected by the append-only trigger"
     );
     let _ = tx.rollback().await;
 }

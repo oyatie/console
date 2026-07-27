@@ -1,5 +1,5 @@
 [package]
-name = "mnt-platform-auth-rest"
+name = "console-platform-auth-rest"
 version = "0.1.0"
 description = "REST API for passkey ceremonies and token lifecycle."
 edition.workspace = true
@@ -9,20 +9,20 @@ publish.workspace = true
 
 [features]
 # Local role-switch dev-auth endpoint. NOT in `default` — see the crate-level
-# docs on the `dev_auth` module and `mnt-gate-dev-auth-absence`.
+# docs on the `dev_auth` module and `console-gate-dev-auth-absence`.
 dev-auth = []
 
 [dependencies]
 axum = { workspace = true }
 http = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-platform-auth = { path = "../auth" }
-mnt-platform-authz = { path = "../authz" }
-mnt-platform-db = { workspace = true }
-mnt-platform-email = { workspace = true }
-mnt-platform-group = { path = "../group" }
-mnt-platform-provisioning = { path = "../provisioning" }
-mnt-platform-request-context = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-auth = { path = "../auth" }
+console-platform-authz = { path = "../authz" }
+console-platform-db = { workspace = true }
+console-platform-email = { workspace = true }
+console-platform-group = { path = "../group" }
+console-platform-provisioning = { path = "../provisioning" }
+console-platform-request-context = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }

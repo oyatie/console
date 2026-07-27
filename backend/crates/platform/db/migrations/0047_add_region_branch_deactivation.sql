@@ -15,15 +15,15 @@
 -- a 409 rather than orphaning anything — this column only records the state.
 --
 -- RLS/grants: both tables are already ENABLE + FORCE ROW LEVEL SECURITY (0030)
--- with the `org_isolation` policy, and `mnt_rt` already holds
+-- with the `org_isolation` policy, and `console_rt` already holds
 -- SELECT/INSERT/UPDATE/DELETE on them (0031). Adding a nullable column needs no
 -- new grant or policy — the existing org_isolation USING/WITH CHECK clauses
 -- continue to scope every read and the UPDATE that sets `deactivated_at`. The
 -- 0031 `enforce_org_id_immutable` BEFORE UPDATE triggers also still apply, so a
 -- deactivation can never move a row between tenants.
 --
--- mnt-gate: audited-table regions
--- mnt-gate: audited-table branches
+-- console-gate: audited-table regions
+-- console-gate: audited-table branches
 
 ALTER TABLE regions
     ADD COLUMN deactivated_at TIMESTAMPTZ NULL;

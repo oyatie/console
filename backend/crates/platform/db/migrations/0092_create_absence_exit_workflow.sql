@@ -6,7 +6,7 @@
 -- confirmation, insurance-loss package, severance calculation inputs, and
 -- approval-draft payload without guessing payroll-sensitive figures.
 
--- mnt-gate: audited-table employee_absence_alerts
+-- console-gate: audited-table employee_absence_alerts
 CREATE TABLE employee_absence_alerts (
     id                  UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -47,7 +47,7 @@ CREATE TRIGGER trg_employee_absence_alerts_org_immutable
     BEFORE UPDATE ON employee_absence_alerts
     FOR EACH ROW EXECUTE FUNCTION enforce_org_id_immutable();
 
--- mnt-gate: audited-table employee_exit_cases
+-- console-gate: audited-table employee_exit_cases
 CREATE TABLE employee_exit_cases (
     id                   UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id               UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -99,7 +99,7 @@ ALTER TABLE employee_absence_alerts
     ADD CONSTRAINT employee_absence_alerts_linked_exit_same_org_fk
     FOREIGN KEY (linked_exit_case_id, org_id) REFERENCES employee_exit_cases(id, org_id) ON DELETE CASCADE;
 
--- mnt-gate: audited-table employee_exit_settlement_packages
+-- console-gate: audited-table employee_exit_settlement_packages
 CREATE TABLE employee_exit_settlement_packages (
     id                            UUID        NOT NULL DEFAULT gen_random_uuid(),
     org_id                        UUID        NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -157,6 +157,6 @@ BEGIN
 END
 $$;
 
-GRANT SELECT, INSERT, UPDATE ON employee_absence_alerts TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON employee_exit_cases TO mnt_rt;
-GRANT SELECT, INSERT, UPDATE ON employee_exit_settlement_packages TO mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON employee_absence_alerts TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON employee_exit_cases TO console_rt;
+GRANT SELECT, INSERT, UPDATE ON employee_exit_settlement_packages TO console_rt;

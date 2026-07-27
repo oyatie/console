@@ -3,8 +3,8 @@
 //! This crate owns EV object value types and state-machine rules only. It has no
 //! SQLx, REST, storage, request-context, workorder, or compliance dependency.
 
-use mnt_kernel_core::KernelError;
-pub use mnt_kernel_core::{
+use console_kernel_core::KernelError;
+pub use console_kernel_core::{
     EvidenceCopyId, EvidenceCustodyEventId, EvidenceExportId, EvidenceLegalHoldId,
     EvidenceObjectId, EvidenceTsaProofId,
 };

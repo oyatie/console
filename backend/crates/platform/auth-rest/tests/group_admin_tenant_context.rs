@@ -4,20 +4,20 @@
 //! Unlike a construction-seam test (which supplies the freshness itself and so
 //! would still pass if the handler stopped reading it), this drives the actual
 //! `POST /api/v1/group-admin/tenant-context` handler through the built `router()`
-//! under the real `mnt_rt` runtime role. It fails if the handler stops sourcing
+//! under the real `console_rt` runtime role. It fails if the handler stops sourcing
 //! freshness, stamps zeros, or transposes the fields — because it asserts the
 //! MINTED token carries the target subsidiary's DB-current `policy_version` (and
 //! the absent-0 baseline for a cross-org actor), and that a later bump flows.
 //!
-//! `mnt_rt` (NOSUPERUSER, NOBYPASSRLS) — never a BYPASSRLS superuser pool, which
+//! `console_rt` (NOSUPERUSER, NOBYPASSRLS) — never a BYPASSRLS superuser pool, which
 //! would mask a broken read path (rls-verify-as-runtime-role).
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_auth_rest::{
+use console_kernel_core::{OrgId, UserId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_auth_rest::{
     AuthRestConfig, AuthRestState, GROUP_ADMIN_TENANT_CONTEXT_PATH, router,
 };
 use p256::ecdsa::SigningKey;
@@ -30,8 +30,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 struct Keys {
     private_pem: String,
@@ -68,7 +68,7 @@ fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
         AuthRestConfig {
             rp_id: "example.com".to_owned(),
             rp_origin: "https://auth.example.com".to_owned(),
-            rp_name: "MNT Maintenance".to_owned(),
+            rp_name: "Console".to_owned(),
             ceremony_ttl: Duration::minutes(5),
             jwt_issuer: TEST_ISSUER.to_owned(),
             jwt_audience: TEST_AUDIENCE.to_owned(),
@@ -88,7 +88,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -97,7 +97,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-// --- seeding (owner pool; group tables are owner-only, mnt_rt has no access) ---
+// --- seeding (owner pool; group tables are owner-only, console_rt has no access) ---
 
 async fn seed_org(owner_pool: &PgPool, slug: &str) -> Uuid {
     sqlx::query_scalar(

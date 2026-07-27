@@ -3,7 +3,7 @@
 -- receipts, and search. Realtime fan-out is intentionally outside this
 -- migration and arrives in T3.2.
 
--- mnt-gate: audited-table messenger_threads
+-- console-gate: audited-table messenger_threads
 CREATE TABLE messenger_threads (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     kind          TEXT        NOT NULL CHECK (kind IN ('work_order','team','dm','group')),
@@ -26,7 +26,7 @@ CREATE UNIQUE INDEX idx_messenger_threads_work_order
 CREATE INDEX idx_messenger_threads_branch_kind
     ON messenger_threads (branch_id, kind, updated_at DESC);
 
--- mnt-gate: audited-table messenger_thread_members
+-- console-gate: audited-table messenger_thread_members
 CREATE TABLE messenger_thread_members (
     thread_id UUID        NOT NULL REFERENCES messenger_threads(id) ON DELETE CASCADE,
     user_id   UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -38,7 +38,7 @@ CREATE TABLE messenger_thread_members (
 CREATE INDEX idx_messenger_thread_members_user
     ON messenger_thread_members (user_id, thread_id);
 
--- mnt-gate: audited-table messenger_messages
+-- console-gate: audited-table messenger_messages
 CREATE TABLE messenger_messages (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     thread_id     UUID        NOT NULL REFERENCES messenger_threads(id) ON DELETE CASCADE,
@@ -62,7 +62,7 @@ CREATE INDEX idx_messenger_messages_search
 -- Message attachments reference already-audited evidence media rows. Upload
 -- and WORM verification stay in the evidence pipeline; messenger only stores
 -- the relationship to a persisted object.
--- mnt-gate: audited-table messenger_message_attachments
+-- console-gate: audited-table messenger_message_attachments
 CREATE TABLE messenger_message_attachments (
     message_id  UUID     NOT NULL REFERENCES messenger_messages(id) ON DELETE CASCADE,
     evidence_id UUID     NOT NULL REFERENCES evidence_media(id) ON DELETE RESTRICT,
@@ -71,7 +71,7 @@ CREATE TABLE messenger_message_attachments (
     UNIQUE (message_id, sort_order)
 );
 
--- mnt-gate: audited-table messenger_read_receipts
+-- console-gate: audited-table messenger_read_receipts
 CREATE TABLE messenger_read_receipts (
     thread_id            UUID        NOT NULL REFERENCES messenger_threads(id) ON DELETE CASCADE,
     user_id              UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,

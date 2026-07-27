@@ -9,8 +9,8 @@ the build report.
 ## Verdict
 
 Stage-2 work is real and largely sound: FORCE RLS + org policy + org-immutable
-trigger + append-only `mnt_rt` grants on the new table are present in 0194;
-the integration suite genuinely runs the assembled router as `mnt_rt`
+trigger + append-only `console_rt` grants on the new table are present in 0194;
+the integration suite genuinely runs the assembled router as `console_rt`
 (`SET ROLE` on every pooled connection); idempotency replay returns the stored
 row without re-audit or re-notification; every mutation lands audit events with
 readback assertions proving `accepted_by` never enters snapshots; scope
@@ -66,13 +66,13 @@ matching the CHECK exactly.
 
 - **RLS**: `support_ticket_acceptances` ENABLE + FORCE RLS, `org_isolation`
   USING/WITH CHECK on `app.current_org`, org-immutable BEFORE UPDATE trigger,
-  `GRANT SELECT, INSERT` / `REVOKE UPDATE, DELETE` for `mnt_rt` (append-only).
+  `GRANT SELECT, INSERT` / `REVOKE UPDATE, DELETE` for `console_rt` (append-only).
   All cross-crate read targets (`registry_sites`, `registry_customers`,
   `work_orders`, `site_attendance_events`) confirmed FORCE RLS (0030/0042).
 - **Runtime role**: all three integration tests dispatch through
-  `build_router` over a pool whose every connection runs `SET ROLE mnt_rt`.
+  `build_router` over a pool whose every connection runs `SET ROLE console_rt`.
 - **Tenant isolation**: sibling-org admin sees `total: 0` (count concealment)
-  and 404 on detail with no name leak — proven as `mnt_rt`, not superuser.
+  and 404 on detail with no name leak — proven as `console_rt`, not superuser.
 - **Deny-by-omission**: out-of-branch sites absent from rows AND totals;
   detail/cursor/link lookups scope-confined to 404; empty branch scope → SQL
   `FALSE`; untriaged tickets actionable only by cross-branch principals.
@@ -102,11 +102,11 @@ matching the CHECK exactly.
 - `cargo fmt --check` — clean on all four support crates and
   `field_visit_api.rs` (pre-existing drift in `cedar_freshness_mint.rs` /
   `logistics_pilot_story.rs` belongs to other lanes).
-- `cargo clippy --tests -D warnings` on mnt-support-{domain,application,
+- `cargo clippy --tests -D warnings` on console-support-{domain,application,
   adapter-postgres,rest} — clean.
 - `cargo test` support crates — domain 9, rest 7 unit + 6 sqlx, adapter 4 unit
   + 14 sqlx (incl. the RLS-as-runtime-role suites) — all green, exit 0.
-- `cargo test -p mnt-app --test field_visit_api` — 3/3 green as `mnt_rt`
+- `cargo test -p console-app --test field_visit_api` — 3/3 green as `console_rt`
   against dev Postgres 127.0.0.1:55432 (per-test scratch DBs via `#[sqlx::test]`).
 
 ## Known limits / not fixed here (out of ownership or accepted)
@@ -117,7 +117,7 @@ matching the CHECK exactly.
   return axum's default plain-text 400, not the canonical envelope — this is
   spine-wide behavior shared by every module, not lane-fixable without a
   platform-level rejection mapper.
-- `cargo clippy -p mnt-app --test field_visit_api` cannot complete because the
+- `cargo clippy -p console-app --test field_visit_api` cannot complete because the
   UNCOMMITTED local spine unblocks (logistics adapter, production/rest — other
   lanes' files, documented in the integration manifest) trip
   `-D clippy::expect-used`; the owning lanes' real fixes supersede those

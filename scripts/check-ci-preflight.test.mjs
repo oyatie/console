@@ -120,8 +120,8 @@ describe("CI preflight contract", () => {
   it("requires backend Buck2 commands to run from the repository root", () => {
     for (const stepName of [
       "Buck2 dev-auth feature PostgreSQL suites",
-      "Buck2 mnt-app unit suite",
-      "Buck2 mnt-app inline PostgreSQL suites",
+      "Buck2 console-app unit suite",
+      "Buck2 console-app inline PostgreSQL suites",
     ]) {
       expectFailure(
         workflow.replace(
@@ -154,17 +154,17 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("rejects API contract tests that point MNT_APP_BIN at a Cargo target", () => {
+  it("rejects API contract tests that point CONSOLE_APP_BIN at a Cargo target", () => {
     for (const path of [
-      "${{ github.workspace }}/backend/target/debug/mnt-app",
-      "${CARGO_TARGET_DIR}/debug/mnt-app",
+      "${{ github.workspace }}/backend/target/debug/console-app",
+      "${CARGO_TARGET_DIR}/debug/console-app",
     ]) {
       expectFailure(
         workflow.replace(
-          "      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/mnt_contract\n",
-          `      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/mnt_contract\n      MNT_APP_BIN: ${path}\n`,
+          "      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract\n",
+          `      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract\n      CONSOLE_APP_BIN: ${path}\n`,
         ),
-        "api-contract must not use a Cargo target path for MNT_APP_BIN",
+        "api-contract must not use a Cargo target path for CONSOLE_APP_BIN",
       );
     }
   });
@@ -180,30 +180,30 @@ describe("CI preflight contract", () => {
     expectFailure(
       workflow.replace(
         "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate direct Buck2 app build\n        run: tools/buck2 build //backend/app:mnt-app\n\n      - name: Capture Buck2-built app for contract test\n",
+        "      - name: Duplicate direct Buck2 app build\n        run: tools/buck2 build //backend/app:console-app\n\n      - name: Capture Buck2-built app for contract test\n",
       ),
       "api-contract must contain only the approved ordered steps",
     );
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Override contract app\n        run: echo \"MNT_APP_BIN=${CARGO_TARGET_DIR}/debug/mnt-app\" >> \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
+        "      - name: Override contract app\n        run: echo \"CONSOLE_APP_BIN=${CARGO_TARGET_DIR}/debug/console-app\" >> \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
       ),
       "api-contract may reference GITHUB_ENV only in the designated capture step",
     );
     expectFailure(
       workflow.replace(
-        '          printf \'MNT_APP_BIN=%s\\n\' "${mnt_app_bin}" >> "${GITHUB_ENV}"\n',
-        '          printf \'MNT_APP_BIN=%s\\n\' "${mnt_app_bin}" >> "${GITHUB_ENV}"\n          export MNT_APP_BIN=/tmp/other-mnt-app\n',
+        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"\n',
+        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"\n          export CONSOLE_APP_BIN=/tmp/other-console-app\n',
       ),
       "api-contract capture must use the designated verified command grammar",
     );
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Employee import replay contract\n        env:\n          MNT_APP_BIN: /tmp/other-mnt-app\n",
+        "      - name: Employee import replay contract\n        env:\n          CONSOLE_APP_BIN: /tmp/other-console-app\n",
       ),
-      "api-contract must not override the captured MNT_APP_BIN",
+      "api-contract must not override the captured CONSOLE_APP_BIN",
     );
   });
 
@@ -223,21 +223,21 @@ describe("CI preflight contract", () => {
     expectFailure(
       workflow.replace(
         "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate direct Buck2 app build\n        run: |\n          command ./tools/buck2 --isolation-dir .tmp \\\n            build --out .tmp/duplicate //backend/app:mnt-app # direct producer\n\n      - name: Capture Buck2-built app for contract test\n",
+        "      - name: Duplicate direct Buck2 app build\n        run: |\n          command ./tools/buck2 --isolation-dir .tmp \\\n            build --out .tmp/duplicate //backend/app:console-app # direct producer\n\n      - name: Capture Buck2-built app for contract test\n",
       ),
       "api-contract must contain only the approved ordered steps",
     );
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Late redirected override\n        run: |\n          echo \"MNT_APP_BIN=/tmp/other-mnt-app\" >> \"$GITHUB_ENV\" # still a write\n          :\n\n      - name: Employee import replay contract\n",
+        "      - name: Late redirected override\n        run: |\n          echo \"CONSOLE_APP_BIN=/tmp/other-console-app\" >> \"$GITHUB_ENV\" # still a write\n          :\n\n      - name: Employee import replay contract\n",
       ),
       "api-contract may reference GITHUB_ENV only in the designated capture step",
     );
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Late tee override\n        run: printf 'MNT_APP_BIN=/tmp/other-mnt-app\\n' | tee -a \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
+        "      - name: Late tee override\n        run: printf 'CONSOLE_APP_BIN=/tmp/other-console-app\\n' | tee -a \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
       ),
       "api-contract may reference GITHUB_ENV only in the designated capture step",
     );
@@ -265,14 +265,14 @@ describe("CI preflight contract", () => {
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Programmatic environment override\n        run: node -e 'require(\"node:fs\").appendFileSync(process.env.GITHUB_ENV, \"MNT_APP_BIN=/tmp/other\\n\")'\n\n      - name: Employee import replay contract\n",
+        "      - name: Programmatic environment override\n        run: node -e 'require(\"node:fs\").appendFileSync(process.env.GITHUB_ENV, \"CONSOLE_APP_BIN=/tmp/other\\n\")'\n\n      - name: Employee import replay contract\n",
       ),
       "api-contract may reference GITHUB_ENV only in the designated capture step",
     );
     expectFailure(
       workflow.replace(
-        '          printf \'MNT_APP_BIN=%s\\n\' "${mnt_app_bin}" >> "${GITHUB_ENV}"',
-        '          printf \'MNT_APP_BIN=%s\\n\' "${mnt_app_bin}" > "${GITHUB_ENV:?}"',
+        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"',
+        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" > "${GITHUB_ENV:?}"',
       ),
       "api-contract capture must use the designated verified command grammar",
     );
@@ -280,11 +280,11 @@ describe("CI preflight contract", () => {
 
   it("allows only the ordered API contract execution surface", () => {
     for (const command of [
-      "$(printf ./tools/buck2) build //backend/app:mnt-app",
+      "$(printf ./tools/buck2) build //backend/app:console-app",
       "node ./scripts/check-openapi-app.mjs",
       "node --enable-source-maps scripts/check-openapi-app.mjs",
-      "cargo build -p mnt-app",
-      'env_name=GITHUB_$(printf ENV); key=MNT_APP_$(printf BIN); printf "$key=/tmp/other\\n" >> "${!env_name}"',
+      "cargo build -p console-app",
+      'env_name=GITHUB_$(printf ENV); key=CONSOLE_APP_$(printf BIN); printf "$key=/tmp/other\\n" >> "${!env_name}"',
     ]) {
       expectFailure(
         workflow.replace(
@@ -297,7 +297,7 @@ describe("CI preflight contract", () => {
   });
 
   it("requires backend DotSlash bootstrap before any Buck or DotSlash invocation", () => {
-    for (const command of ["tools/buck2 --version", "dotslash run //backend/app:mnt-app"]) {
+    for (const command of ["tools/buck2 --version", "dotslash run //backend/app:console-app"]) {
       expectFailure(
         workflow.replace(
           "      - name: Install pinned DotSlash runtime\n        run: ../tools/buck/install_dotslash.sh\n",
@@ -552,10 +552,10 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("locks post-preflight Buck2 reachability targets and disallows added run surfaces", () => {
     expectFailure(
       workflow.replace(
-        "tools/buck2 test //backend/crates/support/domain:mnt-support-domain-unit",
-        "cargo test -p mnt-support-domain",
+        "tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
+        "cargo test -p console-support-domain",
       ),
-      "support-domain-unit must run tools/buck2 test //backend/crates/support/domain:mnt-support-domain-unit",
+      "support-domain-unit must run tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
     );
     expectFailure(
       workflow.replace(
@@ -567,7 +567,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     expectFailure(
       workflow.replace(
         "//tools/buck:attendance-concurrency-postgres",
-        "//backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-concurrency",
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency",
       ),
       "postgres-domain-reachability must run the locked PostgreSQL reachability targets",
     );
@@ -583,42 +583,42 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow,
       "tools/buck/BUCK must bind PostgreSQL wrapper attendance-concurrency-postgres to the loader and exact Rust binary",
       postgresWrapperBuildFile.replace(
-        'args = ["$(location //backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-concurrency)"]',
-        'args = ["$(location //backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-cancel_substitution)"]',
+        'args = ["$(location //backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency)"]',
+        'args = ["$(location //backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-cancel_substitution)"]',
       ),
     );
     expectFailure(
       workflow.replace(
         "      - name: Support domain unit target\n",
-        "      - name: Unexpected Cargo test\n        run: cargo test -p mnt-support-domain\n\n      - name: Support domain unit target\n",
+        "      - name: Unexpected Cargo test\n        run: cargo test -p console-support-domain\n\n      - name: Support domain unit target\n",
       ),
       "support-domain-unit must contain only the locked ordered Buck2 run steps",
     );
     expectFailure(
       workflow.replace(
         "//tools/buck:app-inline-postgres",
-        "//backend/app:mnt-app-itest-inline-postgres",
+        "//backend/app:console-app-itest-inline-postgres",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
         "//tools/buck:app-dev-auth-persona-guard-postgres",
-        "//backend/app:mnt-app-itest-dev_auth_persona_guard_feature",
+        "//backend/app:console-app-itest-dev_auth_persona_guard_feature",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
         "//tools/buck:auth-rest-dev-auth-group-admin-postgres",
-        "//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-group_admin_tenant_context",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-group_admin_tenant_context",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
         "//tools/buck:provisioning-dev-principal-upsert-race-postgres",
-        "//backend/crates/platform/provisioning:mnt-platform-provisioning-itest-dev_principal_upsert_race",
+        "//backend/crates/platform/provisioning:console-platform-provisioning-itest-dev_principal_upsert_race",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -634,23 +634,23 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow,
       "tools/buck/BUCK must bind PostgreSQL wrapper provisioning-dev-principal-upsert-race-postgres to the loader and exact Rust binary",
       postgresWrapperBuildFile.replace(
-        'deps = ["//backend/crates/platform/provisioning:mnt-platform-provisioning-itest-dev_principal_upsert_race"],',
-        'deps = ["//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev_auth_session"],',
+        'deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-dev_principal_upsert_race"],',
+        'deps = ["//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-dev_auth_session"],',
       ),
     );
     expectFailure(
       workflow.replace(
         "      - name: Buck2 dev-auth feature PostgreSQL suites\n",
-        "      - name: Direct Cargo dev-auth suite\n        run: cargo test -p mnt-platform-auth-rest --features dev-auth\n\n      - name: Buck2 dev-auth feature PostgreSQL suites\n",
+        "      - name: Direct Cargo dev-auth suite\n        run: cargo test -p console-platform-auth-rest --features dev-auth\n\n      - name: Buck2 dev-auth feature PostgreSQL suites\n",
       ),
-      "backend must not run direct Cargo PostgreSQL tests for mnt-platform-auth-rest",
+      "backend must not run direct Cargo PostgreSQL tests for console-platform-auth-rest",
     );
     expectFailure(
       workflow.replace(
         "      - name: Buck2 dev-auth feature PostgreSQL suites\n",
-        "      - name: Direct Cargo provisioning race\n        run: cargo test -p mnt-platform-provisioning --test dev_principal_upsert_race\n\n      - name: Buck2 dev-auth feature PostgreSQL suites\n",
+        "      - name: Direct Cargo provisioning race\n        run: cargo test -p console-platform-provisioning --test dev_principal_upsert_race\n\n      - name: Buck2 dev-auth feature PostgreSQL suites\n",
       ),
-      "backend must not run direct Cargo PostgreSQL tests for mnt-platform-provisioning",
+      "backend must not run direct Cargo PostgreSQL tests for console-platform-provisioning",
     );
     const cargo = ["car", "go"].join("");
     const test = ["te", "st"].join("");
@@ -662,7 +662,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
         + "\n\n"
         + backendMarker,
     );
-    for (const packageName of ["mnt-platform-auth-rest", "mnt-platform-provisioning"]) {
+    for (const packageName of ["console-platform-auth-rest", "console-platform-provisioning"]) {
       for (const runner of [cargo + " " + test, cargo + " nextest run"]) {
         for (const packageArgument of [
           "-p " + packageName,
@@ -702,10 +702,10 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       }
     }
     for (const [packageName, command] of [
-      ["mnt-platform-provisioning", cargo + " \\\n          " + test + " \\\n          --package \\\n          mnt-platform-provisioning"],
-      ["mnt-platform-auth-rest", "env SQLX_OFFLINE=true " + cargo + " nextest run \\\n          -p=mnt-platform-auth-rest"],
-      ["mnt-platform-auth-rest", "env -u DATABASE_URL -- " + cargo + " nextest \\\n          run --package=mnt-platform-auth-rest"],
-      ["mnt-platform-provisioning", "command " + cargo + " " + test + " --package mnt-platform-provisioning"],
+      ["console-platform-provisioning", cargo + " \\\n          " + test + " \\\n          --package \\\n          console-platform-provisioning"],
+      ["console-platform-auth-rest", "env SQLX_OFFLINE=true " + cargo + " nextest run \\\n          -p=console-platform-auth-rest"],
+      ["console-platform-auth-rest", "env -u DATABASE_URL -- " + cargo + " nextest \\\n          run --package=console-platform-auth-rest"],
+      ["console-platform-provisioning", "command " + cargo + " " + test + " --package console-platform-provisioning"],
     ]) {
       expectFailure(
         insertBackendRun(command),
@@ -713,11 +713,11 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       );
     }
     for (const command of [
-      "# " + cargo + " " + test + " -p mnt-platform-auth-rest",
-      cargo + " run -p mnt-platform-auth-rest",
-      "echo " + cargo + " " + test + " -p mnt-platform-provisioning",
-      "command -v " + cargo + " " + test + " -p mnt-platform-auth-rest",
-      "command -V " + cargo + " " + test + " -p mnt-platform-provisioning",
+      "# " + cargo + " " + test + " -p console-platform-auth-rest",
+      cargo + " run -p console-platform-auth-rest",
+      "echo " + cargo + " " + test + " -p console-platform-provisioning",
+      "command -v " + cargo + " " + test + " -p console-platform-auth-rest",
+      "command -V " + cargo + " " + test + " -p console-platform-provisioning",
     ]) {
       const failures = evaluateCiPreflight(insertBackendRun(command)).failures;
       assert.ok(
@@ -733,7 +733,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     }
     expectFailure(
       insertBackendRun(
-        "command -p " + cargo + " " + test + " -p mnt-platform-auth-rest \\",
+        "command -p " + cargo + " " + test + " -p console-platform-auth-rest \\",
       ),
       "backend must not contain a malformed executable shell surface",
     );
@@ -741,8 +741,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow,
       "tools/buck/BUCK must bind PostgreSQL wrapper app-inline-postgres to the loader and exact Rust binary",
       postgresWrapperBuildFile.replace(
-        'name = "app-inline-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:mnt-app-itest-inline-postgres)"],\n    deps = ["//backend/app:mnt-app-itest-inline-postgres"],\n    labels = ["test.integration", "resource.postgres", "needs-postgres"],',
-        'name = "app-inline-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:mnt-app-itest-inline-postgres)"],\n    deps = ["//backend/app:mnt-app-itest-inline-postgres"],\n    labels = ["owner.backend.app", "domain.app", "test.integration", "resource.postgres", "needs-postgres"],',
+        'name = "app-inline-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:console-app-itest-inline-postgres)"],\n    deps = ["//backend/app:console-app-itest-inline-postgres"],\n    labels = ["test.integration", "resource.postgres", "needs-postgres"],',
+        'name = "app-inline-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:console-app-itest-inline-postgres)"],\n    deps = ["//backend/app:console-app-itest-inline-postgres"],\n    labels = ["owner.backend.app", "domain.app", "test.integration", "resource.postgres", "needs-postgres"],',
       ),
     );
     expectFailure(
@@ -750,15 +750,15 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       "tools/buck/BUCK must bind PostgreSQL wrapper app-dev-auth-persona-guard-postgres to the loader and exact Rust binary",
       postgresWrapperBuildFile.replace(
         'name = "app-dev-auth-persona-guard-postgres",\n    test = "run_test_with_postgres_env.sh",',
-        'name = "app-dev-auth-persona-guard-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:mnt-app-itest-inline-postgres)"],',
+        'name = "app-dev-auth-persona-guard-postgres",\n    test = "run_test_with_postgres_env.sh",\n    args = ["$(location //backend/app:console-app-itest-inline-postgres)"],',
       ),
     );
     expectFailure(
       workflow,
       "tools/buck/BUCK must bind PostgreSQL wrapper app-dev-auth-persona-guard-postgres to the loader and exact Rust binary",
       postgresWrapperBuildFile.replace(
-        'deps = ["//backend/app:mnt-app-itest-dev_auth_persona_guard_feature"],',
-        'deps = ["//backend/app:mnt-app-itest-inline-postgres"],',
+        'deps = ["//backend/app:console-app-itest-dev_auth_persona_guard_feature"],',
+        'deps = ["//backend/app:console-app-itest-inline-postgres"],',
       ),
     );
   });
@@ -770,8 +770,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     expectFailure(sourceGateDisplaced, "backend must run source-only gates immediately after clippy");
 
     const unitAfterPostgres = workflow
-      .replace("      - name: Buck2 mnt-app unit suite\n", "      - name: Temporary Buck2 step\n")
-      .replace("      - name: Buck2 mnt-app inline PostgreSQL suites\n", "      - name: Buck2 mnt-app unit suite\n");
+      .replace("      - name: Buck2 console-app unit suite\n", "      - name: Temporary Buck2 step\n")
+      .replace("      - name: Buck2 console-app inline PostgreSQL suites\n", "      - name: Buck2 console-app unit suite\n");
     expectFailure(unitAfterPostgres, "backend must preserve the locked fail-fast step order");
 
     const devUpContractAfterDiskPurge = workflow
@@ -783,8 +783,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {
     expectFailure(
       workflow.replace(
-        "        run: cargo run -p mnt-gate-layer-boundary",
-        "        # cargo run -p mnt-gate-layer-boundary",
+        "        run: cargo run -p console-gate-layer-boundary",
+        "        # cargo run -p console-gate-layer-boundary",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -805,14 +805,14 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     expectFailure(
       workflow.replace(
         "      - name: Audit-coverage gate\n",
-        "      - name: Layer-boundary gate\n        if: ${{ !cancelled() }}\n        run: cargo run -p mnt-gate-layer-boundary\n\n      - name: Audit-coverage gate\n",
+        "      - name: Layer-boundary gate\n        if: ${{ !cancelled() }}\n        run: cargo run -p console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
-        "        run: env -u DATABASE_URL tools/buck2 test //backend/app:mnt-app-unit",
-        "        # env -u DATABASE_URL tools/buck2 test //backend/app:mnt-app-unit",
+        "        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
+        "        # env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );

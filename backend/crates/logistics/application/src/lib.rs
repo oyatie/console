@@ -1,6 +1,6 @@
 //! HTTP-independent contracts for the logistics pilot.  `org_id` is absent by
 //! design: the adapter derives it from the authenticated request context.
-use mnt_kernel_core::{BranchId, UserId};
+use console_kernel_core::{BranchId, UserId};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

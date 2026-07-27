@@ -7,4 +7,4 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON
     equipment_maintenance_history,
     equipment_maintenance_history_evidence,
     equipment_maintenance_history_costs
-FROM mnt_rt;
+FROM console_rt;

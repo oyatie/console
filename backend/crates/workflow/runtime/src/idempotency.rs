@@ -9,7 +9,7 @@
 //! All keys are ≥16 chars, satisfying the
 //! `char_length(btrim(...)) BETWEEN 16 AND 200` CHECKs.
 
-use mnt_kernel_core::WorkOrderId;
+use console_kernel_core::WorkOrderId;
 use uuid::Uuid;
 
 /// Run-level key for a work-order completion run: `run:work_order:{id}:completion:v1`.

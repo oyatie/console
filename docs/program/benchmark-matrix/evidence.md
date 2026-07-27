@@ -9,7 +9,7 @@
 
 **Scope:** immutable custody of records/evidence: SHA-256 fixity, WORM copies, chain-of-custody, RFC-3161 timestamps, retention/disposition, legal/litigation holds, evidence-readiness review, and eDiscovery export.
 
-**Our column is code-evidenced** from this repository: FE `web/src/console/evidence/*` (EvidenceRecords, EvidenceCard, evidenceModel, types), BE `backend/crates/docs/rest` (mnt-docs-rest), domain contract `.omc/handoffs/t_15b1a1ec-ev-object-domain-api-contract.md`, ledger `docs/program/console-program-ledger.md`.
+**Our column is code-evidenced** from this repository: FE `web/src/console/evidence/*` (EvidenceRecords, EvidenceCard, evidenceModel, types), BE `backend/crates/docs/rest` (console-docs-rest), domain contract `.omc/handoffs/t_15b1a1ec-ev-object-domain-api-contract.md`, ledger `docs/program/console-program-ledger.md`.
 
 **Honesty flag (our column):** at `origin/main@86a97771…`, the evidence frontend uses real typed list/detail/verify/hold operations; the previously cited stub path is absent. This is source wiring, not deployment proof. WORM/object-lock infrastructure remains unproved, RFC-3161 is nullable/wire-pending, and audit-chain custody is DARK until an external signer plus out-of-band anchor exist.
 

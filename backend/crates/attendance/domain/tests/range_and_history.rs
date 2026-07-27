@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use mnt_attendance_domain::{AttendanceDateRange, HistoricalAbsence, SubstitutionWindow};
+use console_attendance_domain::{AttendanceDateRange, HistoricalAbsence, SubstitutionWindow};
 use time::{Date, Duration, Month};
 use uuid::Uuid;
 

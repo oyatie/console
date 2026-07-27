@@ -9,9 +9,9 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-gate-vendor-lockin-lib",
+    name = "console-gate-vendor-lockin-lib",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/vendor-lockin", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_vendor_lockin",
+    crate = "console_gate_vendor_lockin",
     edition = "2024",
     crate_root = "backend/ci/gates/vendor-lockin/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -23,9 +23,9 @@ rust_library(
 )
 
 rust_binary(
-    name = "mnt-gate-vendor-lockin",
+    name = "console-gate-vendor-lockin",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/vendor-lockin", ["src/main.rs"]),
-    crate = "mnt_gate_vendor_lockin",
+    crate = "console_gate_vendor_lockin",
     edition = "2024",
     crate_root = "backend/ci/gates/vendor-lockin/src/main.rs",
     visibility = ["PUBLIC"],
@@ -33,14 +33,14 @@ rust_binary(
     deps = [
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
-        ":mnt-gate-vendor-lockin-lib",
+        ":console-gate-vendor-lockin-lib",
     ],
 )
 
 rust_test(
-    name = "mnt-gate-vendor-lockin-unit",
+    name = "console-gate-vendor-lockin-unit",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/vendor-lockin", glob(["src/**/*.rs"], exclude = ["src/main.rs"])),
-    crate = "mnt_gate_vendor_lockin",
+    crate = "console_gate_vendor_lockin",
     edition = "2024",
     crate_root = "backend/ci/gates/vendor-lockin/src/lib.rs",
     visibility = ["PUBLIC"],
@@ -53,7 +53,7 @@ rust_test(
 )
 
 rust_test(
-    name = "mnt-gate-vendor-lockin-itest-gate_detects_violation",
+    name = "console-gate-vendor-lockin-itest-gate_detects_violation",
     mapped_srcs = repo_mapped_srcs("backend/ci/gates/vendor-lockin", ["tests/gate_detects_violation.rs"]),
     crate = "gate_detects_violation",
     edition = "2024",
@@ -64,6 +64,6 @@ rust_test(
     deps = [
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
-        ":mnt-gate-vendor-lockin-lib",
+        ":console-gate-vendor-lockin-lib",
     ],
 )

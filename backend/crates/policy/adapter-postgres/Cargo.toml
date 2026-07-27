@@ -1,5 +1,5 @@
 [package]
-name = "mnt-policy-adapter-postgres"
+name = "console-policy-adapter-postgres"
 version = "0.1.0"
 description = "Postgres adapter for Cedar policy catalog rows and no-code draft staging."
 edition.workspace = true
@@ -8,11 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-kernel-core = { workspace = true }
-mnt-platform-db = { workspace = true }
-mnt-platform-request-context = { workspace = true }
-mnt-policy-application = { workspace = true }
-mnt-policy-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-platform-db = { workspace = true }
+console-platform-request-context = { workspace = true }
+console-policy-application = { workspace = true }
+console-policy-domain = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }

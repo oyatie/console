@@ -1,5 +1,5 @@
 [package]
-name = "mnt-orgchange-adapter-postgres"
+name = "console-orgchange-adapter-postgres"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
@@ -7,12 +7,12 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-mnt-governance-domain = { workspace = true }
-mnt-kernel-core = { workspace = true }
-mnt-orgchange-domain = { path = "../domain" }
-mnt-platform-db = { workspace = true }
-mnt-platform-group = { path = "../../platform/group" }
-mnt-platform-request-context = { workspace = true }
+console-governance-domain = { workspace = true }
+console-kernel-core = { workspace = true }
+console-orgchange-domain = { path = "../domain" }
+console-platform-db = { workspace = true }
+console-platform-group = { path = "../../platform/group" }
+console-platform-request-context = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 sqlx = { workspace = true }

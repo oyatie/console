@@ -4,4 +4,4 @@
 -- `leave_api.create_employee` reaches it by PERFORM as the owning definer, so
 -- no role needs a grant back.
 REVOKE ALL ON FUNCTION leave_api.assert_employee_directory_manager(UUID, UUID)
-    FROM PUBLIC, mnt_rt, mnt_leave_cmd;
+    FROM PUBLIC, console_rt, console_leave_cmd;

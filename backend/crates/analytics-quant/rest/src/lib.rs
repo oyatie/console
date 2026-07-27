@@ -12,10 +12,10 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Json, Router};
-use mnt_analytics_quant_service::{ProjectionRequest, ProjectionResult, SeriesKind, project};
-use mnt_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::{Action, Feature, Principal, authorize};
+use console_analytics_quant_service::{ProjectionRequest, ProjectionResult, SeriesKind, project};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::{Action, Feature, Principal, authorize};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -43,7 +43,7 @@ impl AnalyticsQuantState {
 /// Build the analytics-quant router, auth-wrapped.
 pub fn router(state: AnalyticsQuantState) -> Router {
     let router = Router::new().route(PROJECTION_PATH, post(post_projection));
-    mnt_platform_request_context::with_request_context(router, state.jwt_verifier, state.pool)
+    console_platform_request_context::with_request_context(router, state.jwt_verifier, state.pool)
 }
 
 /// Request body for the projection endpoint.

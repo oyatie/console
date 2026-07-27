@@ -15,22 +15,22 @@ fn main() {
 
 fn run_gate(workspace_dir: &Path) {
     eprintln!(
-        "mnt-gate-rls-arming: checking workspace at {}",
+        "console-gate-rls-arming: checking workspace at {}",
         workspace_dir.display()
     );
 
-    let result = mnt_gate_rls_arming::check_workspace(workspace_dir).unwrap_or_else(|e| {
+    let result = console_gate_rls_arming::check_workspace(workspace_dir).unwrap_or_else(|e| {
         eprintln!("ERROR: {e}");
         std::process::exit(1);
     });
 
     if result.passed() {
-        eprintln!("mnt-gate-rls-arming: PASSED");
+        eprintln!("console-gate-rls-arming: PASSED");
         std::process::exit(0);
     }
 
     eprintln!(
-        "mnt-gate-rls-arming: FAILED - {} violation(s):",
+        "console-gate-rls-arming: FAILED - {} violation(s):",
         result.violations.len()
     );
     for violation in &result.violations {

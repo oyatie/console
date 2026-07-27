@@ -277,7 +277,7 @@ pub struct SmtpSessionConfig {
 impl Default for SmtpSessionConfig {
     fn default() -> Self {
         Self {
-            hostname: "mnt-mailbox.local".to_owned(),
+            hostname: "console-mailbox.local".to_owned(),
             max_recipients: DEFAULT_MAX_RECIPIENTS,
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
         }
@@ -327,7 +327,7 @@ impl SmtpSession {
         SmtpReply::new(
             220,
             Some("2.0.0"),
-            format!("{} ESMTP mnt-mailbox", self.config.hostname),
+            format!("{} ESMTP console-mailbox", self.config.hostname),
         )
     }
 

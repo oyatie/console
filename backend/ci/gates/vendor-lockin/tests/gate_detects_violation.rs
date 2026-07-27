@@ -1,4 +1,4 @@
-use mnt_gate_vendor_lockin::{
+use console_gate_vendor_lockin::{
     Registry, RegistryEntry, TextArtifact, ViolationKind, audit, load_registry,
 };
 use std::fs;
@@ -204,7 +204,7 @@ fn binary_exits_non_zero_on_registry_violation() -> Result<(), Box<dyn std::erro
         ],
     )?;
 
-    let output = Command::new(env!("CARGO_BIN_EXE_mnt-gate-vendor-lockin"))
+    let output = Command::new(env!("CARGO_BIN_EXE_console-gate-vendor-lockin"))
         .current_dir(&repo)
         .output()?;
 
@@ -220,7 +220,7 @@ fn binary_exits_non_zero_on_registry_violation() -> Result<(), Box<dyn std::erro
 
 fn temp_workspace(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let dir = std::env::temp_dir().join(format!(
-        "mnt-gate-vendor-lockin-{name}-{}",
+        "console-gate-vendor-lockin-{name}-{}",
         std::process::id()
     ));
     if dir.exists() {

@@ -3,7 +3,7 @@
 //! This crate provides the CONCRETE [`EnvelopeCredentialCipher`] implementation
 //! of the [`CredentialCipher`] PORT. The trait and its value types ([`Aad`],
 //! [`SealedCredential`], [`CipherError`]) are owned by the application layer
-//! (`mnt-comms-application`); this crate depends on that abstraction and
+//! (`console-comms-application`); this crate depends on that abstraction and
 //! implements it, so the dependency direction stays clean (the application /
 //! adapter layers speak only to the port, and only the app composition root
 //! wires this concrete cipher).
@@ -26,9 +26,9 @@
 //!
 //! # Master key (KEK)
 //!
-//! The KEK is loaded from the `MNT_MAIL_MASTER_KEY` environment variable — a
+//! The KEK is loaded from the `CONSOLE_MAIL_MASTER_KEY` environment variable — a
 //! base64 (standard alphabet) encoding of exactly 32 bytes — sourced from OCI
-//! Vault into the `mnt-secrets` env in production. It is NEVER hardcoded, logged,
+//! Vault into the `console-secrets` env in production. It is NEVER hardcoded, logged,
 //! or written to disk by this crate, and is held in a [`SecretBox`] so it is
 //! zeroized on drop and prints as `[REDACTED]`.
 //!
@@ -49,12 +49,12 @@ use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
 use secrecy::{ExposeSecret, SecretBox};
 use zeroize::Zeroize;
 
-pub use mnt_comms_application::credential_cipher::{
+pub use console_comms_application::credential_cipher::{
     Aad, CipherError, CredentialCipher, SealedCredential,
 };
 
 /// The environment variable carrying the base64-encoded 32-byte master KEK.
-pub const MASTER_KEY_ENV: &str = "MNT_MAIL_MASTER_KEY";
+pub const MASTER_KEY_ENV: &str = "CONSOLE_MAIL_MASTER_KEY";
 
 /// The key-derivation version stamped onto every freshly encrypted row. Bumped
 /// (with a re-wrap job) on KEK rotation.
@@ -71,7 +71,7 @@ pub struct EnvelopeCredentialCipher {
 
 impl EnvelopeCredentialCipher {
     /// Build the cipher from the base64-encoded 32-byte KEK in the
-    /// `MNT_MAIL_MASTER_KEY` environment variable.
+    /// `CONSOLE_MAIL_MASTER_KEY` environment variable.
     pub fn from_env() -> Result<Self, CipherError> {
         let encoded = std::env::var(MASTER_KEY_ENV).map_err(|_| CipherError::MasterKey)?;
         Self::from_base64_key(&encoded)

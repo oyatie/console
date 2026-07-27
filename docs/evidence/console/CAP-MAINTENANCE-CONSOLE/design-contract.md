@@ -1,7 +1,7 @@
 # CAP-MAINTENANCE-CONSOLE — Design Contract (API · DTO · FSM · DDL 0193)
 
 Contract for stages 2 (backend) and 3 (frontend). Additive only; no existing route/DTO field changes except
-optional additions. All mutations audited via `with_audit`; all reads branch-scoped + RLS as `mnt_rt`;
+optional additions. All mutations audited via `with_audit`; all reads branch-scoped + RLS as `console_rt`;
 deny-by-omission (403 without leakage; list scoping never reveals other branches).
 
 ## 1. Enums (typed fields, §4-19)
@@ -63,7 +63,7 @@ CREATE TABLE work_order_settlement_lines (
 );
 -- RLS: enable + org policy identical to work_orders (copy the 0030/0031 pattern:
 -- FORCE ROW LEVEL SECURITY, USING org_id = current_org(), immutable org trigger).
--- Verify as mnt_rt in sqlx tests (rls-verify-as-runtime-role memory).
+-- Verify as console_rt in sqlx tests (rls-verify-as-runtime-role memory).
 ```
 
 ## 3. FSMs
@@ -141,7 +141,7 @@ maintenance/
                                    // from: work_order_read_all, work_order_create, work_order_edit_intake,
                                    //  assignee_manage, work_order_start, work_report_submit, completion_review,
                                    //  priority_manage, target_manage, org_wide_queue_triage
-  maintenanceApi.ts                // typed over @maintenance/api-client-ts components; list/detail/create/
+  maintenanceApi.ts                // typed over @console/api-client-ts components; list/detail/create/
                                    //  assign/start/report/approve/reject/settlement CRUD; requireData error shape
   routeContract.ts                 // { branchId } fixture (structural only)
   maintenance.css                  // plain class strings `maintenance__*`; token colors only

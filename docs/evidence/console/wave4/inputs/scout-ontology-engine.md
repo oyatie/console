@@ -41,7 +41,7 @@ There are **three** registration paths, and only one of them is complete.
   - a tenant with **any** pre-existing `ont_object_types` row →
     `ontology_builtin.empty_org_required` (23514).
   - Exact re-install of the same version+digest is a no-op.
-- Only `mnt_ontology_writer` may read the allowlist (`0165:230`); `mnt_rt` is revoked
+- Only `console_ontology_writer` may read the allowlist (`0165:230`); `console_rt` is revoked
   (`0165:132`).
 
 **Consequence (the single biggest lens-A finding):** adding a 28th seeded type is not
@@ -73,8 +73,8 @@ only callers in the whole repo are
 So a user-authored type is stranded in `draft` and can never serve instances.
 
 Two further constraints on that publish, once it is exposed:
-- `transition_object_type` runs as `mnt_ontology_cmd`, **not** `mnt_rt`
-  ("draft publication is never available to mnt_rt", `adapter-postgres/src/lib.rs:507-509`),
+- `transition_object_type` runs as `console_ontology_cmd`, **not** `console_rt`
+  ("draft publication is never available to console_rt", `adapter-postgres/src/lib.rs:507-509`),
   so the REST tier needs the command pool (`command_pool()`), same as instance writes.
 - publication **consumes target-bound four-eyes evidence atomically** (same doc comment)
   — a publish route must carry an approval ref, not just an If-Match.
@@ -210,7 +210,7 @@ payloads; isolation test).
 - Migration `0177_ontology_action_command_receipts.sql`: `ont_action_command_receipts`,
   PK `(org_id, command_id)`, `payload_digest BYTEA(32)`, `receipt JSONB`, FORCE RLS
   `org_isolation`, immutability trigger on UPDATE/DELETE, `GRANT SELECT, INSERT` to
-  `mnt_rt` only.
+  `console_rt` only.
 - Execute path `rest/src/lib.rs:1058-1202`:
   - `command_id` **required** for `instance_revision` (`:1062-1064`);
   - `expected_revision` **required** whenever `instance_id` is present (`:1065-1068`);
@@ -237,7 +237,7 @@ mechanical port.
 ### Gate evidence (already there, reusable)
 
 Gate chain is the governance crate's, not ontology's: `GateChainConfig`/`GateChainOutcome`/
-`GateEvidence`/`evaluate_gate_chain` from `mnt_governance_domain` (`rest/src/lib.rs:33-36`).
+`GateEvidence`/`evaluate_gate_chain` from `console_governance_domain` (`rest/src/lib.rs:33-36`).
 Config parsed from `ont_action_types.control_points` by
 `parse_control_points` (`application/src/lib.rs:42-70`; recognizes `authority`,
 `self_checklist`, `four_eyes`, `egress_dlp`). Authority today = the **legacy**

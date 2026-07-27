@@ -5,8 +5,8 @@
 //! (so the registry FK to `users(id, org_id)` holds) and isolated from other orgs.
 //!
 //! The onboarding shell and catalog reads use a pool whose connections `SET ROLE
-//! mnt_rt`, while catalog mutation uses a distinct pool whose connections `SET
-//! ROLE mnt_ontology_cmd`. This mirrors the production runtime/command capability
+//! console_rt`, while catalog mutation uses a distinct pool whose connections `SET
+//! ROLE console_ontology_cmd`. This mirrors the production runtime/command capability
 //! split while keeping FORCE RLS active. The assertions read `ont_object_types` as
 //! the OWNER with RLS off, so they see the truth regardless of any armed GUC.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -14,12 +14,12 @@
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use http::{Request, StatusCode, header};
-use mnt_kernel_core::{OrgId, UserId};
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::seed::seed_governed_config_object_types;
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_provisioning::PlatformProvisioner;
-use mnt_platform_rest::{PLATFORM_ORGS_PATH, PlatformRestState, TenantConfigSeeder, router};
+use console_kernel_core::{OrgId, UserId};
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::seed::seed_governed_config_object_types;
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_provisioning::PlatformProvisioner;
+use console_platform_rest::{PLATFORM_ORGS_PATH, PlatformRestState, TenantConfigSeeder, router};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -30,17 +30,17 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 
 /// The engine-backed catalog seeder, mirroring the production impl the App tier
-/// injects (`mnt_app::tenant_config_seeder`). Kept here because the platform tier
+/// injects (`console_app::tenant_config_seeder`). Kept here because the platform tier
 /// only depends on the ontology adapter as a dev-dependency.
 fn seeder(store: PgOntologyStore) -> TenantConfigSeeder {
     std::sync::Arc::new(move |org, actor, at| {
         let store = store.clone();
         Box::pin(async move {
-            mnt_platform_request_context::scope_org(
+            console_platform_request_context::scope_org(
                 org,
                 seed_governed_config_object_types(&store, actor, at),
             )
@@ -137,7 +137,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
@@ -152,7 +152,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())

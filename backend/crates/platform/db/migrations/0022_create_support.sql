@@ -13,7 +13,7 @@
 -- never written to logs (enforced by the pii-no-logs gate over logging macros)
 -- and never copied into audit_events snapshots.
 
--- mnt-gate: audited-table support_tickets
+-- console-gate: audited-table support_tickets
 CREATE TABLE support_tickets (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     -- NULLABLE: customer-intake tickets are branch-less until triaged; internal
@@ -72,7 +72,7 @@ CREATE INDEX idx_support_tickets_untriaged
     ON support_tickets (status, created_at DESC)
     WHERE branch_id IS NULL;
 
--- mnt-gate: audited-table support_ticket_comments
+-- console-gate: audited-table support_ticket_comments
 CREATE TABLE support_ticket_comments (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     ticket_id        UUID        NOT NULL REFERENCES support_tickets(id) ON DELETE RESTRICT,

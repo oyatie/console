@@ -6,7 +6,7 @@ import { test, expect } from "../fixtures/roles";
  * Browser dogfood caught a SUPER_ADMIN session getting bounced to
  * `/login?next=...` after many protected-route `page.goto()` visits because each
  * hard navigation loses the in-memory access token and relies on boot silent
- * refresh from the HttpOnly `mnt_refresh` cookie. That is a legitimate browser
+ * refresh from the HttpOnly `console_refresh` cookie. That is a legitimate browser
  * pattern (reloads, bookmarked deep links, QA/dogfood crawls), so it must not trip
  * the refresh endpoint's ordinary auth-attempt cap.
  */

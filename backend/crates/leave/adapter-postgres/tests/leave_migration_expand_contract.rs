@@ -12,7 +12,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
-use mnt_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
+use console_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_chain};
 
 const MIGRATION_0166: &str =
     include_str!("../../../platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql");
@@ -155,40 +155,40 @@ async fn restore_pre_0166_schema(pool: &PgPool) {
             ALTER COLUMN days TYPE NUMERIC(4,1),
             ALTER COLUMN days SET NOT NULL;
 
-        ALTER ROLE mnt_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
+        ALTER ROLE console_app LOGIN INHERIT NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE
             NOREPLICATION PASSWORD 'leave-migration-owner-a166';
-        ALTER ROLE mnt_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
+        ALTER ROLE console_leave_definer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
             NOCREATEDB NOCREATEROLE NOREPLICATION;
-        ALTER ROLE mnt_leave_cmd LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
+        ALTER ROLE console_leave_cmd LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT
             NOCREATEDB NOCREATEROLE NOREPLICATION;
-        REVOKE mnt_leave_definer FROM mnt_rt, mnt_leave_cmd;
-        REVOKE mnt_rt, mnt_leave_cmd FROM mnt_app, mnt_leave_definer;
-        GRANT mnt_leave_definer TO mnt_app
+        REVOKE console_leave_definer FROM console_rt, console_leave_cmd;
+        REVOKE console_rt, console_leave_cmd FROM console_app, console_leave_definer;
+        GRANT console_leave_definer TO console_app
             WITH ADMIN FALSE, INHERIT TRUE, SET TRUE;
 
         DO $db_owner$
         BEGIN
-            EXECUTE format('ALTER DATABASE %I OWNER TO mnt_app', current_database());
+            EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());
         END
         $db_owner$;
 
-        ALTER TABLE organizations OWNER TO mnt_app;
-        ALTER TABLE users OWNER TO mnt_app;
-        ALTER TABLE user_branches OWNER TO mnt_app;
-        ALTER TABLE regions OWNER TO mnt_app;
-        ALTER TABLE branches OWNER TO mnt_app;
-        ALTER TABLE employees OWNER TO mnt_app;
-        ALTER TABLE leave_requests OWNER TO mnt_app;
-        ALTER TABLE data_import_runs OWNER TO mnt_app;
-        ALTER TABLE data_import_rows OWNER TO mnt_app;
-        ALTER TABLE audit_events OWNER TO mnt_app;
-        ALTER TABLE policy_roles OWNER TO mnt_app;
-        ALTER TABLE policy_role_permissions OWNER TO mnt_app;
-        ALTER TABLE policy_role_conditions OWNER TO mnt_app;
-        ALTER TABLE user_role_assignments OWNER TO mnt_app;
+        ALTER TABLE organizations OWNER TO console_app;
+        ALTER TABLE users OWNER TO console_app;
+        ALTER TABLE user_branches OWNER TO console_app;
+        ALTER TABLE regions OWNER TO console_app;
+        ALTER TABLE branches OWNER TO console_app;
+        ALTER TABLE employees OWNER TO console_app;
+        ALTER TABLE leave_requests OWNER TO console_app;
+        ALTER TABLE data_import_runs OWNER TO console_app;
+        ALTER TABLE data_import_rows OWNER TO console_app;
+        ALTER TABLE audit_events OWNER TO console_app;
+        ALTER TABLE policy_roles OWNER TO console_app;
+        ALTER TABLE policy_role_permissions OWNER TO console_app;
+        ALTER TABLE policy_role_conditions OWNER TO console_app;
+        ALTER TABLE user_role_assignments OWNER TO console_app;
 
-        REVOKE ALL ON leave_requests FROM PUBLIC, mnt_rt, mnt_leave_cmd, mnt_leave_definer;
-        GRANT SELECT, INSERT, UPDATE ON leave_requests TO mnt_rt;
+        REVOKE ALL ON leave_requests FROM PUBLIC, console_rt, console_leave_cmd, console_leave_definer;
+        GRANT SELECT, INSERT, UPDATE ON leave_requests TO console_rt;
         "#,
     )
     .execute(pool)
@@ -216,7 +216,7 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(connection).await?;
+                sqlx::query("SET ROLE console_rt").execute(connection).await?;
                 Ok(())
             })
         })
@@ -231,7 +231,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_leave_cmd")
+                sqlx::query("SET ROLE console_leave_cmd")
                     .execute(connection)
                     .await?;
                 Ok(())
@@ -248,7 +248,7 @@ async fn definer_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(1)
         .after_connect(|connection, _metadata| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_leave_definer")
+                sqlx::query("SET ROLE console_leave_definer")
                     .execute(connection)
                     .await?;
                 Ok(())
@@ -351,7 +351,7 @@ async fn migrate_populated_pre_0166(owner_pool: &PgPool) {
 }
 
 async fn apply_0166_with_rehearsal_budgets(owner_pool: &PgPool) -> (String, String) {
-    let migrator = login_role_pool(owner_pool, "mnt_app", MIGRATOR_PASSWORD).await;
+    let migrator = login_role_pool(owner_pool, "console_app", MIGRATOR_PASSWORD).await;
     let mut migration = migrator.begin().await.unwrap();
     sqlx::query("SET LOCAL lock_timeout = '5s'")
         .execute(&mut *migration)
@@ -431,7 +431,7 @@ async fn migrate_staged_f6ff_employee_import(owner_pool: &PgPool) {
     .await
     .unwrap();
 
-    let migrator = login_role_pool(owner_pool, "mnt_app", MIGRATOR_PASSWORD).await;
+    let migrator = login_role_pool(owner_pool, "console_app", MIGRATOR_PASSWORD).await;
     sqlx::raw_sql(MIGRATION_0166)
         .execute(&migrator)
         .await
@@ -1620,7 +1620,7 @@ async fn staged_f6ff_apply_rejects_missing_duplicate_or_forged_current_tx_audit(
     .unwrap();
 
     let mut cross_org = owner_pool.begin().await.unwrap();
-    sqlx::query("SET LOCAL ROLE mnt_leave_definer")
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
         .execute(&mut *cross_org)
         .await
         .unwrap();

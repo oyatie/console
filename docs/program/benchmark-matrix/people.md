@@ -34,7 +34,7 @@ Sources: `backend/app/src/hr.rs` (10,288 LoC), `backend/crates/payroll/domain/sr
 - 근태/attendance: import pipeline (preview/dry-run/apply/summary) + `/attendance-records/me` self-service check-in create + org attendance-records list + attendance-summary.
 - Leave: request-decision FSM with **decider≠requester** SoD; source-observed request/balance reads and source-wired decision/promotion calls; plus a round-labelled notice/receipt substrate that accepts `1|2` and records idempotent receipt-gated notices. It does not enforce statutory timing or round sequencing, and refusal does not prove prior round `2`.
 - Offboarding: absence-exit-dashboard, exit-cases (report/confirm/**approval-draft** → 전자결재 AP- object).
-- **Payroll kernel** (`mnt_payroll_domain`): statutory **4대보험** contribution rates (연금/건강/고용/산재) as ppm with effective-period versioning, **national-pension base limits**, **minimum-wage** table, **NTS withholding** rows, payroll-draft builder, **severance-pay** draft enforcing the max-of-average-vs-ordinary-wage floor — *mandatory field, compile-error on omission* — and a **release gate** requiring golden-case + professional validation. ⚠️ **Citation fix:** the governing provision is **근로기준법 제2조제2항** (the Act: "평균임금이 통상임금보다 적으면 통상임금액을 평균임금으로 한다"); 근로기준법 **시행령** 제2조 instead governs *periods excluded from average-wage calculation* (수습·휴업·출산휴가 등). The code comment (`payroll/domain/src/lib.rs:149,553`) currently mis-cites this as 시행령 §2② and should be corrected to 제2조제2항.
+- **Payroll kernel** (`console_payroll_domain`): statutory **4대보험** contribution rates (연금/건강/고용/산재) as ppm with effective-period versioning, **national-pension base limits**, **minimum-wage** table, **NTS withholding** rows, payroll-draft builder, **severance-pay** draft enforcing the max-of-average-vs-ordinary-wage floor — *mandatory field, compile-error on omission* — and a **release gate** requiring golden-case + professional validation. ⚠️ **Citation fix:** the governing provision is **근로기준법 제2조제2항** (the Act: "평균임금이 통상임금보다 적으면 통상임금액을 평균임금으로 한다"); 근로기준법 **시행령** 제2조 instead governs *periods excluded from average-wage calculation* (수습·휴업·출산휴가 등). The code comment (`payroll/domain/src/lib.rs:149,553`) currently mis-cites this as 시행령 §2② and should be corrected to 제2조제2항.
 - Authz: branch-scoped `EmployeeDirectoryManage` and deny-by-default advisory feature projection; live enforcement remains legacy server-side plus evidenced RLS, with Cedar/PBAC target/shadow only. Hash-chain audit infrastructure exists, but universal people-event coverage is not claimed.
 
 **Frontend:**
@@ -129,7 +129,7 @@ Sources: `backend/app/src/hr.rs` (10,288 LoC), `backend/crates/payroll/domain/sr
 
 ### Row 11 — Mobile / employee self-service
 
-- **Ours:** web-console leave and attendance paths exist; the repository's Android app is the field app (`com.maintenance.field`), not a general employee self-service app. A native employee app remains backlog. [code: android/app/build.gradle.kts; web/src/console]
+- **Ours:** web-console leave and attendance paths exist; the repository's Android app is the field app (`com.console.app`), not a general employee self-service app. A native employee app remains backlog. [code: android/app/build.gradle.kts; web/src/console]
 - **Rippling:** Full mobile app — pay stubs, PTO, docs, onboarding tasks. [V] (rippling.com) [I on parity]
 - **SAP SF:** Mobile app for EC/Time; functional but not loved for UX. [I]
 - **Asana:** Strong mobile app for task/onboarding, not HR data. [I]

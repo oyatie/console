@@ -1,7 +1,7 @@
 //! Workflow runtime engine.
 //!
 //! Application-style logic only — no sqlx/axum/tokio. All persistence goes through
-//! [`mnt_workflow_domain::WorkflowRuntimePort`], which the Postgres adapter
+//! [`console_workflow_domain::WorkflowRuntimePort`], which the Postgres adapter
 //! implements, so this crate is DB-free and unit-testable. It provides:
 //!
 //! * [`idempotency`] — the run/node/outbox idempotency-key derivations (design §B)

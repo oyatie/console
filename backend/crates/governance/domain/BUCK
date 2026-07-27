@@ -9,30 +9,30 @@ export_file(
 )
 
 rust_library(
-    name = "mnt-governance-domain",
+    name = "console-governance-domain",
     mapped_srcs = repo_mapped_srcs("backend/crates/governance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_governance_domain",
+    crate = "console_governance_domain",
     edition = "2024",
     crate_root = "backend/crates/governance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/governance/domain"},
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )
 
 rust_test(
-    name = "mnt-governance-domain-unit",
+    name = "console-governance-domain-unit",
     mapped_srcs = repo_mapped_srcs("backend/crates/governance/domain", glob(["src/**/*.rs"])),
-    crate = "mnt_governance_domain",
+    crate = "console_governance_domain",
     edition = "2024",
     crate_root = "backend/crates/governance/domain/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/governance/domain"},
     labels = ["owner.backend.crates.governance.domain", "domain.governance", "test.unit", "resource.none"],
     deps = [
-        "//backend/crates/kernel/core:mnt-kernel-core",
+        "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
     ],
 )

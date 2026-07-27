@@ -5,10 +5,10 @@
 //! request input — mirroring the notifications recipient-scoping idiom.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use mnt_kernel_core::{
+use console_kernel_core::{
     AuditAction, AuditEvent, KernelError, Timestamp, TodoId, TraceContext, UserId,
 };
-use mnt_todos_domain::TodoRef;
+use console_todos_domain::TodoRef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

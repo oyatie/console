@@ -12,7 +12,7 @@
 
 "Enterprise-grade production SaaS" = the conglomerate operations platform of `SPEC.md`, and for **every
 shipped action**, all of:
-- **Tested trifecta:** unit + integration (real `mnt_rt`, never BYPASSRLS-masked) + e2e/regression.
+- **Tested trifecta:** unit + integration (real `console_rt`, never BYPASSRLS-masked) + e2e/regression.
 - **Apparent breakage:** the full CI suite (incl. Playwright E2E) is **green and BLOCKS the deploy**.
 - **Secure + audited:** RLS-armed, authz-gated (capability not role-string), every mutation audited,
   tenant-isolated, no secrets in logs/`/tmp`.
@@ -68,12 +68,12 @@ Collision rule: agents parallelize only on **disjoint file trees**; `ko.ts` + `o
 collision points; run isolated via **git worktrees**, merge with discipline. ⟂ = parallel-safe now.
 
 ### Track Q — Quality & Test Mandate (cross-cutting; ~80% parallel-safe) ⟂
-The 109-gap worklist. Backend `mnt_rt`/unit tests live in disjoint per-crate `tests/` dirs → fan out.
-- **Q0 (Tier-0, no openapi):** execute-purchase mnt_rt+e2e, register_device, admin-OTP IDOR, update-user
+The 109-gap worklist. Backend `console_rt`/unit tests live in disjoint per-crate `tests/` dirs → fan out.
+- **Q0 (Tier-0, no openapi):** execute-purchase console_rt+e2e, register_device, admin-OTP IDOR, update-user
   escalation negative, storefront-media leak, delete-listing, arrival-events read, integrity list/triage,
   OrgWideQueueTriage negative, **force-remove tests committed + e2e**.
-- **Q1 (Tier-1):** convert BYPASSRLS-masked writes to real `mnt_rt` (registry/messenger/financial/
-  reporting); auth-rest handler `tests/`; purchase approve/reject SoD under mnt_rt.
+- **Q1 (Tier-1):** convert BYPASSRLS-masked writes to real `console_rt` (registry/messenger/financial/
+  reporting); auth-rest handler `tests/`; purchase approve/reject SoD under console_rt.
 - **Q2 (Tier-2):** parsers, thin reads, transition e2e (per the worklist).
 - **Q3 (gate):** make red E2E/test **block the deploy** (ci/image-release `needs:`); green + de-flake the
   Playwright suite; the org-binding rls-arming lint (#43); the real #31 PlatformConsole fix.
@@ -84,7 +84,7 @@ The 109-gap worklist. Backend `mnt_rt`/unit tests live in disjoint per-crate `te
   deploy to live — confirm approach first.)*
 - **O2 Observability:** app metrics + alerts (latency/error-rate/auth-failure/queue-depth), so incidents
   are caught proactively, not reported by users.
-- **O3 Secrets:** `MNT_MAIL_MASTER_KEY` → OCI Vault (#28); audit all secrets are Vault-sourced.
+- **O3 Secrets:** `CONSOLE_MAIL_MASTER_KEY` → OCI Vault (#28); audit all secrets are Vault-sourced.
 - **O4 Resilience:** verify CNPG/Barman restore drill; single-node → document/plan the scale path.
 
 ### Track A — Auth hardening (gated on the acme commit; touches `provisioning`+`ko.ts`)

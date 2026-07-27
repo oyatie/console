@@ -11,7 +11,7 @@
 // drains.
 //
 // The behavioral proof is the backing #[sqlx::test]s (run by the backend
-// cargo-test job as the real non-owner mnt_rt role, with app.current_org armed,
+// cargo-test job as the real non-owner console_rt role, with app.current_org armed,
 // against a fresh migrated DB). This gate asserts the E2E genuinely encodes the
 // AC's transactional invariants — a shared consume body with all three writes, a
 // rollback probe that reuses that exact body, and the atomicity/idempotency
@@ -79,7 +79,7 @@ function functionSlice(source, name) {
 
 const e2e = read(E2E);
 
-// --- (1) Real E2E: fresh migrated DB, exercised as the non-owner mnt_rt role. ---
+// --- (1) Real E2E: fresh migrated DB, exercised as the non-owner console_rt role. ---
 requireMatches(
   e2e,
   E2E,
@@ -89,8 +89,8 @@ requireMatches(
 requireIncludes(
   e2e,
   E2E,
-  "SET LOCAL ROLE mnt_rt",
-  "the E2E drops to the genuine non-owner mnt_rt role (RLS is actually enforced)",
+  "SET LOCAL ROLE console_rt",
+  "the E2E drops to the genuine non-owner console_rt role (RLS is actually enforced)",
 );
 requireIncludes(
   e2e,
@@ -98,15 +98,15 @@ requireIncludes(
   "set_config('app.current_org'",
   "the E2E arms app.current_org so RLS scopes every statement (like with_org_conn)",
 );
-// Every `SET [LOCAL] ROLE <x>` must target mnt_rt — never a superuser/owner role
-// (postgres/mnt_app) which would bypass RLS and mask a broken RLS/flag path.
+// Every `SET [LOCAL] ROLE <x>` must target console_rt — never a superuser/owner role
+// (postgres/console_app) which would bypass RLS and mask a broken RLS/flag path.
 const roleSwitches = [...e2e.matchAll(/set\s+(?:local\s+)?role\s+([a-z_]+)/gi)].map((m) =>
   m[1].toLowerCase(),
 );
 assert(
-  roleSwitches.length > 0 && roleSwitches.every((r) => r === "mnt_rt"),
-  "every role switch in the E2E targets mnt_rt (never a superuser/owner/BYPASSRLS role)",
-  `${E2E}: every SET ROLE must target mnt_rt (found: ${
+  roleSwitches.length > 0 && roleSwitches.every((r) => r === "console_rt"),
+  "every role switch in the E2E targets console_rt (never a superuser/owner/BYPASSRLS role)",
+  `${E2E}: every SET ROLE must target console_rt (found: ${
     [...new Set(roleSwitches)].join(", ") || "none"
   })`,
 );
@@ -337,6 +337,6 @@ console.log(
     "single transaction. A rolled-back drain persists NONE of them (all-or-nothing atomicity, event " +
     "stays PENDING); a committed drain stages exactly ONE BLOCKED_LEGAL_GATE draft + ONE audit row and " +
     "marks the event DELIVERED; replays add ZERO rows and the payroll_draft_runs count stays 1 across " +
-    "drains. Proven as the real mnt_rt role with app.current_org armed; no new runtime tables.",
+    "drains. Proven as the real console_rt role with app.current_org armed; no new runtime tables.",
 );
 for (const item of passes) console.log(`- ${item}`);

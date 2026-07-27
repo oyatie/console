@@ -15,7 +15,7 @@
 -- Separation of duties is enforced BOTH in code and here: `decided_by` can
 -- never equal `requester_user_id`, so a bug cannot stamp a self-approval.
 
--- mnt-gate: audited-table leave_requests
+-- console-gate: audited-table leave_requests
 CREATE TABLE leave_requests (
     id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id              UUID        NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
@@ -74,5 +74,5 @@ CREATE INDEX leave_requests_org_branch_status_idx
     ON leave_requests (org_id, branch_id, status, created_at DESC);
 
 -- Leave requests are approval evidence; the runtime role never hard-deletes.
-GRANT SELECT, INSERT, UPDATE ON leave_requests TO mnt_rt;
-REVOKE DELETE ON leave_requests FROM mnt_rt;
+GRANT SELECT, INSERT, UPDATE ON leave_requests TO console_rt;
+REVOKE DELETE ON leave_requests FROM console_rt;

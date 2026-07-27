@@ -18,7 +18,7 @@ survived. Honest gaps are listed at the end — they are follow-ups, not defects
   SECURITY and the standard `org_isolation` USING/WITH CHECK policy on
   `app.current_org`, plus `enforce_org_id_immutable` triggers. Events additionally get
   the 0153 `governance_append_only_record` UPDATE/DELETE triggers and a
-  `REVOKE UPDATE, DELETE … FROM mnt_rt`.
+  `REVOKE UPDATE, DELETE … FROM console_rt`.
 - Every mutation runs inside `with_audits(pool, org, …)` and every read inside
   `with_org_conn`, both of which arm the transaction-local GUC **before** the closure
   runs (verified in `platform/db/src/audit_tx.rs`). No orgchange query runs on a bare
@@ -27,17 +27,17 @@ survived. Honest gaps are listed at the end — they are follow-ups, not defects
   column-granted, non-tenant `groups` metadata — verified in migration 0060 that
   `groups` has no RLS by design (platform table, `GRANT SELECT (id, slug, name,
   status)` only) and that both resolvers authorize by actor and are EXECUTE-granted to
-  `mnt_rt`.
+  `console_rt`.
 - `apply_op` mutates `regions`/`branches`/`registry_sites`/`employees` with bare
   `WHERE id = $1` **inside the armed transaction**; verified migrations 0030/0035/0063
   FORCE RLS + `org_isolation` on every one of those tables, so a cross-tenant UUID in
   a proposal op resolves to zero rows → conflict, never a cross-tenant write.
 
 ### Runtime-role integration tests
-- `org_change_api.rs` builds a second pool with `after_connect → SET ROLE mnt_rt` and
+- `org_change_api.rs` builds a second pool with `after_connect → SET ROLE console_rt` and
   routes **all** HTTP through `build_router` on that pool; the superuser pool is used
   only for seeding and direct-SQL readback assertions. Confirmed the router receives
-  the `mnt_rt` pool (the `send` helper builds `AppState` from the pool passed in, and
+  the `console_rt` pool (the `send` helper builds `AppState` from the pool passed in, and
   every call passes `&rt`).
 - Count-leak-free isolation is proven: outsider ADMIN of a second org gets detail 404
   (same shape as absent), `total: 0` list, 404 on mutation attempts — not filtered
@@ -120,7 +120,7 @@ survived. Honest gaps are listed at the end — they are follow-ups, not defects
    also pre-checks with the same message).
 3. **`/org-entities` positive path untested** — only the fail-closed empty case was
    proven, which a permanently-dead endpoint would also pass. Added group + membership
-   + grant seeding (owner pool; `mnt_rt` correctly cannot write those tables) and
+   + grant seeding (owner pool; `console_rt` correctly cannot write those tables) and
    asserted the granted 법인 appears while the grant-less outsider still gets `[]`.
 
 ## Pre-existing, out-of-lane observations (NOT fixed here)
@@ -158,8 +158,8 @@ survived. Honest gaps are listed at the end — they are follow-ups, not defects
 ## Commands run (this stage, from the committed tree)
 
 - `rustfmt --check` on all four lane-owned files — clean.
-- `cargo clippy -p mnt-orgchange-domain -p mnt-orgchange-adapter-postgres
-  -p mnt-orgchange-rest --all-targets -- -D warnings` — clean.
-- `cargo test -p mnt-orgchange-domain` — 8/8 pass.
-- `cargo test -p mnt-app --test org_change_api` — 3/3 pass (runtime role `mnt_rt`,
+- `cargo clippy -p console-orgchange-domain -p console-orgchange-adapter-postgres
+  -p console-orgchange-rest --all-targets -- -D warnings` — clean.
+- `cargo test -p console-orgchange-domain` — 8/8 pass.
+- `cargo test -p console-app --test org_change_api` — 3/3 pass (runtime role `console_rt`,
   fresh scratch DBs through the full migration chain, assembled `build_router`).

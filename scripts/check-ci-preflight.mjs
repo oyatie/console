@@ -31,7 +31,7 @@ const consoleTrainDerivation = [
 ];
 const buckPostgresEnvironmentTestCommand = "tools/buck/run_test_with_postgres_env.test.sh";
 const buckPostgresHarnessTestCommand = "tools/buck/test_needs_postgres.test.sh";
-const supportDomainUnitCommand = "tools/buck2 test //backend/crates/support/domain:mnt-support-domain-unit";
+const supportDomainUnitCommand = "tools/buck2 test //backend/crates/support/domain:console-support-domain-unit";
 const postgresDomainReachabilityCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
   "//tools/buck:dispatch-p1-postgres \\",
@@ -39,22 +39,22 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:attendance-concurrency-postgres",
 ];
 const postgresWrapperContracts = [
-  ["dispatch-p1-postgres", "//backend/crates/dispatch/adapter-postgres:mnt-dispatch-adapter-postgres-itest-p1_dispatch"],
-  ["attendance-cancel-substitution-postgres", "//backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-cancel_substitution"],
-  ["attendance-concurrency-postgres", "//backend/crates/attendance/adapter-postgres:mnt-attendance-adapter-postgres-itest-concurrency"],
-  ["app-inline-postgres", "//backend/app:mnt-app-itest-inline-postgres"],
-  ["app-dev-auth-persona-guard-postgres", "//backend/app:mnt-app-itest-dev_auth_persona_guard_feature"],
-  ["auth-rest-dev-auth-inline-postgres", "//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev-auth-postgres"],
-  ["auth-rest-dev-auth-session-postgres", "//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-dev_auth_session"],
-  ["auth-rest-dev-auth-group-admin-postgres", "//backend/crates/platform/auth-rest:mnt-platform-auth-rest-itest-group_admin_tenant_context"],
-  ["provisioning-dev-principal-upsert-race-postgres", "//backend/crates/platform/provisioning:mnt-platform-provisioning-itest-dev_principal_upsert_race"],
-  ["app-evaluation-cycle-api-postgres", "//backend/app:mnt-app-itest-evaluation_cycle_api"],
-  ["ontology-builtin-catalog-additive-upgrade-postgres", "//backend/crates/ontology/adapter-postgres:mnt-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role"],
-  ["app-org-change-api-postgres", "//backend/app:mnt-app-itest-org_change_api"],
-  ["app-purchase-request-collection-api-postgres", "//backend/app:mnt-app-itest-purchase_request_collection_api"],
-  ["app-workflow-object-context-api-postgres", "//backend/app:mnt-app-itest-workflow_object_context_api"],
-  ["equipment-3r-http-postgres", "//backend/crates/equipment/rest:mnt-equipment-rest-itest-equipment_3r_http"],
-  ["app-equipment-3r-api-postgres", "//backend/app:mnt-app-itest-equipment_3r_api"],
+  ["dispatch-p1-postgres", "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres-itest-p1_dispatch"],
+  ["attendance-cancel-substitution-postgres", "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-cancel_substitution"],
+  ["attendance-concurrency-postgres", "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency"],
+  ["app-inline-postgres", "//backend/app:console-app-itest-inline-postgres"],
+  ["app-dev-auth-persona-guard-postgres", "//backend/app:console-app-itest-dev_auth_persona_guard_feature"],
+  ["auth-rest-dev-auth-inline-postgres", "//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-dev-auth-postgres"],
+  ["auth-rest-dev-auth-session-postgres", "//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-dev_auth_session"],
+  ["auth-rest-dev-auth-group-admin-postgres", "//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-group_admin_tenant_context"],
+  ["provisioning-dev-principal-upsert-race-postgres", "//backend/crates/platform/provisioning:console-platform-provisioning-itest-dev_principal_upsert_race"],
+  ["app-evaluation-cycle-api-postgres", "//backend/app:console-app-itest-evaluation_cycle_api"],
+  ["ontology-builtin-catalog-additive-upgrade-postgres", "//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role"],
+  ["app-org-change-api-postgres", "//backend/app:console-app-itest-org_change_api"],
+  ["app-purchase-request-collection-api-postgres", "//backend/app:console-app-itest-purchase_request_collection_api"],
+  ["app-workflow-object-context-api-postgres", "//backend/app:console-app-itest-workflow_object_context_api"],
+  ["equipment-3r-http-postgres", "//backend/crates/equipment/rest:console-equipment-rest-itest-equipment_3r_http"],
+  ["app-equipment-3r-api-postgres", "//backend/app:console-app-itest-equipment_3r_api"],
 ];
 const postgresWrapperLoader = "run_test_with_postgres_env.sh";
 const postgresWrapperLabels = '["test.integration", "resource.postgres", "needs-postgres"]';
@@ -455,9 +455,9 @@ function requireOrderedStepContracts(steps, contracts, job, failures) {
 const apiContractCaptureName = "Capture Buck2-built app for contract test";
 const apiContractCaptureCommands = [
   "set -euo pipefail",
-  'mnt_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/mnt-app"',
-  'test -x "${mnt_app_bin}"',
-  "printf 'MNT_APP_BIN=%s\\n' \"${mnt_app_bin}\" >> \"${GITHUB_ENV}\"",
+  'console_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"',
+  'test -x "${console_app_bin}"',
+  "printf 'CONSOLE_APP_BIN=%s\\n' \"${console_app_bin}\" >> \"${GITHUB_ENV}\"",
 ];
 const apiContractAllowedSteps = [
   "name: Checkout\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
@@ -474,9 +474,9 @@ const apiContractAllowedSteps = [
         run: |
           set -euo pipefail
           # check:openapi-app is the sole Buck2 producer for this handoff.
-          mnt_app_bin="\${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/mnt-app"
-          test -x "\${mnt_app_bin}"
-          printf 'MNT_APP_BIN=%s\\n' "\${mnt_app_bin}" >> "\${GITHUB_ENV}"`,
+          console_app_bin="\${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"
+          test -x "\${console_app_bin}"
+          printf 'CONSOLE_APP_BIN=%s\\n' "\${console_app_bin}" >> "\${GITHUB_ENV}"`,
   "name: Employee import replay contract\n        if: ${{ !cancelled() }}\n        run: npm run test:employee-import-contract",
   "name: Ontology write precondition contract\n        if: ${{ !cancelled() }}\n        run: npm run test:ontology-write-precondition",
   "name: Generated TypeScript client round-trip\n        if: ${{ !cancelled() }}\n        run: npm run test:contract",
@@ -650,14 +650,14 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
       failures.push("backend must not use !cancelled() on protected fail-fast steps");
     }
     const sourceGateContracts = [
-      ["Layer-boundary gate", "cargo run -p mnt-gate-layer-boundary"],
-      ["Audit-coverage gate", "cargo run -p mnt-gate-audit-coverage"],
-      ["Migration-safety gate", "cargo run -p mnt-gate-migration-safety"],
-      ["Tenant-isolation gate", "cargo run -p mnt-gate-tenant-isolation"],
-      ["PII-no-logs gate", "cargo run -p mnt-gate-pii-no-logs"],
-      ["RLS-arming gate", "cargo run -p mnt-gate-rls-arming"],
-      ["Dev-auth-absence gate", "cargo run -p mnt-gate-dev-auth-absence"],
-      ["IaC tier-discipline gate", "cargo run -p mnt-gate-iac-tier"],
+      ["Layer-boundary gate", "cargo run -p console-gate-layer-boundary"],
+      ["Audit-coverage gate", "cargo run -p console-gate-audit-coverage"],
+      ["Migration-safety gate", "cargo run -p console-gate-migration-safety"],
+      ["Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation"],
+      ["PII-no-logs gate", "cargo run -p console-gate-pii-no-logs"],
+      ["RLS-arming gate", "cargo run -p console-gate-rls-arming"],
+      ["Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence"],
+      ["IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"],
     ];
     const gateIndexes = requireOrderedStepContracts(
       steps,
@@ -691,13 +691,13 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
           if: failFastIf,
         },
         {
-          name: "Buck2 mnt-app unit suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/app:mnt-app-unit",
+          name: "Buck2 console-app unit suite",
+          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
           workingDirectory: ".",
           if: failFastIf,
         },
         {
-          name: "Buck2 mnt-app inline PostgreSQL suites",
+          name: "Buck2 console-app inline PostgreSQL suites",
           run: [
             "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
             "//tools/buck:app-inline-postgres \\",
@@ -717,7 +717,7 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     if (directCargoTestAnalysis.malformed) {
       failures.push("backend must not contain a malformed executable shell surface");
     }
-    for (const packageName of ["mnt-platform-auth-rest", "mnt-platform-provisioning"]) {
+    for (const packageName of ["console-platform-auth-rest", "console-platform-provisioning"]) {
       if (directCargoTestAnalysis.packages.has(packageName)) {
         failures.push("backend must not run direct Cargo PostgreSQL tests for " + packageName);
       }
@@ -776,22 +776,22 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     if (openApiGateIndexes.length !== 1) {
       failures.push("api-contract must run exactly one npm run check:openapi-app producer");
     }
-    const jobOrStepAppBinaryOverride = /^ {6,}MNT_APP_BIN\s*:/m.test(apiContract);
+    const jobOrStepAppBinaryOverride = /^ {6,}CONSOLE_APP_BIN\s*:/m.test(apiContract);
     const captureStepIndexes = apiContractSteps
       .map((step, index) => (step.startsWith(`name: ${apiContractCaptureName}\n`) ? index : -1))
       .filter((index) => index >= 0);
     const captureStepIndex = captureStepIndexes[0] ?? -1;
     const captureIsDesignated = captureStepIndexes.length === 1 && isDesignatedApiContractCapture(apiContractSteps[captureStepIndex]);
     const nonCaptureSteps = apiContractSteps.filter((_, index) => index !== captureStepIndex);
-    const shellAppBinaryOverride = nonCaptureSteps.some((step) => step.includes("MNT_APP_BIN"));
+    const shellAppBinaryOverride = nonCaptureSteps.some((step) => step.includes("CONSOLE_APP_BIN"));
     const cargoTargetAppBinaryOverride = apiContract.split(/\r?\n/).some((line) =>
-      !line.trimStart().startsWith("#") && line.includes("MNT_APP_BIN:") && (line.includes("backend/target") || line.includes("CARGO_TARGET_DIR")),
+      !line.trimStart().startsWith("#") && line.includes("CONSOLE_APP_BIN:") && (line.includes("backend/target") || line.includes("CARGO_TARGET_DIR")),
     );
     if (jobOrStepAppBinaryOverride || shellAppBinaryOverride) {
-      failures.push("api-contract must not override the captured MNT_APP_BIN");
+      failures.push("api-contract must not override the captured CONSOLE_APP_BIN");
     }
     if (cargoTargetAppBinaryOverride) {
-      failures.push("api-contract must not use a Cargo target path for MNT_APP_BIN");
+      failures.push("api-contract must not use a Cargo target path for CONSOLE_APP_BIN");
     }
     if (!captureIsDesignated) {
       failures.push("api-contract capture must use the designated verified command grammar");
@@ -808,7 +808,7 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
       || captureStepIndex < openApiGateIndex
       || captureStepIndex > contractTestIndex
     ) {
-      failures.push("api-contract must capture the Buck2-built mnt-app path for npm run test:contract");
+      failures.push("api-contract must capture the Buck2-built console-app path for npm run test:contract");
     }
   }
 

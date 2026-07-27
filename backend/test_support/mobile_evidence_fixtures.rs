@@ -1,4 +1,4 @@
-use mnt_kernel_core::{BranchId, UserId, WorkOrderId};
+use console_kernel_core::{BranchId, UserId, WorkOrderId};
 use sqlx::PgPool;
 
 /// Seed a sync row that was claimed (IN_PROGRESS) but never completed — the

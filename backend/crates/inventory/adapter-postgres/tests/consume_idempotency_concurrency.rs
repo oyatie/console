@@ -2,19 +2,19 @@
 //! Concurrent consumption retries must replay the committed event, rather than
 //! turn a uniqueness race into a generic conflict.
 
-use mnt_inventory_adapter_postgres::PgInventoryStore;
-use mnt_inventory_application::{
+use console_inventory_adapter_postgres::PgInventoryStore;
+use console_inventory_application::{
     ConsumeInventoryCommand, ConsumeInventorySource, CycleCountDecision, DecideCycleCountCommand,
     MovementSourceView, OpenCycleCountCommand, RecordReceiptCommand, SubmitCycleCountCommand,
     UpsertCountLineCommand,
 };
-use mnt_inventory_domain::VarianceReason;
-use mnt_kernel_core::{
+use console_inventory_domain::VarianceReason;
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, InventoryItemId, InventoryStockLocationId, OrgId,
     P1DispatchId, TraceContext, WorkOrderId,
 };
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{grant_mnt_rt, seed_org_and_super_admin};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{grant_console_rt, seed_org_and_super_admin};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -65,14 +65,14 @@ fn movement_sources_serialize_as_the_closed_discriminated_wire_contract() {
 async fn concurrent_identical_consumptions_replay_once_and_payload_mismatch_conflicts(
     owner_pool: PgPool,
 ) {
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT ON work_orders TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO mnt_rt",
-            "GRANT SELECT, INSERT ON inventory_consumption_events TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT ON work_orders TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO console_rt",
+            "GRANT SELECT, INSERT ON inventory_consumption_events TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
         ],
     )
     .await;
@@ -218,14 +218,14 @@ async fn concurrent_identical_consumptions_replay_once_and_payload_mismatch_conf
 async fn omitted_occurrence_time_replays_despite_server_requested_at_and_rejects_explicit_presence(
     owner_pool: PgPool,
 ) {
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT ON work_orders TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO mnt_rt",
-            "GRANT SELECT, INSERT ON inventory_consumption_events TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT ON work_orders TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO console_rt",
+            "GRANT SELECT, INSERT ON inventory_consumption_events TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
         ],
     )
     .await;
@@ -297,14 +297,14 @@ async fn omitted_occurrence_time_replays_despite_server_requested_at_and_rejects
 async fn concurrent_explicit_timestamp_mismatch_conflicts_without_second_mutation(
     owner_pool: PgPool,
 ) {
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT ON work_orders TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO mnt_rt",
-            "GRANT SELECT, INSERT ON inventory_consumption_events TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT ON work_orders TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO console_rt",
+            "GRANT SELECT, INSERT ON inventory_consumption_events TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
         ],
     )
     .await;
@@ -383,17 +383,17 @@ async fn concurrent_explicit_timestamp_mismatch_conflicts_without_second_mutatio
 async fn cycle_approval_replays_once_and_applies_immutable_variance_to_current_stock(
     owner_pool: PgPool,
 ) {
-    grant_mnt_rt(
+    grant_console_rt(
         &owner_pool,
         &[
-            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO mnt_rt",
-            "GRANT SELECT, INSERT ON inventory_consumption_events TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_counts TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_counters TO mnt_rt",
-            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_lines TO mnt_rt",
-            "GRANT SELECT, INSERT ON inventory_movements TO mnt_rt",
-            "GRANT SELECT, INSERT ON audit_events TO mnt_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_stock_locations TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_items TO console_rt",
+            "GRANT SELECT, INSERT ON inventory_consumption_events TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_counts TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_counters TO console_rt",
+            "GRANT SELECT, INSERT, UPDATE ON inventory_cycle_count_lines TO console_rt",
+            "GRANT SELECT, INSERT ON inventory_movements TO console_rt",
+            "GRANT SELECT, INSERT ON audit_events TO console_rt",
         ],
     )
     .await;
@@ -482,7 +482,7 @@ async fn cycle_approval_replays_once_and_applies_immutable_variance_to_current_s
         trace: TraceContext::generate(),
         occurred_at: now,
     };
-    // Two independently checked-out mnt_rt connections race the exact same
+    // Two independently checked-out console_rt connections race the exact same
     // approval. The durable key plus row lock must produce one adjustment and
     // one audit, with the losing caller replaying the committed decision.
     let approval_barrier = Arc::new(Barrier::new(2));
@@ -700,7 +700,7 @@ async fn cycle_approval_replays_once_and_applies_immutable_variance_to_current_s
 }
 
 fn consume_command(
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
     branch: BranchId,
     item_id: InventoryItemId,
     work_order_id: WorkOrderId,
@@ -782,19 +782,19 @@ async fn two_connection_runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(2)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_rt").execute(conn).await?;
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
                 Ok(())
             })
         })
         .connect_with(options)
         .await
-        .expect("connect two mnt_rt-role test connections")
+        .expect("connect two console_rt-role test connections")
 }
 
 async fn seed_consumption_fixture(
     pool: &PgPool,
     org: Uuid,
-    actor: mnt_kernel_core::UserId,
+    actor: console_kernel_core::UserId,
 ) -> (BranchId, InventoryItemId, WorkOrderId) {
     let region_id = Uuid::new_v4();
     let branch_id = Uuid::new_v4();

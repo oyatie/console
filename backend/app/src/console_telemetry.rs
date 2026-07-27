@@ -10,11 +10,11 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Extension, Json, Router};
-use mnt_kernel_core::OrgId;
-use mnt_platform_auth::JwtVerifier;
-use mnt_platform_authz::Principal;
-use mnt_platform_db::{DbError, with_org_conn};
-use mnt_platform_request_context::{current_org, with_request_context};
+use console_kernel_core::OrgId;
+use console_platform_auth::JwtVerifier;
+use console_platform_authz::Principal;
+use console_platform_db::{DbError, with_org_conn};
+use console_platform_request_context::{current_org, with_request_context};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -271,8 +271,8 @@ impl From<sqlx::Error> for TelemetryError {
     }
 }
 
-impl From<mnt_platform_request_context::RequestContextError> for TelemetryError {
-    fn from(err: mnt_platform_request_context::RequestContextError) -> Self {
+impl From<console_platform_request_context::RequestContextError> for TelemetryError {
+    fn from(err: console_platform_request_context::RequestContextError) -> Self {
         tracing::error!(error = %err, "console route telemetry request context error");
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,

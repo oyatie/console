@@ -1,7 +1,7 @@
-use mnt_app::{AppConfig, AppRole, AppState, init_tracing, run_migrations, serve};
+use console_app::{AppConfig, AppRole, AppState, init_tracing, run_migrations, serve};
 
 #[tokio::main]
-async fn main() -> Result<(), mnt_app::AppError> {
+async fn main() -> Result<(), console_app::AppError> {
     let config = AppConfig::from_env()?;
     let telemetry = init_tracing(&config)?;
 

@@ -5,11 +5,11 @@
 The current OCI Talos cluster keeps the existing production app, web, API, worker,
 database, object-storage integration, and transactional email path. OTP and admin
 one-time email must continue to use OCI Email Delivery from the existing
-`mnt-config` values:
+`console-config` values:
 
-- `MNT_EMAIL_SMTP_HOST=smtp.email.ap-chuncheon-1.oci.oraclecloud.com`
-- `MNT_EMAIL_SMTP_PORT=587`
-- `MNT_EMAIL_FROM=no-reply@knllogistic.com`
+- `CONSOLE_EMAIL_SMTP_HOST=smtp.email.ap-chuncheon-1.oci.oraclecloud.com`
+- `CONSOLE_EMAIL_SMTP_PORT=587`
+- `CONSOLE_EMAIL_FROM=no-reply@knllogistic.com`
 
 Do not reclassify this OCI SMTP relay as authoritative corporate mailbox or MX
 hosting. It is only the outbound transactional path for current product flows.
@@ -47,7 +47,7 @@ macOS bridge CIDR before the component can reach the bridge.
 The relay component is stateless by default: it uses a static recipient allowlist
 from `imessage-relay-secrets` and does not mount the app runtime database secret.
 A future platform-recipient database source must introduce a dedicated
-least-privilege relay database role and policies rather than reusing `mnt-db-rt`.
+least-privilege relay database role and policies rather than reusing `console-db-rt`.
 The non-OCI overlay must also patch the TEST-NET caller ingress CIDR, pin the
 relay image to a signed immutable digest, and verify a policy-capable CNI before
 relying on Kubernetes NetworkPolicy enforcement.
@@ -93,8 +93,8 @@ tree:
 ```sh
 test -f docs/runbooks/non-oci-talos-mail-imessage-relay.md
 grep -F BLOCKED_PENDING_NON_OCI_TALOS_CREDENTIALS docs/runbooks/non-oci-talos-mail-imessage-relay.md
-grep -F MNT_EMAIL_SMTP_PORT=587 docs/runbooks/non-oci-talos-mail-imessage-relay.md
-git diff -- deploy/apps/maintenance/base/configmap.yaml
+grep -F CONSOLE_EMAIL_SMTP_PORT=587 docs/runbooks/non-oci-talos-mail-imessage-relay.md
+git diff -- deploy/apps/console/base/configmap.yaml
 git diff -- deploy/talos/README.md
 ```
 

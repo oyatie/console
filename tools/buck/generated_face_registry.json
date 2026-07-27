@@ -32,7 +32,7 @@
     {
       "id": "openapi-swift",
       "source_roots": ["backend/openapi", "clients/swift/openapi-generator-config.yaml", "scripts/generate-swift-client.mjs"],
-      "output_patterns": ["clients/swift/Sources/MaintenanceAPIClient/Generated/**"],
+      "output_patterns": ["clients/swift/Sources/ConsoleAPIClient/Generated/**"],
       "writer": {"kind": "repo-exec", "executable": "tools/buck/generated-face-openapi-swift.sh", "target": "//tools/buck:generated-face-openapi-swift"},
       "drift_gate": {"tier": "expensive", "kind": "writer-snapshot"}
     }

@@ -1,7 +1,7 @@
 import type * as React from "react";
 import { useState } from "react";
 
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 import type { WorkOrderDetail as WorkOrderDetailData } from "../../api/types";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";

@@ -4,22 +4,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: maintenance-object-store-dark
+  name: console-object-store-dark
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1" # self-hosted S3 must exist before consumers switch endpoints.
-    maintenance.nousresearch.com/dark-stage: "true"
-    maintenance.nousresearch.com/context: "onprem"
-    maintenance.nousresearch.com/activation-boundary: "DARK: not referenced by deploy/argocd/apps; manual apply/sync only after founder/operator approval"
+    console.nousresearch.com/dark-stage: "true"
+    console.nousresearch.com/context: "onprem"
+    console.nousresearch.com/activation-boundary: "DARK: not referenced by deploy/argocd/apps; manual apply/sync only after founder/operator approval"
 spec:
-  project: maintenance-object-store-dark
+  project: console-object-store-dark
   source:
-    repoURL: https://github.com/jason931225/maintenance.git
+    repoURL: https://github.com/jason931225/console.git
     targetRevision: main
     path: deploy/apps/object-store/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: maintenance-object-store
+    namespace: console-object-store
   syncPolicy:
     # No automated sync by design: applying this Application stages Argo visibility
     # only. A later operator-approved on-prem cutover must sync it manually.

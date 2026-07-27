@@ -4,7 +4,7 @@
 //! attach `org_id` to every emitted audit event. QueryBuilder/runtime SQL keeps
 //! this crate SQLx-offline friendly: no new `.sqlx` cache entries are required.
 
-use mnt_inventory_application::{
+use console_inventory_application::{
     CancelCycleCountCommand, ConsumeInventoryCommand, ConsumeInventorySource,
     CreateInventoryItemCommand, CreateStockLocationCommand, CycleCountDecision, CycleCountDetail,
     CycleCountLineView, CycleCountPage, CycleCountView, DecideCycleCountCommand,
@@ -16,17 +16,17 @@ use mnt_inventory_application::{
     UpdateInventoryItemCommand, UpdateInventoryItemFields, UpsertCountLineCommand,
     inventory_audit_event,
 };
-use mnt_inventory_domain::{
+use console_inventory_domain::{
     CycleCountStatus, InventoryCode, InventoryConsumptionSource, InventoryItemState,
     InventoryItemStatus, MoneyWon, MovementKind, PositiveQuantityMilli, QuantityMilli,
     SafetyStockMilli, UnitCode, VarianceReason,
 };
-use mnt_kernel_core::{
+use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, InventoryConsumptionEventId, InventoryItemId,
     InventoryStockLocationId, KernelError, OrgId, P1DispatchId, SiteId, UserId, WorkOrderId,
 };
-use mnt_platform_db::{DbError, with_audits, with_org_conn};
-use mnt_platform_request_context::current_org;
+use console_platform_db::{DbError, with_audits, with_org_conn};
+use console_platform_request_context::current_org;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 
@@ -83,7 +83,7 @@ impl PgInventoryStore {
         &self.pool
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_stock_location(
         &self,
         command: CreateStockLocationCommand,
@@ -196,7 +196,7 @@ impl PgInventoryStore {
         })
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn create_item(
         &self,
         command: CreateInventoryItemCommand,
@@ -274,7 +274,7 @@ impl PgInventoryStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn update_item(
         &self,
         command: UpdateInventoryItemCommand,
@@ -345,7 +345,7 @@ impl PgInventoryStore {
         .await
     }
 
-    // mnt-gate: state-changing-handler
+    // console-gate: state-changing-handler
     pub async fn consume_item(
         &self,
         command: ConsumeInventoryCommand,

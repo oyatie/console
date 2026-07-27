@@ -8,7 +8,7 @@ const SLO_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/slos");
 #[test]
 fn openslo_v1_files_have_required_slo_shape() {
     let availability = read_slo("api-availability.openslo.yaml");
-    assert_required_shape(&availability, "mnt-api-availability");
+    assert_required_shape(&availability, "console-api-availability");
     assert_contains(&availability, "target: 0.995");
     assert_contains(&availability, "duration: 30d");
     assert_contains(&availability, "budgetingMethod: Occurrences");
@@ -17,7 +17,7 @@ fn openslo_v1_files_have_required_slo_shape() {
     assert_contains(&availability, "total:");
 
     let latency = read_slo("api-latency.openslo.yaml");
-    assert_required_shape(&latency, "mnt-api-latency");
+    assert_required_shape(&latency, "console-api-latency");
     assert_contains(&latency, "target: 0.99");
     assert_contains(&latency, "duration: 30d");
     assert_contains(&latency, "op: lte");
@@ -37,7 +37,7 @@ fn assert_required_shape(contents: &str, name: &str) {
     assert_contains(contents, "metadata:");
     assert_contains(contents, &format!("name: {name}"));
     assert_contains(contents, "spec:");
-    assert_contains(contents, "service: mnt-app-api");
+    assert_contains(contents, "service: console-app-api");
     assert_contains(contents, "indicator:");
     assert_contains(contents, "objectives:");
     assert_contains(contents, "metricSource:");

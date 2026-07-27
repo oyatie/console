@@ -4,7 +4,7 @@
 -- insert/delete; the live count is COUNT(*) over the rows. A realtime
 -- `message_ack` event (same LISTEN/NOTIFY pattern as message_posted) lets the
 -- count chip update without a poll.
--- mnt-gate: audited-table messenger_message_acks
+-- console-gate: audited-table messenger_message_acks
 CREATE TABLE messenger_message_acks (
     message_id UUID        NOT NULL REFERENCES messenger_messages(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -20,7 +20,7 @@ ALTER TABLE messenger_message_acks FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_isolation ON messenger_message_acks
     USING (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid)
     WITH CHECK (org_id = NULLIF(current_setting('app.current_org', true), '')::uuid);
-GRANT SELECT, INSERT, DELETE ON messenger_message_acks TO mnt_rt;
+GRANT SELECT, INSERT, DELETE ON messenger_message_acks TO console_rt;
 
 -- Reply-quote: a message may quote an earlier message. The same-thread
 -- invariant (a quote only targets a message in its own thread) is enforced in

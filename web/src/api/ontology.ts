@@ -14,7 +14,7 @@
 // acting/resolve/lifecycle payloads DO have real generated schema components
 // (be2-ont-gaps), so those casts narrow to the generated types below instead
 // of hand-duplicated interfaces.
-import type { components } from "@maintenance/api-client-ts";
+import type { components } from "@console/api-client-ts";
 
 import type { ConsoleApiClient } from "./client";
 import {

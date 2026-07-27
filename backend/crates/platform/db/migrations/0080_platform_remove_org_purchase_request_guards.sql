@@ -84,4 +84,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION platform_remove_organization(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION platform_remove_organization(UUID) TO mnt_rt;
+GRANT EXECUTE ON FUNCTION platform_remove_organization(UUID) TO console_rt;

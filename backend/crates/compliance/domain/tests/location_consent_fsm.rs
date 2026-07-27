@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used)]
 
-use mnt_compliance_domain::{LocationConsent, LocationConsentState};
-use mnt_kernel_core::{BranchId, ErrorKind, UserId};
+use console_compliance_domain::{LocationConsent, LocationConsentState};
+use console_kernel_core::{BranchId, ErrorKind, UserId};
 use time::macros::datetime;
 
 #[test]

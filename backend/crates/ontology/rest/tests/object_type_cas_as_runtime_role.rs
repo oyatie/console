@@ -2,19 +2,19 @@
 //! HTTP composition proof for object-type key CAS.
 //!
 //! Every request traverses the real ontology router, signed-JWT request context,
-//! and a genuine `mnt_rt` pool so RLS and the transactional audit path are part
+//! and a genuine `console_rt` pool so RLS and the transactional audit path are part
 //! of the proof rather than mocked away.
 
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
-use mnt_governance_adapter_postgres::PgGovernanceStore;
-use mnt_kernel_core::{OrgId, TraceContext, UserId};
-use mnt_ontology_adapter_postgres::PgOntologyStore;
-use mnt_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
-use mnt_ontology_rest::{OntologyRestState, router};
-use mnt_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use mnt_platform_request_context::scope_org;
-use mnt_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
+use console_governance_adapter_postgres::PgGovernanceStore;
+use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_ontology_adapter_postgres::PgOntologyStore;
+use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
+use console_ontology_rest::{OntologyRestState, router};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -25,8 +25,8 @@ use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
 
-const TEST_ISSUER: &str = "mnt-platform-auth";
-const TEST_AUDIENCE: &str = "mnt-api";
+const TEST_ISSUER: &str = "console-platform-auth";
+const TEST_AUDIENCE: &str = "console-api";
 const KEY: &str = "cas.http.proof";
 const POLICY_KEY: &str = "policycase";
 const ORG_B: Uuid = Uuid::from_u128(0x5555_5555_5555_5555_5555_5555_5555_5555);
@@ -64,7 +64,7 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .max_connections(4)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("SET ROLE mnt_ontology_cmd")
+                sqlx::query("SET ROLE console_ontology_cmd")
                     .execute(conn)
                     .await?;
                 Ok(())
@@ -898,7 +898,7 @@ async fn migration_0170_stages_blocker_fk_and_0171_validates_only_after_prefligh
         DROP POLICY org_isolation ON cedar_policy_catalog_normalization_blockers;
         ALTER TABLE cedar_policy_catalog_normalization_blockers NO FORCE ROW LEVEL SECURITY;
         ALTER TABLE cedar_policy_catalog_normalization_blockers DISABLE ROW LEVEL SECURITY;
-        REVOKE SELECT ON cedar_policy_catalog_normalization_blockers FROM mnt_rt;
+        REVOKE SELECT ON cedar_policy_catalog_normalization_blockers FROM console_rt;
         ALTER TABLE cedar_policy_catalog_normalization_blockers
             DROP CONSTRAINT fk_cedar_policy_catalog_normalization_blockers_catalog;
         "#,
@@ -987,16 +987,16 @@ fn policy_draft(key: &str) -> Value {
     })
 }
 
-fn created_object_type_id(body: &Value) -> mnt_ontology_domain::ObjectTypeId {
+fn created_object_type_id(body: &Value) -> console_ontology_domain::ObjectTypeId {
     let id = body["id"]
         .as_str()
         .expect("object-type create response must contain an id")
         .parse::<Uuid>()
         .expect("object-type id must be a UUID");
-    mnt_ontology_domain::ObjectTypeId::from_uuid(id)
+    console_ontology_domain::ObjectTypeId::from_uuid(id)
 }
 
-/// Reads the blocker queue as `mnt_rt` with `app.current_org` armed the way a
+/// Reads the blocker queue as `console_rt` with `app.current_org` armed the way a
 /// request-scoped connection arms it. The table has no Rust read path, so there
 /// is no adapter to arm the GUC here: `scope_org` alone only sets a task-local,
 /// and a raw pooled query would leave `current_setting('app.current_org')` empty
@@ -1024,24 +1024,24 @@ async fn seed_object_type(
     org: OrgId,
     actor: UserId,
     stable_key: &str,
-) -> mnt_ontology_domain::ObjectTypeId {
+) -> console_ontology_domain::ObjectTypeId {
     scope_org(org, async {
         PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await)
             .create_object_type(
                 actor,
-                mnt_ontology_adapter_postgres::CreateObjectTypeDraft {
+                console_ontology_adapter_postgres::CreateObjectTypeDraft {
                     stable_key: stable_key.to_owned(),
                     title: "Other tenant case".to_owned(),
                     title_property_key: None,
-                    backing_kind: mnt_ontology_domain::BackingKind::Instance,
+                    backing_kind: console_ontology_domain::BackingKind::Instance,
                     backing_table: None,
                     primary_key_property: None,
                     // Mirrors `policy_draft`: the cross-tenant instance seeded into this
                     // type carries `owner`/`flagged`, and instance writes reject attributes
                     // the object type does not declare.
                     properties: vec![
-                        mnt_ontology_adapter_postgres::PropertyDefInput {
+                        console_ontology_adapter_postgres::PropertyDefInput {
                             key: "owner".to_owned(),
                             title: "Owner".to_owned(),
                             field_type: "text".to_owned(),
@@ -1050,7 +1050,7 @@ async fn seed_object_type(
                             required: true,
                             in_property_policy: false,
                         },
-                        mnt_ontology_adapter_postgres::PropertyDefInput {
+                        console_ontology_adapter_postgres::PropertyDefInput {
                             key: "flagged".to_owned(),
                             title: "Flagged".to_owned(),
                             field_type: "boolean".to_owned(),
@@ -1078,7 +1078,7 @@ async fn seed_instance(
     runtime_pool: &PgPool,
     org: OrgId,
     actor: UserId,
-    type_id: mnt_ontology_domain::ObjectTypeId,
+    type_id: console_ontology_domain::ObjectTypeId,
     title: &str,
     attributes: Value,
 ) -> Uuid {
@@ -1098,7 +1098,7 @@ async fn seed_instance(
                 OffsetDateTime::now_utc(),
             )
             .await
-            .expect("seed instance through mnt_rt")
+            .expect("seed instance through console_rt")
     })
     .await
     .instance
@@ -1130,7 +1130,7 @@ async fn seed_catalog_entry(owner_pool: &PgPool, org: OrgId, stable_key: &str) -
 async fn attach_enforced_policy(
     owner_pool: &PgPool,
     org: OrgId,
-    type_id: mnt_ontology_domain::ObjectTypeId,
+    type_id: console_ontology_domain::ObjectTypeId,
     stable_key: &str,
     effect: &str,
     blocks: Value,
@@ -1145,7 +1145,7 @@ async fn attach_enforced_policy(
 async fn attach_enforced_policy_with_attachment_effect(
     owner_pool: &PgPool,
     org: OrgId,
-    type_id: mnt_ontology_domain::ObjectTypeId,
+    type_id: console_ontology_domain::ObjectTypeId,
     stable_key: &str,
     catalog_effect: &str,
     attachment_effect: &str,
@@ -1173,7 +1173,7 @@ async fn attach_enforced_policy_with_attachment_effect(
     .bind(validation_status)
     .bind(blocks)
     // rls-arming: test fixture writes the protected catalog as DB owner before
-    // the route exercises its genuine mnt_rt read role.
+    // the route exercises its genuine console_rt read role.
     .fetch_one(owner_pool)
     .await
     .expect("seed enforced policy catalog entry");
@@ -1194,7 +1194,7 @@ async fn attach_enforced_policy_with_attachment_effect(
 async fn attach_enforced_policy_with_validation(
     owner_pool: &PgPool,
     org: OrgId,
-    type_id: mnt_ontology_domain::ObjectTypeId,
+    type_id: console_ontology_domain::ObjectTypeId,
     stable_key: &str,
     effect: &str,
     validation_status: &str,
