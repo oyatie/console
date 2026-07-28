@@ -609,3 +609,15 @@ Two of the seven repair and verification lanes died on a session limit, one of t
 Residual vacuity is recorded rather than claimed closed. All three route rules remain gated on the caller supplying route facts, so a future caller that omits the argument disables them with no test failing. The boolean claims are still corroborated only through `route_keys`, so a registry declaring zero keys while parking the real key in `unmodeled_keys` satisfies the bijection — dormant only while no route source exists, and live again when the Leptos rebuild lands. The screen-key regex silently drops any key containing an underscore or hyphen. The five jobs declared not-mirrored carry no step-level coverage at all: twenty run-steps that can be added, changed or deleted with the guard green. And no executable assertion of the ADR-0025 `EXPOSED_SCREEN_KEYS is []` invariant now exists anywhere; it survives in prose only.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
+
+## 2026-07-28 — the guard that could only fail on the branch that ships
+
+`#506` added a tripwire asserting the candidate tracks no console route source, resolving the registry's bound candidate SHA and running `git ls-tree <C>` against it. That call cannot succeed on `main`. The repository allows squash merges only, so C is orphaned the instant a pull request lands, and the tree object it names stops existing: CI preflight died on `fatal: not a tree object` and skipped every job behind it. `main` was red within a minute of a merge whose own checks were all green.
+
+The test was green on the pull request for the same reason it was doomed on `main` — pre-merge, C is reachable. A guard validated only where its precondition happens to hold is not validated. The whole of `#506` was verified on a branch, and the one environment never exercised was the only one that ships.
+
+It now asserts against `HEAD`, which carries identical `web/**` content because T touches nothing but the three authority documents, and which always resolves. Reproduced before and after in a fresh shallow clone of `main` where the candidate is genuinely unreachable: four of four pass, and the four other preflight suites pass there unchanged, confirming this was the only breakage rather than the first of several. The tripwire still bites — the same `ls-tree` against a pre-deletion tree reports both route sources tracked.
+
+Recorded because the mechanism generalises: preflight steps that derive the C/T/M train are gated on `github.event_name == 'pull_request'`, and anything reading candidate-bound state from an ungated step inherits a precondition that is false on `main` by construction.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.

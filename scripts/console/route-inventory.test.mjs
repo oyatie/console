@@ -19,13 +19,21 @@ const ROUTE_CLAIM_FIELDS = ['source_mounted', 'production_exposed', 'registry_bo
 // rebuild will never emit at those paths. They are deleted rather than skipped.
 // What replaces them is the contract that still binds in the no-frontend state:
 // the registry may not claim route presentation that no source can corroborate.
+// Asserted against HEAD, not the registry's bound candidate. The candidate is
+// unreachable wherever it matters most: this repository allows squash merges
+// only, so C is orphaned the moment a pull request lands and `git ls-tree <C>`
+// on `main` is "fatal: not a tree object" — which made this contract
+// unverifiable on the only branch that ships. HEAD carries identical `web/**`
+// content because T touches nothing but the three authority documents, so it
+// asserts the same invariant and always resolves. A git failure here is a
+// thrown error, never a skip.
 const candidateTracks = (relativePath) => execFileSync(
   'git',
-  ['-C', repoRoot, 'ls-tree', authorityRegistry.candidate.sha, '--', relativePath],
+  ['-C', repoRoot, 'ls-tree', 'HEAD', '--', relativePath],
   { encoding: 'utf8' },
 ).trim() !== '';
 
-test('the immutable candidate holds no console route source', () => {
+test('the tree under test holds no console route source', () => {
   assert.deepEqual(
     [CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE].filter(candidateTracks),
     [],
