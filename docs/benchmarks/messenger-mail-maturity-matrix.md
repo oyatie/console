@@ -1,5 +1,7 @@
 # Messenger + Mail maturity matrix
 
+> **OUT OF SCOPE AFTER THE 2026-07-28 pivot.** The decisions here stand, but the subject falls outside the narrowed scope (Ontology · Foundry · Policy, then Organization + Employee, then HR + Payroll). See `docs/PIVOT-2026-07-28.md`.
+
 Date reviewed: 2026-06-29
 
 ## Verdict

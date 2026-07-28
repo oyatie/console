@@ -1,5 +1,7 @@
 # Issue #55 benchmark: enterprise collaboration/work hub
 
+> **SUPERSEDED — 2026-07-28 pivot.** This document describes a surface or plan that no longer exists. See `docs/PIVOT-2026-07-28.md` for what is currently true. Content below is retained as a historical record and is not current intent.
+
 Date reviewed: 2026-06-28
 
 ## Product benchmark conclusion

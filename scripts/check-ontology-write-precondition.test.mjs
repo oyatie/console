@@ -6,10 +6,6 @@ const openapi = readFileSync(
   new URL("../backend/openapi/openapi.yaml", import.meta.url),
   "utf8",
 );
-const generatedTs = readFileSync(
-  new URL("../clients/ts/src/schema.d.ts", import.meta.url),
-  "utf8",
-);
 const ciWorkflow = readFileSync(
   new URL("../.github/workflows/ci.yml", import.meta.url),
   "utf8",
@@ -33,16 +29,13 @@ test("ontology stage declares strong required If-Match and exact precondition st
   assert.match(operation, /headers:[\s\S]*ETag:/);
 });
 
-test("object type wire contract and regenerated TypeScript client carry key revision", () => {
+test("object type wire contract carries key revision", () => {
   const summaryStart = openapi.indexOf("    ObjectTypeSummary:");
   const summaryEnd = openapi.indexOf("\n    InstanceLifecycleState:", summaryStart);
   const summary = openapi.slice(summaryStart, summaryEnd);
   assert.match(summary, /required:[^\n]*key_write_revision/);
   assert.match(summary, /key_write_revision:/);
   assert.match(summary, /key_write_etag:/);
-  assert.match(generatedTs, /key_write_revision: number/);
-  assert.match(generatedTs, /key_write_etag: string/);
-  assert.match(generatedTs, /"If-Match": string/);
 });
 
 test("hosted CI runs the ontology write precondition contract", () => {

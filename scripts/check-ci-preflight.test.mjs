@@ -526,16 +526,16 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
   });
 
-  it("rejects any expensive backend, mobile, or browser job without the preflight dependency", () => {
+  it("rejects any expensive job without the preflight dependency", () => {
     expectFailure(workflow.replace("  backend:\n", "  backend:\n    needs: []\n"), "backend must need preflight");
-    expectFailure(workflow.replace("    needs: [preflight, mobile-parity]\n", "    needs: []\n"), "android-app must need preflight");
-    expectFailure(workflow.replace("  browser-e2e:\n", "  browser-e2e:\n    needs: []\n"), "browser-e2e must need preflight");
+    expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    needs: []\n"), "repo-gates must need preflight");
+    expectFailure(workflow.replace("  api-contract:\n", "  api-contract:\n    needs: []\n"), "api-contract must need preflight");
     expectFailure(workflow.replace("  kubernetes-manifests:\n", "  kubernetes-manifests:\n    needs: []\n"), "kubernetes-manifests must need preflight");
   });
 
   it("rejects failure-insensitive job-level conditions on protected jobs", () => {
     expectFailure(workflow.replace("  backend:\n", "  backend:\n    if: always()\n"), "backend must not define job-level if");
-    expectFailure(workflow.replace("  browser-e2e:\n", "  browser-e2e:\n    if: ${{ !cancelled() }}\n"), "browser-e2e must not define job-level if");
+    expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    if: ${{ !cancelled() }}\n"), "repo-gates must not define job-level if");
   });
 
   it("rejects job-level preflight failure bypasses", () => {

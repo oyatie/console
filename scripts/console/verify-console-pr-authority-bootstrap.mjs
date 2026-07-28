@@ -134,12 +134,38 @@ function gitOps(repo) {
 function safeBaseBranch(base) { return base === 'main'; }
 function parseArgs(argv) {
   const result = {}; for (let index = 0; index < argv.length; index += 2) { const key = argv[index]; const value = argv[index + 1]; if (!['--pr-number', '--head', '--merge', '--base'].includes(key) || value === undefined) fail('usage: --pr-number N --head SHA --merge SHA --base branch'); result[key.slice(2)] = value; }
-  if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head'); exactSha(result.merge, 'PR merge'); if (!safeBaseBranch(result.base)) fail('PR base is outside the console foundation trust scope'); return result;
+  if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head');
+  // `--merge` is informational only. GitHub computes `merge_commit_sha`
+  // asynchronously, so it is null on `opened` and stale on `synchronize`; the
+  // authoritative value is the `refs/pull/N/merge` ref resolved at fetch time.
+  // Validate it only when the event actually supplied one.
+  if (result.merge !== undefined && result.merge !== '' && result.merge !== 'null') exactSha(result.merge, 'PR merge');
+  if (!safeBaseBranch(result.base)) fail('PR base is outside the console foundation trust scope'); return result;
 }
-function fetchExactPullObjects(repo, number, expectedHead, expectedMerge) {
+/**
+ * Fetch the pull request's head and synthetic merge objects, and return the
+ * merge SHA that GitHub actually has right now.
+ *
+ * `head` is compared strictly: it pins the exact reviewed code, and a mismatch
+ * means the event and the refs disagree about what is being verified.
+ *
+ * `merge` is deliberately NOT compared to the event payload. GitHub regenerates
+ * the synthetic test-merge commit asynchronously and it embeds a timestamp, so
+ * its SHA changes on every recompute — including recomputes triggered by the
+ * very event that starts this job. Comparing the payload's (already stale)
+ * `merge_commit_sha` against the freshly fetched ref therefore fails on every
+ * force-push, and on reopen, with no security benefit: the merge commit is only
+ * a vehicle. Its integrity is established structurally downstream by
+ * `verifyBootstrapGraph`, which requires exactly two parents with the verified
+ * authority tip as parent 2. So we resolve the ref and hand that SHA onward.
+ */
+function fetchExactPullObjects(repo, number, expectedHead) {
   const namespace = `refs/console-bootstrap/${number}`;
   git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${number}/head:${namespace}/head`, `+refs/pull/${number}/merge:${namespace}/merge`]);
-  if (git(repo, ['rev-parse', `${namespace}/head`]).trim() !== expectedHead || git(repo, ['rev-parse', `${namespace}/merge`]).trim() !== expectedMerge) fail('GitHub pull refs do not match event SHAs');
+  if (git(repo, ['rev-parse', `${namespace}/head`]).trim() !== expectedHead) fail('GitHub pull head ref does not match the event head SHA');
+  const resolvedMerge = git(repo, ['rev-parse', `${namespace}/merge`]).trim();
+  if (!/^[0-9a-f]{40}$/.test(resolvedMerge)) fail('GitHub pull merge ref is unresolvable');
+  return resolvedMerge;
 }
 export function fetchExactAuthorityTip(repo, number, expectedHead) {
   const parsedNumber = String(number);
@@ -175,7 +201,7 @@ function parseSquashBindingArgs(argv) {
   const result = {}; for (let index = 0; index < argv.length; index += 2) { const key = argv[index]; const value = argv[index + 1]; if (!['--pr-number', '--head', '--squash', '--base'].includes(key) || value === undefined) fail('usage: squash-binding --pr-number N --head SHA --squash SHA --base main'); result[key.slice(2)] = value; }
   if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head'); exactSha(result.squash, 'squash commit'); if (!safeBaseBranch(result.base)) fail('PR base is outside the protected main trust scope'); return result;
 }
-function main() { const args = parseArgs(process.argv.slice(2)); const repo = process.cwd(); fetchExactPullObjects(repo, args['pr-number'], args.head, args.merge); const graph = verifyBootstrapGraph(gitOps(repo), { headSha: args.head, mergeSha: args.merge }); runAuthenticatedCandidateChecks(repo, graph.candidateSha, graph.integrationTipSha, graph.mergeSha); process.stdout.write(`${JSON.stringify({ verdict: 'PASS', ...graph }, null, 2)}\n`); }
+function main() { const args = parseArgs(process.argv.slice(2)); const repo = process.cwd(); const mergeSha = fetchExactPullObjects(repo, args['pr-number'], args.head); const graph = verifyBootstrapGraph(gitOps(repo), { headSha: args.head, mergeSha }); runAuthenticatedCandidateChecks(repo, graph.candidateSha, graph.integrationTipSha, graph.mergeSha); process.stdout.write(`${JSON.stringify({ verdict: 'PASS', ...graph }, null, 2)}\n`); }
 function squashBindingMain() {
   const args = parseSquashBindingArgs(process.argv.slice(3)); const repo = process.cwd();
   const preMergeBaseSha = git(repo, ['rev-parse', 'HEAD']).trim();

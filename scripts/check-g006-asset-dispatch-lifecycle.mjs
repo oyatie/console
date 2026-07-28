@@ -82,7 +82,6 @@ assert(
 );
 requireFile(matrixPath, "G006 asset dispatch lifecycle matrix");
 requireFile(auditPath, "enterprise UI route audit register");
-requireFile("e2e/specs/platform-maturity-g006-asset-dispatch-lifecycle.spec.ts", "G006 Playwright matrix contract spec");
 
 if (matrix) {
   assert(matrix.schemaVersion === 1, "G006 matrix schema version 1", `${matrixPath}: schemaVersion must be 1`);
@@ -94,11 +93,8 @@ if (matrix) {
   );
   assert(Array.isArray(matrix.routePaths) && matrix.routePaths.length >= 9, "G006 matrix routePaths", `${matrixPath}: routePaths must cover asset/dispatch routes`);
   assert(Array.isArray(matrix.dependencyRoutes) && matrix.dependencyRoutes.length >= 3, "G006 matrix dependency routePaths", `${matrixPath}: dependencyRoutes must cover work-order/finance/catalog dependencies`);
-  requireArrayOfStrings(matrix.requiredE2eSpecs, matrixPath, "requiredE2eSpecs");
-  requireArrayOfStrings(matrix.requiredWebTests, matrixPath, "requiredWebTests");
   requireArrayOfStrings(matrix.requiredBackendTests, matrixPath, "requiredBackendTests");
   assert(Array.isArray(matrix.backendContracts) && matrix.backendContracts.length >= 12, "G006 backend contract inventory", `${matrixPath}: backendContracts must include registry/dispatch/geodata/finance contracts`);
-  assert(Array.isArray(matrix.frontendContracts) && matrix.frontendContracts.length >= 11, "G006 frontend contract inventory", `${matrixPath}: frontendContracts must include equipment/dispatch/map/cost surfaces`);
   assert(Array.isArray(matrix.safetyAssertions) && matrix.safetyAssertions.length >= 10, "G006 safety assertions", `${matrixPath}: safetyAssertions must capture owner/operator/transfer/search/map/dispatch/economics guardrails`);
 
   const requiredRouteGroups = new Set(["sites", "equipment-list", "equipment-detail", "equipment-manage", "legacy-import", "geodata", "dispatch-board", "dispatch-map", "maintenance-inspection"]);
@@ -158,42 +154,13 @@ if (matrix) {
     }
   }
 
-  for (const contract of matrix.frontendContracts ?? []) {
-    requireFile(contract.file, `frontend contract ${contract.file}`);
-    assert(typeof contract.contract === "string" && contract.contract.length >= 48, `frontend contract ${contract.file}: rationale`, `${matrixPath}: ${contract.file} contract rationale is too weak`);
-    requireArrayOfStrings(contract.requiredSnippets, matrixPath, `frontend contract ${contract.file} required snippets`);
-    for (const snippet of contract.requiredSnippets ?? []) {
-      requireIncludes(contract.file, snippet, `frontend contract ${contract.file}: ${snippet}`);
-    }
-  }
 
-  for (const spec of matrix.requiredE2eSpecs ?? []) requireFile(spec, `G006 E2E spec ${spec}`);
-  for (const test of matrix.requiredWebTests ?? []) requireFile(test, `G006 web test ${test}`);
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G006 backend test ${test}`);
 
-  requireIncludes("e2e/specs/platform-maturity-g006-asset-dispatch-lifecycle.spec.ts", matrixPath, "G006 Playwright spec imports matrix");
-  requireIncludes("e2e/specs/platform-maturity-g006-asset-dispatch-lifecycle.spec.ts", auditPath, "G006 Playwright spec imports route audit");
   requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G006 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "ownership transfers", "foundation gate mentions legal ownership transfer contract");
   requireIncludes("docs/specs/foundation-gates.md", "assets only to equipment/inventory schemas", "foundation gate mentions asset/inventory mapping contract");
 
-  const bannedCopyNeedles = ["장비관리 + 장비조회", "이 화면을 표시하지 못했습니다", "black background", "coming soon", "Coming soon", "Lorem ipsum"];
-  const sourceFilesWithUserVisibleAssetUx = [
-    "web/src/pages/EquipmentPage.tsx",
-    "web/src/pages/EquipmentManagePage.tsx",
-    "web/src/pages/EquipmentBrowsePage.tsx",
-    "web/src/pages/EquipmentDetailPage.tsx",
-    "web/src/pages/DispatchPage.tsx",
-    "web/src/pages/DispatchMapPage.tsx",
-    "web/src/features/equipment/EquipmentManagementPanel.tsx",
-    "web/src/features/equipment/SiteGeographyPanel.tsx",
-    "web/src/features/dispatch/WorkOrderDispatchControls.tsx",
-  ];
-  for (const file of sourceFilesWithUserVisibleAssetUx) {
-    for (const needle of bannedCopyNeedles) {
-      requireNotIncludes(file, needle, `G006 no weak asset/dispatch copy in ${file}`);
-    }
-  }
 }
 
 if (failures.length) {

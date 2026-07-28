@@ -153,12 +153,12 @@ patches:
     patch: |-
       - op: replace
         path: /spec/podSelector/matchExpressions/0/values
-        value: [console-app, console-web, console-worker, console-migrate, console-db-topology]
+        value: [console-app, console-worker, console-migrate, console-db-topology]
   - target: { group: networking.k8s.io, version: v1, kind: NetworkPolicy, name: allow-app-egress-dns }
     patch: |-
       - op: replace
         path: /spec/podSelector/matchExpressions/0/values
-        value: [console-app, console-web, console-worker, console-migrate, console-db-topology]
+        value: [console-app, console-worker, console-migrate, console-db-topology]
   - target: { group: networking.k8s.io, version: v1, kind: NetworkPolicy, name: allow-app-egress-postgres }
     patch: |-
       - op: replace

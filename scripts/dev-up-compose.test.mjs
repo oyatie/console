@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import test from "node:test";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { parseSingleBuckOutput, resolveRepoBuckOutput } from "./lib/dev-up-buck-output.mjs";
 import { parseWindowsProcessIdentity, processIdentityMatches, shouldSignalManagedProcess } from "./lib/dev-up-process-identity.mjs";
-import { resolveBootstrapModes } from "./lib/dev-up-modes.mjs";
 
 const compose = readFileSync(
   new URL("../ops/compose.dev-deps.yml", import.meta.url),
@@ -30,10 +29,6 @@ const secretsDoc = readFileSync(
   new URL("../deploy/SECRETS.md", import.meta.url),
   "utf8",
 );
-const e2eDb = readFileSync(
-  new URL("../e2e/harness/db.sh", import.meta.url),
-  "utf8",
-);
 const devSeed = readFileSync(
   new URL("./dev-seed.sql", import.meta.url),
   "utf8",
@@ -42,16 +37,6 @@ const commandRoleInit = readFileSync(
   new URL("../ops/postgres-reconcile-topology.sh", import.meta.url),
   "utf8",
 );
-const ciGates = readFileSync(new URL("../docs/CI-GATES.md", import.meta.url), "utf8");
-const playwrightConfig = readFileSync(new URL("../playwright.config.ts", import.meta.url), "utf8");
-const e2eSpecInstructionSources = readdirSync(new URL("../e2e/specs/", import.meta.url), {
-  recursive: true,
-})
-  .filter((entry) => entry.endsWith(".spec.ts"))
-  .map((entry) => ({
-    path: String(entry),
-    text: readFileSync(new URL(`../e2e/specs/${entry}`, import.meta.url), "utf8"),
-  }));
 
 test("mox localserve creates its config below the named volume root", () => {
   assert.match(compose, /localserve/);
@@ -354,13 +339,6 @@ test("documented runtime URI uses its generated URL-safe password consistently",
   assert.doesNotMatch(secretsDoc, /RT_URI="postgresql:\/\/console_rt:\*\*\*@/);
 });
 
-test("e2e database harness never prints or passes the owner password on a psql command line", () => {
-  assert.doesNotMatch(e2eDb, /echo[^\n]*DATABASE_URL/);
-  assert.doesNotMatch(e2eDb, /psql\s+"\$\{DATABASE_URL\}"/);
-  assert.match(e2eDb, /password redacted/);
-  assert.match(e2eDb, /PGPASSWORD="\$\{CONSOLE_APP_POSTGRES_PASSWORD\}" psql/);
-});
-
 test("dev seed uses the audited runtime compatibility boundary for ontology definitions", () => {
   const runSeed = devUp.match(
     /function runSeed\(compose\) \{(?<body>[\s\S]*?)\n\}/,
@@ -399,142 +377,6 @@ test("dev seed uses the audited runtime compatibility boundary for ontology defi
     /o\.xmin = pg_current_xact_id\(\)::xid/,
     "idempotent retries must audit only parents created by the current transaction",
   );
-});
-
-test("dev-auth stays production-faithful while explicit console preview remains Vite-only", () => {
-  const ci = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
-  const appRouter = readFileSync(new URL("../web/src/AppRouter.tsx", import.meta.url), "utf8");
-  assert.match(
-    devUp,
-    /const \{ VITE_CONSOLE_DEV_PREVIEW: _ignoredConsolePreview, \.\.\.parentEnv \} = process\.env/,
-    "caller-supplied console preview flags must not leak through the shared app environment",
-  );
-  assert.match(
-    devUp,
-    /function buildViteEnv\(appEnv, consolePreview\)[\s\S]*?\.\.\.\(consolePreview \? \{ VITE_CONSOLE_DEV_PREVIEW: "1" \} : \{\}\)/,
-    "only an explicitly opted-in Vite child may receive the console preview flag",
-  );
-  assert.match(
-    devUp,
-    /env: buildViteEnv\([\s\S]*?process\.env\.VITE_CONSOLE_DEV_PREVIEW === "1"/,
-    "Vite preview exposure must depend on the explicit preview flag, not dev-auth",
-  );
-  assert.match(
-    appRouter,
-    /dev: import\.meta\.env\.DEV,[\s\S]*?flag: import\.meta\.env\.VITE_CONSOLE_DEV_PREVIEW/,
-    "the product route must retain its import.meta.env.DEV production fence alongside the preview flag",
-  );
-  const devAuthCi = ci.slice(
-    ci.indexOf("- name: dev-up bootstrap --features dev-auth"),
-    ci.indexOf("- name: Upload dev-auth e2e report"),
-  );
-  assert.match(
-    devAuthCi,
-    /CONSOLE_DEV_AUTH_E2E: "1"/,
-  );
-  assert.doesNotMatch(
-    devAuthCi,
-    /VITE_CONSOLE_DEV_PREVIEW/,
-    "the fail-closed dev-auth gate must not globally expose preview inventory",
-  );
-});
-
-test("preview-only bootstrap starts Vite without enabling or seeding dev-auth", () => {
-  const appRouter = readFileSync(
-    new URL("../web/src/AppRouter.tsx", import.meta.url),
-    "utf8",
-  );
-  assert.deepEqual(resolveBootstrapModes({}), {
-    devAuth: false,
-    consolePreview: false,
-    startVite: false,
-  });
-  assert.deepEqual(
-    resolveBootstrapModes({ VITE_CONSOLE_DEV_PREVIEW: "1" }),
-    {
-      devAuth: false,
-      consolePreview: true,
-      startVite: true,
-    },
-  );
-  assert.deepEqual(resolveBootstrapModes({ CONSOLE_DEV_AUTH_E2E: "1" }), {
-    devAuth: true,
-    consolePreview: false,
-    startVite: true,
-  });
-
-  const bootstrap = devUp.slice(
-    devUp.indexOf("async function cmdBootstrap()"),
-    devUp.indexOf("async function cmdDown()"),
-  );
-  assert.match(
-    bootstrap,
-    /const \{ devAuth, consolePreview, startVite \} =\s*resolveBootstrapModes\(process\.env\)/,
-  );
-  assert.match(bootstrap, /if \(devAuth\) runSeed\(compose\)/);
-  assert.match(bootstrap, /const appBinary = buildAppBinary\(devAuth\)/);
-  assert.match(bootstrap, /if \(startVite\)/);
-  assert.match(bootstrap, /env: buildViteEnv\(appEnv, consolePreview\)/);
-  assert.doesNotMatch(
-    bootstrap,
-    /buildViteEnv\(appEnv, devAuth\)/,
-    "dev-auth must not implicitly arm console preview",
-  );
-  assert.match(
-    ciGates,
-    /`VITE_CONSOLE_DEV_PREVIEW=1 npm run dev:bootstrap`/,
-    "the documented preview-only command must exercise this bootstrap mode",
-  );
-  assert.match(
-    appRouter,
-    /dev: import\.meta\.env\.DEV,[\s\S]*?flag: import\.meta\.env\.VITE_CONSOLE_DEV_PREVIEW/,
-    "preview exposure must remain impossible in production builds",
-  );
-});
-
-test("authoritative dev-auth instructions keep preview independent", () => {
-  const devAuthEnv = "CONSOLE_DEV_AUTH_E2E=1";
-  const documentedCommands = [
-    `${devAuthEnv} npm run dev:bootstrap`,
-    `${devAuthEnv} node scripts/dev-up.mjs bootstrap`,
-    `${devAuthEnv} npx playwright test --project=dev-auth`,
-  ];
-  for (const command of documentedCommands) {
-    assert.match(ciGates, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
-  for (const command of ciGates.matchAll(/`([^`]+)`/g)) {
-    const value = command[1];
-    if (
-      value.includes("CONSOLE_DEV_AUTH_E2E=1") ||
-      value.includes("npx playwright test --project=dev-auth")
-    ) {
-      assert.doesNotMatch(value, /VITE_CONSOLE_DEV_PREVIEW=1/);
-    }
-  }
-  assert.match(
-    playwrightConfig,
-    /CONSOLE_DEV_AUTH_E2E=1 node scripts\/dev-up\.mjs bootstrap/,
-  );
-  assert.match(
-    playwrightConfig,
-    /CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth/,
-  );
-  for (const source of e2eSpecInstructionSources) {
-    for (const command of source.text.matchAll(/`([^`]+)`/g)) {
-      const value = command[1];
-      if (
-        value.includes("CONSOLE_DEV_AUTH_E2E=1") &&
-        (value.includes("node scripts/dev-up.mjs bootstrap") ||
-          value.includes("npx playwright test --project=dev-auth"))
-      ) {
-        assert.doesNotMatch(
-          value,
-          /VITE_CONSOLE_DEV_PREVIEW=1/,
-          `${source.path} must keep the fail-closed dev-auth proof independent of console preview`,
-        );
-      }
-    }
-  }
 });
 
 test("dev-up executes one validated Buck2 output for both migration and API roles", () => {
@@ -640,7 +482,7 @@ test("Windows identity parsing requires the PowerShell start token and executabl
 test("Buck2 host backend receives the same dedicated platform-force command capability as local topology", () => {
   const buildAppEnv = devUp.slice(
     devUp.indexOf("function buildAppEnv(role)"),
-    devUp.indexOf("function buildViteEnv(appEnv, consolePreview)"),
+    devUp.indexOf("function writePidState(state)"),
   );
   const devComposeEnvironment = devUp.slice(
     devUp.indexOf("async function bringUpDeps()"),

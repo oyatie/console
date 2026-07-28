@@ -1,1 +1,0 @@
-export { ForecastBody } from "./ForecastBody";

@@ -1,5 +1,7 @@
 # Palantir Foundry operations benchmark — applicable product bar
 
+> **PARTIALLY SUPERSEDED — 2026-07-28 pivot.** Parts of this document refer to surfaces that were deleted or renamed. See `docs/PIVOT-2026-07-28.md` for what is currently true. Content below is unedited; verify any claim against the truth set before relying on it.
+
 Status: planning/quality gate for the enterprise-operations platform. This is a
 benchmarking note, not a claim that we implement or copy Palantir Foundry. We use
 public Palantir documentation and read-only Oyatie planning artifacts to sharpen

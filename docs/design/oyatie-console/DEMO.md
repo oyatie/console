@@ -1,4 +1,12 @@
 # 데모 대본 (from-scratch 시나리오 — 전부 UI no-code · 2026-07-21)
+
+> **SUPERSEDED — 2026-07-28 pivot.** These click-paths run against Claude Design project `9c7c313a`
+> ("Oyatie Console"), which is **no longer the design authority** and whose 63-screen surface was
+> never built. Current authority: project `198fcee4` ("기본") — a shell only (empty nav, empty main
+> section, four empty comms-rail sections). The React/Vite `web/` app these scripts also targeted
+> was deleted on 2026-07-28. **No screen referenced below is reachable today.** Kept as a
+> historical record of intended flows. Truth set:
+> [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
 > 각 대본 = 실제 클릭 경로. 모든 단계는 감사 로그에 남는다 (감사 로그 화면에서 역추적 가능).
 
 ## 1. 법인 신설 (그룹 내 새 회사 셋업)

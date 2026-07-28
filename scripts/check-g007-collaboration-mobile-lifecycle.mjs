@@ -95,7 +95,6 @@ assert(
 );
 requireFile(matrixPath, "G007 collaboration mobile lifecycle matrix");
 requireFile(auditPath, "enterprise UI route audit register");
-requireFile("e2e/specs/platform-maturity-g007-collaboration-mobile-lifecycle.spec.ts", "G007 Playwright matrix contract spec");
 
 if (matrix) {
   assert(matrix.schemaVersion === 1, "G007 matrix schema version 1", `${matrixPath}: schemaVersion must be 1`);
@@ -107,10 +106,7 @@ if (matrix) {
   );
   assert(Array.isArray(matrix.routePaths) && matrix.routePaths.length >= 3, "G007 matrix routePaths", `${matrixPath}: routePaths must cover collaboration routes`);
   assert(Array.isArray(matrix.dependencyRoutes) && matrix.dependencyRoutes.length >= 2, "G007 matrix dependency routePaths", `${matrixPath}: dependencyRoutes must cover Work Hub/Approvals dependencies`);
-  requireArrayOfStrings(matrix.requiredE2eSpecs, matrixPath, "requiredE2eSpecs");
-  requireArrayOfStrings(matrix.requiredWebTests, matrixPath, "requiredWebTests");
   requireArrayOfStrings(matrix.requiredBackendTests, matrixPath, "requiredBackendTests");
-  requireArrayOfStrings(matrix.requiredMobileTests, matrixPath, "requiredMobileTests");
   assert(Array.isArray(matrix.safetyAssertions) && matrix.safetyAssertions.length >= 12, "G007 safety assertions", `${matrixPath}: safetyAssertions must capture collaboration/mail/mobile guardrails`);
 
   const requiredRouteGroups = new Set(["collaboration-hub", "messenger", "mailbox"]);
@@ -162,35 +158,13 @@ if (matrix) {
   }
 
   requireContractSet(matrix, "backendContracts", 12, "G007 backend contract inventory");
-  requireContractSet(matrix, "frontendContracts", 9, "G007 frontend contract inventory");
-  requireContractSet(matrix, "mobileContracts", 8, "G007 mobile/native contract inventory");
 
-  for (const spec of matrix.requiredE2eSpecs ?? []) requireFile(spec, `G007 E2E spec ${spec}`);
-  for (const test of matrix.requiredWebTests ?? []) requireFile(test, `G007 web test ${test}`);
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G007 backend test ${test}`);
-  for (const test of matrix.requiredMobileTests ?? []) requireFile(test, `G007 mobile test ${test}`);
 
-  requireIncludes("e2e/specs/platform-maturity-g007-collaboration-mobile-lifecycle.spec.ts", matrixPath, "G007 Playwright spec imports matrix");
-  requireIncludes("e2e/specs/platform-maturity-g007-collaboration-mobile-lifecycle.spec.ts", auditPath, "G007 Playwright spec imports route audit");
   requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G007 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "notification rules", "foundation gate mentions notification contract");
   requireIncludes("docs/specs/foundation-gates.md", "passkey step-up", "foundation gate mentions passkey step-up contract");
 
-  const bannedCopyNeedles = ["이 화면을 표시하지 못했습니다", "black background", "coming soon", "Coming soon", "Lorem ipsum", "별도 데모"];
-  const collaborationUxFiles = [
-    "web/src/pages/CollaborationPage.tsx",
-    "web/src/pages/MessengerPage.tsx",
-    "web/src/features/messenger/MessengerPanel.tsx",
-    "web/src/pages/MailPage.tsx",
-    "web/src/features/comms/CommsRail.tsx",
-    "ios/Sources/ConsoleApp/ConsoleViews.swift",
-    "android/app/src/main/kotlin/com/console/app/ui/ConsoleApp.kt",
-  ];
-  for (const file of collaborationUxFiles) {
-    for (const needle of bannedCopyNeedles) {
-      requireNotIncludes(file, needle, `G007 no weak collaboration/mobile copy in ${file}`);
-    }
-  }
 }
 
 if (failures.length) {

@@ -64,62 +64,6 @@ requireIncludes(
   "professional artifact digest validation",
 );
 
-requireIncludes(
-  "web/src/components/shell/nav.ts",
-  "Payroll readiness is high-sensitivity",
-  "navigation separates payroll readiness from finance",
-);
-requireIncludes(
-  "web/src/AppRouter.tsx",
-  'itemKey="payroll"',
-  "payroll route uses nav-item authorization",
-);
-requireIncludes(
-  "web/src/AppRouter.tsx",
-  'path="/payroll"',
-  "payroll readiness route",
-);
-requireMatches(
-  "web/src/pages/PayrollPage.tsx",
-  /\.GET\(\s*"\/api\/v1\/hr\/readiness-summary"/,
-  "payroll readiness summary read path",
-);
-requireIncludes(
-  "web/src/pages/PayrollPage.tsx",
-  "calculation_enabled_runs",
-  "payroll calculation readiness gate surfaced",
-);
-requireIncludes(
-  "web/src/pages/PayrollPage.tsx",
-  "copy.status.blocked",
-  "payroll page defaults to legal blocked status",
-);
-requireIncludes(
-  "web/src/pages/EmployeesPage.test.tsx",
-  "기본시급",
-  "payroll wage column masking test",
-);
-requireIncludes(
-  "web/src/pages/EmployeesPage.test.tsx",
-  "퇴직금 중간정산",
-  "severance interim-settlement masking test",
-);
-requireIncludes(
-  "web/src/pages/EmployeesPage.test.tsx",
-  "queryByText(\"12345\")",
-  "raw payroll amount non-render assertion",
-);
-requireIncludes(
-  "web/src/pages/EmployeesPage.test.tsx",
-  "queryByText(\"2025-12-31\")",
-  "raw severance date non-render assertion",
-);
-requireIncludes(
-  "web/src/pages/MailPage.test.tsx",
-  "급여명세서 확인",
-  "payroll receipt mail workflow test fixture",
-);
-
 requireMatches(
   "package.json",
   /"check:payroll"\s*:\s*"node scripts\/check-payroll-domain\.mjs"/,
@@ -134,17 +78,6 @@ requireIncludes(
   ".github/workflows/ci.yml",
   "npm run check:payroll-release-gate",
   "CI payroll release-gate wiring",
-);
-
-requireAbsent(
-  "web/src/pages/PayrollPage.tsx",
-  /\.(POST|PUT|PATCH|DELETE)\(/,
-  "payroll readiness page mutation API calls",
-);
-requireAbsent(
-  "web/src/pages/EmployeesPage.tsx",
-  /(월급|급여액|기본시급|통상시급|계좌번호|주민번호)/,
-  "generic HR page raw payroll/bank/resident fields",
 );
 
 reportGate("payroll release gate check passed");

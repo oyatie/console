@@ -2,7 +2,7 @@
 # Live denied-traffic smoke for deploy/apps/console/base/networkpolicy.yaml.
 #
 # The smoke creates temporary pods in the target namespace:
-# - an app=console-web HTTP target on port 8080, which the checked-in ingress policy
+# - an app=console-app HTTP target on port 8080, which the checked-in ingress policy
 #   allows from same-namespace pods;
 # - an unlabeled control client, which should reach that target; and
 # - an app=console-app policy client, selected by default-deny-egress-app-tier, which
@@ -46,7 +46,7 @@ policy), Antrea, kube-router, or OVN-Kubernetes. Plain flannel is expected to
 fail the preflight and is not valid evidence.
 
 What the smoke proves:
-  1. an unlabeled same-namespace control pod can reach a temporary app=console-web
+  1. an unlabeled same-namespace control pod can reach a temporary app=console-app
      HTTP target on TCP/8080, proving the target Service and ingress allow path;
   2. a temporary app=console-app pod can use kube-dns and outbound HTTPS on TCP/443,
      matching allow-app-egress-dns and allow-app-egress-https;
@@ -234,7 +234,7 @@ metadata:
   name: ${TARGET_POD}
   namespace: ${NAMESPACE}
   labels:
-    app: console-web
+    app: console-app
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   restartPolicy: Never
@@ -267,7 +267,7 @@ metadata:
     ${LABEL_KEY}: ${RUN_ID}
 spec:
   selector:
-    app: console-web
+    app: console-app
     ${LABEL_KEY}: ${RUN_ID}
   ports:
     - name: http

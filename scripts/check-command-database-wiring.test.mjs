@@ -42,55 +42,25 @@ test("database-backed CI and release probes reconcile, migrate, and serve with s
   const ci = read(".github/workflows/ci.yml");
   assert.match(ci, /CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="\$PLATFORM_FORCE_COMMAND_PASSWORD"/);
   assert.match(ci, /PLATFORM_FORCE_COMMAND_DATABASE_URL="postgres:\/\/console_platform_force_cmd:/);
-  assert.match(ci, /E2E_CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD/);
 });
 
-test("contract and browser harnesses never alias command URLs to DATABASE_URL", () => {
-  const contract = read("scripts/contract-roundtrip.ts");
-  assert.match(contract, /provisionDatabaseTopology\(db, databaseUrl\)/);
-  assert.match(contract, /DATABASE_URL: topology\.runtimeDatabaseUrl/);
+test("the dev boot path never aliases command URLs to DATABASE_URL", () => {
+  // dev-up.mjs is the surviving boot path (the contract and browser harnesses
+  // it replaced were deleted with the frontend): each command role must get
+  // its OWN least-privilege URL, never a reuse of the runtime/owner
+  // DATABASE_URL.
+  const devUp = read("scripts/dev-up.mjs");
+  assert.match(devUp, /DATABASE_URL: role === "migrate" \? databaseUrl\(\) : runtimeDatabaseUrl\(\)/);
+  assert.match(devUp, /LEAVE_COMMAND_DATABASE_URL: commandDatabaseUrl\(\s*"console_leave_cmd"/);
+  assert.match(devUp, /ONTOLOGY_COMMAND_DATABASE_URL: commandDatabaseUrl\(\s*"console_ontology_cmd"/);
   assert.match(
-    contract,
-    /LEAVE_COMMAND_DATABASE_URL: topology\.leaveCommandDatabaseUrl/,
-  );
-  assert.match(
-    contract,
-    /ONTOLOGY_COMMAND_DATABASE_URL: topology\.ontologyCommandDatabaseUrl/,
-  );
-  assert.match(
-    contract,
-    /PLATFORM_FORCE_COMMAND_DATABASE_URL: topology\.platformForceCommandDatabaseUrl/,
-  );
-  assert.match(contract, /format\([\s\S]*?\$1::text, \$2::text\)/);
-  assert.match(
-    contract,
-    /ALTER ROLE %I SET transaction_timeout = ''45s''/,
-  );
-  assert.match(
-    contract,
-    /ALTER ROLE %I IN DATABASE %I RESET %I/,
-  );
-  assert.match(contract, /current_setting\('transaction_timeout'\)/);
-
-  const e2e = read("e2e/harness/boot-backend.sh");
-  assert.match(e2e, /DATABASE_URL="postgres:\/\/console_rt:/);
-  assert.match(e2e, /LEAVE_COMMAND_DATABASE_URL="postgres:\/\/console_leave_cmd:/);
-  assert.match(
-    e2e,
-    /ONTOLOGY_COMMAND_DATABASE_URL="postgres:\/\/console_ontology_cmd:/,
-  );
-  assert.match(
-    e2e,
-    /PLATFORM_FORCE_COMMAND_DATABASE_URL="postgres:\/\/console_platform_force_cmd:/,
+    devUp,
+    /PLATFORM_FORCE_COMMAND_DATABASE_URL: commandDatabaseUrl\(\s*"console_platform_force_cmd"/,
   );
   assert.doesNotMatch(
-    e2e,
-    /(?:LEAVE|ONTOLOGY|PLATFORM_FORCE)_COMMAND_DATABASE_URL="\$\{DATABASE_URL\}"/,
+    devUp,
+    /(?:LEAVE|ONTOLOGY|PLATFORM_FORCE)_COMMAND_DATABASE_URL:\s*(?:databaseUrl\(\)|runtimeDatabaseUrl\(\)|process\.env\.DATABASE_URL)/,
   );
-
-  const databaseHarness = read("e2e/harness/db.sh");
-  assert.match(databaseHarness, /CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="\$\{E2E_CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD/);
-  assert.match(databaseHarness, /CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="\$\{CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD\}"/);
 });
 
 test("append-only migration 0167 declares serving-role bounds and nonclaims", () => {

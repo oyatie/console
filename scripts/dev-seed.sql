@@ -7,7 +7,7 @@
 -- a 창원-based forklift fleet-maintenance operator — across every domain the
 -- console's mounted screens read, so each screen shows REAL rows.
 --
--- IDIOM: same as e2e/harness/seed*.sql — connected as the PG superuser
+-- IDIOM: connected as the PG superuser
 -- (BYPASSRLS), arm `app.current_org` to mirror runtime tenant-scoping and to
 -- satisfy any FORCE-RLS WITH CHECK, deterministic all-hex ids, ON CONFLICT DO
 -- NOTHING so re-runs are idempotent. NOT production ops (that goes through the

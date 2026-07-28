@@ -1,4 +1,20 @@
 # 작업 지침
+
+> **SUPERSEDED — 2026-07-28 pivot.** This directory mirrors Claude Design project `9c7c313a`
+> ("Oyatie Console"), which is **no longer the design authority**. Current authority: project
+> `198fcee4` ("기본") — a **shell only**: sidebar (empty nav), main column (empty section), comms
+> rail with four empty collapsible sections (메신저/메일/알림/공지), responsive drawers under 900px,
+> 2-way light/dark theme.
+>
+> **These session instructions are historical — do not follow them as current process.** The
+> 63-screen surface they route through (DESIGN/TODO/ROADMAP/AGENTS reading order, "현재 상태 · 다음
+> 우선순위") describes the superseded prototype. `HANDOFF.md` remains useful, but only as a backend
+> contract reference (§18 ontology, §15 lifecycle, §16 guardrails, §17 enterprise standards).
+>
+> Also deleted on 2026-07-28: the React/Vite `web/` app, `clients/{ts,kotlin,swift}`, Playwright
+> `e2e/`, and the iOS/Android deliverables. The frontend rebuild targets **Leptos 0.9** and returns
+> last. Repo renamed `maintenance` → `console`. Canonical truth set:
+> [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
 - 이 프로젝트의 모든 설계 결정은 루트의 **DESIGN.md**(온톨로지 우선 헌장)를 따른다. 새 화면/컴포넌트/텍스트를 만들거나 수정하기 전에 DESIGN.md의 "UI/UX 불변식 audit 체크리스트"(§4)와 §4.7 패턴 전파 규칙을 적용할 것.
 - 작업 목록은 루트의 **TODO.md**를 단일 출처로 유지한다 — 완료 시 체크, 새 directive는 TODO.md와 DESIGN.md 카탈로그에 함께 반영.
 - **새 세션 시작 시 반드시**: **ROADMAP.md**(마스터 빌드 블루프린트 — 페이즈·모듈 매트릭스[벤치마크]·품질기준·온톨로지 그래프·진행 로그)와 **AGENTS.md**(파일 지도·현재 상태·변경 로그 = 최신 상태의 단일 출처)를 먼저 읽는다. 백엔드 계약·OSS 통합(mox·ONLYOFFICE·Rust 인제스트·증거 아카이빙·DLP)은 **HANDOFF.md**(§1–16 — 생애주기 엔진 §15·내부통제 가드레일 §16 포함).
@@ -11,7 +27,10 @@
 - **콘솔 전역 Cedar PBAC**: 화면·카드·행·액션·검색·집계 전부 정책 평가 결과. "전체"=인가 법인 합집합. 권한 있어도 열람은 기록. 비밀 구역은 deny-by-omission.
 - **자동화=결정적 또는 수동(§4-28 · 무AI)**: 배정·인수인계·위임·판정은 결정적 규칙(같은 입력=같은 출력·감사에 규칙 명시) 아니면 수동(조율 큐·four-eyes). AI/LLM 판정 금지.
 - **no-code 우선 · 비주얼 · 개체 기반**: 정책·워크플로·자동화·예약작업 전부 자연어/블록 캔버스 + 시뮬레이션·되돌리기.
+- **노동법·문화 가드레일(§4-31)**: 연차=사유란 없음·거부 불가(시기변경 협의만) · 야근 미화·근무태도 평가·채용 차별 필드 금지 · 법정 기간·요율=카탈로그 자동 산정(근거 법령 표기·단축 불가).
+- **전망 2축(§4-30)**: 경고·지표는 실시간 실적 + 전망(추세 투사)을 함께 — 산식 1줄 명시·시나리오 3종(무조치/처방/악화)·개체 승인 시 재계산. 블랙박스·AI 추정 금지.
 - **체크리스트 게이트(§4-29)**: 중대 액션=프리플라이트(자동 판정은 자동 체크·사람 판단만 attest·fail-closed)+포스트플라이트(실행 검증 자동 기록·이상=알림·되돌리기).
+- **역할 기반 노출(§4-32)**: 메뉴=배정 세트만(권한 있어도 상시 노출 금지) · 나머지는 「모듈 찾기」+핀 고정.
 - **입력 불변식(§4-27)**: 폼은 사용자를 신뢰하지 않는다 — 정형 필드=입력 정규화 마스크(잘못된 형식이 존재 불가), 필수=fail-closed 게이트, enum=N+1 직접 입력, 개체·인물 선택=타입어헤드(열거 금지·프로덕션 규모 기준), placeholder=일반 키보드 문자·실무형 문구, 생성 폼=하류 효과 1줄 고지.
 - **깊이 우선(deep not wide), 예외 우선, 설명용 UI 금지**: 상태=칩, 기능 없는 텍스트 금지. **부제·설명 캡션 금지** — 제목 밑 서브타이틀, 기술스택/프로토콜 캡션(예: "mox · IMAP4/SMTP"), "이 열람은 감사됨" 류 메타 안내, 칩·아이콘이 이미 보여주는 것을 반복하는 산문은 모두 제거(경고·에러 등 실제 액션을 유발하는 문구만 허용). 상세 보기 기본은 핀 패널.
 - **전 직원 시스템 + 모바일**: 관리자 전용이 아님. 셀프서비스(본인 급여·개인 inbox)·passkey 수령확인. 커뮤니케이션은 rail↔main 승격.

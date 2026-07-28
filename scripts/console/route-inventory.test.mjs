@@ -41,20 +41,43 @@ function assertCandidateRouteContract(result) {
   assert.deepEqual(result.exposed, [], 'candidate source must not expose an unverified route');
 }
 
+// The 2026-07-28 clean-slate pivot deleted the frontend, so the candidate holds
+// no console route sources. `null` means "no frontend in this candidate", which
+// is a valid state, not a failure: a console with no frontend presents no routes.
+// The Leptos rebuild re-registers its route source here.
 function candidateTexts() {
-  return {
-    nav: candidateFile('web/src/console/shell/nav.ts'),
-    registry: candidateFile('web/src/console/screens/registry.ts'),
-  };
+  try {
+    return {
+      nav: candidateFile('web/src/console/shell/nav.ts'),
+      registry: candidateFile('web/src/console/screens/registry.ts'),
+    };
+  } catch {
+    return null;
+  }
 }
 
 test('route inventory exactly matches the immutable candidate authority contract', () => {
-  const { nav, registry } = candidateTexts();
-  assertCandidateRouteContract(extractConsoleRouteFactsFromTexts(nav, registry));
+  const texts = candidateTexts();
+  if (!texts) {
+    // No route sources => the registry must declare no routes, or the two disagree.
+    const declared = authorityRegistry.capabilities.flatMap((capability) => capability.route_presentation.route_keys);
+    assert.deepEqual(declared, [], 'registry declares route keys but the candidate has no console route source');
+    return;
+  }
+  assertCandidateRouteContract(extractConsoleRouteFactsFromTexts(texts.nav, texts.registry));
 });
 
-test('route inventory contract rejects missing, extra, and misclassified candidate routes', () => {
-  const { nav, registry } = candidateTexts();
+test('route inventory contract rejects missing, extra, and misclassified candidate routes', (t) => {
+  const texts = candidateTexts();
+  if (!texts) {
+    // This is a negative test over real candidate route sources; it mutates them
+    // to prove the contract rejects bad route sets. With the frontend deleted
+    // there is nothing to mutate. Skipped loudly rather than passed silently, so
+    // the Leptos rebuild restores this coverage instead of quietly losing it.
+    t.skip('no console route source in candidate (2026-07-28 clean-slate pivot)');
+    return;
+  }
+  const { nav, registry } = texts;
 
   const missing = extractConsoleRouteFactsFromTexts(
     nav.replace('  "consulting",\n', ''),

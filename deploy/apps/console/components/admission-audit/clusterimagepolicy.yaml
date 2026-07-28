@@ -15,7 +15,6 @@ spec:
   mode: warn
   images:
     - glob: ghcr.io/jason931225/console-app
-    - glob: ghcr.io/jason931225/console-web
   authorities:
     - name: github-actions-keyless-image-release
       keyless:

@@ -59,8 +59,6 @@ const PLAN = new Map([
   ["Buck PostgreSQL environment wrapper regression", { tier: "fast" }],
   ["Buck disposable PostgreSQL harness regression", { tier: "fast" }],
   ["CI preflight contract", { tier: "fast" }],
-  ["Root npm workspace integrity", { tier: "fast" }],
-  ["Root npm workspace integrity tests", { tier: "fast" }],
   ["Canonical npm lockfile", { tier: "fast" }],
   ["Cargo.lock consistency", { tier: "fast" }],
 

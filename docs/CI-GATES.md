@@ -201,56 +201,32 @@ names only, not incidental workflow prose or runner setup text.
 
 ### Root package scripts run by CI
 
-- `check:android-e2e-fail-closed`
 - `check:adrs`
-- `check:browser-persona-matrix`
 - `check:ci-preflight`
 - `check:console-truth-ledger`
-- `check:cx-reporting-maturity`
-- `check:enterprise-ux-parity`
-- `check:financial-maturity`
 - `check:foundation-gates`
 - `check:g004-identity-foundation`
 - `check:g005-workflow-lifecycle`
 - `check:g006-asset-dispatch-lifecycle`
 - `check:g007-collaboration-mobile-lifecycle`
 - `check:g008-payroll-readiness`
-- `check:ios-ui-test-fail-closed`
 - `check:k8s`
-- `check:kotlin`
 - `check:openapi-app`
-- `check:operations-intelligence-maturity`
 - `check:package-lock`
 - `check:payroll-release-gate`
 - `check:people-hr-maturity`
 - `check:pr473-migration-operational`
-- `check:root-workspaces`
 - `check:production-hardening`
-- `check:swift`
-- `check:ts`
 - `check:workflow-runtime-m2-cedar-guards`
 - `check:workflow-runtime-m2-drainer`
 - `check:workflow-runtime-m2-runtime`
 - `check:workflow-runtime-m2-strangler`
 - `check:workflow-runtime-spine`
-- `gen:api:portable`
-- `gen:api:swift`
-- `test:api-client-contract:swift`
-- `test:api-client-contract:ts`
-- `test:contract`
 - `test:adrs`
-- `test:root-workspaces`
 - `test:employee-import-contract`
 - `test:ontology-write-precondition`
 - `test:production-hardening`
 - `test:text-gate`
-
-### Web console package scripts run by CI
-
-- `web:check:production-dev-auth-absence`
-- `web:lint`
-- `web:test`
-- `web:test:production-dev-auth-guards`
 
 - **Backend — fmt / clippy / test / gates**: `cargo fmt --all -- --check`,
   `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`,

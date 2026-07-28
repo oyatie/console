@@ -532,7 +532,7 @@ export function evaluateProdOverlayImageChecks(readText) {
     "prod overlay kustomization",
   );
   const imageEntries = parseKustomizeImageEntries(prodOverlay);
-  const requiredImages = ["console-app", "console-web"];
+  const requiredImages = ["console-app"];
   const pinnedRequiredImages = requiredImages.filter((imageName) =>
     imageEntries.some(
       (entry) =>
@@ -544,7 +544,7 @@ export function evaluateProdOverlayImageChecks(readText) {
     result,
     pinnedRequiredImages.length === requiredImages.length,
     `prod overlay digest pins: ${pinnedRequiredImages.length} (${pinnedRequiredImages.join(", ")})`,
-    `${path} must pin at least console-app and console-web by immutable sha256 digest (found ${pinnedRequiredImages.length}); do not deploy mutable tags`,
+    `${path} must pin at least console-app by immutable sha256 digest (found ${pinnedRequiredImages.length}); do not deploy mutable tags`,
   );
 
   const mutableTags = imageEntries.filter(
@@ -1103,16 +1103,6 @@ export function evaluateWorkflowHardeningChecks(readText) {
   );
   requirement(
     result,
-    packageJson?.scripts?.["test:openapi-toolchain-security"] ===
-      "node --test scripts/check-openapi-toolchain-security.test.mjs" &&
-      readText("scripts/check-openapi-toolchain-security.test.mjs").trim()
-        .length > 0,
-    "OpenAPI toolchain security regression: exact package test wiring present",
-    "OpenAPI toolchain security regression test and exact package CLI wiring must be present",
-  );
-
-  requirement(
-    result,
     workflowHasRun(ciWorkflow, [/\bnpm\s+run\s+check:production-hardening\b/]),
     "CI runs production-hardening contract as an active step",
     "CI must run npm run check:production-hardening as an active step",
@@ -1466,14 +1456,6 @@ export function evaluateWorkflowHardeningChecks(readText) {
   );
   requirement(
     result,
-    workflowHasRun(securityWorkflow, [
-      /\bnpm\s+run\s+test:openapi-toolchain-security\b/,
-    ]),
-    "security workflow portable gate: active OpenAPI toolchain regression",
-    "security workflow must actively run npm run test:openapi-toolchain-security",
-  );
-  requirement(
-    result,
     workflowHasRun(securityWorkflow, [/\bnpm\s+audit\s+--audit-level=high\b/]),
     "security workflow portable gate: active npm audit",
     "security workflow must actively run npm audit --audit-level=high",
@@ -1514,217 +1496,6 @@ export function evaluateWorkflowHardeningChecks(readText) {
     "security workflow must verify canonical Trivy exception parity before the full-scan YAML policy is used",
   );
 
-  return result;
-}
-
-export function evaluateAndroidE2eTokenHandoffChecks(readText) {
-  const result = createResult();
-  const ciPath = ".github/workflows/ci.yml";
-  const gradlePath = "android/app/build.gradle.kts";
-  const testPath =
-    "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt";
-  const ciWorkflow = requirePresentText(result, readText, ciPath, "CI workflow");
-  const gradleFile = requirePresentText(result, readText, gradlePath, "Android app Gradle file");
-  const workOrderFlowTest = requirePresentText(
-    result,
-    readText,
-    testPath,
-    "Android instrumented WorkOrderFlowTest",
-  );
-  const activeCiWorkflow = stripHashComments(ciWorkflow);
-  const androidJobMatch = activeCiWorkflow.match(
-    /^  android-instrumented:\s*$([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*$|(?![\s\S]))/m,
-  );
-  const androidWorkflow = androidJobMatch?.[1] ?? "";
-  const sessionBlock = findWorkflowRunBlock(androidWorkflow, [
-    /field-e2e-session\.properties/,
-    /auth\/otp\/redeem/,
-  ]);
-  const gradleBlock = findWorkflowRunBlock(androidWorkflow, [
-    /\.\/gradlew\s+fieldApi34DebugAndroidTest/,
-  ]);
-  const gradleCommandLine =
-    gradleBlock.match(/^.*\.\/gradlew\s+fieldApi34DebugAndroidTest.*$/m)?.[0] ?? "";
-
-  requirement(
-    result,
-    /install\s+-d\s+-m\s+700\s+"?\$session_assets_dir"?/.test(androidWorkflow) &&
-      /\bumask\s+077\b/.test(androidWorkflow) &&
-      /chmod\s+600\s+"?\$session_file"?/.test(androidWorkflow) &&
-      /\$\{?RUNNER_TEMP\}?\/android-e2e-session-assets/.test(androidWorkflow) &&
-      (/(?:export\s+FIELD_E2E_SESSION_ASSETS_DIR=|FIELD_E2E_SESSION_ASSETS_DIR=.*GITHUB_ENV)/.test(
-        androidWorkflow,
-      )),
-    "Android E2E session asset fixture is runner-temp chmod-restricted and path-addressed",
-    "Android E2E session asset fixture must be under RUNNER_TEMP with directory 700, file 600, and be exposed only as a path (same-step export or GITHUB_ENV)",
-  );
-  requirement(
-    result,
-    /::add-mask::.*(?:bootstrap_otp|\$otp)/.test(sessionBlock) &&
-      /auth\/otp\/redeem/.test(sessionBlock) &&
-      /::add-mask::.*access_token/.test(sessionBlock) &&
-      /::add-mask::.*refresh_token/.test(sessionBlock),
-    "Android E2E OTP and minted tokens are masked before fixture write",
-    "Android E2E must mask its random OTP and minted tokens before redeeming or writing the session fixture",
-  );
-  requirement(
-    result,
-    !/\bGITHUB_OUTPUT\b/.test(androidWorkflow) &&
-      !/steps\.session\.outputs\.(?:access|refresh)\b/.test(androidWorkflow) &&
-      !/android\.testInstrumentationRunnerArguments\.FIELD_E2E_(?:ACCESS|REFRESH)_TOKEN/.test(
-        gradleCommandLine,
-      ),
-    "Android E2E credentials avoid GitHub outputs and Gradle arguments",
-    "Android E2E credentials must not be written to GITHUB_OUTPUT or passed as Gradle instrumentation arguments",
-  );
-  requirement(
-    result,
-    /providers\.environmentVariable\("FIELD_E2E_SESSION_ASSETS_DIR"\)/.test(gradleFile) &&
-      /sourceSets\s*\{[\s\S]*getByName\("androidTest"\)[\s\S]*assets\.srcDir/.test(gradleFile),
-    "Android Gradle exposes runner-temp session fixture as androidTest assets",
-    "Android Gradle must expose FIELD_E2E_SESSION_ASSETS_DIR as androidTest assets",
-  );
-  requirement(
-    result,
-    /InstrumentationRegistry\.getInstrumentation\(\)[\s\S]*\.context[\s\S]*\.assets[\s\S]*\.open\("field-e2e-session\.properties"\)/.test(
-      workOrderFlowTest,
-    ) &&
-      /FIELD_E2E_ACCESS_TOKEN/.test(workOrderFlowTest) &&
-      /FIELD_E2E_REFRESH_TOKEN/.test(workOrderFlowTest) &&
-      /SessionTokenStore/.test(workOrderFlowTest) &&
-      !/getArguments\s*\(\s*\)/.test(workOrderFlowTest),
-    "WorkOrderFlowTest reads the credential fixture rather than instrumentation arguments",
-    "WorkOrderFlowTest must load the session tokens from the androidTest asset fixture",
-  );
-  return result;
-}
-
-export function evaluateAndroidE2eFailClosedChecks(readText) {
-  const result = createResult();
-  const ciPath = ".github/workflows/ci.yml";
-  const debugManifestPath = "android/app/src/debug/AndroidManifest.xml";
-  const debugNetworkConfigPath =
-    "android/app/src/debug/res/xml/network_security_config.xml";
-  const ciWorkflow = requirePresentText(result, readText, ciPath, "CI workflow");
-  const debugManifest = requirePresentText(
-    result,
-    readText,
-    debugManifestPath,
-    "Android debug manifest",
-  );
-  const debugNetworkConfig = requirePresentText(
-    result,
-    readText,
-    debugNetworkConfigPath,
-    "Android debug network security config",
-  );
-  const gradleFile = requirePresentText(
-    result,
-    readText,
-    "android/app/build.gradle.kts",
-    "Android app Gradle file",
-  );
-  const activeCiWorkflow = stripHashComments(ciWorkflow);
-  const androidJobMatch = activeCiWorkflow.match(
-    /^  android-instrumented:\s*$([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*$|(?![\s\S]))/m,
-  );
-  const androidWorkflow = androidJobMatch?.[1] ?? "";
-
-  requirement(
-    result,
-    Boolean(androidJobMatch),
-    "Android E2E workflow job present",
-    `${ciPath} must contain an android-instrumented job`,
-  );
-
-  requirePackageScript(result, readText, "check:android-e2e-fail-closed");
-  requirement(
-    result,
-    workflowHasRun(ciWorkflow, [/\bnpm\s+run\s+check:android-e2e-fail-closed\b/]),
-    "CI runs Android E2E fail-closed workflow guard",
-    `${ciPath} must actively run npm run check:android-e2e-fail-closed`,
-  );
-  requirement(
-    result,
-    /image:\s*postgres:18\.4\b/.test(androidWorkflow),
-    "Android E2E uses local PostgreSQL 18.4",
-    `${ciPath} android-instrumented must start PostgreSQL 18.4 locally`,
-  );
-  requirement(
-    result,
-    patternsAppearInOrder(androidWorkflow, [
-      /git\s+rev-parse\s+HEAD/,
-      /GITHUB_SHA/,
-      /cargo\s+build[\s\S]*console-app|cargo\s+build[\s\S]*--bin\s+console-app/,
-    ]),
-    "Android E2E verifies exact candidate SHA before backend build",
-    `${ciPath} must verify git HEAD against GITHUB_SHA before building the E2E backend`,
-  );
-  requirement(
-    result,
-    /e2e\/harness\/db\.sh/.test(androidWorkflow) &&
-      /seed-mobile-ci\.sql/.test(androidWorkflow) &&
-      /openssl\s+rand/.test(androidWorkflow) &&
-      /sha256sum/.test(androidWorkflow) &&
-      /e2e\/harness\/boot-backend\.sh/.test(androidWorkflow) &&
-      /E2E_HTTP_ADDR:\s*127\.0\.0\.1:8080/.test(androidWorkflow) &&
-      /backend_url="http:\/\/127\.0\.0\.1:8080"/.test(androidWorkflow) &&
-      /printf\s+'%s'\s+"\$bootstrap_otp"\s*\|\s*jq\s+-Rsc\s+'\{otp:\.\}'\s*\|\s*curl[\s\S]*\$backend_url\/api\/v1\/auth\/otp\/redeem/.test(
-        androidWorkflow,
-      ) &&
-      /--data-binary\s+@-/.test(androidWorkflow),
-    "Android E2E boots a self-hosted candidate backend with a random SHA256 mechanic OTP",
-    `${ciPath} must migrate/seed local PostgreSQL, SHA256-hash a random mechanic OTP, boot the candidate backend on loopback, and JSON-encode the OTP with jq before redeeming it locally`,
-  );
-  requirement(
-    result,
-    !/secrets\.FIELD_E2E_|FIELD_E2E_BASE_URL|FIELD_E2E_SEED_REFRESH_TOKEN|FIELD_E2E_REQUIRE_REAL_SESSION/.test(
-      androidWorkflow,
-    ),
-    "Android E2E has no external backend or long-lived session secret dependency",
-    `${ciPath} must not depend on FIELD_E2E external backend/session secrets or optional protected-context skipping`,
-  );
-  requirement(
-    result,
-    /rglob\("TEST-\*\.xml"\)/.test(androidWorkflow) &&
-      /endswith\("\.WorkOrderFlowTest"\)/.test(androidWorkflow) &&
-      /case\.find\("skipped"\)/.test(androidWorkflow) &&
-      /case\.find\("failure"\)/.test(androidWorkflow) &&
-      /case\.find\("error"\)/.test(androidWorkflow) &&
-      /if not cases:/.test(androidWorkflow),
-    "Android E2E requires executed WorkOrderFlowTest JUnit evidence with no skip/failure/error",
-    `${ciPath} must parse WorkOrderFlowTest JUnit XML and fail unless it executed with zero skipped, failures, and errors`,
-  );
-  requirement(
-    result,
-    /if:\s*always\(\)/.test(androidWorkflow) &&
-      /rm\s+-rf\s+"?\$session_assets_dir"?|rm\s+-rf\s+"?\$\{RUNNER_TEMP\}/.test(
-        androidWorkflow,
-      ) &&
-      /kill\s+"?\$.*(?:backend|pid)/i.test(androidWorkflow),
-    "Android E2E always cleans session fixtures and the candidate backend",
-    `${ciPath} must run an always cleanup step that removes runner-temp session fixtures and terminates the candidate backend`,
-  );
-  requirement(
-    result,
-    /networkSecurityConfig="@xml\/network_security_config"/.test(debugManifest) &&
-      /<domain[^>]*>10\.0\.2\.2<\/domain>/.test(debugNetworkConfig) &&
-      /cleartextTrafficPermitted="true"/.test(debugNetworkConfig) &&
-      !/usesCleartextTraffic="true"/.test(debugManifest) &&
-      /https:\/\//.test(gradleFile),
-    "Android cleartext is debug-only for emulator loopback while release remains HTTPS",
-    "Android must permit cleartext only through the debug 10.0.2.2 network config and preserve an HTTPS release API URL",
-  );
-  requirement(
-    result,
-    patternsAppearInOrder(androidWorkflow, [
-      /e2e\/harness\/db\.sh/,
-      /e2e\/harness\/boot-backend\.sh/,
-      /\.\/gradlew\s+fieldApi34DebugAndroidTest/,
-    ]),
-    "Android E2E boots its isolated backend before Gradle Managed Device execution",
-    `${ciPath} must complete local database/backend setup before Gradle Managed Device execution`,
-  );
   return result;
 }
 
@@ -1825,7 +1596,7 @@ export function evaluateDeployAutomationChecks(readText) {
   );
   const executableText = logicalLines.join("\n");
   const rollouts = parseShellArray(logicalLines, "ROLLOUTS");
-  const requiredRollouts = ["console-app", "console-web"];
+  const requiredRollouts = ["console-app"];
   const missingRollouts = requiredRollouts.filter(
     (rollout) => !rollouts.includes(rollout),
   );
@@ -1833,7 +1604,7 @@ export function evaluateDeployAutomationChecks(readText) {
     result,
     missingRollouts.length === 0,
     `deploy automation rollouts covered: ${requiredRollouts.join(", ")}`,
-    `${path} must actively wait for both console-app and console-web rollouts; ROLLOUTS must list both before claiming deployment verification (missing ${missingRollouts.join(", ") || "none"})`,
+    `${path} must actively wait for the console-app rollout; ROLLOUTS must list it before claiming deployment verification (missing ${missingRollouts.join(", ") || "none"})`,
   );
 
   const failOpenBlocks = findFailOpenKubectlPrerequisiteBlocks(logicalLines);
@@ -2012,8 +1783,6 @@ export function evaluateGlobalHardeningChecks(readText) {
   requirePackageScript(result, readText, "check:k8s:networkpolicy");
   appendResult(result, evaluateExpandContractReleaseChecks(readText));
   appendResult(result, evaluateWorkflowHardeningChecks(readText));
-  appendResult(result, evaluateAndroidE2eTokenHandoffChecks(readText));
-  appendResult(result, evaluateAndroidE2eFailClosedChecks(readText));
   requireTextIncludes(
     result,
     readText,
@@ -2080,7 +1849,6 @@ export function evaluateGlobalHardeningChecks(readText) {
     "kind: ClusterImagePolicy",
     "mode: warn",
     "ghcr.io/jason931225/console-app",
-    "ghcr.io/jason931225/console-web",
     "https://token.actions.githubusercontent.com",
     "image-release\\.yml@refs/(heads/main|tags/v[0-9].*)",
     "https://fulcio.sigstore.dev",

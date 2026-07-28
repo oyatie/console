@@ -212,7 +212,7 @@ higher-risk maintenance operation.
    show all of these assertions before claiming isolation:
 
    - allowed same-namespace ingress: an unlabeled control pod reaches the
-     temporary `app=console-web` target on TCP/8080;
+     temporary `app=console-app` target on TCP/8080;
    - allowed DNS egress: an `app=console-app` client resolves
      `kubernetes.default.svc.cluster.local` through kube-dns;
    - allowed outbound HTTPS egress: the same app-tier client reaches the
@@ -222,7 +222,7 @@ higher-risk maintenance operation.
      reaches `console-db-rw.console.svc.cluster.local:5432`, proving the
      `allow-app-egress-postgres` and `allow-postgres-from-app` path;
    - explicit denied flow: the `app=console-app` client fails to reach the temporary
-     `app=console-web` target on TCP/8080. On pre-cutover plain flannel, if the
+     HTTP target on TCP/8080. On pre-cutover plain flannel, if the
      preflight were bypassed, this denied connection would normally succeed
      because flannel is not enforcing the app-tier default-deny egress policy.
 

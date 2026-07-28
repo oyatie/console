@@ -1,1 +1,0 @@
-export { renderWithWindowManager } from "./renderWithWindowManager";

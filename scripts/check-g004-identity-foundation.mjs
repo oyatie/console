@@ -70,18 +70,14 @@ assert(packageJson.scripts?.["check:g004-identity-foundation"] === "node scripts
 assert(ci.includes("npm run check:g004-identity-foundation"), "CI runs G004 identity foundation gate", ".github/workflows/ci.yml must run npm run check:g004-identity-foundation");
 requireFile(matrixPath, "G004 identity foundation matrix");
 requireFile(auditPath, "enterprise UI route audit register");
-requireFile("e2e/specs/platform-maturity-g004-identity-foundation.spec.ts", "G004 Playwright matrix contract spec");
 
 if (matrix) {
   assert(matrix.schemaVersion === 1, "G004 matrix schema version 1", `${matrixPath}: schemaVersion must be 1`);
   assert(matrix.goalId === goalId, "G004 matrix goal id", `${matrixPath}: goalId must be ${goalId}`);
   assert(typeof matrix.nonClaimPolicy === "string" && matrix.nonClaimPolicy.includes("G009"), "G004 matrix records live-evidence non-claim policy", `${matrixPath}: nonClaimPolicy must reserve live rollout/screenshot claims for G009`);
   assert(Array.isArray(matrix.routePaths) && matrix.routePaths.length > 0, "G004 matrix routePaths", `${matrixPath}: routePaths must be non-empty`);
-  requireArrayOfStrings(matrix.requiredE2eSpecs, matrixPath, "requiredE2eSpecs");
-  requireArrayOfStrings(matrix.requiredWebTests, matrixPath, "requiredWebTests");
   requireArrayOfStrings(matrix.requiredBackendTests, matrixPath, "requiredBackendTests");
   assert(Array.isArray(matrix.backendContracts) && matrix.backendContracts.length >= 6, "G004 backend contract inventory", `${matrixPath}: backendContracts must include RLS/group/policy/passkey/employee contracts`);
-  assert(Array.isArray(matrix.frontendContracts) && matrix.frontendContracts.length >= 6, "G004 frontend contract inventory", `${matrixPath}: frontendContracts must include users/policy/group/employees/org/auth surfaces`);
   assert(Array.isArray(matrix.safetyAssertions) && matrix.safetyAssertions.length >= 8, "G004 safety assertions", `${matrixPath}: safetyAssertions must capture identity/group/policy/passkey/lifecycle guardrails`);
 
   const requiredRouteGroups = new Set(["auth", "platform", "settings", "identity-admin", "group-org", "people", "policy"]);
@@ -130,21 +126,9 @@ if (matrix) {
     }
   }
 
-  for (const contract of matrix.frontendContracts ?? []) {
-    requireFile(contract.file, `frontend contract ${contract.file}`);
-    assert(typeof contract.contract === "string" && contract.contract.length >= 32, `frontend contract ${contract.file}: rationale`, `${matrixPath}: ${contract.file} contract rationale is too weak`);
-    requireArrayOfStrings(contract.requiredSnippets, matrixPath, `frontend contract ${contract.file} required snippets`);
-    for (const snippet of contract.requiredSnippets ?? []) {
-      requireIncludes(contract.file, snippet, `frontend contract ${contract.file}: ${snippet}`);
-    }
-  }
 
-  for (const spec of matrix.requiredE2eSpecs ?? []) requireFile(spec, `G004 E2E spec ${spec}`);
-  for (const test of matrix.requiredWebTests ?? []) requireFile(test, `G004 web test ${test}`);
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G004 backend test ${test}`);
 
-  requireIncludes("e2e/specs/platform-maturity-g004-identity-foundation.spec.ts", matrixPath, "G004 Playwright spec imports matrix");
-  requireIncludes("e2e/specs/platform-maturity-g004-identity-foundation.spec.ts", auditPath, "G004 Playwright spec imports route audit");
   requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G004 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "passkey", "foundation gate mentions passkey contract");
   requireIncludes("docs/specs/foundation-gates.md", "policy", "foundation gate mentions policy contract");

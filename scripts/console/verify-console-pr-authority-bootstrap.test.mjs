@@ -51,7 +51,7 @@ test('rejects policy type/mode, policy change, and product change after C', () =
   rejects({ treeEntry: () => ({ mode: '100755', type: 'blob' }) }, /mode-100644/);
   rejects({ diff: () => [...changes.slice(0, 2), { path: POLICY_PATH, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
   rejects({ diff: () => [...changes.slice(0, 2), { path: 'scripts/console/validate-console-truth-ledger.mjs', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
-  rejects({ diff: () => [...changes.slice(0, 2), { path: 'web/src/console/marker.mjs', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
+  rejects({ diff: () => [...changes.slice(0, 2), { path: 'backend/app/src/marker.rs', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
 });
 test('rejects indirect T and malformed M', () => {
   rejects({ parents: (sha) => sha === T ? [C, BASE] : [BASE, T] }, /direct single-parent/);

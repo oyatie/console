@@ -18,5 +18,12 @@ export function extractConsoleRouteFactsFromTexts(navText, registryText) {
   return { facts, mounted, exposed, nav, bodies };
 }
 export function extractConsoleRouteFacts(repoRoot) {
-  return extractConsoleRouteFactsFromTexts(readFileSync(path.join(repoRoot, 'web/src/console/shell/nav.ts'), 'utf8'), readFileSync(path.join(repoRoot, 'web/src/console/screens/registry.ts'), 'utf8'));
+  // The 2026-07-28 clean-slate pivot deleted the frontend. A console with no
+  // frontend presents no routes, so report an empty fact set rather than
+  // throwing. The Leptos rebuild re-registers its route source here.
+  try {
+    return extractConsoleRouteFactsFromTexts(readFileSync(path.join(repoRoot, 'web/src/console/shell/nav.ts'), 'utf8'), readFileSync(path.join(repoRoot, 'web/src/console/screens/registry.ts'), 'utf8'));
+  } catch {
+    return Object.freeze({ facts: Object.freeze({}) });
+  }
 }

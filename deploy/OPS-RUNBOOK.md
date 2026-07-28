@@ -438,12 +438,11 @@ script must reach its final `done: <sha> deployed and verified (...)` line befor
 an operator or release note claims deployment completion. The required signals are:
 
 1. the matching `image-release.yml` run for the commit succeeds;
-2. the `digest-console-app` and `digest-console-web` artifacts provide fresh `sha256`
-   digests;
+2. the `digest-console-app` artifact provides a fresh `sha256` digest;
 3. the prod kustomization pins those digests and the bump commit/revision is the
    desired GitOps revision;
 4. Argo Application `maintenance` reports `Synced` at that revision;
-5. `console-app` and `console-web` Argo Rollouts become Healthy;
+5. the `console-app` Argo Rollout becomes Healthy;
 6. `console-worker` Deployment rollout completes;
 7. each workload template image and each running/ready pod's image ID or image
    reference matches the built digest; and

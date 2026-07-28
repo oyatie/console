@@ -8,12 +8,15 @@ for (let index = 2; index < process.argv.length; index += 2) args.set(process.ar
 const mode = args.get("--mode");
 const reportPath = args.get("--audit-report");
 const registryPath = args.get("--registry") ?? "security/node-audit-exceptions.json";
+// Parameterized like --registry so the gate's own tests can assert the
+// lockfile-mismatch branch against a fixture instead of the repo lockfile.
+const lockPath = args.get("--lockfile") ?? "package-lock.json";
 if (!["dev-codegen", "production"].includes(mode) || !reportPath) {
-  throw new Error("usage: check-node-audit-exceptions.mjs --mode <dev-codegen|production> --audit-report <path> [--registry <path>]");
+  throw new Error("usage: check-node-audit-exceptions.mjs --mode <dev-codegen|production> --audit-report <path> [--registry <path>] [--lockfile <path>]");
 }
 const report = JSON.parse(readFileSync(reportPath, "utf8"));
 const registry = JSON.parse(readFileSync(resolve(root, registryPath), "utf8"));
-const lock = JSON.parse(readFileSync(resolve(root, "package-lock.json"), "utf8"));
+const lock = JSON.parse(readFileSync(resolve(root, lockPath), "utf8"));
 if (!Number.isInteger(report.auditReportVersion) || typeof report.vulnerabilities !== "object" || report.vulnerabilities === null || typeof report.metadata?.vulnerabilities !== "object") {
   throw new Error("npm audit report is incomplete; refusing to treat an audit execution failure as clean");
 }

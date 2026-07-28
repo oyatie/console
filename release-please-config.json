@@ -8,14 +8,7 @@
   "changelog-path": "CHANGELOG.md",
   "packages": {
     ".": {
-      "component": "console",
-      "extra-files": [
-        {
-          "type": "json",
-          "path": "web/package.json",
-          "jsonpath": "$.version"
-        }
-      ]
+      "component": "console"
     }
   }
 }

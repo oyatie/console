@@ -11,12 +11,6 @@ on:
     paths:
       - "backend/**"
       - "backend/openapi/**"
-      - "clients/**"
-      - "web/**"
-      - "e2e/**"
-      - "playwright.config.ts"
-      - "android/**"
-      - "ios/**"
       - "deploy/**"
       - "docs/decisions/**"
       - "docs/program/**"
@@ -36,24 +30,13 @@ on:
       - "third-party/rust/**"
       - "BUCK"
       - ".buckconfig"
-      - "fastlane/**"
-      - "Gemfile"
-      - "Gemfile.lock"
       - "package.json"
       - "package-lock.json"
-      - "openapitools.json"
-      - "tsconfig.json"
       - ".github/workflows/*.yml"
   pull_request:
     paths:
       - "backend/**"
       - "backend/openapi/**"
-      - "clients/**"
-      - "web/**"
-      - "e2e/**"
-      - "playwright.config.ts"
-      - "android/**"
-      - "ios/**"
       - "deploy/**"
       - "docs/decisions/**"
       - "docs/program/**"
@@ -73,13 +56,8 @@ on:
       - "third-party/rust/**"
       - "BUCK"
       - ".buckconfig"
-      - "fastlane/**"
-      - "Gemfile"
-      - "Gemfile.lock"
       - "package.json"
       - "package-lock.json"
-      - "openapitools.json"
-      - "tsconfig.json"
       - ".github/workflows/*.yml"
   workflow_dispatch:
 
@@ -175,12 +153,6 @@ jobs:
 
       - name: CI preflight contract
         run: npm run check:ci-preflight
-
-      - name: Root npm workspace integrity
-        run: npm run check:root-workspaces
-
-      - name: Root npm workspace integrity tests
-        run: npm run test:root-workspaces
 
       - name: Canonical npm lockfile
         run: npm run check:package-lock
@@ -590,6 +562,17 @@ jobs:
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit
 
+      # openapi.yaml is the single source of truth for the REST surface and is
+      # include_str!-ed into the binary. This suite is the only thing that
+      # inventories every mounted route against it. It existed but was never
+      # invoked by CI, so drift between the router and the spec could land
+      # unnoticed; `check:openapi-app` does not cover this (it only regexes
+      # /api/platform/ paths, then byte-compares the served bytes to the file —
+      # tautological, since the handler returns the const verbatim).
+      - name: Buck2 console-app OpenAPI drift suite
+        working-directory: .
+        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
+
       - name: Buck2 console-app inline PostgreSQL suites
         working-directory: .
         run: |
@@ -598,7 +581,7 @@ jobs:
             //tools/buck:app-dev-auth-persona-guard-postgres
 
   dev-up-smoke:
-    name: dev-up.mjs smoke — compose deps + migrate + /readyz + dev-auth e2e
+    name: dev-up.mjs smoke — compose deps + migrate + /readyz
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 30
@@ -654,86 +637,8 @@ jobs:
         if: always()
         run: node scripts/dev-up.mjs down
 
-      - name: Install workspace dependencies (for the dev-auth e2e project)
-        run: npm ci
-
-      - name: Install Playwright Chromium + OS deps
-        run: npx playwright install --with-deps chromium
-
-      - name: dev-up bootstrap --features dev-auth (backend + Vite dev server)
-        env:
-          CONSOLE_DEV_AUTH_E2E: "1"
-        run: node scripts/dev-up.mjs bootstrap
-
-      - name: Dev-mode e2e — role switcher against the real dev-auth stack
-        # This spec CANNOT run in the "Browser E2E" job above: that suite tests
-        # a production build (no dev-auth feature), and the switcher's
-        # DEV-only predicate must never be weakened just to make it render
-        # there (see playwright.config.ts). Both tiers are already running
-        # from the previous step.
-        env:
-          CONSOLE_DEV_AUTH_E2E: "1"
-        run: npx playwright test --project=dev-auth
-
-      - name: Upload dev-auth e2e report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: dev-auth-e2e-report
-          path: |
-            e2e/.artifacts/html-report
-            e2e/.artifacts/test-results
-          retention-days: 7
-
-      - name: dev-up down (dev-auth stack)
-        if: always()
-        run: node scripts/dev-up.mjs down
-
-  api-clients:
-    name: API clients — TypeScript / Kotlin generation and compile
-    runs-on: ubuntu-latest
-    needs: preflight
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Set up Java
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Install client tooling
-        run: npm ci
-
-      - name: Regenerate TypeScript and Kotlin clients
-        run: npm run gen:api:portable
-
-      - name: Generated client drift gate
-        run: git diff --exit-code -- clients/ts clients/kotlin
-
-      - name: TypeScript compile
-        if: ${{ !cancelled() }}
-        run: npm run check:ts
-
-      - name: TypeScript generated contract tests
-        if: ${{ !cancelled() }}
-        run: npm run test:api-client-contract:ts
-
-      - name: Kotlin compile and generated contract tests
-        if: ${{ !cancelled() }}
-        run: npm run check:kotlin
-
-  web:
-    name: Web console — lint / test / build
+  repo-gates:
+    name: Repo gates — ADR / foundation / domain maturity
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 20
@@ -763,14 +668,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run check:foundation-gates
 
-      - name: Root npm workspace integrity
-        if: ${{ !cancelled() }}
-        run: npm run check:root-workspaces
-
-      - name: Root npm workspace integrity tests
-        if: ${{ !cancelled() }}
-        run: npm run test:root-workspaces
-
       - name: Canonical npm lockfile
         if: ${{ !cancelled() }}
         run: npm run check:package-lock
@@ -778,23 +675,6 @@ jobs:
       - name: Shared text gate unit tests
         if: ${{ !cancelled() }}
         run: npm run test:text-gate
-
-      - name: Enterprise UX parity / no-text-wall gate
-        if: ${{ !cancelled() }}
-        run: npm run check:enterprise-ux-parity
-
-      - name: Browser persona E2E matrix gate
-        if: ${{ !cancelled() }}
-        run: npm run check:browser-persona-matrix
-
-      - name: iOS UI-test fail-closed workflow guard
-        if: ${{ !cancelled() }}
-        run: npm run check:ios-ui-test-fail-closed
-
-      - name: Android E2E fail-closed workflow guard
-        if: ${{ !cancelled() }}
-        run: npm run check:android-e2e-fail-closed
-
       - name: G004 identity group org people policy foundation gate
         if: ${{ !cancelled() }}
         run: npm run check:g004-identity-foundation
@@ -843,36 +723,8 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run check:payroll-release-gate
 
-      - name: Financial maturity gate
-        if: ${{ !cancelled() }}
-        run: npm run check:financial-maturity
-
-      - name: CX reporting BI maturity gate
-        if: ${{ !cancelled() }}
-        run: npm run check:cx-reporting-maturity
-
-      - name: Operations intelligence maturity gate
-        if: ${{ !cancelled() }}
-        run: npm run check:operations-intelligence-maturity
-
-      - name: Lint (eslint + UI-string gate)
-        if: ${{ !cancelled() }}
-        run: npm run lint --workspace @console/web
-
-      - name: Unit tests
-        if: ${{ !cancelled() }}
-        run: npm run test --workspace @console/web
-
-      - name: Production dev-auth artifact entrypoint assertions
-        if: ${{ !cancelled() }}
-        run: npm run test:production-dev-auth-guards --workspace @console/web
-
-      - name: Production build
-        if: ${{ !cancelled() }}
-        run: npm run check:production-dev-auth-absence --workspace @console/web
-
   api-contract:
-    name: API contract — app OpenAPI and generated TS round-trip
+    name: API contract — app-served OpenAPI
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 30
@@ -950,10 +802,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run test:ontology-write-precondition
 
-      - name: Generated TypeScript client round-trip
-        if: ${{ !cancelled() }}
-        run: npm run test:contract
-
   kubernetes-manifests:
     name: Kubernetes manifests — render / hardening / NetworkPolicy preflight
     runs-on: ubuntu-latest
@@ -995,480 +843,3 @@ jobs:
       - name: Production hardening regression tests
         if: ${{ !cancelled() }}
         run: npm run test:production-hardening
-
-  swift-client:
-    name: API client — Swift generation and build
-    runs-on: macos-latest
-    needs: preflight
-    timeout-minutes: 25
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install client tooling
-        run: npm ci
-
-      - name: Verify Swift toolchain
-        run: swift --version
-
-      - name: Regenerate Swift client
-        run: npm run gen:api:swift
-
-      - name: Generated Swift client drift gate
-        run: git diff --exit-code -- clients/swift
-
-      - name: Swift build
-        if: ${{ !cancelled() }}
-        run: npm run check:swift
-
-      - name: Swift generated contract tests
-        if: ${{ !cancelled() }}
-        run: npm run test:api-client-contract:swift
-
-  mobile-parity:
-    name: Mobile parity — checklist and strings
-    runs-on: ubuntu-latest
-    needs: preflight
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Check hardcoded UI strings across clients
-        if: ${{ !cancelled() }}
-        run: node scripts/check-i18n.mjs
-
-  android-app:
-    name: Android app — Gradle build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: [preflight, mobile-parity]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Set up Java
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
-
-      - name: Install Android SDK packages
-        run: |
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.1.0"
-
-      - name: Gradle build
-        working-directory: android
-        # Exclude unit-test tasks from the build step: testDebugUnitTest is run in the
-        # dedicated step below, and testReleaseUnitTest cannot be run here because
-        # ui-test-manifest (debugImplementation) provides ComponentActivity only to the
-        # debug unit-test manifest — not the release one. AGP does not support merging
-        # additional AAR manifests into the release JVM unit-test binary via any test
-        # source-set scope. The debug run provides equivalent coverage; the release APK
-        # is still assembled and lint-checked here.
-        run: ./gradlew build -x testReleaseUnitTest -x testDebugUnitTest
-
-      - name: Robolectric Compose UI + accessibility tests
-        if: ${{ !cancelled() }}
-        working-directory: android
-        run: ./gradlew testDebugUnitTest
-
-      - name: Roborazzi screenshot verification
-        if: ${{ !cancelled() }}
-        working-directory: android
-        # Goldens are recorded and committed under android/app/src/test/snapshots.
-        # verifyRoborazziDebug is the regression gate; it fails on any pixel diff.
-        run: ./gradlew verifyRoborazziDebug
-
-      - name: Upload test + Roborazzi reports
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: android-test-reports
-          path: |
-            android/app/build/reports/tests/**
-            android/app/build/test-results/**
-            android/app/build/outputs/roborazzi/**
-          if-no-files-found: ignore
-          retention-days: 7
-
-  android-instrumented:
-    name: Android app — instrumented post-login E2E (emulator)
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    needs: [preflight, android-app]
-    services:
-      postgres:
-        image: postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_PASSWORD: android-${{ github.run_id }}-${{ github.run_attempt }}-admin
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      CI: "true"
-      CARGO_INCREMENTAL: "0"
-      CARGO_PROFILE_DEV_DEBUG: "0"
-      E2E_PG_SUPERUSER: postgres
-      E2E_PG_SUPERUSER_PASSWORD: android-${{ github.run_id }}-${{ github.run_attempt }}-admin
-      E2E_PG_HOST: localhost
-      E2E_PG_PORT: "5432"
-      E2E_DB_NAME: console_android_${{ github.run_id }}_${{ github.run_attempt }}
-      E2E_HTTP_ADDR: 127.0.0.1:8080
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          persist-credentials: false
-
-      - name: Verify exact candidate SHA before build
-        run: |
-          set -euo pipefail
-          actual_sha="$(git rev-parse HEAD)"
-          if [ "$actual_sha" != "$GITHUB_SHA" ]; then
-            echo "::error title=Android E2E candidate mismatch::Checked-out HEAD $actual_sha does not match GITHUB_SHA $GITHUB_SHA."
-            exit 1
-          fi
-
-      - name: Free runner disk for Rust backend and emulator
-        uses: ./.github/actions/free-runner-disk
-
-      - name: Enable KVM for hardware-accelerated emulator
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
-
-      - name: Set up Java
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
-        env:
-          # free-runner-disk removes the preinstalled root-owned SDK tree. Keep
-          # this job's replacement SDK writable, isolated, and runner-local.
-          ANDROID_HOME: ${{ runner.temp }}/android-sdk
-          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-
-      - name: Install Android SDK packages
-        run: |
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.1.0"
-
-      - name: Install PostgreSQL client for the hermetic harness
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
-
-      - name: Build exact candidate backend
-        working-directory: backend
-        run: SQLX_OFFLINE=true cargo build --locked -q -p console-app
-
-      - name: Run hermetic post-login E2E on Gradle Managed Device
-        # Candidate source, PostgreSQL, database fixtures, backend, OTP, session,
-        # emulator, and assertions all live in this job. No external backend or
-        # long-lived refresh-token secret can drift from the tested SHA.
-        run: |
-          set -euo pipefail
-          session_assets_dir="${RUNNER_TEMP}/android-e2e-session-assets"
-          session_file="${session_assets_dir}/field-e2e-session.properties"
-          export E2E_AUTH_DIR="${RUNNER_TEMP}/android-e2e-auth"
-          export CONSOLE_APP_BIN="${GITHUB_WORKSPACE}/backend/target/debug/console-app"
-
-          cleanup_android_e2e() {
-            if [ -s "${E2E_AUTH_DIR}/backend.pid" ]; then
-              backend_pid="$(cat "${E2E_AUTH_DIR}/backend.pid")"
-              kill "$backend_pid" 2>/dev/null || true
-            fi
-            rm -rf "$session_assets_dir" "$E2E_AUTH_DIR"
-            find android/app/build -type f -name 'field-e2e-session.properties' -delete 2>/dev/null || true
-            find android/app/build -type f -name '*androidTest*.apk' -delete 2>/dev/null || true
-          }
-          trap cleanup_android_e2e EXIT
-          cleanup_android_e2e
-
-          printf '::add-mask::%s\n' "$E2E_PG_SUPERUSER_PASSWORD"
-          for role_password_var in \
-            E2E_CONSOLE_APP_POSTGRES_PASSWORD \
-            E2E_CONSOLE_RT_POSTGRES_PASSWORD \
-            E2E_CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD \
-            E2E_CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD \
-            E2E_CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
-          do
-            role_password="$(openssl rand -hex 32)"
-            printf '::add-mask::%s\n' "$role_password"
-            export "$role_password_var=$role_password"
-          done
-          unset role_password
-
-          bootstrap_otp="$(openssl rand -hex 24)"
-          printf '::add-mask::%s\n' "$bootstrap_otp"
-          otp_hash="$(printf '%s' "$bootstrap_otp" | sha256sum | awk '{print $1}')"
-
-          bash e2e/harness/db.sh
-          PGPASSWORD="$E2E_CONSOLE_APP_POSTGRES_PASSWORD" psql \
-            --host "$E2E_PG_HOST" \
-            --port "$E2E_PG_PORT" \
-            --username console_app \
-            --dbname "$E2E_DB_NAME" \
-            --set ON_ERROR_STOP=1 \
-            --set "otp_hash=$otp_hash" \
-            --set "fixture_profile=full" \
-            --file e2e/harness/seed-mobile-ci.sql
-
-          bash e2e/harness/boot-backend.sh
-          backend_url="http://127.0.0.1:8080"
-          if ! resp="$(printf '%s' "$bootstrap_otp" | jq -Rsc '{otp:.}' | curl -fsS -X POST "$backend_url/api/v1/auth/otp/redeem" \
-            -H 'Content-Type: application/json' \
-            --data-binary @-)"; then
-            echo "::error title=Android E2E session mint failed::The job-local OTP exchange failed."
-            exit 1
-          fi
-          if ! access_token=$(printf '%s' "$resp" | jq -er '.access_token'); then
-            echo "::error title=Android E2E session mint failed::The backend response omitted access_token."
-            exit 1
-          fi
-          if ! refresh_token=$(printf '%s' "$resp" | jq -er '.refresh_token'); then
-            echo "::error title=Android E2E session mint failed::The backend response omitted refresh_token."
-            exit 1
-          fi
-          printf '::add-mask::%s\n' "$access_token"
-          printf '::add-mask::%s\n' "$refresh_token"
-          unset bootstrap_otp otp_hash resp
-
-          install -d -m 700 "$session_assets_dir"
-          umask 077
-          {
-            printf 'FIELD_E2E_ACCESS_TOKEN=%s\n' "$access_token"
-            printf 'FIELD_E2E_REFRESH_TOKEN=%s\n' "$refresh_token"
-          } > "$session_file"
-          chmod 600 "$session_file"
-          export FIELD_E2E_SESSION_ASSETS_DIR="$session_assets_dir"
-
-          (
-            cd android
-            ./gradlew fieldApi34DebugAndroidTest
-          )
-
-          # JUnit evidence is mandatory: WorkOrderFlowTest must be present and
-          # must have no skipped, failed, or errored test cases.
-          python3 - <<'PY'
-          import pathlib
-          import sys
-          import xml.etree.ElementTree as ET
-
-          result_files = pathlib.Path("android/app/build").rglob("TEST-*.xml")
-          cases = []
-          for result_file in result_files:
-              try:
-                  root = ET.parse(result_file).getroot()
-              except ET.ParseError as error:
-                  raise SystemExit(f"invalid Android JUnit XML {result_file}: {error}")
-              for case in root.iter("testcase"):
-                  if case.attrib.get("classname", "").endswith(".WorkOrderFlowTest"):
-                      cases.append((result_file, case))
-
-          if not cases:
-              raise SystemExit("WorkOrderFlowTest is missing from Android JUnit test-results")
-          for result_file, case in cases:
-              if case.find("skipped") is not None:
-                  raise SystemExit(f"WorkOrderFlowTest was skipped in {result_file}")
-              failure = case.find("failure")
-              error = case.find("error")
-              if failure is not None or error is not None:
-                  raise SystemExit(f"WorkOrderFlowTest failed or errored in {result_file}")
-          print(f"verified {len(cases)} WorkOrderFlowTest JUnit case(s): executed, zero skipped/failures/errors")
-          PY
-
-          {
-            echo "### Android instrumented post-login E2E"
-            echo "- Candidate SHA: \`$GITHUB_SHA\`"
-            echo "- Backend: checked-out candidate on job-local loopback"
-            echo "- Database: job-local PostgreSQL 18.4"
-            echo "- Result: WorkOrderFlowTest executed with zero skips/failures/errors"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload hermetic Android instrumented reports
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: android-instrumented-test-reports
-          path: |
-            android/app/build/outputs/androidTest-results/**
-            android/app/build/reports/androidTests/**
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Remove hermetic Android session and backend
-        if: always()
-        run: |
-          auth_dir="${RUNNER_TEMP}/android-e2e-auth"
-          if [ -s "${auth_dir}/backend.pid" ]; then
-            kill "$(cat "${auth_dir}/backend.pid")" 2>/dev/null || true
-          fi
-          rm -rf "${RUNNER_TEMP}/android-e2e-session-assets" "$auth_dir"
-          find android/app/build -type f -name 'field-e2e-session.properties' -delete 2>/dev/null || true
-          find android/app/build -type f -name '*androidTest*.apk' -delete 2>/dev/null || true
-
-  ios-app:
-    name: iOS app — Swift build and behavior tests
-    runs-on: macos-latest
-    timeout-minutes: 30
-    needs: [preflight, mobile-parity]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Verify Swift toolchain
-        run: swift --version
-
-      - name: Swift build
-        working-directory: ios
-        run: swift build
-
-      - name: Swift package tests
-        if: ${{ !cancelled() }}
-        working-directory: ios
-        run: swift test
-
-      - name: Behavior runner
-        if: ${{ !cancelled() }}
-        working-directory: ios
-        run: swift run ConsoleCoreBehaviorTests
-
-  browser-e2e:
-    name: Browser E2E — Playwright (all user stories)
-    runs-on: ubuntu-latest
-    needs: preflight
-    timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:18.4
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          # The topology bootstrap requires a real administrator credential;
-          # keep the E2E service and harness on the same password-authenticated
-          # contract instead of declaring a password that trust auth ignores.
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      CI: "true"
-      # Keep the E2E Rust build lean on the standard GitHub runner; this job
-      # only needs the console-app binary, not debug symbols.
-      CARGO_INCREMENTAL: "0"
-      CARGO_PROFILE_DEV_DEBUG: "0"
-      # Point the harness (e2e/harness/*.sh) at the service as the postgres superuser.
-      E2E_PG_SUPERUSER: postgres
-      E2E_PG_SUPERUSER_PASSWORD: postgres
-      # Playwright fixtures invoke psql after db.sh exits, so retain the same
-      # libpq credential in the parent job environment for their passwordless URLs.
-      PGPASSWORD: postgres
-      E2E_PG_HOST: localhost
-      E2E_PG_PORT: "5432"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Free runner disk for Rust backend
-        uses: ./.github/actions/free-runner-disk
-
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install workspace dependencies
-        run: npm ci
-
-      - name: Install PostgreSQL client (psql for the harness seeding)
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
-
-      - name: Install Python E2E helpers
-        run: |
-          python3 -m venv .venv-e2e
-          .venv-e2e/bin/python -m pip install --upgrade pip
-          .venv-e2e/bin/python -m pip install -r e2e/requirements.txt
-          echo "$PWD/.venv-e2e/bin" >> "$GITHUB_PATH"
-
-      - name: Build backend binary (console-app) for the harness
-        working-directory: backend
-        # SQLX_OFFLINE so the query! macros compile against the committed .sqlx cache
-        # (same contract as the backend job). The harness then runs target/debug/console-app
-        # for the migrate + api roles.
-        run: SQLX_OFFLINE=true cargo build -q -p console-app
-
-      - name: Install Playwright Chromium + OS deps
-        run: npx playwright install --with-deps chromium
-
-      - name: Run browser E2E suite
-        # e2e/run.sh: gen-keys -> db (drop+migrate+seed console_e2e) -> boot backend
-        # (api role, /readyz) -> playwright (builds + previews web on :5173, proxies
-        # /api) -> teardown. Every user-story spec across all roles, real WebAuthn
-        # via the CDP virtual authenticator.
-        env:
-          CONSOLE_APP_BIN: ${{ github.workspace }}/backend/target/debug/console-app
-        run: bash e2e/run.sh
-
-      - name: Upload Playwright report + traces
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: browser-e2e-report
-          path: |
-            e2e/.artifacts/html-report
-            e2e/.artifacts/test-results
-          retention-days: 7

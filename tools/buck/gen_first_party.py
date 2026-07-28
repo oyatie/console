@@ -85,23 +85,13 @@ OPENAPI_DRIFT_EXTERNAL = {
 OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
     "backend/openapi/openapi.yaml"
 )
-OPENAPI_DRIFT_EXTERNAL.update({
-    "//clients:kotlin-dispatch-queue-status": (
-        "clients/kotlin/src/main/kotlin/com/console/api/client/model/"
-        "DispatchQueueStatus.kt"
-    ),
-    "//clients:kotlin-p1-dispatches-api": (
-        "clients/kotlin/src/main/kotlin/com/console/api/client/api/"
-        "P1DispatchesApi.kt"
-    ),
-    "//clients:swift-client": (
-        "clients/swift/Sources/ConsoleAPIClient/Generated/Client.swift"
-    ),
-    "//clients:swift-types": (
-        "clients/swift/Sources/ConsoleAPIClient/Generated/Types.swift"
-    ),
-    "//clients:ts-schema": "clients/ts/src/schema.d.ts",
-})
+# The 2026-07-28 clean-slate pivot deleted clients/{ts,kotlin,swift}. The two
+# openapi_drift tests that compared the spec against those generated client faces
+# were removed with them, so the drift target no longer needs any //clients:*
+# input. Keeping these entries made //backend/app:console-app-itest-openapi_drift
+# unbuildable ("package `root//clients:` does not exist"), which in turn broke
+# `cargo clippy --all-targets` and the whole backend job. Re-register the
+# equivalent mapping here when a Leptos-era client face exists.
 
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.

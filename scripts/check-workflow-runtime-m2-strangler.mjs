@@ -14,7 +14,6 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const migrationsDir = "backend/crates/platform/db/migrations";
 const migrationPath = `${migrationsDir}/0095_create_org_runtime_flags.sql`;
-const seedDir = "e2e/harness";
 const STRANGLER_FLAG = "workflow_runtime_m2_strangler";
 
 const failures = [];
@@ -137,13 +136,11 @@ function listSql(relDir) {
 }
 
 const migrationFiles = listSql(migrationsDir);
-const seedFiles = listSql(seedDir);
 assert(migrationFiles.length > 0, "migration set is discoverable", `${migrationsDir}: no migrations found to scan`);
 scanForEnrollment(migrationsDir, migrationFiles);
-scanForEnrollment(seedDir, seedFiles);
 assert(
   !failures.some((f) => f.includes("land dark") || f.includes("flipped on") || f.includes("stay OFF")),
-  `zero enabled rows shipped across ${migrationFiles.length} migrations + ${seedFiles.length} e2e seeds`,
+  `zero enabled rows shipped across ${migrationFiles.length} migrations`,
   "an enrollment write was found (see failures above)",
 );
 
@@ -171,6 +168,6 @@ if (failures.length) {
 console.log(`Workflow runtime M2 strangler dark-landing gate passed (${passes.length} checks).`);
 console.log(
   `- ${STRANGLER_FLAG} resolves FALSE for every tenant: org_runtime_flags ships 0 enabled rows across ` +
-    `${migrationFiles.length} migrations + ${seedFiles.length} e2e seeds; absent row => OFF via org_runtime_flag_enabled().`,
+    `${migrationFiles.length} migrations; absent row => OFF via org_runtime_flag_enabled().`,
 );
 for (const item of passes) console.log(`- ${item}`);

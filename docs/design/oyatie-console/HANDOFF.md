@@ -1,5 +1,20 @@
 # HANDOFF.md — 백엔드 구현자 인수인계
 
+> **PARTIALLY SUPERSEDED — 2026-07-28 pivot.** This directory mirrors Claude Design project
+> `9c7c313a` ("Oyatie Console"), which is **no longer the design authority** (current: project
+> `198fcee4` "기본", shell only). The React/Vite `web/` app, `clients/{ts,kotlin,swift}`,
+> Playwright `e2e/` and the iOS/Android deliverables were deleted; the frontend rebuild targets
+> **Leptos 0.9** and returns last. Repo renamed `maintenance` → `console`.
+>
+> **This file is deliberately kept as the backend contract reference.** §18 온톨로지 엔진,
+> §15 생애주기 엔진, §16 가드레일 and §17 엔터프라이즈 표준 still describe the contract behind the
+> surviving Rust engine (`backend/crates/ontology/`, `backend/crates/platform/authz/` Cedar
+> partial-eval, `backend/crates/platform/audit-chain/`). Its **frontend/screen** content, the
+> mock-console inventory in §0, and sections covering now-descoped areas (ingest, evidence/WORM,
+> the office editor, mail/mox, ERP and field ops) are **historical**.
+>
+> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
+
 > 프런트(Oyatie Console)는 **온톨로지·이벤트·정책(Cedar PBAC)**을 UI로 시뮬레이션한다. 이 문서는 그 UI 계약을 실제 백엔드로 구현할 때의 데이터 모델·이벤트·정책·통합 지점을 정리한다. Palantir Foundry(온톨로지/액션/펑션) 벤치마크.
 
 ## 0. 아키텍처 원칙
@@ -169,3 +184,40 @@
 - **화면 구성**: C/U/D=「구성」 모드(열·스탯·거동, 개인=직행·공유=팀 배포 결재).
 - **데이터(값)**: C=인제스트(DX- 파이프라인)·기안 구조화 필드 · U=**오버라이드**(위 공통) · D=보존기한 처분(폐기 게이트).
 - **잔여 갭(레지스터)**: 시리즈 인스턴스 값 직접 입력 · 모듈 행 자체의 인라인 생성(현재 도메인 액션 경유 — 체인 원칙상 의도) · 조직 트리 요소 삭제 가드 · 대시보드 위젯 추가.
+
+
+---
+
+## 18. 배정·부하·정원 계약 (2026-07-25 · WL-01 / UT-03 / HC-01)
+
+백엔드 구현자용 요약 — UI가 기대하는 계약. 전부 **결정적 규칙**(AI 판정 없음), 같은 입력=같은 출력, 판정 근거는 감사에 문자열로 남긴다.
+
+### 18.1 적합도 평가 `POST /assign/eligibility`
+입력: `{ workType, siteId, startsAt, durationH, requires?: {clearance, license[]} }` → 출력: 후보 배열 + **제외 이유**(비노출 금지 — UI가 「가능한 사람이 없음 + 이유」를 표시해야 함).
+판정 축(전부 필수·순서 고정):
+1. **직무군** 일치(경비·미화·정비·물류·관제)
+2. **직급·연차**: 근속 < 12개월 → 단독 배정 불가(2인 1조) · 단독 야간은 반장 이상
+3. **클리어런스**: 현장 민감도 ≤ 사람 클리어런스(민감 현장 C2+, 급여·인사 자료 C3)
+4. **자격·교육 유효성**: 신임교육·특수검진·면허 만료일 > 근무일 (만료=후보 제외, 사유 = 「검진 만료 D+n」)
+
+### 18.2 부하 상한 (fail-closed · 완화 불가)
+- 주 배정 ≤ 52h(법정 §53 — 하드) · 동시 오더 ≤ 3 · 연속 근무 ≤ 6일 · 야간 종료 후 11h 휴식
+- 상한 위반 후보는 **응답에서 제외**하고 `excluded[]`에 사유. 자동 완화·초과 배정 API 금지.
+- 상한 값은 설정 개체 WL-01 v(n) — 개정=four-eyes·발효일, **법정 상한은 단축만 허용**.
+
+### 18.3 가동률·저활용 `GET /analytics/utilization?window=14d`
+- 가동률 = 실배정시간 / 계약 소정시간 (인력풀 비상근 제외)
+- 하한 70% 2주 연속 미달 = `reassignCandidate: true` + 원인 코드(`scope_reduced` / `cert_expired` / `idle_pool`)
+- **자동 전보·자동 해고 트리거 금지** — 후보 목록만, 실행은 사람 승인 + 동의 기록.
+
+### 18.4 공정성 `GET /assign/fairness`
+- 최근 7일 배정시간·야간횟수 표준 편차. ±15% 초과 시 라운드로빈 순번 재계산(멱등 — 같은 기간 재실행 시 동일 결과).
+
+### 18.5 정원 과부족 `GET /headcount/gap`
+- 정원 = Σ 포지션 편성(계약 요구 인원) · 현재 = 재직 − 휴직 − 파견 전출 (인력풀 비합산)
+- 팀별 `gap = 현재 − 정원`, 음수=부족·양수=과잉. **대시보드·계약 수익성과 동일 산식**(중복 정의 금지).
+- 전보 후보는 18.1 적합도를 재사용하고 **갭(교육·클리어런스 승급)을 명시** — 부적합 사유도 반환.
+
+### 18.6 결재 퀵 액션 (Situation Handling)
+- 알림에 결재 개체 참조(`ref: AP-####`)를 반드시 포함. UI는 **텍스트에서 금액을 파싱하지 않는다**.
+- 서버가 `{ amount, requesterId, urgency, approverIds[] }`를 제공 → 퀵 승인 자격 = 금액 ≤ DoA 한도 ∧ 요청자 ≠ 승인자(SoD) ∧ 긴급 아님. 자격 판정은 **서버에서도 재평가**(UI 판정 신뢰 금지).

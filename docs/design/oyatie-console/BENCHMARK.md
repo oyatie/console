@@ -1,6 +1,15 @@
 # 벤치마크 비교 매트릭스 (2026-07-21 · 정직 평가)
+
+> **SUPERSEDED — 2026-07-28 pivot.** This matrix rates the prototype in Claude Design project
+> `9c7c313a` ("Oyatie Console"), which is **no longer the design authority** (current: project
+> `198fcee4` "기본", shell only) — so every "동급/부분/미달" verdict below is about a mock-up that is
+> no longer being built. Scope has narrowed to Ontology · Foundry · Policy, then Organization +
+> Employee, then HR + Payroll; the surviving benchmarks are **AWS Cedar** (policy) and **Palantir
+> Foundry** (ontology, actions, lineage). Rows for descoped areas (ERP, field ops, dispatch, comms,
+> compliance, ingest, evidence/WORM, office editor) no longer track anything planned. Truth set:
+> [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
 > 기준: 각 모듈의 best-in-class 대비. **동급** = 핵심 문법 재현 + UI에서 재구성 가능. **부분** = 대표 플로만. **미달** = 구조적 격차(백엔드·스케일·성숙도).
-> 전제: 본 콘솔은 **프런트 목업**(단일 세션·시드 데이터·백엔드 시뮬레이션). "동급" 판정도 UI 계약 수준이지 프로덕션 수준이 아님.
+> 전제: 본 콘솔은 **프런트 목업**(단일 세션·시드 데이터·백엔드 시뮬레이션). "동급" 판정도 UI 계약 수준이지 프로덕션 수준이 아니다.
 
 | 모듈 | 벤치마크 | 동급 (재현·재구성 가능) | 그들이 더 잘하는 것 (정직 갭) |
 |---|---|---|---|

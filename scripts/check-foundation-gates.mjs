@@ -127,28 +127,19 @@ function requireCiGateDocsDriftInventory() {
   const docsPath = "docs/CI-GATES.md";
   const ciPath = ".github/workflows/ci.yml";
   const rootPackagePath = "package.json";
-  const webPackagePath = "web/package.json";
 
   const docs = read(docsPath);
   const ci = read(ciPath);
   const rootPackage = JSON.parse(read(rootPackagePath));
-  const webPackage = JSON.parse(read(webPackagePath));
   const npmInvocations = extractCiNpmRunInvocations(ci);
 
   const backendGatePackages = extractCiBackendGatePackages(ci);
-  const rootScripts = uniqueSorted(
-    npmInvocations
-      .filter(({ options }) => !/\s--workspace\s+/.test(options))
-      .map(({ script }) => script),
+  const rootScripts = uniqueSorted(npmInvocations.map(({ script }) => script));
+  // The repo has no npm workspaces left, so any `--workspace` invocation in CI
+  // is by definition uncovered by the drift policy.
+  const unknownWorkspaceInvocations = npmInvocations.filter(({ options }) =>
+    /\s--workspace\s+/.test(options),
   );
-  const webScripts = uniqueSorted(
-    npmInvocations
-      .filter(({ options }) => /\s--workspace\s+(?:web|@console\/web)\b/.test(options))
-      .map(({ script }) => script),
-  );
-  const unknownWorkspaceInvocations = npmInvocations
-    .filter(({ options }) => /\s--workspace\s+/.test(options))
-    .filter(({ options }) => !/\s--workspace\s+(?:web|@console\/web)\b/.test(options));
 
   if (!docs.includes("check:foundation-gates") || !docs.includes(".github/workflows/ci.yml")) {
     failures.push(`${docsPath}: CI drift inventory must name check:foundation-gates and .github/workflows/ci.yml as the source of truth`);
@@ -162,7 +153,6 @@ function requireCiGateDocsDriftInventory() {
   }
 
   requireNoMissingPackageScripts("root CI package scripts", rootScripts, rootPackage, rootPackagePath);
-  requireNoMissingPackageScripts("web-console CI package scripts", webScripts, webPackage, webPackagePath, (script) => `web:${script}`);
 
   compareInventory(
     "docs/CI-GATES.md backend console-gate binaries run by CI",
@@ -177,13 +167,6 @@ function requireCiGateDocsDriftInventory() {
     rootScripts,
     docsPath,
     `${ciPath} + ${rootPackagePath}`,
-  );
-  compareInventory(
-    "docs/CI-GATES.md web console package scripts run by CI",
-    markdownCodeListUnderHeading(docsPath, "Web console package scripts run by CI"),
-    webScripts.map((script) => `web:${script}`),
-    docsPath,
-    `${ciPath} + ${webPackagePath}`,
   );
 }
 
@@ -241,9 +224,7 @@ for (const ciNeedle of [
   "cargo run -p console-gate-audit-coverage",
   "cargo run -p console-gate-pii-no-logs",
   "cargo run -p console-gate-rls-arming",
-  "git diff --exit-code -- clients/ts clients/kotlin",
   "npm run check:openapi-app",
-  "npm run test:contract",
 ]) {
   requireIncludes(".github/workflows/ci.yml", ciNeedle, `CI gate: ${ciNeedle}`);
 }
@@ -286,20 +267,8 @@ for (const releaseNeedle of [
 requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please token fallback documented");
 requireIncludes("backend/rust-toolchain.toml", "channel = \"1.97.1\"", "Rust toolchain pinned to 1.97.1");
 
-// UI shell/design/i18n/a11y baseline.
-requireFile("e2e/fixtures/ux.ts", "browser UX fixture");
-for (const uxNeedle of [
-  "assertNoAxeViolations",
-  "assertNoRawI18nKeys",
-  "attachConsoleGuard",
-  "critical/serious axe",
-]) {
-  requireIncludes("e2e/fixtures/ux.ts", uxNeedle, `UX fixture: ${uxNeedle}`);
-}
-requireIncludes("scripts/check-i18n.mjs", "web/scripts/check-ui-strings.mjs", "cross-surface i18n check includes web");
-requireIncludes("web/package.json", "check-ui-strings.mjs", "web lint includes UI-string gate");
-requireIncludes("web/src/components/shell/nav.ts", "visibleNavItemsForRoles", "role-aware shell navigation seam");
-requireIncludes("web/src/components/shell/Sidebar.tsx", "ko.shell.mainNav", "authenticated shell navigation label");
+// Enterprise UX benchmark matrices stay repo-owned even though the browser
+// shell they were written against now lives outside this repository.
 requireIncludes("docs/benchmarks/enterprise-parity-matrix.md", "SAP Fiori", "enterprise UX benchmark matrix");
 requireIncludes("docs/benchmarks/enterprise-parity-matrix.md", "Palantir", "ontology/operations benchmark matrix");
 

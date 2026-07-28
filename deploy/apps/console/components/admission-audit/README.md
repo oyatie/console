@@ -2,7 +2,7 @@
 
 Kustomize component for **audit-mode image-admission verification** with
 [sigstore policy-controller](https://docs.sigstore.dev/policy-controller/overview/).
-It verifies that the production `console-app` and `console-web` images are keylessly
+It verifies that the production `console-app` image is keylessly
 signed by the repository's `image-release.yml` GitHub Actions workflow, using the
 public Fulcio and Rekor services.
 
@@ -32,8 +32,8 @@ those CRDs exist; otherwise Argo would reject the unknown `ClusterImagePolicy`.
 
 ## Policy contract
 
-- Images covered: `ghcr.io/jason931225/console-app` and
-  `ghcr.io/jason931225/console-web`; `console-worker` shares the `console-app` image.
+- Images covered: `ghcr.io/jason931225/console-app`; `console-worker` shares the
+  `console-app` image.
 - Issuer: `https://token.actions.githubusercontent.com`.
 - Subject: this repository's `.github/workflows/image-release.yml` on `main` or
   a SemVer tag.

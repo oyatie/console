@@ -17,10 +17,7 @@ __pycache__/
 # Swift / Gradle build outputs
 **/.build/
 **/.swiftpm/
-**/.gradle/
 **/.kotlin/
-clients/kotlin/build/
-clients/kotlin/**/build/
 
 # OMC/session state — anywhere in the tree (planning artifacts in .omc/plans, .omc/specs, .omc/ultragoal ARE tracked)
 **/.omc/state/

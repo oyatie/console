@@ -82,7 +82,6 @@ assert(
 );
 requireFile(matrixPath, "G005 workflow lifecycle matrix");
 requireFile(auditPath, "enterprise UI route audit register");
-requireFile("e2e/specs/platform-maturity-g005-workflow-lifecycle.spec.ts", "G005 Playwright matrix contract spec");
 
 if (matrix) {
   assert(matrix.schemaVersion === 1, "G005 matrix schema version 1", `${matrixPath}: schemaVersion must be 1`);
@@ -94,11 +93,8 @@ if (matrix) {
   );
   assert(Array.isArray(matrix.routePaths) && matrix.routePaths.length >= 6, "G005 matrix routePaths", `${matrixPath}: routePaths must cover workflow routes`);
   assert(Array.isArray(matrix.dependencyRoutes) && matrix.dependencyRoutes.length >= 3, "G005 matrix dependency routePaths", `${matrixPath}: dependencyRoutes must cover downstream route dependencies`);
-  requireArrayOfStrings(matrix.requiredE2eSpecs, matrixPath, "requiredE2eSpecs");
-  requireArrayOfStrings(matrix.requiredWebTests, matrixPath, "requiredWebTests");
   requireArrayOfStrings(matrix.requiredBackendTests, matrixPath, "requiredBackendTests");
   assert(Array.isArray(matrix.backendContracts) && matrix.backendContracts.length >= 9, "G005 backend contract inventory", `${matrixPath}: backendContracts must include workflow/approval/evidence contracts`);
-  assert(Array.isArray(matrix.frontendContracts) && matrix.frontendContracts.length >= 8, "G005 frontend contract inventory", `${matrixPath}: frontendContracts must include workflow/overview/approval/work-order surfaces`);
   assert(Array.isArray(matrix.safetyAssertions) && matrix.safetyAssertions.length >= 10, "G005 safety assertions", `${matrixPath}: safetyAssertions must capture workflow, approval, evidence, badge, and scope guardrails`);
 
   const requiredRouteGroups = new Set(["overview", "approvals", "workflow-builder", "work-order-detail", "intake", "planned-work"]);
@@ -159,41 +155,13 @@ if (matrix) {
     }
   }
 
-  for (const contract of matrix.frontendContracts ?? []) {
-    requireFile(contract.file, `frontend contract ${contract.file}`);
-    assert(typeof contract.contract === "string" && contract.contract.length >= 40, `frontend contract ${contract.file}: rationale`, `${matrixPath}: ${contract.file} contract rationale is too weak`);
-    requireArrayOfStrings(contract.requiredSnippets, matrixPath, `frontend contract ${contract.file} required snippets`);
-    for (const snippet of contract.requiredSnippets ?? []) {
-      requireIncludes(contract.file, snippet, `frontend contract ${contract.file}: ${snippet}`);
-    }
-  }
 
-  for (const spec of matrix.requiredE2eSpecs ?? []) requireFile(spec, `G005 E2E spec ${spec}`);
-  for (const test of matrix.requiredWebTests ?? []) requireFile(test, `G005 web test ${test}`);
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G005 backend test ${test}`);
 
-  requireIncludes("e2e/specs/platform-maturity-g005-workflow-lifecycle.spec.ts", matrixPath, "G005 Playwright spec imports matrix");
-  requireIncludes("e2e/specs/platform-maturity-g005-workflow-lifecycle.spec.ts", auditPath, "G005 Playwright spec imports route audit");
   requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G005 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "workflow/approval/action lifecycle", "foundation gate mentions workflow/approval/action lifecycle");
   requireIncludes("docs/specs/foundation-gates.md", "Work Hub", "foundation gate mentions Work Hub server feed contract");
 
-  const bannedCopyNeedles = ["Workflow + Approval", "업무 객체 중심 실행 흐름", "별도 데모", "coming soon", "Coming soon", "Lorem ipsum", "black background"];
-  const sourceFilesWithUserVisibleWorkflow = [
-    "web/src/pages/WorkflowStudioPage.tsx",
-    "web/src/pages/OverviewPage.tsx",
-    "web/src/pages/ApprovalsPage.tsx",
-    "web/src/features/approvals/ApprovalQueue.tsx",
-    "web/src/pages/DailyPlanPage.tsx",
-    "web/src/pages/WorkOrderDetailPage.tsx",
-    "web/src/features/dispatch/WorkOrderDetail.tsx",
-    "web/src/features/support/support-format.ts",
-  ];
-  for (const file of sourceFilesWithUserVisibleWorkflow) {
-    for (const needle of bannedCopyNeedles) {
-      requireNotIncludes(file, needle, `G005 no weak workflow copy in ${file}`);
-    }
-  }
 }
 
 if (failures.length) {

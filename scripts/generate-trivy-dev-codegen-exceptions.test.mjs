@@ -7,7 +7,39 @@ import { test } from "node:test";
 
 const root = new URL("..", import.meta.url).pathname;
 const script = join(root, "scripts/generate-trivy-dev-codegen-exceptions.mjs");
-const canonical = JSON.parse(readFileSync(join(root, "security/node-audit-exceptions.json"), "utf8"));
+// Self-contained fixture registry. These tests prove the gate's accept/reject
+// behaviour, so they must not depend on whether the repo currently ships any
+// live exception (security/node-audit-exceptions.json is empty since the
+// OpenAPI codegen devDependencies were removed).
+const canonical = {
+  schema_version: "node-audit-exceptions-v1",
+  entries: [
+    {
+      advisory: "GHSA-mh99-v99m-4gvg",
+      package: "brace-expansion",
+      version: "2.1.2",
+      path: "node_modules/@redocly/openapi-core/node_modules/brace-expansion",
+      scope: "dev-codegen",
+      owner: "platform-security",
+      tracking: "SEC-FIXTURE-001",
+      rationale: "Fixture entry exercising the dev-codegen exception path; not a live suppression.",
+      trivy_statement: "Fixture dev-only matcher path; tracked by SEC-FIXTURE-001.",
+      expires_on: "2099-01-01",
+    },
+    {
+      advisory: "GHSA-mh99-v99m-4gvg",
+      package: "brace-expansion",
+      version: "5.0.7",
+      path: "node_modules/brace-expansion",
+      scope: "dev-codegen",
+      owner: "platform-security",
+      tracking: "SEC-FIXTURE-001",
+      rationale: "Fixture entry exercising the dev-codegen exception path; not a live suppression.",
+      trivy_statement: "Fixture dev-only CLI matcher path; tracked by SEC-FIXTURE-001.",
+      expires_on: "2099-01-01",
+    },
+  ],
+};
 const expiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), "trivy-exception-parity-"));

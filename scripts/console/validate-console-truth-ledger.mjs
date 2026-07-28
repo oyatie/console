@@ -83,10 +83,20 @@ export function createConsoleCandidateSourceResolver(repoRoot, candidateSha, int
   };
   return Object.freeze({ candidateSha, integrationTipSha, readText, resolveSource });
 }
+const CONSOLE_NAV_SOURCE = 'web/src/console/shell/nav.ts';
+const CONSOLE_REGISTRY_SOURCE = 'web/src/console/screens/registry.ts';
 export function extractConsoleRouteFactsFromCandidate(candidateSource) {
+  // The 2026-07-28 clean-slate pivot deleted the whole frontend, so the console
+  // route sources no longer exist in the candidate. A console with no frontend
+  // presents no routes: report an empty fact set rather than failing, so the
+  // bijection in validateConsoleTruthLedger holds against an empty declared set.
+  // When the Leptos rebuild lands, its route source is registered here.
+  if (!candidateSource.resolveSource(CONSOLE_NAV_SOURCE) || !candidateSource.resolveSource(CONSOLE_REGISTRY_SOURCE)) {
+    return Object.freeze({ facts: Object.freeze({}) });
+  }
   return extractConsoleRouteFactsFromTexts(
-    candidateSource.readText('web/src/console/shell/nav.ts'),
-    candidateSource.readText('web/src/console/screens/registry.ts'),
+    candidateSource.readText(CONSOLE_NAV_SOURCE),
+    candidateSource.readText(CONSOLE_REGISTRY_SOURCE),
   );
 }
 function canonicalJsonDigest(value) { return createHash('sha256').update(JSON.stringify(stable(value))).digest('hex'); }

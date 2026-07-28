@@ -28,8 +28,8 @@ if grep -R "newTag:" deploy/apps/console/overlays/prod >/dev/null; then
   echo "render-k8s: prod overlay must not use mutable newTag values" >&2
   exit 1
 fi
-if [[ "$(grep -c 'digest: sha256:' deploy/apps/console/overlays/prod/kustomization.yaml)" -lt 2 ]]; then
-  echo "render-k8s: expected console-app and console-web sha256 digest pins in prod overlay" >&2
+if [[ "$(grep -c 'digest: sha256:' deploy/apps/console/overlays/prod/kustomization.yaml)" -lt 1 ]]; then
+  echo "render-k8s: expected a console-app sha256 digest pin in prod overlay" >&2
   exit 1
 fi
 

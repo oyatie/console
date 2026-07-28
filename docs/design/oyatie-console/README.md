@@ -1,5 +1,20 @@
 # Acme Group Design System
 
+> **SUPERSEDED — 2026-07-28 pivot.** This directory mirrors Claude Design project `9c7c313a`
+> ("Oyatie Console" / "B2B SaaS Console Design"), which is **no longer the design authority**.
+> Current authority: project `198fcee4` ("기본") — a **shell only**: sidebar (empty nav), main
+> column (empty section), comms rail with four empty collapsible sections (메신저/메일/알림/공지),
+> responsive drawers under 900px, 2-way light/dark theme. The 63-screen console surface described
+> in this mirror is **historical**, not current intent.
+>
+> Also deleted on 2026-07-28: the React/Vite `web/` app, `clients/{ts,kotlin,swift}`, Playwright
+> `e2e/`, and the iOS/Android deliverables. The frontend rebuild targets **Leptos 0.9** and returns
+> last. Repo renamed `maintenance` → `console`. Scope narrowed to Ontology · Foundry · Policy, then
+> Organization + Employee, then HR + Payroll.
+>
+> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md). Nothing below is
+> updated to match it — read it as a record of what was designed, not what is being built.
+
 Extracted from the **Acme Group Console** — a Palantir-benchmarked, ontology-first B2B SaaS console for conglomerate HR/operations (근태·급여·연차·복리후생·채용·전자결재·문서·권한정책, with built-in messenger/mail/notification). Source of truth: `Oyatie Console.dc.html` (the working console) + `DESIGN.md` (design charter) + `TODO.md` (roadmap) at project root. Korean-first UI.
 
 > This DS is **foundation-first and in progress**: tokens, styles, and this guide are done. Components, specimen cards, and UI kits are on the TODO list (#45–48) and still to be authored.

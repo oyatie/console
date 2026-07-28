@@ -4,9 +4,9 @@ metadata:
   name: console
   namespace: argocd
 spec:
-  description: Forklift FSM platform + application
+  description: Console platform + application
   sourceRepos:
-    - https://github.com/jason931225/console.git # replace jason931225
+    - https://github.com/jason931225/console.git
     - https://charts.jetstack.io
     - https://argoproj.github.io/argo-helm
     - https://traefik.github.io/charts

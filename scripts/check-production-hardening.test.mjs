@@ -15,8 +15,6 @@ import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 
 import {
-  evaluateAndroidE2eFailClosedChecks,
-  evaluateAndroidE2eTokenHandoffChecks,
   evaluateCnpgContextChecks,
   evaluateDeployAutomationChecks,
   evaluateExpandContractReleaseChecks,
@@ -409,16 +407,13 @@ function evaluateProdOverlay(text) {
 describe("production hardening global image checks", () => {
   it("accepts immutable digest pins without mutable tags", () => {
     const digestA = "a".repeat(64);
-    const digestB = "b".repeat(64);
     const result = evaluateProdOverlay(`images:
   - name: console-app
     digest: sha256:${digestA}
-  - name: console-web
-    digest: sha256:${digestB}
 `);
 
     assert.deepEqual(result.failures, []);
-    assert.match(result.passes.join("\n"), /prod overlay digest pins: 2/);
+    assert.match(result.passes.join("\n"), /prod overlay digest pins: 1/);
   });
 
   it("rejects missing digest pins and mutable image tags", () => {
@@ -429,7 +424,7 @@ describe("production hardening global image checks", () => {
 
     assert.ok(
       result.failures.some((failure) =>
-        failure.includes("must pin at least console-app and console-web"),
+        failure.includes("must pin at least console-app"),
       ),
     );
     assert.ok(
@@ -441,18 +436,15 @@ describe("production hardening global image checks", () => {
 
   it("rejects digest pins and mutable tags that appear only in comments", () => {
     const digestA = "a".repeat(64);
-    const digestB = "b".repeat(64);
     const result = evaluateProdOverlay(`images:
   # - name: console-app
   #   digest: sha256:${digestA}
-  # - name: console-web
-  #   digest: sha256:${digestB}
   # newTag: latest
 `);
 
     assert.ok(
       result.failures.some((failure) =>
-        failure.includes("must pin at least console-app and console-web"),
+        failure.includes("must pin at least console-app"),
       ),
     );
     assert.deepEqual(
@@ -856,8 +848,6 @@ const validProductionEvidenceText = `${JSON.stringify(
 
 const validWorkflowFiles = {
   "scripts/check-production-authority-blocked.mjs": "#!/usr/bin/env node\n",
-  "scripts/check-openapi-toolchain-security.test.mjs":
-    "import { test } from 'node:test';\ntest('compatibility', () => {});\n",
   "package.json": JSON.stringify({
     scripts: {
       "test:production-hardening":
@@ -928,8 +918,6 @@ jobs:
         run: cargo deny --manifest-path backend/Cargo.toml check
   node-advisories:
     steps:
-      - name: OpenAPI toolchain compatibility
-        run: npm run test:openapi-toolchain-security
       - name: npm audit
         run: |
           npm audit --omit=dev --audit-level=high --json > report.json
@@ -1127,27 +1115,6 @@ describe("production hardening workflow gates", () => {
   });
   it("accepts active CI, security, and image-release workflow gates", () => {
     assert.deepEqual(evaluateWorkflows().failures, []);
-  });
-
-  it("rejects removing the OpenAPI toolchain compatibility regression", () => {
-    const pkg = JSON.parse(validWorkflowFiles["package.json"]);
-    delete pkg.scripts["test:openapi-toolchain-security"];
-    assertHasFailure(
-      evaluateWorkflows({ "package.json": JSON.stringify(pkg) }),
-      "OpenAPI toolchain security regression test and exact package CLI wiring",
-    );
-
-    assertHasFailure(
-      evaluateWorkflows({
-        ".github/workflows/security.yml": validWorkflowFiles[
-          ".github/workflows/security.yml"
-        ].replace(
-          "        run: npm run test:openapi-toolchain-security\n",
-          "        run: echo compatibility gate removed\n",
-        ),
-      }),
-      "security workflow must actively run npm run test:openapi-toolchain-security",
-    );
   });
 
   it("binds the documented GitHub environment Team response shape exactly", () => {
@@ -1545,173 +1512,6 @@ jobs:
   });
 });
 
-const validAndroidE2eFiles = {
-  "package.json": JSON.stringify({ scripts: { "check:android-e2e-fail-closed": "node scripts/check-android-e2e-fail-closed.mjs" } }),
-  ".github/workflows/ci.yml": `name: CI
-jobs:
-  web:
-    steps:
-      - run: npm run check:android-e2e-fail-closed
-  android-instrumented:
-    env:
-      E2E_HTTP_ADDR: 127.0.0.1:8080
-    services:
-      postgres:
-        image: postgres:18.4
-    steps:
-      - run: |
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          cargo build --release --bin console-app
-      - name: Bootstrap hermetic backend and session fixture
-        run: |
-          set -euo pipefail
-          session_assets_dir="\${RUNNER_TEMP}/android-e2e-session-assets"
-          session_file="$session_assets_dir/field-e2e-session.properties"
-          bootstrap_otp="$(openssl rand -hex 32)"
-          otp_hash="$(printf '%s' "$bootstrap_otp" | sha256sum | awk '{print $1}')"
-          printf '::add-mask::%s\\n' "$bootstrap_otp"
-          E2E_PG_HOST=127.0.0.1 e2e/harness/db.sh
-          psql -v otp_hash="$otp_hash" -v fixture_profile=full -f e2e/harness/seed-mobile-ci.sql
-          e2e/harness/boot-backend.sh
-          backend_url="http://127.0.0.1:8080"
-          response="$(printf '%s' "$bootstrap_otp" | jq -Rsc '{otp:.}' | curl -fsS -X POST "$backend_url/api/v1/auth/otp/redeem" --data-binary @-)"
-          access_token="$(printf '%s' "$response" | jq -er '.access_token')"
-          refresh_token="$(printf '%s' "$response" | jq -er '.refresh_token')"
-          printf '::add-mask::%s\\n' "$access_token"
-          printf '::add-mask::%s\\n' "$refresh_token"
-          install -d -m 700 "$session_assets_dir"
-          umask 077
-          printf 'FIELD_E2E_ACCESS_TOKEN=%s\\nFIELD_E2E_REFRESH_TOKEN=%s\\n' "$access_token" "$refresh_token" > "$session_file"
-          chmod 600 "$session_file"
-          export FIELD_E2E_SESSION_ASSETS_DIR="$session_assets_dir"
-          (
-            cd android
-            ./gradlew fieldApi34DebugAndroidTest
-          )
-          python3 - <<'PY'
-          import pathlib
-          import xml.etree.ElementTree as ET
-          cases = []
-          for result_file in pathlib.Path("android/app/build").rglob("TEST-*.xml"):
-              root = ET.parse(result_file).getroot()
-              for case in root.iter("testcase"):
-                  if case.attrib.get("classname", "").endswith(".WorkOrderFlowTest"):
-                      cases.append(case)
-          if not cases:
-              raise SystemExit("WorkOrderFlowTest is missing")
-          for case in cases:
-              if case.find("skipped") is not None:
-                  raise SystemExit("WorkOrderFlowTest was skipped")
-              if case.find("failure") is not None or case.find("error") is not None:
-                  raise SystemExit("WorkOrderFlowTest failed")
-          PY
-      - name: Cleanup hermetic Android E2E
-        if: always()
-        run: |
-          rm -rf "\${RUNNER_TEMP}/android-e2e-session-assets"
-          kill "$(cat "\${RUNNER_TEMP}/android-e2e-auth/backend.pid")" || true
-`,
-  "android/app/build.gradle.kts": `val fieldE2eSessionAssetsDir = providers.environmentVariable("FIELD_E2E_SESSION_ASSETS_DIR")
-android {
-  buildTypes { release { buildConfigField("String", "API_BASE_URL", "\\"https://api.example.test\\"") } }
-  sourceSets { getByName("androidTest") { fieldE2eSessionAssetsDir.orNull?.let { assets.srcDir(it) } } }
-}`,
-  "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": `class WorkOrderFlowTest {
-  fun fixture() {
-    InstrumentationRegistry.getInstrumentation().context.assets.open("field-e2e-session.properties")
-    val access = "FIELD_E2E_ACCESS_TOKEN"
-    val refresh = "FIELD_E2E_REFRESH_TOKEN"
-    SessionTokenStore(ApplicationProvider.getApplicationContext())
-  }
-}`,
-  "android/app/src/debug/AndroidManifest.xml": `<manifest><application android:networkSecurityConfig="@xml/network_security_config" /></manifest>`,
-  "android/app/src/debug/res/xml/network_security_config.xml": `<network-security-config><base-config cleartextTrafficPermitted="false"/><domain-config cleartextTrafficPermitted="true"><domain>10.0.2.2</domain></domain-config></network-security-config>`,
-};
-
-function evaluateAndroidE2eTokenHandoff(overrides = {}) {
-  const files = { ...validAndroidE2eFiles, ...overrides };
-  return evaluateAndroidE2eTokenHandoffChecks((path) => files[path] ?? "");
-}
-function evaluateAndroidE2eFailClosed(overrides = {}) {
-  const files = { ...validAndroidE2eFiles, ...overrides };
-  return evaluateAndroidE2eFailClosedChecks((path) => files[path] ?? "");
-}
-
-describe("production hardening Android hermetic E2E", () => {
-  it("accepts a self-hosted PostgreSQL 18.4 candidate-SHA session harness", () => {
-    const result = evaluateAndroidE2eFailClosed();
-    assert.deepEqual(result.failures, []);
-    assert.match(result.passes.join("\\n"), /local PostgreSQL 18.4/);
-    assert.match(result.passes.join("\\n"), /exact candidate SHA/);
-  });
-
-  it("accepts a masked runner-temp asset handoff without token outputs or Gradle args", () => {
-    const result = evaluateAndroidE2eTokenHandoff();
-    assert.deepEqual(result.failures, []);
-    assert.match(result.passes.join("\\n"), /runner-temp chmod-restricted/);
-  });
-
-  it("rejects external backend secrets and optional protected-context self-skipping", () => {
-    const result = evaluateAndroidE2eFailClosed({
-      ".github/workflows/ci.yml": validAndroidE2eFiles[".github/workflows/ci.yml"].replace(
-        "services:",
-        "env:\\n  FIELD_E2E_BASE_URL: ${{ secrets.FIELD_E2E_BASE_URL }}\\n  FIELD_E2E_REQUIRE_REAL_SESSION: '0'\\n    services:",
-      ),
-    });
-    assertHasFailure(result, "must not depend on FIELD_E2E external backend/session secrets");
-  });
-
-  it("rejects a non-hermetic database version, build without exact SHA, and non-local OTP exchange", () => {
-    const result = evaluateAndroidE2eFailClosed({
-      ".github/workflows/ci.yml": validAndroidE2eFiles[".github/workflows/ci.yml"]
-        .replace("postgres:18.4", "postgres:17")
-        .replace('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"\n          ', "")
-        .replace('$backend_url/api/v1/auth/otp/redeem', 'https://external.example/api/v1/auth/token/refresh'),
-    });
-    assertHasFailure(result, "must start PostgreSQL 18.4 locally");
-    assertHasFailure(result, "must verify git HEAD against GITHUB_SHA");
-    assertHasFailure(result, "must migrate/seed local PostgreSQL");
-  });
-
-  it("rejects raw or malformed OTP JSON instead of jq-encoding the bootstrap credential", () => {
-    const result = evaluateAndroidE2eFailClosed({
-      ".github/workflows/ci.yml": validAndroidE2eFiles[".github/workflows/ci.yml"]
-        .replace("jq -Rsc '{otp:.}' | ", "")
-        .replace("--data-binary @-", '-d "{\\"otp\\":\\"$bootstrap_otp\\"}"'),
-    });
-    assertHasFailure(result, "must migrate/seed local PostgreSQL, SHA256-hash a random mechanic OTP");
-  });
-
-  it("rejects credential leaks, unverified JUnit evidence, missing cleanup, and release cleartext", () => {
-    const overrides = {
-      ".github/workflows/ci.yml": validAndroidE2eFiles[".github/workflows/ci.yml"]
-        .replace('export FIELD_E2E_SESSION_ASSETS_DIR="$session_assets_dir"', 'echo "access=$access_token" >> "$GITHUB_OUTPUT"')
-        .replace('case.find("skipped")', 'case.find("not-skipped")')
-        .replace('if: always()', 'if: success()')
-        .replace('kill "$(cat "\${RUNNER_TEMP}/android-e2e-auth/backend.pid")" || true', 'true'),
-      "android/app/src/debug/AndroidManifest.xml": `<manifest><application android:usesCleartextTraffic="true" /></manifest>`,
-    };
-    const result = evaluateAndroidE2eFailClosed(overrides);
-    const tokenResult = evaluateAndroidE2eTokenHandoff(overrides);
-    assertHasFailure(tokenResult, "must not be written to GITHUB_OUTPUT");
-    assertHasFailure(result, "must parse WorkOrderFlowTest JUnit XML");
-    assertHasFailure(result, "must run an always cleanup step");
-    assertHasFailure(result, "must permit cleartext only through the debug 10.0.2.2");
-  });
-
-  it("rejects token Gradle arguments and a WorkOrderFlowTest that reads instrumentation arguments", () => {
-    const result = evaluateAndroidE2eTokenHandoff({
-      ".github/workflows/ci.yml": validAndroidE2eFiles[".github/workflows/ci.yml"].replace(
-        "./gradlew fieldApi34DebugAndroidTest",
-        "./gradlew fieldApi34DebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.FIELD_E2E_ACCESS_TOKEN=$access_token",
-      ),
-      "android/app/src/androidTest/kotlin/com/console/app/WorkOrderFlowTest.kt": `class WorkOrderFlowTest { fun fixture() = InstrumentationRegistry.getArguments() }`,
-    });
-    assertHasFailure(result, "must not be written to GITHUB_OUTPUT or passed as Gradle instrumentation arguments");
-    assertHasFailure(result, "must load the session tokens from the androidTest asset fixture");
-  });
-});
-
 function evaluateDeployScript(text) {
   return evaluateDeployAutomationChecks((path) =>
     path === "scripts/deploy.sh" ? text : "",
@@ -1729,7 +1529,7 @@ case "\${1:-}" in
     ;;
 esac
 if [[ "\${MODE}" == "digest-bump-only" ]]; then
-  log "done: \${SHORT_SHA} desired prod digests updated only (console-app=sha256:aaa, console-web=sha256:bbb); deployment, rollout, pod-image, and endpoint verification were NOT run."
+  log "done: \${SHORT_SHA} desired prod digests updated only (console-app=sha256:aaa); deployment, rollout, pod-image, and endpoint verification were NOT run."
   exit 0
 fi
 require kubectl
@@ -1738,7 +1538,7 @@ if ! kubectl version >/dev/null 2>&1; then
   exit 1
 fi
 kubectl -n "$ARGO_NS" annotate "application/$APP_NAME" "argocd.argoproj.io/refresh=hard" --overwrite
-ROLLOUTS=(console-app console-web)
+ROLLOUTS=(console-app)
 for rollout in "\${ROLLOUTS[@]}"; do
   kubectl argo rollouts status "$rollout" -n "$NAMESPACE" --timeout 600s
 done
@@ -1769,7 +1569,7 @@ log "done: \${SHORT_SHA} deployed and verified"
     assertHasFailure(result, "must actively request an Argo hard refresh");
     assertHasFailure(
       result,
-      "must actively wait for both console-app and console-web rollouts",
+      "must actively wait for the console-app rollout",
     );
   });
 
@@ -1783,7 +1583,7 @@ case "\${1:-}" in
     ;;
 esac
 require kubectl
-ROLLOUTS=(console-app console-web)
+ROLLOUTS=(console-app)
 if [[ "\${MODE}" == "digest-bump-only" ]]; then
   log "done: \${SHORT_SHA} deployed and verified (digest bump only)"
   exit 0
@@ -1811,7 +1611,7 @@ log "done: \${SHORT_SHA} deployed and verified"
 require kubectl
 kubectl version >/dev/null
 kubectl -n "$ARGO_NS" annotate "application/$APP_NAME" "argocd.argoproj.io/refresh=hard" --overwrite
-ROLLOUTS=(console-app console-web)
+ROLLOUTS=(console-app)
 for rollout in "\${ROLLOUTS[@]}"; do
   kubectl argo rollouts status "$rollout" -n "$NAMESPACE" --timeout 600s || true
 done

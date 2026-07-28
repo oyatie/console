@@ -21,9 +21,31 @@ appended row recording the strike; the original row stays.
    on the migrations directory, because that directory shows only *this*
    worktree — see §2 for why that is not the same question.
 
-Requesting is cheap. Colliding is not: two migrations with the same number are
-not detected by `cargo`, `sqlx`, or any CI gate in this repo — they are detected
-by a reviewer reading a merge diff, or not at all.
+Requesting is cheap. Colliding is not — though the detection story is better
+than this document originally claimed.
+
+> **Corrected 2026-07-28.** The original text said a duplicate number is "not
+> detected by `cargo`, `sqlx`, or any CI gate in this repo". That is **wrong**:
+> `backend/ci/gates/migration-safety/src/lib.rs` buckets every `NNNN_` filename
+> prefix by parent directory and emits `ViolationKind::DuplicateMigrationVersion`
+> when more than one file shares a prefix (covered by
+> `backend/ci/gates/migration-safety/tests/gate_detects_violation.rs`). It is
+> wired at `.github/workflows/ci.yml` as the "Migration-safety gate" step
+> (`cargo run -p console-gate-migration-safety`) in the `backend` job. The gate
+> predates this document.
+>
+> The real hazard is narrower, and still real: the gate only fires when **both
+> files are in one tree**. Pull-request CI runs against the merge ref, so a
+> second lane *would* fail — but nothing forces a re-run when the base advances.
+> `main` is currently **unprotected** (`gh api .../branches/main/protection` →
+> 404): no required status checks, no "require branches up to date", no merge
+> queue. So a lane whose check went green before the other lane merged stays
+> mergeable, and detection lands **after** the merge, when the `push: main` run
+> of the same gate turns `main` red. Deployment is contained — `image-release.yml`
+> requires a successful exact-SHA `main` CI run — but `main` itself breaks.
+>
+> Reserving numbers up front therefore remains correct; the reason is
+> merge-ordering, not the absence of a detector.
 
 ## 2. Why `ls` is the wrong instrument — the proven failure mode
 

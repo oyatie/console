@@ -1,16 +1,19 @@
 # Acme Group 콘솔 — ROADMAP (마스터 빌드 블루프린트)
 
-> **Authority boundary (2026-07-23 · re-applied atop the change-log-190 upstream sync):** this file is a Claude Design
-> visual/interaction reference and prototype history. Its mock rows, executable
-> prototype actions, and `완료` labels are not repository implementation,
-> backend, review, test, release, or deployment evidence. The repository-native
-> implementation authority is
-> [`docs/program/console-enterprise-roadmap.md`](../../program/console-enterprise-roadmap.md).
-> Everything below this blockquote is the byte-exact upstream design document.
+> **SUPERSEDED — 2026-07-28 pivot.** This directory mirrors Claude Design project `9c7c313a`
+> ("Oyatie Console" / "B2B SaaS Console Design"), which is **no longer the design authority**.
+> Current authority: project `198fcee4` ("기본") — a **shell only**: sidebar (empty nav), main
+> column (empty section), comms rail with four empty collapsible sections (메신저/메일/알림/공지),
+> responsive drawers under 900px, 2-way light/dark theme. The 63-screen console surface and the
+> 39-module matrix below are **historical**, not current intent.
 >
-> 이 문서의 상태표와 완료 기록은 설계 프로토타입의 이력이며 현재 구현 큐나 완료 증거가 아니다. 현재 실행 상태는 `docs/program/console-enterprise-roadmap.md`와 그 기계 판독 레지스트리에서만 갱신한다.
-> **권한 연대기(문서 범위 상태 구분):** 이 문서의 Cedar/PBAC 항목과 완료 로그는 목업·작성·시뮬레이션·목표 계약을 기록한다. 별도 공존 맵 승격 증거가 없는 한 이 문서가 전제하는 상태는 레거시 서버 권한/미들웨어와 PostgreSQL RLS 집행, Cedar target/shadow다. 이 상태 구분은 배포·런타임 검증 증거가 아니며, 실제 집행 상태는 별도 운영 증거로 검증해야 한다.
-> **ADR-0025 프로덕션 상태 오버레이 (2026-07-20):** 아래의 `완료`·`검증` 기록은 개발 인벤토리와 해당 시점의 제한된 검증을 뜻하며 프로덕션 준비도 승격이 아니다. 화면 상태는 (1) 정보구조에만 있는 `DECLARED/UNMOUNTED/DARK`, (2) 소스에 본문이 연결됐지만 증거 승인을 받지 않은 `MOUNTED/DARK`, (3) ADR-0025 전체 증거 요건을 승인받아 매니페스트에 포함된 `EXPOSED`로 구분한다. 현재 `EXPOSED_SCREEN_KEYS`는 비어 있다. `/console/*`는 서버 소유 롤아웃 응답과 증거 승인 매니페스트가 모두 허용할 때만 열리며, 그 외에는 작동하는 레거시 `/overview`로 fail closed한다.
+> Also deleted on 2026-07-28: the React/Vite `web/` app, `clients/{ts,kotlin,swift}`, Playwright
+> `e2e/`, and the iOS/Android deliverables. The frontend rebuild targets **Leptos 0.9** and returns
+> last. Repo renamed `maintenance` → `console`. Scope narrowed to Ontology · Foundry · Policy, then
+> Organization + Employee, then HR + Payroll — ERP modules, field ops, dispatch, comms modules,
+> compliance modules, ingest, evidence/WORM and the office editor are explicitly **out of scope**.
+>
+> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
 
 > 목적: 콘솔 **전 모듈을 엔터프라이즈 프로덕션 목업 품질**로 완성한다 — no stubs·no filler·no "good for now". 모든 화면이 상호작용하고, **온톨로지·데이터 상관·워크플로·자동화**를 실증한다. "배선(백엔드 연결)만 하면 되는" 상태가 목표.
 > 이 문서는 실행 계획의 단일 출처다. 설계 원칙=DESIGN.md, 백엔드 계약=HANDOFF.md, 세션 작업목록=TODO.md, 운영노트=AGENTS.md. 매 모듈 완료 시 본 문서의 상태표를 갱신한다.
@@ -41,6 +44,7 @@
 **ERP/현장/규제**: Ledger·Voucher·Purchase·Asset·Inventory ; Vendor ; DispatchOrder·MaintenanceOrder·CustomerSite ; Jurisdiction·Consent·DSR·DataClass ; Benefit(수명주기)
 
 **표준 관계 체인**: `C- → Position → PolicyPreset → Posting → Applicant → Employee → Timetable ⇄ Attendance ⇄ Substitution/OT(AP-) → PayrollRun → Payslip → LaborCost → ContractProfitability → (환류) C-`. 어느 노드에서든 1클릭 상·하류.
+**수요 원천 3갈래 (2026-07-25 · DESIGN §3 개정)**: 위 체인의 출발점은 `C-` 하나가 아니다 — `C-`(수주·매출) · `OP-`(회사 운영·간접비) · `PJ-`(프로젝트·예산) 셋이 같은 골격(Position → … → PayrollRun → LaborCost)에 합류하고, 귀속은 근태의 **투입 원천 축**이 결정한다. 환류 종점만 갈린다: 계약 수익성 / 예산 집행 / 진척 대비 소진. 배부 규칙 `AL-` = 개체(발효일·결재).
 
 ## 3. 교차 시스템 (모든 모듈이 계승 — 재구현 금지)
 > **북극성 벤치마크 (전반)**: **Palantir Foundry**(온톨로지·Actions·Functions·Workshop·Pipeline·계보 — 개체·구성·분석의 근간) · **Slack/Teams**(커뮤니케이션·프레젠스·스레드·협업·링크 unfurl·회의) · 모듈별 best-in-class(Workday·Greenhouse·ServiceNow·Retool/Appsmith/ToolJet 등 §4 매트릭스·HANDOFF §19). 새 표면은 이 셋 + 해당 모듈 best-in-class에 대조해 심화.
@@ -52,6 +56,51 @@
 - **자동화**: `workflows/schedules` + 트리거→조건→액션; 실행 시 logEvent·실제 개체 생성. 새 모듈의 이벤트는 트리거 후보로 노출.
 - **no-code 편집기**: 정책·워크플로·매핑 템플릿·프리셋 = 자연어 블록 캔버스 + 시뮬레이션 + 버전/되돌리기.
 - **디자인 토큰**: `tokens/*.css` + `.console` 테마(라이트/다크). 인라인 스타일. Pretendard. 아이콘=인라인 스트로크 SVG.
+
+## 3.5 SAP 스위트 대조 (2026-07-25 · 옴니 플랫폼 커버리지)
+> 판정 표기: ✅구현(e2e 검증) · 🟡부분(표면 있음·심화 필요) · ⬜갭 · ✕의도적 제외(업종 불필요). 상세·근거 = 와이어프레임 「Oyatie 구조 · 관계 맵」 1h.
+
+| SAP 모듈 | 우리 대응 | 상태 | 잔여 갭 (우선순위) |
+|---|---|---|---|
+| SuccessFactors Employee Central | 인사 관리 · 직원 원장 · 조직도 | ✅ | 다국가 필드·통화 = ✕(국내 4법인) |
+| SF Recruiting | 채용(공고·지원자·오퍼·인재풀) | ✅ | 퍼널 전환율·단계 소요일 분석 🟡 |
+| SF Onboarding | 입사=직원 개체 생성만 | ⬜ | **온보딩 체크리스트 오케스트레이션 (P1)** — 대량 입·퇴사 상시 |
+| SF Performance & Goals | 평가(KPI·근태 기반) | ✅ | 목표 캐스케이딩(법인→팀→개인) 🟡 |
+| SF Compensation | — | ⬜ | **연봉 조정 사이클 (P1)**: 예산 배분·관리자 제안·상한 검증·일괄 발효 |
+| SF Learning (LMS) | 자격·교육 유효성 판정(배정 4축 입력) | 🟡 | **P0 — 과정·이수·재교육 주기 관리 부재**(가드레일 원천이 콘솔 밖) |
+| SF Succession | — | ⬜ | 후계자 계획 (P3) |
+| EC Payroll / PY | 급여 회차 · 보정 회차 · 퇴사 정산 | ✅ | 4대보험 EDI·연말정산 = 연동 계약 🟡 · Payroll Control Center 사전점검 규칙 라이브러리 (P2) |
+| Time & Attendance (WFS/Kronos) | 근태 · 교대 패턴 · 커버 플래너 · 주 52h | ✅ | 교대 교환(shift swap) 마켓 ⬜ (P2) |
+| Benefits / Absence | 복리후생 · 연차(사유 불요·거부 불가) | ✅ | — |
+| Concur (경비·출장) | 경비·출장(정책 자동 판정·카드 대조·중복 차단) | ✅ | 여정 예약·항공/숙박 연동 ✕ |
+| Fieldglass (외주) | 외주 인력(SOW·시간 승인·파견 2년·단가표) | ✅ | 공급사 셀프서비스 포털 🟡 (P1) |
+| S/4 FI 재무회계 | 재무(전표·대사) | 🟡 | **원장 정합성(이중 기입·기간 마감·보정 분개) = L3 백엔드** |
+| S/4 CO 관리회계 | 원가 배분 AL-01 · 계약 수익성 CT- | ✅ | 예산 대비 실적·시나리오 비교 🟡 (P1) |
+| S/4 SD 영업·청구 | 수주·청구(기성·부분·채권 연령·여신 정지) | ✅ | 전자세금계산서 국세청 연계 🟡 |
+| S/4 MM 구매·재고 | 구매 PO- · 재고 IV-(실사) | ✅ | — |
+| Ariba 소싱 | 구매 기안만 | ⬜ | RFQ 다자 견적·비교·공급사 입찰 (P2) |
+| S/4 PP 생산계획 | 생산 MES(OEE·품질·로트 계보·MRP) | 🟡 | 능력 소요 계획(CRP)·유한 능력 스케줄링 (P2) |
+| S/4 QM 품질 | QA-01(관리도·Cp/Cpk·NCR Hold·검사계획) | ✅ | — |
+| S/4 PM 설비보전 | 정비 오더 · 자산 | 🟡 | **예방정비 계획(주기·계량기 자동 오더) (P1)** — 현재 접수 대응 중심 |
+| EWM 창고 | 재고 · 물류 현장 | 🟡 | 로케이션·피킹 지시·바코드 작업 (P2 → 물류도급 확대 시 P1) |
+| PS 프로젝트 | 계약 단위 관리로 대체 | ⬜ | WBS·단계별 원가 (P2) |
+| TM 운송 | 배차 · 운영 지도 | 🟡 | 운송 단가·정산 (P3) |
+| Treasury 자금 | 채권·입금 대사 | ⬜ | 자금 계획(주간 현금 흐름 전망) (P2) — 미청구 경고와 연결 |
+| IBP 계획 | 예측 FC-(입찰·수요 일부) | ⬜ | 수요×능력 통합 계획 (P2) — 인력 수급 전망 결합 가치 큼 |
+| Analytics Cloud | 대시보드 · 차트 빌더 · 분석 축 | ✅ | — |
+| Signavio 프로세스 마이닝 | 감사 로그(원천 보유) | ⬜ | **P1 · 우리 강점 위치** — 실제 처리 경로·병목·재작업률 증명 |
+| MDG 마스터데이터 거버넌스 | 온톨로지(타입·스키마 제안·스튜어드) | ✅ | 중복 병합(merge) 워크플로 🟡 |
+| GRC Access Control | Cedar PBAC · SoD · 감사 | 🟡 | **SoD 위반 시뮬레이션(부여 전 충돌 검사)·역할 사용 마이닝 (P1)** |
+| ILM 데이터 보존 | 보존기한 카탈로그 · 폐기 게이트 | ✅ | WORM 아카이브 스토어 계약 🟡 |
+| BTP · Build (확장) | 연동·릴리스(SDK·웹훅·앱 카탈로그·환경·동결창) | ✅ | 모듈 스캐폴딩·연동 테스트 콘솔 🟡 |
+| Cloud ALM (릴리스·테스트) | REL-01/02(환경·동결창·롤백) | 🟡 | 회귀 테스트 케이스 관리·릴리스별 결과 추적 (P2) |
+| **Fiori UX 프레임워크** | 저장된 뷰(variant) ✅ · facet ✅ · 퀵 액션(Situation Handling) ✅ | 🟡 | **Object Page 앵커·탭 구조 · ALP(차트=시각 필터) · My Outbox(처리 전·후 로그) · Message Popover(일괄 검증 메시지) · draft 편집 잠금** |
+
+### SAP 대조에서 도출된 결론
+1. **HCM·급여·시간·경비·외주는 실사용 가능 수준**(L2) — 잔여는 심화·연동.
+2. **결정적 갭은 SAP 기능이 아니라 업종 법정 모듈**(EHS·LMS·제보·산재) — SAP에도 별도 EHS(SAP EHS Management)가 있으나 우리는 아예 없다. **W1 최우선**.
+3. **L3 병목은 SAP 대비 기능이 아니라 실체**: FI 원장 정합성 · 서버측 정책 실시행 · 관측성·HA · 급여 법무 게이트.
+4. **Fiori UX 패턴 5종은 차용 가치가 명확** — 우리 것보다 검증된 패턴(Object Page 앵커·ALP 시각 필터·Outbox 로그·Message Popover·draft 잠금)은 재발명하지 않고 채택.
 
 ## 4. 모듈 매트릭스 (벤치마크 · 상태)
 > 상태: ✅완료 · 🟡부분 · ⬜신규. 각 모듈은 §0 DoD 통과 필요.
@@ -118,6 +167,10 @@
 - **상시**: 각 신규 모듈은 §5 상관 중 관련 데모를 반드시 연결. 각 완료 후 TODO/AGENTS 갱신 + 검증.
 
 ## 7. 진행 로그
+- 2026-07-25: **#107 수익성 3분기 완료 — 수요 원천 3갈래 에픽(102–107) 종료**. 대시보드 수익성 패널 = 계약(마진)/운영(집행률)/프로젝트(진척) 세그먼트, 행 클릭 시 원천 화면 + 행 선택.
+- 2026-07-25: **#103·104·106 수요 원천 화면 2종 완료** — 프로젝트 PR-(마일스톤·진척 대비 소진 2축·종결 정산 게이트) · 운영 코스트센터 OP-(마진 열 없음 — 예산 집행·배부 후 단가) + 배부 규칙 AL-(발효일·개정 대기·총량 fail-closed). 화면 40종.
+- 2026-07-25: **#105 근태 투입 귀속 축 완료** — 직원-일자 카드 「투입 귀속」(포지션 상속 기본값 · 분할 입력 fail-closed 게이트 · C-/OP-/PJ- 원천 카탈로그). 3갈래 체인의 귀속 축 확보 → PJ-·OP- 화면(103·104) 선행 조건 충족.
+- 2026-07-25: **수요 원천 3갈래 정식화 (directive · 와이어프레임 v2 10·11장)** — DESIGN §3 관계 체인을 C-/OP-/PJ- 단일 골격으로 개정, §2에 OP-·PJ-·AL- 등재, TODO 102–107 등재. 콘솔 구현(PJ- 화면·근태 귀속 축·AL- 배부·수익성 3분기)은 후속 슬라이스.
 - 2026-07-04: 블루프린트 수립.
 - 2026-07-04: **메일 풀뷰(커뮤니케이션 > 메일) 완료·검증** — mox 백엔드 모델(자체 프런트) · 3-pane(폴더 7·리스트·리딩) · 13메일 · 발신자 인증(SPF/DKIM/DMARC)·저장암호화 보안 패널 · 분류·PBAC·보존·litigation hold 거버넌스 · 첨부→인제스트/증거 · 연결 개체 · 컴포저(분류·DLP 외부발송 경고).
 - 2026-07-04: **P1 객체 탐색(관계 그래프) 완료·검증** — 20노드 온톨로지 그래프(계약→편성→공고→지원자 · 현장→팀→직원→근태→대근→인력풀 · 근태→급여→회차→수익성 환류 · 인제스트→계약 · 감사→직원), 방사형+SVG 엣지, 노드 클릭 재중심·상/하류 패널·트레일·범례. 검증 c207→att_cho→pay_cho.
@@ -256,8 +309,26 @@
 - 2026-07-10: **실행 큐 레인 1·2·3·5·9·17·10 + 16 시드 완료 (AGENTS 91–100)** — ① 창 모델 소급: leave 3섹션 카드 존(패턴 세터 — 핀·플로트·트레이·split·프리셋) → benefit·docs 단일 카드 존 재사용(appr=탭 워크스페이스 의도적 제외) ② 대시보드: 구성 위젯 {count|trend|dist} 온톨로지 쿼리 바인딩 제네릭화 + 7월 스탯 6종 라이브 실계산(DASH_CONTRACTS 단일 소스·6월=마감 스냅샷·추이=SR-205 소비) ③ 기안: 증빙 fail-closed 지출류 전체 + §68 금액 투영 패널 ④ 키보드: 급여·공고·월간 J/K/Enter(초크포인트 공용)·aria 무명 버튼 0 ⑤ WORM 뷰어: EV- 원본 봉인 페인(fail-closed)·파생 프리뷰(열람 감사)·ZIP readonly 엔트리 트리 ⑥ 미편성 결원 SLO 알림 시드(대근 편성 시 자동 해소).
 - 2026-07-10: **실행 큐 잔여 소진 (AGENTS 101) — 레인 7·#11·체크인·§18.2·커버 플래너** — 인제스트 매핑 템플릿 TP-01~07 = 재사용 개체(no-code 에디터·변환 enum·사용 작업 drill·활성=개정 스테이징 four-eyes·초안→게시·보관=참조 무결성) + **계보 스트립**(소스→변환·템플릿→검증→개체 — 전 노드 drill) · **퇴사·휴직 생애주기**(사유 enum·발효일·사전점검·SoD 4단계·empSt 전환·회수 정산 6항 fail-closed·복직 전환) · **출근 체크인 심화**(기기×지오펜스 게이트·실적 타임라인 실시간·교대 스왑=결재 큐) · **§18.2**(정의 개정 발효일 구현 창·속성/관계 일몰 deprecated 30일→보관) · **커버 플래너 D+7**(승인 부재×커버 필수×편성 포워드 큐·미래 일자 대근 편성·주간 점검 예약 시드). **다음 = AGENTS 「다음」**: §4-22/23 audit → [~]13 엣지·14·15·17·18 → 대형 에픽 19–23.
 
-> **P0 candidate-truth overlay (2026-07-24):** the repository's v2 capability
-> ledger binds the current candidate and this design digest, but every module
-> remains HOLD until its own real workflow, backend, benchmark, and
-> candidate-bound evidence are independently reviewed. The shared omni-platform
-> gate is additive; it cannot convert this prototype roadmap into delivery proof.
+- 2026-07-26: **원천 3분기 소급 + 교육·자격 LMS (AGENTS 261)** — 분석·감시에 **LB-01 인건비 귀속(계약 4·운영 4·프로젝트 2)**: 종점 지표를 원천마다 다르게(마진 / 예산 집행률 / 진척 대비 소진) · 귀속 = 근태 투입 파생 · Σ귀속 = 급여 총액 fail-closed(RC-01 r7). **screen:"training" 교육·자격 신설**(41번째 화면 — CR-101 경비 신임교육·CR-102 안전보건 정기·CR-103 법정 4대·QL-201 자격 유효기간·QL-301 경비업법 결격 조회·DP-401 배치 신고): 배정 게이트 4축의 **원천 데이터가 콘솔 안으로** — 게이트 칩 클릭 = 원천 화면 drill(양방향). 토큰 정규식 PR·OP·LB·AL 추가. **다음 = AGENTS 「다음」**: W1 잔여(#49-③ 제보 독립 라인·⑤ 산재 동선) → 실행 큐 15·17·18 → #50 위치정보 동의 게이트.
+
+- 2026-07-26: **제보·내부신고 독립 라인 (AGENTS 262 · W1 #49-③④)** — `screen:"whistle"` WB-: 익명 채널(신원·IP 미수집)·실명 **신원 봉인**(열람 = 감사위원 2인 + passkey, 미충족=forbid)·**불이익 조치 감시 90일**(5축 자동 대조 → 인사조치 결재 자동 보류)·외부 수임인 직통 라인·종결 건의 통제 개선 환류. **일반 결재선 우회가 기본값**이고 화면 자체가 deny-by-omission(감사위·컴플라이언스 전용 · 직접 진입 forbid). **다음**: #49-⑤ 산재·보상 동선 → ⑥ 취업규칙 개정 절차 → 실행 큐 15·17·18.
+
+- 2026-07-26: **산재·보상 (AGENTS 263 · W1 #49-⑤)** — `screen:"injury"` IJ-: 요양·휴업 신청(사업주 날인 불요 · 공상 유도 금지)→근태 「산재 요양」 별도 상태(무단·연차 차감 아님)→급여 대체 보상(대기 3일 사업주 60%)→해고 제한 요양+30일(인사조치 자동 보류) · 개별실적요율의 은폐 유인 차단 명문화 · AC-014 재해 조사와 상호 링크. **다음**: #49-⑥ 취업규칙 개정 절차 → ⑦ 고충·징계 → #50 위치정보 동의 게이트.
+
+- 2026-07-26: **사규·취업규칙 (AGENTS 264 · W1 #49-⑥)** — `screen:"rules"` RL-: 효력 3요건(신고·동의·게시) fail-closed · 불이익 변경 = 과반 동의(48.2% 미달 → 신고·발효 잠금) · **RL-LK 연동 원장**으로 조항 → 정책·산식 한 방향 + 발효일 정렬 + 고아 규칙 일 1회 대조 · 수령확인은 `RL_ACK()` 단일 소스(CP-015 불일치 해소). **다음**: #49-⑦ 고충·징계 → ⑧ 4대보험·압류 우선순위 → #50 위치정보 동의 게이트.
+
+- 2026-07-26: **포지션 = 관리 단위 (AGENTS 265 · directive)** — 「포지션 · 정원」 신설: OU-/PO- 레지스트리가 팀·직무의 단일 원천(자유 입력 폐기 · 직원 등록 = 공석 선택) · **일은 자리에 속한다**(부재=기간 위임→복귀 환원 / 공석=임시 분담+충원→입사 시 환원) · **불가분 포지션**(설비·차량·초소 1인 전담)은 위임 UI 미제공, 대근·가동 감산만 · seatCover 단일 저장소 + 타입어헤드 지정 모달 · PO-LINT 4종·PO-RULE 7규칙. **다음**: 포지션 소급 스윕(조직도·인사·공고·평가·근태 drill) → 발령·이동 = 포지션 이전 → W1 #49-⑧.
+
+- 2026-07-26: **포지션 스윕·이전 + 4대보험·공제 (AGENTS 266)** — 인사 카드·명부·조직도·공고가 PO- 코드를 표시·drill(팀·직무의 파생 원천 가시화) · **발령·이동 = 포지션 이전**(공석만 후보 · 이전 공석 + 새 점유 1건 · seatHold 영속) · **`screen:"insurance"` 신설**: 신고 = 인사 이벤트 파생(수기 명부 없음) · **DD-PRI 공제 우선순위 고정**(법정 → 압류 → 임의 · 민사집행법 금지범위 초과 지시는 명령서가 있어도 집행 불가 회신) · 요율 단일 카탈로그(미갱신 = 급여 확정 차단) · SI-REC 4자 대조. **다음**: 평가·근태 편성 포지션 소급 → 실행 큐 15·17·18.
+
+- 2026-07-26: **평가·근태 포지션 소급 + nav 결함 (AGENTS 267)** — 평가 대상 = 포지션 점유자(공석 제외) · 근태 편성 칸이 점유/커버를 PO- 칩으로 구분 · 「전 모듈 상시 표시」가 배정 세트 페르소나에서 무반응이던 결함 + PBAC 우회 동시 수정 · 미정의 토큰(--teal-bd·--danger-ink) 제거. **다음**: 실행 큐 15·17·18 → #50 동의 게이트 → 대형 에픽.
+
+- 2026-07-26: **대시보드 구성 확장 (AGENTS 268 · #17)** — 위젯 순서 이동(읽는 순서 = 우선순위) · 뷰 프리셋 3종 + 현재 구성 저장 · 전환 시 직전 구성 보존 → 「되돌리기」(§4.6 보장) · 위젯 = 온톨로지 라이브 쿼리 유지, 공유 배포는 별도 결재. **다음**: §4-25 8문 전 화면 순회 audit(신규 6화면) → #50 동의 게이트 → 벤치마크 갭 재선정.
+
+- 2026-07-26: **§4-25-⑥ 목업 독립성 감사 (AGENTS 269)** — 신규 7화면 중 5종이 파생 0으로 확인, 주장이 가장 강한 2종을 실제 파생으로: 4대보험 신고 = 인사 이벤트(퇴사·점유 확정·이동) 산출 · 교육·자격 = 갱신 이수 등록이 배정 게이트 카탈로그를 실제 해소. **다음**: 잔여 3화면(제보·고충징계·산재) → §4-25 ①③⑦⑧ 순회.
+
+- 2026-07-26: **사건 진행 엔진 (AGENTS 270 · §4-25-⑥ 완료)** — 제보·징계·재심·고충·산재 7건이 공통 `CASE_FLOWS`로 단계 전이 → 스테퍼·행 상태·스탯이 모두 파생(하드코딩 제거) · DS-2607은 소명 청취 attest 없이는 의결 진행 fail-closed(근기법 §27). **다음**: §4-25 ①③⑦⑧ 순회 audit → #50 동의 게이트 → 벤치마크 갭 재선정.
+
+- 2026-07-27: **레인 파생 + 본인 셀프서비스 (AGENTS 271)** — 사건 레인이 상태를 따라가고(차단/진행/종결) 종결 사건 착지 레인 신설 · 신규 6화면의 관리자 편중을 「내 업무」 본인 카드(내 포지션·자격 만료·내 부재)로 보완 — 전 직원 시스템 원칙 복원. **다음**: §4-25 ①③⑧ 순회 → #50 동의 게이트.
+
+- 2026-07-27: **위치정보 동의 게이트 + 종결 카운터 (AGENTS 272)** — 지오펜스가 동의 원장을 소비(목적·판정값만·좌표 미저장·90일 파기), 철회 시 수기 확인으로 대체하되 체크인은 막지 않음 · 종결 사건의 단계 카운터가 레인·스탯과 한 판정 공유. **다음**: passkey step-up 소급 → §4-25 ①③⑧ 순회.

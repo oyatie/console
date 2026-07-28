@@ -67,24 +67,15 @@ const requiredPreflightCommands = [
   buckPostgresEnvironmentTestCommand,
   buckPostgresHarnessTestCommand,
   "npm run check:ci-preflight",
-  "npm run check:root-workspaces",
-  "npm run test:root-workspaces",
   "npm run check:package-lock",
   "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
 ];
 const protectedJobs = [
   "backend",
   "dev-up-smoke",
-  "api-clients",
-  "web",
+  "repo-gates",
   "api-contract",
   "kubernetes-manifests",
-  "swift-client",
-  "mobile-parity",
-  "android-app",
-  "android-instrumented",
-  "ios-app",
-  "browser-e2e",
   "generated-face-authority",
   "support-domain-unit",
   "postgres-domain-reachability",
@@ -479,7 +470,6 @@ const apiContractAllowedSteps = [
           printf 'CONSOLE_APP_BIN=%s\\n' "\${console_app_bin}" >> "\${GITHUB_ENV}"`,
   "name: Employee import replay contract\n        if: ${{ !cancelled() }}\n        run: npm run test:employee-import-contract",
   "name: Ontology write precondition contract\n        if: ${{ !cancelled() }}\n        run: npm run test:ontology-write-precondition",
-  "name: Generated TypeScript client round-trip\n        if: ${{ !cancelled() }}\n        run: npm run test:contract",
 ];
 
 function hasOnlyAllowedApiContractSteps(steps) {
@@ -801,14 +791,8 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     }
 
     const openApiGateIndex = openApiGateIndexes[0] ?? -1;
-    const contractTestIndex = apiContractSteps.findIndex((step) => runScalar(step) === "npm run test:contract");
-    if (
-      openApiGateIndex < 0
-      || contractTestIndex < 0
-      || captureStepIndex < openApiGateIndex
-      || captureStepIndex > contractTestIndex
-    ) {
-      failures.push("api-contract must capture the Buck2-built console-app path for npm run test:contract");
+    if (openApiGateIndex < 0 || captureStepIndex < openApiGateIndex) {
+      failures.push("api-contract must capture the Buck2-built console-app path after its sole producer");
     }
   }
 

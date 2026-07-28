@@ -29,8 +29,8 @@ creating the secrets that must not live in git.
 | Traefik | chart 40.3.0 | ingress (hostPort 80/443, no LB cost) |
 | mox | 0.0.15 (digest-pinned) | dark/internal corporate mail webapi + IMAP |
 
-Workloads (`deploy/apps/console`): `console-app` (API, blue/green Rollout ×2),
-`console-web` (SPA, blue/green Rollout ×2), `console-worker` (jobs, rolling Deployment),
+Workloads (`deploy/apps/console`): `console-app` (API + Leptos SSR frontend,
+blue/green Rollout ×2), `console-worker` (jobs, rolling Deployment),
 `console-mox` (PVC-backed StatefulSet, ClusterIP-only webapi/IMAP/metrics), `console-db`
 (CNPG Postgres 18, single instance).
 
@@ -38,8 +38,8 @@ Workloads (`deploy/apps/console`): `console-app` (API, blue/green Rollout ×2),
 
 - **Digest-pinned rollouts:** images are built/signed by CI
   (`.github/workflows/image-release.yml`) and emitted as immutable `sha256`
-  digests. The prod overlay pins the `console-app` and `console-web` digests; Argo CD
-  syncs that desired state. `console-app`/`console-web` deploy **blue/green**: the new
+  digests. The prod overlay pins the `console-app` digest; Argo CD
+  syncs that desired state. `console-app` deploys **blue/green**: the new
   ("preview") ReplicaSet comes up alongside the live one, the `smoke-http`
   AnalysisTemplate probes its health endpoint, and only on success is the active
   Service flipped. A failed smoke check → no flip → the old version keeps serving
@@ -47,7 +47,7 @@ Workloads (`deploy/apps/console`): `console-app` (API, blue/green Rollout ×2),
 - **Verified deployment claims:** only the default `scripts/deploy.sh <git-sha>`
   path, run to its final `done: ... deployed and verified` message, counts as a
   completed deployment. It verifies the Image Release run and digest artifacts,
-  the Argo Application synced revision, `console-app`/`console-web` Rollout health,
+  the Argo Application synced revision, `console-app` Rollout health,
   `console-worker` Deployment rollout, workload template image digests, running/ready
   pods whose `imageID` or image reference matches the built digests, and public
   endpoint HTTP 200s. Missing `kubectl`, missing target-cluster access, an
@@ -160,7 +160,7 @@ not activation, deployment, migration, readiness, rollback, or claim authority.
       Plain Talos/flannel must fail until Cilium, Calico/Canal, or another
       policy-capable enforcer is installed and the `maintenance` NetworkPolicies
       are applied. The smoke creates temporary pods and passes only when an
-      unlabeled control pod can reach the temporary `app=console-web` target on
+      unlabeled control pod can reach the temporary `app=console-app` target on
       TCP/8080, an `app=console-app` client can use DNS, outbound HTTPS, and
       Postgres when the `console-db-rw` Service exists, and that same app-tier client
       is denied on a non-allowed TCP/8080 flow by the app-tier egress policy.

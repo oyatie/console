@@ -99,8 +99,6 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci
-      - name: Verify OpenAPI toolchain compatibility repair
-        run: npm run test:openapi-toolchain-security
       - name: Production dependency audit (no exceptions)
         run: |
           report="$(mktemp)"

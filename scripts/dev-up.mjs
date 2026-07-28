@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Local full-stack dev environment orchestrator. Node-only (no bashisms) so it
+// Local backend dev environment orchestrator. Node-only (no bashisms) so it
 // runs the same on macOS/Linux/Windows.
 //
 // Reuses ops/compose.yml (pinned Postgres, SeaweedFS per ADR-0005) + the dev
@@ -14,12 +14,12 @@
 // Subcommands:
 //   doctor     per-OS environment checks with remediation; --cached replays
 //              the last result instead of re-probing (fast path for hooks).
-//   up         deps -> migrate -> Buck2-built backend + vite (web), foreground.
-//              Ctrl+C stops backend/vite; deps stay up for a
+//   up         deps -> migrate -> Buck2-built backend, foreground.
+//              Ctrl+C stops the backend; deps stay up for a
 //              fast restart. Run `down` separately to stop the deps.
 //   bootstrap  deps -> migrate -> console-app in the background -> /readyz probe,
 //              then exits. No watch loop — this is what CI's smoke job runs.
-//   down       stops the exact Buck2 artifact and Vite process started by `up`/`bootstrap` via
+//   down       stops the exact Buck2 artifact started by `up`/`bootstrap` via
 //              the pid file, then the compose deps.
 //
 // Env flags:
@@ -43,7 +43,6 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseSingleBuckOutput, resolveRepoBuckOutput } from "./lib/dev-up-buck-output.mjs";
-import { resolveBootstrapModes } from "./lib/dev-up-modes.mjs";
 import {
   parseWindowsProcessIdentity,
   processIdentityMatches,
@@ -100,7 +99,6 @@ const PORTS = {
   moxImap: Number(process.env.CONSOLE_MOX_IMAP_PORT ?? 1143),
   office: Number(process.env.CONSOLE_OFFICE_DOCSERVER_PORT ?? 8888),
   backend: Number(process.env.CONSOLE_DEV_HTTP_PORT ?? 8090),
-  vite: Number(process.env.E2E_WEB_PORT ?? process.env.CONSOLE_DEV_VITE_PORT ?? 5173),
 };
 
 const POSTGRES_DB = process.env.CONSOLE_POSTGRES_DB ?? "console_dev";
@@ -190,7 +188,7 @@ async function assertPortFree(port, label) {
 }
 
 // `detached: true` makes the child the leader of its own process group,
-// so a plain SIGTERM to its pid can leave grandchildren (console-app/vite)
+// so a plain SIGTERM to its pid can leave grandchildren (console-app)
 // orphaned. Signalling the group reaches the whole background stack.
 function readProcessIdentity(pid) {
   if (process.platform === "win32") {
@@ -233,7 +231,7 @@ function stopBackendProcess(proc) {
     return false;
   }
   try {
-    if (proc.group || proc.mode === "buck2" || proc.mode === "npm") {
+    if (proc.group || proc.mode === "buck2") {
       if (process.platform === "win32") {
         spawnSync("taskkill", ["/T", "/F", "/PID", String(proc.pid)]);
       } else {
@@ -366,7 +364,7 @@ function ensureDevKeys() {
   }
   // Windows-portable replacement for ops/dev-up.sh's `openssl genpkey`/`pkey`
   // calls (openssl is commonly absent on Windows). Same PKCS#8/SPKI PEM shapes
-  // the backend's JWT verifier expects (see e2e/harness/gen-keys.sh).
+  // the backend's JWT verifier expects.
   const { privateKey, publicKey } = generateKeyPairSync("ec", {
     namedCurve: "P-256",
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -414,14 +412,6 @@ async function runDoctorChecks() {
     ok: buck2.ok,
     detail: buck2.detail,
     remediation: buck2.ok ? null : "Restore the repository-pinned tools/buck2 launcher and rerun `npm run dev:doctor`.",
-  });
-
-  const npmInstalled = existsSync(path.join(REPO_ROOT, "node_modules", ".bin", "vite"));
-  checks.push({
-    name: "npm workspace dependencies",
-    ok: npmInstalled,
-    detail: npmInstalled ? "node_modules/.bin/vite present" : "not installed",
-    remediation: npmInstalled ? null : "Run `npm install` at the repo root (fresh clone/worktree).",
   });
 
   for (const [label, port] of Object.entries(PORTS)) {
@@ -635,10 +625,9 @@ function runSeed(compose) {
 // SeaweedFS endpoint, and OTEL_EXPORTER_OTLP_ENDPOINT — rewritten to the
 // published localhost ports for a host-launched process.
 function buildAppEnv(role) {
-  const { VITE_CONSOLE_DEV_PREVIEW: _ignoredConsolePreview, ...parentEnv } = process.env;
   const { privateKeyPem, publicKeyPem } = ensureDevKeys();
   return {
-    ...parentEnv,
+    ...process.env,
     CONSOLE_APP_ROLE: role,
     DATABASE_URL: role === "migrate" ? databaseUrl() : runtimeDatabaseUrl(),
     LEAVE_COMMAND_DATABASE_URL: commandDatabaseUrl(
@@ -673,7 +662,7 @@ function buildAppEnv(role) {
     CONSOLE_JWT_ISSUER: "console-dev",
     CONSOLE_JWT_AUDIENCE: "console",
     CONSOLE_WEBAUTHN_RP_ID: "localhost",
-    CONSOLE_WEBAUTHN_RP_ORIGIN: `http://localhost:${PORTS.vite}`,
+    CONSOLE_WEBAUTHN_RP_ORIGIN: `http://localhost:${PORTS.backend}`,
     CONSOLE_WEBAUTHN_RP_NAME: "정비 콘솔 (dev)",
     CONSOLE_COOKIE_SECURE: "false",
     CONSOLE_COLDSTART_OTP: process.env.CONSOLE_COLDSTART_OTP ?? "coss0000",
@@ -704,19 +693,6 @@ function buildAppEnv(role) {
   };
 }
 
-// The console preview is an explicit Vite-only local affordance, independent of
-// the backend's dev-auth feature. Strip the flag from buildAppEnv(), then pass it
-// only to the Vite child when the caller requested the exact preview opt-in. The
-// screen itself still requires import.meta.env.DEV, so production builds never
-// mount it.
-function buildViteEnv(appEnv, consolePreview) {
-  return {
-    ...appEnv,
-    VITE_PROXY_TARGET: `http://127.0.0.1:${PORTS.backend}`,
-    ...(consolePreview ? { VITE_CONSOLE_DEV_PREVIEW: "1" } : {}),
-  };
-}
-
 function writePidState(state) {
   mkdirSync(STATE_DIR, { recursive: true });
   writeFileSync(PID_FILE, JSON.stringify(state, null, 2));
@@ -736,7 +712,6 @@ function printUrls() {
   console.log("Local full-stack dev environment ready:");
   console.log(`  Backend:      http://127.0.0.1:${PORTS.backend}`);
   console.log(`  /readyz:      http://127.0.0.1:${PORTS.backend}/readyz`);
-  console.log(`  Web console:  http://localhost:${PORTS.vite}`);
   console.log(`  Mailpit UI:   http://localhost:${PORTS.mailpitUi}`);
   console.log(`  mox webapi:   http://localhost:${PORTS.moxWebapi}/webapi/  (mox@localhost / moxmoxmox, admin moxadmin)`);
   console.log(`  mox IMAP:     127.0.0.1:${PORTS.moxImap}   submission 127.0.0.1:${PORTS.moxSubmission}`);
@@ -753,39 +728,30 @@ async function cmdUp() {
   runMigrations(appBinary);
   runSeed(compose);
   const appEnv = buildAppEnv("api");
-  log(`launching ${appBinary.target} + vite (web)...`);
+  log(`launching ${appBinary.target}...`);
   const backend = spawn(appBinary.outputPath, [], { cwd: REPO_ROOT, env: appEnv, stdio: "inherit", detached: process.platform !== "win32" });
-  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-  const web = spawn(npmBin, ["run", "web:dev"], { cwd: REPO_ROOT, env: buildViteEnv(appEnv, process.env.VITE_CONSOLE_DEV_PREVIEW === "1"), stdio: "inherit", detached: process.platform !== "win32" });
   const backendState = managedProcessState({ pid: backend.pid, mode: "buck2", target: appBinary.target, outputPath: appBinary.outputPath, group: process.platform !== "win32" });
-  const webState = managedProcessState({ pid: web.pid, mode: "npm", group: process.platform !== "win32" });
-  writePidState({ startedBy: "up", backend: backendState, web: webState });
+  writePidState({ startedBy: "up", backend: backendState });
   let shuttingDown = false;
   const shutdown = (exitCode = 0) => {
     if (shuttingDown) return;
     shuttingDown = true;
-    log("stopping Buck2-built backend + vite (docker deps stay up — run `dev-up.mjs down` to stop them)...");
-    stopBackendProcess(backendState); stopBackendProcess(webState); process.exit(exitCode);
+    log("stopping Buck2-built backend (docker deps stay up — run `dev-up.mjs down` to stop them)...");
+    stopBackendProcess(backendState); process.exit(exitCode);
   };
   process.once("SIGINT", () => shutdown(0)); process.once("SIGTERM", () => shutdown(0));
   backend.on("error", (err) => { log(`ERROR: could not start ${appBinary.target}: ${err.message}`); shutdown(1); });
-  web.on("error", (err) => { log(`ERROR: could not start npm/vite: ${err.message} (run \`dev-up.mjs doctor\`)`); shutdown(1); });
   backend.on("exit", (code) => { if (code !== 0 && code !== null) { log(`${appBinary.target} exited with code ${code}`); shutdown(1); } });
-  web.on("exit", (code) => { if (code !== 0 && code !== null) { log(`vite exited with code ${code}`); shutdown(1); } });
   try { log(`waiting for /readyz on http://127.0.0.1:${PORTS.backend}/readyz ...`); await waitForHttp(`http://127.0.0.1:${PORTS.backend}/readyz`, 180_000); }
   catch (err) { log(`ERROR: ${err.message}`); shutdown(1); return; }
   printUrls(); await new Promise(() => {});
 }
 
-// CONSOLE_DEV_AUTH_E2E=1 selects the dedicated Buck2 dev-auth target,
-// seeds its personas, and starts Vite for the dev-auth Playwright project.
-// VITE_CONSOLE_DEV_PREVIEW=1 independently starts Vite with the preview flag
-// while retaining the default backend build and unseeded release-parity data.
-// Plain `bootstrap` (the existing CI "dev-up-smoke" job) is unaffected.
+// CONSOLE_DEV_AUTH_E2E=1 selects the dedicated Buck2 dev-auth target and seeds
+// its personas. Plain `bootstrap` (the CI "dev-up-smoke" job) is unaffected.
 async function cmdBootstrap() {
   await assertPortFree(PORTS.backend, "backend");
-  const { devAuth, consolePreview, startVite } =
-    resolveBootstrapModes(process.env);
+  const devAuth = process.env.CONSOLE_DEV_AUTH_E2E === "1";
   const compose = await bringUpDeps();
   reconcileDatabaseTopology(compose);
   const appBinary = buildAppBinary(devAuth);
@@ -844,7 +810,7 @@ async function cmdBootstrap() {
     backend.once("close", (code, signal) => handleEnd("closed", code, signal));
   });
   backend.unref();
-  writePidState({ startedBy: "bootstrap", backend: backendState, web: null });
+  writePidState({ startedBy: "bootstrap", backend: backendState });
 
   try {
     await Promise.race([
@@ -858,71 +824,13 @@ async function cmdBootstrap() {
   ready = true;
   log(`/readyz green at http://127.0.0.1:${PORTS.backend}/readyz`);
 
-  let webState = null;
-  if (startVite) {
-    const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-    const webLogFile = path.join(STATE_DIR, "web.log");
-    const webOut = openSync(webLogFile, "a");
-    log(`starting vite dev server in the background, logging to ${path.relative(REPO_ROOT, webLogFile)}...`);
-    const web = spawn(npmBin, ["run", "web:dev"], {
-      cwd: REPO_ROOT,
-      env: buildViteEnv(appEnv, consolePreview),
-      stdio: ["ignore", webOut, webOut],
-      detached: process.platform !== "win32",
-    });
-    webState = managedProcessState({
-      pid: web.pid,
-      mode: "npm",
-      logFile: webLogFile,
-      group: process.platform !== "win32",
-    });
-    writePidState({
-      startedBy: "bootstrap",
-      backend: backendState,
-      web: webState,
-    });
-    const webStart = new Promise((_, reject) => {
-      let settled = false;
-      const fail = (message) => {
-        if (!settled) {
-          settled = true;
-          reject(new Error(message));
-        }
-      };
-      web.once("error", (err) => fail(`could not start vite: ${err.message}`));
-      web.once("exit", (code, signal) => {
-        fail(code === null ? `vite exited by signal ${signal}` : `vite exited with code ${code}`);
-      });
-      web.once("close", (code, signal) => {
-        fail(code === null ? `vite closed by signal ${signal}` : `vite closed with code ${code}`);
-      });
-    });
-    web.unref();
-    try {
-      await Promise.race([
-        waitForHttp(`http://localhost:${PORTS.vite}/`, 60_000),
-        webStart,
-      ]);
-    } catch (err) {
-      stopBackendProcess(webState);
-      stopBackendProcess(backendState);
-      throw err;
-    }
-    log(`Vite dev server green at http://localhost:${PORTS.vite}/`);
-  }
-
-  writePidState({ startedBy: "bootstrap", backend: backendState, web: webState });
   printUrls();
 }
 
 async function cmdDown() {
   const state = readPidState();
-  if (state) {
-    for (const proc of [state.backend, state.web]) {
-      if (proc?.pid) {
-        stopBackendProcess(proc);
-      }
-    }
+  if (state?.backend?.pid) {
+    stopBackendProcess(state.backend);
   }
   const compose = detectCompose();
   if (compose) {

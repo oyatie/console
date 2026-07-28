@@ -3,15 +3,15 @@ name: Release Please
 # Enforced semantic versioning. Conventional-commit history on main drives an
 # automatically maintained release PR; merging it bumps the version, updates the
 # changelog, and pushes a vX.Y.Z tag. That tag then triggers image-release.yml
-# (server + web images) and release.yml (mobile apps).
+# (the mnt-app server image).
 #
 # NOTE: release PR creation with the default GITHUB_TOKEN also requires the repo
 # Actions setting "Allow GitHub Actions to create and approve pull requests".
 # A tag pushed with the default GITHUB_TOKEN will NOT trigger tag-based workflows
 # (GitHub suppresses recursive triggers). Add RELEASE_PLEASE_TOKEN (fine-grained
 # PAT with contents:write + pull-requests:write) to chain downstream releases
-# automatically; without it the release PR + tag still work, but image/mobile
-# builds are triggered manually. See docs/release/SECRETS.md.
+# automatically; without it the release PR + tag still work, but the image
+# build is triggered manually. See docs/release/SECRETS.md.
 
 on:
   push:

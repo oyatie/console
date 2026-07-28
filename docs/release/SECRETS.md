@@ -1,5 +1,7 @@
 # Mobile Release Secrets
 
+> **SUPERSEDED — 2026-07-28 pivot.** This document describes a surface or plan that no longer exists. See `docs/PIVOT-2026-07-28.md` for what is currently true. Content below is retained as a historical record and is not current intent.
+
 T1.11 adds a tag-gated mobile release workflow at `.github/workflows/release.yml`.
 It uses fastlane `2.236.1`, verified live from RubyGems on 2026-06-12, because the current fastlane docs support App Store Connect API-key auth for TestFlight and Play service-account JSON auth for `supply`.
 

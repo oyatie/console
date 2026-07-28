@@ -174,6 +174,13 @@ deliberately-red change is observed to block deployment.
   silent DDL loss). Reserve disjoint bands per lane in the registry, frozen at fan-out, + a
   `DuplicateVersion`/`NonContiguous` migration-safety variant; better, switch new migrations to
   timestamp/ULID lexical prefixes so "next number" is no longer a shared write.
+  > **Corrected 2026-07-28:** the `DuplicateVersion` variant proposed here **already exists and is
+  > wired** — `ViolationKind::DuplicateMigrationVersion` in
+  > `backend/ci/gates/migration-safety/src/lib.rs`, run as the "Migration-safety gate" step of the
+  > `backend` job. So the loss is not "silent". The residual hazard is merge-ordering: the gate only
+  > fires when both files are in one tree, and `main` is unprotected (no required checks, no
+  > up-to-date requirement, no merge queue), so a stale-green lane can still merge and turn `main` red
+  > afterwards. Band reservation remains correct for that reason, not for the stated one.
   Progress checkpoint (2026-06-25): `console-gate-migration-safety` now rejects duplicate `NNNN` prefixes and
   missing numeric gaps before the normal migration scan; the real repo gate passes through `0059`. The
   registry band reservation is still required before any multi-lane fan-out.

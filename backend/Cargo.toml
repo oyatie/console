@@ -350,3 +350,14 @@ panic = "deny"
 calamine = { path = "../third-party/rust/vendor/calamine-0.35.0-quickxml41" }
 quick-xml = { path = "../third-party/rust/vendor/quick-xml-0.41.0-compat" }
 umya-spreadsheet = { path = "../third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41" }
+
+# Inner-loop build tuning (added 2026-07-28). Full debuginfo is the single
+# largest cost in a workspace this size and is not needed for `cargo check`,
+# clippy, or test runs; line tables keep backtraces useful. Measured context:
+# a lane rehearsal recorded `Cache hits: 0%` over 4,084 commands, so every
+# parallel lane currently recompiles the whole graph from scratch.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.test]
+debug = "line-tables-only"
