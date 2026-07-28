@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.0](https://github.com/jason931225/console/compare/v0.2.2...v0.3.0) (2026-07-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* clean slate — delete frontend, pivot to the governed object engine ([#503](https://github.com/jason931225/console/issues/503))
+
+### Bug Fixes
+
+* **release:** sync package-lock to the 0.2.2 bump that landed without it ([#501](https://github.com/jason931225/console/issues/501)) ([39701a2](https://github.com/jason931225/console/commit/39701a2c3dbacc3b715259a608f6fa8ef531fd39))
+
+
+### Miscellaneous Chores
+
+* clean slate — delete frontend, pivot to the governed object engine ([#503](https://github.com/jason931225/console/issues/503)) ([962fb98](https://github.com/jason931225/console/commit/962fb98b739e330c660f922374cebfbd6d10a239))
+
 ## [0.2.2](https://github.com/jason931225/console/compare/v0.2.1...v0.2.2) (2026-07-27)
 
 
