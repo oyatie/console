@@ -1,0 +1,23 @@
+# The two authority registers are machine-maintained by
+# scripts/console/rebind-authority-train.mjs. Measured on 2026-07-28: a routine
+# authority commit changes 780 lines across them, and 780 of 780 contain a SHA —
+# zero are semantic. That noise buries the reviewable content of every PR (891
+# lines total vs 111 once these two are set aside).
+#
+# `linguist-generated` collapses them to one expandable line in GitHub's diff,
+# where review actually happens. Nothing is hidden: a reviewer can expand on
+# demand. This is deliberately NOT `-diff`, which would render them as binary and
+# make the real content unviewable.
+#
+# CI is unaffected — verified. Nothing textually diffs these files:
+# validate-console-truth-ledger.mjs reads them with `git show <sha>:path`, and
+# verify-console-authority-train.mjs uses `git diff --raw --no-ext-diff`, which
+# reports mode/SHA/status only. `linguist-generated` is a GitHub rendering hint
+# and does not change local git behaviour at all.
+#
+# Considered and rejected: stripping the SHA leaves from the registers. It was
+# refuted four times — it weakens the merge gate at three sites covering 91% of
+# the leaves, because those `?.candidate_sha` comparisons double as existence
+# checks. See docs/ideas/process-minimum-viable-provenance.md.
+docs/program/console-capability-registry.json    linguist-generated=true
+docs/program/console-jurisdiction-register.json  linguist-generated=true
