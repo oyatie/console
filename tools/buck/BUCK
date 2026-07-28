@@ -146,6 +146,14 @@ sh_test(
 )
 
 sh_test(
+    name = "company-conformance-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-company_conformance)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-company_conformance"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "ontology-builtin-catalog-additive-upgrade-postgres",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role)"],

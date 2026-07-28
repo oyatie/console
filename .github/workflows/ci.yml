@@ -226,6 +226,44 @@ jobs:
             //tools/buck:attendance-cancel-substitution-postgres \
             //tools/buck:attendance-concurrency-postgres
 
+  company-conformance:
+    # The immutable target the company/HR fan-out aims at. DELIBERATELY NOT a
+    # required check yet: it is expected RED until the five lane types ship, and
+    # a required red would block every merge in the meantime. Promote it to
+    # required as the LAST commit of the fan-out — an unwired target that never
+    # executes is the false-green class this repo has already shipped six times.
+    name: Company conformance — immutable target (expected red until fan-out lands)
+    runs-on: ubuntu-latest
+    needs: preflight
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install pinned DotSlash runtime
+        run: tools/buck/install_dotslash.sh
+
+      - name: Free runner disk for PostgreSQL Buck2 tests
+        uses: ./.github/actions/free-runner-disk
+
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+
+      - name: Cache Rust dependencies + build artifacts
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: backend
+
+      - name: Company conformance against disposable PostgreSQL
+        run: |
+          tools/buck/test_needs_postgres.sh --num-threads=1 \
+            //tools/buck:company-conformance-postgres
+
   generated-face-authority:
     # This status is the complete generated-face closure required by policy.
     # It becomes merge-enforced only after the live GitHub ruleset admits this
