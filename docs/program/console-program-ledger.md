@@ -581,3 +581,11 @@ Two defects surfaced that would otherwise have shipped. Merging `origin/main` si
 Cluster state was reconciled out of band. The `maintenance` namespace and every `mnt-*` workload were torn down, and the ArgoCD AppProject was moved from `maintenance` to `console`. This resolved a 35-day silent outage in which eight of nine Applications reported `InvalidSpecError: Application referencing project console which does not exist`, because `#495` flipped every child to `project: console` while `deploy/argocd/{root,project}.yaml` sit outside `deploy/argocd/apps/` and require a manual `kubectl apply` (`deploy/README.md:81`). That structural bootstrap gap remains and will recur on the next rename. PostgreSQL is recoverable from a backup verified before deletion: last success `2026-07-27T03:00:20Z`, first recoverability point `2026-06-23`, held off-cluster.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
+
+## 2026-07-28 — `main` repaired after the clean-slate merge
+
+`#503` merged with `Backend — fmt / clippy / test / gates` unverified, and `main` went red. Cause: removing the two client-face drift tests in the pivot orphaned `operation_section` in `backend/app/tests/openapi_drift.rs`, and `cargo clippy --all-targets` runs warnings-as-errors. The helper is removed; the other five in that file still have live call sites and are kept.
+
+Deployment was never at risk — `image-release.yml` gates on a successful exact-SHA `main` CI run, so a red `main` produces no image. This is the post-merge detection path the lane rehearsal predicted: a change goes green in the pull request, lands, and `main` fails afterwards. Branch protection with `strict: true` was enabled after `#503` merged, so from here a pull request must be up to date with `main` before merging, which forces the re-run that catches this class.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.

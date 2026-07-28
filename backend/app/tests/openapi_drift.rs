@@ -847,20 +847,6 @@ fn normalize_path_parameters(path: &str) -> String {
     normalized
 }
 
-fn operation_section<'a>(yaml: &'a str, path: &str, operation: &str) -> &'a str {
-    let start = yaml
-        .find(&format!("  {path}:\n"))
-        .unwrap_or_else(|| panic!("missing {path}"));
-    let remainder = &yaml[start..];
-    let end = remainder[1..]
-        .find("\n  /")
-        .map(|offset| start + offset + 1)
-        .unwrap_or(yaml.len());
-    let section = &yaml[start..end];
-    assert!(section.contains(&format!("operationId: {operation}")));
-    section
-}
-
 fn bounded_section<'a>(source: &'a str, start: &str, end: &str) -> &'a str {
     let start = source
         .find(start)
