@@ -1,99 +1,89 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
+import { CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE, extractConsoleRouteFacts, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
 
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const authorityRegistry = JSON.parse(readFileSync(new URL('../../docs/program/console-capability-registry.json', import.meta.url)));
-const candidateFile = (relativePath) => execFileSync(
+const ROUTE_CLAIM_FIELDS = ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared'];
+
+// The 2026-07-28 clean-slate pivot deleted the frontend, so the immutable
+// candidate holds neither console route source. The former positive/negative
+// tests read those two files out of the candidate and mutated them; both are
+// permanently dead, because the extractor parses TypeScript shapes
+// (MOUNTED_SCREEN_KEYS / EXPOSED_SCREEN_KEYS / SCREEN_REGISTRY) that the Leptos
+// rebuild will never emit at those paths. They are deleted rather than skipped.
+// What replaces them is the contract that still binds in the no-frontend state:
+// the registry may not claim route presentation that no source can corroborate.
+const candidateTracks = (relativePath) => execFileSync(
   'git',
-  ['-C', repoRoot, 'show', `${authorityRegistry.candidate.sha}:${relativePath}`],
+  ['-C', repoRoot, 'ls-tree', authorityRegistry.candidate.sha, '--', relativePath],
   { encoding: 'utf8' },
-);
+).trim() !== '';
 
-function candidateRouteContract() {
-  const expected = new Map();
-  for (const capability of authorityRegistry.capabilities) {
-    for (const key of capability.route_presentation.route_keys) {
-      assert.equal(expected.has(key), false, `authority registry duplicates route key ${key}`);
-      expected.set(key, Object.fromEntries(
-        ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared']
-          .map((field) => [field, capability.route_presentation[field]]),
-      ));
-    }
-  }
-  for (const entry of authorityRegistry.source_inventory.unmodeled_keys) {
-    assert.equal(expected.has(entry.key), false, `authority registry overlaps modeled and unmodeled key ${entry.key}`);
-    assert.equal(entry.status, 'HOLD_UNMAPPED', `unmodeled key ${entry.key} must remain HOLD_UNMAPPED`);
-    expected.set(entry.key, null);
-  }
-  return expected;
-}
-
-function assertCandidateRouteContract(result) {
-  const expected = candidateRouteContract();
-  assert.deepEqual([...Object.keys(result.facts)].sort(), [...expected.keys()].sort(), 'candidate source inventory must contain neither missing nor extra route keys');
-  for (const [key, expectedFacts] of expected) {
-    if (expectedFacts) assert.deepEqual(result.facts[key], expectedFacts, `candidate source classification drifted for ${key}`);
-  }
-  assert.deepEqual(result.exposed, [], 'candidate source must not expose an unverified route');
-}
-
-// The 2026-07-28 clean-slate pivot deleted the frontend, so the candidate holds
-// no console route sources. `null` means "no frontend in this candidate", which
-// is a valid state, not a failure: a console with no frontend presents no routes.
-// The Leptos rebuild re-registers its route source here.
-function candidateTexts() {
-  try {
-    return {
-      nav: candidateFile('web/src/console/shell/nav.ts'),
-      registry: candidateFile('web/src/console/screens/registry.ts'),
-    };
-  } catch {
-    return null;
-  }
-}
-
-test('route inventory exactly matches the immutable candidate authority contract', () => {
-  const texts = candidateTexts();
-  if (!texts) {
-    // No route sources => the registry must declare no routes, or the two disagree.
-    const declared = authorityRegistry.capabilities.flatMap((capability) => capability.route_presentation.route_keys);
-    assert.deepEqual(declared, [], 'registry declares route keys but the candidate has no console route source');
-    return;
-  }
-  assertCandidateRouteContract(extractConsoleRouteFactsFromTexts(texts.nav, texts.registry));
+test('the immutable candidate holds no console route source', () => {
+  assert.deepEqual(
+    [CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE].filter(candidateTracks),
+    [],
+    'candidate tracks a console route source again: restore the source-inventory contract instead of asserting the empty state',
+  );
 });
 
-test('route inventory contract rejects missing, extra, and misclassified candidate routes', (t) => {
-  const texts = candidateTexts();
-  if (!texts) {
-    // This is a negative test over real candidate route sources; it mutates them
-    // to prove the contract rejects bad route sets. With the frontend deleted
-    // there is nothing to mutate. Skipped loudly rather than passed silently, so
-    // the Leptos rebuild restores this coverage instead of quietly losing it.
-    t.skip('no console route source in candidate (2026-07-28 clean-slate pivot)');
-    return;
+test('with no route source the registry may not claim any route presentation', () => {
+  const declared = authorityRegistry.capabilities.flatMap((capability) => capability.route_presentation.route_keys);
+  assert.deepEqual(declared, [], 'registry declares route keys but the candidate has no console route source');
+  assert.deepEqual(
+    authorityRegistry.capabilities
+      .filter((capability) => ROUTE_CLAIM_FIELDS.some((field) => capability.route_presentation[field] === true))
+      .map((capability) => capability.id),
+    [],
+    'capabilities claim mounted/exposed/registry-body/nav route presentation that no candidate source can corroborate',
+  );
+  assert.deepEqual(authorityRegistry.source_inventory?.unmodeled_keys ?? [], [], 'unmodeled route keys cannot exist without a route source');
+});
+
+test('route fact extraction fails closed on anything other than a wholly absent source', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'console-route-source-'));
+  const write = (relativePath, text) => {
+    mkdirSync(path.join(root, path.dirname(relativePath)), { recursive: true });
+    writeFileSync(path.join(root, relativePath), text);
+  };
+  const nav = 'export const MOUNTED_SCREEN_KEYS = ["overview"] as const;\nexport const EXPOSED_SCREEN_KEYS = [] as const;\nconst items = [{ screen: "overview" }];\n';
+  const registry = 'export const SCREEN_REGISTRY = {\n  overview: () => null,\n};\n';
+  try {
+    assert.deepEqual(extractConsoleRouteFacts(root), { route_source_present: false, facts: {} });
+
+    write(CONSOLE_NAV_SOURCE, nav);
+    assert.throws(() => extractConsoleRouteFacts(root), /partially present/, 'a half-landed frontend must not report "no routes"');
+
+    write(CONSOLE_REGISTRY_SOURCE, registry);
+    const facts = extractConsoleRouteFacts(root);
+    assert.equal(facts.route_source_present, true);
+    assert.deepEqual(facts.facts, { overview: { source_mounted: true, production_exposed: false, registry_body_present: true, nav_declared: true } });
+
+    write(CONSOLE_NAV_SOURCE, nav.replace('MOUNTED_SCREEN_KEYS', 'RENAMED_SCREEN_KEYS'));
+    assert.throws(() => extractConsoleRouteFacts(root), /missing MOUNTED_SCREEN_KEYS/, 'a renamed constant must not be absorbed as "no routes"');
+
+    write(CONSOLE_NAV_SOURCE, nav);
+    write(CONSOLE_REGISTRY_SOURCE, registry.replace('SCREEN_REGISTRY', 'RENAMED_REGISTRY'));
+    assert.throws(() => extractConsoleRouteFacts(root), /missing SCREEN_REGISTRY/, 'a malformed registry must not be absorbed as "no routes"');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
-  const { nav, registry } = texts;
+});
 
-  const missing = extractConsoleRouteFactsFromTexts(
-    nav.replace('  "consulting",\n', ''),
-    registry.replace(/^  consulting:.*\n/m, ''),
+test('extracted facts classify mounted, exposed, nav-declared and registry-bodied keys apart', () => {
+  const facts = extractConsoleRouteFactsFromTexts(
+    'export const MOUNTED_SCREEN_KEYS = ["alpha", "beta"] as const;\nexport const EXPOSED_SCREEN_KEYS = ["alpha"] as const;\nconst nav = [{ screen: "alpha" }];\n',
+    'export const SCREEN_REGISTRY = {\n  alpha: () => null,\n  gamma: () => null,\n};\n',
   );
-  assert.throws(() => assertCandidateRouteContract(missing), /missing nor extra route keys/);
-
-  const extra = extractConsoleRouteFactsFromTexts(
-    nav.replace('] as const;\n\nexport type MountedScreenKey', '  "unowned",\n] as const;\n\nexport type MountedScreenKey'),
-    registry,
-  );
-  assert.throws(() => assertCandidateRouteContract(extra), /missing nor extra route keys/);
-
-  const misclassified = extractConsoleRouteFactsFromTexts(
-    nav.replace('  "overview",\n', ''),
-    registry,
-  );
-  assert.throws(() => assertCandidateRouteContract(misclassified), /classification drifted for overview/);
+  assert.deepEqual(facts.facts, {
+    alpha: { source_mounted: true, production_exposed: true, registry_body_present: true, nav_declared: true },
+    beta: { source_mounted: true, production_exposed: false, registry_body_present: false, nav_declared: false },
+    gamma: { source_mounted: false, production_exposed: false, registry_body_present: true, nav_declared: false },
+  });
 });

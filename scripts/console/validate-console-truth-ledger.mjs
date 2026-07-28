@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseImmutableJson } from './immutable-json.mjs';
-import { extractConsoleRouteFacts, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
+import { ABSENT_CONSOLE_ROUTE_FACTS, CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
 import { CONSOLE_CANDIDATE_SIGNING_AUTHORITY, sshSignatureMatchesAuthority, verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mjs';
 
@@ -19,6 +19,7 @@ const immutableReceiptAttestations = new WeakSet();
 function stable(value) { if (Array.isArray(value)) return value.map(stable); if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([a],[b]) => a.localeCompare(b, 'en')).map(([k,v]) => [k,stable(v)])); return value; }
 function ledgerDigest(value) { return createHash('sha256').update(JSON.stringify(stable(value))).digest('hex'); }
 const RESOURCE_KEYS = ['writer', 'postgres', 'browser', 'ios', 'graph', 'cas'];
+const ROUTE_CLAIM_FIELDS = ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared'];
 const AUTHORITY_CONTROL_PATHS = new Set([
   'docs/program/console-capability-registry.json',
   'docs/program/console-jurisdiction-register.json',
@@ -83,17 +84,19 @@ export function createConsoleCandidateSourceResolver(repoRoot, candidateSha, int
   };
   return Object.freeze({ candidateSha, integrationTipSha, readText, resolveSource });
 }
-const CONSOLE_NAV_SOURCE = 'web/src/console/shell/nav.ts';
-const CONSOLE_REGISTRY_SOURCE = 'web/src/console/screens/registry.ts';
+/**
+ * The 2026-07-28 clean-slate pivot deleted the whole frontend, so the console
+ * route sources may be absent from the candidate. A console with no frontend
+ * presents no routes, so the fact set is legitimately empty — but it is flagged
+ * `route_source_present: false`, and validateConsoleTruthLedger then refuses
+ * every positive route claim, because a claim that nothing can corroborate is a
+ * contradiction, not a pass. A half-present source is a hard failure.
+ */
 export function extractConsoleRouteFactsFromCandidate(candidateSource) {
-  // The 2026-07-28 clean-slate pivot deleted the whole frontend, so the console
-  // route sources no longer exist in the candidate. A console with no frontend
-  // presents no routes: report an empty fact set rather than failing, so the
-  // bijection in validateConsoleTruthLedger holds against an empty declared set.
-  // When the Leptos rebuild lands, its route source is registered here.
-  if (!candidateSource.resolveSource(CONSOLE_NAV_SOURCE) || !candidateSource.resolveSource(CONSOLE_REGISTRY_SOURCE)) {
-    return Object.freeze({ facts: Object.freeze({}) });
-  }
+  const navPresent = Boolean(candidateSource.resolveSource(CONSOLE_NAV_SOURCE));
+  const registryPresent = Boolean(candidateSource.resolveSource(CONSOLE_REGISTRY_SOURCE));
+  if (navPresent !== registryPresent) fail(`candidate console route source is partially present: ${navPresent ? CONSOLE_REGISTRY_SOURCE : CONSOLE_NAV_SOURCE} is missing`);
+  if (!navPresent) return ABSENT_CONSOLE_ROUTE_FACTS;
   return extractConsoleRouteFactsFromTexts(
     candidateSource.readText(CONSOLE_NAV_SOURCE),
     candidateSource.readText(CONSOLE_REGISTRY_SOURCE),
@@ -215,12 +218,17 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     }
     const route = object(cap.route_presentation, `${cap.id} route/presentation state`);
     if (!Array.isArray(route.route_keys)) fail(`${cap.id} route keys must be an array`);
-    for (const key of ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared']) if (typeof route[key] !== 'boolean') fail(`${cap.id} route/presentation ${key} must be boolean`);
+    for (const key of ROUTE_CLAIM_FIELDS) if (typeof route[key] !== 'boolean') fail(`${cap.id} route/presentation ${key} must be boolean`);
+    // Checked independently of the per-key loop below: with no route source in
+    // the candidate there are zero keys to iterate, so the loop would corroborate
+    // nothing while every claim stays `true`. A claim no source can corroborate
+    // is a contradiction, not a pass.
+    if (routeFacts && routeFacts.route_source_present !== true) for (const key of ROUTE_CLAIM_FIELDS) if (route[key] === true) fail(`${cap.id} route/presentation claims ${key} but the candidate has no console route source to corroborate it`);
     nonempty(route.evidence_receipt_status, `${cap.id} route evidence receipt status`); nonempty(route.source, `${cap.id} route/presentation source`);
     if (route.production_exposed && !route.source_mounted) fail(`${cap.id} exposed route must be mounted`);
     if (truth.exposure === 'EXPOSED' && !route.production_exposed) fail(`${cap.id} exposed truth contradicts route presentation`);
     if (route.production_exposed && truth.exposure !== 'EXPOSED') fail(`${cap.id} route exposure contradicts truth state`);
-    if (routeFacts) for (const key of route.route_keys) { const fact=routeFacts.facts?.[key]; if (!fact || ['source_mounted','production_exposed','registry_body_present','nav_declared'].some((field)=>fact[field]!==route[field])) fail(`${cap.id} route source fact mismatch for ${key}`); }
+    if (routeFacts) for (const key of route.route_keys) { const fact=routeFacts.facts?.[key]; if (!fact || ROUTE_CLAIM_FIELDS.some((field)=>fact[field]!==route[field])) fail(`${cap.id} route source fact mismatch for ${key}`); }
     const ownership = object(cap.ownership, `${cap.id} ownership`);
     for (const key of ['frontend_roots', 'backend_roots', 'api_schema_roots']) for (const root of array(ownership[key])) nonempty(root, `${cap.id} ownership root`);
     for (const root of array(ownership.private_roots)) { nonempty(root, `${cap.id} private ownership root`); if (sharedRoots.has(root)) fail(`${cap.id} private root is declared shared`); privateRoots.push([cap.id, root]); }

@@ -27,6 +27,7 @@ Test targets:
     hand-maintained exception table.
 """
 import os
+import re
 import sys
 import tomllib
 
@@ -1169,6 +1170,28 @@ def base_env(package, uses_sqlx=False):
     return env
 
 
+CARGO_BIN_EXE = re.compile(r"CARGO_BIN_EXE_([A-Za-z0-9_-]+)")
+
+
+def cargo_bin_exe_env(name, test_file, contents, has_main):
+    """Cargo defines CARGO_BIN_EXE_<bin> for integration tests that shell out to
+    their own crate's binary; Buck2 does not, so `env!` fails at compile time and
+    the target cannot build. Map each referenced binary to its Buck target.
+
+    Fails closed: a reference the package cannot satisfy is raised here rather
+    than emitted as a target that only fails once someone runs it.
+    """
+    env = {}
+    for binary in sorted(set(CARGO_BIN_EXE.findall(contents))):
+        if not has_main or binary != name:
+            raise ValueError(
+                "{}: {} references CARGO_BIN_EXE_{}, but this package declares no "
+                "binary target by that name".format(name, test_file, binary)
+            )
+        env["CARGO_BIN_EXE_" + binary] = "$(location :{})".format(binary)
+    return env
+
+
 def integration_resource_config(name, test_file):
     crate = RESOURCE_CONFIG.get(name, {})
     specific = crate.get("itests", {}).get(test_file, {})
@@ -1415,6 +1438,7 @@ def emit(d, name, deps, named, dev_deps, dev_named):
                 uses_sqlx=any(marker in contents for marker in SQLX_MACRO_MARKERS)
                 or "#[sqlx::test" in contents,
             )
+            itest_env.update(cargo_bin_exe_env(name, tf, contents, has_main))
             features = integration_test_features(name, tf)
             out.append("")
             test_lib_target = integration_test_library_target(name, tf, lib_target)

@@ -9,23 +9,21 @@ import test from 'node:test';
 
 import { createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
 import { verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
-import { extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
+import { ABSENT_CONSOLE_ROUTE_FACTS, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
 
 const registry = JSON.parse(readFileSync(new URL('../../docs/program/console-capability-registry.json', import.meta.url)));
 const jurisdiction = JSON.parse(readFileSync(new URL('../../docs/program/console-jurisdiction-register.json', import.meta.url)));
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+const ROUTE_CLAIM_FIELDS = ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared'];
 
-// The 2026-07-28 clean-slate pivot deleted the frontend, so the candidate holds
-// no console route sources. A console with no frontend presents no routes.
-function immutableCandidateRouteFacts() {
-  try {
-    return extractConsoleRouteFactsFromTexts(
-      execFileSync('git', ['-C', repoRoot, 'show', `${registry.candidate.sha}:web/src/console/shell/nav.ts`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }),
-      execFileSync('git', ['-C', repoRoot, 'show', `${registry.candidate.sha}:web/src/console/screens/registry.ts`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }),
-    );
-  } catch {
-    return Object.freeze({ facts: Object.freeze({}) });
+function withoutRouteClaims(value) {
+  const cleared = structuredClone(value);
+  for (const capability of cleared.capabilities) {
+    capability.route_presentation.route_keys = [];
+    for (const field of ROUTE_CLAIM_FIELDS) capability.route_presentation[field] = false;
   }
+  if (cleared.source_inventory) cleared.source_inventory.unmodeled_keys = [];
+  return cleared;
 }
 
 test('current candidate truth ledger is structurally complete but remains candidate-bound HOLD where evidence is absent', () => {
@@ -79,20 +77,49 @@ test('raw ledger JSON rejects duplicate keys before JSON.parse can hide them', a
   for (const raw of ['{"schema_version":"a","schema_version":"b"}', '{"controls":[{"id":"x","id":"y"}]}']) assert.throws(() => parseImmutableJson(raw, 'truth ledger'), /duplicate JSON key/);
 });
 
-test('source route facts reject a ledger claim that disagrees with mounted/exposed source', async (t) => {
-  const { extractConsoleRouteFacts } = await import('./route-inventory.mjs');
-  const bad = structuredClone(registry);
-  const sales = bad.capabilities.find((capability) => capability.route_presentation.route_keys.includes('overview'));
-  if (!sales) {
-    // The 2026-07-28 clean-slate pivot deleted the frontend, so the registry
-    // declares no route keys and there is no source fact to disagree with.
-    // Skipped loudly rather than passed silently, so the Leptos rebuild restores
-    // this coverage instead of quietly losing it.
-    t.skip('registry declares no console routes (2026-07-28 clean-slate pivot)');
-    return;
+test('source route facts reject a ledger claim that disagrees with mounted/exposed source', () => {
+  // Fixture rather than candidate source: the 2026-07-28 pivot deleted the
+  // frontend, so reading the candidate would exercise nothing. The rule under
+  // test is the per-key comparison, which must reject a claim that contradicts
+  // whatever route source exists.
+  const routeFacts = extractConsoleRouteFactsFromTexts(
+    'export const MOUNTED_SCREEN_KEYS = ["overview"] as const;\nexport const EXPOSED_SCREEN_KEYS = [] as const;\nconst nav = [{ screen: "overview" }];\n',
+    'export const SCREEN_REGISTRY = {\n  overview: () => null,\n};\n',
+  );
+  const truthful = withoutRouteClaims(registry);
+  Object.assign(truthful.capabilities[0].route_presentation, { route_keys: ['overview'], source_mounted: true, registry_body_present: true, nav_declared: true });
+  assert.doesNotThrow(() => validateConsoleTruthLedger(truthful, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts }));
+  const bad = structuredClone(truthful);
+  bad.capabilities[0].route_presentation.source_mounted = false;
+  assert.throws(() => validateConsoleTruthLedger(bad, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts }), /route source fact mismatch/);
+  const unowned = structuredClone(truthful);
+  unowned.capabilities[0].route_presentation.route_keys = [];
+  unowned.capabilities[0].route_presentation.source_mounted = false;
+  unowned.capabilities[0].route_presentation.registry_body_present = false;
+  unowned.capabilities[0].route_presentation.nav_declared = false;
+  assert.throws(() => validateConsoleTruthLedger(unowned, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts }), /complete bijection/);
+});
+
+test('an absent route source refutes every positive route claim instead of iterating zero keys', () => {
+  // With no route source the per-key loop and the bijection both see zero keys,
+  // so they corroborate nothing. The boolean claims must be judged on their own.
+  const truthful = withoutRouteClaims(registry);
+  assert.doesNotThrow(() => validateConsoleTruthLedger(truthful, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts: ABSENT_CONSOLE_ROUTE_FACTS }));
+  for (const field of ROUTE_CLAIM_FIELDS) {
+    const claimed = withoutRouteClaims(registry);
+    claimed.capabilities[0].route_presentation[field] = true;
+    if (field === 'production_exposed') { claimed.capabilities[0].route_presentation.source_mounted = true; claimed.capabilities[0].truth.exposure = 'EXPOSED'; claimed.capabilities[0].truth.verification = 'VERIFIED'; }
+    assert.throws(
+      () => validateConsoleTruthLedger(claimed, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts: ABSENT_CONSOLE_ROUTE_FACTS }),
+      /no console route source to corroborate it/,
+      `${field} claim survived an absent route source`,
+    );
   }
-  sales.route_presentation.source_mounted = false;
-  assert.throws(() => validateConsoleTruthLedger(bad, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts: extractConsoleRouteFacts(process.cwd()) }), /route source fact mismatch/);
+  // A fact object that forgets to declare its provenance is treated as absent,
+  // never as corroboration.
+  const claimed = withoutRouteClaims(registry);
+  claimed.capabilities[0].route_presentation.nav_declared = true;
+  assert.throws(() => validateConsoleTruthLedger(claimed, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts: { facts: {} } }), /no console route source to corroborate it/);
 });
 
 
@@ -126,10 +153,11 @@ test('delivery-unit Buck authority cannot diverge from declared verification tar
 
 test('attestation rejects TOCTOU mutation after candidate-bound validation', async () => {
   const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+  // Route facts are deliberately omitted: this attests digest staleness, not
+  // route binding, and the candidate holds no route source to bind against.
+  // Route-fact binding is covered by the two route tests above.
   const value = structuredClone(registry);
-  // Product facts must come from immutable C rather than the later authority
-  // checkout (or any subsequently advanced working directory).
-  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: registry.candidate.sha, routeFacts: immutableCandidateRouteFacts() });
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: registry.candidate.sha });
   assert.equal(isValidatedConsoleTruthLedger(value), true);
   value.capabilities[0].truth.exposure = 'EXPOSED';
   assert.equal(isValidatedConsoleTruthLedger(value), false);

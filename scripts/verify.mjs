@@ -20,7 +20,27 @@ import { join } from "node:path";
 import yaml from "js-yaml";
 
 const WORKFLOW = ".github/workflows/ci.yml";
-const MIRRORED_JOBS = ["preflight", "backend", "kubernetes-manifests"];
+
+/**
+ * Every job in `ci.yml`, declared exactly once. `true` means its run-steps are
+ * classified in PLAN below; a string means deliberately not mirrored and says
+ * why. A job present in CI but absent here is a hard error -- otherwise the
+ * step-level completeness check silently scopes itself to whatever this list
+ * happened to contain, and a whole new job could land uncovered while
+ * `npm run verify` still printed "passed".
+ */
+const JOBS = new Map([
+  ["preflight", true],
+  ["backend", true],
+  ["repo-gates", true],
+  ["kubernetes-manifests", true],
+  ["support-domain-unit", "single Buck2 unit target behind a pinned toolchain + runner disk-free step"],
+  ["postgres-domain-reachability", "serialized Buck2 PostgreSQL targets; the `db` tier already exercises that harness"],
+  ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
+  ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
+  ["api-contract", "boots a Buck2-built app against a live listener with the CI keypair fixture"],
+]);
+const MIRRORED_JOBS = [...JOBS].filter(([, v]) => v === true).map(([name]) => name);
 const POSTGRES_IMAGE =
   "postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20";
 const BOOTSTRAP_GUC = "options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1";
@@ -73,6 +93,13 @@ const PLAN = new Map([
   ["RLS-arming gate", { tier: "fast" }],
   ["Dev-auth-absence gate", { tier: "fast" }],
   ["IaC tier-discipline gate", { tier: "fast" }],
+  // The eight `cargo run -p console-gate-*` steps above prove only that each
+  // gate exits 0 against THIS tree — which a gate scanning an empty directory
+  // also does. These five suites plant a violation in a throwaway tree and
+  // assert the gate rejects it, so they are what distinguishes "scanned and
+  // found nothing" from "scanned nothing". Unsets DATABASE_URL: none of the
+  // five touch a database.
+  ["Buck2 CI-gate mutation suites — every gate proven to still reject", { tier: "fast" }],
   ["PR 473 migration operational contract tests", { tier: "fast" }],
   ["Reconcile portable PostgreSQL role topology", {
     tier: "db",
@@ -91,7 +118,32 @@ const PLAN = new Map([
   // its own PostgreSQL, so this needs Docker but not a provisioned database.
   ["Buck2 dev-auth feature PostgreSQL suites", { tier: "db" }],
   ["Buck2 console-app unit suite", { tier: "fast" }],
+  // Unsets DATABASE_URL, so it is a no-Docker step despite living among the
+  // PostgreSQL suites. It is the only inventory of mounted routes against
+  // openapi.yaml, so a local miss here is a client-contract miss.
+  ["Buck2 console-app OpenAPI drift suite", { tier: "fast" }],
   ["Buck2 console-app inline PostgreSQL suites", { tier: "db" }],
+
+  // ---- repo-gates --------------------------------------------------------
+  // Pure `npm run` gate binaries: no Docker, no Rust toolchain, no network.
+  // `Install workspace dependencies`, `Foundation gate contract` and
+  // `Canonical npm lockfile` are byte-identical to their preflight twins, so
+  // the entries above cover both jobs.
+  ["ADR governance tests", { tier: "fast" }],
+  ["ADR governance gate", { tier: "fast" }],
+  ["Shared text gate unit tests", { tier: "fast" }],
+  ["G004 identity group org people policy foundation gate", { tier: "fast" }],
+  ["G005 workflow approval Work Hub lifecycle gate", { tier: "fast" }],
+  ["Workflow runtime spine gate", { tier: "fast" }],
+  ["Workflow runtime M2 strangler dark-landing gate", { tier: "fast" }],
+  ["Workflow runtime M2 Cedar-guard observe-and-record gate", { tier: "fast" }],
+  ["Workflow runtime M2 flag-ON runtime gate", { tier: "fast" }],
+  ["Workflow runtime M2 outbox-drainer transactional-idempotency gate", { tier: "fast" }],
+  ["G006 asset equipment dispatch lifecycle gate", { tier: "fast" }],
+  ["G007 collaboration mail calendar poll mobile lifecycle gate", { tier: "fast" }],
+  ["G008 import HR payroll readiness gate", { tier: "fast" }],
+  ["People HR lifecycle maturity gate", { tier: "fast" }],
+  ["Payroll release-gate contract", { tier: "fast" }],
 
   // ---- kubernetes-manifests ---------------------------------------------
   // Mirrored because `check:production-hardening` pins the exact text of the
@@ -101,14 +153,36 @@ const PLAN = new Map([
     tier: "ci-only",
     why: "downloads a pinned kubectl; local checkouts use the one already on PATH",
   }],
+  ["Install kustomize (NetworkPolicy static render proof)", {
+    tier: "ci-only",
+    why: "downloads a pinned kustomize; local checkouts use the one already on PATH, and the script falls back to `kubectl kustomize`",
+  }],
   ["Governed command-database DARK wiring regression", { tier: "fast" }],
   ["Render manifests and NetworkPolicy enforcement preflight", { tier: "fast" }],
   ["Production hardening contract", { tier: "fast" }],
   ["Production hardening regression tests", { tier: "fast" }],
 ]);
 
+/** Fail closed when ci.yml grows or loses a job, in either direction. */
+export function assertJobsDeclared(jobNames = Object.keys(yaml.load(readFileSync(WORKFLOW, "utf8")).jobs ?? {})) {
+  const undeclared = jobNames.filter((name) => !JOBS.has(name));
+  const vanished = [...JOBS.keys()].filter((name) => !jobNames.includes(name));
+  const problems = [];
+  if (undeclared.length) {
+    problems.push(
+      `CI jobs missing from scripts/verify.mjs (mirror it, or declare why not):\n  ${undeclared.join("\n  ")}`,
+    );
+  }
+  if (vanished.length) {
+    problems.push(`Declared jobs with no matching CI job:\n  ${vanished.join("\n  ")}`);
+  }
+  if (problems.length) throw new Error(problems.join("\n\n"));
+  return jobNames;
+}
+
 function ciSteps() {
   const doc = yaml.load(readFileSync(WORKFLOW, "utf8"));
+  assertJobsDeclared(Object.keys(doc.jobs ?? {}));
   const steps = [];
   for (const job of MIRRORED_JOBS) {
     const defined = doc.jobs?.[job]?.steps;
@@ -247,6 +321,11 @@ function main() {
   const failures = [];
   let baseEnv = { ...process.env, ...consoleEnv, SQLX_OFFLINE: "true" };
 
+  // preflight and repo-gates both run `check:foundation-gates` and
+  // `check:package-lock`. Same command, same cwd -- run it once. Keyed on the
+  // command, not the step name, so a future divergence still runs both.
+  const ran = new Set();
+
   const execute = (dbEnv) => {
     for (const step of steps) {
       const plan = PLAN.get(step.name);
@@ -263,6 +342,9 @@ function main() {
         continue;
       }
       const command = plan.run ?? step.run;
+      const key = `${step.cwd} ${command}`;
+      if (ran.has(key)) continue;
+      ran.add(key);
       console.log(`\n── [${plan.tier}] ${step.name}  (cwd: ${step.cwd})`);
       const status = run(command, { ...baseEnv, ...(dbEnv ?? {}) }, step.cwd);
       if (status !== 0) failures.push(step.name);

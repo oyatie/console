@@ -15,7 +15,7 @@
 set -euo pipefail
 
 KUBECTL="${KUBECTL:-kubectl}"
-NAMESPACE="${CONSOLE_NETWORKPOLICY_NAMESPACE:-maintenance}"
+NAMESPACE="${CONSOLE_NETWORKPOLICY_NAMESPACE:-console}"
 MODE="${CONSOLE_NETWORKPOLICY_PREFLIGHT:-warn}"
 EXPECTED_ENFORCER="${CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER:-auto}"
 CILIUM_NAMESPACE="${CONSOLE_NETWORKPOLICY_CILIUM_NAMESPACE:-kube-system}"
@@ -34,8 +34,9 @@ Environment:
       require: fail when kubectl cannot reach the target cluster, the namespace or
                NetworkPolicies are absent, or no policy-capable CNI is detected.
       off:     skip the live readback entirely (the static render proof still runs).
-  CONSOLE_NETWORKPOLICY_NAMESPACE=maintenance
-      Namespace that must contain applied NetworkPolicy objects.
+  CONSOLE_NETWORKPOLICY_NAMESPACE=console
+      Namespace that must contain applied NetworkPolicy objects. Defaults to the
+      namespace the prod overlay renders (deploy/apps/console/base sets it).
   CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=auto|cilium|calico|canal|antrea|kube-router|ovn-kubernetes
       Optional expected CNI/policy enforcer. "auto" accepts any recognized
       NetworkPolicy-capable enforcer and rejects plain flannel-only clusters.
@@ -81,15 +82,30 @@ esac
 # Phase 1: static render proof (kustomize build of the prod overlay).
 # ---------------------------------------------------------------------------
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if ! command -v kustomize >/dev/null 2>&1; then
-  echo "networkpolicy-static: WARNING: kustomize not found; skipping static render proof." >&2
-  echo "networkpolicy-static: install kustomize (or run npm run check:k8s:render first) for the static NetworkPolicy proof." >&2
+RENDER_CMD=()
+if command -v kustomize >/dev/null 2>&1; then
+  RENDER_CMD=(kustomize build)
+elif command -v "${KUBECTL}" >/dev/null 2>&1; then
+  # Same renderer scripts/render-k8s-manifests.sh uses; CI installs kubectl only.
+  RENDER_CMD=("${KUBECTL}" kustomize)
+fi
+
+if [[ "${#RENDER_CMD[@]}" -eq 0 ]]; then
+  # A missing renderer means the assertions below never ran: an unproven gate,
+  # not a passing one. Only an interactive dev box is allowed to degrade.
+  if [[ -n "${CI:-}" ]]; then
+    echo "networkpolicy-static: FAIL: neither kustomize nor ${KUBECTL} found; the static NetworkPolicy proof did not run." >&2
+    echo "networkpolicy-static: CI must install a kustomize renderer before this gate; a skipped proof is not a passing proof." >&2
+    exit 1
+  fi
+  echo "networkpolicy-static: WARNING: no kustomize renderer found; skipping static render proof (local run; this FAILS in CI)." >&2
+  echo "networkpolicy-static: install kustomize or kubectl for the static NetworkPolicy proof." >&2
 else
   RENDER="$(mktemp)"
   trap 'rm -f "$RENDER"' EXIT
   failures=0
 
-  kustomize build "$ROOT/deploy/apps/console/overlays/prod" > "$RENDER"
+  "${RENDER_CMD[@]}" "$ROOT/deploy/apps/console/overlays/prod" > "$RENDER"
 
   require() {
     local needle="$1"

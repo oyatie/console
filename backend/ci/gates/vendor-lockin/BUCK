@@ -59,7 +59,7 @@ rust_test(
     edition = "2024",
     crate_root = "backend/ci/gates/vendor-lockin/tests/gate_detects_violation.rs",
     visibility = ["PUBLIC"],
-    env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/vendor-lockin"},
+    env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/vendor-lockin", "CARGO_BIN_EXE_console-gate-vendor-lockin": "$(location :console-gate-vendor-lockin)"},
     labels = ["owner.backend.ci.gates.vendor-lockin", "domain.ci", "test.integration", "resource.none"],
     deps = [
         "//third-party/rust:serde",

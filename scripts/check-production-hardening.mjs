@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -913,6 +913,74 @@ export function evaluateExpandContractReleaseChecks(readText) {
   return result;
 }
 
+const workflowDirectory = ".github/workflows";
+// Local composite actions live in-repo and are already covered by the commit
+// under review; every remote reference must name an immutable commit SHA.
+const localActionReference = /^\.{1,2}\//;
+const pinnedActionReference = /^[^\s@]+@[0-9a-f]{40}$/;
+
+export function listWorkflowFiles() {
+  const absolute = resolve(root, workflowDirectory);
+  if (!existsSync(absolute)) return [];
+  return readdirSync(absolute)
+    .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
+    .sort()
+    .map((name) => `${workflowDirectory}/${name}`);
+}
+
+function workflowUsesReferences(text) {
+  const references = [];
+  for (const rawLine of text.split(/\r?\n/)) {
+    const match = /^(?:-\s+)?uses:\s*(\S.*)$/.exec(rawLine.trim());
+    if (match) references.push(stripYamlScalar(match[1]));
+  }
+  return references;
+}
+
+export function evaluateActionPinChecks(
+  readText,
+  workflowPaths = listWorkflowFiles(),
+) {
+  const result = createResult();
+  requirement(
+    result,
+    workflowPaths.length > 0,
+    `action pins: ${workflowPaths.length} workflow files enumerated from ${workflowDirectory}`,
+    `action pins: no workflow files found under ${workflowDirectory}; the pin gate would assert nothing`,
+  );
+
+  let pinned = 0;
+  let local = 0;
+  for (const path of workflowPaths) {
+    const text = readText(path);
+    if (text.trim().length === 0) {
+      result.failures.push(
+        `action pins: ${path} is missing or empty; its action references cannot be proven pinned`,
+      );
+      continue;
+    }
+    for (const reference of workflowUsesReferences(text)) {
+      if (localActionReference.test(reference)) {
+        local += 1;
+      } else if (pinnedActionReference.test(reference)) {
+        pinned += 1;
+      } else {
+        result.failures.push(
+          `action pins: ${path} uses ${JSON.stringify(reference)}, which is not pinned to a full 40-hex commit SHA`,
+        );
+      }
+    }
+  }
+
+  requirement(
+    result,
+    pinned > 0,
+    `action pins: ${pinned} remote action references SHA-pinned across ${workflowPaths.length} workflow files (${local} local composite references exempt)`,
+    "action pins: no SHA-pinned remote action references were found; the pin gate is asserting nothing",
+  );
+  return result;
+}
+
 export function evaluateWorkflowHardeningChecks(readText) {
   const result = createResult();
   const productionHardeningTestCommand =
@@ -1399,6 +1467,24 @@ export function evaluateWorkflowHardeningChecks(readText) {
     workflowHasRun(imageReleaseWorkflow, [/\bcosign\s+sign\s+--yes\b/]),
     "image-release portable gate: active cosign signing",
     "image-release must actively cosign sign the immutable image digest",
+  );
+  requirement(
+    result,
+    workflowHasActiveUse(
+      imageReleaseWorkflow,
+      /^\s*uses:\s*sigstore\/cosign-installer@[0-9a-f]{40}\s*$/m,
+    ),
+    "image-release portable gate: cosign installer pinned to upstream sigstore commit",
+    "image-release must install cosign from sigstore/cosign-installer pinned to a full 40-hex commit SHA, not a fork or a floating tag",
+  );
+  requirement(
+    result,
+    workflowHasActiveUse(
+      imageReleaseWorkflow,
+      /^\s*uses:\s*actions\/attest-build-provenance@[0-9a-f]{40}\s*$/m,
+    ),
+    "image-release portable gate: provenance attestation pinned to upstream commit",
+    "image-release must use actions/attest-build-provenance pinned to a full 40-hex commit SHA, not a fork or a floating tag",
   );
   requirement(
     result,
@@ -2659,6 +2745,7 @@ export const DEPLOYMENT_CONTEXTS = Object.freeze([
 function runCli() {
   const groups = [
     { id: "global", result: evaluateGlobalHardeningChecks(read) },
+    { id: "action-pins", result: evaluateActionPinChecks(read) },
     ...DEPLOYMENT_CONTEXTS.map((context) => ({
       id: context.id,
       result: context.evaluate(read),
