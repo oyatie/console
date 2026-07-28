@@ -22,11 +22,30 @@ export const meta = {
 //   crate?:   string   — crate boundary for the work queue. Bun grouped ~16k errors BY CRATE,
 //                        never by file, explicitly to prevent task fragmentation.
 //   designs?: number   — competing designs before the judge. Default 2.
+//   lane?:    "1".."5" — REQUIRED for anything that builds. Routes implement/prove into
+//                        ~/Developer/console-lanes/lane-N, which has its own backend/target.
+//                        Omitting it builds in the main checkout and contends on the build lock.
 //   repo?:    string
 // }
+// NO NODE GLOBALS. The script body runs in a bare sandbox: `process` is not defined, so a
+// `process.env.HOME` fallback is not a fallback — it is an immediate ReferenceError that kills the
+// run before agent 1 starts. (`Date.now`/`Math.random` are likewise banned, as they would break
+// resume.) Paths are therefore literals or `args`. Verified by the failure this line replaced.
+const HOME = '/Users/jasonlee'
 const A = typeof args === 'string' ? JSON.parse(args) : (args || {})
 if (!A.task) throw new Error('slice: `task` is required')
-const REPO = A.repo || process.env.CLAUDE_PROJECT_DIR || '/Users/jasonlee/Developer/console'
+const REPO = A.repo || `${HOME}/Developer/console`
+
+// MEASURED 2026-07-28: a workflow that ran its implementer with cwd = the MAIN checkout turned a
+// single-crate `cargo check` into 47 MINUTES — the log reads `Blocking waiting for file lock on
+// build directory`, because the implementer and the caller contended on one `backend/target`. CI
+// for the same change is 20 minutes. The bottleneck was never CI; it was a shared target dir.
+//
+// Anything that BUILDS therefore runs in a lane worktree, which has its own `target/`. Read-only
+// exploration may use the main checkout because reads take no build lock.
+const LANE = A.lane ? `${HOME}/Developer/console-lanes/lane-${A.lane}` : null
+const BUILD_CWD = LANE || REPO
+if (!LANE) log('WARNING: no `lane` arg — implement/prove will build in the MAIN checkout and may contend on the build lock. Pass lane: "1".."5".')
 const N_DESIGNS = Math.min(Math.max(A.designs ?? 2, 1), 3)
 const CRATE = A.crate || ''
 const OWNS = A.owns || ''
@@ -61,6 +80,28 @@ ${A.context ? A.context + '\n' : ''}${CRATE ? `Crate boundary: \`${CRATE}\`. Gro
 ## Task
 ${A.task}
 ${DISCIPLINE}`
+
+// Appended ONLY to phases that build. Exploration is read-only and takes no build lock.
+const WORKDIR = `
+## WORKING DIRECTORY — build here, nowhere else
+
+**Before your first cargo command, in the same shell:**
+\`\`\`bash
+cd ${BUILD_CWD}
+source ${REPO}/scripts/console/lane-env.sh    # RUSTC_WRAPPER=sccache, 50G ceiling
+\`\`\`
+sccache's cache is user-global (\`~/Library/Caches/Mozilla.sccache\`), so lanes — and other repos on
+this machine — reuse each other's compiled artifacts. Without it every lane recompiles the whole
+dependency graph from cold: measured \`Cache hits: 0%\` across 4,084 commands, because nothing had
+ever sourced this. Confirm with \`sccache --show-stats\` after your build; hits should climb.
+
+${LANE
+  ? `This is an isolated lane worktree with its own \`backend/target\`, so your build cannot contend with
+another agent's. Building in the main checkout instead is what turned a single-crate \`cargo check\`
+into 47 minutes.`
+  : `NOTE: no lane was assigned, so this IS the main checkout and you may contend on the build lock
+with concurrent agents. Report the contention if a build stalls rather than waiting it out.`}
+`
 
 phase('Explore')
 
@@ -133,7 +174,7 @@ paths, exact APIs from the exploration findings, and the exact proof of correctn
 
 phase('Implement')
 
-const impl = await agent(`${CTX}
+const impl = await agent(`${CTX}${WORKDIR}
 
 ## SPECIFICATION — already judged. Implement it; do not redesign.
 ${spec}
@@ -170,7 +211,7 @@ const VERDICT_SCHEMA = {
 // narrative primes a reviewer to accept. Passing the implementer's report here (as I did in an
 // earlier workflow) quietly defeats the mechanism, so these agents are told to read the diff
 // themselves and are given no summary of it.
-const REVIEW_BASE = `${CTX}
+const REVIEW_BASE = `${CTX}${WORKDIR}
 
 **READ-ONLY. No edits, no git mutations.**
 

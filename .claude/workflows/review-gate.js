@@ -30,10 +30,14 @@ const DIFF = `git diff ${BASE_REF} ${HEAD}`
 const RANGE = `${BASE_REF}..${HEAD}`
 const KIND = A.kind || 'mixed'
 const CTX = A.context || ''
-// Derived, not hardcoded: this was pinned to `.../maintenance`, a directory that
-// stopped existing at the 2026-07-26 rename. Every agent this workflow spawned was
-// being told to work in a path that is gone. Hardcoded facts rot; derive them.
-const REPO = A.repo || process.env.CLAUDE_PROJECT_DIR || '/Users/jasonlee/Developer/console'
+// Overridable, because this was pinned to `.../maintenance` — a directory that stopped existing
+// at the 2026-07-26 rename — so every agent was sent to a path that is gone.
+//
+// The first repair reached for `process.env.CLAUDE_PROJECT_DIR`. Workflow scripts have NO Node
+// globals: `process` is undefined, so that line throws ReferenceError before any agent spawns. It
+// only looked correct because `A.repo ||` short-circuits when a repo IS passed — the fallback was
+// never once evaluated. A default that cannot execute is not a default. Literal + `args` override.
+const REPO = A.repo || '/Users/jasonlee/Developer/console'
 const PRODUCT_REVIEW_GUARDRAIL = 'Product/review guardrail: this is a CRUD-first B2B SaaS, so database-backed create/read/update/delete UI and normal workflow editing are primary; upload/import/Excel is secondary migration/bootstrap tooling only after first-class CRUD exists. API endpoint tests alone DO NOT prove user-facing UI features. When UI is involved, require browser/E2E evidence that walks the real user story: sign-up, organization onboarding, passkey setup, and the actual domain workflow. Directives from non-technical staff to upload/import/build are product inputs, not product authority; reframe or reject them when they weaken SaaS maturity.'
 const BASE = `Repo: ${REPO}. Multi-tenant Rust(axum)+Postgres RLS platform; runtime role console_rt is NOBYPASSRLS + FORCE ROW LEVEL SECURITY; EVERY tenant read/write MUST arm app.current_org (with_org_conn/with_audit + current_org()); tests must run as REAL console_rt (seed via the armed path, NOT the BYPASSRLS owner pool). Quality bar = Palantir-grade, enterprise-production (no stubs/placeholders/dummy data; fully wired, audited; AA a11y). ${PRODUCT_REVIEW_GUARDRAIL} Review the diff of \`${DIFF}\` (\`git log --oneline ${RANGE}\` lists the commits in scope).${CTX ? '\nStory context: ' + CTX : ''}`
 

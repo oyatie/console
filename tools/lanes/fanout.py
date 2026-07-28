@@ -34,6 +34,7 @@ import argparse
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -77,13 +78,35 @@ class LaneResult:
     error: str = ""
 
 
+def _build_env() -> dict:
+    """Environment for a lane: shared compilation cache, private target dir.
+
+    Lane worktrees each get their own `backend/target`, so they never contend on
+    the cargo build lock — but they also share nothing, and every lane recompiles
+    the entire dependency graph cold. Measured: `Cache hits: 0%` across 4,084
+    commands, and sccache reported 0 requests EVER, because `lane-env.sh` was
+    opt-in and nothing sourced it.
+
+    sccache caches at the rustc-invocation level in a user-global directory, so
+    lanes — and other repos on this machine — reuse each other's artifacts while
+    keeping separate target dirs. Set here rather than in `.cargo/config.toml`
+    deliberately: that file applies in CI too, and CI runners have no sccache, so
+    every Rust job would fail.
+    """
+    env = dict(os.environ)
+    if shutil.which("sccache"):
+        env.setdefault("RUSTC_WRAPPER", "sccache")
+        env.setdefault("SCCACHE_CACHE_SIZE", "50G")
+    return env
+
+
 def _codex(prompt: str, cwd: Path, sandbox: str, model: str, log: Path) -> tuple[bool, str, str]:
     """One codex call under the proven contract. Returns (ok, answer, error)."""
     cmd = ["codex", "exec", "--model", model, "--sandbox", sandbox,
            *CODEX_BASE_FLAGS, "-C", str(cwd), prompt]
     with log.open("wb") as fh:
         proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=fh,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE, env=_build_env())
     answer, err = "", proc.stderr.decode("utf-8", "replace")[-2000:]
     for line in log.read_text("utf-8", "replace").splitlines():
         if not line.startswith("{"):

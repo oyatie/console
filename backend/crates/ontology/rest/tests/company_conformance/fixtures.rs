@@ -1,4 +1,11 @@
-//! OWNED index — a lane appends ONE `pub mod` line and owns ONE file below.
+//! OWNED index — PRE-RESERVED. All five `pub mod` lines already exist below, so a
+//! lane edits ONLY its own `fixtures/<type>.rs` and touches no shared file.
+//!
+//! Deliberate: "each lane appends one line here" is a claim about agent behaviour, not
+//! a merge property. Two lanes appending to one file tail conflict in the same hunk,
+//! and git cannot know the lines are independent. Pre-reserving makes the disjointness
+//! structural instead of procedural. Adding a SIXTH type is a deliberate act that edits
+//! this file once, outside any lane.
 //!
 //! Everything under `fixtures/` is per-type scenario DATA: the full required
 //! param bag for the auto-attached generic `create` action. Nothing else.

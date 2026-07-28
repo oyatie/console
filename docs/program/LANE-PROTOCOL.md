@@ -51,7 +51,8 @@ incremental through design, big-bang through expansion.
 ~/Developer/console-lanes/lane-{1..5}
 ```
 
-Rationale, from measurement: this repo reached **653 worktrees / 890 directories under `/private/tmp`**.
+Rationale, from measurement: this repo reached **653 worktrees / 890 directories under `/private/tmp`**
+(since consolidated to **6**: main + five lanes).
 That is not untidiness — it caused a real incident this session. The `maintenance`→`console` rename
 orphaned every one of them (their `.git` files pointed at the dead path), silently killing background
 agents. This repo has also lost dev Postgres to 707 orphaned Docker volumes. Bun ran the entire
@@ -68,19 +69,48 @@ Rules:
 **Disjoint roots. No two lanes touch the same file.** This is not a guideline; it was violated twice
 this session and both times produced an edit war that cost more than the parallelism gained.
 
-Reserved before any fan-out:
+Three mechanisms, in order of preference. **Prefer the earlier one — later ones rely on discipline,
+and discipline is what fails.**
 
-| Shared file | Discipline |
-|---|---|
-| `backend/Cargo.toml` `members` | pre-reserve entries; **never create a crate dir without a valid `Cargo.toml` in the same change** — an unmatched glob fails the build for every lane |
-| `third-party/rust/BUCK` | reindeer-generated; **serialize dependency additions**, one owner |
-| `backend/openapi/openapi.yaml` | reserved tag + contiguous path block per lane, merge-queued. **Do not split it** — `include_str!` at `app/src/lib.rs:187` and `app/tests/openapi_drift.rs:6` |
-| migrations (`platform/db/migrations`) | single global sequence (highest `0168`); **pre-reserved block per lane**. Numbers have collided before |
-| type-registry seed | one owner; lanes emit type definitions as data |
-| the conformance suite | owned **outside** the lanes; a lane wanting to change it must escalate |
+1. **Not shared at all** — the lane's work touches only files it owns. Best; nothing to enforce.
+2. **Pre-reserved** — every lane's slot is created in ONE commit *before* fan-out, so a lane edits
+   only its own. Structural, not procedural.
+3. **Serialised** — one owner, others request. A real bottleneck; use only where 1 and 2 fail.
 
-**Acceptance test for fan-out:** two lanes land a type + endpoint + migration with **zero overlapping
-file edits**. Until demonstrated, fan-out is not authorized.
+### Measured collision surface for adding a catalog type (verified 2026-07-28)
+
+| Shared file | Class | Mechanism |
+|---|---|---|
+| `backend/openapi/openapi.yaml` | **① NOT SHARED** | verified: 8 generic ontology paths already cover `/instances`, `/actions/{action_key}/execute`, `/object-types/{key}`. An `Instance`-backed type adds **zero** routes. A lane proposing a bespoke route must escalate — that is `CATALOG.md`'s named anti-pattern |
+| `backend/Cargo.toml` `members` | **① NOT SHARED** | verified: **39 glob members** already cover crates under existing groups. Still true: **never create a crate dir without a valid `Cargo.toml` in the same change** — an unmatched glob breaks the build for every lane |
+| `docs/specs/cedar-pbac-coexistence-map.json` | **① NOT SHARED** | verified: keyed by **domain**, not object type; no entry is per-type. Per-type policy is authored at runtime from the registry (`ontology/rest/src/lib.rs:426-437`). An earlier revision of this table wrongly serialised it |
+| per-crate `BUCK` files | **① NOT SHARED** | **generated** by `tools/buck/gen_first_party.py`. Never hand-edit — the drift gate rejects it. Change the generator; regenerate |
+| conformance `fixtures/<type>.rs` | **② PRE-RESERVED** ✅ | all five `pub mod` lines and files already exist. A lane edits only its own |
+| migrations (`platform/db/migrations`) | **② PRE-RESERVED** | single global sequence, highest **`0204`**. Blocks assigned per lane in the Phase-0 commit; take the number immediately before push |
+| `seed.rs` `BUILTIN_CATALOG_VERSION` (`:68`) | **③ SERIALISED — the real lock** | ONE constant + one 27-draft manifest. Two lanes adding a type both change it. **Fix is per-lane catalog versions**: migration `0204` made installs additive and version-keyed, and the allowlist PK is `catalog_version`, so lanes can ship disjoint versions. Until that lands, this is the one true bottleneck |
+| `.github/workflows/ci.yml`, `tools/buck/BUCK` | **③ SERIALISED** | hand-maintained; rarely touched by a type lane. One owner |
+| `third-party/rust/BUCK` | **③ SERIALISED** | reindeer-generated; serialise dependency additions |
+| the three authority documents | **③ SERIALISED by design** | the C→T train. **Batch the landing** — see §4's landing model |
+| the conformance suite (drivers + assertions) | outside the lanes | a lane wanting to change it must escalate |
+
+**Acceptance test for fan-out:** two lanes land a type slice with **zero overlapping file edits**,
+demonstrated on a real branch. `tools/lanes/fanout.py run` measures this automatically and fails on
+any out-of-slice write.
+
+**Status: isolation itself is PROVEN** (2026-07-28) — 4 concurrent lanes, 37s, 0 of 4 touched
+anything outside their slice, 4/4 outputs correct. What remains is the `BUILTIN_CATALOG_VERSION`
+lock above.
+
+### Build in a lane, never the main checkout
+
+Measured: an agent that ran `cargo check` in the **main checkout** while another built there took
+**47 minutes**, the log reading `Blocking waiting for file lock on build directory`. CI for the same
+change is **20 minutes**. Lane worktrees have their own `backend/target` and do not contend.
+
+Corollary, and the reason this matters: **implementation must never wait on CI.** CI is asynchronous
+verification — 20 minutes of wall clock nobody should be blocking on. What actually serialises
+parallel work is `strict: true` (every merge forces every other open PR to rebase → new C → 390-ref
+rebind → full CI re-run). So: **parallelise the work in lanes, serialise the landing in batches.**
 
 ### Rehearsal results (2026-07-28) — measured, not assumed
 
@@ -94,15 +124,22 @@ Three lanes built real crates concurrently. **Isolation holds; landing does not.
 
 Separate worktrees give separate `target/` directories, so cargo never serialises on the build lock.
 
-**BLOCKER — `main` is not protected.** `gh api repos/.../branches/main/protection` returns
-**404 "Branch not protected"**: no required status checks, no "require branches up to date", no merge
-queue. Consequences measured per collision class:
+**RESOLVED 2026-07-28 — `main` IS protected.** Verified live: **12 required contexts**,
+`strict: true`, `enforce_admins: true`, force-push and deletion blocked. The collision table below
+is kept because the *mechanisms* are still accurate; only the "caught pre-merge?" column changed,
+since `strict: true` now forces a rebase before merge and re-runs CI on the moved base.
+
+Note the cost this introduced: `strict: true` is now what serialises parallel PRs — each merge
+forces every other open PR to rebase, producing a new C and a 390-reference rebind. That is the
+argument for batching the landing, not for reverting protection.
+
+Consequences as originally measured, pre-protection:
 
 | Collision | Caught pre-merge? | Mechanism |
 |---|---|---|
 | duplicate migration number | **NO** | `console-gate-migration-safety` emits `DuplicateMigrationVersion`, but only when both files are in one tree. PR CI runs against the merge ref, so lane B *would* fail — except nothing forces a re-run when the base advances. Lane B's stale-green stays mergeable; **main turns red post-merge**. Deploy is contained (`image-release` needs a green exact-SHA main run) |
 | `Cargo.toml` `members` | **YES** | preflight's `cargo metadata --manifest-path backend/Cargo.toml --locked` resolves the globs and exits 101; all 8 downstream jobs `needs: preflight`, so it fail-fasts in the first minute |
-| duplicate `openapi.yaml` keys | **NO** | `openapi_drift.rs` is **never invoked by CI**; `check:openapi-app` only regexes `/api/platform/` paths and then byte-compares the served bytes to the file — tautological, since the handler returns the `include_str!` const verbatim. Nothing in the repo parses the YAML |
+| duplicate `openapi.yaml` keys | **NOW YES** | *stale as written* — `openapi_drift` is wired at `ci.yml:597` (`//backend/app:console-app-itest-openapi_drift`) since #506. Originally: `check:openapi-app` only regexes `/api/platform/` paths and then byte-compares the served bytes to the file — tautological, since the handler returns the `include_str!` const verbatim. Nothing in the repo parses the YAML |
 
 **Two in-repo documents are wrong about this.** `docs/program/wave4-migration-slot-ledger.md` §1 says
 duplicate migrations are *"not detected by cargo, sqlx, or any CI gate in this repo"*, and
@@ -183,7 +220,7 @@ Adopted verbatim from Bun, both learned the hard way:
 
 ## 9. Local build
 
-buck2 is retained and is the parallel-build path (`.buckconfig`, root `BUCK`, 168 per-crate `BUCK`
+buck2 is retained and is the parallel-build path (`.buckconfig`, root `BUCK`, 169 per-crate `BUCK`
 files, reindeer vendoring, driven by `scripts/dev-up.mjs`). Cargo remains the **source of truth** —
 root `BUCK` says so outright: *"Rust targets are generated from the current Cargo workspace."*
 
