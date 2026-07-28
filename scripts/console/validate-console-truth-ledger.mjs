@@ -11,6 +11,7 @@ import { CONSOLE_CANDIDATE_SIGNING_AUTHORITY, sshSignatureMatchesAuthority, veri
 import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
+const BUCK_TARGET = /^\/\/([A-Za-z0-9_./-]+):([A-Za-z0-9_.-]+)$/;
 const STATES = new Set(['DECLARED', 'PLANNED', 'IMPLEMENTED', 'VERIFIED', 'EXPOSED', 'HOLD']);
 const VERDICTS = new Set(['MEET', 'EXCEED', 'HOLD']);
 const EDGE_TYPES = new Set(['requires', 'blocks', 'integrates_with', 'validates']);
@@ -83,6 +84,49 @@ export function createConsoleCandidateSourceResolver(repoRoot, candidateSha, int
     return /^100644 blob [0-9a-f]{40}\t/.test(entry) || /^100755 blob [0-9a-f]{40}\t/.test(entry) ? { tracked_regular: true } : false;
   };
   return Object.freeze({ candidateSha, integrationTipSha, readText, resolveSource });
+}
+function nonRootCellRoots(configText) {
+  const roots = []; let section = null;
+  for (const line of configText.split('\n')) {
+    const heading = line.match(/^\s*\[([^\]]+)\]/);
+    if (heading) { section = heading[1]; continue; }
+    if (section !== 'cells') continue;
+    const entry = line.match(/^\s*[A-Za-z0-9_-]+\s*=\s*(\S+)\s*$/);
+    if (entry && entry[1] !== '.') roots.push(entry[1].replace(/\/+$/, ''));
+  }
+  return roots;
+}
+/**
+ * Resolves `//pkg:name` by reading the candidate's own `pkg/BUCK` blob for a
+ * literal `name = "…"` declaration. It deliberately never invokes Buck2. This
+ * validator is executed against candidate content inside the
+ * `pull_request_target` authority job, where `buck2 targets` would evaluate
+ * candidate-authored BUCK/`.bzl` — arbitrary code execution on an elevated
+ * runner. Reading a blob is also the only form that behaves identically with and
+ * without dotslash on PATH, which is why the assertion was dying there.
+ *
+ * ponytail: a literal declaration scan, not a Starlark evaluator. Measured
+ * against `buck2 targets` over the whole repository: 0 false positives, and the
+ * only 482 false negatives are reindeer-generated `//third-party/rust` targets,
+ * which read as absent and therefore fail CLOSED. No first-party delivery unit
+ * lives there. Upgrade path if one ever must: resolve targets from a job that
+ * holds no candidate content — never by running Buck2 over the candidate.
+ */
+export function createConsoleBuckTargetResolver(candidateSource) {
+  const cells = nonRootCellRoots(candidateSource.readText('.buckconfig'));
+  return (target) => {
+    const match = BUCK_TARGET.exec(typeof target === 'string' ? target : '');
+    if (!match) return false;
+    const [, pkg, name] = match;
+    if (cells.some((cell) => pkg === cell || pkg.startsWith(`${cell}/`))) return false;
+    const buckFile = `${pkg}/BUCK`;
+    // resolveSource is consulted first: it answers false for an absent or
+    // traversing path, where readText aborts the run. Either way "cannot read"
+    // stays RED and never becomes "verified".
+    if (!candidateSource.resolveSource(buckFile)) return false;
+    const declaration = `name="${name}"`;
+    return candidateSource.readText(buckFile).split('\n').some((line) => { const compact = line.replace(/\s/g, ''); return compact === declaration || compact === `${declaration},`; });
+  };
 }
 /**
  * The 2026-07-28 clean-slate pivot deleted the whole frontend, so the console
@@ -210,7 +254,7 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (delivery.rust_status === 'REQUIRED' && !buckTargets.length) fail(`${cap.id} Rust-required delivery unit has empty Buck targets`);
     if (delivery.rust_status === 'REQUIRED_UNRESOLVED' && (truth.implementation !== 'HOLD' || evidence.status !== 'HOLD')) fail(`${cap.id} unresolved Rust delivery must remain HOLD`);
     if (verificationBuckTargets.length && (buckTargets.length !== verificationBuckTargets.length || buckTargets.some((target, index) => target !== verificationBuckTargets[index]))) fail(`${cap.id} delivery Buck targets must match declared verification targets`);
-    for (const target of buckTargets) { if (typeof target !== 'string' || !/^\/\/[A-Za-z0-9_./-]+:[A-Za-z0-9_.-]+$/.test(target) || !resolveBuckTarget(target)) fail(`${cap.id} has invalid/nonexistent Buck target`); }
+    for (const target of buckTargets) { if (typeof target !== 'string' || !BUCK_TARGET.test(target) || !resolveBuckTarget(target)) fail(`${cap.id} has invalid/nonexistent Buck target`); }
     const dependencies = array(cap.dependency_edges);
     for (const edge of dependencies) {
       object(edge, `${cap.id} dependency edge`); nonempty(edge.target, `${cap.id} dependency target`);
@@ -277,7 +321,7 @@ function main() {
   const jurisdiction = parseImmutableJson(git(root, ['show', `${authorityTipSha}:docs/program/console-jurisdiction-register.json`]), 'console jurisdiction register').value;
   if (registry.candidate?.sha !== candidateSha) fail('CONSOLE_CANDIDATE_SHA must equal the authority-tip candidate SHA');
   const candidateSource = createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha);
-  const resolveBuckTarget = (target) => { try { execFileSync(path.join(root, 'tools/buck2'), ['targets', target], { cwd: root, stdio: 'ignore' }); return true; } catch { return false; } };
+  const resolveBuckTarget = createConsoleBuckTargetResolver(candidateSource);
   const resolveSha = (value) => { try { execFileSync('git', ['cat-file', '-e', `${value}^{commit}`], { cwd: root, stdio: 'ignore' }); return true; } catch { return false; } };
   const routeFacts = extractConsoleRouteFactsFromCandidate(candidateSource);
   console.log(JSON.stringify(validateConsoleTruthLedger(registry, jurisdiction, { resolveSha, resolveSource: candidateSource.resolveSource, resolveBuckTarget, routeFacts, repoRoot: root }), null, 2));

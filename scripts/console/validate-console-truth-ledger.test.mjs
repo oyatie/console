@@ -7,7 +7,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
 
-import { createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
+import { createConsoleBuckTargetResolver, createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
 import { verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { ABSENT_CONSOLE_ROUTE_FACTS, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
 
@@ -135,6 +135,49 @@ test('forged comparator source/date and attacker review cannot pass', () => {
 test('required Buck target fails closed when resolver rejects it', () => {
   const bad = structuredClone(registry); const equipment = bad.capabilities.find((capability) => capability.id === 'CAP-EQUIPMENT-3R-PILOT');
   assert.throws(() => validateConsoleTruthLedger(bad, jurisdiction, { expectedCandidateSha: registry.candidate.sha, resolveBuckTarget: () => false }), /invalid\/nonexistent Buck target/);
+});
+
+test('Buck target existence is read from the candidate BUCK blob, never evaluated by Buck2', () => {
+  const files = {
+    '.buckconfig': '[cells]\n  root = .\n  prelude = prelude\n  toolchains = toolchains\n\n[project]\n  ignore = .git\n',
+    'backend/crates/x/BUCK': 'rust_test(\n    name = "x-unit",\n    srcs = ["lib.rs"],\n)\n#    name = "ghost",\n    labels = ["name = \\"phantom\\""],\n',
+    'toolchains/BUCK': 'toolchain(\n    name = "rust",\n)\n',
+  };
+  const resolve = createConsoleBuckTargetResolver({
+    readText: (file) => { if (!(file in files)) throw new Error(`candidate source is missing: ${file}`); return files[file]; },
+    resolveSource: (file) => (file.includes('..') ? false : file in files && { tracked_regular: true }),
+  });
+  assert.equal(resolve('//backend/crates/x:x-unit'), true);
+  assert.equal(resolve('//backend/crates/x:ghost'), false, 'a commented-out declaration is not a target');
+  assert.equal(resolve('//backend/crates/x:phantom'), false, 'a declaration lookalike inside a string is not a target');
+  assert.equal(resolve('//backend/crates/x:x-uni'), false, 'a prefix of a real name is not a target');
+  assert.equal(resolve('//backend/crates/gone:x-unit'), false, 'a package with no BUCK file fails closed');
+  assert.equal(resolve('//toolchains:rust'), false, 'a nested cell is not a root-cell package');
+  assert.equal(resolve('//../../etc:passwd'), false, 'a traversing label fails closed');
+});
+
+test('the real registry resolves against the real tree, and a nonexistent Buck target goes RED', () => {
+  // Exercises the shipped resolver, not a stub: the same one main() hands to the
+  // validator, so registry/tree drift fails here and not only in CI.
+  const resolveBuckTarget = createConsoleBuckTargetResolver({
+    readText: (file) => readFileSync(path.join(repoRoot, file), 'utf8'),
+    resolveSource: (file) => (file.includes('..') || file.startsWith('/') ? false : existsSync(path.join(repoRoot, file)) && { tracked_regular: true }),
+  });
+  const declared = registry.capabilities.flatMap((capability) => capability.delivery_unit?.buck2_targets ?? []);
+  assert.ok(declared.length > 0, 'the registry must declare at least one Buck target for this to assert anything');
+  for (const target of declared) assert.equal(resolveBuckTarget(target), true, `declared Buck target does not exist in the tree: ${target}`);
+  assert.doesNotThrow(() => validateConsoleTruthLedger(registry, jurisdiction, { expectedCandidateSha: registry.candidate.sha, resolveBuckTarget }));
+
+  for (const mutate of [
+    (capability) => { capability.delivery_unit.buck2_targets[0] = '//backend/crates/equipment/domain:no-such-target'; },
+    (capability) => { capability.delivery_unit.buck2_targets[0] = '//backend/crates/nonexistent/pkg:console-equipment-domain-unit'; },
+  ]) {
+    const bad = structuredClone(registry);
+    const capability = bad.capabilities.find((entry) => entry.id === 'CAP-EQUIPMENT-3R-PILOT');
+    mutate(capability);
+    capability.tests.buck2_targets = structuredClone(capability.delivery_unit.buck2_targets);
+    assert.throws(() => validateConsoleTruthLedger(bad, jurisdiction, { expectedCandidateSha: registry.candidate.sha, resolveBuckTarget }), /invalid\/nonexistent Buck target/);
+  }
 });
 
 test('delivery-unit Buck authority cannot diverge from declared verification targets', () => {
