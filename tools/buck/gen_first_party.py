@@ -605,6 +605,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/key_write_cas_as_runtime_role.rs': 'postgres',
             'tests/niche_config_object_types_as_runtime_role.rs': 'postgres',
             'tests/projected_instances_read_as_runtime_role.rs': 'postgres',
+            'tests/property_link_sync_as_runtime_role.rs': 'postgres',
             'tests/registry_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },

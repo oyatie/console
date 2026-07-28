@@ -690,6 +690,18 @@ pub async fn create_instance_in_tx(
     )
     .await?;
     set_head_pointer_tx(tx, instance_id, revision_id, occurred_at).await?;
+    // AFTER the head insert: `ont_links`'s `(from_instance_id, org_id)` FK is
+    // immediate (`0155:76`), so the edge cannot precede the row it points from.
+    sync_property_links_tx(
+        tx,
+        org_uuid,
+        input.object_type_id,
+        instance_id,
+        &props,
+        &attributes,
+        valid_from,
+    )
+    .await?;
     load_current_state_tx(tx, instance_id).await
 }
 
@@ -788,7 +800,256 @@ pub async fn stage_revision_in_tx(
     )
     .await?;
     set_head_pointer_tx(tx, instance_id, revision_id, occurred_at).await?;
+    // The revision's `valid_from`, never `occurred_at`: a wall-clock stamp on an
+    // edge effective at T0 breaks every effective-dated read.
+    sync_property_links_tx(
+        tx,
+        org_uuid,
+        object_type_id,
+        instance_id,
+        &props,
+        &attributes,
+        valid_from,
+    )
+    .await?;
     load_current_state_tx(tx, instance_id).await
+}
+
+/// Materialise this revision's DECLARED property -> link edges (§2), on `tx`.
+///
+/// A relationship the business declares must be TRAVERSABLE, not merely named in
+/// the attribute bag: a `reference` property round-trips for free, and nothing
+/// downstream can walk it. The binding is therefore data the object type carries,
+/// resolved generically here — a property whose `ont_property_defs.config` holds
+///
+/// ```json
+/// {"link": {"stable_key": "<ont_link_types.stable_key on this type>",
+///           "to_type": "<referent ont_object_types.stable_key>"}}
+/// ```
+///
+/// gets a real `ont_links` edge from THIS instance (child) to its referent
+/// (parent) on every revision. No type is named in this function, and no type
+/// needs engine code: a new one contributes a JSON blob to its own declaration.
+///
+/// `to_type` is matched on `stable_key`, never on `object_type_id`:
+/// `ont_object_types` is one row per `(org, stable_key, schema_version)`
+/// (`0152:32`), so id equality silently starts failing for instances created
+/// under an earlier version the moment the type is revised.
+///
+/// Referential integrity is pre-checked in Rust rather than left to the FK,
+/// because a 23503 is not mapped by `ontology_database_kernel_error` and reaches
+/// callers as an opaque `PgOntologyError::Db` (a 500), not the 4xx a bad
+/// reference deserves.
+async fn sync_property_links_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    org_uuid: Uuid,
+    object_type_id: ObjectTypeId,
+    instance_id: InstanceId,
+    props: &[PropDef],
+    attributes: &serde_json::Value,
+    valid_from: OffsetDateTime,
+) -> Result<(), PgOntologyError> {
+    // Phase 1 — resolve EVERY binding before writing anything. Two properties may
+    // share one link type; closing and inserting per property would let the second
+    // property's close sweep away the edge the first just wrote.
+    let mut link_type_ids: Vec<Uuid> = Vec::new();
+    let mut edges: Vec<(Uuid, Uuid)> = Vec::new();
+    for prop in props {
+        let Some(link) = prop.config.get("link") else {
+            continue;
+        };
+        // Fail closed on a malformed declaration. Skipping it would surface as an
+        // empty traversal, reading as "the mechanism is broken" rather than "the
+        // declaration has a typo".
+        let (Some(stable_key), Some(to_type)) = (
+            link.get("stable_key").and_then(serde_json::Value::as_str),
+            link.get("to_type").and_then(serde_json::Value::as_str),
+        ) else {
+            return Err(KernelError::validation(format!(
+                "property '{}' declares config.link without string `stable_key` and `to_type`",
+                prop.key
+            ))
+            .into());
+        };
+
+        let link_type_id: Uuid = sqlx::query_scalar(
+            "SELECT id FROM ont_link_types WHERE object_type_id = $1 AND stable_key = $2",
+        )
+        .bind(*object_type_id.as_uuid())
+        .bind(stable_key)
+        .fetch_optional(tx.as_mut())
+        .await?
+        .ok_or_else(|| {
+            KernelError::validation(format!(
+                "property '{}' declares link type '{stable_key}', which this object type does not \
+                 define",
+                prop.key
+            ))
+        })?;
+        link_type_ids.push(link_type_id);
+
+        let referents: Vec<&str> = match attributes.get(&prop.key) {
+            None | Some(serde_json::Value::Null) => Vec::new(),
+            Some(serde_json::Value::String(one)) => vec![one.as_str()],
+            Some(serde_json::Value::Array(many)) => many
+                .iter()
+                .map(|item| {
+                    item.as_str().ok_or_else(|| {
+                        KernelError::validation(format!(
+                            "linked attribute '{}' must hold instance id strings",
+                            prop.key
+                        ))
+                    })
+                })
+                .collect::<Result<_, KernelError>>()?,
+            Some(_) => {
+                return Err(KernelError::validation(format!(
+                    "linked attribute '{}' must be an instance id string, an array of them, or null",
+                    prop.key
+                ))
+                .into());
+            }
+        };
+
+        for referent in referents {
+            let to_instance_id: Uuid = referent.parse().map_err(|_| {
+                KernelError::validation(format!(
+                    "linked attribute '{}' is not a valid instance id",
+                    prop.key
+                ))
+            })?;
+            // RLS also renders a cross-tenant instance missing here, which is the
+            // correct answer: it does not exist for this tenant.
+            let referent_type: Option<String> = sqlx::query_scalar(
+                r#"
+                SELECT t.stable_key
+                FROM ont_instances i
+                JOIN ont_object_types t ON t.id = i.object_type_id
+                WHERE i.id = $1
+                "#,
+            )
+            .bind(to_instance_id)
+            .fetch_optional(tx.as_mut())
+            .await?;
+            match referent_type {
+                None => {
+                    return Err(KernelError::not_found(format!(
+                        "linked attribute '{}' references an instance that does not exist",
+                        prop.key
+                    ))
+                    .into());
+                }
+                Some(actual) if actual != to_type => {
+                    return Err(KernelError::validation(format!(
+                        "linked attribute '{}' must reference a '{to_type}', not a '{actual}'",
+                        prop.key
+                    ))
+                    .into());
+                }
+                Some(_) => {}
+            }
+            edges.push((link_type_id, to_instance_id));
+        }
+    }
+
+    // Phase 2 — a type that declares no link touches `ont_links` at all. Every
+    // built-in catalog type is in this branch.
+    if link_type_ids.is_empty() {
+        return Ok(());
+    }
+
+    // Phase 3 — read the live edge set and act only on the DIFFERENCE.
+    //
+    // Closing and reopening every declared edge on every revision would be far
+    // simpler, and the conformance suite cannot tell the two apart: `traverse`
+    // reads `valid_to IS NULL` only, so the graph looks identical either way. It
+    // would also be a lie. `ont_links` is effective-dated history, and an
+    // unconditional sweep records a close and a reopen at T1 for a referent that
+    // never changed — a type carrying two link properties (`employment` has
+    // exactly that) would report a position change on every unrelated transfer.
+    // The whole claim of this system is that the history is true, so the edge is
+    // touched only when the referent set actually differs.
+    let live: Vec<(Uuid, Uuid)> = sqlx::query(
+        r#"
+        SELECT link_type_id, to_instance_id
+        FROM ont_links
+        WHERE from_instance_id = $1 AND link_type_id = ANY($2) AND valid_to IS NULL
+        "#,
+    )
+    .bind(*instance_id.as_uuid())
+    .bind(link_type_ids.as_slice())
+    .fetch_all(tx.as_mut())
+    .await?
+    .into_iter()
+    .map(|row| Ok((row.try_get("link_type_id")?, row.try_get("to_instance_id")?)))
+    .collect::<Result<_, sqlx::Error>>()?;
+
+    // A declaration repeated across two properties must not open two edges.
+    let mut desired = edges;
+    desired.sort_unstable();
+    desired.dedup();
+
+    let stale: Vec<(Uuid, Uuid)> = live
+        .iter()
+        .filter(|edge| !desired.contains(edge))
+        .copied()
+        .collect();
+    let fresh: Vec<(Uuid, Uuid)> = desired
+        .iter()
+        .filter(|edge| !live.contains(edge))
+        .copied()
+        .collect();
+
+    // Close BEFORE inserting: an insert-first order would let the sweep close the
+    // edge it just opened. `valid_from < $4` mirrors `CHECK (valid_to IS NULL OR
+    // valid_to > valid_from)` (`0155:75`) — closing an edge at the instant it
+    // opened raises an unmappable 23514 that aborts the whole writeback
+    // transaction. Unreachable today, because `stage_revision_in_tx` already
+    // rejects a `valid_from` at or before the current revision's; kept because
+    // without it a violated invariant takes down the transaction, and with it the
+    // violation leaves a detectable stale edge instead.
+    if !stale.is_empty() {
+        let (stale_types, stale_referents): (Vec<Uuid>, Vec<Uuid>) = stale.into_iter().unzip();
+        sqlx::query(
+            r#"
+            UPDATE ont_links
+            SET valid_to = $4
+            WHERE from_instance_id = $1
+              AND valid_to IS NULL
+              AND valid_from < $4
+              AND (link_type_id, to_instance_id)
+                  IN (SELECT * FROM UNNEST($2::UUID[], $3::UUID[]))
+            "#,
+        )
+        .bind(*instance_id.as_uuid())
+        .bind(stale_types.as_slice())
+        .bind(stale_referents.as_slice())
+        .bind(valid_from)
+        .execute(tx.as_mut())
+        .await?;
+    }
+
+    // Phase 4 — open the edges that are genuinely new. Direction is CHILD ->
+    // PARENT: `from` is the instance carrying the property, `to` is the referent.
+    // `id`/`created_at` take their column defaults.
+    for (link_type_id, to_instance_id) in fresh {
+        sqlx::query(
+            r#"
+            INSERT INTO ont_links (
+                org_id, link_type_id, from_instance_id, to_instance_id, valid_from
+            )
+            VALUES ($1, $2, $3, $4, $5)
+            "#,
+        )
+        .bind(org_uuid)
+        .bind(link_type_id)
+        .bind(*instance_id.as_uuid())
+        .bind(to_instance_id)
+        .bind(valid_from)
+        .execute(tx.as_mut())
+        .await?;
+    }
+    Ok(())
 }
 
 // ===========================================================================
@@ -873,17 +1134,22 @@ struct PropDef {
     key: String,
     field_kind: FieldKind,
     required: bool,
+    /// The type's own declaration data. Carries the property -> link binding read
+    /// by [`sync_property_links_tx`]; `NOT NULL DEFAULT '{}'` (`0152:56`), so no
+    /// `Option`.
+    config: serde_json::Value,
 }
 
 async fn load_property_defs_tx(
     tx: &mut Transaction<'_, Postgres>,
     object_type_id: ObjectTypeId,
 ) -> Result<Vec<PropDef>, PgOntologyError> {
-    let rows =
-        sqlx::query("SELECT key, type, required FROM ont_property_defs WHERE object_type_id = $1")
-            .bind(*object_type_id.as_uuid())
-            .fetch_all(tx.as_mut())
-            .await?;
+    let rows = sqlx::query(
+        "SELECT key, type, required, config FROM ont_property_defs WHERE object_type_id = $1",
+    )
+    .bind(*object_type_id.as_uuid())
+    .fetch_all(tx.as_mut())
+    .await?;
     rows.iter()
         .map(|row| {
             let field_type: String = row.try_get("type")?;
@@ -891,6 +1157,7 @@ async fn load_property_defs_tx(
                 key: row.try_get("key")?,
                 field_kind: FieldKind::parse(&field_type),
                 required: row.try_get("required")?,
+                config: row.try_get("config")?,
             })
         })
         .collect()
