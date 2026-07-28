@@ -13,7 +13,19 @@
 //!
 //! OWNERSHIP. This file, `company_conformance/{harness,rest,store,fixtures}.rs`
 //! are owned outside the lanes and a lane MAY NOT edit them. A lane owns exactly
-//! one file under `company_conformance/fixtures/` and only the param bags in it.
+//! one file under `company_conformance/fixtures/`: that type's `declare`, and the
+//! param bags for it. Every one of the five slots already exists, so landing a
+//! lane is an edit to that lane's file and no other.
+//!
+//! `declare` is the seam this suite shipped without. It resolves the five types
+//! and classifies the result, but on the first version NOTHING between
+//! `Harness::bootstrap` and the first `resolve_type` could create one — bootstrap's
+//! sole ontology call is `seed_governed_config_object_types`, a closed
+//! `install_builtin_catalog` over a digest-allowlisted manifest, and every
+//! `fixtures::*` entry point is reached only from inside `if ids.contains_key(..)`,
+//! after the type has already resolved. The suite was therefore unsatisfiable by
+//! the lanes it was written for, and a lane would have discovered that only after
+//! being told its own file was sufficient.
 //!
 //! RED FOR THE RIGHT REASON. `scenario` resolves all five lane types first and
 //! CLASSIFIES rather than panicking: an absent type must fail with the pinned

@@ -81,7 +81,15 @@ ${A.context ? A.context + '\n' : ''}${CRATE ? `Crate boundary: \`${CRATE}\`. Gro
 ${A.task}
 ${DISCIPLINE}`
 
-// Appended ONLY to phases that build. Exploration is read-only and takes no build lock.
+// Appended to EVERY phase, exploration included.
+//
+// The first version excluded exploration on the reasoning that "reads take no build lock". That
+// premise was refuted by observation within the hour: an explorer asked to confirm a call signature
+// ran `cargo test -p console-ontology-rest --test publish_auto_create_action_as_runtime_role`
+// against the MAIN checkout's Cargo.toml and held `backend/target/debug/.cargo-lock` for over seven
+// minutes, blocking `npm run verify` behind `Blocking waiting for file lock on build directory`.
+// Verifying a signature by executing it is exactly the discipline demanded elsewhere in this file,
+// so the fix is to give exploration a lane too — not to tell it to stop running things.
 const WORKDIR = `
 ## WORKING DIRECTORY — build here, nowhere else
 
@@ -122,7 +130,7 @@ const areas = A.explore?.length ? A.explore : [{
 }]
 
 const facts = (await parallel(areas.map((a) => () =>
-  agent(`${CTX}\n## YOUR EXPLORATION AREA\n${a.prompt}\n\nRead the code. Return exact APIs a caller must use — an implementer will build directly from your answer, so a vague finding becomes their wrong guess.`,
+  agent(`${CTX}${WORKDIR}\n## YOUR EXPLORATION AREA\n${a.prompt}\n\nRead the code. Return exact APIs a caller must use — an implementer will build directly from your answer, so a vague finding becomes their wrong guess.`,
     { label: `explore:${a.label}`, phase: 'Explore', schema: EXPLORE_SCHEMA })
 ))).filter(Boolean)
 

@@ -53,6 +53,20 @@ pub struct Harness {
     /// branch-scope resolution to `BranchScope::All` without a query
     /// (`authz/src/lib.rs:1478-1483`).
     pub executive: UserId,
+    /// The four-eyes counterparty for schema publication, and — unlike
+    /// [`Self::executive`] — a REAL, ACTIVE `users` row, because every layer that
+    /// enforces four-eyes reads the table rather than a token:
+    /// `gov_approvals` FKs `(approver_id, org_id) -> users(id, org_id)` plus
+    /// `CHECK (approver_id <> requested_by)` (`0153_create_governance.sql:74,78`),
+    /// and `assert_write_context` additionally requires `u.is_active`
+    /// (`0165_ontology_object_type_key_revisions.sql:468-473`).
+    ///
+    /// Unread until the first lane publishes a type, and pre-reserved rather than
+    /// added by that lane precisely so no lane has to edit this owned file. The
+    /// allow goes away on its own the moment any `declare` body stops being a
+    /// no-op; it is not suppressing an unused field, it is holding a seam open.
+    #[allow(dead_code)]
+    pub approver: UserId,
     pub runtime_pool: PgPool,
     pub command_pool: PgPool,
     pub admin_token: String,
@@ -66,6 +80,12 @@ impl Harness {
         let admin =
             seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "company-conformance").await;
         let executive = UserId::new();
+        // A SECOND real user. `seed_org_and_super_admin` conflicts the org row away
+        // and always inserts a fresh `users` row, so a second call is the whole
+        // change; `executive` cannot serve here because it deliberately has none.
+        let approver =
+            seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "company-conformance-approver")
+                .await;
         let command_pool = command_role_pool(&owner_pool).await;
 
         // Install the built-in catalog BEFORE anything else. A hand-authored type
@@ -100,16 +120,27 @@ impl Harness {
         let admin_token = token(&issuer, admin, org, "SUPER_ADMIN");
         let executive_token = token(&issuer, executive, org, "EXECUTIVE");
 
-        Self {
+        let harness = Self {
             org,
             admin,
             executive,
+            approver,
             runtime_pool,
             command_pool,
             admin_token,
             executive_token,
             public_pem,
-        }
+        };
+
+        // The lane types, LAST — after the built-in catalog install above, which
+        // `0204_ontology_catalog_additive_upgrade.sql:119-123` requires: an org
+        // holding `ont_object_types` rows with no prior
+        // `ont_builtin_catalog_installs` row raises 23514
+        // `ontology_builtin.empty_org_required`. Unbuilt types are no-ops, so this
+        // leaves the suite RED exactly where it should be.
+        crate::fixtures::declare_all(&harness).await;
+
+        harness
     }
 
     pub fn verifier(&self) -> JwtVerifier {
