@@ -38,6 +38,7 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:attendance-cancel-substitution-postgres \\",
   "//tools/buck:attendance-concurrency-postgres \\",
   "//tools/buck:ontology-object-type-lifecycle-postgres \\",
+  "//tools/buck:ontology-object-type-cas-postgres \\",
   "//tools/buck:ontology-publish-auto-create-action-postgres",
 ];
 const postgresWrapperContracts = [
@@ -58,6 +59,7 @@ const postgresWrapperContracts = [
   ["equipment-3r-http-postgres", "//backend/crates/equipment/rest:console-equipment-rest-itest-equipment_3r_http"],
   ["app-equipment-3r-api-postgres", "//backend/app:console-app-itest-equipment_3r_api"],
   ["ontology-object-type-lifecycle-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-object_type_lifecycle_over_http"],
+  ["ontology-object-type-cas-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-object_type_cas_as_runtime_role"],
   ["ontology-publish-auto-create-action-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-publish_auto_create_action_as_runtime_role"],
 ];
 const postgresWrapperLoader = "run_test_with_postgres_env.sh";

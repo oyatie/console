@@ -234,6 +234,7 @@ jobs:
             //tools/buck:attendance-cancel-substitution-postgres \
             //tools/buck:attendance-concurrency-postgres \
             //tools/buck:ontology-object-type-lifecycle-postgres \
+            //tools/buck:ontology-object-type-cas-postgres \
             //tools/buck:ontology-publish-auto-create-action-postgres
 
   company-conformance:

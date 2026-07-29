@@ -233,6 +233,21 @@ sh_test(
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 
+# The only committed proof that the instance READ path works: it publishes a
+# type, seeds an enforced catalog row plus an attachment, and asserts the list
+# returns EXACTLY the permitted rows as the genuine non-superuser `console_rt` --
+# a forbid collapses it to `[]` and a cross-tenant type id is 404. Every claim
+# this repo makes about policy-filtered reads rests on that test, and it had a
+# `rust_test` target with no wrapper here and no ci.yml step, so it had never
+# executed in CI. Third instance of the same defect after the two below.
+sh_test(
+    name = "ontology-object-type-cas-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-object_type_cas_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-object_type_cas_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
 # The only committed proof of the publish ladder before this lane, and it had
 # neither a wrapper here nor a step in ci.yml -- a rust_test with no sh_test
 # never executes under `test_needs_postgres.sh`, which is the false-green class
