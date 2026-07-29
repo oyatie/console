@@ -841,3 +841,21 @@ One measurement trap is written down because it cost an hour and will recur on a
 Also recorded: `publish_auto_create_action_as_runtime_role`, the only committed proof of the store-level publish ladder, had a Buck target that no workflow referenced. It had never executed. Both ladders now run.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim. The rehearsal was conducted on a disposable namespace of a development cluster and authorises nothing.
+
+## 2026-07-29 — the pipeline the workflow was missing
+
+The slice workflow ran explore, design, implement, prove. Four phases. The gaps between them had been doing real damage all week, and each one is now its own phase with its own agent.
+
+Red tests come first and have a gate of their own: every test must be OBSERVED failing, and failing for the RIGHT reason. A test that is red because a helper is missing or the file does not compile is a broken test rather than a red one, and the distinction is the whole value of the phase. The implementer is told explicitly that it may not edit a test green when the test disagrees with the code it wrote — doing so inverts the point of writing the test first.
+
+Coverage follows implementation because the red tests prove the specification, which is necessarily narrower than the code that ends up shipping. Error and refusal paths before happy paths: an untested happy path is a risk, an untested refusal path is a vulnerability.
+
+Doubt precedes simplification, deliberately. Simplifying wrong code produces elegant wrong code, and the elegance makes the wrongness harder to see. That phase is briefed with the two occasions this program's own suite could not distinguish a correct implementation from a wrong one — a resolver producing a byte-identical graph while writing false history, and an as-of read that silently became a head read — because both were found by reading the diff and asking what else would produce that green.
+
+Simplification carries an explicit floor: never delete validation at a trust boundary, error handling that prevents data loss, an authorization check, tenancy scoping, or any assertion. Removing a check is scope reduction wearing a disguise. Security review comes after simplification so that it reads what actually ships rather than a draft, and is framed as an attack by a holder of valid credentials in another tenant rather than as a checklist.
+
+Integration is a phase because "a test that cannot execute in CI is not a deliverable" has been violated twice here, most recently by a Buck target that existed, was correct, and that no workflow referenced — so the only committed proof of a core mechanism had never once run. It traces every new test from file to workflow step and names each link.
+
+The structural reason each of these is a separate agent rather than an instruction to the implementer is the same reason the final reviewers never see the implementer's narrative: an agent asked to implement and then simplify and then security-review its own work is grading its own homework.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.

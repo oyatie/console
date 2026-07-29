@@ -1,11 +1,17 @@
 export const meta = {
   name: 'slice',
-  description: 'Build ONE vertical slice under Bun-rewrite discipline: parallel exploration, competing designs judged, single implementer, then two adversarial reviewers who see the DIFF ONLY. Reusable for any slice — parameterised by task, exploration areas, and owned paths.',
-  whenToUse: 'Any bounded implementation slice where correctness matters more than speed: a new crate, a gate, a domain type, a migration. Not for trivial edits (a 2-line change does not need eight agents).',
+  description: 'Build ONE vertical slice through the full pipeline: explore, design, RED tests first, implement, cover, doubt, simplify, security, CI integration, then two adversarial reviewers who see the DIFF ONLY. Reusable for any slice — parameterised by task, exploration areas, and owned paths.',
+  whenToUse: 'Any bounded implementation slice where correctness matters more than speed: a new crate, a gate, a domain type, a migration. Not for trivial edits (a 2-line change does not need ten phases).',
   phases: [
     { title: 'Explore', detail: 'parallel readers — read the code, do not guess' },
     { title: 'Design', detail: 'competing designs, then judged and synthesised' },
-    { title: 'Implement', detail: 'one implementer, coherent slice, escalation path' },
+    { title: 'Red', detail: 'failing tests FIRST, each observed failing for the right reason' },
+    { title: 'Implement', detail: 'make them green without rewriting them' },
+    { title: 'Cover', detail: 'the rest of the tests, measured not estimated' },
+    { title: 'Doubt', detail: 'hunt what is wrong and repair it' },
+    { title: 'Simplify', detail: 'smaller without weaker — never delete a check' },
+    { title: 'Security', detail: 'attack it as a hostile tenant' },
+    { title: 'Integrate', detail: 'prove every new test actually executes in CI' },
     { title: 'Prove', detail: 'two adversarial reviewers — diff only, no author reasoning' },
   ],
 }
@@ -196,6 +202,63 @@ Return a FINAL SPECIFICATION concrete enough to implement with no further design
 paths, exact APIs from the exploration findings, and the exact proof of correctness.`,
   { label: 'judge', phase: 'Design' })
 
+// ── The build pipeline ──────────────────────────────────────────────────────
+// Red tests BEFORE implementation, then defect-hunting, simplification, security and CI wiring as
+// SEPARATE passes before the final adversarial verification. Each stage is its own agent because a
+// single agent asked to implement AND simplify AND security-review its own work grades its own
+// homework — the same reason the reviewers never see the implementer's narrative.
+//
+// Order is deliberate and is not arbitrary taste: defects are fixed before simplification (you
+// cannot safely simplify code that is wrong), simplification precedes security review (so the
+// review reads what actually ships, not a draft), and CI wiring precedes verification (so the
+// verifier can confirm the gate really executes rather than that it merely exists).
+const COMMIT_RULE = `
+**COMMIT as you go** on the branch already checked out in your lane. Atomic commits, one coherent
+step each. Stage the paths you own BY NAME — never \`git add -A\` or \`git commit -a\`, which is how
+one agent's work ends up inside another agent's commit. \`git stash\` and \`git reset\` stay banned.
+
+An earlier version of this workflow told implementers to leave work UNCOMMITTED because "the caller
+owns landing". That contradicted the stash/reset ban, an implementer followed the nearer rule, and a
+concurrent \`git reset --hard\` in the same tree destroyed a finished, passing deliverable. The
+caller owns landing; it does not own keeping your work alive, and neither does the filesystem.`
+
+phase('Red')
+
+// TDD, and the reason it is a separate phase with its own gate: a test written after the code tends
+// to assert what the code does. Written first, it asserts what the code SHOULD do. The gate is that
+// the tests must be OBSERVED failing — a red test nobody watched fail is just an unproven claim.
+const red = await agent(`${CTX}${WORKDIR}
+
+Invoke the \`test-driven-development\` skill and follow it.
+
+## SPECIFICATION — already judged. Do NOT implement it yet.
+${spec}
+
+Exploration findings you may rely on:
+${JSON.stringify(facts, null, 2)}
+
+## Your job: write the FAILING tests, and nothing else
+Write the tests that will prove this specification correct, BEFORE any implementation exists. Then
+RUN them and paste the real failure output.
+
+Hard rules:
+1. **Do not write implementation code.** If a test cannot even compile without a function that does
+   not exist yet, add the smallest possible signature that returns \`unimplemented!()\` or its
+   equivalent — never a working body. That stub is the thing the next phase replaces.
+2. **Every test must be OBSERVED failing, and for the RIGHT REASON.** Quote the actual output. A
+   test that fails because a helper is missing, a fixture is wrong, or the file does not compile is
+   NOT a red test — it is a broken test that happens to be red. Distinguish these explicitly.
+3. **A test that passes before the implementation exists is a defect in the test.** Say so and fix
+   it. This is the single most valuable thing this phase produces.
+4. Assert BEHAVIOUR, not implementation shape. A test that pins internal structure blocks the
+   simplification phase for no safety gain.
+5. Include the negative and refusal cases now, not later — those are the ones that get quietly
+   dropped when written after the fact.
+${COMMIT_RULE}
+
+Report: each test, the failure you observed, and whether that failure is the right one.`,
+  { label: 'red', phase: 'Red' })
+
 phase('Implement')
 
 const impl = await agent(`${CTX}${WORKDIR}
@@ -203,13 +266,15 @@ const impl = await agent(`${CTX}${WORKDIR}
 ## SPECIFICATION — already judged. Implement it; do not redesign.
 ${spec}
 
-Exploration findings you may rely on:
-${JSON.stringify(facts, null, 2)}
+## THE RED TESTS ARE ALREADY WRITTEN AND OBSERVED FAILING
+${red}
 
 ## Your job
-Implement it, and **COMMIT as you go** on the branch already checked out in your lane. Atomic
-commits, one coherent step each. The caller still owns landing — merging, the authority train, the
-pull request — but it does not own keeping your work alive, and neither does the filesystem.
+Make those tests pass. Do not rewrite them to fit your implementation — if a test is genuinely
+wrong, say so explicitly and explain why rather than quietly editing it green. Changing a test to
+match the code you wrote inverts the entire point of writing it first.
+
+Implement it, and ${COMMIT_RULE.trim().slice(2)}
 
 This instruction used to read "leave changes UNCOMMITTED, the caller owns landing", which
 contradicted the \`git stash\`/\`git reset\` ban three paragraphs above it. An implementer followed
@@ -228,6 +293,141 @@ Requirements:
 4. **Report what you could NOT verify, plainly.** An unproven claim stated as fact is worse than an
    admitted gap, because it survives review.`,
   { label: 'implement', phase: 'Implement' })
+
+phase('Cover')
+
+const cover = await agent(`${CTX}${WORKDIR}
+
+The specification is implemented and the red tests are green. Read the diff yourself:
+\`git diff ${BASE_REF}...HEAD\`.
+
+## Your job: close the coverage gap the red tests did not reach
+The red phase wrote the tests that prove the SPEC. That is necessarily narrower than the code that
+now exists. Find what ships untested and test it.
+
+1. **Measure, do not estimate.** Use whatever coverage tooling this repo has; if none is wired, walk
+   every branch of the new code by hand and say that is what you did. "Looks well covered" is not a
+   measurement.
+2. Prioritise by consequence, not by line count: error paths, refusal paths, boundary values, and
+   anything touching authorization, tenancy or money. An untested happy path is a risk; an untested
+   refusal path is a vulnerability.
+3. **Every test you add must be proven RED first** — break the code, watch it fail, restore with a
+   \`cp\` backup (never \`git checkout\`, which would discard uncommitted work). A test added at this
+   stage is at the highest risk of asserting what the code does rather than what it should do.
+4. State the residual gap plainly. Some things genuinely cannot be tested at this layer; naming them
+   is worth more than a fabricated test that pretends otherwise.
+${COMMIT_RULE}`,
+  { label: 'cover', phase: 'Cover' })
+
+phase('Doubt')
+
+// Defect-hunting BEFORE simplification: simplifying wrong code produces elegant wrong code, and the
+// elegance makes the wrongness harder to see.
+const doubt = await agent(`${CTX}${WORKDIR}
+
+Invoke the \`doubt-driven-development\` skill, and draw on \`code-review-and-quality\` and
+\`debugging-and-error-recovery\` as needed. Follow them.
+
+An implementation was just committed on this lane's branch. Read it yourself:
+\`git diff ${BASE_REF}...HEAD\`. You are NOT given the implementer's account — their reasoning would
+prime you to accept it.
+
+## Your job: find what is WRONG, then fix it
+You may edit, unlike the final reviewers. This is the repair pass.
+
+1. **Doubt every claim the code makes about itself.** Comments, docstrings and commit messages are
+   the least reliable artefacts in this repository — it has recorded THREE separate incidents of a
+   comment describing a problem it had already fixed, one of them yesterday. Where a comment and the
+   code disagree, the code is the fact and the comment is the defect.
+2. **Hunt the failure modes the tests do not express.** This suite has TWICE been unable to
+   distinguish a correct implementation from a wrong one: a resolver that produced a byte-identical
+   graph while writing false history, and an as-of read silently becoming a head read. Both were
+   caught by reading the diff and asking what ELSE would produce this green.
+3. Check concurrency, partial failure, and rollback: what happens if this is interrupted midway?
+4. Fix what you find, with a test that would have caught it. Report anything you judge out of scope
+   as an explicit escalation rather than leaving it unsaid.
+${COMMIT_RULE}`,
+  { label: 'doubt', phase: 'Doubt' })
+
+phase('Simplify')
+
+const simplify = await agent(`${CTX}${WORKDIR}
+
+Invoke the \`code-simplification\` skill and the \`ponytail\` skill. Follow them.
+
+Read the diff yourself: \`git diff ${BASE_REF}...HEAD\`.
+
+## Your job: make it smaller without making it weaker
+The tests are green and the known defects are fixed. Now remove what does not earn its place.
+
+1. **Behaviour must not change.** Run the full test set before and after; both must be identical.
+   If a simplification requires a test to change, it is not a simplification — stop and report it.
+2. Delete speculative generality: an abstraction with one implementation, a parameter every caller
+   passes the same value for, a config knob nothing configures, a branch nothing reaches.
+3. Prefer the stdlib and what this repo already has over anything new. Reuse beats invention.
+4. **Do NOT simplify away:** input validation at trust boundaries, error handling that prevents data
+   loss, authorization checks, tenancy scoping, or any assertion. Removing a check is not
+   simplification, it is scope reduction wearing a disguise — and this repo's reviewers explicitly
+   check for deleted assertions.
+5. If the diff is already tight, say so and change nothing. A pass that invents work to look busy is
+   worse than a pass that reports the code is clean.
+${COMMIT_RULE}`,
+  { label: 'simplify', phase: 'Simplify' })
+
+phase('Security')
+
+// After simplification deliberately: the review must read what actually ships.
+const security = await agent(`${CTX}${WORKDIR}
+
+Invoke the \`security-and-hardening\` skill (and \`claude-security\` if relevant). Follow them.
+
+Read the diff yourself: \`git diff ${BASE_REF}...HEAD\`. You may edit to fix what you find.
+
+## Your job: attack this change
+This is a multi-tenant system with row-level security, policy-based authorization and an audit
+chain. Assume an attacker holds valid credentials for ONE tenant and wants another tenant's data.
+
+1. **Tenancy first.** Is every new query armed with the org scope? Is any read reachable that
+   bypasses RLS? A superuser or BYPASSRLS read in a test makes the isolation assertion vacuous —
+   check that the tests assert as the genuine non-superuser runtime role.
+2. **Authorization, not authentication.** Who can call this? Is the check on the right side of the
+   trust boundary? Does a deny-by-default path stay deny-by-default under every input, including
+   empty, null and absent?
+3. **Injection and trust boundaries.** Any string interpolated into SQL, any client-supplied
+   identifier used as a key, any input reaching a \`SECURITY DEFINER\` function.
+4. **Failure modes.** Does an error leak internal state? Does a partial failure leave a half-applied
+   write? Does a raw database error escape as a 500 where a mapped 4xx belongs?
+5. Fix what you find. For anything you cannot fix in scope, ESCALATE it explicitly with its concrete
+   attack path — a named vulnerability is worth more than a silent one.
+${COMMIT_RULE}`,
+  { label: 'security', phase: 'Security' })
+
+phase('Integrate')
+
+// CI wiring as its own phase because "a test that cannot execute in CI is not a deliverable" has
+// been violated repeatedly here — most recently a Buck target that existed, was correct, and that no
+// workflow ever referenced, so the only proof of a core mechanism had never once run.
+const integrate = await agent(`${CTX}${WORKDIR}
+
+Invoke the \`ci-cd-and-automation\` skill and follow it.
+
+Read the diff yourself: \`git diff ${BASE_REF}...HEAD\`.
+
+## Your job: make every new test actually EXECUTE in CI
+A test that cannot run in CI is not a deliverable. This repository has shipped the failure twice: a
+Buck target that existed and was correct but that no workflow referenced — so the only committed
+proof of a core mechanism had never executed — and a required check whose display name promised
+something its steps did not run.
+
+1. Trace each new test from the file to the workflow step that runs it. Name the chain explicitly:
+   generator entry, build target, wrapper, workflow step. A missing link anywhere means it never runs.
+2. Generated files are GENERATED. Never hand-edit one; change the generator and regenerate.
+3. **Prove it, do not assume it.** Run the local equivalent of the CI job. If a job cannot run
+   locally, say exactly which link you could not verify and why.
+4. If a new gate should become a required check, say so and explain the sequencing — a required
+   context that has never reported blocks every merge, so it must report green at least once first.
+${COMMIT_RULE}`,
+  { label: 'integrate', phase: 'Integrate' })
 
 phase('Prove')
 
@@ -248,7 +448,10 @@ const VERDICT_SCHEMA = {
 // themselves and are given no summary of it.
 const REVIEW_BASE = `${CTX}${WORKDIR}
 
-**READ-ONLY. No edits, no git mutations.**
+Invoke the \`verification-before-completion\` skill and follow it.
+
+**READ-ONLY. No edits, no git mutations.** Every earlier phase could edit; you cannot. You are the
+last thing between this change and the branch, and your job is to disbelieve it.
 
 An implementation was just COMMITTED on this lane's branch. **Read the diff yourself** —
 \`git diff ${BASE_REF}...HEAD\`, plus \`git log --oneline ${BASE_REF}..HEAD\` and
@@ -300,4 +503,16 @@ const rerun = passed ? null : {
   suggested_context_additions: verdicts.flatMap((v) => v.residual || []),
 }
 
-return { specification: spec, implementation: impl, verdicts, passed, rerun }
+return {
+  specification: spec,
+  red,
+  implementation: impl,
+  cover,
+  doubt,
+  simplify,
+  security,
+  integrate,
+  verdicts,
+  passed,
+  rerun,
+}
