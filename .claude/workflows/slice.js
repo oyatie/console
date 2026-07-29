@@ -46,6 +46,9 @@ const REPO = A.repo || `${HOME}/Developer/console`
 const LANE = A.lane ? `${HOME}/Developer/console-lanes/lane-${A.lane}` : null
 const BUILD_CWD = LANE || REPO
 if (!LANE) log('WARNING: no `lane` arg — implement/prove will build in the MAIN checkout and may contend on the build lock. Pass lane: "1".."5".')
+// What a reviewer diffs against. The implementer now COMMITS, so `git diff` alone would show an
+// empty tree and a reviewer would report "no changes" as a pass.
+const BASE_REF = A.base || 'origin/main'
 const N_DESIGNS = Math.min(Math.max(A.designs ?? 2, 1), 3)
 const CRATE = A.crate || ''
 const OWNS = A.owns || ''
@@ -91,13 +94,26 @@ ${DISCIPLINE}`
 // Verifying a signature by executing it is exactly the discipline demanded elsewhere in this file,
 // so the fix is to give exploration a lane too — not to tell it to stop running things.
 const WORKDIR = `
-## WORKING DIRECTORY — build here, nowhere else
+## WORKING DIRECTORY — READ THIS BEFORE RUNNING ANYTHING
 
-**Before your first cargo command, in the same shell:**
+**Your inherited cwd is NOT your lane.** You start in whatever directory the calling session
+happened to be in when you were spawned, and that value drifts constantly as the caller works.
+Assume it is wrong.
+
+**Run this FIRST — before \`git status\`, before \`pwd\`, before any orientation command at all:**
 \`\`\`bash
 cd ${BUILD_CWD}
 source ${REPO}/scripts/console/lane-env.sh    # RUSTC_WRAPPER=sccache, 50G ceiling
 \`\`\`
+
+This is not a formality. An implementer once oriented itself with \`git status\` in its inherited
+cwd, found a DIFFERENT lane's branch and commits there, concluded that its own brief was stale,
+and asked whether it should ignore the instruction and work in the wrong tree. It was right about
+what it saw and wrong about what it meant. Had it proceeded, its work would have landed in another
+agent's open pull-request branch and been swept into that agent's next commit.
+
+If what you find after \`cd\` contradicts your brief, that is a real conflict worth escalating. If
+you find a contradiction BEFORE \`cd\`, you are simply in the wrong directory.
 sccache's cache is user-global (\`~/Library/Caches/Mozilla.sccache\`), so lanes — and other repos on
 this machine — reuse each other's compiled artifacts. Without it every lane recompiles the whole
 dependency graph from cold: measured \`Cache hits: 0%\` across 4,084 commands, because nothing had
@@ -191,7 +207,18 @@ Exploration findings you may rely on:
 ${JSON.stringify(facts, null, 2)}
 
 ## Your job
-Implement it. Leave changes in the working tree, UNCOMMITTED — the caller owns landing.
+Implement it, and **COMMIT as you go** on the branch already checked out in your lane. Atomic
+commits, one coherent step each. The caller still owns landing — merging, the authority train, the
+pull request — but it does not own keeping your work alive, and neither does the filesystem.
+
+This instruction used to read "leave changes UNCOMMITTED, the caller owns landing", which
+contradicted the \`git stash\`/\`git reset\` ban three paragraphs above it. An implementer followed
+the nearer rule, and a concurrent agent's \`git reset --hard\` in the same tree destroyed the
+finished deliverable — a working mechanism, already passing, gone. Two rules pointing opposite ways
+is a defect in the process, not in the agent that picked one.
+
+Never \`git commit -a\` or \`git add -A\`: stage the paths you own by name. A blanket add is how one
+agent's work ends up inside another agent's commit.
 ${OWNS ? `You own: ${OWNS}. Touching anything else is a scope violation; escalate instead.\n` : ''}
 Requirements:
 1. It must COMPILE${CRATE ? ` — run \`cargo check -p ${CRATE}\` and iterate until clean` : ''}.
@@ -223,10 +250,17 @@ const REVIEW_BASE = `${CTX}${WORKDIR}
 
 **READ-ONLY. No edits, no git mutations.**
 
-An implementation was just made in this working tree. **Read the diff yourself** — \`git diff\` and
-\`git status --short\`. You are deliberately NOT given the implementer's account of what they did:
-their reasoning would prime you to accept it, and Bun's reviewers saw the diff alone for exactly
-this reason.
+An implementation was just COMMITTED on this lane's branch. **Read the diff yourself** —
+\`git diff ${BASE_REF}...HEAD\`, plus \`git log --oneline ${BASE_REF}..HEAD\` and
+\`git status --short\` to confirm nothing was left dangling. You are deliberately NOT given the
+implementer's account of what they did: their reasoning would prime you to accept it, and Bun's
+reviewers saw the diff alone for exactly this reason.
+
+**If you build or test, do it in THIS lane and nowhere else.** Never run a build in another agent's
+lane — two writers in one worktree share a \`target/\` and a build lock, and the results are not
+merely slow but WRONG. A verification run made while another agent was building in the same tree
+reported a test binary as 0-passed/3-failed; the identical command on an uncontended tree reported
+3-passed/0-failed minutes later. A contended run is not evidence, in either direction.
 
 Assume the change is WRONG and look hard before conceding anything. Bun's reviewers also rejected
 solutions that needed a paragraph of justification to defend — a workaround that must be explained

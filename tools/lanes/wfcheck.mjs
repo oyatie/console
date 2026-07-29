@@ -25,6 +25,25 @@ import vm from 'node:vm'
 
 const PENDING = Symbol('pending')
 
+/** A value that tolerates any property access, indexing, call, await or interpolation. */
+function stub() {
+  const target = function () { return stub() }
+  return new Proxy(target, {
+    get(_t, prop) {
+      // `then: undefined` keeps `await` from treating it as a thenable and hanging.
+      if (prop === 'then') return undefined
+      // A workflow script interpolates agent results into prompt template literals, which coerces
+      // to a primitive. Without these the probe throws "Cannot convert object to primitive value"
+      // — its own defect, reported as if it were the script's.
+      if (prop === Symbol.toPrimitive) return () => '<stub>'
+      if (prop === 'toString' || prop === Symbol.toStringTag) return () => '<stub>'
+      if (prop === Symbol.iterator) return function* () {}
+      return stub()
+    },
+    apply: () => stub(),
+  })
+}
+
 async function check(file, argsJson) {
   const src = readFileSync(file, 'utf8')
     .replace(/^export const meta/m, 'const meta') // `export` is illegal outside a module
@@ -33,9 +52,16 @@ async function check(file, argsJson) {
     args: argsJson ? JSON.parse(argsJson) : {},
     // agent()/parallel()/pipeline() never resolve: reaching a pending await means module scope
     // completed, which is exactly what is under test. Nothing is spawned and nothing is billed.
-    agent: () => new Promise(() => {}),
-    parallel: () => new Promise(() => {}),
-    pipeline: () => new Promise(() => {}),
+    // These RESOLVE rather than hang. An earlier version returned never-settling promises, which
+    // meant evaluation stopped at the script's first `await` and everything after it — every later
+    // phase's template literals, where an undefined identifier hides just as well — went unchecked.
+    // That is how a `${BASE_REF}` with no binding passed this probe: it lives after the first
+    // await, so the crash would have fired only once the implementer had already finished.
+    // Returning a permissive stub lets the whole script run; property access on it yields more
+    // stubs rather than throwing, so only genuine ReferenceErrors surface.
+    agent: async () => stub(),
+    parallel: async (thunks) => (Array.isArray(thunks) ? thunks.map(() => stub()) : []),
+    pipeline: async (items) => (Array.isArray(items) ? items.map(() => stub()) : []),
     phase: () => {},
     log: () => {},
     budget: { total: null, spent: () => 0, remaining: () => Infinity },

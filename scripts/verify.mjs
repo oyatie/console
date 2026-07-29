@@ -39,7 +39,7 @@ const JOBS = new Map([
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
   ["api-contract", "boots a Buck2-built app against a live listener with the CI keypair fixture"],
-  ["company-conformance", "the fan-out's immutable target, expected RED at 0 of 12 until the five lane types ship; mirroring it would fail every local verify for the reason it is deliberately not a required check. Promoted to required — and moved to the `db` tier here — as the LAST commit of the fan-out"],
+  ["company-conformance", true],
 ]);
 const MIRRORED_JOBS = [...JOBS].filter(([, v]) => v === true).map(([name]) => name);
 const POSTGRES_IMAGE =
@@ -162,6 +162,14 @@ const PLAN = new Map([
   ["Render manifests and NetworkPolicy enforcement preflight", { tier: "fast" }],
   ["Production hardening contract", { tier: "fast" }],
   ["Production hardening regression tests", { tier: "fast" }],
+
+  // ---- company-conformance ------------------------------------------------
+  // Mirrored as of the fan-out's last commit. It was declared not-mirrored while
+  // the suite was expected RED, because running it locally would have failed
+  // every verify for the same reason it was deliberately not a required check.
+  // All five lane types now exist and it is green at 12/12, so it is a normal
+  // `db`-tier step and the local mirror runs the real thing.
+  ["Company conformance against disposable PostgreSQL", { tier: "db" }],
 ]);
 
 /** Fail closed when ci.yml grows or loses a job, in either direction. */

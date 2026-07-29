@@ -112,6 +112,47 @@ verification — 20 minutes of wall clock nobody should be blocking on. What act
 parallel work is `strict: true` (every merge forces every other open PR to rebase → new C → 390-ref
 rebind → full CI re-run). So: **parallelise the work in lanes, serialise the landing in batches.**
 
+### One writer per lane — the rule tonight cost us (2026-07-29)
+
+A worktree isolates **files**, not **runtime**. That distinction is well documented elsewhere; the
+failure modes usually named are shared ports, shared databases, shared caches and shared build
+artifacts. Tested against this harness rather than adopted on faith — two lanes running different
+suites **concurrently**, measured:
+
+| resource | isolated here? | mechanism |
+|---|---|---|
+| ports | yes — 32823 vs 32824 | `-p 127.0.0.1::5432`, dynamic |
+| database | yes | per-run container **and** per-run database name |
+| credentials | yes | per-run generated passwords, mode-0600 env file |
+| build artifacts | yes | one `backend/target` per worktree |
+| container/volume | yes | `--rm` + `docker rm -fv` + per-run leak assertion |
+
+Result: **both lanes green in 9 s, zero leaks.** So the generic warning does not apply to this
+setup, and no runtime-isolation layer needs adopting. Do not take that on the strength of the table
+— re-run the experiment if you change the harness.
+
+What DID fail was not a runtime gap at all. **Two agents wrote in one worktree.** A lane was assigned
+to a peer and then built in by the assigner:
+
+* a verification run made while the other agent was building in the same tree reported a test binary
+  **0 passed / 3 failed**; the identical command on an uncontended tree reported **3 passed / 0
+  failed** minutes later. A contended run is not evidence, in either direction — and this one nearly
+  caused a correct result to be rejected;
+* a `git reset --hard` (lane setup) and the authority rebind's own reset **destroyed a peer's
+  finished, passing deliverable** that its brief had told it to leave uncommitted.
+
+Three mechanical rules, each earned:
+
+1. **A lane has exactly ONE writer.** Never build, test, or mutate git in a lane you do not own. To
+   verify someone else's work, mirror their branch into a lane you *do* own (`git fetch <their
+   worktree> <branch>`), never run in theirs.
+2. **Commit as you go; stage by path.** Never `git add -A` or `git commit -a` — a blanket add is how
+   one agent's work lands inside another's commit. "Leave it uncommitted, the caller lands it" is
+   withdrawn: it contradicted the `stash`/`reset` ban and cost a deliverable.
+3. **Hygiene is measured on your OWN run.** A global `docker volume ls | wc -l` before/after is
+   confounded the moment a peer runs a container — observed reporting `34 → 35` when the new volume
+   was someone else's. `tools/lanes/pgtest.sh` now asserts only on its own container name.
+
 ### Rehearsal results (2026-07-28) — measured, not assumed
 
 Three lanes built real crates concurrently. **Isolation holds; landing does not.**
