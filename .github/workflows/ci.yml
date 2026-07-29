@@ -227,12 +227,21 @@ jobs:
             //tools/buck:attendance-concurrency-postgres
 
   company-conformance:
-    # The immutable target the company/HR fan-out aims at. DELIBERATELY NOT a
-    # required check yet: it is expected RED until the five lane types ship, and
-    # a required red would block every merge in the meantime. Promote it to
-    # required as the LAST commit of the fan-out — an unwired target that never
-    # executes is the false-green class this repo has already shipped six times.
-    name: Company conformance — immutable target (expected red until fan-out lands)
+    # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and
+    # a REQUIRED check as of the fan-out's last commit. It was deliberately not
+    # required while it was expected red, because a required red blocks every
+    # merge — and an unwired target that never executes is the false-green class
+    # this repo has already shipped six times. Required at the moment it became
+    # both satisfiable and meaningful, which is the only point where the two
+    # failure modes are simultaneously closed.
+    #
+    # NOTE: it proves the twelve ids the suite can express, and no more. Twice
+    # during the fan-out this target could not distinguish a correct
+    # implementation from a wrong one — link-history churn and an as-of vs
+    # current-head read both left it fully green. The committed mechanism tests
+    # in adapter-postgres cover what it structurally cannot see; do not treat a
+    # green here as sufficient evidence for a mechanism this suite cannot observe.
+    name: Company conformance — 12/12 required target
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 35

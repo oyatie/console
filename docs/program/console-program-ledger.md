@@ -785,3 +785,13 @@ Two instruments were also wrong, both mine. The volume-leak detector compared a 
 One substantive finding is recorded rather than fixed. The comment above `canonical_revision` claimed the fixity hash was order-stable because the workspace had no `preserve_order` feature. Measured, that is false — `cedar-policy-core` enables it, and a probe in this workspace round-trips an object without sorting its keys. The canonicalization is therefore order-dependent and `verify_chain` can report a break on untampered data for any object with two or more attribute keys. It is pre-existing, it is why the conformance suite asserts chain linkage rather than recomputing hashes, and the fix alters every existing `row_hash` — so it needs a re-seal decision and an owner, not a drive-by edit. The comment is corrected; the defect is escalated.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim. A green conformance target is a statement about the target, not about production readiness.
+
+## 2026-07-29 — the target becomes the gate
+
+`Company conformance` is a required check. It was deliberately not one while it was expected red, and it is one now that it is green at twelve of twelve, which is the only moment both failure modes are closed at once: a required red blocks every merge on something nobody can clear, and an optional green is a gate nobody has to respect. This program has shipped the second kind six times and spent a week clearing the first.
+
+Its display name changed with it. The job still announced itself as "expected red until fan-out lands", which was accurate for four days and is now a check advertising its own failure as normal — unreadable as a gate, and this one is the gate.
+
+The header now also records what a green here does NOT prove, because that was learned twice and expensively. The link resolver's history churn produced a byte-identical graph while writing changes into `ont_links` that never happened, and mutating the derivation's as-of read to a current-head read left the suite fully green while the committed adapter test went red. In both cases every one of the twelve ids passed. A reader deciding what evidence this gate constitutes should be told at the gate, not left to find it here.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
