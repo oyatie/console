@@ -807,3 +807,17 @@ The rule this program keeps restating — cite `file:line` of CODE, never a head
 Corrected rather than deleted: the pre-state is why those assertion classes were chosen, and an assertion whose motivation has been erased is one someone later deletes as redundant.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
+
+## 2026-07-29 — the authoring surface is green in CI and 503 in production
+
+An exploration of what a no-code, in-console ontology editor would require produced one finding that outweighs the rest: every ontology WRITE runs on a command pool that no real deployment configures. `command_pool()` returns None unless `ONTOLOGY_COMMAND_DATABASE_URL` is set; that variable is supplied by a kustomize component which `prod`, `on-prem` and `oci-guest` do not reference at all — only two experimental `pr-473-expand-*` overlays do. CI sets it. So `create_object_type` and `stage_revision` return 503 where the system actually runs, today, and every pull request that touches them is green.
+
+This program already has a name for that shape: a gate green on the pull request and impossible where it ships. It was recorded once for a tripwire that resolved a candidate SHA the squash merge destroys. It is the same defect with a different subject, and it would have been discovered on the Monday someone shipped the missing route, merged it green, and could not drive the loop.
+
+Three further walls were found in the same pass, none of them visible from the code that looked complete. `GET /instances` is reachable and permanently empty — the list residual fail-closes to `deny_all()` when no policy is attached, and attaching one is downstream of a catalog table no application role may INSERT into, enforced by a trigger rather than only by a grant. Changing a field in place is structurally impossible, and not for the reason the grants suggest: every ontology write runs inside a `SECURITY DEFINER` function, where a `REVOKE` does no work, so the binding constraint is that staging must resubmit the entire child snapshot byte-for-byte.
+
+The document itself is worth recording as a process result. Its first draft carried four factual errors from the analysis that preceded it, including two the author had already stated aloud as fact. Three adversarial reviewers across two rounds found sixteen more, one of which inverted the headline. The second round found that the first round's corrections had introduced three new errors of their own — a pass that fixes ten claims and breaks three is a net loss, and the only reason that is known is that it was rechecked rather than trusted.
+
+The general lesson is narrow and worth stating plainly. Every one of these errors survived because the code they described was green. Nothing failed. No gate in this repository asks whether a route that exists is reachable in the environment it deploys to, and none asks whether a paragraph still describes the function beneath it.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim. Nothing in the idea document is approved work.
