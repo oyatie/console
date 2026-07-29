@@ -47,16 +47,32 @@
 //! declarative substrate provably cannot fake it:
 //!
 //!   1. RELATIONAL INTEGRITY THROUGH THE ENGINE (CC-02/03/04). Not "the instance
-//!      has an `org_unit_id` attribute" — `traverse` must return the edge. The
-//!      auto `create` action only runs `apply_edits`, which writes ATTRIBUTES
-//!      (`application/src/lib.rs:296`); `PgInstanceStore::create_link` has zero
-//!      non-test callers, so nothing on the action path writes `ont_links`. A
-//!      declared reference property yields an empty graph.
+//!      has an `org_unit_id` attribute" — `traverse` must return the edge.
+//!      WHEN THIS WAS WRITTEN that could not happen: the auto `create` action
+//!      only runs `apply_edits`, which writes ATTRIBUTES
+//!      (`application/src/lib.rs:296`), and `PgInstanceStore::create_link` had
+//!      zero non-test callers, so a declared reference property yielded an empty
+//!      graph. It holds NOW because this assertion forced the mechanism into
+//!      existence: `sync_property_links_tx` (`adapter-postgres/src/instances.rs`)
+//!      projects a property's declared `config.link` into a real `ont_links`
+//!      edge on every revision write. The assertion stays as the regression that
+//!      guards it.
 //!   2. REFERENTIAL VALIDATION (CC-05). A dangling or wrong-type reference must
-//!      be REFUSED. The engine's only check on a `reference` property is
-//!      `value.is_string()` (`instances.rs` `check_field_shape`) — it never
-//!      verifies the referent exists or has the right type, so a stub accepts a
-//!      random UUID and a pointer at the company.
+//!      be REFUSED. Likewise historical: the engine's only check on a
+//!      `reference` property WAS `value.is_string()` (`instances.rs`
+//!      `check_field_shape`), so a stub accepted a random UUID or a pointer at
+//!      the wrong type. `sync_property_links_tx` now pre-checks both in Rust —
+//!      `not_found` for a missing referent, `validation` for a wrong-typed one,
+//!      compared on `stable_key` rather than the per-version `object_type_id`.
+//!
+//!      Both paragraphs above described the engine as it was on 2026-07-28 and
+//!      were left describing it that way for one day after the code changed
+//!      underneath them. They are corrected here rather than deleted because the
+//!      pre-state is why these assertion classes were chosen — but a reader who
+//!      trusted the stale text would have concluded the engine performs no
+//!      referential validation, which is now the opposite of true. This is the
+//!      same failure this program has recorded twice before: a comment that
+//!      describes the problem it has already fixed.
 //!   3. DERIVATION (CC-10). The pay run's `gross_total` is COMPUTED from the
 //!      referenced employments' `base_salary`; the suite never sends it and
 //!      asserts the fixture did not either. `apply_edits` resolves an edit to a

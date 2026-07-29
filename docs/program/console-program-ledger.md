@@ -795,3 +795,15 @@ Its display name changed with it. The job still announced itself as "expected re
 The header now also records what a green here does NOT prove, because that was learned twice and expensively. The link resolver's history churn produced a byte-identical graph while writing changes into `ont_links` that never happened, and mutating the derivation's as-of read to a current-head read left the suite fully green while the committed adapter test went red. In both cases every one of the twelve ids passed. A reader deciding what evidence this gate constitutes should be told at the gate, not left to find it here.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
+
+## 2026-07-29 — the third comment that described a problem it had already fixed
+
+The conformance suite's own module doc claimed the engine writes no graph edges for a declared reference property, and performs no check on a reference beyond `value.is_string()`. Both were true when written and both were falsified within a day by the mechanism the suite itself forced into existence. A reader trusting the text would have concluded this engine performs no referential validation, which is now the opposite of true.
+
+That is three instances of one failure mode now recorded here. A migration header describing the problem it had already fixed killed a plan premise that had been verified twice. A comment asserting the fixity hash was order-stable was measured false this week. And now a test suite's own doc, in the file whose whole purpose is to be the immutable target other work aims at.
+
+The rule this program keeps restating — cite `file:line` of CODE, never a header comment — is usually explained as "comments can be wrong". The sharper reading is that comments rot *silently while the code they describe is still green*. Nothing failed. Every gate passed. The only signal was a reviewer reading a paragraph and a resolver side by side and noticing they disagreed. That is not a signal any gate in this repo produces, which is worth knowing before trusting a green run to mean the documentation is current.
+
+Corrected rather than deleted: the pre-state is why those assertion classes were chosen, and an assertion whose motivation has been erased is one someone later deletes as redundant.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
