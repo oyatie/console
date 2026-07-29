@@ -859,3 +859,17 @@ Integration is a phase because "a test that cannot execute in CI is not a delive
 The structural reason each of these is a separate agent rather than an instruction to the implementer is the same reason the final reviewers never see the implementer's narrative: an agent asked to implement and then simplify and then security-review its own work is grading its own homework.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.
+
+## 2026-07-29 — the fourth comment that outlived the problem it described
+
+The ontology reachability job carried a comment saying it was not a required check, that this made it a false-green, and that promoting it was the deliverable that would close the lane. It was promoted an hour later. The comment survived the act it was describing, and would have told the next reader that a required gate was optional.
+
+That is four instances this week: a migration header describing the problem it had already fixed, a claim that the fixity hash was order-stable, the conformance suite's own module doc describing an engine that two of its own assertions had since changed, and now this. Three of the four were written by the same hand that then closed the gap and left the description standing.
+
+The interesting part is that none of them is carelessness about comments in general. Each was written carefully, was accurate when written, and described exactly the thing the author was about to fix. The failure is structural: closing a gap feels like the end of the task, and the sentence that motivated the work goes stale at precisely the moment attention moves on. A gate turning green is the signal to stop looking, which is also the moment the prose describing the red state becomes false.
+
+No mechanism in this repository catches it. Every one of the four was found by a person or an agent reading a paragraph and the code beneath it side by side and noticing they disagreed — never by a test, a gate, or a review checklist. That is worth stating plainly rather than resolving to be more careful, because three prior resolutions to be more careful produced a fourth instance.
+
+Recorded alongside it: the promotion made the job's display name load-bearing. Branch protection matches the required context on that literal string, so renaming the job without updating the protection contexts in the same change silently un-requires it and restores the false-green the old comment described. That was verified against the live protection API rather than assumed.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, release, production-exposure, legal-qualification, or Korea claim.

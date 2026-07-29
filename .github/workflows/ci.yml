@@ -192,10 +192,14 @@ jobs:
         run: tools/buck2 test //backend/crates/support/domain:console-support-domain-unit
 
   postgres-domain-reachability:
-    # NOT a required check yet, so a red here does not block a merge. That is a
-    # false-green until it is promoted, and promotion is the deliverable that
-    # closes this lane -- not a follow-up. Rename the display name only while it
-    # is unrequired: the required-context match is on the literal string.
+    # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
+    # once it had reported green on main at least once — a required context that
+    # has never reported blocks every merge, so the order matters.
+    #
+    # The display name below is now LOAD-BEARING: branch protection matches the
+    # required context on that literal string, so renaming this job without
+    # updating the protection contexts in the same change silently un-requires
+    # it and restores the false-green this comment used to describe.
     name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
     runs-on: ubuntu-latest
     needs: preflight
