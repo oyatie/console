@@ -224,3 +224,23 @@ sh_test(
     deps = ["//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+sh_test(
+    name = "ontology-object-type-lifecycle-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-object_type_lifecycle_over_http)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-object_type_lifecycle_over_http"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# The only committed proof of the publish ladder before this lane, and it had
+# neither a wrapper here nor a step in ci.yml -- a rust_test with no sh_test
+# never executes under `test_needs_postgres.sh`, which is the false-green class
+# this repo has already shipped six times.
+sh_test(
+    name = "ontology-publish-auto-create-action-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-publish_auto_create_action_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-publish_auto_create_action_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

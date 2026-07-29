@@ -49,7 +49,7 @@ use console_ontology_application::{
     parse_control_points, validate_params,
 };
 use console_ontology_domain::{
-    FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId,
+    FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
 };
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::cedar_pbac::authoring::DeclaredAttr;
@@ -194,6 +194,7 @@ impl ProjectedDispatchRegistry {
 pub const OBJECT_TYPES_PATH: &str = "/api/v1/ontology/object-types";
 pub const OBJECT_TYPE_KEY_PATH: &str = "/api/v1/ontology/object-types/{key}";
 pub const OBJECT_TYPE_ACTING_PATH: &str = "/api/v1/ontology/object-types/{key}/acting";
+pub const OBJECT_TYPE_LIFECYCLE_PATH: &str = "/api/v1/ontology/object-types/{key}/lifecycle";
 pub const INSTANCES_PATH: &str = "/api/v1/ontology/instances";
 pub const INSTANCE_ID_PATH: &str = "/api/v1/ontology/instances/{id}";
 pub const INSTANCE_HISTORY_PATH: &str = "/api/v1/ontology/instances/{id}/history";
@@ -208,6 +209,7 @@ pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[
     OBJECT_TYPES_PATH,
     OBJECT_TYPE_KEY_PATH,
     OBJECT_TYPE_ACTING_PATH,
+    OBJECT_TYPE_LIFECYCLE_PATH,
     INSTANCES_PATH,
     INSTANCE_ID_PATH,
     INSTANCE_HISTORY_PATH,
@@ -232,6 +234,10 @@ pub fn router(state: OntologyRestState) -> Router {
             get(get_object_type).put(stage_object_type_revision),
         )
         .route(OBJECT_TYPE_ACTING_PATH, get(object_type_acting))
+        .route(
+            OBJECT_TYPE_LIFECYCLE_PATH,
+            post(transition_object_type_lifecycle),
+        )
         .route(INSTANCES_PATH, get(list_instances))
         .route(INSTANCE_ID_PATH, get(get_instance))
         .route(INSTANCE_HISTORY_PATH, get(get_instance_history))
@@ -389,6 +395,50 @@ async fn stage_object_type_revision(
         .map_err(RestError::from_ontology)?;
     let write_version = summary.write_version();
     object_type_response(StatusCode::CREATED, summary, &write_version)
+}
+
+#[derive(Debug, Deserialize)]
+struct ObjectTypeLifecycleRequest {
+    to_state: SchemaLifecycleState,
+}
+
+/// Drive the object-type schema FSM. The legal edge set lives in SQL
+/// (`0165_ontology_object_type_key_revisions.sql:1015-1022`) and the
+/// approval-consuming `review_pending -> published` branch is enforced there
+/// too, so this handler holds NO transition table: every rejected edge arrives
+/// as a mapped `PgOntologyError` and every new state costs zero rest-crate code.
+async fn transition_object_type_lifecycle(
+    State(state): State<OntologyRestState>,
+    headers: HeaderMap,
+    Path(key): Path<String>,
+    Query(query): Query<ObjectTypeVersionQuery>,
+    Json(body): Json<ObjectTypeLifecycleRequest>,
+) -> Result<Response, RestError> {
+    let principal = authorize_ontology(&state, &headers).await?;
+    let expected = required_object_type_write_precondition(&headers)?;
+    // `transition_lifecycle` takes a VERSION id, and `get_object_type(key, None)`
+    // returns the published-preferred head — so once v1 is published, a key-only
+    // call would address v1 forever. `?version=` is how a staged v2 is reachable.
+    let detail = state
+        .registry
+        .get_object_type(&key, query.version)
+        .await
+        .map_err(RestError::from_ontology)?;
+    let summary = state
+        .registry
+        .transition_lifecycle(
+            principal.user_id,
+            detail.object_type.id,
+            expected,
+            body.to_state,
+            true,
+            TraceContext::generate(),
+            OffsetDateTime::now_utc(),
+        )
+        .await
+        .map_err(RestError::from_ontology)?;
+    let write_version = summary.write_version();
+    object_type_response(StatusCode::OK, summary, &write_version)
 }
 
 // ---------------------------------------------------------------------------

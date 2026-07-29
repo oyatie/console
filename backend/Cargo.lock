@@ -2453,6 +2453,7 @@ dependencies = [
  "console-governance-adapter-postgres",
  "console-governance-application",
  "console-governance-domain",
+ "console-governance-rest",
  "console-kernel-core",
  "console-ontology-adapter-postgres",
  "console-ontology-application",

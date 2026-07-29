@@ -192,7 +192,11 @@ jobs:
         run: tools/buck2 test //backend/crates/support/domain:console-support-domain-unit
 
   postgres-domain-reachability:
-    name: Dispatch and attendance — disposable PostgreSQL reachability
+    # NOT a required check yet, so a red here does not block a merge. That is a
+    # false-green until it is promoted, and promotion is the deliverable that
+    # closes this lane -- not a follow-up. Rename the display name only while it
+    # is unrequired: the required-context match is on the literal string.
+    name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 35
@@ -224,7 +228,9 @@ jobs:
           tools/buck/test_needs_postgres.sh --num-threads=1 \
             //tools/buck:dispatch-p1-postgres \
             //tools/buck:attendance-cancel-substitution-postgres \
-            //tools/buck:attendance-concurrency-postgres
+            //tools/buck:attendance-concurrency-postgres \
+            //tools/buck:ontology-object-type-lifecycle-postgres \
+            //tools/buck:ontology-publish-auto-create-action-postgres
 
   company-conformance:
     # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and

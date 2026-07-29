@@ -622,6 +622,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/action_execute_as_runtime_role.rs': 'postgres',
             'tests/company_conformance.rs': 'postgres',
             'tests/object_type_cas_as_runtime_role.rs': 'postgres',
+            'tests/object_type_lifecycle_over_http.rs': 'postgres',
             'tests/ont_gaps_as_runtime_role.rs': 'postgres',
             'tests/projected_dispatch_as_runtime_role.rs': 'postgres',
             'tests/publish_auto_create_action_as_runtime_role.rs': 'postgres',

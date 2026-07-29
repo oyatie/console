@@ -28,6 +28,12 @@ uuid.workspace = true
 
 [dev-dependencies]
 console-governance-application = { path = "../../governance/application" }
+# Dev-only: publishing an object type is four ordered HTTP calls, two of which
+# are governance approvals. Driving that ladder over HTTP ONLY — which is the
+# whole point of `object_type_lifecycle_over_http` — needs the governance router
+# merged alongside this one, exactly as `build_router` merges them. A rest -> rest
+# NORMAL dep would trip the layer-boundary gate; it exempts dev-deps (kind = "dev").
+console-governance-rest = { path = "../../governance/rest" }
 console-platform-test-support = { workspace = true }
 p256 = { version = "0.13.2", features = ["ecdsa", "pkcs8", "pem"] }
 tokio.workspace = true

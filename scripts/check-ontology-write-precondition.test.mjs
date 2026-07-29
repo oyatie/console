@@ -11,22 +11,47 @@ const ciWorkflow = readFileSync(
   "utf8",
 );
 
-function stageOperation(spec) {
-  const start = spec.indexOf("  /api/v1/ontology/object-types/{key}:");
-  const put = spec.indexOf("    put:", start);
-  const nextPath = spec.indexOf("\n  /api/", put);
-  assert.notEqual(start, -1);
-  assert.notEqual(put, -1);
-  return spec.slice(put, nextPath);
+// Each CAS-guarded ontology write gets its own slice: the paths are siblings in
+// the document, not nested, so one extractor structurally cannot see another's
+// operation — it stops at the next `\n  /api/`.
+function operationSlice(spec, pathKey, method) {
+  const start = spec.indexOf(`  ${pathKey}:`);
+  assert.notEqual(start, -1, `missing path ${pathKey}`);
+  const operation = spec.indexOf(`    ${method}:`, start);
+  assert.notEqual(operation, -1, `missing ${method} on ${pathKey}`);
+  const nextPath = spec.indexOf("\n  /api/", operation);
+  return spec.slice(operation, nextPath);
+}
+
+function assertWritePreconditionContract(operation, label) {
+  assert.match(
+    operation,
+    /name: If-Match[\s\S]*in: header[\s\S]*required: true/,
+    label,
+  );
+  assert.match(operation, /'400':/, label);
+  assert.match(operation, /'412':/, label);
+  assert.match(operation, /'428':/, label);
+  assert.match(operation, /headers:[\s\S]*ETag:/, label);
 }
 
 test("ontology stage declares strong required If-Match and exact precondition statuses", () => {
-  const operation = stageOperation(openapi);
-  assert.match(operation, /name: If-Match[\s\S]*in: header[\s\S]*required: true/);
-  assert.match(operation, /'400':/);
-  assert.match(operation, /'412':/);
-  assert.match(operation, /'428':/);
-  assert.match(operation, /headers:[\s\S]*ETag:/);
+  assertWritePreconditionContract(
+    operationSlice(openapi, "/api/v1/ontology/object-types/{key}", "put"),
+    "stage revision",
+  );
+});
+
+test("ontology lifecycle transition declares the same write precondition contract", () => {
+  const operation = operationSlice(
+    openapi,
+    "/api/v1/ontology/object-types/{key}/lifecycle",
+    "post",
+  );
+  assertWritePreconditionContract(operation, "lifecycle transition");
+  // Key-only addressing resolves the published-preferred head, so a revision
+  // staged behind a published one is only reachable through ?version=.
+  assert.match(operation, /name: version[\s\S]*in: query/);
 });
 
 test("object type wire contract carries key revision", () => {
