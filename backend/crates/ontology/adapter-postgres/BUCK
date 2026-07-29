@@ -331,6 +331,36 @@ rust_test(
 )
 
 rust_test(
+    name = "console-ontology-adapter-postgres-itest-property_derivation_as_runtime_role",
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/adapter-postgres", ["tests/property_derivation_as_runtime_role.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
+    crate = "property_derivation_as_runtime_role",
+    edition = "2024",
+    crate_root = "backend/crates/ontology/adapter-postgres/tests/property_derivation_as_runtime_role.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
+    labels = ["owner.backend.crates.ontology.adapter-postgres", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/domain:console-ontology-domain",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//third-party/rust:hex",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:uuid",
+        ":console-ontology-adapter-postgres",
+    ],
+)
+
+rust_test(
     name = "console-ontology-adapter-postgres-itest-property_link_sync_as_runtime_role",
     mapped_srcs = repo_mapped_srcs("backend/crates/ontology/adapter-postgres", ["tests/property_link_sync_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",

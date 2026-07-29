@@ -13,7 +13,7 @@
 //! one tx, `app.current_org` armed) and reads wrap [`with_org_conn`], so Postgres
 //! RLS scopes every row to the tenant and an unset org fails closed.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
 use console_ontology_domain::{
@@ -648,9 +648,12 @@ pub async fn create_instance_in_tx(
     let revision_id = InstanceRevisionId::new();
     let valid_from = input.valid_from.unwrap_or(occurred_at);
 
-    let attributes = require_object(&input.attributes)?;
+    let mut attributes = require_object(&input.attributes)?;
     require_instance_backed_object_type(tx, input.object_type_id).await?;
     let props = load_property_defs_tx(tx, input.object_type_id).await?;
+    // Before validation, so the derived value is shape-checked like any other,
+    // and before `canonical_revision` below, so it is inside the fixity hash.
+    resolve_derived_attributes_tx(tx, &props, &mut attributes, valid_from).await?;
     validate_attributes(&props, &attributes)?;
 
     let canonical = canonical_revision(
@@ -719,7 +722,7 @@ pub async fn stage_revision_in_tx(
     let org_uuid = *org.as_uuid();
     let revision_id = InstanceRevisionId::new();
     let valid_from = input.valid_from.unwrap_or(occurred_at);
-    let attributes = require_object(&input.attributes)?;
+    let mut attributes = require_object(&input.attributes)?;
 
     // Lock the head; a disposed instance is terminal and un-revisable.
     let head = sqlx::query(
@@ -736,6 +739,9 @@ pub async fn stage_revision_in_tx(
     }
 
     let props = load_property_defs_tx(tx, object_type_id).await?;
+    // Both revision writers derive, not just `create_instance_in_tx`: a caller
+    // may send `gross_total` on an edit, and only the second write would keep it.
+    resolve_derived_attributes_tx(tx, &props, &mut attributes, valid_from).await?;
     validate_attributes(&props, &attributes)?;
 
     // Lock the current open revision to chain onto it.
@@ -1052,17 +1058,243 @@ async fn sync_property_links_tx(
     Ok(())
 }
 
+/// Materialise this revision's DECLARED derived attributes (§2), on `tx`.
+///
+/// Some values the business needs are not sent, they are COMPUTED from other
+/// instances: a pay run's gross total is the sum of the referenced employments'
+/// salaries. `apply_edits` resolves an edit to a constant or a named param and
+/// does no arithmetic, so a declarative type cannot produce that number — and
+/// per-type arithmetic in the engine would end the declarative model outright.
+/// The computation is therefore data the object type carries, resolved
+/// generically here, exactly as the property -> link binding is: a property
+/// whose `ont_property_defs.config` holds
+///
+/// ```json
+/// {"derive": {"op": "sum", "over": "<id-array property on this type>",
+///             "of": "<integer property on the referent>",
+///             "to_type": "<referent ont_object_types.stable_key>"}}
+/// ```
+///
+/// is computed on every revision write. No type is named in this function, and a
+/// new derived property contributes a JSON blob to its own declaration.
+///
+/// `op` is stated rather than implied, and an unimplemented one is refused: a
+/// money field whose operation lives only in engine source is not a
+/// declaration, and a `_ => sum` default would let a typo silently compute the
+/// wrong thing.
+///
+/// Runs BEFORE `validate_attributes`, and therefore before `canonical_revision`.
+/// Before validation, so the computed value is shape-checked by the same
+/// validator every caller-sent value goes through (a `derive` mis-declared onto
+/// a `text` property is then a 4xx, not a stored lie). Before canonicalization,
+/// because the fixity chain hashes the stored bag: a value written afterwards
+/// would make `verify_chain` report the revision as the first chain break,
+/// indistinguishable from tamper.
+///
+/// The write is UNCONDITIONAL. The auto-attached `create` action emits one edit
+/// per declared property (`0165_ontology_object_type_key_revisions.sql:1031`)
+/// and `apply_edits` resolves an absent param to `Value::Null` and inserts it
+/// (`application/src/lib.rs:288`), so the key always arrives — as null when the
+/// caller behaved, and as whatever they sent when they did not. "Caller sent
+/// null" and "the action filled null" are therefore indistinguishable, so
+/// filling only an absent key would never fire; and since `params_schema` lists
+/// the derived property, a caller CAN send one. Overwriting is what makes the
+/// value derived rather than merely defaulted.
+///
+/// Referents are read AS OF this revision's `valid_from`, never at the head. A
+/// pay run for a period is a fact about that period: a head read would let an
+/// unrelated later raise change a total already sealed into the hash chain, so
+/// the number could no longer be reconstructed from the effective-dated history.
+/// Same predicate as [`PgInstanceStore::get_as_of`], and the same argument
+/// `sync_property_links_tx`'s call sites make for stamping edges with
+/// `valid_from` rather than `occurred_at`.
+///
+/// Like its sibling, referential failures are pre-checked in Rust and returned
+/// as `KernelError`, never left to a SQLSTATE that would surface as an opaque
+/// 500. A referent that is missing, cross-tenant (RLS renders it missing), of
+/// the wrong type, or has no revision effective at `valid_from` FAILS the write.
+/// Dropping its term instead would store a smaller, entirely plausible total.
+async fn resolve_derived_attributes_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    props: &[PropDef],
+    attributes: &mut serde_json::Value,
+    valid_from: OffsetDateTime,
+) -> Result<(), PgOntologyError> {
+    for prop in props {
+        let Some(derive) = prop.config.get("derive") else {
+            continue;
+        };
+        let (Some(op), Some(over), Some(of), Some(to_type)) = (
+            derive.get("op").and_then(serde_json::Value::as_str),
+            derive.get("over").and_then(serde_json::Value::as_str),
+            derive.get("of").and_then(serde_json::Value::as_str),
+            derive.get("to_type").and_then(serde_json::Value::as_str),
+        ) else {
+            return Err(KernelError::validation(format!(
+                "property '{}' declares config.derive without string `op`, `over`, `of` and \
+                 `to_type`",
+                prop.key
+            ))
+            .into());
+        };
+        if op != "sum" {
+            return Err(KernelError::validation(format!(
+                "property '{}' declares derivation op '{op}', which this engine does not \
+                 implement",
+                prop.key
+            ))
+            .into());
+        }
+
+        // `over` is the one declaration field the bag read below cannot police:
+        // a key the type does not declare reads as absent, which is
+        // indistinguishable from declared-but-empty, so the sum would be 0 and
+        // that 0 would be hash-sealed as truth. An empty ARRAY is a legitimate 0
+        // (a pay run with no members); an UNDECLARED `over` is a declaration bug
+        // and must be a 4xx, the same argument the closed `op` match wins above.
+        if !props.iter().any(|p| p.key == over) {
+            return Err(KernelError::validation(format!(
+                "property '{}' sums over '{over}', which this object type does not declare",
+                prop.key
+            ))
+            .into());
+        }
+
+        // The source is a collection, so unlike the link binding a bare scalar is
+        // not accepted: summing over one id is `[id]`.
+        let ids: Vec<Uuid> = match attributes.get(over) {
+            None | Some(serde_json::Value::Null) => Vec::new(),
+            Some(serde_json::Value::Array(many)) => many
+                .iter()
+                .map(|item| {
+                    item.as_str().and_then(|id| id.parse().ok()).ok_or_else(|| {
+                        KernelError::validation(format!(
+                            "derived property '{}' sums over '{over}', which must hold \
+                                 instance id strings",
+                            prop.key
+                        ))
+                    })
+                })
+                .collect::<Result<_, KernelError>>()?,
+            Some(_) => {
+                return Err(KernelError::validation(format!(
+                    "derived property '{}' sums over '{over}', which must be an array of \
+                     instance ids or null",
+                    prop.key
+                ))
+                .into());
+            }
+        };
+
+        // One round trip for N referents: an id-at-a-time loop would issue N
+        // queries inside the writeback transaction, which already holds the head
+        // `FOR UPDATE`. A plain SELECT takes no row locks, so it cannot deadlock
+        // against them. `= ANY` is SET semantics — the sum walks the DECLARED id
+        // list against this map, so a bag naming the same referent twice pays it
+        // twice rather than being silently de-duplicated.
+        let mut found: HashMap<Uuid, (String, serde_json::Value)> = HashMap::new();
+        for row in sqlx::query(
+            r#"
+            SELECT i.id, t.stable_key, r.attributes
+            FROM ont_instances i
+            JOIN ont_object_types t ON t.id = i.object_type_id
+            JOIN ont_instance_revisions r
+              ON r.instance_id = i.id
+             AND r.valid_from <= $2
+             AND (r.valid_to IS NULL OR $2 < r.valid_to)
+            WHERE i.id = ANY($1)
+            "#,
+        )
+        .bind(ids.as_slice())
+        .bind(valid_from)
+        .fetch_all(tx.as_mut())
+        .await?
+        {
+            found.insert(
+                row.try_get("id")?,
+                (row.try_get("stable_key")?, row.try_get("attributes")?),
+            );
+        }
+
+        let mut total: i64 = 0;
+        for id in &ids {
+            let Some((actual, referent)) = found.get(id) else {
+                return Err(KernelError::not_found(format!(
+                    "derived property '{}' sums over '{over}', which references instance {id}, \
+                     with no revision effective at this instant",
+                    prop.key
+                ))
+                .into());
+            };
+            if actual != to_type {
+                return Err(KernelError::validation(format!(
+                    "derived property '{}' sums over '{over}', which must reference a \
+                     '{to_type}', not a '{actual}'",
+                    prop.key
+                ))
+                .into());
+            }
+            let term = referent
+                .get(of)
+                .and_then(serde_json::Value::as_i64)
+                .ok_or_else(|| {
+                    KernelError::validation(format!(
+                        "derived property '{}' sums '{of}', which referent {id} does not carry \
+                         as an integer",
+                        prop.key
+                    ))
+                })?;
+            // Never a bare `+`: an overflow panic inside the writeback
+            // transaction is not a mappable 4xx, and money sums are where it
+            // happens.
+            total = total.checked_add(term).ok_or_else(|| {
+                KernelError::validation(format!("derived property '{}' overflowed", prop.key))
+            })?;
+        }
+
+        attributes
+            .as_object_mut()
+            .ok_or_else(|| KernelError::validation("attributes must be a JSON object"))?
+            .insert(prop.key.clone(), serde_json::Value::from(total));
+    }
+    Ok(())
+}
+
 // ===========================================================================
 // Fixity (§1b) — per-(org,instance) SHA-256 hash chain.
 //
 // No shared canonicalizer helper exists in the tree today (the crate the arch
 // doc names, `crates/compliance/integrity`, is the governance-findings engine,
-// not a hash-chain), so this is a self-contained deterministic canonicalization:
-// serde_json serializes object keys in sorted order (no `preserve_order`
-// feature in the workspace → BTreeMap), giving a stable byte string with no
-// float or non-string-key ambiguity. `valid_to` is deliberately EXCLUDED — it
-// legitimately changes when an interval is closed, so it is metadata, not
-// fixity-covered content.
+// not a hash-chain), so this is a self-contained canonicalization. `valid_to` is
+// deliberately EXCLUDED — it legitimately changes when an interval is closed, so
+// it is metadata, not fixity-covered content.
+//
+// KNOWN DEFECT, PRE-EXISTING, NOT INTRODUCED BY THE DERIVATION ABOVE. This
+// comment used to claim "serde_json serializes object keys in sorted order (no
+// `preserve_order` feature in the workspace → BTreeMap), giving a stable byte
+// string". That is FALSE, and it is false in the direction that matters: a
+// comment asserting a hash chain is sound is exactly what stops the next reader
+// from checking. Measured with `cargo tree -e features -i serde_json`:
+//
+//     serde_json feature "preserve_order"  ←  cedar-policy-core v4.11.2
+//
+// which reaches this crate through `console-platform-authz`. `serde_json::Map`
+// is therefore an insertion-ordered IndexMap, not a BTreeMap, so this
+// canonicalization is order-DEPENDENT: an attribute bag round-tripped through
+// the database can serialize to different bytes than the bag that was hashed,
+// and `verify_chain` reports a break on untampered data. It bites any object
+// with two or more attribute keys whose insertion order differs from read-back
+// order.
+//
+// This is why `company_conformance.rs` asserts chain LINKAGE (each revision's
+// `prev_hash` matching its predecessor's `row_hash`) rather than calling
+// `verify_chain`, and says so at its own :103-129. The suite is green because
+// it does not recompute hashes — not because recomputation would succeed.
+//
+// The fix is to sort keys explicitly here rather than rely on the map type, and
+// it is deliberately NOT made in this change: it alters every existing
+// `row_hash`, so it needs a re-seal or migration decision and an audit-chain
+// owner, not a drive-by edit inside a lane. Escalated rather than settled.
 // ===========================================================================
 
 fn canonical_revision(
