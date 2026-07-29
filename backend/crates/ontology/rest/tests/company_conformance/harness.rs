@@ -1,4 +1,21 @@
-//! OWNED — a lane may not edit this file.
+//! OWNED — a lane may not edit this file, with ONE narrow exception recorded
+//! here: [`attach_view_permits`], the object-policy attachment at the tail of
+//! bootstrap.
+//!
+//! That attachment is LOAD-BEARING for all four REST-driver reads. Instance
+//! visibility is deny-by-default: with no object policy attached, the list
+//! serves nothing and — since the single-instance reads are gated too — `read`,
+//! `history`, `traverse`, `acting` and `resolve` are all 404. The suite used to
+//! pass only because those five reads ignored the policy entirely; closing that
+//! made an explicit, org-authored permit the price of every read here.
+//!
+//! Deny-by-default is intact: the org AUTHORED a permit through the audited HTTP
+//! writer. The engine assumes nothing.
+//!
+//! Nothing else here may change. No assertion in this suite or its helpers may
+//! be weakened, deleted, loosened or made conditional; if conformance ever looks
+//! like it needs one changed, that is the vacuity failure this suite exists to
+//! prevent — stop and escalate.
 //!
 //! Pools, roles, tokens and the built-in catalog install shared by both drivers.
 //!
@@ -140,6 +157,10 @@ impl Harness {
         // leaves the suite RED exactly where it should be.
         crate::fixtures::declare_all(&harness).await;
 
+        // LAST, after every type exists: one org-authored view permit per object
+        // type. See the module header — this is the narrow R2 exception.
+        attach_view_permits(&harness).await;
+
         harness
     }
 
@@ -168,6 +189,92 @@ impl Harness {
     pub fn registry(&self) -> PgOntologyStore {
         PgOntologyStore::new(self.runtime_pool.clone()).with_command_pool(self.command_pool.clone())
     }
+}
+
+/// Attach ONE unconditional enforced `view` permit to every object type the org
+/// holds, through the audited HTTP writer this slice ships.
+///
+/// The types are ENUMERATED FROM THE ENGINE rather than derived from a list.
+/// `LANE_TYPES` omits the built-in `position` and `customer` that the controls
+/// drive, and a lane instance's traversal neighbour can be built-in-typed, so any
+/// hand-maintained list would silently drift and 404 a control.
+///
+/// Driving it over HTTP rather than through the store is deliberate: it exercises
+/// the authority gate, the derived `resource_type` and the 422 mapping, which
+/// makes this suite the writer's strongest integration test.
+async fn attach_view_permits(h: &Harness) {
+    let service = console_ontology_rest::router(h.state(Some(h.verifier())));
+    let (status, body) = request_json(
+        &service,
+        "GET",
+        "/api/v1/ontology/object-types",
+        &h.admin_token,
+        serde_json::Value::Null,
+    )
+    .await;
+    assert!(
+        status.is_success(),
+        "object-type enumeration must succeed before attaching permits: {status} {body}"
+    );
+    // No dedup: the enumeration is `SELECT DISTINCT ON (o.stable_key)`
+    // (`adapter-postgres/src/lib.rs:611`), one row per key.
+    for object_type in body.as_array().expect("object-type list is an array") {
+        let key = object_type["stable_key"]
+            .as_str()
+            .expect("every object type carries a stable_key");
+        let (status, body) = request_json(
+            &service,
+            "POST",
+            &format!("/api/v1/ontology/object-types/{key}/policies"),
+            &h.admin_token,
+            serde_json::json!({ "effect": "permit", "conditions": [] }),
+        )
+        .await;
+        // Never `continue` on a non-2xx: an unbuilt lane type simply is not in
+        // this list, so there is nothing to swallow, and a silently failed attach
+        // would 404 every read of that type.
+        assert_eq!(
+            status,
+            axum::http::StatusCode::CREATED,
+            "attaching the view permit for {key} must be created: {status} {body}"
+        );
+    }
+}
+
+async fn request_json(
+    service: &axum::Router,
+    method: &str,
+    uri: &str,
+    token: &str,
+    body: serde_json::Value,
+) -> (axum::http::StatusCode, serde_json::Value) {
+    use axum::body::{Body, to_bytes};
+    use axum::http::{Request, header};
+    use tower::ServiceExt;
+
+    let mut builder = Request::builder()
+        .method(method)
+        .uri(uri)
+        .header(header::AUTHORIZATION, format!("Bearer {token}"));
+    let payload = if body == serde_json::Value::Null {
+        Body::empty()
+    } else {
+        builder = builder.header(header::CONTENT_TYPE, "application/json");
+        Body::from(serde_json::to_vec(&body).expect("serialize request body"))
+    };
+    let response = service
+        .clone()
+        .oneshot(builder.body(payload).expect("build request"))
+        .await
+        .expect("router response");
+    let status = response.status();
+    let bytes = to_bytes(response.into_body(), usize::MAX)
+        .await
+        .expect("read body");
+    (
+        status,
+        serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null),
+    )
 }
 
 fn settings() -> JwtSettings {

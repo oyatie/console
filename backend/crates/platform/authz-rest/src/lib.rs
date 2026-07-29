@@ -15,8 +15,8 @@
 mod store;
 
 pub use store::{
-    CatalogEntry, CreateDraftCommand, DecisionLogEntry, DecisionLogRow, DraftRecord, PgCedarError,
-    PgCedarPolicyStore, ReviewDraftCommand, UpdateDraftCommand,
+    AttachObjectPolicyCommand, CatalogEntry, CreateDraftCommand, DecisionLogEntry, DecisionLogRow,
+    DraftRecord, PgCedarError, PgCedarPolicyStore, ReviewDraftCommand, UpdateDraftCommand,
 };
 
 use axum::extract::{Path, Query, State};

@@ -118,6 +118,10 @@ const PLAN = new Map([
   // migration-0196-authorized `console_buck_admin` identity. The harness brings up
   // its own PostgreSQL, so this needs Docker but not a provisioned database.
   ["Buck2 dev-auth feature PostgreSQL suites", { tier: "db" }],
+  // Unsets DATABASE_URL and needs no Docker: the crate's unit target is pure
+  // residual-lowering and authoring logic. Mirrored locally because it is the
+  // only place the row-visibility safety properties execute at all.
+  ["Buck2 platform-authz unit suite", { tier: "fast" }],
   ["Buck2 console-app unit suite", { tier: "fast" }],
   // Unsets DATABASE_URL, so it is a no-Docker step despite living among the
   // PostgreSQL suites. It is the only inventory of mounted routes against

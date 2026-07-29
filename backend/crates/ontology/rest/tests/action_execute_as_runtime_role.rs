@@ -32,7 +32,9 @@ use console_ontology_adapter_postgres::{
 use console_ontology_domain::{ActionDispatch, BackingKind, ObjectTypeId};
 use console_ontology_rest::{ActionCommand, ActionError, OntologyRestState};
 use console_platform_authz::{Principal, Role};
-use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
+use console_platform_test_support::{
+    attach_enforced_view_permit, runtime_role_pool, seed_org_and_super_admin,
+};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -459,6 +461,18 @@ async fn command_receipt_replays_and_stale_editor_cannot_append(owner_pool: PgPo
         "set_priority",
         json!(["authority"]),
         json!([]),
+    )
+    .await;
+    // The only test in this file that acts on an EXISTING instance, and an action
+    // now reads its target through the object-policy gate. Visibility is
+    // deny-by-default, so without a permit the edit below is `NotFound` before it
+    // reaches the command receipt it exists to assert on. The other eight tests
+    // are creates (`instance_id: None`), which the gate does not touch.
+    attach_enforced_view_permit(
+        &owner_pool,
+        *org.as_uuid(),
+        *type_id.as_uuid(),
+        "wo.command",
     )
     .await;
     let created = console_platform_request_context::scope_org(org, async {

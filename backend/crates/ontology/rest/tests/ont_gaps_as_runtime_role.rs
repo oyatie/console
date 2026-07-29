@@ -34,7 +34,8 @@ use console_ontology_rest::{ActionError, LifecycleCommand, OntologyRestState};
 use console_platform_authz::{Principal, Role};
 use console_platform_request_context::scope_org;
 use console_platform_test_support::{
-    runtime_role_pool, seed_bound_workflow_and_policy, seed_org_and_super_admin,
+    attach_enforced_view_permit, runtime_role_pool, seed_bound_workflow_and_policy,
+    seed_org_and_super_admin,
 };
 use serde_json::json;
 use sqlx::PgPool;
@@ -189,6 +190,11 @@ async fn configured_edge_commits_and_unconfigured_is_fail_closed(owner_pool: PgP
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
     let type_id = seed_type(&owner_pool, org, actor, "workorder").await;
+    // `commit_lifecycle` loads its target through the object-policy gate, and
+    // visibility is deny-by-default: with nothing attached this test 404s before
+    // it reaches the lifecycle configuration it exists to assert on. The permit
+    // is unconditional, so it constrains nothing below.
+    attach_enforced_view_permit(&owner_pool, *org.as_uuid(), *type_id.as_uuid(), "workorder").await;
     let instance = seed_instance(&owner_pool, org, actor, type_id, "WO-1").await;
     let instance_id = *instance.instance.id.as_uuid();
     // Only draft→active is configured.

@@ -233,6 +233,21 @@ sh_test(
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 
+# The audited object-policy attach writer, plus the five single-instance read
+# paths that ignored the object policy entirely (a row hidden from the list was
+# still fetchable by id, by as-of, by history, by traverse, by acting and by
+# code). Wired here, in ci.yml, and in BOTH locked lists in
+# scripts/check-ci-preflight.mjs at the same time: a rust_test with no sh_test
+# wrapper resolves, builds, and never executes -- the false-green class this
+# repo has already shipped six times.
+sh_test(
+    name = "ontology-object-policy-attach-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-object_policy_attach_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-object_policy_attach_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
 # The only committed proof that the instance READ path works: it publishes a
 # type, seeds an enforced catalog row plus an attachment, and asserts the list
 # returns EXACTLY the permitted rows as the genuine non-superuser `console_rt` --
@@ -257,5 +272,46 @@ sh_test(
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-publish_auto_create_action_as_runtime_role)"],
     deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-publish_auto_create_action_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# The three ontology/rest suites that had a `rust_test` target and NOTHING else:
+# no wrapper here, no ci.yml step, no entry in either locked list in
+# scripts/check-ci-preflight.mjs. They executed nowhere -- the seventh instance
+# of the four-coupled-places defect, and the two worst of them are precisely the
+# suites that break when an action starts reading its target through the
+# object-policy gate. CI was structurally incapable of observing that.
+#
+# `action_execute` owns the mutating half of the gate: the ONLY committed proof
+# that an action against an existing instance appends exactly one revision, one
+# audit row and one command receipt, and that a stale editor cannot append.
+sh_test(
+    name = "ontology-action-execute-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-action_execute_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-action_execute_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# `ont_gaps` owns `commit_lifecycle`: the only proof that an unconfigured
+# lifecycle edge is fail-closed, and one of the three paths this lane gated.
+sh_test(
+    name = "ontology-gaps-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-ont_gaps_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-ont_gaps_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+# `projected_dispatch` owns the arm `prepare()` deliberately does NOT gate: a
+# projected action's target is a domain row this crate cannot see, so gating it
+# would 404 every projected dispatch. Measured 5/5 green across the gate change,
+# which is the evidence that the `_ =>` arm is correctly ungated -- evidence CI
+# could not previously produce.
+sh_test(
+    name = "ontology-projected-dispatch-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-projected_dispatch_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-projected_dispatch_as_runtime_role"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )

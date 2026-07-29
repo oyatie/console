@@ -569,6 +569,37 @@ impl PgOntologyStore {
         .await
     }
 
+    /// The `(stable_key, schema_version)` of ONE object-type version, addressed
+    /// by its own id and tenant-scoped by RLS.
+    ///
+    /// [`Self::list_object_types`] and [`Self::get_object_type`] are both
+    /// `DISTINCT ON (o.stable_key)`: they answer "the current head for this key"
+    /// and CANNOT resolve a superseded version id at all. An instance keeps the
+    /// `object_type_id` it was created under for life — `stage_object_type`
+    /// inserts a brand-new row with a fresh id (`0165:884-900`) and nothing
+    /// re-points `ont_instances` — so anything resolving an INSTANCE's type must
+    /// come through here. Resolving it through the head instead makes every row
+    /// created before a revision unreadable the moment the next version
+    /// publishes.
+    pub async fn object_type_version(
+        &self,
+        object_type_id: ObjectTypeId,
+    ) -> Result<(String, i64), PgOntologyError> {
+        let org = current_org().map_err(KernelError::from)?;
+        with_org_conn::<_, (String, i64), PgOntologyError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                sqlx::query_as(
+                    "SELECT stable_key, schema_version FROM ont_object_types WHERE id = $1",
+                )
+                .bind(*object_type_id.as_uuid())
+                .fetch_optional(tx.as_mut())
+                .await?
+                .ok_or_else(|| KernelError::not_found("object type was not found").into())
+            })
+        })
+        .await
+    }
+
     /// List the current head per object-type key (the published version if one
     /// exists, else the highest schema_version), tenant-scoped by RLS.
     pub async fn list_object_types(&self) -> Result<Vec<ObjectTypeSummary>, PgOntologyError> {

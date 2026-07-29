@@ -458,34 +458,43 @@ impl PgInstanceStore {
         .await
     }
 
-    /// List current-state instances of one object type with the Cedar object-row
-    /// residual (arch §5d) pushed into SQL — the discretionary deny-by-omission
-    /// filter composed on top of the hard RLS org floor.
+    /// Current-state instances of one object type that the Cedar object-row
+    /// residual (arch §5d) admits — the discretionary deny-by-omission filter
+    /// composed on top of the hard RLS org floor, pushed into SQL.
+    ///
+    /// This is the ONE place the residual meets a row, whether the caller is the
+    /// list endpoint or a single-instance read. `ids` narrows the candidate set
+    /// (`None` = the whole type); it is bound as a nullable `uuid[]` rather than
+    /// branching the SQL text, so the residual's first placeholder is the
+    /// constant `3` and the "did I use 2 or 3" placeholder-shift footgun cannot
+    /// exist.
     ///
     /// `policies` is the applicable object-policy set the caller collected from the
     /// catalog for `(subject, view, object_type)`; `subject` supplies the concrete
     /// attribute values its conditions reference. Composition is
-    /// `WHERE i.object_type_id = $1 AND (<residual>)`: RLS (armed on the connection)
-    /// is the tenant floor the residual can only narrow, never widen. Fail-closed —
-    /// no applicable permit, or any untranslatable term, yields `WHERE FALSE`
-    /// (zero rows), and `forbid` policies exclude rows a permit would otherwise show
-    /// (see [`console_platform_authz::cedar_pbac::residual::lower`]).
-    pub async fn list_instances_filtered(
+    /// `WHERE i.object_type_id = $1 AND (<ids>) AND (<residual>)`: RLS (armed on the
+    /// connection) is the tenant floor the residual can only narrow, never widen.
+    /// Fail-closed — no applicable permit, or any untranslatable term, yields
+    /// `WHERE FALSE` (zero rows), and `forbid` policies exclude rows a permit would
+    /// otherwise show (see
+    /// [`console_platform_authz::cedar_pbac::residual::lower`]).
+    pub async fn visible_instances(
         &self,
         object_type_id: ObjectTypeId,
+        ids: Option<&[Uuid]>,
         subject: &SubjectAttrs,
         policies: &[ObjectPolicy],
     ) -> Result<Vec<InstanceState>, PgOntologyError> {
         let org = current_org().map_err(KernelError::from)?;
-        // `$1` is object_type_id, so the residual's own binds start at `$2`. The
-        // revision attributes are aliased `r` in the join below.
+        // `$1` is object_type_id and `$2` the nullable id filter, so the
+        // residual's own binds start at `$3` — unconditionally.
         let residual = lower(
             LoweringTarget::Instance {
                 attributes_column: "r.attributes",
             },
             subject,
             policies,
-            2,
+            3,
         );
         // Audited SQL-safe: the ONLY interpolated fragment is `residual.where_sql`,
         // which the residual lowering emits from gate-checked column identifiers and
@@ -501,14 +510,17 @@ impl PgInstanceStore {
                 r.reason, r.prev_hash, r.row_hash
             FROM ont_instances i
             JOIN ont_instance_revisions r ON r.instance_id = i.id AND r.valid_to IS NULL
-            WHERE i.object_type_id = $1 AND ({residual})
+            WHERE i.object_type_id = $1
+              AND ($2::uuid[] IS NULL OR i.id = ANY($2))
+              AND ({residual})
             ORDER BY i.created_at DESC
             "#,
             residual = residual.where_sql,
         ));
+        let ids = ids.map(<[Uuid]>::to_vec);
         with_org_conn::<_, Vec<InstanceState>, PgOntologyError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                let mut query = sqlx::query(sql).bind(*object_type_id.as_uuid());
+                let mut query = sqlx::query(sql).bind(*object_type_id.as_uuid()).bind(ids);
                 for value in &residual.binds {
                     query = match value {
                         SqlValue::Text(text) => query.bind(text),
@@ -522,6 +534,19 @@ impl PgInstanceStore {
             })
         })
         .await
+    }
+
+    /// [`Self::visible_instances`] over the whole object type — the list surface.
+    /// Signature and semantics are byte-identical to what shipped, so the
+    /// CI-required read-path proof stays a valid regression witness.
+    pub async fn list_instances_filtered(
+        &self,
+        object_type_id: ObjectTypeId,
+        subject: &SubjectAttrs,
+        policies: &[ObjectPolicy],
+    ) -> Result<Vec<InstanceState>, PgOntologyError> {
+        self.visible_instances(object_type_id, None, subject, policies)
+            .await
     }
 
     /// §2 search-around: bounded outgoing BFS over live (`valid_to IS NULL`) links

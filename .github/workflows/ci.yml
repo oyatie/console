@@ -235,7 +235,11 @@ jobs:
             //tools/buck:attendance-concurrency-postgres \
             //tools/buck:ontology-object-type-lifecycle-postgres \
             //tools/buck:ontology-object-type-cas-postgres \
-            //tools/buck:ontology-publish-auto-create-action-postgres
+            //tools/buck:ontology-publish-auto-create-action-postgres \
+            //tools/buck:ontology-object-policy-attach-postgres \
+            //tools/buck:ontology-action-execute-postgres \
+            //tools/buck:ontology-gaps-postgres \
+            //tools/buck:ontology-projected-dispatch-postgres
 
   company-conformance:
     # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and
@@ -640,6 +644,20 @@ jobs:
             //tools/buck:auth-rest-dev-auth-session-postgres \
             //tools/buck:auth-rest-dev-auth-group-admin-postgres \
             //tools/buck:provisioning-dev-principal-upsert-race-postgres
+
+      # The residual lowering that decides which instance rows a caller may see
+      # lives in this crate, and its 44 unit tests — including
+      # `unconditional_forbid_collapses_whole_filter_to_false`,
+      # `untranslatable_term_collapses_whole_filter_never_drops` and
+      # `unsafe_attributes_column_denies_all` — executed NOWHERE in CI. The
+      # target resolved and built; no workflow referenced it. That is the
+      # false-green class this repo has already shipped: a correct test that
+      # never runs. It also carries the dotted-stable-key refusal matrix, the
+      # only evidence that widening `is_stable_key` for dots did not widen the
+      # Cedar injection boundary on any other axis.
+      - name: Buck2 platform-authz unit suite
+        working-directory: .
+        run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit
 
       - name: Buck2 console-app unit suite
         working-directory: .

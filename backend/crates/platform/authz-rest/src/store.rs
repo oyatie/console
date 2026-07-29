@@ -97,26 +97,57 @@ pub struct ReviewDraftCommand {
     pub note: Option<String>,
 }
 
+/// One org-authored object policy, on its way to becoming an enforced catalog
+/// row plus the attachment that binds it to an object-type version.
+///
+/// `declared` MUST be the same declared-attribute set the read path derives for
+/// that object type: `load_enforced_object_policy_blocks` re-validates and
+/// re-normalizes every row on every read and hard-errors on any disagreement
+/// (see the canonicality checks below), so an attach validated against a
+/// different set would 500 every later read of the type.
+///
+/// It carries NO `stable_key`, `title` or `natural_language_rule`: all three are
+/// functions of the object type the definer resolves for itself, so migration
+/// 0205 generates them. A caller cannot forge a value it cannot supply, and a
+/// hand-crafted call to the definer therefore cannot mint a catalog row this
+/// route would have labelled differently. It carries no generated Cedar text
+/// either — 0205 stores NULL rather than accept a value nothing can re-derive.
+pub struct AttachObjectPolicyCommand {
+    pub actor: UserId,
+    /// The object-type VERSION id the attachment is filed under, matching the
+    /// `ont_object_policies.object_type_id` the read path queries.
+    pub object_type_id: Uuid,
+    pub blocks: NoCodeBlocks,
+    pub declared: Vec<DeclaredAttr>,
+}
+
 fn digest(text: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(text.as_bytes());
     format!("sha256:{}", hex::encode(hasher.finalize()))
 }
 
+/// `target_type` is a parameter rather than the hardcoded `"cedar_policy_draft"`
+/// it used to be: an object-policy attachment writes no draft row, and naming
+/// one in the audit trail would be a lie about what was mutated.
 fn audit_event(
     action: &str,
+    target_type: &'static str,
     actor: UserId,
     target_id: impl ToString,
 ) -> Result<AuditEvent, KernelError> {
     Ok(AuditEvent::new(
         Some(actor),
         AuditAction::new(action)?,
-        "cedar_policy_draft",
+        target_type,
         target_id.to_string(),
         TraceContext::generate(),
         time::OffsetDateTime::now_utc(),
     ))
 }
+
+/// The audit `target_type` for the four Cedar draft verbs.
+const DRAFT_TARGET_TYPE: &str = "cedar_policy_draft";
 
 impl PgCedarPolicyStore {
     #[must_use]
@@ -158,6 +189,75 @@ impl PgCedarPolicyStore {
         .await
     }
 
+    /// Attach one org-authored object policy to an object type, as one enforced
+    /// catalog row plus its attachment, audited in the same transaction.
+    ///
+    /// The runtime role deliberately still has NO INSERT on the catalog
+    /// (`0150:117-118`). The two rows are written by
+    /// `ont_policy_api.attach_object_policy`, a SECURITY DEFINER routine owned
+    /// by the NOBYPASSRLS `console_ontology_writer` role (migration 0205), so
+    /// the RLS org floor still applies to the write and the residual can only
+    /// narrow it. `with_audit` arms `app.current_org` before the call and
+    /// appends the audit row inside the same transaction, so a failed attach
+    /// leaves neither a policy nor an audit claim that one exists.
+    ///
+    /// Validation is the authoring validator's verdict, never re-encoded here:
+    /// an invalid policy is a `Validation` error and nothing is written.
+    pub async fn attach_object_policy(
+        &self,
+        command: AttachObjectPolicyCommand,
+    ) -> Result<Uuid, PgCedarError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let validation = authoring::validate_blocks_with(org, &command.blocks, &command.declared);
+        if !validation.valid {
+            return Err(PgCedarError::Domain(KernelError::validation(
+                validation.errors.join("; "),
+            )));
+        }
+        let event = audit_event(
+            "ontology.object_policy.attach",
+            "ont_object_policies",
+            command.actor,
+            command.object_type_id,
+        )?
+        .with_org(org)
+        .with_snapshots(None, Some(validation.normalized_row.clone()));
+        let actor = *command.actor.as_uuid();
+        let org_uuid = *org.as_uuid();
+        // All three `effect` writes derive from one value: the loader rejects any
+        // disagreement between blocks, catalog and attachment.
+        let effect = command.blocks.effect.as_str();
+
+        with_audit::<_, Uuid, PgCedarError>(&self.pool, event, move |tx| {
+            Box::pin(async move {
+                let policy_id: Uuid = sqlx::query_scalar(
+                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
+                )
+                .bind(org_uuid)
+                .bind(actor)
+                .bind(command.object_type_id)
+                .bind(effect)
+                // The CANONICAL normalized row, never `to_value(&blocks)`: the
+                // read path re-derives it and rejects any non-canonical row, so
+                // the raw JSON would pass this write and 500 every later read.
+                // 0205 also checks its three scalars against `effect` and against
+                // the object type it resolves, so a hand-crafted call cannot mint
+                // an inert row either.
+                //
+                // `validation.generated_policy_text` is deliberately NOT sent and
+                // 0205 no longer accepts it: see the note on
+                // [`Self::load_enforced_policies`]. Enforcement re-derives
+                // everything from this row.
+                .bind(&validation.normalized_row)
+                .bind(authoring::AUTHORING_SCHEMA_VERSION)
+                .fetch_one(tx.as_mut())
+                .await?;
+                Ok(policy_id)
+            })
+        })
+        .await
+    }
+
     // -- §5a drafts --------------------------------------------------------
 
     /// Create a no-code draft. `review_status` is forced to `draft` and the
@@ -170,9 +270,14 @@ impl PgCedarPolicyStore {
         let org = current_org().map_err(KernelError::from)?;
         let validation = authoring::validate_blocks(org, &command.blocks);
         let draft_id = Uuid::new_v4();
-        let event = audit_event("cedar.draft.create", command.actor, draft_id)?
-            .with_org(org)
-            .with_snapshots(None, Some(validation.normalized_row.clone()));
+        let event = audit_event(
+            "cedar.draft.create",
+            DRAFT_TARGET_TYPE,
+            command.actor,
+            draft_id,
+        )?
+        .with_org(org)
+        .with_snapshots(None, Some(validation.normalized_row.clone()));
         let actor = *command.actor.as_uuid();
         let org_uuid = *org.as_uuid();
 
@@ -217,9 +322,14 @@ impl PgCedarPolicyStore {
     ) -> Result<DraftRecord, PgCedarError> {
         let org = current_org().map_err(KernelError::from)?;
         let validation = authoring::validate_blocks(org, &command.blocks);
-        let event = audit_event("cedar.draft.update", command.actor, command.draft_id)?
-            .with_org(org)
-            .with_snapshots(None, Some(validation.normalized_row.clone()));
+        let event = audit_event(
+            "cedar.draft.update",
+            DRAFT_TARGET_TYPE,
+            command.actor,
+            command.draft_id,
+        )?
+        .with_org(org)
+        .with_snapshots(None, Some(validation.normalized_row.clone()));
         let actor = *command.actor.as_uuid();
         let draft_id = command.draft_id;
 
@@ -292,7 +402,8 @@ impl PgCedarPolicyStore {
         draft_id: Uuid,
     ) -> Result<DraftRecord, PgCedarError> {
         let org = current_org().map_err(KernelError::from)?;
-        let event = audit_event("cedar.draft.validate", actor, draft_id)?.with_org(org);
+        let event =
+            audit_event("cedar.draft.validate", DRAFT_TARGET_TYPE, actor, draft_id)?.with_org(org);
         with_audit::<_, DraftRecord, PgCedarError>(&self.pool, event, move |tx| {
             Box::pin(async move {
                 let blocks: NoCodeBlocks =
@@ -333,7 +444,8 @@ impl PgCedarPolicyStore {
         draft_id: Uuid,
     ) -> Result<DraftRecord, PgCedarError> {
         let org = current_org().map_err(KernelError::from)?;
-        let event = audit_event("cedar.draft.submit", actor, draft_id)?.with_org(org);
+        let event =
+            audit_event("cedar.draft.submit", DRAFT_TARGET_TYPE, actor, draft_id)?.with_org(org);
         with_audit::<_, DraftRecord, PgCedarError>(&self.pool, event, move |tx| {
             Box::pin(async move {
                 let current = draft_row_conn(tx.as_mut(), draft_id).await?;
@@ -361,8 +473,13 @@ impl PgCedarPolicyStore {
         command: ReviewDraftCommand,
     ) -> Result<DraftRecord, PgCedarError> {
         let org = current_org().map_err(KernelError::from)?;
-        let event =
-            audit_event("cedar.draft.review", command.reviewer, command.draft_id)?.with_org(org);
+        let event = audit_event(
+            "cedar.draft.review",
+            DRAFT_TARGET_TYPE,
+            command.reviewer,
+            command.draft_id,
+        )?
+        .with_org(org);
         let reviewer = command.reviewer;
         let draft_id = command.draft_id;
         let decision = command.decision;
@@ -496,15 +613,47 @@ impl PgCedarPolicyStore {
 
     /// Load the enforced catalog policy set (those carrying generated Cedar text)
     /// for the org — the live set behind `/policy/authorize`.
+    ///
+    /// Object-policy attachments are EXCLUDED, twice over.
+    ///
+    /// `generated_policy_text` is the one parameter
+    /// `ont_policy_api.attach_object_policy` can neither derive nor re-validate
+    /// (rendering Cedar in SQL would be a second copy of
+    /// `generate_cedar_text_with` living in a migration, and bounding the text
+    /// with LIKE predicates does not bound it — a condition literal may
+    /// legitimately contain `;`). So 0205 does not take it: an attached row stores
+    /// NULL, which the `IS NOT NULL` predicate below already excludes, and which
+    /// `OBJECT_POLICY_SELECT` excludes on the type-scoped path for the same
+    /// reason. That path — `POST /policy/authorize` carrying an `object_type_id`
+    /// — is NOT a separate concern from this one: it is the same endpoint reading
+    /// the same forgeable column, and excluding only the org-wide set left a
+    /// definer call choosing the Cedar that decided it (measured `Allow` for a
+    /// principal owning nothing, `object_policy_attach_as_runtime_role.rs`).
+    ///
+    /// The `NOT EXISTS` clause below therefore now only bites rows attached some
+    /// OTHER way — i.e. before 0205 revoked `console_rt`'s INSERT on
+    /// `ont_object_policies`. It is kept as depth, not because it is redundant.
+    /// It is NOT a pure narrowing: dropping a `forbid` row from the org-wide set
+    /// widens every decision that row would have blocked. That is acceptable only
+    /// because the population it can reach is legacy attachments, and the
+    /// alternative is honouring Cedar text nothing can re-derive.
+    ///
+    /// [`Self::load_enforced_object_policy_blocks`] is untouched by any of this:
+    /// it re-derives every policy from `normalized_row` and never reads the text.
     pub async fn load_enforced_policies(&self) -> Result<Vec<AuthoredPolicy>, PgCedarError> {
         let org = current_org().map_err(KernelError::from)?;
         with_org_conn::<_, _, PgCedarError>(&self.pool, org, move |tx| {
             Box::pin(async move {
                 let rows = sqlx::query(
                     r#"
-                    SELECT id, generated_policy_text
-                    FROM cedar_policy_catalog_entries
-                    WHERE status = 'enforced' AND generated_policy_text IS NOT NULL
+                    SELECT c.id, c.generated_policy_text
+                    FROM cedar_policy_catalog_entries c
+                    WHERE c.status = 'enforced'
+                      AND c.generated_policy_text IS NOT NULL
+                      AND NOT EXISTS (
+                          SELECT 1 FROM ont_object_policies a
+                          WHERE a.cedar_policy_id = c.id AND a.org_id = c.org_id
+                      )
                     "#,
                 )
                 .fetch_all(tx.as_mut())

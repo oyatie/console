@@ -37,12 +37,12 @@ use console_governance_domain::{
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
 use console_ontology_adapter_postgres::instances::{
     CreateInstance, InstanceHead, InstanceState, PgInstanceStore, RevisionSummary, StageRevision,
-    TraversalGraph, create_instance_in_tx, stage_revision_in_tx,
+    TraversalGraph, TraversalNode, create_instance_in_tx, stage_revision_in_tx,
 };
 use console_ontology_adapter_postgres::{
     ActingRule, ActionTypeSummary, CreateObjectTypeDraft, ObjectTypeSummary,
     ObjectTypeWritePrecondition, ObjectTypeWriteVersion, PgOntologyError, PgOntologyStore,
-    ResolvedInstance,
+    PropertyDefSummary, ResolvedInstance,
 };
 use console_ontology_application::{
     ActionDispatch, apply_edits, egress_evidence, evaluate_submission_criteria, evaluation_context,
@@ -52,8 +52,9 @@ use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::cedar_pbac::authoring::DeclaredAttr;
-use console_platform_authz::cedar_pbac::authoring::{ConditionOp, ConditionValue, NoCodeBlocks};
+use console_platform_authz::cedar_pbac::authoring::{
+    self, Condition, ConditionOp, ConditionValue, DeclaredAttr, Effect, NoCodeBlocks,
+};
 use console_platform_authz::cedar_pbac::evaluate_legacy_contract;
 use console_platform_authz::cedar_pbac::residual::{
     ObjectPolicy, Predicate, PredicateValue, ResidualOp, SqlValue, SubjectAttrs,
@@ -61,14 +62,14 @@ use console_platform_authz::cedar_pbac::residual::{
 use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, Feature, Principal, authorize_org_wide,
 };
-use console_platform_authz_rest::PgCedarPolicyStore;
+use console_platform_authz_rest::{AttachObjectPolicyCommand, PgCedarError, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audits};
 use console_platform_request_context::current_org;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::Row;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet, VecDeque, hash_map::Entry};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -82,7 +83,8 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct OntologyRestState {
     registry: PgOntologyStore,
-    instances: PgInstanceStore,
+    /// Sealed: see [`gate`]. Only `gate` can reach the unfiltered store inside.
+    instances: gate::Instances,
     governance: PgGovernanceStore,
     policies: PgCedarPolicyStore,
     jwt_verifier: Option<JwtVerifier>,
@@ -104,7 +106,9 @@ impl OntologyRestState {
         let policies = PgCedarPolicyStore::new(registry.pool().clone());
         Self {
             registry,
-            instances,
+            // The public parameter stays a `PgInstanceStore`: sealing is internal
+            // to this crate and no composition root or fixture changes.
+            instances: gate::Instances::new(instances),
             policies,
             governance,
             jwt_verifier,
@@ -195,6 +199,7 @@ pub const OBJECT_TYPES_PATH: &str = "/api/v1/ontology/object-types";
 pub const OBJECT_TYPE_KEY_PATH: &str = "/api/v1/ontology/object-types/{key}";
 pub const OBJECT_TYPE_ACTING_PATH: &str = "/api/v1/ontology/object-types/{key}/acting";
 pub const OBJECT_TYPE_LIFECYCLE_PATH: &str = "/api/v1/ontology/object-types/{key}/lifecycle";
+pub const OBJECT_TYPE_POLICIES_PATH: &str = "/api/v1/ontology/object-types/{key}/policies";
 pub const INSTANCES_PATH: &str = "/api/v1/ontology/instances";
 pub const INSTANCE_ID_PATH: &str = "/api/v1/ontology/instances/{id}";
 pub const INSTANCE_HISTORY_PATH: &str = "/api/v1/ontology/instances/{id}/history";
@@ -210,6 +215,7 @@ pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[
     OBJECT_TYPE_KEY_PATH,
     OBJECT_TYPE_ACTING_PATH,
     OBJECT_TYPE_LIFECYCLE_PATH,
+    OBJECT_TYPE_POLICIES_PATH,
     INSTANCES_PATH,
     INSTANCE_ID_PATH,
     INSTANCE_HISTORY_PATH,
@@ -238,6 +244,7 @@ pub fn router(state: OntologyRestState) -> Router {
             OBJECT_TYPE_LIFECYCLE_PATH,
             post(transition_object_type_lifecycle),
         )
+        .route(OBJECT_TYPE_POLICIES_PATH, post(attach_object_policy))
         .route(INSTANCES_PATH, get(list_instances))
         .route(INSTANCE_ID_PATH, get(get_instance))
         .route(INSTANCE_HISTORY_PATH, get(get_instance_history))
@@ -442,6 +449,98 @@ async fn transition_object_type_lifecycle(
 }
 
 // ---------------------------------------------------------------------------
+// Object-policy attachment (arch §5d authoring → the row-visibility residual)
+// ---------------------------------------------------------------------------
+
+/// The wire body carries the rule and NOTHING that identifies what it applies to.
+///
+/// `resource_type` is derived from the path `{key}` and `action` is fixed to
+/// [`authoring::OBJECT_POLICY_ACTION`] on purpose: a persisted policy whose
+/// `resource_type` disagrees with the object type's `stable_key` never matches
+/// `applicable_object_policies`, so it denies forever at HTTP 200 `[]` — a
+/// silent failure no post-hoc test can see. Deriving both makes it
+/// unrepresentable, and is less code than accepting them.
+#[derive(Debug, Deserialize)]
+struct AttachObjectPolicyRequest {
+    effect: Effect,
+    #[serde(default)]
+    conditions: Vec<Condition>,
+}
+
+#[derive(Debug, Serialize)]
+struct AttachObjectPolicyResponse {
+    id: Uuid,
+}
+
+/// The most AND-ed conditions one attached policy may PERSIST.
+///
+/// The authoring grammar bounds neither the count nor the literal lengths
+/// (`authoring.rs:306-341`), and an attachment can never be revoked: both tables
+/// are append-only (`0154:90-99`) and no role anywhere holds UPDATE on
+/// `cedar_policy_catalog_entries` (`0150:118` revokes it from `console_rt`,
+/// `0205:151` grants the writer only SELECT and INSERT), so a row can never
+/// leave the `status = 'enforced'` the loader selects on (`store.rs:558`).
+/// An oversized list is therefore permanent work charged to every later read of
+/// the type — re-validated, re-rendered, re-normalized and lowered into the SQL
+/// residual on the list, on all five single-instance paths, and once per
+/// node-type group inside a traversal.
+///
+/// 32 is far above any authorable rule: a condition's left side comes from
+/// `RESOURCE_ATTRS` (4), `SUBJECT_ATTRS` (4) or the type's declared Text/Boolean
+/// properties. The bound is applied HERE and not in the validator on purpose —
+/// tightening the validator would retroactively invalidate any already-enforced
+/// row and 500 every read of its type, which is the failure this bound exists to
+/// prevent.
+const MAX_ATTACHED_CONDITIONS: usize = 32;
+
+/// Author one enforced object policy and attach it to an object type.
+///
+/// This route asserts the authoring validator's verdict; it never re-encodes the
+/// rule. A condition the validator cannot represent — for instance one over a
+/// Date property, which [`declared_attrs`] cannot splice into the Cedar schema —
+/// is refused here with the validator's own message rather than landing enforced
+/// and 500-ing every later read of the type.
+async fn attach_object_policy(
+    State(state): State<OntologyRestState>,
+    headers: HeaderMap,
+    Path(key): Path<String>,
+    Json(body): Json<AttachObjectPolicyRequest>,
+) -> Result<(StatusCode, Json<AttachObjectPolicyResponse>), RestError> {
+    let principal = authorize_ontology(&state, &headers).await?;
+    if body.conditions.len() > MAX_ATTACHED_CONDITIONS {
+        return Err(RestError::from_kernel(KernelError::validation(format!(
+            "a policy may carry at most {MAX_ATTACHED_CONDITIONS} conditions, got {}",
+            body.conditions.len()
+        ))));
+    }
+    let detail = state
+        .registry
+        .get_object_type(&key, None)
+        .await
+        .map_err(RestError::from_ontology)?;
+    let blocks = NoCodeBlocks {
+        effect: body.effect,
+        action: authoring::OBJECT_POLICY_ACTION.to_owned(),
+        resource_type: detail.object_type.stable_key.clone(),
+        conditions: body.conditions,
+    };
+    // `stable_key`, `title` and `natural_language_rule` are NOT sent: all three
+    // are functions of the object type, and a value the definer derives for
+    // itself is a value a hand-crafted call to it cannot forge (0205 §4).
+    let id = state
+        .policies
+        .attach_object_policy(AttachObjectPolicyCommand {
+            actor: principal.user_id,
+            object_type_id: *detail.object_type.id.as_uuid(),
+            declared: declared_attrs(&detail.properties),
+            blocks,
+        })
+        .await
+        .map_err(RestError::from_cedar)?;
+    Ok((StatusCode::CREATED, Json(AttachObjectPolicyResponse { id })))
+}
+
+// ---------------------------------------------------------------------------
 // Instance surface (thin over PgInstanceStore)
 // ---------------------------------------------------------------------------
 
@@ -457,28 +556,35 @@ async fn list_instances(
     Query(query): Query<InstanceListQuery>,
 ) -> Result<Json<Vec<InstanceState>>, RestError> {
     let principal = authorize_ontology(&state, &headers).await?;
-    let object_type = state
-        .registry
-        .list_object_types()
+    let policies = object_view_policies(&state, query.r#type)
         .await
-        .map_err(RestError::from_ontology)?
-        .into_iter()
-        .find(|candidate| candidate.id == ObjectTypeId::from_uuid(query.r#type))
-        .ok_or_else(|| {
-            RestError::from_kernel(KernelError::not_found("object type was not found"))
-        })?;
-    // The object type's own declared properties are admissible in policies
-    // scoped to it. The residual lowering already reads arbitrary instance
-    // attributes; supplying the declared set lets the authoring validator agree,
-    // with each property spliced into the Cedar schema so reads stay proven.
-    // Only Text and Boolean are representable as optional Cedar attributes; a
-    // policy over any other kind fails closed in the validator.
-    let declared: Vec<DeclaredAttr> = state
-        .registry
-        .get_object_type(&object_type.stable_key, None)
+        .map_err(RestError::from_ontology)?;
+    let subject = ontology_subject(&principal);
+    let list = state
+        .instances
+        .list_instances_filtered(ObjectTypeId::from_uuid(query.r#type), &subject, &policies)
         .await
-        .map_err(RestError::from_ontology)?
-        .properties
+        .map_err(RestError::from_ontology)?;
+    Ok(Json(list))
+}
+
+/// The object type's own declared properties, which are admissible in policies
+/// scoped to it. The residual lowering already reads arbitrary instance
+/// attributes; supplying the declared set lets the authoring validator agree,
+/// with each property spliced into the Cedar schema so reads stay proven.
+/// Only Text and Boolean are representable as optional Cedar attributes; a
+/// policy over any other kind fails closed in the validator.
+///
+/// Attach time and read time MUST derive this from the same function: the
+/// loader re-validates every enforced row against the declared set and hard-
+/// errors on disagreement, so two spellings would 500 the type forever.
+///
+/// CEILING (escalated, not fixed here): this is a point-in-time claim. A
+/// property that is `Text` at attach and later revised to `Date` turns a valid
+/// enforced row into a permanent 500 across every read path that shares
+/// [`object_view_policies`]. The durable fix is revision-time re-validation.
+fn declared_attrs(properties: &[PropertyDefSummary]) -> Vec<DeclaredAttr> {
+    properties
         .iter()
         .filter_map(|property| match property.field_kind {
             FieldKind::Boolean => Some(DeclaredAttr {
@@ -491,24 +597,343 @@ async fn list_instances(
             }),
             _ => None,
         })
-        .collect();
+        .collect()
+}
+
+/// The enforced `view` object policies attached to one object-type VERSION id.
+///
+/// An unknown / cross-tenant version id is a 404 here, never an empty policy set
+/// — an unresolvable type must not be mistaken for an unpoliced one.
+///
+/// The version is resolved BY ITS OWN ID through
+/// [`PgOntologyStore::object_type_version`], never through the registry head;
+/// that function's doc carries the reason, and it is the only reason it exists.
+///
+/// `declared` likewise comes from the instance's OWN version, not the head: the
+/// loader re-validates each enforced row against it, and a policy authored over
+/// a property the next version dropped would otherwise 500 forever.
+/// Errors on [`PgOntologyError`], not [`RestError`], because BOTH the read
+/// channel (`RestError::from_ontology`) and the action channel
+/// (`ActionError::Store`) already consume it. That is what lets ONE gate serve
+/// the read routes and the write routes without a second error currency — and
+/// `RestError` is private, so an `ActionError` variant holding one is E0446.
+async fn object_view_policies(
+    state: &OntologyRestState,
+    object_type_id: Uuid,
+) -> Result<Vec<ObjectPolicy>, PgOntologyError> {
+    let (stable_key, schema_version) = state
+        .registry
+        .object_type_version(ObjectTypeId::from_uuid(object_type_id))
+        .await?;
+    let declared = declared_attrs(
+        &state
+            .registry
+            .get_object_type(&stable_key, Some(schema_version))
+            .await?
+            .properties,
+    );
     let blocks = state
         .policies
-        .load_enforced_object_policy_blocks(query.r#type, &declared)
+        .load_enforced_object_policy_blocks(object_type_id, &declared)
         .await
         .map_err(|error| {
             tracing::error!(%error, "ontology object-policy load failed");
-            RestError::internal("unable to evaluate object visibility policy")
+            // Renders 500 / "internal" through `status_for_error_kind`, byte-identical
+            // to the `RestError::internal` this replaced.
+            PgOntologyError::Domain(KernelError::internal(
+                "unable to evaluate object visibility policy",
+            ))
         })?;
-    let policies = applicable_object_policies(&blocks, &object_type.stable_key);
-    let subject = ontology_subject(&principal);
-    let list = state
-        .instances
-        .list_instances_filtered(ObjectTypeId::from_uuid(query.r#type), &subject, &policies)
-        .await
-        .map_err(RestError::from_ontology)?;
-    Ok(Json(list))
+    Ok(applicable_object_policies(&blocks, &stable_key))
 }
+
+/// The gate, and the only module in this crate that can reach an ungated
+/// single-row read.
+///
+/// [`PgInstanceStore::get_current`] serves any row the RLS org floor admits and
+/// applies NO object-policy residual, so every call to it outside
+/// [`visible_head_inner`] is a policy bypass. This module makes that
+/// unrepresentable rather than merely reviewed: [`Instances`] wraps the store in
+/// a private tuple field, and `lib.rs` is this module's PARENT, which cannot
+/// reach a child's private field.
+///
+/// Wrapping alone is NOT the property, and claiming it was is how this hole
+/// nearly shipped: `get_as_of`, `history` and `traverse` apply no residual
+/// either, so re-exporting them by `InstanceId` would have let a new route read
+/// every revision of a hidden row with the seal fully intact. Each of them takes
+/// PROOF instead of an id:
+///
+///   * [`Instances::get_as_of`] and [`Instances::history`] take [`Visible`],
+///     whose field is private to this module, so [`visible_head_inner`] is the
+///     only thing in the crate that can produce one — `InstanceState` itself is
+///     all-`pub` and a struct literal would forge it. The id is read off the
+///     proof, so it cannot even be pointed at a different row than the one gated.
+///   * `traverse` is not re-exported at all. [`visible_traversal`] is the whole
+///     route body, so the raw graph never exists outside this module.
+///
+/// WHAT THIS SEAL DOES AND DOES NOT COVER — stated precisely, because an
+/// earlier version of this comment claimed more than the code delivers and a
+/// reviewer refuted it by execution.
+///
+/// It DOES make the specific hole that produced this slice unrepresentable:
+/// `get_current` has exactly one call site and it is inside this module, so a
+/// future route cannot fetch a single row's head unfiltered no matter how it is
+/// classified in the route table.
+///
+/// It does NOT make every conceivable ungated read impossible. The passthroughs
+/// above are re-exported, and a sufficiently determined new handler can compose
+/// them into a read this module never anticipated. `NotInstanceBearing` in the
+/// route-classification table therefore remains a DECLARATIVE label with no
+/// enforcement behind it: a future route mislabelled there ships green. That is
+/// a known, named gap, not a covered one — the honest compensating control is
+/// that `Gated` IS load-bearing and is proven red by mutation, not that
+/// mislabelling has been made harmless.
+mod gate {
+    use super::*;
+
+    #[derive(Clone)]
+    pub(super) struct Instances(PgInstanceStore);
+
+    /// One instance head the object-policy residual admitted for this principal.
+    ///
+    /// The field is private to `gate`, which is the entire point: a value of this
+    /// type is evidence that [`visible_head_inner`] ran, and no other module can
+    /// manufacture one.
+    pub(super) struct Visible(InstanceState);
+
+    impl Visible {
+        pub(super) fn into_inner(self) -> InstanceState {
+            self.0
+        }
+    }
+
+    impl Instances {
+        pub(super) fn new(inner: PgInstanceStore) -> Self {
+            Self(inner)
+        }
+
+        pub(super) async fn list_instances_filtered(
+            &self,
+            object_type_id: ObjectTypeId,
+            subject: &SubjectAttrs,
+            policies: &[ObjectPolicy],
+        ) -> Result<Vec<InstanceState>, PgOntologyError> {
+            self.0
+                .list_instances_filtered(object_type_id, subject, policies)
+                .await
+        }
+
+        pub(super) async fn visible_instances(
+            &self,
+            object_type_id: ObjectTypeId,
+            ids: Option<&[Uuid]>,
+            subject: &SubjectAttrs,
+            policies: &[ObjectPolicy],
+        ) -> Result<Vec<InstanceState>, PgOntologyError> {
+            self.0
+                .visible_instances(object_type_id, ids, subject, policies)
+                .await
+        }
+
+        /// An earlier revision of a row whose HEAD the caller has already been
+        /// granted. `head` is the proof — only [`visible_head_inner`] mints one
+        /// — and the id is read off it, so this cannot be pointed at a row the
+        /// residual never admitted.
+        pub(super) async fn get_as_of(
+            &self,
+            head: &Visible,
+            at: OffsetDateTime,
+        ) -> Result<InstanceState, PgOntologyError> {
+            self.0.get_as_of(head.0.instance.id, at).await
+        }
+
+        /// The revision chain of a row whose HEAD the caller has already been
+        /// granted, INTACT. Never filtered per revision: `verify_chain` breaks on
+        /// the first `prev_hash` gap, so a per-revision security filter would
+        /// masquerade as a tamper alarm.
+        pub(super) async fn history(
+            &self,
+            head: &Visible,
+        ) -> Result<Vec<RevisionSummary>, PgOntologyError> {
+            self.0.history(head.0.instance.id).await
+        }
+    }
+
+    /// THE gate. Every path that serves, evaluates or mutates a single instance
+    /// routes through here — the read routes via [`visible_head`], the action and
+    /// lifecycle routes directly, because they carry the [`ActionError`] channel.
+    /// One helper, one residual: a second gating path would let the two diverge.
+    ///
+    /// Returns the row the FILTER produced, never the unfiltered head, so what a
+    /// caller is served is by construction what the residual permitted — a gate
+    /// that read twice could let the two reads diverge.
+    ///
+    /// A denied row is `not_found` with the adapter's own message, byte-identical
+    /// to `load_current_state_tx`'s, so a denied row and a nonexistent one are
+    /// indistinguishable. **404, never 403**: a 403 turns the status code into an
+    /// existence oracle.
+    ///
+    /// The object type is resolved from the INSTANCE'S OWN `object_type_id`, never
+    /// from a caller-supplied one, so naming a type you can see while targeting an
+    /// instance of a type you cannot is not a bypass.
+    pub(super) async fn visible_head_inner(
+        state: &OntologyRestState,
+        principal: &Principal,
+        id: Uuid,
+    ) -> Result<Visible, PgOntologyError> {
+        let head = state
+            .instances
+            .0
+            .get_current(InstanceId::from_uuid(id))
+            .await?;
+        let object_type_id = head.instance.object_type_id;
+        let policies = object_view_policies(state, *object_type_id.as_uuid()).await?;
+        let subject = ontology_subject(principal);
+        state
+            .instances
+            .visible_instances(object_type_id, Some(&[id]), &subject, &policies)
+            .await?
+            .into_iter()
+            .next()
+            .map(Visible)
+            .ok_or_else(|| {
+                PgOntologyError::Domain(KernelError::not_found("instance was not found"))
+            })
+    }
+
+    pub(super) async fn visible_head(
+        state: &OntologyRestState,
+        principal: &Principal,
+        id: Uuid,
+    ) -> Result<Visible, RestError> {
+        visible_head_inner(state, principal, id)
+            .await
+            .map_err(RestError::from_ontology)
+    }
+
+    /// Walk the graph and filter it in ONE call, so the unfiltered
+    /// [`TraversalGraph`] never leaves this module. [`Instances`] deliberately
+    /// does not re-export `traverse`: a raw walk in the parent module would be an
+    /// ungated read of every neighbour's id, type, title and lifecycle state.
+    pub(super) async fn visible_traversal(
+        state: &OntologyRestState,
+        principal: &Principal,
+        root: InstanceId,
+        link_type_id: Option<LinkTypeId>,
+        depth: u32,
+    ) -> Result<TraversalGraph, RestError> {
+        let graph = state
+            .instances
+            .0
+            .traverse(root, link_type_id, depth)
+            .await
+            .map_err(RestError::from_ontology)?;
+        visible_subgraph(state, principal, graph).await
+    }
+
+    /// Drop from a traversal every node the object-policy residual does not admit,
+    /// every edge touching one, and everything the root can no longer reach.
+    ///
+    /// Gating only the root measurably disclosed both hidden neighbours' titles at
+    /// depth 1. Nodes are grouped by `object_type_id` because a neighbour may be of
+    /// a different type than the root — including a built-in catalog type — and each
+    /// type carries its own attached policies.
+    async fn visible_subgraph(
+        state: &OntologyRestState,
+        principal: &Principal,
+        graph: TraversalGraph,
+    ) -> Result<TraversalGraph, RestError> {
+        let subject = ontology_subject(principal);
+        let mut by_type: HashMap<ObjectTypeId, Vec<Uuid>> = HashMap::new();
+        for node in &graph.nodes {
+            by_type
+                .entry(node.object_type_id)
+                .or_default()
+                .push(*node.instance_id.as_uuid());
+        }
+        let mut visible: HashSet<Uuid> = HashSet::new();
+        for (object_type_id, ids) in by_type {
+            let policies = object_view_policies(state, *object_type_id.as_uuid())
+                .await
+                .map_err(RestError::from_ontology)?;
+            let rows = state
+                .instances
+                .visible_instances(object_type_id, Some(&ids), &subject, &policies)
+                .await
+                .map_err(RestError::from_ontology)?;
+            visible.extend(rows.iter().map(|row| *row.instance.id.as_uuid()));
+        }
+
+        let root = *graph.root.as_uuid();
+        if !visible.contains(&root) {
+            return Err(RestError::from_kernel(KernelError::not_found(
+                "instance was not found",
+            )));
+        }
+        let edges: Vec<_> = graph
+            .edges
+            .into_iter()
+            .filter(|edge| {
+                visible.contains(edge.from_instance_id.as_uuid())
+                    && visible.contains(edge.to_instance_id.as_uuid())
+            })
+            .collect();
+
+        // Re-BFS from the root over what survives: a node whose only path ran
+        // through a hidden one is no longer reachable, and its recorded depth would
+        // otherwise disclose the length of that hidden path.
+        //
+        // FIFO, not LIFO. `depth` is the SHORTEST hop count — `PgInstanceStore::
+        // traverse` computes it level by level — and the `Vacant` guard below writes
+        // each node's depth exactly once, so the first visit has to be the shortest
+        // one. A stack visits the long arm of a diamond first, records its length,
+        // and then declines to lower it: measured `far` at 3 when it was 2 hops
+        // away, with nothing hidden at all.
+        let mut depths: HashMap<Uuid, u32> = HashMap::from([(root, 0)]);
+        let mut frontier = VecDeque::from([root]);
+        while let Some(current) = frontier.pop_front() {
+            let depth = depths[&current];
+            for edge in &edges {
+                if *edge.from_instance_id.as_uuid() == current {
+                    let next = *edge.to_instance_id.as_uuid();
+                    if let Entry::Vacant(slot) = depths.entry(next) {
+                        slot.insert(depth + 1);
+                        frontier.push_back(next);
+                    }
+                }
+            }
+        }
+        let mut nodes: Vec<_> = graph
+            .nodes
+            .into_iter()
+            .filter_map(|node| {
+                depths
+                    .get(node.instance_id.as_uuid())
+                    .map(|depth| TraversalNode {
+                        depth: *depth,
+                        ..node
+                    })
+            })
+            .collect();
+        // `traverse` hands its nodes over sorted by `(depth, id)`; a recomputed
+        // depth can violate that, so restore the order the response contract states.
+        nodes.sort_by_key(|node| (node.depth, *node.instance_id.as_uuid()));
+        let edges = edges
+            .into_iter()
+            .filter(|edge| {
+                depths.contains_key(edge.from_instance_id.as_uuid())
+                    && depths.contains_key(edge.to_instance_id.as_uuid())
+            })
+            .collect();
+        Ok(TraversalGraph {
+            root: graph.root,
+            nodes,
+            edges,
+        })
+    }
+}
+
+use gate::{visible_head, visible_head_inner, visible_traversal};
 
 /// Convert only the already-validated no-code row-policy subset into the SQL
 /// residual grammar. A condition unsupported by residual lowering is retained
@@ -579,14 +1004,22 @@ async fn get_instance(
     Path(id): Path<Uuid>,
     Query(query): Query<AsOfQuery>,
 ) -> Result<Json<InstanceState>, RestError> {
-    authorize_ontology(&state, &headers).await?;
-    let instance_id = InstanceId::from_uuid(id);
-    let instance = match query.as_of {
-        Some(at) => state.instances.get_as_of(instance_id, at).await,
-        None => state.instances.get_current(instance_id).await,
+    let principal = authorize_ontology(&state, &headers).await?;
+    // The HEAD is what the gate decides on, including for an as-of read:
+    // gating the as-of revision instead would be a time-travel bypass — a
+    // caller could read a hidden row at an instant before the attribute the
+    // policy matches on took its current value.
+    let head = visible_head(&state, &principal, id).await?;
+    match query.as_of {
+        Some(at) => Ok(Json(
+            state
+                .instances
+                .get_as_of(&head, at)
+                .await
+                .map_err(RestError::from_ontology)?,
+        )),
+        None => Ok(Json(head.into_inner())),
     }
-    .map_err(RestError::from_ontology)?;
-    Ok(Json(instance))
 }
 
 async fn get_instance_history(
@@ -594,10 +1027,13 @@ async fn get_instance_history(
     headers: HeaderMap,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Vec<RevisionSummary>>, RestError> {
-    authorize_ontology(&state, &headers).await?;
+    let principal = authorize_ontology(&state, &headers).await?;
+    // The gated head is the ARGUMENT, not a discarded precondition: `history`
+    // takes proof, so this cannot decay into an ungated read by deleting a line.
+    let head = visible_head(&state, &principal, id).await?;
     let history = state
         .instances
-        .history(InstanceId::from_uuid(id))
+        .history(&head)
         .await
         .map_err(RestError::from_ontology)?;
     Ok(Json(history))
@@ -621,17 +1057,22 @@ async fn traverse_instance(
     Path(id): Path<Uuid>,
     Query(query): Query<TraverseQuery>,
 ) -> Result<Json<TraversalGraph>, RestError> {
-    authorize_ontology(&state, &headers).await?;
-    let graph = state
-        .instances
-        .traverse(
+    let principal = authorize_ontology(&state, &headers).await?;
+    // The root is gated by `visible_traversal` along with every other node, from
+    // ONE residual evaluation. A separate pre-gate would be a second read of the
+    // same fact, free to diverge from the one that decides the node set. The walk
+    // and the filter are ONE call because the unfiltered graph must not be
+    // nameable here: `traverse` is not re-exported from `gate` at all.
+    Ok(Json(
+        visible_traversal(
+            &state,
+            &principal,
             InstanceId::from_uuid(id),
             query.link_type.map(LinkTypeId::from_uuid),
             query.depth,
         )
-        .await
-        .map_err(RestError::from_ontology)?;
-    Ok(Json(graph))
+        .await?,
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -800,7 +1241,7 @@ impl OntologyRestState {
         action_key: &str,
         command: ActionCommand,
     ) -> Result<PreflightOutcome, ActionError> {
-        let prepared = self.prepare(action_key, &command).await?;
+        let prepared = self.prepare(principal, action_key, &command).await?;
         let gates = self.evaluate_gates(principal, &prepared, &command).await?;
         let criteria_ok = prepared.criteria.is_ok();
         let criteria_error = prepared.criteria.as_ref().err().map(|e| e.message.clone());
@@ -827,7 +1268,7 @@ impl OntologyRestState {
         action_key: &str,
         command: ActionCommand,
     ) -> Result<ExecuteOutcome, ActionError> {
-        let prepared = self.prepare(action_key, &command).await?;
+        let prepared = self.prepare(principal, action_key, &command).await?;
 
         if let Err(err) = &prepared.criteria {
             return Err(ActionError::CriteriaFailed(err.message.clone()));
@@ -956,6 +1397,7 @@ impl OntologyRestState {
     /// evaluate submission criteria — the deterministic prep both paths share.
     async fn prepare(
         &self,
+        principal: &Principal,
         action_key: &str,
         command: &ActionCommand,
     ) -> Result<Prepared, ActionError> {
@@ -976,13 +1418,20 @@ impl OntologyRestState {
         // Only an `instance_revision` target lives in `ont_instances`; a projected
         // action's target_id is a DOMAIN row (equipment, work order, …) that the
         // engine does not own, so we never resolve it here (submit criteria for a
-        // projected action read params only).
+        // projected action read params only) — and gating it would 404 every
+        // projected dispatch against a row this crate cannot even see.
+        //
+        // Read THROUGH the gate: what an action evaluates is by construction what
+        // the residual permitted. Both callers reach this before any write opens,
+        // so a hidden row is refused before a revision, an approval or a dispatch
+        // can be spent. A denied row raises the adapter's own `not_found`, so it
+        // is indistinguishable from a genuinely missing one — 404, never 403.
         let base_attrs = match (action.dispatch, command.instance_id) {
             (ActionDispatch::InstanceRevision, Some(id)) => {
-                self.instances
-                    .get_current(id)
+                visible_head_inner(self, principal, *id.as_uuid())
                     .await
                     .map_err(ActionError::Store)?
+                    .into_inner()
                     .revision
                     .attributes
             }
@@ -1412,10 +1861,12 @@ impl OntologyRestState {
         instance_id: InstanceId,
         command: LifecycleCommand,
     ) -> Result<LifecycleOutcome, ActionError> {
-        // Load the target (RLS-scoped): a cross-org / missing id ⇒ NotFound, no leak.
-        let head = self
-            .instances
-            .get_current(instance_id)
+        // Load the target THROUGH the gate (RLS floor + object-policy residual):
+        // a cross-org, missing OR policy-hidden id ⇒ NotFound, no leak. This is the
+        // first statement, so refusal precedes `lifecycle_writeback` and the
+        // four-eyes consume inside it — and precedes the 403 below, whose message
+        // interpolates the row's CURRENT STATE.
+        let head = visible_head_inner(self, principal, *instance_id.as_uuid())
             .await
             .map_err(|e| match e {
                 PgOntologyError::Domain(k) if k.kind == ErrorKind::NotFound => {
@@ -1423,6 +1874,7 @@ impl OntologyRestState {
                 }
                 other => ActionError::Store(other),
             })?
+            .into_inner()
             .instance;
         let from = to_governance_state(head.lifecycle_state);
         let to = to_governance_state(command.to_state);
@@ -1642,7 +2094,10 @@ async fn instance_acting(
     headers: HeaderMap,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Vec<ActingRule>>, RestError> {
-    authorize_ontology(&state, &headers).await?;
+    let principal = authorize_ontology(&state, &headers).await?;
+    // Measured existence oracle before the gate: an ungated 200 here confirmed a
+    // hidden row existed AND named the policies attached to it.
+    visible_head(&state, &principal, id).await?;
     let acting = state
         .registry
         .acting_on_instance(id)
@@ -1675,17 +2130,33 @@ async fn resolve_code(
     headers: HeaderMap,
     Query(query): Query<ResolveQuery>,
 ) -> Result<Json<ResolvedInstance>, RestError> {
-    authorize_ontology(&state, &headers).await?;
+    let principal = authorize_ontology(&state, &headers).await?;
     // Deny-by-omission: an unknown / cross-tenant code is a 404, never a 403.
-    state
+    let unresolvable =
+        || RestError::from_kernel(KernelError::not_found("no instance resolves that code"));
+    let resolved = state
         .registry
         .resolve_by_code(&query.code)
         .await
         .map_err(RestError::from_ontology)?
-        .map(Json)
-        .ok_or_else(|| {
-            RestError::from_kernel(KernelError::not_found("no instance resolves that code"))
-        })
+        .ok_or_else(unresolvable)?;
+    // `ResolvedInstance` carries no `object_type_id`, so the gate resolves it
+    // from the instance itself. Measured before the gate: this route returned
+    // the id, type and title of a policy-hidden row.
+    //
+    // The gate's own 404 says "instance was not found" — a DIFFERENT body than
+    // this route's miss, and the only gated route where the two diverge. Object
+    // codes are human-meaningful and enumerable, so two distinguishable 404s
+    // answer "does this code exist?" for rows the policy hides. Restate the
+    // route's own miss; only a NotFound is rewritten, so a policy-loader failure
+    // still surfaces as the 500 it is instead of a silent "no such code".
+    visible_head(&state, &principal, resolved.id)
+        .await
+        .map_err(|error| match error.status {
+            StatusCode::NOT_FOUND => unresolvable(),
+            _ => error,
+        })?;
+    Ok(Json(resolved))
 }
 
 // ---------------------------------------------------------------------------
@@ -1865,6 +2336,16 @@ impl RestError {
         }
     }
 
+    /// The Cedar policy store's two-arm error surface. `Domain` already carries
+    /// the kernel `ErrorKind`, so a validation failure at attach maps to 422 with
+    /// the validator's own message and needs no new mapping.
+    fn from_cedar(error: PgCedarError) -> Self {
+        match error {
+            PgCedarError::Domain(error) => Self::from_kernel(error),
+            PgCedarError::Db(error) => Self::from_db(error),
+        }
+    }
+
     fn from_db(error: DbError) -> Self {
         match error {
             DbError::Sqlx(sqlx::Error::RowNotFound) => {
@@ -1875,6 +2356,24 @@ impl RestError {
             {
                 tracing::error!(error = %err, "ontology unique-constraint violation");
                 Self::from_kernel(KernelError::conflict("resource already exists"))
+            }
+            // 23503, foreign-key violation: the request named a row that does not
+            // exist. Measured: attaching an object policy as a validly-signed
+            // principal with no `users` row hit `created_by`'s
+            // `(created_by, org_id) -> users(id, org_id)` FK and returned 500 —
+            // a client-caused refusal reported as a server fault, which buries a
+            // real authz condition (a token for a since-removed user) in the
+            // noise operators are trained to page on.
+            //
+            // The message is deliberately generic and the constraint name stays
+            // in the log: naming it would disclose the schema.
+            DbError::Sqlx(sqlx::Error::Database(err))
+                if err.code().is_some_and(|code| code == "23503") =>
+            {
+                tracing::error!(error = %err, "ontology foreign-key violation");
+                Self::from_kernel(KernelError::validation(
+                    "the request references a row that does not exist",
+                ))
             }
             DbError::Sqlx(err) => {
                 tracing::error!(error = %err, "database error");

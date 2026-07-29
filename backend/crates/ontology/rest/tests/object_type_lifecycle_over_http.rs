@@ -370,17 +370,24 @@ async fn a_type_is_authored_published_and_instantiated_over_http(owner_pool: PgP
             Value::Null,
         )
         .await;
-    assert_eq!(read.status, StatusCode::OK, "get instance: {}", read.body);
+    // This type has no object policy attached, so it is invisible on EVERY read
+    // path, not merely the list. The by-id assertion flipped from 200 to 404 when
+    // `get_instance` started applying the same object-policy residual the list
+    // applies; a denied row is deliberately indistinguishable from a nonexistent
+    // one, because a 403 would make the status code an existence oracle.
     assert_eq!(
-        read.body["revision"]["attributes"]["policy_name"],
-        json!("야간 인수인계")
+        read.status,
+        StatusCode::NOT_FOUND,
+        "get instance: {}",
+        read.body
     );
 
-    // BASELINE PIN, not an endorsement: `list_instances` lowers every object
+    // NOT a baseline pin and NOT pending: `list_instances` lowers every object
     // policy to a residual and an empty permit set is `deny_all()`
-    // (authz/src/cedar_pbac/residual.rs:200-203), so a freshly published type
-    // lists nothing even though GET by id serves it. This assertion MUST flip in
-    // the same PR as the residual-lowering fix.
+    // (authz/src/cedar_pbac/residual.rs:200-203), so a type with no attached
+    // permit lists nothing. That is deny-by-default working, and this assertion
+    // is correct forever. Making it return rows would mean the engine assumed a
+    // permit the org never authored.
     let listed = http
         .send(
             "GET",
@@ -394,7 +401,7 @@ async fn a_type_is_authored_published_and_instantiated_over_http(owner_pool: PgP
     assert_eq!(
         listed.body,
         json!([]),
-        "list_instances is fail-closed today; flip this with the residual fix"
+        "no attached permit means no rows: deny-by-default, not a pending fix"
     );
 }
 

@@ -257,6 +257,27 @@ fn is_ident(s: &str) -> bool {
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
 }
 
+/// A resource-type stable key, mirroring the object-type CHECK
+/// `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$` (`0152:20`, `0165:94`).
+///
+/// Dots matter: an object type may legitimately be keyed `hr.employee`, and the
+/// runtime matches an attached policy by `block.resource_type == stable_key`.
+/// Refusing a dot here would make every dotted object type permanently
+/// un-policyable and therefore — once the single-instance reads are gated —
+/// permanently invisible on every read path. That is a hole, not a fix.
+///
+/// This is not a widening of the injection boundary: `resource_type` is emitted
+/// only through [`quote`] as a JSON-escaped string literal, where a dot is inert.
+/// On every non-dot axis this predicate is strictly TIGHTER than [`is_ident`],
+/// which it is spelled in terms of so the two cannot drift: each segment is an
+/// ident that additionally has to START with a letter, so `1abc`, `_x` and `123`
+/// were accepted before and are refused now. An empty segment — `""`, `.a`,
+/// `a.`, `a..b` — is refused by `is_ident`.
+fn is_stable_key(s: &str) -> bool {
+    s.split('.')
+        .all(|segment| is_ident(segment) && segment.starts_with(|c: char| c.is_ascii_lowercase()))
+}
+
 /// Validate no-code blocks against the closed attribute/action whitelist and the
 /// resource-type stable-key shape. This is the boundary that keeps generated
 /// Cedar text un-injectable: every emitted token comes from a whitelist or a
@@ -276,9 +297,9 @@ fn check_blocks_with(blocks: &NoCodeBlocks, declared: &[DeclaredAttr]) -> Result
             blocks.action
         )));
     }
-    if !is_ident(&blocks.resource_type) {
+    if !is_stable_key(&blocks.resource_type) {
         return Err(KernelError::validation(
-            "resource_type must be a [a-z0-9_] stable key",
+            "resource_type must be a dot-separated [a-z][a-z0-9_]* stable key",
         ));
     }
     for cond in &blocks.conditions {
@@ -1216,5 +1237,35 @@ mod tests {
             .unwrap(),
             ReviewStatus::ApprovedForPromotion
         );
+    }
+
+    /// Defect (c): an object type may be keyed `hr.employee` (`0152:20`), and the
+    /// runtime matches an attached policy by `block.resource_type == stable_key`.
+    /// A dotted key must therefore validate, while every shape the object-type
+    /// CHECK refuses must still be refused here.
+    #[test]
+    fn resource_type_accepts_dotted_stable_keys_and_still_refuses_everything_else() {
+        for accepted in ["work_order", "hr.employee", "a.b.c", "a1_2.b3"] {
+            let validation = validate_blocks(OrgId::knl(), &owner_view_permit(accepted));
+            assert!(
+                validation.valid,
+                "{accepted:?} must be policyable: {:?}",
+                validation.errors
+            );
+        }
+        for refused in [
+            "", ".a", "a.", "a..b", "1abc", "_x", "A", "a b", "a\"b", "a-b", "a.B", "a.1b",
+        ] {
+            let validation = validate_blocks(OrgId::knl(), &owner_view_permit(refused));
+            assert!(!validation.valid, "{refused:?} must be refused");
+            assert!(
+                validation
+                    .errors
+                    .iter()
+                    .any(|error| error.contains("stable key")),
+                "{refused:?} must be refused BY THE KEY SHAPE, not incidentally: {:?}",
+                validation.errors
+            );
+        }
     }
 }

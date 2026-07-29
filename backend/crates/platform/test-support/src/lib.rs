@@ -158,6 +158,67 @@ pub async fn seed_bound_workflow_and_policy(
     .unwrap();
 }
 
+/// Attach ONE unconditional enforced `view` permit to an object type.
+///
+/// Object-policy visibility is deny-by-default and unconditional: with nothing
+/// attached, every single-row read, every action against an existing instance
+/// and every lifecycle transition on that type is a 404. A suite whose subject
+/// is command receipts or lifecycle configuration — not row visibility — needs
+/// this to reach its subject at all, and it is the fixture equivalent of the org
+/// having authored one permit through the audited attach route.
+///
+/// Purely additive, and it can never hide anything: a `forbid` still wins, and a
+/// type with no permit stays invisible. Never call it from a suite that is
+/// asserting visibility, which must author its own policy.
+///
+/// Owner-pool setup helper — `console_rt` holds no INSERT on either table
+/// (0150:117-118, and 0205 took back the `ont_object_policies` INSERT 0154
+/// granted).
+pub async fn attach_enforced_view_permit(
+    owner_pool: &PgPool,
+    org: uuid::Uuid,
+    object_type_id: uuid::Uuid,
+    resource_type: &str,
+) {
+    let cedar_id: uuid::Uuid = sqlx::query_scalar(
+        r#"
+        INSERT INTO cedar_policy_catalog_entries
+            (org_id, stable_key, title, natural_language_rule, effect, status, source,
+             principal, action, resource, conditions, policy_version, schema_version,
+             bundle_digest, validation_status, normalized_row)
+        VALUES ($1,
+                'object_policy.' || $2 || '.' || replace(gen_random_uuid()::text, '-', ''),
+                'Test view permit', 'permit viewing every row of this type',
+                'permit', 'enforced', 'no_code_draft',
+                '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '[]'::jsonb, 1,
+                'ontology-runtime-filter-v1',
+                'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+                'valid',
+                jsonb_build_object('effect', 'permit', 'action', 'view',
+                                   'resource_type', $2::text,
+                                   'conditions', '[]'::jsonb))
+        RETURNING id
+        "#,
+    )
+    .bind(org)
+    .bind(resource_type)
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
+    .fetch_one(owner_pool)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO ont_object_policies (org_id, object_type_id, cedar_policy_id, effect) VALUES ($1, $2, $3, 'permit')",
+    )
+    .bind(org)
+    .bind(object_type_id)
+    .bind(cedar_id)
+    // rls-arming: ok test fixture seeds RLS tables as owner during setup, before the console_rt role switch
+    .execute(owner_pool)
+    .await
+    .unwrap();
+}
+
 /// Seed a region + branch under `OrgId::knl()`. `region_name`/`branch_name`
 /// are used as label prefixes; a random UUID suffix keeps names unique
 /// across concurrent test runs.
