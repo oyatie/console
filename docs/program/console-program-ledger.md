@@ -1053,3 +1053,42 @@ Nothing in the candidate changes what any capability may do. It changes what the
 One property is worth recording at the authority layer. The candidate's own commit message records that each of the ten was verified against its handler by symbol rather than taken from the audit that found them — the audit's line numbers were wrong twice, and two of its handler names resolved to store methods with similar names. A finding is not evidence until the thing it names has been read.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for the ecosystem plan and its adversarial review
+
+The registers rebind to the ecosystem-plan candidate. The candidate is documentation and
+tooling: the policy/organization/user/approvals plan, its adversarial review, ten accepted
+ADRs, six experiments run rather than designed, a payroll golden-case audit, a Korean
+statutory source register, and three scripts — an additive ADR index generator, a
+doc-citation verifier now wired into the repo gates, and a client for the official
+legislation API.
+
+Nothing in the candidate changes what any capability may do. No migration, no route, no
+gate threshold, no exposure.
+
+Three properties are worth recording at the authority layer.
+
+The candidate **corrects itself in place rather than presenting a clean history.** Its own
+documents record fourteen corrections to their input, four retracted claims, and — on the
+day of this binding — a retracted staleness finding of my own: I called the kernel's 고용보험
+citation stale by matching a law's *name* instead of reading its delegation chain, and the
+rate is set in 징수법 시행령 rather than 고용보험법 시행령. The retraction is a commit, not an
+edit. A reader should treat the correction record as part of the deliverable.
+
+The candidate asserts **no Korean legal conclusion and moves no Korea control**. Its
+statutory register names instruments and quotes their dates and figures; where a document
+could not be read, it says so and leaves the row unverified. One figure was verified
+against a 고시 body — 기준소득월액 하한 410천원 / 상한 6,590천원 for the July 2026 window, which
+matches the kernel — and the adjacent window's figures were explicitly left unverified
+because the portal serves only consolidated current text. Matching the spec is not matching
+the instrument.
+
+The candidate **found a silent revert in itself before this binding.** Diffed against main
+it showed 39 deletions in the served OpenAPI contract: the branch predated the security
+schemes added for ten operations, so merging it would have removed them. The merge that
+fixes this is the candidate commit. A draft branch left red for a day accumulates reverts
+that no gate reports, because the gate never ran.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
