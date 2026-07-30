@@ -8,6 +8,43 @@ Target: `backend/openapi/openapi.yaml`, 35,935 lines, served verbatim via
 
 ---
 
+## DECISION 2026-07-30 — generate, against this audit's verdict
+
+Owner principle, stated after this audit landed: **refrain from hand-maintaining anything where possible.**
+That reverses the verdict below, and the audit's own evidence supports the reversal once the principle is
+applied. The audit is retained in full — its findings are what make the decision informed, and its cost
+figures are real.
+
+**The argument this audit missed.** Ten operations are documented as requiring no authentication while the
+handler requires a bearer token. If the document is generated from the handlers, **that class of defect
+becomes impossible rather than found**. The audit ranks these first for repair and does not observe that
+generation retires the category. For a security misstatement on a live client-facing artifact, "cannot
+happen" beats "was fixed once".
+
+**The 824 constraints are not destroyed, they are relocated.** The audit counts ~824 hand-authored
+`pattern` / `minimum` / `minLength` constraints as a cost of generation "unless each is re-encoded as a
+`#[schema(...)]` attribute". Re-encoding them *is* the win: a constraint in a separate 36,000-line file
+drifts from the type it constrains, and a constraint on the type cannot. The ETag pattern the audit names
+as most valuable to an integrator is exactly the kind that should sit on the type.
+
+**And 82% accurate is the argument, not the counter-argument.** An 18% error rate today is the steady state
+of hand-maintenance, not a backlog — it only stays fixed while someone keeps fixing it. The audit optimises
+transition cost; the principle optimises for the artifact staying correct without ongoing labour.
+
+**What survives from this audit unchanged, and it is the more urgent finding:** the gate is broken under
+*either* model. `openapi_yaml_covers_configured_route_inventory` asserts YAML ⊇ inventory and never the
+reverse, and **64 of 515 served paths — 12.4% — sit outside the inventory entirely**, invisible to it.
+Generation does not fix that; extending the gate does, and it must happen regardless.
+
+**Sequencing, revised:** (1) the 10 security misstatements now, because they are live and generation is not
+imminent; (2) the gate holes, needed either way; (3) generation, per `ADR-0031`, which therefore stands as
+written; (4) the remaining opaque bodies, which generation subsumes.
+
+`ADR-0031` and `d4-frontend-charter.md` need no correction — their claim was right and this audit's cost
+analysis is a transition-cost argument, not a steady-state one.
+
+---
+
 ## Verdict: neither generate nor demote — fix and close the gate
 
 The question assumed the file is stale. On paths it is not: **zero documented
