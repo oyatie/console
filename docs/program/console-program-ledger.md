@@ -1054,6 +1054,44 @@ One property is worth recording at the authority layer. The candidate's own comm
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, or production-exposure claim.
 
+## 2026-07-30 — the candidate binding for the payroll tests that ran nowhere
+
+The registers rebind to the payroll CI candidate. The candidate wires
+`//backend/crates/payroll/domain:console-payroll-domain-unit` into a workflow for the
+first time: its 16 tests were compiled by `cargo clippy --all-targets` and never
+executed, which is the fifth instance of that class this week.
+
+Nothing in the candidate changes what any capability may do. It changes which tests
+run, and it renames two of them.
+
+Three properties are worth recording at the authority layer, because a green train
+invites inferences it does not support.
+
+The candidate **renames two tests, and the rename is the load-bearing part** rather
+than cosmetic. `transition_payroll_run` has no non-test caller, and two tests were
+named for system properties this repository does not have — that calculation is
+blocked without validated release evidence, and that issuance is blocked without
+step-up. Wiring them into CI unrenamed would have converted a dormant falsehood into
+a CI-endorsed one: a green check certifying guarantees the production path does not
+implement. No assertion was deleted or weakened; both tests pin exactly what they
+pinned before.
+
+The candidate does **not** make payroll safe to release. The release gate is consulted
+in exactly one place, inside payslip issuance and after the run reaches `PAID`, so the
+lifecycle through payment remains ungated and the gate withholds the 임금명세서 rather
+than the money. A separate audit recorded 19 blocking golden-case gaps against this
+kernel on the same day. Running the unit tests proves the unit tests run.
+
+The candidate's integration coverage is **still not wired and is not claimed to be**.
+`run_lifecycle_api.rs` holds the only gate-blocks-issuance assertion, needs PostgreSQL,
+and belongs in a wrapper target under `postgres-domain-reachability`. It was left out
+because it could not be verified locally, and an unverified wrapper is the defect the
+candidate exists to stop repeating.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
 ## 2026-07-30 — the candidate binding for the ecosystem plan and its adversarial review
 
 The registers rebind to the ecosystem-plan candidate. The candidate is documentation and
@@ -1139,3 +1177,4 @@ synthetic merge — because each one skipped is a full rebind later.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+||||||| 18a21d7cd
