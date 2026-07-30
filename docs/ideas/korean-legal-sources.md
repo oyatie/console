@@ -1,8 +1,8 @@
-# Korean legal source repositories — what each can and cannot be used for
+# Korean legal sources — what each of four repositories can and cannot be used for
 
 > `Status: RESEARCH — sourced 2026-07-30. Asserts no Korean legal conclusion and changes no control's HOLD.`
 >
-> Three repositories the owner supplied. The register governs what may be cited as evidence, so the useful
+> Four repositories the owner supplied. The register governs what may be cited as evidence, so the useful
 > question is not "is this good" but **"which register field can this fill, and which can it never fill."**
 
 ## The rule these are measured against
@@ -15,11 +15,12 @@
 evidence on any source, date, scope or interpretation change, and its `uncertainty_rule` is that missing,
 stale, conflicting or unqualified authority is `HOLD` — *"agents may not invent certainty."*
 
-**None of these three repositories is an allowed source.** All three are third-party curations. That does
-not make them useless; it makes them **discovery aids** — they tell you which official document to fetch
-and cite, which is most of the work.
+**No repository here is itself an allowed source.** All four are third-party work. That does not make them
+useless; it makes them **discovery aids** — they tell you which official document to fetch and cite, which
+is most of the work. The fourth, `legalize-pipeline`, is the exception that matters: it does not *contain* an
+allowed source, it *reaches* one, and §"The official API" below records what that takes.
 
-## 1. `legalize-kr/legalize-kr` — the most useful of the three
+## 1. `legalize-kr/legalize-kr` — the most useful of the archives
 
 Korean legislation as a **git archive**, one Markdown file per law, amendments recorded as commits dated to
 their actual promulgation dates. Data obtained from the **National Legal Information Center OpenAPI**
@@ -89,7 +90,7 @@ that the *conflict exists in our architecture* and that no record addresses it. 
 2026-baseline and says many provisions it cites are **not yet in force**, so its timing claims need checking
 against 시행일자 for each instrument — which is exactly what repository 1 is good for.
 
-## How to use these three together
+## How to use these together
 
 1. **Discovery** — `legalize-kr` to find the instrument, its 공포번호 and its 시행일자.
 2. **Citation** — fetch and cite **law.go.kr** directly. Never the mirror, never a commit hash.
