@@ -308,7 +308,7 @@ Named once here; every entity in §4 refers to them. All four are enforced by
 | Tier | Definition | Gate hook | Runtime reach |
 |---|---|---|---|
 | **G — global read** | no `org_id`, no RLS, `console_rt` may SELECT | `global_table_allowlist()` `:44`, entries `:48-70` | direct |
-| **O — owner-only** | no `org_id`, no RLS, **no runtime grant at all** | `owner_only_table_allowlist()` `:115`, entries `:118-124` | SECURITY DEFINER only |
+| **O — owner-only** | no `org_id`, no RLS, **no runtime grant at all** | `owner_only_table_allowlist()` `:115`, entries `:117-129` | SECURITY DEFINER only |
 | **T — tenant** | `org_id NOT NULL` + `ENABLE`/`FORCE` RLS on `app.current_org` | default classification; anything else is `UnclassifiedTable`, `:804-808` | direct, filtered |
 | **N — ontology instance** | rows in `ont_instances`/`ont_instance_revisions`/`ont_links`, themselves Tier T | `0155:16`, `:37`, `:66` | via ontology API |
 
@@ -318,13 +318,27 @@ Two facts about the tiers decide most of §4:
   in Tier G. Tier O is where cross-tenant authorization data already lives — `group_memberships` and
   `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`:118-124`).
 - **Tier N cannot hold a cross-tenant edge.** `ont_instances.org_id` is `NOT NULL` (`0155:18`) and
-  `ont_links` pins **both** endpoints to the same org via composite FK (`0155:78-79`). This is
-  structural, not a missing feature. It is the single constraint that shapes the entity model.
+  `ont_links` pins **both** endpoints to the same org via composite FK — `0155:76`
+  `FOREIGN KEY (from_instance_id, org_id) REFERENCES ont_instances(id, org_id) ON DELETE CASCADE,` and its
+  `to_instance_id` twin at `:77`. This is structural, not a missing feature. It is the single constraint that
+  shapes the entity model.
+  **Its consequence, applied where it bites:** an `ont_link` endpoint must be an `ont_instances` row in the
+  same org, so **no scope descriptor can be an `ont_link`** — not `group`, not `organization`, and by the
+  uniformity argument not `org_unit` either. Every scope edge in §4.3 is therefore a property
+  `{level, node_id}` carrying `AccessScope`. This section named the constraint and §4.3 contradicted it; the
+  contradiction is the defect, and X4b measured which side was right.
 
 A fifth path, **Tier P — projected**: `ont_object_types.backing_kind = 'projected'` (`0152:25`,
 CHECK at `:34-38`) makes an existing Tier T table canvas-visible without moving its data, against a
-compiled-in allowlist (`ontology/adapter-postgres/src/instances.rs:1479-1498`). Cost: projected types
-have no owned revision store, so no fixity chain and no as-of replay (`instances.rs:1522`).
+compiled-in allowlist (`backend/crates/ontology/adapter-postgres/src/instances.rs:1479-1498`). Cost: projected
+types have no owned revision store, so no fixity chain and no as-of replay (`instances.rs:1522`) — and,
+because they own no `ont_instances` rows at all (`instances.rs:1443-1450`), **no `ont_link` may name a
+projected type's row as an endpoint** (§4.3).
+
+**Tier P is code-gated, not CI-gated**, and the difference decides who can add one: `allowlisted_projected_table`
+(`instances.rs:1479-1498`) is a compiled-in `match` arm plus a CHECK, **not** an entry in
+`backend/ci/gates/tenant-isolation/src/lib.rs`. So a new projection is a code change reviewed like code, and
+no gate will tell you it is missing.
 
 **The tier rule.** Cross-tenant → O. Within one tenant, needs authoring + replay → N. Needs a
 constraint the ontology cannot express (uniqueness, money, FK to legacy) → T, projected into P if the
@@ -383,7 +397,7 @@ attempts are the reason this work exists. The executable evidence that matching 
 identity is in `0076` itself: the link is a **nullable** column (`0076:13-14`) with a partial unique
 index (`0076:22-24`), and its backfill promotes a row only where `HAVING count(*) = 1` holds for the
 employee number (`0076:40-46`), leaving every duplicate unlinked. `employees` even carries
-`identity_resolution_strategy` and `identity_resolution_confidence` (`0076:49-50`) — a confidence
+`identity_resolution_strategy` and `identity_resolution_confidence` (`0075_employee_identity_resolution.sql:6`, `:13`) — a confidence
 model, which is what you build when matching is a guess. A mechanism that must decline the ambiguous
 majority is not an identity.
 
@@ -530,11 +544,12 @@ automatically an access Role."* **None of them is built** (no `positions`, `org_
 specified-and-unbuilt: use those names. `party` is this plan's only rename, and only because later verticals
 need customers and suppliers under one identity — noted so the mapping to `Person` stays obvious.
 
-#### Tier O — platform, definer-mediated (1 new table)
+#### Tier O — platform, definer-mediated (2 new tables, **both DEFERRED out of Slice 0**)
 
 | Entity | Purpose | Identity / key | Lifetime | Slice 0 shape |
 |---|---|---|---|---|
-| **`party`** | one durable identity per natural or legal person, across every tenant and vertical | `id UUID PRIMARY KEY` (plain, per §0.4) |永久; never hard-deleted, terminal soft state only | `(id, party_kind, status, created_at)` — **and nothing else** |
+| **`party`** | a durable identity handle reused across tenants and verticals, in the scope this plan can actually deliver | `id UUID PRIMARY KEY` (plain, per §0.4) |永久; never hard-deleted, terminal soft state only | **DEFERRED** — see below. Slice 0 does not need it |
+| **group-scoped grant store** | grants whose `scope.level = group`; unreachable from Tier N | `(id, org_id_of_grantor, …)`, keyed inside its definer | effective-dated | **DEFERRED** — W5/W8 |
 
 `party_kind ∈ {NATURAL, LEGAL}`. **The row holds no personal data** — no name, no phone, no
 주민등록번호. It is an opaque durable handle. That is what makes §5.4 (PII) and erasure tractable, and
@@ -547,17 +562,74 @@ requirement and every Tier G rationale; Tier N is forbidden by `0155:18`.
 Named `party`, not `employee`, so the sales, procurement and governance verticals reuse one identity.
 Employment is one relationship kind among `CUSTOMER`, `SUPPLIER`, `DIRECTOR`, `CONTRACTOR`.
 
-#### Tier T — tenant, ordinary RLS (2 new tables, 2 new columns)
+**`party` and its three companions are DEFERRED out of Slice 0, and Slice 0 does not wait on them.** Struck
+from the 0207+ list: the Tier O `party` table and the Tier T rows `party_org_visibility`, `users.party_id`
+and `employees.party_id`. The reason is irreversibility, not doubt about the design: `users` is in
+`built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so `DROP COLUMN` on
+`users.party_id` is a gate violation — **a column added today is permanent, while adding it later is purely
+additive**. Slice 0's two grants are 현장-scoped and intra-org (§8), and its capacity recording lands on
+`gov_approvals`, so **no lane waits on the party**.
+
+Five non-foreclosure constraints hold while it is deferred, so the deferral cannot become a foreclosure:
+
+1. **No cross-tenant identifier as a FOREIGN KEY**, and none in any UNIQUE constraint or index **whose key
+   does not lead with `org_id`** — see the security-control note below, measured in X4 CONTROL 3.
+2. **The authorization path never reads `employees`.** It is an HR projection, not an identity.
+3. **`0075_employee_identity_resolution.sql:16-17`'s
+   `CHECK (identity_name_only_merge = FALSE)` is never dropped or relaxed.** Name-only merge is the failure
+   mode this whole entity exists to remove.
+4. When the handle lands it is **an ordinary tenant-scoped row homed at the existing sentinel org**
+   `00000000-0000-0000-0000-00000000face`, under the standard `org_isolation` policy — **not** a Tier O
+   carve-out, **no** new GUC, **no** definer-mediated read.
+5. Any eventual edge FK is `RESTRICT` / `NO ACTION`, never `CASCADE`.
+
+**`party_org_visibility`'s key order is a security control, not a style choice.**
+`UNIQUE (org_id, party_id, relationship_kind, valid_from)` — **`org_id` leads the key because a unique index
+is enforced physically BELOW RLS.** Drop it from the front and error `23505` alone discloses that another
+org holds an edge to this party, past a correctly-armed FORCE policy. Measured: X4 CONTROL 3 returned
+`ERROR: duplicate key value violates unique constraint "x4probe_edge_control_uniqleak_party_id_relationship_kind_va_key"`
+where the real key returned `insert-accepted-no-collision`. **The 0207-series migration that creates this
+table must carry that reason as a comment in its own text**, or the next person to "tidy" the key order
+reopens a confidentiality hole with a green test suite. Its probe is
+`visibility_unique_key_leads_with_org_id` (§7).
+
+**The `party` resolution mechanism — one human, two orgs — is a named pre-condition for when `party` lands,
+not a Slice-0 design.** Picked on the record, option (b): **resolution is a platform-principal operation with
+an audit record, never a tenant capability.** A tenant-side "is this the same person" action is the matching
+service §3.2 Option 4 already rejects, and it would let one tenant probe another's roster. Option (a) —
+`party` minted per passkey credential and self-linked by the human at second-org onboarding — remains
+admissible and ADR-0022 permits it, because it is **local** identity rather than federation; it is not
+chosen because it needs an endpoint this plan has not designed. Constraint 4 above governs either way, which
+is what **reconciles this with the Tier O heading**: the handle is definer-mediated only if it is ever
+actually placed in Tier O, and constraint 4 says it should not be.
+
+**Group-scoped grants cannot be Tier N at all** — they are the second Tier O table, beside
+`group_role_grants`. Org_unit- and organization-scoped grants stay Tier N: X4b CASE 1 measured that arm
+resolving end to end, with subject, capability and scope folded out of Tier N. The group arm fails
+structurally: `0155:18` makes `ont_instances.org_id` `NOT NULL`, leaving no third option for the row's
+tenancy, so the grant is homed in exactly one org — and X4b CASE 2c/2d measured org B, a **sibling in the
+same group**, reading **0** rows while RLS-bypassed ground truth showed the revision present. A
+group-scoped grant that its own group cannot read is not a group-scoped grant.
+
+**The burden that store inherits, measured in X4b §5:** the shipped group definer
+(`group_role_grants_for_user`) references **no `app.*` GUC at all**, so **the caller is the org floor** for
+every group-scoped authority read today. A new Tier O grant store must therefore be
+**authorisation-complete inside the definer**, keyed on the **authenticated principal** — never on a
+caller-supplied org id or group id. `group_role_grants` is already in `owner_only_table_allowlist`
+(`backend/ci/gates/tenant-isolation/src/lib.rs:115-129`), so the new store takes the same classification and
+the same review posture, and `no_new_gate_classification` (§7) names **both** owner-only tables.
+
+#### Tier T — tenant, ordinary RLS (Slice 0: **1** new table and **2** new columns; the party rows are deferred)
 
 | Entity | Purpose | Identity / key | Lifetime | Slice 0 |
 |---|---|---|---|---|
-| **`party_org_visibility`** | **the keystone edge.** The tenant-owned fact that this org holds a relationship to this party | `(id)`; `UNIQUE (org_id, party_id, relationship_kind, valid_from)` | effective-dated interval | yes — one row |
+| **`party_org_visibility`** | **the keystone edge.** The tenant-owned fact that this org holds a relationship to this party | `(id)`; `UNIQUE (org_id, party_id, relationship_kind, valid_from)` — **`org_id` leads the key as a security control**, above | effective-dated interval | **DEFERRED** with `party` |
 | **`work`** (업무) | first-class work; the join point for artifacts, actions, handover, ledger and metrics | `(id, org_id)` | open → closed | yes — one row |
 | **`worksite_registration`** | 사업장 legal attributes: 4대보험 registration unit, optional 사업자등록번호 | `(id, org_id)`; `UNIQUE (org_id, business_registration_no)` | permanent per site | **no** — W3 |
 | **`worksite_contract`** (사업장 계약) | the contract a temporary unit's existence is DERIVED from | `(id, org_id)` | a term | **no** — W15 |
 | **`lot`** | quantity-bearing node: the splittable/mergeable unit (§5.8) | `(id, org_id)` | until consumed | **no** — W16 |
-| `users.party_id` | link the per-org account to the durable identity | nullable FK `→ party(id)` | — | yes |
-| `employees.party_id` | link the imported HR row to the durable identity | nullable FK `→ party(id)` | — | yes |
+| `users.party_id` | link the per-org account to the durable identity | nullable FK `→ party(id)` | — | **DEFERRED** — `users` is audited, so the column is permanent once landed |
+| `employees.party_id` | link the imported HR row to the durable identity | nullable FK `→ party(id)` | — | **DEFERRED** with `party` |
 | `gov_approvals.authorizing_grant_id`, `.on_behalf_of_party_id` | **capacity** — §4.0.1, §4.0.3 | two nullable additive columns | — | **yes** |
 
 **The capacity columns land on `gov_approvals`, not on `audit_events`** (§4.0.3). Two nullable additive
@@ -608,7 +680,7 @@ under RLS (`0063:21-25`).
 
 | Entity | Purpose | Identity | Lifetime | Slice 0 |
 |---|---|---|---|---|
-| **`grant`** | binds *(subject party, capability, scope, source)* | instance id | effective-dated; revocation closes `valid_to` | yes — 1 |
+| **`grant`** *(scope.level ∈ {org_unit, organization, region, branch, worksite})* | binds *(subject party, capability, scope, source)*. **Group-scoped grants are NOT here** — they are Tier O, above | instance id | effective-dated; revocation closes `valid_to` | yes — 2, both 현장 scope |
 | **`org_unit`** | 조직 structure, with **kind** (부서/팀/TF/사업장) and **lifetime** | instance id | permanent, or derived from a contract (§5.10) | yes — 1 (kind = 사업장) |
 | **`delegation_rule`** (전결규정) | (category × amount band × raising scope) → competent unit, terminal? | instance id | effective-dated | yes — 1 row, 1 band |
 | **`approval_template`** | per document class: ordered/parallel steps, each with competent-unit-by-lookup + required capability + mode | instance id | versioned by the registry | yes — 1 step |
@@ -636,7 +708,7 @@ copying `0153`'s own inline comment `-- one decision per request` instead of rea
 
 Three notes where Tier N bites:
 
-- **`employment` cannot link to `party` with an `ont_link`** (`0155:78-79`). `party_id` is an
+- **`employment` cannot link to `party` with an `ont_link`** (`0155:76-77`). `party_id` is an
   attribute-bag **property** holding a UUID, app-validated. The shipped precedent for an untyped
   cross-store pointer is `recruit_postings.position_ref TEXT` (`0187:29`), commented *"optional
   ontology position instance ref"*. Same seam, opposite direction.
@@ -678,6 +750,28 @@ line specifically** rather than the spec. And `:298` risk 4 puts **intercompany/
 
 This is the plan's central claim, and it is the reason §0.1 matters.
 
+**X4 confirms it, and confirms it in a bounded form that must be stated with it.** What was measured — 30
+assertions, 3 controls RED, zero new GUCs, the 141 RLS policies untouched — is **visibility of a known party
+within the armed org**. X4's own scope line says so: *"Schema-level only. No `organizations` FK, no
+Cedar/PBAC layer, no application path."* It does **not** extend to **cross-org authority resolution**, which
+X4b then measured **failing**.
+
+**The falsifying case, stated honestly rather than left for an implementer to hit.** Armed to org A, resolve
+the eligible approvers for a step whose competent unit sits at **group** scope, where the only qualifying
+holder is a user of org B. On this design that question is **not answerable** without either iterating the
+member orgs or reading a Tier O group-scoped grant store (§4.1) — because a group-scoped grant cannot live
+in Tier N at all, and a sibling org reads zero rows from the one that does exist. So "no second tenancy
+dimension" is true, and "everything resolves in one query under `app.current_org`" is not.
+
+**Which of the two readings of the definer this plan means: Variant B.** The party/edge join runs **inside**
+the definer, which re-derives the org floor from `current_setting('app.current_org')` and never accepts an
+org from the caller. §7 already decides it — `party_not_readable_as_console_rt` asserts the direct SELECT is
+denied, which is only consistent with Variant B. Variant A (the join outside, the definer answering
+narrow questions) is rejected on measurement, not taste: it leaves **platform-wide party cardinality
+readable by any tenant**. X4 measured `SELECT count(*) FROM x4probe_party` returning **`2`** where org A held
+an edge to only one — and DN-0003 invariant 5 makes that a violation, not an inelegance: *"Denied data is
+omitted, including counts and relationship existence"* (`DN-0003:85-86`).
+
 The confidential fact is not *"who is this party"* — it is *"which parties does org A hold edges to"*.
 That fact lives in `party_org_visibility`, which names exactly one `org_id` per row. Ordinary
 `app.current_org` RLS therefore gives the whole requirement: org A reads only its own edges and
@@ -717,18 +811,19 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 | `parent_org_unit` | org_unit → org_unit | OneMany | yes | `ont_link` | tenant |
 | `worksite_legal_reg` | org_unit → worksite_registration | OneOne | yes | FK (T) + projection | tenant |
 | `grant_subject` | grant → party | OneMany | yes | property (UUID) | tenant |
-| `grant_scope` | grant → org_unit \| organization \| group | OneMany | yes | `ont_link` + `AccessScope.level` (`org-hierarchy.md:172-173`) | tenant |
+| `grant_scope` | grant → a scope **descriptor** | OneMany | yes | **property `{level, node_id}`** — `AccessScope`, never an `ont_link` | tenant |
 | `grant_source_assignment` | grant → assignment | OneOne | yes | `ont_link` | tenant |
-| **`position_at_scope`** | position → org_unit \| organization \| group | OneMany | yes | `ont_link` | tenant |
+| **`position_at_scope`** | position → a scope **descriptor** | OneMany | yes | **property `{level, node_id}`** — `AccessScope`, never an `ont_link` | tenant |
 | **`holds_position`** | party → position | **ManyMany** | yes | `assignment` instance | tenant |
-| `derived_from` | lot → lot, **quantity-bearing** | **ManyMany** | yes | `lot_derivation` row (T) | tenant |
+| `derived_from` | lot → lot, **quantity-bearing** | **ManyMany** | yes | `lot_split` row (T) | tenant |
 | `declares` | contract_line → lot (the root) | OneMany | yes | FK | tenant |
-| `work_scope` | work → org_unit | OneOne | yes | `ont_link` | tenant |
-| `work_origin` (발생지) | work → org_unit | OneOne | yes | `ont_link` | tenant |
-| `work_performed_at` (수행지) | work → org_unit | OneOne | yes | `ont_link` | tenant |
-| `work_jurisdiction` (결재 관할) | work → org_unit | OneOne | yes | `ont_link` | tenant |
+| `work_scope` | work → a scope descriptor | OneOne | yes | **property `{level, node_id}`** on the `work` row — never an `ont_link` | tenant |
+| `work_origin` (발생지) | work → a scope descriptor | OneOne | yes | **property `{level, node_id}`** on the `work` row | tenant |
+| `work_performed_at` (수행지) | work → a scope descriptor | OneOne | yes | **property `{level, node_id}`** on the `work` row | tenant |
+| `work_jurisdiction` (결재 관할) | work → a scope descriptor | OneOne | yes | **property `{level, node_id}`** on the `work` row | tenant |
 | `work_assignee` | work → party | ManyMany | yes | property set + `assignment` | tenant |
 | `work_artifact` | work → email_thread \| document \| … | ManyMany | yes | `object_links` row | tenant |
+| **`person_artifact`** | person → email_thread \| document \| … | ManyMany | yes | `object_links` row on the **seeded `person` kind** (`0102:32`) | tenant |
 | `competent_for` (전담) | org_unit → (category, band, scope) | ManyMany | yes | `delegation_rule` | tenant |
 | `line_step` | approval_line → step | OneMany ×2 sets | yes | `ont_link` (raised / executed) | tenant |
 | `step_edge_kind` | step → {결재, 협조, 보고} | — | yes | property on step | tenant |
@@ -736,11 +831,39 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 | `signature_on_behalf_of` | `gov_approvals` → party | OneOne, nullable | yes | `gov_approvals.on_behalf_of_party_id` column (T), **no FK** | tenant |
 | `obligation_notice` | approval_line → notices | OneMany | yes | `notices` FK | tenant |
 
-**Every `ont_link` row above is authored as a property carrying `config.link = {stable_key, to_type}`,
-never as a bare link type** — §0.12. A link type alone writes no edge. This is a hard specification, not
-a style preference.
+**No *reachable* path writes an `ont_links` row without a property carrying
+`config.link = {stable_key, to_type}`** — §0.12. A link type alone writes no edge on any path a user or an
+API caller can reach. This is a hard specification, not a style preference. **The one exception, named so
+nobody discovers it and thinks the rule is false:** `PgInstanceStore::create_link`
+(`backend/crates/ontology/adapter-postgres/src/instances.rs:291`, INSERT at `:319`) writes a row directly
+from a bare `link_type_id` — but every call site in the repo is under `tests/`, so it has **zero non-test
+callers**. `grep 'INSERT INTO ont_links'` finds **two** sites and only one of them is the property
+mechanism.
 
-Five of these deserve their reason stated:
+**Why every scope edge above is a property and not an `ont_link` — measured, not argued.** An `ont_link`
+endpoint must be an `ont_instances` row **in the same org**: `0155:76-77` FKs both
+`(from_instance_id, org_id)` and `(to_instance_id, org_id)` to `ont_instances(id, org_id)`. Neither an
+`organization` nor a `group` is an `ont_instances` row, so `grant → group` and `grant → organization` are
+**not storable at all**. X4b CASE 3a executed the write and got
+`ERROR: insert or update on table "ont_links" violates foreign key constraint "ont_links_to_instance_id_org_id_fkey"`.
+The `org_unit` arm *is* storable, but it is made a property too, so there is **one** storage form and the
+fold reads `AccessScope` uniformly instead of branching on how the scope happened to be recorded. The
+vocabulary is the shipped one: `backend/crates/kernel/core/src/access_scope.rs:28-34`
+`enum AccessScopeLevel { Group, Org, Region, Branch, Worksite }` and `:37-40`
+`struct AccessScope { level, node_id }`, specified at `docs/specs/org-hierarchy.md:172-173`.
+
+> **Caveat, and it is a hard one: Slice 0 must not publish a `grant_scope` link type whose declared target
+> set includes `group` or `organization`.** That arm fails at the first write, and by then the schema is
+> already published — an authored type's published schema is the expensive thing to withdraw, not the row.
+
+**Why the four `work_*` edges are properties: `work` is Tier T projected, and a projected type owns no
+instances.** `backend/crates/ontology/adapter-postgres/src/instances.rs:1443-1450` states it: *"A
+`projected` object type owns no store of its own … This is a READ-ONLY view … there is no create/stage path
+here, only list."* So `work` has no `ont_instances` row to be an `ont_link` endpoint, and all four edges are
+rejected by referential integrity **today**. They become scope-descriptor properties on the `work` row — or
+an `object_links` row, the shape `work_artifact` already uses.
+
+Six of these deserve their reason stated:
 
 - **`holds_position` is ManyMany, and `position` belongs to a scope — not to a person.** 직책 is not a
   global attribute. A guild officer post and an alliance officer post are different posts held
@@ -750,12 +873,27 @@ Five of these deserve their reason stated:
   position per person, so no correction was needed — but the scope link was implicit and is now
   explicit.
 
-- **`work_artifact` uses `object_links` (`0102:54`), not `ont_links`.** `object_links` addresses
-  endpoints as `src_kind`/`src_id` and `dst_kind`/`dst_id` (`0102:57-60`) with **no FK to either
-  endpoint id**, and `link_type` is validated only by slug regex (`0102:63`) — so a new edge kind needs
-  no migration. That is exactly a work→artifact edge across heterogeneous stores, already
-  `UNIQUE (org_id, src_kind, src_id, dst_kind, dst_id, link_type)` (`0102:68`). Both `person` and
-  `org_unit` are already seeded kinds (`0102:32-33`); `work` needs one appended row.
+- **`work_artifact` uses `object_links` (`0102:54`), not `ont_links` — and a new edge kind IS a
+  migration.** The storage choice stands: `object_links` addresses endpoints as `src_kind`/`src_id` and
+  `dst_kind`/`dst_id` (`0102:57`, `:59`) with **no FK to either endpoint id**, which is exactly a
+  work→artifact edge across heterogeneous stores, already
+  `UNIQUE (org_id, src_kind, src_id, dst_kind, dst_id, link_type)` (`0102:68`). Both `person` and `org_unit`
+  are already seeded kinds (`0102:32-33`); `work` needs one appended row.
+  **The reason previously given for it is struck.** The plan said *"`link_type` is validated only by slug
+  regex (`0102:63`) — so a new edge kind needs no migration."* That went stale at `0130`/`0132`:
+  `0130_create_link_types.sql` created the registry, seeded **twelve** labels (`:37-49`, none of them
+  `work_artifact`), granted `console_rt` **SELECT only** (`:52`), and added
+  `object_links_link_type_fkey … ON DELETE RESTRICT NOT VALID` (`:75`), validated by `0132:8`. `console_rt`
+  cannot INSERT a `link_type` — measured: *"permission denied for table link_types"* (X4b S1). So **a new
+  edge kind is one appended `link_types` row per kind in a migration**, exactly like the `object_types` kind
+  row this plan already budgets. Carry the per-kind cost D3 names: one `RESOLVABLE_KIND_AUTH` row, one
+  `resolve_*` arm, and **a one-time audit of pre-existing links of that kind**, because registering a kind
+  makes prior links of it retroactively resolvable with no backfill re-check.
+- **`person_artifact` is declared, not left to a probe to discover.** The PII and handover boundary rests on
+  the distinction between an artifact linked to a **work** and one linked to a **person**, and until now that
+  distinction existed only inside §4.5's 인계 완료 clause 2 and the `handover_moves_work_artifacts_only`
+  probe. It is an `object_links` row on the already-seeded `person` kind (`0102:32`), ManyMany, owned by the
+  tenant, and 인계 완료 clause 2 now references it by name.
 - **Three edge kinds, not one with a flag.** 결재 / 협조 / 보고 differ in direction and meaning; 보고
   is the return leg C and D owe B. A flag on a signing edge cannot carry a reverse-direction
   obligation.
@@ -802,8 +940,9 @@ Concrete paths for the operations that matter.
 **Resolve effective authority** — `effective(party, scope, asof)`:
 ```
 definer effective_grants_for(p_party, p_scope, p_asof)          -- row_security off, re-validating
-  → party_org_visibility  WHERE org_id = current_setting('app.current_org')  -- the visibility gate
+  → visibility_predicate  WHERE org_id = current_setting('app.current_org')  -- the visibility gate
                             AND party_id = p_party AND asof ∈ [valid_from, valid_to)
+     -- table: party_org_visibility once it lands; the subject's own `users` row in Slice 0 (§5.1)
   → BRANCH ON p_scope.level                                     -- AccessScope, NOT a DSL (§0.17)
     ├ org_unit | organization | region | branch | worksite:
     │   → grant instances     WHERE org_id = current_setting('app.current_org')   -- org_predicate
@@ -1062,8 +1201,12 @@ the number cannot rot and so a probe can delete them one at a time:
 
 1. **`org_predicate`** — every grant instance row and every grant revision row read is filtered
    `org_id = current_setting('app.current_org')`, **a literal, never a parameter**;
-2. **`visibility_predicate`** — `party_org_visibility` filtered on `current_setting('app.current_org')`,
-   never a parameter (§4.2);
+2. **`visibility_predicate`** — the subject is proven visible to the armed org by a row filtered on
+   `current_setting('app.current_org')`, **never a parameter** (§4.2). While `party_org_visibility` is
+   deferred (§4.1) the row is the subject's own `users` row and the predicate is
+   `users.org_id = current_setting('app.current_org')`; when the edge table lands the predicate moves to it
+   unchanged in form. The check is the predicate, not the table — which is why deferring the table does not
+   remove a check from Slice 0;
 3. **`chain_linkage`** — each returned revision's `prev_hash` equals its predecessor's `row_hash`
    (`0155:52-53`), erroring the whole load on the first mismatch;
 4. **`scope_containment`** — every returned scope is inside the armed org's reachable scope set.
@@ -1371,7 +1514,7 @@ two correct shapes.
 
 ```
 up   (traceable input for production):
-  finished_good lot → lot_derivation(child=·) recursively → roots → contract_line → contract
+  finished_good lot → lot_split(child_lot_id=·) recursively → roots → contract_line → contract
 down (does the accounting close?):
   contract_line → declared qty; sum(leaf lots) + sum(scrap lots) must equal it
 ```
@@ -1639,8 +1782,8 @@ session state. Any probe in this section that asserts an absence must state wher
 | Probe | Asserts | Known-bad control (must be RED) |
 |---|---|---|
 | `fold_is_additive` | adding a grant strictly grows the capability set | a fold implementation with any narrowing predicate |
-| `fold_is_scope_parameterised` | `effective(P, group G) ≠ effective(P, company A)` | a fold that ignores the scope argument |
-| `requirement_3` | associate-at-A with a group-G grant out-ranks executive-at-B | any rank-derived ordering |
+| `fold_is_scope_parameterised` | `effective(P, group G) ≠ effective(P, company A)`, with the **group** arm sourced from the **Tier O** group-scoped grant store (§4.1) and the company arm from Tier N | a fold that ignores the scope argument |
+| `requirement_3` | associate-at-A with a group-G grant out-ranks executive-at-B — the group-G grant coming from the **Tier O** store, because Tier N cannot hold it (X4b) | any rank-derived ordering; and a Tier N-only substrate, which cannot produce the precondition at all |
 | `delegation_adds_never_removes` | delegating retains the delegator's grant | an implementation that closes the source grant |
 | `asof_replay` | fold at raise time ≠ fold at decision time when a grant closed between | a fold that ignores `p_asof` |
 | `feature_catalog_matches_enum` | `feature_catalog` ≡ `Feature::ALL`, both directions | a `Feature` variant with no catalog row; a catalog row with no variant |
@@ -1658,7 +1801,9 @@ session state. Any probe in this section that asserts an absence must state wher
 | `definer_returns_no_foreign_org_grant` | one party with a visibility edge in **both** orgs and one grant in each; armed as org A, the call returns exactly **one** row | the definer as §4.5 specified it before this revision — no `org_id` predicate on the grant read |
 | `row_security_restored_on_error` | an exception inside the definer leaves `row_security = on` | a definer without the `EXCEPTION WHEN OTHERS` restore of `0060:88-91` |
 | `genesis_grant_mintable_only_by_platform_principal` | a grant with no authorising grant can be minted **only** on the platform-principal path gated by `PlatformFeature::TenantCreate` (§5.1) | a **tenant**-authenticated endpoint creating a grant with no authorising grant |
-| `no_new_gate_classification` | the tenant-isolation gate passes with `party` in `owner_only_table_allowlist` and `party_org_visibility` unlisted | `party` added to `global_table_allowlist` (must be RED per §3.2 Option 3) |
+| `no_new_gate_classification` | the tenant-isolation gate passes with **both** owner-only tables — `party` **and** the group-scoped grant store — in `owner_only_table_allowlist`, and `party_org_visibility` unlisted | either owner-only table added to `global_table_allowlist` (must be RED per §3.2 Option 3) |
+| `visibility_unique_key_leads_with_org_id` | an insert into `party_org_visibility` that collides **only** with an invisible other-org row is **accepted** | the same table keyed `UNIQUE (party_id, relationship_kind, valid_from)` — must be RED with `23505` (X4 CONTROL 3) |
+| `ont_link_to_projected_row_is_rejected` | an `ont_links` INSERT naming a **projected** type's row as an endpoint fails **on the FK** (`0155:76-77`) | the four `work_*` edges as §4.3 specified them before this revision, i.e. as `ont_link`s |
 | `worksite_reg_no_unique` | duplicate 사업자등록번호 rejected by the DB | the constraint expressed only in app code |
 
 ### End-to-end (the proving slice)
@@ -1769,7 +1914,7 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 
 | # | Crate | Ships |
 |---|---|---|
-| 1 | `platform/db` | migrations 0207+: `party`, `party_org_visibility`, `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer |
+| 1 | `platform/db` | migrations 0207+: `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer. **`party` and `party_org_visibility` are struck** — deferred out of Slice 0 on irreversibility (§4.1) |
 | 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs |
 | 3 | `platform/authz-rest` | the re-validating definer read path (§5.1) |
 | 4 | `ontology/*` | the Tier N types + their attached policies; `allowlisted_projected_table` arm for `work` |
@@ -1819,7 +1964,7 @@ its GREEN is the only kind that counts.
 | X1 | **Edges from an authored type.** Publish a type whose relationship is declared *only* as a link type, then again with a property carrying `config.link` | first writes 0 edges, second writes edges | the link-type-only case must be **RED** (it is today's behaviour, §0.12) | the canvas cannot express relationships; §0.12's guard becomes a blocking fix |
 | X2 | **A published type lists rows.** Publish with, and without, an attached object policy | without → `[]`; with → rows | the no-policy case must be RED (`residual.rs:200-203`) | every Tier N entity is unusable; Tier T for all of them |
 | X3 | **The definer survives attack.** Build `effective_grants_for`, then run the #525 exploit shape and a foreign-org party id against it | both refused **by execution**, not by argument | a definer filtering on a parameter instead of `app.current_org` must leak — the `0060:99` shape copied verbatim | the bootstrap resolution fails; grants cannot be read outside the gate |
-| X4 | **No second RLS dimension is needed.** Answer `effective(party, scope)` for a person in two orgs using only `app.current_org` + the visibility edge | answerable with zero new GUCs | an attempt that requires `app.current_group` | §4.2 collapses and the 141-table cost returns — this is the plan's central claim, so test it first |
+| X4 | **No second RLS dimension is needed.** Answer `effective(party, scope)` for a person in two orgs using only `app.current_org` + the visibility edge. **Bounded to visibility of a known party within the armed org**; the falsifying case is a **group**-scope step whose only qualifying holder is a user of a sibling org, which X4b measured returning 0 rows (§4.2) | answerable with zero new GUCs, for the bounded claim | an attempt that requires `app.current_group`. **Instrument control:** a GUC inventory read from `pg_settings` rather than from stored policy expressions returns 0 rows and looks like a pass (§7 preamble) | §4.2 collapses and the 141-table cost returns — this is the plan's central claim, so test it first |
 | X5 | **Cedar decides alone.** Encode four grant sources over one person in two companies; confirm requirement 3 with no Rust fallback | Cedar alone decides | a case needing a companion evaluator | two evaluators will diverge; the fold moves entirely into Cedar or entirely out |
 | X6 | **Fold cost per request.** Measure `effective(party, scope)` at realistic grant counts, materialized vs on-demand | on-demand is acceptable at slice-0 scale; materialization keyed on `policy_versions` if not | a fold whose cost grows with total org grants rather than the person's | §5.6's invalidation design becomes load-bearing earlier |
 | X7 | **Draft-PR CI coverage.** Push a backend-touching commit and a docs-only commit to a draft PR; compare required contexts | backend runs all 14; docs-only runs none | trusting the UI's absence of red as green | the one-PR model needs an explicit verification checkpoint per rung |
@@ -1840,7 +1985,7 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 |---|---|
 | — | **The reciprocal ADR pairs G1-G9 (§5.11).** Under README rules 2-4 these *gate* the work; G1 (platform `party`) and G2 (`org_id` × `BranchScope`) block slice 0; **G2b blocks C5** |
 | — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `known-bad-controls.tsv` |
-| **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; `RealtimeEvent` variants + channel consts; migration slots 0207+ |
+| **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
 | — | **G9 audit-coverage enumeration (§5.11):** every new write path, its `with_audit` status, and any `audit-coverage` gate entry required. The exclusion set has exactly one entry (`ADR-0002:20`) and a test asserts it |
 | — | **CI wiring per crate**, targeting the CI that **exists** (buck2 live) not the one `PIVOT-2026-07-28.md` §6 describes. X8 runs first |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
@@ -1869,11 +2014,11 @@ Minimum shape of each entity, and nothing more:
 
 | Entity | Slice-0 minimum |
 |---|---|
-| `party` | 1 row: `(id, NATURAL, ACTIVE)`. No attributes. |
-| `party_org_visibility` | 1 row: the raiser, `EMPLOYMENT`, open interval |
-| `users.party_id` | populated for the raiser and the approver |
+| `party` | **not in Slice 0** — deferred on irreversibility (§4.1). The grant's `subject` is the raiser's `users.id`, an ordinary tenant-scoped UUID |
+| `party_org_visibility` | **not in Slice 0** — deferred with `party`. `visibility_predicate` (§5.1) binds against `users.org_id = current_setting('app.current_org')` until the edge table lands, which is the same predicate against a table that already exists |
+| `users.party_id` | **not in Slice 0** — `users` is audited, so the column is permanent once landed (§4.1) |
 | `org_unit` | 1 instance, `kind = 사업장`. No legal attributes. |
-| `work` | 1 instance, with `work_scope` → that 현장 |
+| `work` | **1 `work` ROW written by the domain use-case, listed through the projection** — a projected type has no instance-create path (`instances.rs:1443-1450`) — with `work_scope` as a scope-descriptor property naming that 현장 |
 | `grant` | 2 instances: `purchase.approve` at 현장 scope (authorises) + one at a **different** 현장 (must not) |
 | `delegation_rule` | 2 rows: the ≤₩1,000,000 band → 현장 terminal; the >band → 본사 |
 | `approval_template` | 1 template, 1 step, `mode = terminal_if_전결` |
@@ -1893,9 +2038,10 @@ the wrong thing:
 | `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
 | `finance_gl_vouchers` | 1 posted voucher with `accounting_date` and a line dimensioned to the work | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2 |
 
-**Explicitly out of slice 0:** control edges, group designation, `Feature` work, the canvas, 합의,
-협조/보고 edges, employment, employment type, PII attributes, retroactive linking, lots, metrics,
-allocation.
+**Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 —
+deferred on irreversibility), group-scoped grants and the Tier O store that would hold them, control edges,
+group designation, `Feature` work, the canvas, 합의, 협조/보고 edges, employment, employment type, PII
+attributes, retroactive linking, lots, metrics, allocation.
 
 ### Slice 1 — promotion (승진 / 인사발령): the write path
 
@@ -1988,14 +2134,18 @@ first vertical and PII is where its obligations attach, while every Korea contro
 requirement it serves, since a person can work across groups. `party` in the global-read tier —
 invalidated by confidentiality and by the tier's own "no tenant data" meaning. `party` in the tenant
 tier with a matching service — invalidated as the status quo, whose own backfill declines every
-ambiguous row (`0076:40-46`) and carries a confidence model (`0076:49-50`).
+ambiguous row (`0076:40-46`) and carries a confidence model
+(`0075_employee_identity_resolution.sql:6`, `:13`).
 
 **Why chosen.** It is the only option that meets the confidentiality requirement without a second
 tenancy dimension, and it reuses four shipped mechanisms rather than adding any: the tier
 classifications the CI gate already enforces, the `SECURITY DEFINER` resolver pattern (`0060:99-126`),
-the untyped `object_links` edge store (`0102:54`), and the re-validating-read bargain
-(`store.rs:576-593`, `0205:69-74`). Sixteen new entities cost one owner-only table, two tenant tables,
-two nullable FK columns and one definer.
+the `object_links` edge store (`0102:54`), and the re-validating-read bargain
+(`backend/crates/platform/authz-rest/src/store.rs:576-593`, `0205:69-74`). The cost, corrected: **two
+owner-only tables** — `party` **and** the group-scoped grant store — each carrying its own
+`owner_only_table_allowlist` classification and its own audited definer, so **one definer per owner-only
+store**, not one in total; two tenant tables; and two nullable columns on `gov_approvals`. Both owner-only
+tables are deferred out of Slice 0 (§4.1), so Slice 0 pays for **one** tenant table and the two columns.
 
 **Consequences.** A standing `SECURITY DEFINER` surface that must be re-proven on every change, with
 the parameter-trust weakness of its own precedent as the named failure mode. Cross-store pointers mean

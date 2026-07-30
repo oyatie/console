@@ -38,3 +38,36 @@ forms (`users.party_id` FK, `party_org_visibility` row), so a column-stored rela
 and §4.3 is the only place in the plan that records cardinality. Deleting would have dropped
 "OneOne, nullable" with nowhere else to state it. The brief's stated goal — one signature store, no
 `approval_signature` entity — holds either way.
+
+## Wave 2 — the storage substrate: what can and cannot be an `ont_link`
+
+**Changed.** §4.3: `grant_scope`, `position_at_scope` and all four `work_*` edges became scope-descriptor
+**properties** `{level, node_id}` on the shipped `AccessScope` vocabulary
+(`kernel/core/src/access_scope.rs:28-34`, `:37-40`) instead of `ont_link`s, with the measured FK rejection
+(X4b CASE 3a) and the projected-type reason (`instances.rs:1443-1450`) stated inline, plus the hard caveat
+that Slice 0 must not publish a `grant_scope` link type declaring `group` or `organization` targets. The
+`work_artifact` slug-regex reason is struck for the `0130`/`0132` registry (a new edge kind IS a migration);
+`person_artifact` is declared as a row; `lot_derivation` → `lot_split`; the absolute no-`ont_link` rule
+became a **reachability** rule naming `create_link`'s zero non-test callers. §4.1: Tier O is two tables,
+group-scoped grants moved there with the caller-is-the-org-floor burden, the `party` family is DEFERRED with
+R2's five constraints, `org_id`-leads-the-key is recorded as a security control the migration text must
+carry, and resolution is decided as a platform-principal operation. §3.1 fixed `0155:78-79` → `:76-77`,
+added the consequence sentence, and recorded Tier P as code-gated. §4.2 bounded the central claim to
+visibility-within-the-armed-org and stated the group-scope falsifying case and Variant B. §9's cost line
+now says two owner-only tables and one definer each; "untyped" deleted; `0076:49-50` → `0075:6,13`.
+
+**Not anticipated by the brief.** Deferring the `party` family out of Slice 0 (item 2.2(b)) contradicts
+three rows of §8's **Slice 0** table, which the brief's row-addressed list for wave 2 does not include:
+`party` "1 row", `party_org_visibility` "1 row", `users.party_id` "populated". Left alone, the plan would
+have asserted both DEFERRED and shipped-in-Slice-0. Resolved the only way that keeps "no lane waits on the
+party" true: Slice 0's grant `subject` is the raiser's `users.id`, and §5.1's `visibility_predicate` binds
+against `users.org_id = current_setting('app.current_org')` until the edge table lands — the same predicate
+against a table that already exists, so **no check is removed from Slice 0**. §5.1's check 2 and §4.5's
+definer trace were updated to say so, and the party family was added to "Explicitly out of slice 0".
+Also: §3.1's `owner_only_table_allowlist` entry anchor `:118-124` was stale (three entries now span
+`:117-129`); corrected while in that row.
+
+**Done early, out of its wave.** Item 4.2's instruction to delete the undeliverable G1 claim *"one durable
+identity per natural or legal person, across every tenant and vertical"* from the §4.1 `party` purpose cell
+landed here, because item 2.2 rewrote that same cell. Wave 4 still owes the G1 row itself and the three
+block-work claims.
