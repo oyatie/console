@@ -231,3 +231,20 @@ state which widening brings them" — chose the second, and named **W6** specifi
 
 **Table-integrity check is now part of each wave.** Two four-column §5.11 rows written in waves 3 and 4 had only
 three cells; caught in wave 6, and the check passes over every table block at wave 7.
+
+## Post-wave-7 correction — the D4 count changed underneath the revision
+
+`5a4cdd0ba` (`docs(ideas): D4 consensus …`) landed on this branch **between wave 6 and wave 7**, by another
+agent, touching only `docs/ideas/d4-frontend-charter.md`. It did not touch the plan or this log, so no wave was
+merged over. But it changed the fact wave 4 had just recorded: the charter now names a **third** amendment
+target — adding a `ui` layer to `ADR-0001`'s **enumerated** crate family amends ADR-0001 — where the brief's
+allocation table and my §5.11 D4 row both say "two records".
+
+**Not resolved by inventing ADR-0037.** Numbers are assigned centrally in this workflow, and the plan now
+carries the record of four judges each computing "next free" and all four claiming 0027. Instead: the D4 row and
+the allocation table now say **at least two**, carry the third target as an explicitly *(unallocated)* row, and
+state that the count is the charter's to give at acceptance rather than this plan's to restate. The integrator
+allocates it with the rest in the same atomic commit.
+
+This is the migration-count lesson arriving live: a derived count restated in a second document went stale
+within one session of being written.
