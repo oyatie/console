@@ -146,3 +146,31 @@ in the same migration, is self-contained and **was** implemented.
 follow-up list actually places that bullet at **`:157`** (`:158` is "Object graph explorer"). Item 6.4 lists
 `ADR-0023:158` among the anchors to *leave as line numbers* — leaving it would have left it wrong. Corrected to
 `:157` here, alongside the `:154-155` → `:153-154` fix in the same family.
+
+## Wave 5 — the deferred-decision paragraphs
+
+**Changed.** §5.5 downgraded the claim to **COST**-as-a-query at all three sites (revenue and profit need the
+peer plan's account master), named the three shipped parallel money stores as the reconciliation backlog,
+recorded N5's three Slice-0 prerequisites, demoted "no production data" to an assertion and added **V-1**
+(the voucher is gate-marked audited at `0160:21`, so `accounting_date` is irreversible once landed), corrected
+four period-lock sites to **five** (orgchange has two guards, `:611` and `:744`), decided 확정-requires-an-open-period
+in one place so W14 stops contradicting itself, stated the single-valued dimension as this plan's take with
+the distributed case owned by the peer plan, flagged `economics_is_a_view`'s dependency on X-T9b, and moved
+**206 → 205** at all three sites with the commit named. §5.6 deleted the materialise row (contradicted its own
+row 5, §4.6, and ADR-0021 decision 4, and was mis-keyed on a `PRIMARY KEY (org_id)` table), re-keyed to
+per `(org, user)`, and recorded that **both** counters must bump with the five measured call sites. §4.6 added
+the bundle-schema ordering constraint (an undeclared attribute fails `Entities::from_entities` and denies
+everything) and the two shipped declarative systems plus the plpgsql `create`-action insert at `0165:1024-1041`.
+§5.8 kept the row CHECK but added the `FOR UPDATE` mechanism, withdrew the two over-claiming sentences, stated
+the aggregate honestly, fixed `production_plans` → **`production_operations`** at all three sites, and carried
+N4's three non-foreclosure constraints. §5.9 decided the correction axis as a **stated deferral** with its
+consequence, and Slice 1 gained the assignment kind and return-right marker. §4.0's "systems light up" sentence
+is deleted; §4.0.2 gained the two requires-code rows, the handler count, and the DN-0003 invariant-1 answer.
+
+**Not anticipated by the brief.** (1) §0.11's *"That is the cache-invalidation key the realtime question
+needs"* becomes false once §5.6 keys per `(org, user)`. §0.11 is in no wave's section index. Softened to "half
+of the key", with the reason (`PRIMARY KEY (org_id)`, and assignment writes do not bump it). (2) W12's
+acceptance row said *"`policy_versions` invalidation"* — now both counters. (3) The brief's item 5.4(a) cites a
+domain `state.consume(quantity)` at `inventory/adapter-postgres/src/lib.rs:411`; `:411` is the event `INSERT`
+and the domain call is at **`:406`**. Cited both, at their real lines. (4) §2 driver 2 needed the qualification
+the brief asks for in 5.5(a) — added there, since driver 2 is the sentence that promises replay is free.

@@ -120,7 +120,13 @@ invention." **Partly true, and the useful half is missing.**
   materialized, no cache, and `version` is always 1 with empty fixity hashes.
 - `ont_analytics` (`0152:107-119`) stores `key`, `title`, `formula JSONB`, `result_type JSONB`. It is a
   **formula registry with nowhere to put results.**
-- **Zero `CREATE MATERIALIZED VIEW` in all 206 migrations.** Verified repo-wide.
+- **Zero `CREATE MATERIALIZED VIEW` in all 205 `.sql` migrations in the main checkout as of `8e76dffb4`.**
+  Verified repo-wide by `ls backend/crates/platform/db/migrations/*.sql | wc -l` = **205**, highest
+  `0205_ont_policy_api_attach_writer.sql`; the 206th directory entry is `BUCK`, which is why three places in
+  this plan said 206. Reservations start at **0207** (0205 landed, 0206 is in flight in lane-1). Restating a
+  derived fact in prose is what `docs/ideas/fanout-plan-DRAFT.md:243` warns against, using the migration count
+  as its own worked example — *"simultaneously wrong in three planning docs"*. The claim itself is unchanged;
+  only the count moves.
 
 So the replayability-versus-aggregate tension (Addendum 5) is real and the substrate does not resolve
 it. Resolved in §5.7 by putting the two questions in two stores rather than building a read model.
@@ -156,8 +162,10 @@ never stores a computed outcome. So "simulate a role or 전결규정 change befo
 work with a cost** (§4.8), not a free reuse.
 
 The more valuable find sits four lines below: **`policy_versions`** (`0065:177-181`), a per-org
-monotonic version bumped on every role write. That is the cache-invalidation key the realtime question
-needs, and `policy_version` is already a required cache-key part in the coexistence map.
+monotonic version bumped on every role write, and already a required cache-key part in the coexistence map. It
+is **half** of the cache-invalidation key the realtime question needs — it is `PRIMARY KEY (org_id)`, so on its
+own it invalidates every client in the tenant on any change, and it is not bumped by assignment writes at all.
+The other half is `authz_subject_version`; §5.6 keys on both.
 
 ### 0.12 CONFIRMED: a link type alone produces no edge, ever — every relationship must ride a property
 
@@ -322,7 +330,10 @@ language. Fewer moving parts, smaller attack surface, and it is what the spec al
    a second dimension pays the largest cost in the program — so the design must not need one.
 2. **Canvas-configurable and replayable must be free, not built.** The ontology already gives
    effective-dated, fixity-chained, fold-based state (`0155:37-64`). Entities that take that path cost
-   an authored type; entities that don't cost a migration plus a history mechanism.
+   an authored type; entities that don't cost a migration plus a history mechanism. **Qualified: what is free
+   is replay along the VALID-time axis.** Knowledge-time correction is not free and is not built — the
+   append-only trigger (`0155:112-160`) refuses in-place repair by design, so a correcting axis is a decision
+   §5.9 records rather than a property this driver supplies.
 3. **Payroll correctness is the first vertical's acceptance bar, and PII is where it attaches.** Every
    jurisdiction binding and Korea control reads HOLD
    (`docs/program/console-program-ledger.md:327`, `:420`), and the PII substrate itself
@@ -447,9 +458,9 @@ vocabulary where the requirement is authorability. Both sets are open.
 
 **Concerns are components. Entities declare which they compose.** This is the ECS mapping taken
 literally, and it is the honest answer to "how does this tie into the engine": the ontology's typed
-properties and links **are** the component mechanism, and actions with dispatch are the systems. A new
-entity class declares its components; the systems light up for it without anyone hand-writing an
-integration per concern.
+properties and links **are** the component mechanism, and actions with dispatch are the systems. What a new
+entity class does **not** get is automatic behaviour per concern — §4.0.2 states the boundary, and an earlier
+draft of this section asserted the opposite two paragraphs above it.
 
 #### 4.0.1 The component vocabulary — current set, not a closed one
 
@@ -468,7 +479,7 @@ This is the current set. It is extended by adding a row, and nothing in the desi
 | **approval** | a document class | routed line, signatures | ADR-0023 (§5.2) |
 | **communication** | a channel kind | scoped thread, derived membership | `messenger_threads.kind` (`0012:9`) |
 | **custody/handover** | an assignee edge | transfer, 인계 완료 query | §4.5 |
-| **economics** | a dimension reference | cost/revenue/profit as queries | **largely absent** — §5.5 |
+| **economics** | a dimension reference | **cost** as a query over voucher lines (revenue/profit need the peer plan's account master — §5.5) | **largely absent** — §5.5 |
 | **structural lineage** | a quantity + a parent edge | split/merge DAG with conservation | **absent** — §5.8 |
 | **measurement** | a metric formula | aggregates | `ont_analytics` (`0152:107`) stores formulas, **no result store** — §0.8 |
 | **compliance/jurisdiction** | a jurisdiction binding | control traces | register; **all HOLD** — §5.4 |
@@ -499,12 +510,31 @@ composition and the reason a fixed list of spines was wrong.
 | **tenancy** | — | **code**: a migration, if it needs a table |
 | **economics / lineage** | — | **code**: today both substrates are absent |
 | **projected backing** | — | **code**: one arm in `allowlisted_projected_table` (`instances.rs:1479`) |
+| **an action on a projected type** | — | **code**: one `ProjectedDispatchRegistry` handler per action. `backend/crates/ontology/rest/src/lib.rs:160-195` — `pub struct ProjectedDispatchRegistry { handlers: HashMap<String, ProjectedHandler> }`, a chainable `register(target, handler)` builder, and a `dispatch` returning `ActionError::NotWiredYet`. Registered in the App composition root; **unwired = `NotWiredYet`**, which is fail-closed but is still code |
+| **the authoring-action vocabulary** | — | **code, and it is CLOSED at five elements**: `backend/crates/platform/authz/src/cedar_pbac/authoring.rs:246-252` `AUTHORING_ACTIONS` = `view`, `edit`, `read_field`, `console:configure`, `console:deploy`. A sixth authoring verb is a code change, not an authored row |
 
 **So "manageable without developers" is true for the dimension side and false for the component side.**
 Declaring a new *type* is authored; giving it a *new concern* is code. That boundary is the honest answer
-to the requirement, and it is also the collision named in §5.11: DN-0003 decides extensibility is
+to the requirement, and it is also the matter named in §5.11 G7: DN-0003 decides extensibility is
 **bounded** — declarative tenant definitions over compile-time-allowlisted first-party tools. This plan
 does not pretend otherwise.
+
+**Size the wiring, do not label it.** `docs/specs/ecosystem-entity-components.tsv` (Phase 0) must carry a
+**handler count** for `work`'s Slice-0, W4, W11 and W13 actions, so §8 Phase 4's `app` crate row reads as a
+number rather than as the word "wiring". One `ProjectedDispatchRegistry` handler per action is a countable unit;
+"wiring" is not.
+
+**DN-0003 invariant 1 for Tier T and Tier P, answered before `work` is built.** The invariant is *"Every
+consequential mutation is an Action. Direct object-property edits are not the normal operational write path"*
+(`DN-0003:73-74`). `work` is Tier T projected, and a projected type's domain use-case remains the sole writer
+(`instances.rs:1443-1450`) — so the two paths must be reconciled explicitly, not assumed. This plan takes the
+**bounded exception**: `work`'s consequential mutations run through the domain use-case, which is the *normal*
+write path for that table and is itself audited, while the ontology surface is read-only over it. The gate that
+holds the exception is the projected-type read-only contract in `instances.rs:1443-1450` plus the audited
+domain use-case; what is forfeited is the **revision history** — a projected type has no fixity chain and no
+as-of replay (§3.1), which is exactly why authority does **not** live in Tier T. Probe:
+`projected_mutation_goes_through_the_domain_usecase`; known-bad control: a write reaching the backing table
+through an ontology property edit.
 
 
 #### 4.0.3 The headline finding: one missing field, inherited by every entity composing `record`
@@ -719,7 +749,7 @@ under RLS (`0063:21-25`).
 | **`employment`** | revise the shipped fixture type | instance id | a period, with terms | no — W2 |
 | `authority_rule` | predicate → grant generator over the four dimensions | instance id | effective-dated | no — W5 |
 | **`position`** | 직책 **at a scope** — a post that exists unoccupied | instance id | permanent, or bounded with its unit | **slice 1** |
-| `assignment` | party ⟶ position, or party ⟶ work, for a period | instance id | a period | **slice 1** (position), W4 (work) |
+| `assignment` | party ⟶ position, or party ⟶ work, for a period. Carries an **assignment kind** ∈ {substantive, acting, seconded} and a **return-right marker**, both authored properties | instance id | a period | **slice 1** (position), W4 (work) |
 | `contract` / `contract_line` | 계약 and its declared quantity (the parent of a lot tree) | instance id | a term | no — W16 |
 | `employment_type` | authored type with per-type accrual/insurance/severance rules | instance id | effective-dated | no — W6 |
 | `group_designation` | the **derived** effective-dated group fact, with its reason | instance id | recomputed on control-edge change | no — W7 |
@@ -1105,6 +1135,14 @@ What the plan adds:
   - The fold's output enters as **two new subject attributes**: `capabilities: Set<String>` and
     `scopes: Set<String>`. `roles` is already a string set, so authored role keys need no schema
     change to that attribute.
+  - **All three new attributes must be declared in the bundle schema BEFORE any code reads the fold.**
+    `Schema::from_str(schema_src)`
+    (`backend/crates/platform/authz/src/cedar_pbac/engine.rs:306`) parses the bundle schema, and
+    `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))` (`:449`) **validates against
+    it** — so an undeclared attribute fails entity construction, and a failed entity construction
+    **denies everything**. This applies to `capabilities: Set<String>`, to `scopes: Set<String>` and to the
+    decision-scope resource attribute, not only to the hierarchy. §8 carries it as a **hard Phase-4 ordering
+    constraint: `platform/authz`'s schema change lands first**, before any crate reads the fold.
   - **Decision scope is a new resource attribute**, beside `branch` — not a replacement.
     `branch` stays the operational scope (ADR-0003, and the non-null `branch_id` on every operational
     row). This is how decision scope splits from operational scope without touching the floor.
@@ -1112,7 +1150,20 @@ What the plan adds:
     entities to `Entities::from_entities` (`:449`), plus declaring them in the bundle schema (§0.3).
     Not free.
   - Caching: `crossRequestAllowDecisionCache: false` in the coexistence map already forbids caching
-    a fold across requests. Do not add one.
+    a fold across requests. Do not add one. Recorded as **N1 (ADR-0032)** so the absence is a decision.
+
+**What already ships declaratively, stated so this plan is not later read as understating the substrate.** Two
+**type-agnostic declarative systems are executable code today**, not roadmap:
+`sync_property_links_tx` (`backend/crates/ontology/adapter-postgres/src/instances.rs:874`, called at `:723` and
+`:836`) and `resolve_derived_attributes_tx` (`:1142`, called at `:681` and `:769`). And plpgsql itself INSERTs a
+generic `create` action on publish — `0165:1024-1041` builds `params_schema` and `edits` from
+`ont_property_defs` and inserts an `ont_action_types` row with `dispatch = 'instance_revision'`, for any type
+that has no instance-revision action yet.
+
+So extensibility is **open in the entity dimension and closed in the verb dimension** — which is DN-0003
+invariant 10 **already implemented**, not a gap. The cheap axis is therefore widening the `derive` op set:
+`instances.rs:1166` rejects every op but `sum` with *"property '…' declares derivation op '{op}', which this
+engine does not implement"*. One arm per op, no new mechanism.
 
 ### 4.7 The game-system lens (requirement 8)
 
@@ -1379,8 +1430,8 @@ permanently is the cheaper end state, not a staging posture.
 ### 5.5 E — Economics: DECIDED — there is no GL; build the spine, seeded by the voucher
 
 **Correction to an earlier premise in this plan: no general ledger exists.** `finance-gl` is two tables.
-Verified absent from all 206 migrations: `gl_postings`, `journal_entries`, `gl_accounts`,
-`chart_of_accounts`, `fiscal_periods`, `trial_balance`. So "make the object a dimension on existing GL
+Verified absent from all **205** `.sql` migrations as of `8e76dffb4`: `gl_postings`, `journal_entries`,
+`gl_accounts`, `chart_of_accounts`, `fiscal_periods`, `trial_balance`. So "make the object a dimension on existing GL
 postings" was not available, and the earlier §5.5 built on it.
 
 What actually exists, and its four disqualifying gaps:
@@ -1400,16 +1451,29 @@ What actually exists, and its four disqualifying gaps:
 `assert_period_open(tx, domain, date)` (`platform/db/src/period_lock.rs:60-96`) is keyed on a **DATE**,
 and the voucher has none. Worse, the lock **does not enforce itself**: nothing in the database applies it
 to any other table — the only triggers protect the lock row (`0107:59-88`) — so enforcement is an opt-in
-Rust call with four non-test sites (`financial/adapter-postgres/src/lib.rs:1254`,
-`workflow/adapter-postgres/src/lib.rs:792`, `orgchange/adapter-postgres/src/lib.rs:611`,
-`app/src/hr.rs:1706`). **`finance-gl` is not among them.** Omit the call and the write succeeds.
+Rust call with **five** non-test sites: `backend/crates/financial/adapter-postgres/src/lib.rs:1254`,
+`backend/crates/workflow/adapter-postgres/src/lib.rs:792`,
+`backend/crates/orgchange/adapter-postgres/src/lib.rs:611` **and** `:744` (two separate guards, not one),
+and `backend/app/src/hr.rs:1706`. **`finance-gl` is not among them.** Omit the call and the write succeeds.
+The count is corrected because it is checkable: a lane that greps, finds five, and reads "four" stops trusting
+the paragraph — and the paragraph's substantive point is the one thing here that must be trusted.
 
 **Decision: EXTEND the voucher into a posting model; do not build alongside.** Argued, not assumed.
 
 | Option | Verdict |
 |---|---|
-| **Extend the voucher** ← chosen | It already owns the two hardest parts: a DB-enforced double-entry balance gate and POSTED immutability (`0160:78-118`), plus reversal linkage (`:38-39`) and SoD (`0163:25-27`). Those are the parts that are expensive to get right and easy to get wrong. What is missing — a business date, an account master, a currency column, a line-level dimension — is **additive DDL on a table with no production data claim**. |
+| **Extend the voucher** ← chosen | It already owns the two hardest parts: a DB-enforced double-entry balance gate and POSTED immutability (`0160:78-118`), plus reversal linkage (`:38-39`) and SoD (`0163:25-27`). Those are the parts that are expensive to get right and easy to get wrong. What is missing — a business date, an account master, a currency column, a line-level dimension — is additive DDL. **That "no production data" claim is an ASSERTION, not a verified fact, and the DDL is IRREVERSIBLE once landed:** `0160_create_finance_gl_vouchers.sql:21` is `-- console-gate: audited-table finance_gl_vouchers`, and `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs:174-187`) folds that marker into the same audited set as the five built-ins — so `DROP COLUMN` on the voucher is a **gate violation**. Additive here means permanent. |
 | Build a parallel spine | Two records of the same money diverge; that is a certainty, not a risk. And it would need its own balance and immutability enforcement, re-deriving `0160:78-118`. **Rejected.** |
+
+**"Two records of the same money diverge" has already happened three times in this tree, and the reconciliation
+backlog belongs to the peer plan.** Naming them, because a certainty stated in the future tense reads as
+caution rather than as a debt:
+
+| Parallel money store | Guard |
+|---|---|
+| `equipment_cost_ledger` (`0015:45-58`) | gate-marked audited (`0015:45`) |
+| `equipment_3r_dispositions.cost_minor` / `.sale_amount_minor` (`0182:96-97`) | **no period-lock guard** |
+| `equipment_3r_rental_cases.monthly_rate_minor` (`0182:33`) | **no period-lock guard** |
 
 The additive delta, smallest first:
 
@@ -1421,12 +1485,43 @@ The additive delta, smallest first:
    header approximation.
 3. Account master and currency — **the peer plan** (below).
 
-**Because the spine is greenfield, "cost/revenue/profit are queries, not stored fields" is now a design
-freedom taken deliberately**, not a constraint inherited from an existing GL. Taken: no entity carries a
-cost or profit column; both are aggregates over lines dimensioned by `(object_kind, object_id)`.
+**Because the spine is greenfield, COST-as-a-query is a design freedom taken deliberately**, not a constraint
+inherited from an existing GL. Taken: no entity carries a cost or profit column; both are aggregates over lines
+dimensioned by `(object_kind, object_id)`. **The claim is scoped to COST.** Revenue and profit need an account
+master and a sign convention this plan does not build, so calling them "queries" today asserts a capability the
+substrate does not have — three tables already hold money in parallel (above), which is what the unscoped claim
+looks like in practice.
+
+**N5's three prerequisites, and they DO block Slice 0** even though the record does not:
+
+1. **`accounting_date DATE NOT NULL`** distinct from `posted_at` — irreversible once landed (above);
+2. **a line-level `branch_id`** — without it a posting cannot be attributed to the scope that authorised it;
+3. **an `assert_period_open(tx, PeriodLockDomain::Accounting, accounting_date)` caller in the finance-gl store**
+   — while `backend/crates/finance-gl/rest/src/lib.rs:28` is
+   `const VOUCHER_FEATURE: Feature = Feature::PeriodLockManage;`, i.e. the crate already names period locks as
+   its capability while enforcing none.
+
+**확정 requires an open period — decided here, in one place.** A compensating voucher posts with an
+`accounting_date` in the **current OPEN period** while referencing the original's date and id; it never posts
+into the closed period it corrects. Without this decided in one place **W14 is self-contradictory for its own
+case**: the `assert_period_open` guard W14 adds would refuse the compensating posting W14 exists to prove. Add
+the locked-period 반려 probe: a 반려 arriving after the period closed must produce a current-period compensating
+voucher, and the known-bad control is an implementation that back-dates it.
+
+**Whether one voucher line may be reported against more than one object: NOT decided here, and that is the
+point.** Real-versus-statistical assignment and percentage distribution are decisions the **peer finance plan**
+owns — §5.5's own must-not-foreclose list already demands *"allocation with a recorded basis"*, which is the
+same question. This plan takes the single-valued case (one line, one object dimension) and forecloses nothing:
+a distribution table keyed to a line is additive.
 
 **In scope for this plan:** items 1 and 2, plus one posted voucher in slice 0. The ₩100,000 purchase has
-a cost and an authorization, so the minimal `economics` component is *in*.
+a cost and an authorization, so the minimal `economics` component is *in*. **The single posted voucher is not
+evidence the dimension shape is settled** — one line against one object cannot distinguish the single-valued
+design from the distributed one.
+
+**`economics_is_a_view` has an unmeasured dependency.** It groups by `account_code`, and **X-T9b predicts that
+is not reproducible**: `0160:62` rejects blank but stores untrimmed, so `'100'` and `' 100'` are two groups
+holding the same account. Free-text-versus-account-master is an open owner question, and the probe inherits it.
 
 **Explicitly a peer plan, argued rather than dropped:** account master / chart of accounts, multi-currency
 and FX (the degenerate `currency_code = 'KRW'` CHECKs at `0179:68`, `0182:35`, `0172:10` show the
@@ -1450,11 +1545,30 @@ The transport decides this (§0.9). `NOTIFY_PAYLOAD_LIMIT_BYTES = 8000`
 
 | Question | Decision |
 |---|---|
-| Compute the fold on demand, or materialise? | **Materialise per (party, scope), keyed on `policy_versions.version`** (`0065:177-181`) — the per-org counter already bumped on every role write, and already a required cache-key part in the coexistence map |
-| Change propagation path | grant revision → bump `policy_versions` → `pg_notify` on a new `authority_changed` channel (a 4th const beside `0012`-era `:37-39`) → WebSocket hub → client re-reads |
+| Change propagation path | grant revision → bump **both** counters (below) → `pg_notify` on a new `authority_changed` channel (a 4th const beside `0012`-era `:37-39`) → WebSocket hub → client re-reads |
+| Invalidation key | **per `(org, user)`, not per org.** `policy_versions` is `PRIMARY KEY (org_id)` (`0065:177-181`), so keying invalidation there alone makes **one grant edit invalidate every connected client in a 10k-employee tenant** |
+| Which counters a grant revision bumps | **both.** `authz_subject_version` for the subject party's users **and** `policy_versions` for the org. Neither alone is sufficient — see below |
 | What the push carries | **ids and the new version only.** Never capabilities |
 | What is authoritative on disagreement | **the server, always.** Every protected endpoint re-authorizes — the coexistence map's `serverAuthoritative` invariant. A stale client shows a stale button; pressing it is refused |
 | Cache scope | per request, never across requests — `crossRequestAllowDecisionCache: false` |
+
+**The materialise option is deleted, not deferred.** An earlier draft's first row read *"Materialise per (party,
+scope), keyed on `policy_versions.version`"*. It contradicted **row 5 of its own table** (per request, never
+across requests), §4.6's own text, and `ADR-0021` decision 4's compiled-bundle caching with **no cross-request
+allow/deny caching** — which a plan cannot supersede (`README` rule 4). It was also **mis-keyed**, as the
+invalidation row now records. This is a **one-row deletion, not a governance question**: no ADR is engaged, and
+**N1 (ADR-0032)** records the mechanism so the deletion reads as a decision rather than an omission.
+
+**Why both counters, measured.** Assignment writes bump the **subject** counter
+(`backend/crates/identity/adapter-postgres/src/lib.rs:304`, `:672`, `:1606` — `bump_subject_version_tx`), while
+role-definition and role-status edits bump only the **org** counter (`:1284`, `:1369` —
+`bump_policy_version_tx`). So keyed on either alone, **a whole class of authority change pings nobody.**
+`ADR-0021` decision 5 requires both directions: *"Role, assignment, **responsibility**, employment state,
+branch/team, or credential changes synchronously bump subject/policy versions so stale subject material cannot
+keep granting access"* — and a grant is a responsibility change. Note honestly that **per-org invalidation alone
+is strictly coarser**: any grant change would invalidate every party's fold in that org, a cost **X6 does not
+measure**. Probe: `grant_write_bumps_subject_version`; known-bad control: a grant write that bumps only
+`policy_versions`.
 
 Cost: one `RealtimeEvent` variant (`realtime/src/lib.rs:318-337`), one channel const, one notifier
 following `PostgresNotificationNotifier` (`:273`). The `pg_notify` call sites carry
@@ -1470,8 +1584,8 @@ activity feed — all governed by the same fold, and the feed specifically throu
 ### 5.7 G — Replayability versus aggregate metrics: DECIDED — two stores, no read model
 
 Both are required and the substrate resolves neither (§0.8). Rejected: building a materialized read
-model — there are zero materialized views in 206 migrations, so it would be the first, and it would
-need its own invalidation, rebuild and staleness semantics.
+model — there are zero materialized views in the **205** migrations as of `8e76dffb4`, so it would be the
+first, and it would need its own invalidation, rebuild and staleness semantics.
 
 **Split by question, not by entity:**
 
@@ -1513,8 +1627,10 @@ word that will not survive contact with an accountant).
 - `milli` fixed-point integers throughout — the repo's quantity convention
 
 `production_demand_contracts` (`0173:6`) is already a contract entity for the production case, and
-`production_plans` already carries `output_quantity` / `scrap_quantity` (`0173:81-82`), so scrap is a
-modelled concept rather than a new one.
+**`production_operations`** — not `production_plans` — already carries `output_quantity` / `scrap_quantity`
+(`CREATE TABLE` at `0173:75`, columns at `:81-82`), so scrap is a modelled concept rather than a new one.
+`production_plans` carries only `quantity` (`0173:50`); the distinction matters because a lane looking for scrap
+on the wrong table concludes it does not exist.
 
 **What is genuinely missing is only the derivation edge.** Linear stock decrement exists; the
 split/merge tree does not. So:
@@ -1525,16 +1641,36 @@ split/merge tree does not. So:
 | `lot_split` (Tier T) | **one row per split**: `(parent_lot_id, parent_qty_before_milli, split_qty_milli, parent_qty_after_milli, child_lot_id, uom, conversion_factor, reason)` |
 | UoM conversion | **stored explicitly** on the row. 100 units consumed as 2 pallets is a conversion; an unrecorded one makes the tree unauditable |
 
-**The invariant is a row-level CHECK, not a definer — and that is a change from my first draft.**
-`CHECK (parent_qty_before_milli - split_qty_milli = parent_qty_after_milli)` on each `lot_split` row is
-exactly the `0156:103` pattern, and it makes conservation unviolatable without any procedural code. A
-merge is the same row read in the other direction. Yield loss, scrap and shrinkage are **explicit child
-lots**, never silent slack — and `production_plans.scrap_quantity` (`0173:82`) shows the repo already
-treats scrap as a first-class quantity.
+**The row-level CHECK stays, and it is NOT sufficient on its own.**
+`CHECK (parent_qty_before_milli - split_qty_milli = parent_qty_after_milli)` on each `lot_split` row is exactly
+the `0156:103` pattern and it is worth having. But **two concurrent splits of a 100-unit lot can both write
+(100, 60, 40)**: each row satisfies the CHECK in isolation, and the lot is over-allocated by 20. A per-row
+constraint cannot see a sibling row, so an earlier draft's claim that it *"makes conservation unviolatable
+without any procedural code"* is **withdrawn**, along with the claim that *"a definer is needed when an
+invariant spans sibling rows, and putting before/split/after on one row removes the span"* — putting the triple
+on one row removes the span **within** a row, not **across** concurrent writers.
 
-I had reached for a `SECURITY DEFINER` here on the `0205` precedent. That was over-built: a definer is
-needed when an invariant spans sibling rows, and putting before/split/after on one row removes the span.
-The shipped `0156:103` CHECK is the cheaper and stronger answer.
+**The mechanism, copied from the precedent that actually handles this.** The split write **locks the parent lot
+row `FOR UPDATE` inside the action's transaction**, derives `parent_qty_before_milli` **from the locked row and
+never from the request**, and updates `lot.quantity_milli` in the same transaction. The shipped shape is
+`backend/crates/inventory/adapter-postgres/src/lib.rs:394` `fetch_item_for_update_tx`, layered on
+`lock_consumption_idempotency_key_tx` at `:376` and a domain `state.consume(quantity)` at `:406`, with the event
+INSERT at `:411`. Three guards — idempotency lock, row lock, domain check — with the row CHECK underneath all of
+them. Probe: `lot_concurrent_split_cannot_overallocate`, whose **known-bad control is the row-CHECK-only
+implementation**, i.e. this plan's previous design.
+
+**`lot.quantity_milli` is AUTHORITATIVE**, updated under the same lock — because a derived reading requires
+summing the split tree on every read, which is the aggregate the down-traversal already describes and cannot be
+a row constraint.
+
+**And the invariant, stated honestly:** what ships is a **per-row CHECK plus a whole-tree aggregate**. The
+aggregate is not a row CHECK and is therefore **not unviolatable** — §5.8's own down-traversal states it as an
+aggregate (*"sum(leaf lots) + sum(scrap lots) must equal it"*) a few lines below where an earlier draft called it
+unviolatable.
+
+A merge is the same row read in the other direction. Yield loss, scrap and shrinkage are **explicit child
+lots**, never silent slack — and `production_operations.scrap_quantity` (`0173:82`) shows the repo already
+treats scrap as a first-class quantity.
 
 **The structural echo, reused rather than reinvented:** a contract line's **declared** quantity and its
 **realized** set of splits are both stored and neither is derivable from the other — which is exactly
@@ -1559,9 +1695,21 @@ shaped right.
 nodes, authorizing grant) and an `economics` posting dimensioned `'lot'`. A lot in flight
 belongs to 업무, so it follows the work on 인계 like any other artifact.
 
+**Non-foreclosure constraints while lineage is deferred (N4 / ADR-0034, §5.11).** W16 has no 0207+ slot, so the
+constraints are recorded instead of the schema:
+
+1. **Quantity-bearing or lineage edges may never live in `object_links`.** `0102:68` permits exactly one edge per
+   `(org, src, dst, link_type)`, and `:86` grants `console_rt` `SELECT, INSERT, DELETE` — **no UPDATE**. A
+   quantity that cannot be updated and cannot repeat is not a quantity.
+2. **A `TRANSFER` movement carries its from/to pair on ONE row**, for the same reason the conservation triple
+   does: a pair split across two rows is a span no row constraint can close.
+3. **No lineage ADR is accepted until the N-into-1 merge names its serialization point and lock order** — every
+   shipped precedent in this tree locks exactly **one** row, so a merge is the first case with no precedent to
+   copy, and lock order is where that becomes a deadlock rather than a bug.
+
 **Adjacent precedents, and what each lacks.** `inventory_consumption_events` (`0156:81`) — quantity,
 cost and conservation, but linear and bound to `work_orders` by FK (`:107`) rather than a generic
-dimension. `production_demand_contracts` (`0173:6`) and `production_plans` scrap (`0173:81-82`) — the
+dimension. `production_demand_contracts` (`0173:6`) and `production_operations` scrap (`0173:81-82`) — the
 contract and scrap concepts. `equipment_ownership_transfer_requests` / `_events` (`0072:8`, `:35`) — a
 request/event custody-transfer pair, the right shape for *movement* but carrying no quantity and no
 derivation. **Extend these rather than adding a parallel model:** the honest new surface is `lot` +
@@ -1592,6 +1740,28 @@ special case.** Standing is line membership (§5.2), and membership is recorded 
 `approval_line` instance, not derived from the holder's current grants. So a demoted member keeps the
 power to 반려 a matter they were already placed on, and loses position-sourced grants only for *future*
 routing. Confirmed by construction; the probe is `demoted_member_retains_standing` (§7).
+
+**The correction axis is decided before Slice 1, and this plan takes the DEFERRAL with its consequence named.**
+An erroneous revision **cannot be repaired in place**, and the substrate is explicit about it:
+`0155_create_ontology_instances.sql:112-160` — `ont_instance_revisions_append_only()` raises on any DELETE,
+raises if `OLD.valid_to IS NOT NULL`, and raises unless the **only** changed column is `valid_to`, so
+`attributes`, `valid_from`, `version`, `prev_hash` and `row_hash` are all pinned. With
+`CHECK (valid_to IS NULL OR valid_to > valid_from)` and `idx_ont_instance_revisions_one_open`, an erroneous
+revision cannot be rewritten, cannot be closed at a zero-length interval, and a new revision at the same
+`valid_from` **overlaps**. The migration's own header says the intent: *"a correction is a NEW revision, never a
+rewrite of a stored one."*
+
+The alternative on the record is the **bi-temporal entry-date axis**: a correcting revision carrying
+`corrects_revision_id` plus a knowledge-time argument on as-of reads. It is **not taken in slices 0/1**, and the
+consequence of deferring it must be stated rather than discovered: **between the error and its discovery, the
+fold returns the wrong value for that period, and the record of that period cannot be made right — only
+annotated forward.** For authority that is a real cost, not a cosmetic one.
+
+Note this is a **different concern** from the post-확정 반려 compensating `correction` revision (§5.2), which is
+the plan's only correction concept today: that one corrects a *decision*, this one would correct a *record of
+what was true*. Probe: an as-of read across a corrected interval; known-bad control: **a correction that
+silently rewrites history**, which the append-only trigger already refuses — so the probe is really asserting
+that no application path tries.
 
 **The basis carries through the whole chain**, and this is the one place the current design would drop
 it: 발령 (the 결재 document's own record) → grant expiry (`grant_reason`, above) → audit event
@@ -1944,6 +2114,7 @@ session state. Any probe in this section that asserts an absence must state wher
 | `every_entity_declares_its_components` | each §4.1 entity has a row per composed component in `ecosystem-entity-components.tsv` | an entity with no rows — the §4.0.1 completeness test, as a test |
 | `capacity_recorded_on_every_authority_mutation` | reads the **D3 write-path enumeration** (§8 Phase 0) and asserts every enumerated authority-mutating path writes `gov_approvals.authorizing_grant_id`. The `audit_events` pair is **out of scope** until those deferred columns land (§4.0.3) | a mutation writing a null capacity where the enumeration says it is required |
 | `no_duplicated_fact` | `work` (Tier T) and the revision chain never store the same field | a `work.assignee` column duplicating the assignment edge |
+| `projected_mutation_goes_through_the_domain_usecase` | every consequential `work` mutation runs through the audited domain use-case, satisfying DN-0003 invariant 1 for a projected type (§4.0.2) | a write reaching the backing table through an ontology property edit |
 | `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `residual.rs:200-203` (§0.13) |
 | `link_type_alone_is_rejected` | a link type with `to_object_type_id` and no property referencing its `stable_key` fails `validate_draft` | today's behaviour — **must be RED before the guard lands** (§0.12) |
 | `slice0_band_enforced_synchronously` | the ₩100,000 band is refused **at raise**, not flagged at close | a check that only reports at period close |
@@ -1955,9 +2126,11 @@ session state. Any probe in this section that asserts an absence must state wher
 | `disband_expires_assignment_grants` | assignment-sourced grants end with no explicit revocation | membership granting a role directly, leaving an orphan |
 | `transfer_keeps_crew_and_scope` | rebinding to a new contract preserves unit, members and in-flight lines | transfer implemented as disband + recreate |
 | `lot_conservation` | `parent_before − split = parent_after` per row; scrap is an explicit lot | a split leaving unaccounted slack |
+| `lot_concurrent_split_cannot_overallocate` | two concurrent splits of the same lot cannot both commit an over-allocating pair; the parent is locked `FOR UPDATE` and `parent_qty_before_milli` comes from the locked row (§5.8) | the **row-CHECK-only** implementation — two writes of (100, 60, 40) both satisfy the CHECK and over-allocate by 20 |
 | `lot_uom_conversion_recorded` | a cross-UoM split stores its factor | an implicit conversion |
 | `lot_traversal_up` | a finished good enumerates every contributing contract line | a broken derivation chain |
 | `realtime_push_carries_no_capability` | the NOTIFY payload contains ids and a version only | a payload containing a capability set — must also fail the 8000-byte cap (`realtime:40`) |
+| `grant_write_bumps_subject_version` | a grant revision bumps `authz_subject_version` for the subject party's users **and** `policy_versions` for the org (§5.6) | a grant write that bumps only `policy_versions` — a whole class of authority change then pings nobody |
 | `stale_client_button_is_refused` | pressing a stale action after demotion is denied server-side | trusting the client projection |
 | `channel_membership_is_derived` | changing an assignment updates the thread roster with no manual step | a hand-maintained roster (today's `0012:30-36`) |
 | `deny_by_omission_is_explained` | a refusal a user sees carries a reason | `determining_policies` empty with no fallback (today, `0159:29`) |
@@ -2111,13 +2284,13 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 | # | Crate | Ships |
 |---|---|---|
 | 1 | `platform/db` | migrations 0207+: `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer. **`party` and `party_org_visibility` are struck** — deferred out of Slice 0 on irreversibility (§4.1) |
-| 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs |
+| 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs. **HARD ORDERING: the bundle-schema declaration of `capabilities`, `scopes` and the decision-scope resource attribute lands FIRST** — `Entities::from_entities` validates against the schema (`engine.rs:449`), so an undeclared attribute denies everything (§4.6) |
 | 3 | `platform/authz-rest` | the re-validating definer read path (§5.1) |
 | 4 | `ontology/*` | the Tier N types + their attached policies; `allowlisted_projected_table` arm for `work` |
 | 5 | `identity/rest` | C2 — `policy_feature_catalog()` off data |
 | 6 | `finance-gl` | line-level typed dimension; **and the missing `assert_period_open` call** (§5.5) |
 | 7 | `messenger` + `platform/realtime` | derived membership; the `authority_changed` event |
-| 8 | `app` | wiring, `/overview` surface |
+| 8 | `app` | `/overview` surface, and **N `ProjectedDispatchRegistry` handlers** — one per `work` action across Slice 0 / W4 / W11 / W13, counted in `ecosystem-entity-components.tsv` (§4.0.2). Sized, not labelled "wiring" |
 
 **CI wiring is per TEST, not per crate — and the template is a worked one, cited by target name.** X9 traced
 all four links through a real test:
@@ -2271,7 +2444,7 @@ the wrong thing:
 | Entity | Slice-0 minimum | Why it cannot wait |
 |---|---|---|
 | `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
-| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` and a line dimensioned to the work | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2 |
+| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160:21`), a line-level `branch_id`, a line dimensioned to the work, and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
 
 **Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 —
 deferred on irreversibility), group-scoped grants and the Tier O store that would hold them, control edges,
@@ -2285,11 +2458,12 @@ structure, authority and 결재 at once.
 
 | Entity | Slice-1 minimum |
 |---|---|
-| `position` | 2 instances, both via `position_at_scope` — one at the 현장, one at the company |
+| `position` | 2 instances, both carrying a `position_at_scope` scope-descriptor property — one at the 현장, one at the company |
 | `assignment` | the old closes at 발령일, the new opens — two revisions, never an update |
 | `approval_template` | 1 인사발령 template |
 | `approval_line` + a `gov_approvals` signature | with capacity (`authorizing_grant_id`) |
 | `grant` | position-sourced, opening and closing on the same 발령일 |
+| `assignment` **kind** + **return right** | the two new authored properties (§4.1), exercised rather than declared: 육아휴직 복직 is statutory and HR+payroll is the first vertical, so this entity carries them either way — as a property now, or as a reshape of a shipped type later. `holds_position` is already ManyMany, so a substitute's concurrent assignment is already expressible |
 
 **Acceptance.** `asof_replay` GREEN across the 발령일 boundary (the fold differs either side);
 `demoted_member_retains_standing` GREEN; `basis_survives_the_chain` GREEN; assigned `work` and in-flight
@@ -2311,7 +2485,7 @@ expiry, never deletion**.
 | W9 | `Feature` sequencing C1→C6 (§5.3) | every coexistence-map entry `cedar_only`; `matrix_row` and `Role` deleted; `Feature` retained |
 | W10 | Canvas over the authored types, four-eyes on every authority change. **Deferred by follow-up and off the slice-0/1 critical path — NOT gated on a charter** (§5.11 G6: no charter clause exists) | no authority change lands without a `gov_approval_consumptions` row |
 | W11 | Derived channel membership; `messenger_threads.work_order_id` (`0012:11`) generalised to `work` | `channel_membership_is_derived` GREEN; the conversation follows the work on 인계 |
-| W12 | Realtime authority propagation (§5.6): one `RealtimeEvent` variant, one channel, `policy_versions` invalidation | `realtime_push_carries_no_capability` and `stale_client_button_is_refused` GREEN |
+| W12 | Realtime authority propagation (§5.6): one `RealtimeEvent` variant, one channel, invalidation keyed per `(org, user)` bumping **both** counters | `realtime_push_carries_no_capability` and `stale_client_button_is_refused` GREEN |
 | W13 | `work` metrics: the new fields (§4.1) + cycle-time aggregates over Tier T | `no_duplicated_fact` GREEN; an aggregate over 10k rows does not fold revisions |
 | W14 | The pre-terminal finalization path (ADR-0023) end to end, incl. the compensating document and its contra voucher | `posted_voucher_cannot_be_rewritten` GREEN via the `0160:78-118` trigger; **and** `assert_period_open` called from finance-gl |
 | W15 | `worksite_contract` + disband/transfer (§5.10) | all four disband/transfer probes GREEN |
@@ -2351,8 +2525,9 @@ extension mechanism. Extend the **`record`** component's contract with `authoriz
 makes two nullable columns the highest-leverage change here. Build the **`economics`** component by
 **extending `finance_gl_vouchers`** with a business date and a typed, line-level object dimension: there is
 no general ledger to reconcile to, and the voucher already owns the DB-enforced balance gate and POSTED
-immutability that are the expensive parts. Cost, revenue and profit are queries, never stored fields — now
-a design freedom taken deliberately rather than a constraint inherited.
+immutability that are the expensive parts. **Cost** is a query over voucher lines, never a stored field — a
+design freedom taken deliberately rather than a constraint inherited. Revenue and profit are **not** claimed as
+queries: they need the account master and sign convention the peer plan owns (§5.5).
 
 **Standing of this document.** It is a plan, so under `docs/decisions/README.md` rule 4 it decides
 nothing. Its output is the governance records of **§5.11** — five reciprocal amendment pairs (ADR-0027 to
