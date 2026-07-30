@@ -830,8 +830,8 @@ vocabularies were being conflated, and neither gives 부서 a scope level:
   `backend/crates/platform/authz/src/lib.rs` `pub fn effective_branch_scope_for_tenant`. A sixth variant
   is therefore a change to a **kernel** enum plus a compile error at both sites plus a decided
   `branch_scope_for_org` projection for the new level. That is code, not an authored row.
-- `policy_role_conditions.attribute` **does** hold `department` (`0065:115`, one of the 17 literals), but the
-  resolver evaluates **only** `branch` and `team` (`authz/src/lib.rs:1403-1429`, `_ => return None`), so a
+- `policy_role_conditions.attribute` **does** hold `department` (`0065` `'department',`, one of the 17 literals), but the
+  resolver evaluates **only** `branch` and `team` (`authz/src/lib.rs` `match condition.attribute.as_str()`, whose fallthrough is `_ => return None`), so a
   `department` condition is **writable and resolver-void today** — and §4.4 narrows the write path away from it
   precisely for that reason. It is not a Slice-0 mechanism either.
 
@@ -846,7 +846,7 @@ Slice 0 must ship.
 beside `group_role_grants`. (An earlier revision called this "the second Tier O table", counting `party` as the
 first; `party` is not in Tier O, above.) `Org`-, `Region`-, `Branch`- and `Worksite`-scoped grants stay Tier N: X4b CASE 1 measured
 that arm resolving end to end, with subject, capability and scope folded out of Tier N. The `Group` arm fails
-structurally: `0155:18` makes `ont_instances.org_id` `NOT NULL`, leaving no third option for the row's
+structurally: `0155` `CREATE TABLE ont_instances` makes `ont_instances.org_id` `NOT NULL`, leaving no third option for the row's
 tenancy, so the grant is homed in exactly one org — and X4b CASE 2c/2d measured org B, a **sibling in the
 same group**, reading **0** rows while RLS-bypassed ground truth showed the revision present. A
 group-scoped grant that its own group cannot read is not a group-scoped grant.
@@ -856,7 +856,7 @@ group-scoped grant that its own group cannot read is not a group-scoped grant.
 every group-scoped authority read today. A new Tier O grant store must therefore be
 **authorisation-complete inside the definer**, keyed on the **authenticated principal** — never on a
 caller-supplied org id or group id. `group_role_grants` is already in `owner_only_table_allowlist`
-(`backend/ci/gates/tenant-isolation/src/lib.rs:115-129`), so the new store takes the same classification and
+(`backend/ci/gates/tenant-isolation/src/lib.rs` `pub fn owner_only_table_allowlist`), so the new store takes the same classification and
 the same review posture. **It is the ONE owner-only table this plan adds** — `party` is not one (above) — and
 `no_new_gate_classification` (§7) names it alone.
 
@@ -876,16 +876,16 @@ the same review posture. **It is the ONE owner-only table this plan adds** — `
 
 **The capacity columns land on `gov_approvals`, not on `audit_events`** (§4.0.3). Two nullable additive
 columns, following the precedent in the same table:
-`ALTER TABLE gov_approvals         ADD COLUMN target_ref UUID;` (`0164_bind_consume_four_eyes.sql:34`, with
-its `gov_approval_requests` sibling at `:33`), whose own comment reads *"target only. No FK — like
+`0164_bind_consume_four_eyes.sql` `ALTER TABLE gov_approvals         ADD COLUMN target_ref UUID;` (with
+its sibling `0164_bind_consume_four_eyes.sql` `ALTER TABLE gov_approval_requests ADD COLUMN target_ref UUID;`), whose own comment reads *"target only. No FK — like
 `request_ref`, it is a logical ref across lanes."* — the same posture `on_behalf_of_party_id` takes.
 
 **The invariant, stated once so no implementer reads capacity as a relaxation: capacity refines a
-signature; it never satisfies a four-eyes gate.** `CHECK (approver_id <> requested_by)`
-(`0153_create_governance.sql:74`) is retained **verbatim**, and it is one of **five DB-enforced four-eyes
-CHECKs in this tree** — `0153:74`, `0122_create_leave_requests.sql:63`,
-`0163_finance_gl_voucher_sod.sql:25-27`, `0186_payroll_run_lifecycle.sql:39`,
-`0191_create_inventory_cycle_counts.sql:46`. **None of the five becomes conditional on capacity.** A 대리
+signature; it never satisfies a four-eyes gate.** `0153` `CHECK (approver_id <> requested_by)`
+is retained **verbatim**, and it is one of **five DB-enforced four-eyes
+CHECKs in this tree** — `0153` `CHECK (approver_id <> requested_by)`, `0122_create_leave_requests.sql` `CHECK (decided_by IS NULL OR decided_by <> requester_user_id)`,
+`0163_finance_gl_voucher_sod.sql` `approved_by IS NOT NULL AND approved_by <> created_by`, `0186_payroll_run_lifecycle.sql` `CHECK (decided_by IS NULL OR submitted_by IS NULL OR decided_by <> submitted_by);`,
+`0191_create_inventory_cycle_counts.sql` `CHECK (decided_by IS NULL OR decided_by <> submitted_by),`. **None of the five becomes conditional on capacity.** A 대리
 signature is still a distinct `approver_id` from `requested_by`; recording *on whose behalf* it was taken
 does not make it the same person's signature twice.
 
@@ -896,8 +896,8 @@ lane does not "complete" it.
 
 **`work` is Tier T, not Tier N** (§0.14). It needs indexed aggregate SQL for cycle-time and
 cost-rollup metrics, and there is no materialized read model to bridge a revision fold to that (§0.8).
-It is added to `allowlisted_projected_table` (`instances.rs:1479-1498`) — **one match arm** — so the
-canvas sees it. `work_orders` (`:1481`) and `employees` (`:1482`) are already there; this is the proven
+It is added to `allowlisted_projected_table` (`instances.rs` `fn allowlisted_projected_table`) — **one match arm** — so the
+canvas sees it. `work_orders` (`instances.rs` `"work_orders" => "work_orders",`) and `employees` (`instances.rs` `"employees" => "employees",`) are already there; this is the proven
 pattern, not a new one.
 
 Fields on `work` that are genuinely new and not projections of any component: `estimated_effort`,
@@ -908,15 +908,15 @@ column.
 `party_org_visibility` carries `org_id NOT NULL` + `ENABLE`/`FORCE ROW LEVEL SECURITY` on
 `app.current_org` — the ordinary Tier T shape, no allowlist entry, no gate exception. It also carries
 `relationship_kind`, `valid_from`/`valid_to`, `created_by`, and a mandatory `reason` (the shape
-`clearance_assignments` already proves at `0147:14-32`).
+`clearance_assignments` already proves at `0147` `CREATE TABLE clearance_assignments`).
 
 `worksite_registration` is Tier T rather than Tier N precisely because 사업자등록번호 needs a UNIQUE
 constraint and payroll needs an FK — neither expressible in an attribute bag. It is projected into
 Tier P so the canvas can see it.
 
-`users.employee_id` (`0076:13-20`) stays as-is. `employees` becomes the **per-tenant HR projection of
+`users.employee_id` (`0076` `ADD CONSTRAINT users_employee_same_org_fk`) stays as-is. `employees` becomes the **per-tenant HR projection of
 a party**, not a rival identity — which is also where its personal attributes keep living, already
-under RLS (`0063:21-25`).
+under RLS (`0063` `CREATE POLICY org_isolation ON employees`).
 
 #### Tier N — ontology instance types (canvas-editable and replayable for free)
 
@@ -937,29 +937,29 @@ under RLS (`0063:21-25`).
 | `correction` | the compensating revision a post-확정 반려 emits (§5.2) | instance id | immutable | no — W14 |
 
 Every one of these is Tier N for the same reason: it is authored, lives inside one tenant, and needs
-effective-dated replay — all three of which `0155:37-64` already provides. None of them earns a
+effective-dated replay — all three of which `0155` `CREATE TABLE ont_instance_revisions` already provides. None of them earns a
 migration.
 
 **There is no `approval_signature` entity, and an earlier draft of this plan invented one.** The signature
 store is `gov_approvals`, already shipped (§4.4). Storing a signature in `ont_instance_revisions.attributes`
 would be a strict **regression**, not a reuse: a JSONB attribute bag under `ON DELETE CASCADE` on org
-(`0155:37-56`) loses the `(approver_id, org_id) REFERENCES users(id, org_id)` FK (`0153:79`), the
-self-approval CHECK (`0153:74`), the single-use `UNIQUE (org_id, request_ref)` index (`0153:76`) and the
+(`0155` `CREATE TABLE ont_instance_revisions`) loses the approver FK `0153` `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT`, the
+self-approval CHECK (`0153` `CHECK (approver_id <> requested_by)`), the single-use index (`0153` `UNIQUE (org_id, request_ref),`) and the
 `ON DELETE RESTRICT` durability posture that every shipped four-eyes gate binds against. The error was
 copying `0153`'s own inline comment `-- one decision per request` instead of reading its caller — see §4.4.
 
 Three notes where Tier N bites:
 
-- **`employment` cannot link to `party` with an `ont_link`** (`0155:76-77`). `party_id` is an
+- **`employment` cannot link to `party` with an `ont_link`** (`0155` `FOREIGN KEY (to_instance_id, org_id) REFERENCES ont_instances(id, org_id)`). `party_id` is an
   attribute-bag **property** holding a UUID, app-validated. The shipped precedent for an untyped
-  cross-store pointer is `recruit_postings.position_ref TEXT` (`0187:29`), commented *"optional
+  cross-store pointer is `recruit_postings.position_ref TEXT` (`0187` `position_ref TEXT,`), commented *"optional
   ontology position instance ref"*. Same seam, opposite direction.
 - **`employment` must separate employer from worksite** (파견 puts them in different legal entities):
   `employer_party_id` (property → `party`) and `worksite_org_unit` (`ont_link` → `org_unit`). The
   split is already half-anticipated in `recruit_postings`, as two free-text columns `company` and
-  `worksite` (`0187:20-21`).
-- **Replace `person_name`.** `fixtures/employment.rs:142` declares `title_property_key:
-  Some("person_name")` and `:148` declares it a string property. The occupant becomes `party_id`;
+  `worksite` (`0187` `worksite TEXT NOT NULL CHECK (btrim(worksite) <> '')`).
+- **Replace `person_name`.** `fixtures/employment.rs` `title_property_key: Some("person_name".to_owned())` declares the display key,
+  and `fixtures/employment.rs` `key: "person_name".to_owned(),` declares it a string property. The occupant becomes `party_id`;
   `person_name` becomes a display projection, not identity.
 
 #### Deferred with its constraint stated, not its schema
@@ -973,20 +973,20 @@ neither does any widening before W7; designing its DDL now would be speculative.
 
 ### 4.2 Why there is no second tenancy dimension
 
-**Independently confirmed by a shipped spec.** `docs/specs/org-hierarchy.md:3-7` self-declares P0-P3 **IMPLEMENTED**
+**Independently confirmed by a shipped spec.** `docs/specs/org-hierarchy.md` `P0 schema/resolvers IMPLEMENTED` self-declares P0-P3 **IMPLEMENTED**
 (`backend/crates/platform/group/src/lib.rs` exists) and states the posture verbatim: *"the per-법인
 `app.current_org` boundary is **UNCHANGED**. This spec adds a controlled cross-entity scope **above** that
 boundary; it never punches a hole in it."*
 
 That is the same move this section makes for `party`, already executed once. Requirement 4 (org plane vs
-group plane) is therefore **reuse, not design**: `org-hierarchy.md:172-173` specifies
-`AccessScope { level ∈ {Group, Org, Region, Branch, Worksite} }`, and `:241-246` protects the separation
+group plane) is therefore **reuse, not design**: `org-hierarchy.md` `resolved at login from the principal's assignment + carried in the JWT.` specifies
+`AccessScope { level ∈ {Group, Org, Region, Branch, Worksite} }`, and `org-hierarchy.md` `A GroupFeature NEVER confers a tenant Feature` protects the separation
 with an invariant — *"A GroupFeature NEVER confers a tenant Feature; a tenant Role NEVER confers a
 GroupFeature"*. Adopt both.
 
-One line must give way: `org-hierarchy.md:96` `PRIMARY KEY (group_id, org_id), UNIQUE (org_id)` — *"an Org
+One line must give way: `org-hierarchy.md` `PRIMARY KEY (group_id, org_id), UNIQUE (org_id));` — *"an Org
 is in at most ONE group"* — is exactly what forbids joint ventures, so W7's control edges supersede **that
-line specifically** rather than the spec. And `:298` risk 4 puts **intercompany/elimination out of scope
+line specifically** rather than the spec. And `org-hierarchy.md` `is OUT of scope here (Track C)` risk 4 puts **intercompany/elimination out of scope
 (Track C)**, which is the citation that bounds §5.5's peer plan.
 
 
@@ -1014,7 +1014,7 @@ read `party` as `console_rt` armed to a tenant, and `org_isolation` returns **ze
 already rejected on measurement, and the measurement is why the handle may never be granted to `console_rt`
 unfiltered: X4 measured `SELECT count(*) FROM x4probe_party` returning **`2`** where org A held
 an edge to only one — and DN-0003 invariant 5 makes that a violation, not an inelegance: *"Denied data is
-omitted, including counts and relationship existence"* (`DN-0003:85-86`). The sentinel-homed row satisfies
+omitted, including counts and relationship existence"* (`DN-0003` `Denied data is omitted, including counts and relationship existence.`). The sentinel-homed row satisfies
 invariant 5 in its own terms: the count is **omitted** (0), not refused with an error.
 
 The confidential fact is not *"who is this party"* — it is *"which parties does org A hold edges to"*.
@@ -1029,7 +1029,7 @@ Consequences: **zero new GUCs. Zero changes to the 141 RLS policies. Zero new ga
 The input's "largest single engineering cost" does not arise.
 
 The one new mechanism is a resolver, and its pattern is already shipped:
-`group_role_grants_for_user` (`0060:99-126`) — `SECURITY DEFINER`, `SET search_path = public,
+`group_role_grants_for_user` (`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)`) — `SECURITY DEFINER`, `SET search_path = public,
 pg_temp`, `SET LOCAL row_security = off`, a narrow parameterised query, `SET LOCAL row_security = on`,
 an `EXCEPTION WHEN OTHERS` handler that restores it before re-raising (`0060:90-92`),
 `REVOKE ALL … FROM PUBLIC`,

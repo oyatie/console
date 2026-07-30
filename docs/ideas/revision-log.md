@@ -718,3 +718,21 @@ worse than one that names the table containing the column. The claim is unchange
 (`actor UUID REFERENCES users(id)`, `trace_id CHAR(32)`, …) rather than being collapsed into one
 `CREATE TABLE audit_events` anchor: collapsing would have made the reader scan eighteen lines to check a
 one-column claim, which is the vagueness this sweep is supposed to remove, not introduce.
+
+## Wave 5 — §4.1 party/employment through §4.2 group plane (`DRAFT:833`-`DRAFT:1032`)
+
+`UNVERIFIABLE 401 → 367` · `RESOLVES 166 → 201` · `BROKEN 0` · total 718
+
+### Factually wrong, corrected to what the file says
+
+- **`0153:79` for the approver FK, a third time** (`DRAFT:946`). Same defect as `DRAFT:117`: line 79 is `);`,
+  and the FK is `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT` at **78**.
+  Three sections had inherited one wrong number.
+- **`0187:29` is `status`, not `position_ref`** (`DRAFT:955`). `position_ref TEXT, -- optional ontology
+  position instance ref` is line **28**; `:29` is
+  `status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','PUBLISHED','CLOSED'))`. Off by one, onto a
+  column that has nothing to do with the cross-store-pointer claim.
+
+The five DB-enforced four-eyes CHECKs (`DRAFT:886`-`DRAFT:888`) were all cited correctly and now each carries
+its own CHECK expression, so the count claim "five" is checkable one grep at a time instead of resting on five
+line numbers in four migrations.
