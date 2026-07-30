@@ -496,3 +496,91 @@ Nits, one fact with two numbers each: the custom-role resolver is `authz/src/lib
 (the fn opens at `:78`); `allowed_audit_exclusions()` is cited `:90-111` and ends at `:107`. And W1 calls the
 recipient change *"All of it ADDITIVE"* while its acceptance asks for `recipient_user_id` *"present,
 nullable"* — `0162:45` is `NOT NULL`, so that leg is a relaxation the gate permits, not an addition.
+
+## Citation-class sweep, wave 0 — the baseline and the check that holds it
+
+Two consecutive consistency passes each shipped new defects and every one was a line number. So this wave
+fixes no citation. It measures the population and lands the gate: `scripts/console/verify-doc-citations.mjs`,
+wired as `npm run check:doc-citations`.
+
+**The argument the script encodes.** A line number cannot be checked. You can confirm the file has that many
+lines; you cannot confirm the line says what the citation claims — so an off-by-one survives every review that
+does not open both files side by side, which is how `0153:79`, `0130:43` and `0152:99` each shipped. A symbol
+or a quoted fragment is checkable by `grep`: it resolves or it does not. The script's verdicts follow that
+split, and the `--max-unverifiable=N` threshold is what lets the sweep ratchet in waves instead of demanding
+one perfect pass.
+
+**Baseline on `docs/ideas/ecosystem-plan-DRAFT.md`, nothing fixed:**
+
+| verdict | count | meaning |
+|---|---|---|
+| total citations | **719** | parsed from the doc's own grammar, fenced blocks excluded |
+| RESOLVES | **2** | a symbol found in the cited file — `authoring.rs` `simulate_inner`, `seed.rs` `BUILTIN_CATALOG_VERSION` |
+| UNVERIFIABLE | **566** | line numbers. **79% of all 719, and 566 of the 568 that make any claim about content** |
+| BROKEN | **0** | nothing provably wrong survives, which is why the control below matters |
+| FILE-ONLY | 129 | a file named with no checkable claim attached |
+| MISSING | 22 | a file named that is not in the repo — planned artifacts and deliberate absences, so reported, not fatal |
+
+566 unverifiable against 2 resolving is the finding. The document's reasoning was never the problem; almost
+none of its evidence is machine-checkable, so consistency passes had nothing to check against but each other,
+and agreeing with a wrong neighbour was indistinguishable from being right.
+
+Of the 566, **2 are SUSPECT** — a bare `:line` past the end of the file the script infers for it:
+
+- §"deferred 규제 PII epic" (line 1696) — `ledger :174`, but the nearest preceding citation is `ADR-0023:157`
+  and ADR-0023 has 166 lines. The ledger has 1045, so `:174` is fine *for the ledger*: the antecedent lives in
+  the English word "ledger", not in the citation.
+- §LANE-PROTOCOL staleness row (line 2684) — `:268-269` for a file the row named three spans earlier, with a
+  bare `` `0204` `` in between that captured the antecedent. LANE-PROTOCOL has 270 lines, so again the number
+  is right and the binding is not.
+
+Neither is reported BROKEN, deliberately: the inheritance is the script's guess, and asserting a guess is wrong
+is the exact move that propagated `:79`. But both prove the bare `:N` form is unsound even when its digits are
+correct — the reader binds it by prose, and prose drifts.
+
+**Known-bad control, observed RED.** A probe with no demonstrated failure mode is not evidence. Fixture at
+`scratchpad/known-bad-citations.md` carries eight citations with pre-declared verdicts:
+
+```
+$ node scripts/console/verify-doc-citations.mjs .../known-bad-citations.md
+BROKEN — provably wrong, fix these first
+  known-bad-citations.md:9   `.../authz/src/lib.rs` `fn no_such_function_exists_here()`  → not found in file
+  known-bad-citations.md:12  `.../authz/src/totally_made_up.rs:42`                       → file not found
+  known-bad-citations.md:15  `9998:12`                                                   → no migration with that number
+  known-bad-citations.md:18  `0153_create_governance.sql:99999`                          → line 99999 past end of file (141 lines)
+RESOLVES — verifiable by grep
+  known-bad-citations.md:23  authz/src/lib.rs                 found "pub enum Feature"
+  known-bad-citations.md:26  .../instances.rs                 found "sync_property_links_tx"
+UNVERIFIABLE
+  known-bad-citations.md:31  0153_create_governance.sql:78
+  known-bad-citations.md:33  0153_create_governance.sql:79  (inherited file)
+  total 8 · RESOLVES 2 · UNVERIFIABLE 2 · BROKEN 4        EXIT=1
+```
+
+All eight match. `total citations : 8` also confirms the seven decoys in that fixture — `Feature::ALL`,
+`app.current_org`, `LISTEN/NOTIFY`, `prelude/`, `ontology/*`, `.sql`, `(id, org_id)` — were not counted as
+citations. Threshold checked both directions: `--max-unverifiable=2` exits 0 on a doc with 2, and
+`--max-unverifiable=1` fails it.
+
+**Two defects found in the verifier itself while taking this baseline**, both worth recording because both are
+the document's own failure mode reappearing in the tool:
+
+1. The first version inherited the antecedent file across a *failed* resolution, so `engine.rs:370-391`
+   (ambiguous — `platform/authz/src/cedar_pbac/engine.rs` and `workflow/runtime/src/engine.rs` both match)
+   left a stale binding and the following `:403-424` and `:430` were reported BROKEN against a file nobody
+   cited. The tool was propagating a false fact to stay consistent. Fixed: an unresolved anchor clears the
+   antecedent, and ambiguity is UNVERIFIABLE, never BROKEN.
+2. The first run reported 59 BROKEN; 57 of them were the checker's fault, from three causes. It read
+   directories and globs as files (`prelude/`, `platform/db`, `ontology/*`) and prose containing a slash as a
+   path (`LISTEN/NOTIFY`, `DRAFT/BALANCE_CHECKED/…`). It looked for design notes only in `docs/decisions/`,
+   so every `DN-0003` cite failed — the file is at `docs/decisions/notes/`. And it made no distinction
+   between a citation that is wrong and a file the plan has not written yet, so `docs/specs/*.tsv`
+   deliverables, `ecosystem-PORTING.md`, and the never-issued `ADR-0013` the document *correctly* describes as
+   absent all came back as defects. Those are now MISSING, reported and non-fatal, because the tool cannot
+   tell a typo from a plan and must not pretend it can. A citation checker that cries wolf gets switched off,
+   which is worse than not having one.
+
+`npm run check:doc-citations` is pinned at `--max-unverifiable=566` and passes today. It fails on any BROKEN
+citation and on any *growth* in the unverifiable count, so the number can only go down. Wave 1 is the rewrite:
+each `:N` becomes a symbol or a quoted fragment at least as specific as the line number it replaces, and the
+pin drops to match.
