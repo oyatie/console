@@ -112,7 +112,8 @@ The input concludes *"So 통지 → 인지 is built. What is missing is narrower
 — naming only the missing content and closure. It missed a third, structural gap:
 `notice_receipts` has `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)`
 (`0162:50`), so a recipient **must be a user of that org**. That is the same foreign-key blocker the
-input correctly identifies in `gov_approvals` (`0153:78`) and rejects the mechanism for. A group-level
+input correctly identifies in `gov_approvals` (`0153:79` — the *approver* FK; `:78` is the `requested_by`
+twin, and earlier drafts of this plan cited `:78` for both) and rejects the mechanism for. A group-level
 line member in another company cannot be notified. Resolved in §5.2 gap 3.
 
 ### 0.7 Two object registries exist, and one warned against the other
@@ -475,9 +476,12 @@ What the input's **`## Recommended Direction`** assumes — *"People are group-s
 **Pros.** A group-scoped person row is directly readable by `console_rt`, so ontology links to it work
 natively and no definer is needed.
 
-**Invalidated** — by the requirement it exists to serve. The input's own `:89-92` establishes that a
-person can work for companies in *different* groups (a contractor, a director on two unrelated boards,
-anyone moving between groups), so group-scoping relocates the duplication rather than removing it, and
+**Invalidated** — by the requirement it exists to serve. The input establishes it itself, under
+**`## Where employees belong — reasoned from the objects, not the schema`**: *"The group is not high
+enough. A person can work for companies in **different** groups — a contractor, a director on two unrelated
+boards, anyone moving from group A to group B."* (Quoted, not line-cited: this was the **last** surviving
+line-number anchor into the one file whose anchors moved twice — `grep -F ':89-92'` returned exactly one hit,
+here.) So group-scoping relocates the duplication rather than removing it, and
 cannot represent a person before they are grouped. It then also costs a second GUC bridged into 141
 RLS policies and a gate classification that does not exist. **Maximum cost for a design that does not
 meet the requirement.**
@@ -1157,7 +1161,7 @@ point of stating them per row.
 | Mechanism | Executable blocker | Verdict |
 |---|---|---|
 | `work_order_approval_steps` | `step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` `0008:62`; `role CHECK (role IN ('MECHANIC','ADMIN','EXECUTIVE'))` `:63`; `UNIQUE (work_order_id, role)` `:71` | 3 steps max, demo roles, each role once, serial only. 합의 inexpressible. **Leave alone.** |
-| `gov_approvals` | `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` `0153:78` — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. `UNIQUE (org_id, request_ref)` `0153:76` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
+| `gov_approvals` | `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` **`0153:79`** — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. (`:78` is the `requested_by` FK; three sites in earlier drafts cited `:78` for the approver, and §4.1 already cited `:79` correctly — one fact, two line numbers, now one.) `UNIQUE (org_id, request_ref)` `0153:76` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
 | `policy_role_conditions` | `attribute CHECK` over **17** literals `0065:110-127`; `operator CHECK (operator IN ('equals','not_equals','in'))` `0065:129`. **The resolver evaluates far less than the CHECK admits:** `backend/crates/platform/authz/src/lib.rs:1404-1430` returns `None` unless the operator is `equals`\|`in` **and** the attribute is `branch`\|`team` | **Narrow the WRITE PATH to `{branch, team}` × `{equals, in}`**, with a test asserting write-accepted ⊆ resolver-evaluated; leave the DB CHECK permissive as the additive extension point. `not_equals` stays writable-but-unwritten rather than removed. **Two of the four dimensions have no substrate at all** — see below |
 | `notices` / `notice_receipts` | `notice_receipts` is `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)` `0162:41-51` — **no content column**; `notices.status CHECK (status IN ('draft','published'))` `0162:22` — **no closure state**; `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)` `0162:50` — **recipient must be a user of that org**; and **no per-recipient audience targeting at all** — see below | 통지 → 인지 is built. **Four** gaps, two of them structural. **Extend; never build a second ack mechanism.** |
 
@@ -1205,8 +1209,8 @@ invents work.
 **What capacity costs here: two nullable columns, and nothing relaxed.** 전결 by delegated authority is
 already two rows (same `approver_id`, different `request_ref`, same `requested_by`), and 전결 where the
 competent authority **is** the drafter needs **zero** approval nodes — the self-approval CHECK is never
-reached because no signature is required. The cross-org FK (`0153:78`) remains the one real blocker, and W1
-is where it is addressed.
+reached because no signature is required. The cross-org approver FK (`0153:79`) remains the one real blocker,
+and W1 is where it is addressed.
 
 **`notices`' fourth gap is a confidentiality regression, not a missing feature.** W1's party-keyed recipient
 fixes the cross-org FK; it does **not** fix the **org-wide fan-out**.
@@ -1218,7 +1222,17 @@ in the org. So until this is fixed, **a 반려 notice on a 결재 matter reaches
 
 The fix is **per-recipient audience targeting** with its own DDL: an explicit recipient list keyed by party
 (`notice_audience_parties (org_id, notice_id, party_id)`), with the snapshot INSERT selecting from it rather than
-from `users`. And `obligation_notifies_line_as_raised` (§7) must assert that **non-members receive nothing**,
+from `users`.
+
+**And that DDL must be ADDITIVE, because both tables are gate-marked audited.** `0162:12` is
+`-- console-gate: audited-table notices` and `0162:40` is `-- console-gate: audited-table notice_receipts`,
+which `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs:174-187`) folds into the same
+set as the five built-ins — so **`DROP COLUMN` on either is a gate violation**, exactly as for `audit_events`
+(§4.0.3) and the voucher (§5.5). `notice_receipts.recipient_user_id` is `NOT NULL` (`0162:45`). So W1's
+"party-keyed recipient **replacing** the org-composite FK" is precisely: `ALTER COLUMN recipient_user_id DROP
+NOT NULL`, `DROP CONSTRAINT` on the composite FK, `ADD COLUMN recipient_party_id UUID` — and **never** a
+`DROP COLUMN`. The new `notice_audience_parties` table is greenfield and therefore free. Recorded here because
+the word "replacing" in W1 reads as a column swap, and a column swap is refused by a gate. And `obligation_notifies_line_as_raised` (§7) must assert that **non-members receive nothing**,
 with **the shipped org-wide snapshot as its known-bad control** — the probe as previously written asserts only
 that truncated member D *is* notified, which the current org-wide fan-out satisfies trivially.
 
@@ -1768,7 +1782,9 @@ The additive delta, smallest first:
 2. **Push the object dimension down to the line** and **type it**: `source_object_type` FK →
    `object_types(kind)`, which already seeds `'voucher'` (`0102:40`). Typing it closes the "any string is
    accepted" hole; pushing it to the line is what makes per-object economics a real query rather than a
-   header approximation.
+   header approximation. **`finance_gl_voucher_lines` carries its own audited marker (`0160:56`)**, so these
+   columns are as permanent as the header's — the same "additive means permanent" warning, on the table this
+   item actually alters.
 3. Account master and currency — **the peer plan** (below).
 
 **Because the spine is greenfield, COST-as-a-query is a design freedom taken deliberately**, not a constraint
@@ -1810,8 +1826,8 @@ is not reproducible**: `0160:62` rejects blank but stores untrimmed, so `'100'` 
 holding the same account. Free-text-versus-account-master is an open owner question, and the probe inherits it.
 
 **Explicitly a peer plan, argued rather than dropped:** account master / chart of accounts, multi-currency
-and FX (the degenerate `currency_code = 'KRW'` CHECKs at `0179:68`, `0182:35`, `0172:10` show the
-convention is single-currency throughout), depreciation and accrual posting — today depreciation is only a
+and FX (the degenerate single-value CHECKs at `0179:68` and `0182:35` on `currency_code`, and `0172:10` on a
+column simply named `currency`, show the convention is single-currency throughout), depreciation and accrual posting — today depreciation is only a
 synchronous pricing formula on quotes (`0015:16-18`, `:88-90`, computed at
 `financial/domain/src/lib.rs:203`, emitted as a `"DEPRECIATION"` quote line at `:214`) and is **never
 posted**; nothing schedule-driven writes any ledger despite `workflow_schedules.cron_expr` existing
@@ -1986,7 +2002,10 @@ constraints are recorded instead of the schema:
 
 1. **Quantity-bearing or lineage edges may never live in `object_links`.** `0102:68` permits exactly one edge per
    `(org, src, dst, link_type)`, and `:86` grants `console_rt` `SELECT, INSERT, DELETE` — **no UPDATE**. A
-   quantity that cannot be updated and cannot repeat is not a quantity.
+   quantity that cannot be updated and cannot repeat is not a quantity. **The temptation is concrete, not
+   hypothetical:** `derived_from` — *"Source was produced from the destination (lineage)"* — is **already one of
+   the twelve seeded `link_types` labels** (`0130:43`), so the edge kind §4.3 names `derived_from` looks
+   pre-built. It is not: it is the wrong store for it.
 2. **A `TRANSFER` movement carries its from/to pair on ONE row**, for the same reason the conservation triple
    does: a pair split across two rows is a span no row constraint can close.
 3. **No lineage ADR is accepted until the N-into-1 merge names its serialization point and lock order** — every
@@ -2288,7 +2307,8 @@ habit is what failed in the precedent.
 
 ### Scenario 2 — Grants quietly become subtractive
 
-`policy_role_conditions` already models the four dimensions as data (`attribute` CHECK, `0065:110-128`)
+`policy_role_conditions` already models two of the four dimensions as data (`attribute` CHECK, `0065:110-127`
+— §4.4(b): 직무 and 직급 are not literals there)
 — and its operator set is `CHECK (operator IN ('equals','not_equals','in'))` (`0065:129`). **`not_equals`
 is already in the shipped vocabulary.** The path of least resistance is to reuse that table and its
 resolver, and the moment one condition narrows rather than adds, `effective(P, B) > effective(Q, B)`
@@ -2458,8 +2478,8 @@ guards and the Bun mechanisms are owned by `docs/ideas/fanout-plan-DRAFT.md` §5
 
 ### Phase 0 — the reference documents (before any code)
 
-Bun spent ~3 hours producing `PORTING.md` + `LIFETIMES.tsv` before converting one file. Ours, both of
-which **must exist and be reviewed before fanout opens**:
+Bun spent ~3 hours producing `PORTING.md` + `LIFETIMES.tsv` before converting one file. Ours — **three files,
+all of which must exist and be reviewed before fanout opens**:
 
 | File | Content | Bun analogue |
 |---|---|---|
@@ -2740,7 +2760,7 @@ the wrong thing:
 | Entity | Slice-0 minimum | Why it cannot wait |
 |---|---|---|
 | `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
-| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160:21`), a line-level `branch_id`, a line dimensioned to the work, and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
+| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160:21`), a line-level `branch_id` and a line dimensioned to the work (**also irreversible** — `finance_gl_voucher_lines` carries its own marker at `0160:56`, which earlier drafts did not say while putting two new columns on it), and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
 
 **Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 — the
 tables because Slice 0 does not need them, `users.party_id` on irreversibility; they land together in **W2**),
@@ -2771,7 +2791,7 @@ expiry, never deletion**.
 
 | # | Widening | Acceptance |
 |---|---|---|
-| W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, and a **party-keyed recipient** replacing the org-composite FK (`0162:50`) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company**; post-확정 correction GREEN; no second ack mechanism exists |
+| W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, a **party-keyed recipient** superseding the org-composite FK (`0162:50`), and **per-recipient audience targeting** (§4.4's fourth gap). **All of it ADDITIVE — `notices` and `notice_receipts` are both gate-marked audited (`0162:12`, `:40`), so no `DROP COLUMN` is available** (§4.4) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company and with every non-member receiving nothing**, against the shipped org-wide snapshot as its known-bad control; post-확정 correction GREEN; no second ack mechanism exists; and `recipient_user_id` still present, nullable |
 | W2 | **The party family lands here** — no other widening carried it, and W2 is the first that cannot proceed without it: the `party` table (sentinel-homed, §4.1), `party_org_visibility`, `users.party_id`, `employees.party_id`. Then `employment` revised: `party_id` replaces `person_name`; employer split from worksite | `party_is_invisible_and_unmintable_from_a_tenant`, `visibility_edge_rls` and `visibility_unique_key_leads_with_org_id` GREEN with their controls RED; `visibility_predicate` (§5.1) moves from `users` to `party_org_visibility` **unchanged in form**; a 파견 employment with employer ≠ worksite round-trips |
 | W3 | `org_unit` kinds/lifetime + `worksite_registration` (Tier T, projected) | duplicate 사업자등록번호 rejected by the DB; a bounded TF expires |
 | W4 | `work` handover + `assignment` as a grant source; **and the fixed-authority 인계 완료 count** without which hard-gating is not available (§4.5) | `handover_is_scope_bounded` and `handover_moves_work_artifacts_only` GREEN; the 인계 완료 **assertion** recorded with its asserted count. Hard-gating offboarding lands **only** with the fixed-authority count — until then the assertion is evidence, not a gate |
