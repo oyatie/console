@@ -1092,3 +1092,24 @@ that no gate reports, because the gate never ran.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — rebind after reconciling a concurrent writer on the same branch
+
+The registers rebind again, onto the merge that reconciles a teammate's independent
+main-merge with this branch's own. Both writers had merged main to recover the OpenAPI
+security schemes the branch would otherwise have reverted; the teammate's merge carried
+no content this branch lacked.
+
+This entry exists because the rebind happened twice in one day for one candidate, and
+that is the cost the lane protocol's "one writer per lane" rule is meant to avoid. Two
+writers on one branch means 390 references are rewritten once per writer, and the only
+thing that made the second rebind cheap was that it is scripted. The protocol was not
+violated by anyone here — a subagent and its parent are one writer by intent and two by
+mechanism, which is a gap in the rule rather than a breach of it.
+
+Recorded rather than smoothed over, because the alternative was a force-push that would
+have discarded a concurrent writer's commit to produce a tidier history.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
