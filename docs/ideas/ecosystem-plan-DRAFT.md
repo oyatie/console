@@ -402,10 +402,11 @@ language. Fewer moving parts, smaller attack surface, and it is what the spec al
 
 ## 3. Viable options
 
-### 3.1 Shared vocabulary — the four storage tiers that already exist
+### 3.1 Shared vocabulary — the four CI-enforced storage tiers, plus one CODE-gated projection
 
-Named once here; every entity in §4 refers to them. All four are enforced by
-`backend/ci/gates/tenant-isolation/src/lib.rs`.
+Named once here; every entity in §4 refers to them. **All four are enforced by
+`backend/ci/gates/tenant-isolation/src/lib.rs`; the fifth path below — Tier P, projection — is not,** and the
+heading says so because principle 4 turns on the difference.
 
 | Tier | Definition | Gate hook | Runtime reach |
 |---|---|---|---|
@@ -610,7 +611,7 @@ as-of replay (§3.1), which is exactly why authority does **not** live in Tier T
 through an ontology property edit.
 
 
-#### 4.0.3 The headline finding: one missing field, inherited by every entity composing `record`
+#### 4.0.3 The headline finding: the `record` contract cannot say under WHAT AUTHORITY — and every entity composing it inherits the gap
 
 `audit_events` current shape is `0003:11-28` plus `org_id` (`0032:84`) plus
 `ip, user_agent, auth_method, device, classification_badges, anomaly, reason` (`0149:6-13`).
