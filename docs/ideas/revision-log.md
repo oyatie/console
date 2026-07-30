@@ -409,3 +409,90 @@ reference rather than a level. A department level is W5 work and must arrive wit
 - Table-integrity check (pipe count per block, discounting escaped `\|`) run at the end of every commit:
   clean.
 - No code was executed. Every claim above is a read of the file cited.
+
+---
+
+## Adversarial re-read of the global-consistency pass — what the repair itself broke
+
+Read fresh against code, not against the findings list. R1-R4 and D1-D3 all verified **fixed** at every site
+(§9 now says `gov_approvals`; 인계 완료 is an assertion in §5.10/§4.0.1/W4; §4.5's branch and §4.1's grant row
+carry `{Group, Org, Region, Branch, Worksite}`, re-verified at `access_scope.rs:28-34`; §5.8's heading matches
+its body; the Phase-0 table has three rows). Ten new contradictions, three of them **written by this pass**.
+
+**Written by this pass (regressions).**
+1. **"It is the ONE owner-only table this plan adds"** (§4.1, `7a54a5d09`) and **"ONE new owner-only table"**
+   (§9, `36ba15c84`) are false by the plan's own text: `party_link` is *"**Tier O** and reuses the shipped
+   `group_role_grants` definer pattern"* (§4.1), `no (O)` in §4.3's `controls` row, and *"`party_link` control
+   edges (Tier O)"* at W7. Both Tier O tables are deferred, so deferral cannot be the distinction. §9's
+   Consequences counts two definer surfaces where three are scheduled, and §7's probe *"names it alone"*.
+   The gate reads only the compiled list (`tenant-isolation/src/lib.rs:115-130`, 3 entries today; the
+   `-- console-gate: owner-only-table` markers at `0060:30`,`:39` have no reader) — so each is its own entry.
+2. **§9's "settled figure" undercounts Slice 0** (`36ba15c84`): *"Slice 0 pays for exactly one of those tables —
+   `work` — plus the two `gov_approvals` columns and the definer"* vs Phase 4 crate 1's own list (*"voucher
+   `accounting_date`"*), the Slice-0 addition row (`accounting_date` + line `branch_id` + line dimension, all
+   **irreversible**, `0160:21`/`:56` verified) and §5.5's *"N5's three prerequisites, and they DO block Slice
+   0"*. §9's "three new tenant tables … plus" list also omits W1's `notice_audience_parties`.
+3. **D1's load-bearing ground cites a comment** (`7a54a5d09`): `0051…:34` is header prose; the executable
+   re-homing is `UPDATE audit_events SET org_id = sentinel_org` at **`0051:195-196`**. Cited that way twice
+   (§4.1 ground 2, §9 "Why chosen"), against the preamble's own "cites **executable** code or DDL". Same
+   shape: §5.11 cites `audit-coverage/src/lib.rs:90-111` for a set that ends at **`:107`** (`:109-111` is
+   `check_workspace`).
+
+**Left standing by it (gaps of the exact shape it swept for).**
+4. §3.2 **Option 1 — the RECOMMENDED option** — still reads *"Tier N authority"* in its heading and *"the
+   authority/approval entities of §4.1 as ontology instance types"* in its body, with **no X4b exception**.
+   That is the §9 defect this pass fixed, one section earlier, unfixed.
+5. *"zero new gate classifications"* survives in §3.2 Option 1's Pros (the sentence this pass edited) and
+   §4.2's Consequences, while §4.1 removes *"one gate classification"* of two and §7's probe asserts
+   **exactly one**. The probe is still named `no_new_gate_classification`.
+6. **X6 resurrects the deleted materialise option:** *"materialization keyed on `policy_versions` if not"* —
+   §5.6 deleted that row as ADR-0021-violating and **mis-keyed**, and N1 records *"no cross-request
+   materialisation"*. X6 is one of the three experiments gating Slice-0 green.
+7. **Slice 0 cannot satisfy two of its own `slice0_*` probes:** its grants are *"2 instances … 현장 …
+   + one at a **different** 현장"* and *"both `Worksite`-scoped"*, but `slice0_본사_may_still_approve` needs
+   *"본사 … at company scope"* and `slice0_second_band` routes *">band → 본사"*. Three grants, not two.
+   Separately, Acceptance says *"Every `slice0_*` probe"*, which excludes `daeri_records_both_parties` — the
+   probe the Slice-0 addition row makes non-optional.
+8. **One fact, two ranges, both outside their function:** §4.2 cites `0060:90-92` and §7 `0060:88-91` for
+   `group_role_grants_for_user`'s `EXCEPTION` restore. That function is `0060:99-126` and its handler is
+   **`:120-122`**; `:88-92` belongs to `group_member_org_ids`. This is the `0153:78`/`:79` defect again.
+9. §4.6 *"Three entities must be ordinary tables … all three are Tier T"* (this pass's clause) undercounts —
+   `work` is the fourth (§0.14), plus `worksite_contract`, `lot` — in the section whose previous bullet says
+   *"no count is restated here, because counts in this plan have rotted twice"*.
+10. §7 Observability still watches for *"a scope-expression bug"*, a mechanism §0.17 **deleted**. And
+    §4.0.1's `record` row sends the capacity gap to **§4.0.2**; it lives in §4.0.3.
+
+No code executed. `Status: PENDING APPROVAL` untouched; nothing above softens a HOLD or a gate.
+
+## Verification pass over the global-consistency commits — two citations went the wrong way
+
+R1-R4 and D1-D3 all confirmed fixed against the current text, and 7/7 headings, both rewritten §7 probes and
+12 of the 16 "verified sound" enumerations re-read exact. Two numbers introduced by `a94b2586a` are wrong, and
+one entry in the enumeration list was marked verified while it is off:
+
+1. **`gov_approvals`' approver FK is `0153:78`, NOT `:79`.** Read
+   `backend/crates/platform/db/migrations/0153_create_governance.sql`: `:77` is
+   `FOREIGN KEY (requested_by, org_id)`, `:78` is `FOREIGN KEY (approver_id, org_id)`, `:79` is `);`. The pass
+   moved three **correct** `:78` cites to `:79` (§0.4-area line 117, §4.4's `gov_approvals` row, §5.9's
+   blocker sentence) to agree with §4.1, which was the wrong one, and added prose at two of them asserting
+   *"`:78` is the `requested_by` FK"* — it is `:77`. Four sites now carry the off-by-one, inside the claim W1
+   exists to fix. The plan's other cites into this file (`:71`, `:74`, `:76`) all match exactly, so the
+   convention is not in doubt and there is only one copy of the file outside `console-lanes/`.
+2. **`derived_from` is `0130:44`, not `0130:43`** (`:43` is `belongs_to`). The quoted description is right; only
+   the number is wrong. Twelve labels at `0130:38-49`, as claimed.
+3. **`ont_action_types.dispatch` CHECK is `0152:97`, not `0152:99`** (`:99` is `control_points`). §4.6's cite,
+   pre-existing since `fc704f29f` — so this is the enumeration checklist over-claiming "every one re-read",
+   not a regression.
+
+Also open, same shape as the seven headings: **`party_link` is still Tier O** (§4.1's deferred-constraint
+block, W7) while §4.1's Tier O heading says **1** new table, §4.1 says *"the ONE owner-only table this plan
+adds"*, and §9's cost bullet says *"ONE new owner-only table"*. The tenant bullet beside it names its
+widening-horizon tables; the owner-only bullet names none, so a lane greps that sentence and concludes W7's
+`party_link` needs no allowlist entry. Pre-existing (the pre-revision text said "two", also excluding
+`party_link`), but it is the same reader-facing failure the heading sweep was for.
+
+Nits, one fact with two numbers each: the custom-role resolver is `authz/src/lib.rs:1403-1429` in §4.1 and
+`:1404-1430` in §4.4 (the fn is 1399-1430); the POSTED trigger is `0160:78-118` in W14 and `0160:79` in §7
+(the fn opens at `:78`); `allowed_audit_exclusions()` is cited `:90-111` and ends at `:107`. And W1 calls the
+recipient change *"All of it ADDITIVE"* while its acceptance asks for `recipient_user_id` *"present,
+nullable"* — `0162:45` is `NOT NULL`, so that leg is a relaxation the gate permits, not an addition.
