@@ -26,11 +26,17 @@
 //   LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs 근로기준법 [more names...]
 //   LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs --json 근로기준법
 //   LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs --check-kernel
+//   LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs --admrul 최저임금   # 고시/훈령/예규
 //
 // Exit codes: 0 all resolved; 1 any name unresolved, any request failed, or (under
 // --check-kernel) any cited source URL that does not resolve.
 
 const API = 'https://www.law.go.kr/DRF/lawSearch.do';
+// 고시/훈령/예규 are 행정규칙, a DIFFERENT target from 법령. Four of the nine payroll
+// statutory items are set by 고시, and searching target=law for them returns nothing —
+// which is how they came to be recorded as 'not resolvable on the public portal'.
+// They are resolvable; they are just not 법령.
+const ADMRUL_TARGET = 'admrul';
 const THROTTLE_MS = 200; // the operators' own documented spacing; do not lower
 const RETRY_DELAYS_MS = [2000, 4000, 8000];
 
@@ -43,6 +49,7 @@ if (!OC) {
 const args = process.argv.slice(2);
 const asJson = args.includes('--json');
 const wantKernelCheck = args.includes('--check-kernel');
+const wantAdmrul = args.includes('--admrul');
 const names = args.filter((a) => !a.startsWith('--'));
 if (names.length === 0 && !wantKernelCheck) {
   console.error('Usage: LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs <법령명> [...]');
@@ -126,6 +133,51 @@ async function resolve(name) {
   // 근로기준법 시행령 and 시행규칙 — which are usually the instruments that carry the rate.
   const exact = rows.filter((r) => r.name === name);
   return { query: name, exact, related: rows.filter((r) => r.name !== name) };
+}
+
+async function resolveAdmrul(name) {
+  const url = `${API}?OC=${encodeURIComponent(OC)}&target=${ADMRUL_TARGET}&type=XML`
+    + `&query=${encodeURIComponent(name)}&display=20`;
+  const xml = await fetchWithRetry(url);
+
+  const code = textOf(xml, 'resultCode');
+  if (code && code !== '00') {
+    throw new Error(`API resultCode ${code}: ${textOf(xml, 'resultMsg')}`);
+  }
+
+  const blocks = [...xml.matchAll(/<admrul id="\d+">([\s\S]*?)<\/admrul>/g)].map((m) => m[1]);
+  const rows = blocks.map((b) => ({
+    name: textOf(b, '행정규칙명'),
+    kind: textOf(b, '행정규칙종류'),          // 고시 / 훈령 / 예규 / 지침
+    ministry: textOf(b, '소관부처명'),
+    status: textOf(b, '현행연혁구분'),
+    issued_on: ymdToIso(textOf(b, '발령일자')),
+    issue_no: textOf(b, '발령번호'),
+    effective_date: ymdToIso(textOf(b, '시행일자')),
+    seq: textOf(b, '행정규칙일련번호'),
+    // Credential-free. The API's own 행정규칙상세링크 embeds the OC.
+    source_uri: `https://www.law.go.kr/행정규칙/${encodeURIComponent(textOf(b, '행정규칙명'))}`,
+    // Serves the consolidated body without a key — this is what makes the text readable.
+    body_uri: `https://www.law.go.kr/LSW/admRulInfoR.do?admRulSeq=${textOf(b, '행정규칙일련번호')}`,
+  }));
+  return { query: name, rows };
+}
+
+if (wantAdmrul) {
+  for (const [i, name] of names.entries()) {
+    if (i > 0) await sleep(THROTTLE_MS);
+    const r = await resolveAdmrul(name);
+    console.log(`\n### ${r.query}  (target=admrul)`);
+    if (r.rows.length === 0) console.log('  no 행정규칙 matched — refine the name, do not guess one');
+    for (const row of r.rows) {
+      console.log(`  ${row.status === '현행' ? '*' : ' '} ${row.name}  [${row.kind}] ${row.status}`);
+      console.log(`      발령 ${row.issued_on} 제${row.issue_no}호  시행 ${row.effective_date}  ${row.ministry}`);
+      console.log(`      ${row.source_uri}`);
+      console.log(`      body: ${row.body_uri}`);
+    }
+  }
+  console.log(`\nretrieved_at ${new Date().toISOString()}`);
+  process.exit(0);
 }
 
 // --check-kernel: compare what the payroll kernel CITES against what is currently in
