@@ -105,7 +105,7 @@ Two registries hold object kinds, and both are executable:
 that migration's own header warns against *"a second registry."* Not this plan's defect to fix, but
 every new entity must state which registry names it, or it will be seeded into the wrong one. This
 plan's answer: `work` gets an `object_types` row (it is an `object_links` endpoint kind, §4.3); all
-fourteen Tier N types are `ont_object_types` rows only.
+Tier N types in §4.1 are `ont_object_types` rows only.
 
 ### 0.8 The engine does NOT already pay for metrics — the substrate has no read model
 
@@ -335,13 +335,14 @@ canvas must see it.
 #### Option 1 — Global opaque handle + tenant edge + Tier N authority  ← RECOMMENDED
 
 `party` in Tier O holding no PII; `party_org_visibility` in Tier T under ordinary
-`app.current_org` RLS; one re-validating definer; the fourteen authority/approval entities as
+`app.current_org` RLS; one re-validating definer; the authority/approval entities of §4.1 as
 ontology instance types.
 
 **Pros.** Zero new GUCs, zero changes to the 141 RLS policies, zero new gate classifications. Reuses
 three existing tier classifications, the shipped `SECURITY DEFINER` resolver pattern (`0060:99-126`),
 the `object_links` edge store (`0102:54`), and the re-validating-read bargain (`store.rs:576-593`).
-Canvas-editability and replay arrive free for 14 of 16 entities. PII does not move. Slice 0 is
+Canvas-editability and replay arrive free for every Tier N entity — the large majority. PII does not
+move. Slice 0 is
 unblocked while every Korea control reads HOLD.
 
 **Cons.** Cross-store pointers: `employment.party_id` and `grant.subject` are attribute-bag UUIDs, not
@@ -480,12 +481,38 @@ It does **not** carry:
 | quantity / amount / unit | a ledger line cannot be rendered |
 
 **This is a gap in the `record` component's contract, so every entity composing `record` inherits it.**
-That is what makes it the highest-leverage change in the plan rather than one feature's missing field:
+That is what makes it a high-leverage finding rather than one feature's missing field:
 `authorizing_grant_id` + `on_behalf_of_party_id` supplies the 결재 capacity record (§4.1), the activity
-feed, the audit trail, and any ledger line — and it is two nullable columns.
+feed, the audit trail, and any ledger line.
 
-The precedent is exact: `0149:6-13` added seven nullable columns to this same append-only table for
-backward compatibility with existing rows. Same migration shape, same rationale.
+**Where the two columns land in Slice 0: `gov_approvals`, not `audit_events`.** The finding stands; its
+target moved, and the reason is reversibility.
+
+- `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`) is exactly
+  `audit_events, regions, branches, users, user_branches`, so **a column on `audit_events` is permanent from
+  the day it lands** — `DROP COLUMN` on an audited table is a gate violation. A Slice-0 shape that has not
+  yet been exercised should not be the shape that can never be withdrawn.
+- `gov_approvals` is in **neither** that built-in list **nor** the `-- console-gate: audited-table` marker
+  set that `discover_audited_tables` (`:174-187`) folds into it, so the same two columns there are
+  reversible. Its additive-column precedent is in the same table
+  (`0164_bind_consume_four_eyes.sql:34`, §4.1).
+- The probe that would give the `audit_events` pair meaning —
+  `capacity_recorded_on_every_authority_mutation` (§7) — needs the **D3 write-path enumeration** (§8 Phase 0)
+  to exist first. Landing a permanent column ahead of the artifact that says where null is a defect is the
+  wrong order.
+
+**The `audit_events` pair is therefore DEFERRED, and it is priced rather than scheduled.** Its DDL is two
+nullable columns and the `0149:6-13` precedent is exact — that migration added seven nullable columns to
+this same append-only table. The real cost is not the DDL: it is **reaching the value**. `AuditEvent`
+(`backend/crates/kernel/core/src/audit.rs:83`) carries `id, actor, action, target_type, target_id,
+branch_id, org_id, before, after, request_context, classification, trace, occurred_at` and **no capacity
+field**, so every site that wants to populate the column must have the authorising grant id in hand at the
+call. There are **466** non-test `with_audit` references under `backend/crates`. An
+`AuditEvent::authorized(…, grant_id)` constructor that the compiler enforces across all of them is a
+**RECOMMENDATION, not a requirement** — a compiler-enforced constructor at 466 sites is a larger change than
+this plan can price, and pretending otherwise is how a two-column estimate becomes a quarter. The subset
+where a null capacity is a **defect** rather than merely absent is named by the D3 enumeration, not by this
+paragraph.
 
 **Quantity and amount do NOT go here.** They belong to the `economics` component (§5.5). Putting money
 on `audit_events` builds a second ledger, which is the divergence failure by construction.
@@ -531,7 +558,27 @@ Employment is one relationship kind among `CUSTOMER`, `SUPPLIER`, `DIRECTOR`, `C
 | **`lot`** | quantity-bearing node: the splittable/mergeable unit (§5.8) | `(id, org_id)` | until consumed | **no** — W16 |
 | `users.party_id` | link the per-org account to the durable identity | nullable FK `→ party(id)` | — | yes |
 | `employees.party_id` | link the imported HR row to the durable identity | nullable FK `→ party(id)` | — | yes |
-| `audit_events.authorizing_grant_id`, `.on_behalf_of_party_id` | **capacity** — §4.0.1 | nullable columns | — | **yes** |
+| `gov_approvals.authorizing_grant_id`, `.on_behalf_of_party_id` | **capacity** — §4.0.1, §4.0.3 | two nullable additive columns | — | **yes** |
+
+**The capacity columns land on `gov_approvals`, not on `audit_events`** (§4.0.3). Two nullable additive
+columns, following the precedent in the same table:
+`ALTER TABLE gov_approvals         ADD COLUMN target_ref UUID;` (`0164_bind_consume_four_eyes.sql:34`, with
+its `gov_approval_requests` sibling at `:33`), whose own comment reads *"target only. No FK — like
+`request_ref`, it is a logical ref across lanes."* — the same posture `on_behalf_of_party_id` takes.
+
+**The invariant, stated once so no implementer reads capacity as a relaxation: capacity refines a
+signature; it never satisfies a four-eyes gate.** `CHECK (approver_id <> requested_by)`
+(`0153_create_governance.sql:74`) is retained **verbatim**, and it is one of **five DB-enforced four-eyes
+CHECKs in this tree** — `0153:74`, `0122_create_leave_requests.sql:63`,
+`0163_finance_gl_voucher_sod.sql:25-27`, `0186_payroll_run_lifecycle.sql:39`,
+`0191_create_inventory_cycle_counts.sql:46`. **None of the five becomes conditional on capacity.** A 대리
+signature is still a distinct `approver_id` from `requested_by`; recording *on whose behalf* it was taken
+does not make it the same person's signature twice.
+
+While `party` is deferred (below), `on_behalf_of_party_id` carries **no FOREIGN KEY** — a bare nullable
+`UUID`. D1's non-foreclosure constraint forbids a cross-tenant identifier as a FK regardless, so this is not
+a temporary shortcut waiting on `party`; the absent FK is the decision, and it is stated here so a later
+lane does not "complete" it.
 
 **`work` is Tier T, not Tier N** (§0.14). It needs indexed aggregate SQL for cycle-time and
 cost-rollup metrics, and there is no materialized read model to bridge a revision fold to that (§0.8).
@@ -566,7 +613,6 @@ under RLS (`0063:21-25`).
 | **`delegation_rule`** (전결규정) | (category × amount band × raising scope) → competent unit, terminal? | instance id | effective-dated | yes — 1 row, 1 band |
 | **`approval_template`** | per document class: ordered/parallel steps, each with competent-unit-by-lookup + required capability + mode | instance id | versioned by the registry | yes — 1 step |
 | **`approval_line`** | a raised document's line. Stores **line-as-raised AND line-as-executed** | instance id | raised → in_progress → closed → **confirmed** | yes |
-| **`approval_signature`** | *(signer party, authorising grant, scope, capacity, on_behalf_of)* | instance id | immutable | yes — 1 |
 | **`employment`** | revise the shipped fixture type | instance id | a period, with terms | no — W2 |
 | `authority_rule` | predicate → grant generator over the four dimensions | instance id | effective-dated | no — W5 |
 | **`position`** | 직책 **at a scope** — a post that exists unoccupied | instance id | permanent, or bounded with its unit | **slice 1** |
@@ -579,6 +625,14 @@ under RLS (`0063:21-25`).
 Every one of these is Tier N for the same reason: it is authored, lives inside one tenant, and needs
 effective-dated replay — all three of which `0155:37-64` already provides. None of them earns a
 migration.
+
+**There is no `approval_signature` entity, and an earlier draft of this plan invented one.** The signature
+store is `gov_approvals`, already shipped (§4.4). Storing a signature in `ont_instance_revisions.attributes`
+would be a strict **regression**, not a reuse: a JSONB attribute bag under `ON DELETE CASCADE` on org
+(`0155:37-56`) loses the `(approver_id, org_id) REFERENCES users(id, org_id)` FK (`0153:79`), the
+self-approval CHECK (`0153:74`), the single-use `UNIQUE (org_id, request_ref)` index (`0153:76`) and the
+`ON DELETE RESTRICT` durability posture that every shipped four-eyes gate binds against. The error was
+copying `0153`'s own inline comment `-- one decision per request` instead of reading its caller — see §4.4.
 
 Three notes where Tier N bites:
 
@@ -678,8 +732,8 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 | `competent_for` (전담) | org_unit → (category, band, scope) | ManyMany | yes | `delegation_rule` | tenant |
 | `line_step` | approval_line → step | OneMany ×2 sets | yes | `ont_link` (raised / executed) | tenant |
 | `step_edge_kind` | step → {결재, 협조, 보고} | — | yes | property on step | tenant |
-| `signature_grant` | approval_signature → grant | OneOne | yes | `ont_link` | tenant |
-| `signature_on_behalf_of` | approval_signature → party | OneOne, nullable | yes | property (UUID) | tenant |
+| `signature_grant` | `gov_approvals` → grant | OneOne | yes | `gov_approvals.authorizing_grant_id` column (T) | tenant |
+| `signature_on_behalf_of` | `gov_approvals` → party | OneOne, nullable | yes | `gov_approvals.on_behalf_of_party_id` column (T), **no FK** | tenant |
 | `obligation_notice` | approval_line → notices | OneMany | yes | `notices` FK | tenant |
 
 **Every `ont_link` row above is authored as a property carrying `config.link = {stable_key, to_type}`,
@@ -717,9 +771,29 @@ Structural, not missing features — so the plan builds beside them rather than 
 | Mechanism | Executable blocker | Verdict |
 |---|---|---|
 | `work_order_approval_steps` | `step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` `0008:62`; `role CHECK (role IN ('MECHANIC','ADMIN','EXECUTIVE'))` `:63`; `UNIQUE (work_order_id, role)` `:71` | 3 steps max, demo roles, each role once, serial only. 합의 inexpressible. **Leave alone.** |
-| `gov_approvals` | `UNIQUE (org_id, request_ref)` `0153:75` — one decision per request; `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` `:78` | One decision, and the approver **must** be a user of that org — a group-level approver is forbidden by the FK. No capacity column. **Correct for four-eyes; reuse it for that only.** |
+| `gov_approvals` | `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` `0153:78` — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. `UNIQUE (org_id, request_ref)` `0153:76` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
 | `policy_role_conditions` | `attribute CHECK (… 'group','organization','department','team','position','assignment','site','branch' …)` `0065:110-128`; `operator CHECK (operator IN ('equals','not_equals','in'))` `0065:129` | The predicate vocabulary the plan needs **already exists as data** — but `not_equals` makes it subtractive-capable, and the fold must be additive. **Reuse the attribute vocabulary; never its operator set.** |
 | `notices` / `notice_receipts` | `notice_receipts` is `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)` `0162:41-51` — **no content column**; `notices.status CHECK (status IN ('draft','published'))` `0162:22` — **no closure state**; `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)` `0162:50` — **recipient must be a user of that org** | 통지 → 인지 is built. Three gaps, one of them structural (see below). **Extend; never build a second ack mechanism.** |
+
+**`gov_approvals` already runs an N-node 결재 line, and the plan misread it.** The blocker cell used to
+read *"`UNIQUE (org_id, request_ref)` — one decision per request"*, which would have made a multi-step line
+inexpressible and is the reason an earlier draft invented an `approval_signature` entity. It is wrong.
+`backend/crates/orgchange/adapter-postgres/src/lib.rs:1477-1488` — the newest approval domain in the repo —
+INSERTs into `gov_approvals` binding `request_ref` to **`step_id`** and `requested_by` to
+`request.drafted_by`, with its own comment *"Record the decision through `gov_approvals` so the DB-level
+approver <> requester CHECK is the second SoD net."* So an eight-step `org_change_request` writes **eight**
+immutable rows. The constraint is **one signature per node**, not one per request.
+
+**Name the failure mode, because it is the same one `ADR-0002` produced.** The plan cited the migration's
+own inline comment (`-- one decision per request`, `0153:76`) instead of reading the caller. A comment in a
+migration is prose about code, exactly like an ADR Decision line, and it was wrong in the direction that
+invents work.
+
+**What capacity costs here: two nullable columns, and nothing relaxed.** 전결 by delegated authority is
+already two rows (same `approver_id`, different `request_ref`, same `requested_by`), and 전결 where the
+competent authority **is** the drafter needs **zero** approval nodes — the self-approval CHECK is never
+reached because no signature is required. The cross-org FK (`0153:78`) remains the one real blocker, and W1
+is where it is addressed.
 
 ### 4.5 The traversals
 
@@ -730,12 +804,26 @@ Concrete paths for the operations that matter.
 definer effective_grants_for(p_party, p_scope, p_asof)          -- row_security off, re-validating
   → party_org_visibility  WHERE org_id = current_setting('app.current_org')  -- the visibility gate
                             AND party_id = p_party AND asof ∈ [valid_from, valid_to)
-  → grant instances       WHERE subject = p_party
-                            AND scope ⊇ p_scope                 -- AccessScope levels, NOT a DSL (§0.17)
-                            AND asof ∈ [valid_from, valid_to)
+  → BRANCH ON p_scope.level                                     -- AccessScope, NOT a DSL (§0.17)
+    ├ org_unit | organization | region | branch | worksite:
+    │   → grant instances     WHERE org_id = current_setting('app.current_org')   -- org_predicate
+    │                           AND subject = p_party
+    │                           AND scope ⊇ p_scope
+    │                           AND asof ∈ [valid_from, valid_to)
+    │   → grant revisions     WHERE org_id = current_setting('app.current_org')   -- org_predicate
+    └ group:
+        → the Tier O group-scoped grant store, through ITS definer (§4.1)
+          — NOT Tier N: a group-scoped grant cannot live in ont_instances at all,
+            measured in X4b, and a sibling org reads zero rows
   → fold: union of capabilities. No deny rows. No subtraction.
-  → re-validate every row's prev_hash/row_hash chain before returning (§5.1)
+  → re-validate: the four named checks of §5.1
+      (org_predicate, visibility_predicate, chain_linkage, scope_containment)
 ```
+The `org_id = current_setting('app.current_org')` predicate on **both** grant reads is not decoration. The
+visibility edge only proves the armed org holds an edge to this party; without the predicate on the grant
+read itself the definer returns that party's grants **from every org**, because `row_security` is off. A
+party visible in two orgs is the ordinary case this whole design exists to serve, so this is the likely
+production failure, not an exotic one. Its probe is `definer_returns_no_foreign_org_grant` (§7).
 
 **Resolve a 결재 line** — at raise time, never at request time:
 ```
@@ -747,13 +835,28 @@ document.category, document.amount, raising org_unit
   → persist line-as-raised (immutable) AND line-as-executed (revised on every re-route)
 ```
 
-**Hand over work** — re-point one edge, scope-bounded:
+**Hand over work — two operations, not one with a flag.** 대리 and 전보 differ in whether the authority
+comes back, and a design with one path gets the revert wrong:
+
 ```
-close work_assignee(work, outgoing) ; open work_assignee(work, incoming)
+대리 (time-boxed, REVERTING — 휴직 / 연차 / 출장)
+  open a grant with valid_to SET at creation      -- the revert is the interval, not a task
+  work_assignee edges are NOT re-pointed          -- the work stays with the absentee
+  every signature taken under it records on_behalf_of = the absent party (§4.0.3)
+  at valid_to the grant closes with no operator action; nothing to remember, nothing to forget
+
+전보 (permanent, NON-REVERTING — 전보 / 퇴사)
+  close work_assignee(work, outgoing) ; open work_assignee(work, incoming)
   artifacts follow automatically — they were linked to `work`, never to the person
   scope-bounded: only works whose work_scope ⊆ the relinquished scope move
-  대리 vs 분배: 대리 sets signature_on_behalf_of (audit records BOTH); 분배 opens N assignee edges
+  position-sourced grants close at 발령일 (§5.9); 인계 완료 is asserted, below
+  분배 is neither: it opens N assignee edges and closes none
 ```
+
+**복직** is the 대리 interval simply ending, so it costs nothing — which is the reason to model 대리 as a
+bounded interval rather than as a delegate flag someone must later clear. **퇴사** is 전보 with no incoming
+party named, which is the case where 인계 완료 matters most and is exactly where it cannot be hard-gated
+(below).
 
 **Link an inbound email** — deterministic or manual, never inferred:
 ```
@@ -765,17 +868,38 @@ otherwise → manual triage queue
   Gate it with the same capability class as granting authority, and audit it.
 ```
 
-**Compute 인계 완료** — a query, not a checkbox:
+**인계 완료 — one audited assertion, NOT a query, and NOT a hard gate.** The three clauses below are
+computed **server-side under a fixed authority** and then **asserted** as one audited record — outgoing
+party, incoming party, relinquished scope, and the count **as asserted**:
+
 ```
 ∃ work where work_assignee = departing ∧ no successor edge ∧ work_scope ⊆ relinquished  → incomplete
-∃ artifact linked to departing but to no work                                            → incomplete
+      (storage: `work_scope` is a scope-descriptor PROPERTY on the `work` row, §4.3 — not an ont_link)
+∃ artifact linked to departing via the person-endpoint object_links edge (§4.3) but to no work
+                                                                                          → incomplete
 ∃ obligation loop (§5.2) with an unacknowledged node or no 조치보고                       → incomplete
 ```
 
-**"Why may this person do this?"** — the audit answer:
+**Offboarding cannot be hard-gated on 인계 완료 in Slice 0.** An incomplete handover is visible and
+provable, but not blocking, because a completeness count over heterogeneous artifact edges is
+**principal-relative**. `resolve_head` says so in its own comment — *"`Ok(None)` is byte-identical to 'not
+found'/'not visible', so no existence oracle"* (`backend/app/src/objects.rs:690-697`) — and DN-0003
+invariant 5 makes omission-including-counts **binding**: *"Denied data is omitted, including counts and
+relationship existence"* (`DN-0003:85-86`). So two people run this and get two different answers, and the
+delta may not be exposed to either of them. A gate that blocks 퇴사 on a number one principal cannot see is
+a gate that blocks the wrong people; the assertion records who asserted what they could see, which is
+auditable and honest. Hard-gating is a widening (W4) that needs a fixed-authority count first.
+
+**No frequency is claimed for orphan edges.** `object_links.src_id` and `.dst_id` carry **no FK** to any
+endpoint (`0102:57`, `:59`), so orphans are structurally possible — but no delete path was traced, so this
+plan states the possibility and does **not** assert how often it happens.
+
+**"Why may this person do this?"** — the audit answer, against the signature store that actually ships
+(`gov_approvals`, §4.4 — there is no `approval_signature` entity):
 ```
-approval_signature → signature_grant → grant → {source, scope, valid_from, reason}
-                   → the revision chain at the signature's timestamp
+gov_approvals row → authorizing_grant_id → grant → {source, scope, valid_from, reason}
+                  → the grant's revision chain at the signature's decided_at
+                  → on_behalf_of_party_id, when the signature was taken 대리
   replay: re-fold at asof = raise time and at asof = decision time; both must reconstruct exactly.
 ```
 
@@ -789,7 +913,8 @@ fixity-chained revisions where state is a fold.
 
 What the plan adds:
 
-- **Authored types get canvas + replay for free.** Fourteen of the sixteen new entities are Tier N.
+- **Authored types get canvas + replay for free.** Most of the new entities are Tier N (§4.1 is the
+  list; no count is restated here, because counts in this plan have rotted twice).
   Their history, as-of queries and tamper-evidence come from `ont_instance_revisions.prev_hash` /
   `row_hash` (`0155:52-53`), the one-open-revision index (`:57-58`) and the as-of index (`:59-60`).
   This is what makes
@@ -910,11 +1035,18 @@ explicit configured rules and away from inference. Aligned, not in tension.
 
 Two distinct circles; the input names only the second.
 
-**The genesis circle** — the first grant in an org cannot be granted by a grant. **Resolved outside
-the runtime.** Org creation mints one genesis grant to the org's first passkey-bound admin party, in
-the migration/provisioning path, audited. Genesis is a migration fact, never a runtime capability, so
-there is no runtime code path that can mint authority from nothing. Every subsequent authority change
-goes through four-eyes (`gov_approvals`, `0153:65-79`).
+**The genesis circle** — the first grant in an org cannot be granted by a grant. **Resolved outside the
+tenant plane.** Genesis is a **platform-principal** capability, never a tenant capability: org creation is
+gated on `PlatformFeature::TenantCreate`
+(`backend/crates/platform/platform-rest/src/lib.rs:574`, on the live route registered at `:235`,
+`PLATFORM_ORGS_PATH … .post(create_org)`), and the extension point that mints the genesis grant is the
+seed-first-SUPER_ADMIN step already inside `create_org` (`:568`), whose own doc header reads *"POST
+/api/platform/orgs — onboard a NEW tenant (the only place org rows are created by the app), seed its first
+SUPER_ADMIN, and return a one-time OTP."* So no **tenant**-authenticated path can mint authority from
+nothing; the path that can is authenticated as the platform and audited. (The earlier framing — "genesis is
+a migration fact" — was wrong: it is a live handler, and calling it a migration would have sent an
+implementer looking for DDL.) Every subsequent authority change goes through four-eyes (`gov_approvals`,
+`0153:65-79`).
 
 **The read circle** — Cedar gates instance reads, so reading a grant would need a grant. **Resolved by
 one definer that re-validates, following the precedent exactly.** The precedent is
@@ -925,17 +1057,47 @@ re-validation a LIVE CONSTRAINT whose deletion *"would kill this justification s
 test here stays green."*
 
 `effective_grants_for(p_party, p_scope, p_asof)` takes the same bargain: it reads outside per-type
-Cedar gating, and pays on **every** read with
+Cedar gating, and pays on **every** read with four **named** checks. They are named rather than counted so
+the number cannot rot and so a probe can delete them one at a time:
 
-1. `party_org_visibility` filtered on `current_setting('app.current_org')` — never a parameter (§4.2);
-2. re-chaining every returned grant revision's `prev_hash`/`row_hash` (`0155:52-53`) and erroring the
-   whole load on the first mismatch;
-3. asserting every returned scope is inside the armed org's reachable scope set;
-4. no cross-request cache.
+1. **`org_predicate`** — every grant instance row and every grant revision row read is filtered
+   `org_id = current_setting('app.current_org')`, **a literal, never a parameter**;
+2. **`visibility_predicate`** — `party_org_visibility` filtered on `current_setting('app.current_org')`,
+   never a parameter (§4.2);
+3. **`chain_linkage`** — each returned revision's `prev_hash` equals its predecessor's `row_hash`
+   (`0155:52-53`), erroring the whole load on the first mismatch;
+4. **`scope_containment`** — every returned scope is inside the armed org's reachable scope set.
+
+**No cross-request cache** is a stated property of this read (ADR-0021 decision 4), not a fifth check —
+there is nothing to delete to make it RED, so it does not belong in a deletion probe.
+
+**Chain linkage, not recomputation — and recomputation is unavailable to anyone.** Hash *recomputation* is
+not available in any language until an explicit key sort plus a re-seal lands with a named audit-chain
+owner, because canonicalization is insertion-order dependent. The measurement is already in the tree, in
+`backend/crates/ontology/adapter-postgres/src/instances.rs`'s **KNOWN DEFECT** block (`:1297-1320`), which
+records `cargo tree -e features -i serde_json` yielding *"`serde_json` feature `preserve_order` ←
+cedar-policy-core v4.11.2"*, reaching that crate through `console-platform-authz`, so *"`serde_json::Map`
+is therefore an insertion-ordered IndexMap, not a BTreeMap, so this canonicalization is order-DEPENDENT"*.
+The lock corroborates the edge: `serde_json 1.0.150` lists `indexmap 2.14.0` among its dependencies
+(`backend/Cargo.lock:6659-6671`), which is exactly what that feature does. And `revision_row_hash` is
+Rust-side SHA-256 over `serde_json::to_vec`, so plpgsql cannot compute it at all. The same block states the
+consequence verbatim: *"The suite is green because it does not recompute hashes — not because recomputation
+would succeed."* Linkage is what SQL can do, and it is what `company_conformance.rs` already asserts. If
+this plan later wants recomputation, it is a **Phase-0 prerequisite with a named owner**, never a Slice-0
+check.
+
+**What the precedent is, and what it is not.** `backend/crates/platform/authz-rest/src/store.rs:576-593`
+is a precedent for **re-validation as a discipline**, and **not** a precedent for reading with RLS off: it
+is validator re-execution plus canonicality plus effect agreement on an ordinary pooled read, containing no
+`row_security` manipulation at all. The one shipped function that does turn `row_security` off —
+`group_role_grants_for_user` (`0060:99-126`) — does it on an **owner-only table carrying no RLS policy**,
+where the switch is nearly inert. `effective_grants_for` reads Tier T rows that **do** carry policies, so
+it is the first place in this repo where the switch is load-bearing. That is why the checks are named and
+individually deletable rather than described.
 
 Payment terms, so this cannot rot the way `0205` warns: an `-- rls-arming: ok` marker naming the
-bargain (gate at `rls-arming/src/lib.rs:69`), and a test that **deletes each of the four checks in
-turn and must go RED** (§7). A re-validation nobody has proven RED is not a re-validation.
+bargain (gate at `rls-arming/src/lib.rs:69`), and a test that **deletes each named check in turn and must
+go RED** (§7). A re-validation nobody has proven RED is not a re-validation.
 
 ### 5.2 B — Finality: **ALREADY DECIDED by ADR-0023.** Delta only.
 
@@ -961,6 +1123,7 @@ likewise covered by "arbitrary DAGs" plus the four declared role kinds.
 | **Standing after closure** — line membership survives truncation and demotion (§5.9) | the DAG decision covers routing, not standing |
 | **The obligation loop** — 통지 → 인지 → **조치보고** → 종료 over `notices` (§0.6) | the return leg, and its cross-org recipient blocker |
 | **Line-as-raised vs line-as-executed** — both stored | required by the obligation loop's notification scope |
+| **Release-reset on a band crossing** — a signature is a statement about a document **state**, so an amendment that crosses a `delegation_rule` band **invalidates the signatures taken under the prior band** and re-routes | the DAG decision covers routing and finality, not the invalidation of already-taken signatures. Slice 0's **one band and one step cannot surface this** — with one band there is no crossing — so it is recorded here as a delta the slice does not prove. Its probe's known-bad control: an implementation that keeps signatures valid after the amount is raised across a band |
 
 Inherited and unchanged: `ADR-0018:115-116` requires **fresh passkey step-up** for approval/signature,
 role/policy change, payroll/HR/legal, asset ownership, financial/payment and cross-org transfer — every
@@ -1239,8 +1402,8 @@ effective permissions via position-sourced grants (authority), requires approval
 effective-dated on 발령일 (a revision, not an update), and must replay.
 
 Minimum entity shape for slice 1: `position` ×2 (from, to), `assignment` (closed + opened),
-`approval_template` for 인사발령, `approval_line`, `approval_signature` with capacity, and the
-`authorizing_grant_id` column. No new entity classes.
+`approval_template` for 인사발령, `approval_line`, a `gov_approvals` signature carrying capacity, and the
+`gov_approvals.authorizing_grant_id` column. No new entity classes.
 
 **Demotion is grant EXPIRY, not deletion.** Otherwise replay dies. The shape to generalise is already
 shipped and verified: `clearance_assignments` carries `status TEXT CHECK (status IN
@@ -1463,6 +1626,14 @@ the bug.
 Every critical probe is listed with the **known-bad input that must make it RED**. A probe whose RED
 has not been observed is not evidence.
 
+**One measured instrument trap, recorded here because it made a probe in this very plan look like a pass.**
+On PG 18 a placeholder GUC set with `SET app.current_org = …` is readable through `current_setting()` but
+**never appears in `pg_settings`**. So a GUC inventory built by querying session state returns **zero rows**
+and looks like proof that no second tenancy dimension exists — which is the answer X4 was designed to test,
+arrived at by measuring nothing. X4's first attempt did exactly this. A GUC inventory must be extracted from
+**stored policy expressions and function bodies** (`pg_policy.polqual`, `pg_proc.prosrc`), never from
+session state. Any probe in this section that asserts an absence must state where it looked.
+
 ### Unit
 
 | Probe | Asserts | Known-bad control (must be RED) |
@@ -1483,9 +1654,10 @@ has not been observed is not evidence.
 | `party_not_readable_as_console_rt` | direct `SELECT * FROM party` as `console_rt` is **denied** | a `GRANT SELECT … TO console_rt` on `party` |
 | `visibility_edge_rls` | org A cannot see org B's `party_org_visibility` rows for the same party | RLS not FORCEd, or policy omitted |
 | `definer_ignores_parameter_org` | passing another org's party id returns **zero rows** | a definer that filters on a parameter instead of `app.current_org` — i.e. `0060:99` copied verbatim |
-| `definer_revalidation_each_check` | deleting **each** of the four re-validation checks (§5.1) in turn fails the suite | all four present (baseline GREEN) — and each of the four deletions individually RED |
+| `definer_revalidation_each_check` | baseline GREEN with all named checks of §5.1 present; then deleting **`org_predicate`**, **`visibility_predicate`**, **`chain_linkage`** and **`scope_containment`** each in turn fails the suite | each named deletion individually RED. The probe **names each check** rather than carrying a count, so the number cannot rot |
+| `definer_returns_no_foreign_org_grant` | one party with a visibility edge in **both** orgs and one grant in each; armed as org A, the call returns exactly **one** row | the definer as §4.5 specified it before this revision — no `org_id` predicate on the grant read |
 | `row_security_restored_on_error` | an exception inside the definer leaves `row_security = on` | a definer without the `EXCEPTION WHEN OTHERS` restore of `0060:88-91` |
-| `genesis_grant_not_runtime_mintable` | no runtime path mints a grant with no authorising grant | an endpoint that creates a grant without four-eyes |
+| `genesis_grant_mintable_only_by_platform_principal` | a grant with no authorising grant can be minted **only** on the platform-principal path gated by `PlatformFeature::TenantCreate` (§5.1) | a **tenant**-authenticated endpoint creating a grant with no authorising grant |
 | `no_new_gate_classification` | the tenant-isolation gate passes with `party` in `owner_only_table_allowlist` and `party_org_visibility` unlisted | `party` added to `global_table_allowlist` (must be RED per §3.2 Option 3) |
 | `worksite_reg_no_unique` | duplicate 사업자등록번호 rejected by the DB | the constraint expressed only in app code |
 
@@ -1496,7 +1668,8 @@ has not been observed is not evidence.
 | `slice0_terminal_at_현장` | ₩100,000 비품 raised at 현장 R resolves to a terminal 현장 signature | routing that escalates to 본사 |
 | `slice0_negative_scope` | a grant at a *different* 현장 does not authorise | a fold ignoring scope |
 | `slice0_second_band` | ₩100,000,000 re-routes by the same lookup, no special case | a hard-coded escalation path |
-| `slice0_capacity_recorded` | the signature carries *(signer, authorising grant, scope)* | a signature recording only the signer — the `gov_approvals.approver_id` shape (`0153:71`, no capacity column) |
+| `slice0_capacity_recorded` | the `gov_approvals` row carries `authorizing_grant_id` beside *(signer, scope)* | a signature recording only the signer — today's `gov_approvals.approver_id`-only shape (`0153:71`, no capacity column) |
+| `daeri_records_both_parties` | a 대리 signature records the outgoing signer **and** `on_behalf_of_party_id` | a 대리 signature whose `on_behalf_of_party_id` is null |
 | `slice0_closed_grant_refused` | a grant closed at the decision timestamp cannot authorise | a fold using `now()` instead of the decision timestamp |
 | `slice0_본사_may_still_approve` | 본사 retains `purchase.approve` at company scope; routing did not restrict it | routing implemented as a capability restriction |
 | `retroactive_반려_after_확정` | emits a `correction`; the original stays `confirmed` in history | an implementation that transitions or rewrites the original |
@@ -1510,7 +1683,7 @@ has not been observed is not evidence.
 | Probe | Asserts | Known-bad control |
 |---|---|---|
 | `every_entity_declares_its_components` | each §4.1 entity has a row per composed component in `ecosystem-entity-components.tsv` | an entity with no rows — the §4.0.1 completeness test, as a test |
-| `capacity_recorded_on_every_authority_mutation` | grant, promote, demote and link-email all write `authorizing_grant_id` | a mutation writing a null capacity |
+| `capacity_recorded_on_every_authority_mutation` | reads the **D3 write-path enumeration** (§8 Phase 0) and asserts every enumerated authority-mutating path writes `gov_approvals.authorizing_grant_id`. The `audit_events` pair is **out of scope** until those deferred columns land (§4.0.3) | a mutation writing a null capacity where the enumeration says it is required |
 | `no_duplicated_fact` | `work` (Tier T) and the revision chain never store the same field | a `work.assignee` column duplicating the assignment edge |
 | `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `residual.rs:200-203` (§0.13) |
 | `link_type_alone_is_rejected` | a link type with `to_object_type_id` and no property referencing its `stable_key` fails `validate_draft` | today's behaviour — **must be RED before the guard lands** (§0.12) |
@@ -1596,7 +1769,7 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 
 | # | Crate | Ships |
 |---|---|---|
-| 1 | `platform/db` | migrations 0207+: `party`, `party_org_visibility`, `work`, `audit_events` capacity columns, voucher `accounting_date`, the definer |
+| 1 | `platform/db` | migrations 0207+: `party`, `party_org_visibility`, `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer |
 | 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs |
 | 3 | `platform/authz-rest` | the re-validating definer read path (§5.1) |
 | 4 | `ontology/*` | the Tier N types + their attached policies; `allowlisted_projected_table` arm for `work` |
@@ -1613,7 +1786,9 @@ platforms. Ours, cheapest first, each rung gating the next:
 1. `cargo check` on the touched crate
 2. the migration applies, and **re-applies onto a populated DB**
 3. the tenant-isolation gate classifies every new table (`tenant-isolation/src/lib.rs:804-808`)
-4. the definer probes — including `definer_ignores_parameter_org` and all four re-validation deletions
+4. the definer probes — `definer_ignores_parameter_org`, `definer_returns_no_foreign_org_grant`, and the
+   named re-validation deletions (`org_predicate`, `visibility_predicate`, `chain_linkage`,
+   `scope_containment`)
 5. slice 0 end-to-end, with its RED records
 6. slice 1 (promotion) end-to-end
 7. the 14 CI jobs
@@ -1703,8 +1878,8 @@ Minimum shape of each entity, and nothing more:
 | `delegation_rule` | 2 rows: the ≤₩1,000,000 band → 현장 terminal; the >band → 본사 |
 | `approval_template` | 1 template, 1 step, `mode = terminal_if_전결` |
 | `approval_line` | 1 instance, both raised and executed lines persisted |
-| `approval_signature` | 1 row carrying *(signer, authorising grant, scope)* |
-| `effective_grants_for` | the definer, with all four re-validation checks |
+| `gov_approvals` | 1 row carrying *(signer, authorising grant, scope)* — the shipped signature store, not a new entity (§4.4) |
+| `effective_grants_for` | the definer, with the four **named** re-validation checks of §5.1: `org_predicate`, `visibility_predicate`, `chain_linkage`, `scope_containment` |
 
 **Acceptance.** Every `slice0_*` probe in §7 GREEN, **and** each of its known-bad controls observed
 RED. The two-grant and two-band rows exist specifically so the fold is a fold and the lookup is a
@@ -1715,7 +1890,7 @@ the wrong thing:
 
 | Entity | Slice-0 minimum | Why it cannot wait |
 |---|---|---|
-| `audit_events.authorizing_grant_id` | populated on the one signature | the capacity field is what makes the signature a signature (§4.0.1) |
+| `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
 | `finance_gl_vouchers` | 1 posted voucher with `accounting_date` and a line dimensioned to the work | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2 |
 
 **Explicitly out of slice 0:** control edges, group designation, `Feature` work, the canvas, 합의,
@@ -1732,7 +1907,7 @@ structure, authority and 결재 at once.
 | `position` | 2 instances, both via `position_at_scope` — one at the 현장, one at the company |
 | `assignment` | the old closes at 발령일, the new opens — two revisions, never an update |
 | `approval_template` | 1 인사발령 template |
-| `approval_line` + `approval_signature` | with capacity |
+| `approval_line` + a `gov_approvals` signature | with capacity (`authorizing_grant_id`) |
 | `grant` | position-sourced, opening and closing on the same 발령일 |
 
 **Acceptance.** `asof_replay` GREEN across the 발령일 boundary (the fold differs either side);
