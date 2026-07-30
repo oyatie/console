@@ -664,3 +664,36 @@ No decision, section number, or claim about the system changed in this wave.
 - `DRAFT:260` carried *"and not the `:213-217` an earlier draft of this plan cited"* — citation history that
   means nothing once no citation is a line number. Removed; the surviving fact (that document counted 12, the
   code has 14) is untouched.
+
+## Wave 3 — §3.1 tiers through §4.0 component table (`DRAFT:423`-`DRAFT:581`)
+
+`UNVERIFIABLE 471 → 439` · `RESOLVES 93 → 125` · `BROKEN 0` · total 714
+
+### Factually wrong, corrected to what the file says
+
+- **`0152:25` is `primary_key_property`, not `backing_kind`** (`DRAFT:436`). The sentence claims
+  `ont_object_types.backing_kind = 'projected'`; `backing_kind TEXT NOT NULL CHECK (backing_kind IN
+  ('projected','instance'))` is line **23**, and `:25` is `primary_key_property TEXT NULL, -- projected: PK
+  column`. Two lines off, onto a different column of the same table.
+- **`0152:23` is `backing_kind`, not `title_property_key`** (`DRAFT:551`) — the same off-by-one from the other
+  side. `title_property_key TEXT NULL` is line **22**. One fact, two sections, two different wrong numbers.
+- **`ontology/rest/src/lib.rs:194` and `:370` are not the object-type write routes** (`DRAFT:579`). `:194` is a
+  bare `}` and `:370` is `#[derive(Debug, Deserialize)]`. The live routes are
+  `get(list_object_types).post(create_object_type)` (**245**) and
+  `get(get_object_type).put(stage_object_type_revision)` (**249**), with handlers at **350** and **392**. The
+  claim that POST/PUT are live is true; nothing at the cited lines showed it.
+- **`:201` / `:202` for the two route consts recur here too** (`DRAFT:580`, `DRAFT:581`) — same defect as
+  `DRAFT:258`, fixed the same way.
+- **`0102:54` is `object_links.id`, not the table** (`DRAFT:464`, `DRAFT:552`). `CREATE TABLE object_links` is
+  line **53**.
+- **`0076:22-24` spans the index tail and a blank line** (`DRAFT:514`). The partial unique index begins at
+  **21** with `CREATE UNIQUE INDEX users_org_employee_unique_idx`; `:24` is empty. Same shape at
+  `DRAFT:513`, where `:13-14` covers `ADD COLUMN employee_id UUID;` plus a blank line.
+
+### Anchored deliberately at the table, not the column
+
+`DRAFT:424` claims `ont_instances.org_id` is `NOT NULL`, cited `0155:18`, which is correct. It is now cited as
+`0155` `CREATE TABLE ont_instances`, because the column line
+`org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,` is **not unique** in that migration —
+all three tables declare it, differing only in alignment padding. An anchor that resolves by whitespace is
+worse than one that names the table containing the column. The claim is unchanged and one grep away.

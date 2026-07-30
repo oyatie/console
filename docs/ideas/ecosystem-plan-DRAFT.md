@@ -420,11 +420,11 @@ Two facts about the tiers decide most of §4:
 - **Every Tier G rationale is literally "no tenant data"** (`backend/ci/gates/tenant-isolation/src/lib.rs` `no tenant data`).
   PII therefore cannot go
   in Tier G. Tier O is where cross-tenant authorization data already lives — `group_memberships` and
-  `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`:117-129`).
-- **Tier N cannot hold a cross-tenant edge.** `ont_instances.org_id` is `NOT NULL` (`0155:18`) and
-  `ont_links` pins **both** endpoints to the same org via composite FK — `0155:76`
-  `FOREIGN KEY (from_instance_id, org_id) REFERENCES ont_instances(id, org_id) ON DELETE CASCADE,` and its
-  `to_instance_id` twin at `:77`. This is structural, not a missing feature. It is the single constraint that
+  `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`tenant-isolation/src/lib.rs` `"cross-tenant group role authorization; own-grants resolver only"`).
+- **Tier N cannot hold a cross-tenant edge.** `ont_instances.org_id` is `NOT NULL` (`0155` `CREATE TABLE ont_instances`) and
+  `ont_links` pins **both** endpoints to the same org via composite FK —
+  `0155` `FOREIGN KEY (from_instance_id, org_id) REFERENCES ont_instances(id, org_id) ON DELETE CASCADE,` and its
+  `to_instance_id` twin `0155` `FOREIGN KEY (to_instance_id, org_id) REFERENCES ont_instances(id, org_id)`. This is structural, not a missing feature. It is the single constraint that
   shapes the entity model.
   **Its consequence, applied where it bites:** an `ont_link` endpoint must be an `ont_instances` row in the
   same org, so **no scope descriptor can be an `ont_link`** — not a `Group`, not an `Org`, and by the
@@ -433,15 +433,15 @@ Two facts about the tiers decide most of §4:
   shipped `AccessScopeLevel` variants and nothing else (§4.1). This section named the constraint and §4.3 contradicted it; the
   contradiction is the defect, and X4b measured which side was right.
 
-A fifth path, **Tier P — projected**: `ont_object_types.backing_kind = 'projected'` (`0152:25`,
-CHECK at `:34-38`) makes an existing Tier T table canvas-visible without moving its data, against a
-compiled-in allowlist (`backend/crates/ontology/adapter-postgres/src/instances.rs:1479-1498`). Cost: projected
-types have no owned revision store, so no fixity chain and no as-of replay (`instances.rs:1522`) — and,
-because they own no `ont_instances` rows at all (`instances.rs:1443-1450`), **no `ont_link` may name a
+A fifth path, **Tier P — projected**: `ont_object_types.backing_kind = 'projected'` (`0152` `backing_kind TEXT NOT NULL CHECK (backing_kind IN ('projected','instance'))`,
+CHECK at `0152` `(backing_kind = 'projected' AND backing_table IS NOT NULL AND primary_key_property IS NOT NULL)`) makes an existing Tier T table canvas-visible without moving its data, against a
+compiled-in allowlist (`backend/crates/ontology/adapter-postgres/src/instances.rs` `fn allowlisted_projected_table`). Cost: projected
+types have no owned revision store, so no fixity chain and no as-of replay (`instances.rs` `async fn list_projected_rows_tx`) — and,
+because they own no `ont_instances` rows at all (`instances.rs` `owns no store of its own`), **no `ont_link` may name a
 projected type's row as an endpoint** (§4.3).
 
 **Tier P is code-gated, not CI-gated**, and the difference decides who can add one: `allowlisted_projected_table`
-(`instances.rs:1479-1498`) is a compiled-in `match` arm plus a CHECK, **not** an entry in
+(`instances.rs` `fn allowlisted_projected_table`) is a compiled-in `match` arm plus a CHECK, **not** an entry in
 `backend/ci/gates/tenant-isolation/src/lib.rs`. So a new projection is a code change reviewed like code, and
 no gate will tell you it is missing.
 
@@ -460,8 +460,8 @@ the **authority fold**; the authority/approval entities of §4.1 as ontology ins
 
 **Pros.** Zero new GUCs, zero changes to the 141 RLS policies, zero new gate classifications, **and no
 owner-only table for the handle itself**. Reuses the existing tier classifications unchanged, the shipped
-`SECURITY DEFINER` resolver pattern (`0060:99-126`),
-the `object_links` edge store (`0102:54`), and the re-validating-read bargain (`backend/crates/platform/authz-rest/src/store.rs:576-593`).
+`SECURITY DEFINER` resolver pattern (`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)`),
+the `object_links` edge store (`0102` `CREATE TABLE object_links`), and the re-validating-read bargain (`authz-rest/src/store.rs` `pub async fn load_enforced_object_policy_blocks`).
 Canvas-editability and replay arrive free for every Tier N entity — the large majority. PII does not
 move. Slice 0 is
 unblocked while every Korea control reads HOLD.
@@ -496,7 +496,7 @@ meet the requirement.**
 **Invalidated** — Tier G means `console_rt` may SELECT with no filter, so any tenant enumerates every
 party on the platform. That directly contradicts the confidentiality requirement (company A must not
 learn its employee also works at company B), and every existing Tier G rationale is literally *"no
-tenant data"* (`tenant-isolation/src/lib.rs:48-70`). Adding PII-adjacent identity there breaks the
+tenant data"* (`tenant-isolation/src/lib.rs` `no tenant data`). Adding PII-adjacent identity there breaks the
 allowlist's own stated meaning.
 
 #### Option 4 — a party row **per tenant**, deduplicated by a matching service
@@ -510,10 +510,10 @@ person. The tier is not what separates them; the cardinality is.
 
 **Invalidated** — this is the status quo (`users` + `employees` + `person_name`), whose three failed
 attempts are the reason this work exists. The executable evidence that matching cannot substitute for
-identity is in `0076` itself: the link is a **nullable** column (`0076:13-14`) with a partial unique
-index (`0076:22-24`), and its backfill promotes a row only where `HAVING count(*) = 1` holds for the
-employee number (`0076:40-46`), leaving every duplicate unlinked. `employees` even carries
-`identity_resolution_strategy` and `identity_resolution_confidence` (`0075_employee_identity_resolution.sql:6`, `:13`) — a confidence
+identity is in `0076` itself: the link is a **nullable** column (`0076` `ADD COLUMN employee_id UUID;`) with a partial unique
+index (`0076` `CREATE UNIQUE INDEX users_org_employee_unique_idx`), and its backfill promotes a row only where `HAVING count(*) = 1` holds for the
+employee number (`0076` `HAVING count(*) = 1`), leaving every duplicate unlinked. `employees` even carries
+`identity_resolution_strategy` and `identity_resolution_confidence` (`0075_employee_identity_resolution.sql` `ADD COLUMN identity_resolution_strategy` and `0075_employee_identity_resolution.sql` `ADD COLUMN identity_resolution_confidence`) — a confidence
 model, which is what you build when matching is a guess. A mechanism that must decline the ambiguous
 majority is not an identity.
 
@@ -543,19 +543,19 @@ This is the current set. It is extended by adding a row, and nothing in the desi
 
 | Component | Contract: entity supplies | Contract: entity gets | Substrate today |
 |---|---|---|---|
-| **record** | an action for every consequential mutation | append-only history, actor, time, **capacity** | `audit_events` (`0003:10`) — **capacity missing**, §4.0.2 |
+| **record** | an action for every consequential mutation | append-only history, actor, time, **capacity** | `audit_events` (`0003` `CREATE TABLE audit_events`) — **capacity missing**, §4.0.2 |
 | **authority** | a scope, and a Cedar resource type | fold-decided access; `effective(party, scope)` | `cedar_pbac` + `grant` (§5.1) |
-| **tenancy/scope** | `org_id` | FORCE-RLS isolation on `app.current_org` | 141 tables; gate at `tenant-isolation/src/lib.rs:44` |
-| **time/effectivity** | `valid_from` / `valid_to` | as-of replay, fixity chain | `ont_instance_revisions` (`0155:37`) |
-| **lifecycle** | a state set | FSM transitions, terminal soft states | `ont_instances.lifecycle_state` (`0155:27`); `lifecycle_transition_rules` |
-| **identity/naming** | a display key | human-navigable UI, `!`-code deref | `title_property_key` (`0152:23`); `object_types` (`0102:19`) |
-| **relationships** | a property carrying `config.link` | traversal | `ont_links`; `object_links` (`0102:54`) — **see §0.12** |
+| **tenancy/scope** | `org_id` | FORCE-RLS isolation on `app.current_org` | 141 tables; gate at `tenant-isolation/src/lib.rs` `ViolationKind::UnclassifiedTable` |
+| **time/effectivity** | `valid_from` / `valid_to` | as-of replay, fixity chain | `ont_instance_revisions` (`0155` `CREATE TABLE ont_instance_revisions`) |
+| **lifecycle** | a state set | FSM transitions, terminal soft states | `ont_instances.lifecycle_state` (`0155` `CHECK (lifecycle_state IN ('draft','active','locked','archived','disposed'))`); `lifecycle_transition_rules` |
+| **identity/naming** | a display key | human-navigable UI, `!`-code deref | `title_property_key` (`0152` `title_property_key TEXT NULL`); `object_types` (`0102` `kind TEXT PRIMARY KEY`) |
+| **relationships** | a property carrying `config.link` | traversal | `ont_links`; `object_links` (`0102` `CREATE TABLE object_links`) — **see §0.12** |
 | **approval** | a document class | routed line, signatures | ADR-0023 (§5.2) |
-| **communication** | a channel kind | scoped thread, derived membership | `messenger_threads.kind` (`0012:9`) |
+| **communication** | a channel kind | scoped thread, derived membership | `messenger_threads.kind` (`0012` `CHECK (kind IN ('work_order','team','dm','group'))`) |
 | **custody/handover** | an assignee edge | transfer; 인계 완료 as **one audited assertion, not a query and not a gate** | §4.5 |
 | **economics** | a dimension reference | **cost** as a query over voucher lines (revenue/profit need the peer plan's account master — §5.5) | **largely absent** — §5.5 |
 | **structural lineage** | a quantity + a parent edge | split/merge DAG with conservation | **absent** — §5.8 |
-| **measurement** | a metric formula | aggregates | `ont_analytics` (`0152:107`) stores formulas, **no result store** — §0.8 |
+| **measurement** | a metric formula | aggregates | `ont_analytics` (`0152` `CREATE TABLE ont_analytics`) stores formulas, **no result store** — §0.8 |
 | **compliance/jurisdiction** | a jurisdiction binding | control traces | register; **all HOLD** — §5.4 |
 
 **Composition, shown for four entities — including one the owner never named**, to demonstrate the
@@ -576,9 +576,9 @@ composition and the reason a fixed list of spines was wrong.
 
 | Step | Authored (canvas) | Requires code |
 |---|---|---|
-| declare the type, properties, links | yes — `POST`/`PUT` object-types are live (`ontology/rest/src/lib.rs:194`, `:370`) | — |
-| publish it | yes — `OBJECT_TYPE_LIFECYCLE_PATH` (`:201`) | — |
-| make it readable | yes — `OBJECT_TYPE_POLICIES_PATH` (`:202`), and **required** or it lists `[]` (§0.13) | — |
+| declare the type, properties, links | yes — `POST`/`PUT` object-types are live (`ontology/rest/src/lib.rs` `get(list_object_types).post(create_object_type)` and `ontology/rest/src/lib.rs` `get(get_object_type).put(stage_object_type_revision)`) | — |
+| publish it | yes — `OBJECT_TYPE_LIFECYCLE_PATH` (`ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_LIFECYCLE_PATH`) | — |
+| make it readable | yes — `OBJECT_TYPE_POLICIES_PATH` (`ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_POLICIES_PATH`), and **required** or it lists `[]` (§0.13) | — |
 | **record** | — | **code**: an audit action code |
 | **authority** | partly | **code**: a `Feature` variant — Cedar's action id (§0.2) |
 | **tenancy** | — | **code**: a migration, if it needs a table |
