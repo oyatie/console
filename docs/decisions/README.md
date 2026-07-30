@@ -61,8 +61,8 @@ related: []
 | [ADR-0030](ADR-0030-console-rebuild-charter-leptos.md) | proposed | Charters the console rebuild on Leptos with an SSR shell and island editors for authorization reasons, a domain-first repository convention with no stack split, and frontend implementation gated on the ontology engine substrate; proposes withdrawing ADR-0025's carbon-copy visual authority, `web/src/console/**` path and two-shell composition, and enumerated spine boundary, and retaining its nine-item slice bar |
 | [ADR-0031](ADR-0031-contracts-crate-single-internal-contract.md) | proposed | A Rust wire-DTO contracts crate is the single internal API contract, with `openapi.yaml` emitted from it and diff-gated; proposes amendments to ADR-0009's contract mechanism |
 | [ADR-0032](ADR-0032-effective-dated-grants-and-authority-freshness.md) | proposed | Effective-dates the role grant only, keeps the authority fold per-request and uncached citing ADR-0021 §4/§5 as enabling, and refuses an as-of authority read while six of the fold's seven inputs are head-valued |
-| [ADR-0035](ADR-0035-conserved-quantity-lineage.md) | proposed | Quantity-bearing split/merge lineage deferred; conservation requires row-level `FOR UPDATE` locking and a pure domain predicate, and the row CHECK is a per-row backstop only |
 | [ADR-0033](ADR-0033-object-policy-revocation.md) | proposed | An over-broad object-policy permit is correctable by attaching a forbid; a mistaken forbid has no reversal write. Records the asymmetry and specifies revocation as a one-landing catalog status transition, unbuilt until an incident is counted |
+| [ADR-0035](ADR-0035-conserved-quantity-lineage.md) | proposed | Quantity-bearing split/merge lineage deferred; conservation requires row-level `FOR UPDATE` locking and a pure domain predicate, and the row CHECK is a per-row backstop only |
 | [ADR-0036](ADR-0036-object-dimensioned-economics.md) | proposed | Cost is a query over the double-entry voucher dimensioned by object reference; the finance subsystem is a peer plan, and the missing line dimension, `accounting_date` + period-lock caller, account master, and currency shape must stay additive |
 
 ## Effective relationship graph
@@ -73,6 +73,19 @@ related: []
 - ADR-0025 amends ADR-0023's shared-chrome composition and non-feature-flag coexistence clauses. ADR-0023 remains accepted for `/overview`, Work Hub/My Work semantics, workflow-engine direction, policy/audit rules, and the fully-wired/no-stub delivery contract.
 - ADR-0019 remains the mail-server authority. Mox is DARK and unresolved, not silently accepted.
 - ADR-0026 narrowly amends ADR-0023's historical COSS RN follow-up, records a product-surface retirement outside ADR-0009's Console parity scope and ADR-0012's four deliverables, and does not amend either of those decisions.
+
+### Proposed relationships — not in effect
+
+Nothing in this subsection is an amendment. Each line records a `proposed` record's `proposes_amendments_to` declaration, which carries no authority over an accepted ADR under authority rules 2 and 4. No target ADR carries an `amended_by` key for any of them, and every named target remains accepted and authoritative in full until the proposing record is accepted.
+
+- ADR-0027 proposes to amend ADR-0022 by adding one prohibition its integration clause does not contain — linking two accounts to one identity — and states that it narrows rather than widens ADR-0022. It also records that ADR-0022 never decided the platform-identity question it has been cited for.
+- ADR-0028 proposes to amend one clause of ADR-0003: the `BranchScope::All` derivation keyed to SUPER_ADMIN/EXECUTIVE role literals. ADR-0003's remaining day-1 schema, default-deny filtering, and branch-scoped broadcast/rollup rules are untouched by the proposal. ADR-0018 and ADR-0021 are `related` only and are not proposed for amendment.
+- ADR-0029 proposes to amend ADR-0002's audit-coverage exclusion sentence, whose stated cardinality of one disagrees with the gate's two. It also names a correction owed in ADR-0014's closing Decision sentence for the same reason, and states that its own scope does not authorize that edit — acceptance must either widen this record or issue a separate one.
+- ADR-0030 proposes to amend ADR-0025's stack-bound structural clauses — carbon-copy visual authority, the `web/src/console/**` path and two-shell composition, and the spine boundary as enumerated — and proposes to retain its nine-item slice bar and product semantics. Its `proposes_amendments_to` names ADR-0025 alone; ADR-0023 is `related` only, and ADR-0001, ADR-0009, and ADR-0012 are recorded as owed nothing.
+- ADR-0031 proposes to amend the contract-mechanism half of ADR-0009's Decision only. Its dual-native client-generation, dual-build, and sequencing clauses are equally divergent from HEAD, are outside this record's scope, and need their own decision.
+- ADR-0032, ADR-0033, ADR-0035, and ADR-0036 declare `related` only. They propose no amendment and no supersession; each states that conclusion as a checked one rather than an omission, and each names the `related` additions and index-row status change owed on its own acceptance.
+
+**These nine are proposed together.** ADR-0027 through ADR-0036 were drafted on 2026-07-30 as one pass; they are nine records, not ten, because no ADR-0034 was written — that number is simply unassigned, and rule 7 reserves ADR-0013 alone. They are not a package deal: each stands or falls on its own evidence. Accepting any one of them requires, in the same atomic commit as its status flip, the reciprocal edits its own final section names — the target's frontmatter key, this index's row and graph lines, and, where the target's Decision text has become false, the sentence edited in place. A reciprocal key alone would leave a false sentence standing in an authoritative record, which is the failure those sections exist to prevent.
 
 ## Subordinate design notes
 
