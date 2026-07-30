@@ -6,7 +6,7 @@ date: 2026-07-30
 owner: jasonlee
 decision: audit-coverage-exclusion-cardinality-and-binding
 amends: [ADR-0002, ADR-0014]
-related: [ADR-0002, ADR-0014]
+related: [ADR-0002, ADR-0014, ADR-0035]
 ---
 
 # ADR-0029 — Audit-coverage exclusions are two, bound to a (file, function) pair

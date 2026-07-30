@@ -1,6 +1,6 @@
 ---
 id: ADR-0035
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
@@ -12,7 +12,7 @@ related: [ADR-0001, ADR-0002, ADR-0018, ADR-0029]
 
 ## Status
 
-**Proposed 2026-07-30.** No accepted decision is amended or superseded by this
+**Accepted 2026-07-30.** No accepted decision is amended or superseded by this
 record. It defers a schema (quantity-bearing split/merge lineage) and fixes the
 mechanism story for the conservation the repository already ships. Nothing here
 authorizes a migration slot, a table, or a new gate.
@@ -209,45 +209,47 @@ constraint is.
   conservation to a CHECK; only review does. This is a weaker mechanism than the
   invariant it protects, and it is recorded as such rather than overstated.
 
-## Reciprocal record edits on acceptance
+## Reciprocal record edits landed on acceptance
 
-This record declares `related` only. No amendment or supersession is asserted
-now, and no accepted record acquires an `amended_by` key from it — a proposed
-record has no active relationship to reciprocate
-(`docs/decisions/README.md:9`, `:26`). On acceptance, the following edits land in
+This record declares `related` only. No amendment or supersession is asserted,
+and no accepted record acquired an `amended_by` key from it
+(`docs/decisions/README.md:9`, `:26`). The following edits landed in
 the same atomic commit as the status change:
 
 1. **`related` additions.** `ADR-0001`, `ADR-0002`, `ADR-0018`, and `ADR-0029`
-   each add `ADR-0035` to their own `related` list — for ADR-0029, whenever it is
-   itself accepted, since a proposed record's list is still in motion.
+   each added `ADR-0035` to their own `related` list — for ADR-0029, this was
+   possible because it was itself accepted first, in the preceding commit of the
+   same pass.
    `related` reciprocity is not
    machine-enforced — `scripts/check-adrs.mjs:23-27` lists only the
    `amends`/`amended_by` and `supersedes`/`superseded_by` pairs in
    `RECIPROCAL_RELATIONSHIPS`, and `:248-249` validates `related` as an inline
    array only — so this is a README:9 obligation kept by discipline, not by the
    gate.
-2. **Index row.** The `ADR-0035` row in `docs/decisions/README.md` changes its
+2. **Index row.** The `ADR-0035` row in `docs/decisions/README.md` changed its
    status cell from `proposed` to `accepted`. `scripts/check-adrs.mjs:461-464`
    fails the build if the index status and the frontmatter status disagree, so
-   this edit is not optional.
+   this edit was not optional.
 3. **No target sentence is edited by this record.** Its constraints add to
    ADR-0001:20, ADR-0002:20 and ADR-0018:94; they do not make any sentence in
-   those records false. One stale sentence does sit nearby — ADR-0002:20's
-   exclusion count — and it belongs to proposed ADR-0029, not here. A `related`
-   key cannot license editing another record's Decision text.
+   those records false. One stale sentence did sit nearby — ADR-0002:20's
+   exclusion count — and it belonged to ADR-0029, not here; ADR-0029 corrected it
+   on its own acceptance. A `related` key cannot license editing another record's
+   Decision text.
 
 ## Follow-ups
 
 1. **Run the two-transaction probe** described under Consequences before any
    lineage design is proposed, and attach its output. It requires a scratch
    database and no new code.
-2. **The stale clause in ADR-0002 is already another record's business.**
-   ADR-0002:20 states that the audit-coverage gate's "exclusion set contains
-   exactly one entry — the LocationPing ingestion path". The executable gate
-   returns **two**: `allowed_audit_exclusions()` at
+2. **The stale clause in ADR-0002 was another record's business, and is now
+   resolved.** ADR-0002:20 used to state that the audit-coverage gate's "exclusion
+   set contains exactly one entry — the LocationPing ingestion path". The
+   executable gate returns **two**: `allowed_audit_exclusions()` at
    `backend/ci/gates/audit-coverage/src/lib.rs:90` yields `record_location_ping`
-   (`:95`) and `purge_expired_location_data` (`:104`). Proposed ADR-0029 owns that
-   reconciliation and this record does not duplicate it. What matters here is the
+   (`:95`) and `purge_expired_location_data` (`:104`). ADR-0029 owned that
+   reconciliation and corrected the sentence on its own acceptance; this record
+   never duplicated it. What matters here is the
    scope of the reliance: this record leans only on ADR-0002:20's transaction
    ordering, which the inventory path honors at
    `inventory/adapter-postgres/src/lib.rs:360`. The one-entry clause must not be

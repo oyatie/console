@@ -1,6 +1,6 @@
 ---
 id: ADR-0036
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
@@ -12,7 +12,7 @@ related: [ADR-0002, ADR-0003, ADR-0023]
 
 ## Status
 
-**Proposed 2026-07-30.** This record neither amends nor supersedes any accepted
+**Accepted 2026-07-30.** This record neither amends nor supersedes any accepted
 decision; it declares `related` only. It draws a boundary around an existing money
 store and names what a future finance subsystem — a **peer plan**, not this record —
 must not foreclose. A full ledger design (account master, analytic dimensions,
@@ -217,26 +217,26 @@ rather than to this record.
    crate's own module docs (`finance-gl/rest/src/lib.rs:1-8`).
 5. The `REVERSED` ⇒ `reversed_by_voucher_id IS NOT NULL` CHECK.
 
-## Reciprocal record edits on acceptance
+## Reciprocal record edits landed on acceptance
 
-This record carries no `amends`, `supersedes`, or `proposes_amendments_to` key, so no
-target ADR gains `amended_by` — now or on acceptance. `related` is not a machine-
+This record carries no `amends` or `supersedes` key, so no
+target ADR gained `amended_by`. `related` is not a machine-
 reciprocal key (`scripts/check-adrs.mjs:23-27` pairs only
 `amends`/`amended_by` and `supersedes`/`superseded_by`), but README:9's
 "explicit in both records" applies in spirit. On acceptance, and in one atomic
 commit:
 
 1. `docs/decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md`
-   frontmatter gains `ADR-0036` in its `related` list.
+   frontmatter gained `ADR-0036` in its `related` list.
 2. `docs/decisions/ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md`
-   frontmatter gains `ADR-0036` in its `related` list.
-3. `docs/decisions/ADR-0023-oyatie-console-authority.md` frontmatter gains
+   frontmatter gained `ADR-0036` in its `related` list.
+3. `docs/decisions/ADR-0023-oyatie-console-authority.md` frontmatter gained
    `ADR-0036` in its `related` list.
-4. `docs/decisions/README.md`: the ADR-0036 index row's status cell changes from
+4. `docs/decisions/README.md`: the ADR-0036 index row's status cell changed from
    `proposed` to `accepted`.
 
-No sentence in ADR-0002, ADR-0003, or ADR-0023 becomes false on acceptance, so no
-in-place Decision text edit is owed in any of them. ADR-0002's same-transaction
+No sentence in ADR-0002, ADR-0003, or ADR-0023 became false on acceptance, so no
+in-place Decision text edit was owed in any of them. ADR-0002's same-transaction
 audit rule and ADR-0003's branch scope are what the voucher store already obeys
 (`with_audits`, `backend/crates/platform/db/src/audit_tx.rs:111`; branch-scoped
 `authorize` at `finance-gl/rest/src/lib.rs:189,239,270`), and ADR-0023:84's

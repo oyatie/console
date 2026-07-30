@@ -6,7 +6,7 @@ date: 2026-06-12
 owner: jasonlee
 consensus: ralplan iteration 3 (Planner/Architect/Critic APPROVE, 2026-06-12)
 amended_by: [ADR-0029]
-related: [ADR-0014, ADR-0029]
+related: [ADR-0014, ADR-0029, ADR-0032, ADR-0035, ADR-0036]
 ---
 
 # ADR-0002 — Audit-first transactional discipline (audit event in same tx; append-only table)

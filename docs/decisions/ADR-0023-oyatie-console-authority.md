@@ -6,7 +6,7 @@ date: 2026-07-04
 owner: jasonlee
 related_documents: [DESIGN.md]
 amended_by: [ADR-0025, ADR-0026]
-related: [ADR-0009, ADR-0018, ADR-0021, ADR-0025, ADR-0026]
+related: [ADR-0009, ADR-0018, ADR-0021, ADR-0025, ADR-0026, ADR-0036]
 ---
 
 # ADR-0023: Oyatie console authority — accepted foundation; two-shell surface strategy superseded by ADR-0025

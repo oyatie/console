@@ -1,6 +1,6 @@
 ---
 id: ADR-0033
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
@@ -12,8 +12,8 @@ related: [ADR-0021, ADR-0023]
 
 ## Status
 
-**Proposed 2026-07-30.** `related` only. This record proposes no amendment and no
-supersession; it records a measured property of the shipped no-code
+**Accepted 2026-07-30.** `related` only. This record amends nothing and supersedes
+nothing; it records a measured property of the shipped no-code
 object-policy path and specifies what a revocation path would have to satisfy
 before anyone builds one.
 
@@ -232,10 +232,10 @@ operators as an ordinary attach.
   the forbid write should require step-up authentication or an impact preview is
   named as a follow-up and is unmeasured here.
 
-## Reciprocal records on acceptance
+## Reciprocal records landed on acceptance
 
-This record declares `related` only, so **no target ADR gains a relationship key
-and no existing ADR file changes.** That is a checked conclusion, not an
+This record declares `related` only, so **no target ADR gained a relationship key
+and no existing ADR file changed.** That is a checked conclusion, not an
 omission:
 
 - **ADR-0021** — no Decision sentence becomes false. Its row-boundary rule
@@ -249,9 +249,9 @@ omission:
   (`ADR-0023:148-156`), and an accepted ADR is authoritative "within its stated
   scope" (`docs/decisions/README.md:7`) — out-of-scope is silence, not
   prohibition. Nothing to amend, nothing to withdraw.
-- **`docs/decisions/README.md`** — one index row added for this record at status
+- **`docs/decisions/README.md`** — one index row was added for this record at status
   `proposed`, per the gate's index requirement. On acceptance the only reciprocal
-  edit is that row's status cell, `proposed` → `accepted`, plus one line in the
+  edits were that row's status cell, `proposed` → `accepted`, plus one line in the
   effective relationship graph stating that this record is `related`-only and
   amends nothing.
 

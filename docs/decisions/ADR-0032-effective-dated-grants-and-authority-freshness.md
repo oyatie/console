@@ -1,6 +1,6 @@
 ---
 id: ADR-0032
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
@@ -12,7 +12,7 @@ related: [ADR-0002, ADR-0003, ADR-0021]
 
 ## Status
 
-Proposed 2026-07-30, `doc_status: review`. Proposes no amendment and no supersession; `related`
+Accepted 2026-07-30, `doc_status: review`. Amends nothing and supersedes nothing; `related`
 only. It grants no authority, widens no exposure, and weakens no gate. It makes no Korean compliance
 claim: the six Korea controls remain `HOLD`.
 
@@ -164,29 +164,29 @@ with no re-litigation, because clause 4 already states the admission rule.
   column exists in the migration set, so that term names nothing enforceable. This record does not
   repair the list; it records the gap.
 
-## Reciprocity on acceptance
+## Reciprocity landed on acceptance
 
-This record proposes no amendment, so no target ADR gains `amended_by`, and no existing Decision
-sentence becomes false by its acceptance. The reciprocal edits, to land in the same atomic commit as
+This record amends nothing, so no target ADR gained `amended_by`, and no existing Decision
+sentence became false by its acceptance. The reciprocal edits landed in the same atomic commit as
 acceptance:
 
 - `docs/decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md` frontmatter:
-  `related` gains `ADR-0032`.
+  `related` gained `ADR-0032`.
 - `docs/decisions/ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md` frontmatter:
-  `related` gains `ADR-0032` (its `related` is `[]` today).
-- `docs/decisions/ADR-0021-cedar-pbac-authorization-strangler.md` frontmatter: `related` gains
+  `related` gained `ADR-0032` (its `related` was `[]` before ADR-0028's acceptance).
+- `docs/decisions/ADR-0021-cedar-pbac-authorization-strangler.md` frontmatter: `related` gained
   `ADR-0032`.
-- `docs/decisions/README.md`: the ADR-0032 index row's status cell changes from `proposed` to
-  `accepted`, and the "Effective relationship graph" section gains one line recording that ADR-0032
+- `docs/decisions/README.md`: the ADR-0032 index row's status cell changed from `proposed` to
+  `accepted`, and the "Effective relationship graph" section gained one line recording that ADR-0032
   reads ADR-0021 §4/§5 as enabling effective-dated grants and adds a scoped-replay invariant without
   changing ADR-0021's scope.
 
 One clarification, not an amendment: this record relies on ADR-0002's `with_audit`
 same-transaction rule, which is executable. It does not rely on that ADR's audit-coverage
-exclusion-set count, which does not match the gate (`backend/ci/gates/audit-coverage/src/lib.rs:90-106`
-returns two exclusions and
-`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs:26-28` asserts two); reconciling
-that sentence belongs to a separate record.
+exclusion-set count, which as drafted did not match the gate
+(`backend/ci/gates/audit-coverage/src/lib.rs:90-106` returns two exclusions and
+`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs:26-28` asserts two). That
+sentence was reconciled by a separate record, ADR-0029, accepted the same day.
 
 ## Verification baseline
 

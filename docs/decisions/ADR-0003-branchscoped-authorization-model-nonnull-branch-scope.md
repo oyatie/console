@@ -6,7 +6,7 @@ date: 2026-06-12
 owner: jasonlee
 consensus: ralplan iteration 3 (Planner/Architect/Critic APPROVE, 2026-06-12)
 amended_by: [ADR-0028]
-related: [ADR-0028]
+related: [ADR-0028, ADR-0032, ADR-0036]
 ---
 
 # ADR-0003 — Branch-scoped authorization model (non-null branch scope day 1; default-deny)

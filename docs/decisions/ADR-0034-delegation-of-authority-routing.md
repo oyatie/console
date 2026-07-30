@@ -1,6 +1,6 @@
 ---
 id: ADR-0034
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
@@ -17,7 +17,7 @@ approval-line DAGs with dynamic 결재선 and 검토/승인/합의/참조 roles,
 model** in which 최종승인 and 수령확인 are pre-terminal `WAITING` nodes — never a reopened terminal run —
 with 사후 반려 modelled as a compensating document or event. ADR-0018 decides the engine that runs it.
 
-This record proposes only the delta. It does not restate or reopen either.
+This record decides only the delta. It does not restate or reopen either.
 
 Three concepts are absent from the entire accepted record — verified by search across `docs/decisions/`,
 including `notes/`: **전결**, **competence (전담)**, and the **capacity** a signature is made under. They
@@ -31,9 +31,9 @@ raising unit. A 전담 unit holds terminal authority for its category and does n
 as "escalation" would make the common case — a matter closing where it arose — look like an exception.
 
 **Competence is a third relation, separate from control and structure.** Which unit may *decide* is not
-derivable from who owns whom (control) or who reports to whom (structure). ADR-0028 proposes the
-composition of `org_id` and `BranchScope`; competence is the relation that would sit beside them, and
-nothing in the accepted record currently expresses it.
+derivable from who owns whom (control) or who reports to whom (structure). ADR-0028 decides the
+composition of `org_id` and `BranchScope`; competence is the relation that sits beside them, and
+nothing in the accepted record expressed it before this one.
 
 **A signature records the capacity it was made under**, not only the signer. When one person holds several
 grants that could each authorise the same act, which one applied is what decides whether 전결규정 was
@@ -109,5 +109,18 @@ that whoever implements capacity does not discover the conflict by weakening the
   above them rather than a fourth.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and exposure
-state remains `HOLD`; this record proposes a decision and makes no completion, deployment, or
+state remains `HOLD`; this record records a decision and makes no completion, deployment, or
 production-exposure claim.
+
+## Reciprocal record edits on acceptance
+
+This record declares `related` only — `[ADR-0002, ADR-0003, ADR-0018, ADR-0023, ADR-0025, ADR-0028]` —
+and names no amendment or supersession, so no target ADR gained `amended_by` and no target's Decision
+text became false on its acceptance. It named no `related` additions owed in its targets, and none
+were made; the only reciprocal edit was the `docs/decisions/README.md` index row's status cell,
+`proposed` → `accepted`, plus one line in the effective relationship graph.
+
+`related` reciprocity is not machine-enforced (`scripts/check-adrs.mjs:23-27` pairs only
+`amends`/`amended_by` and `supersedes`/`superseded_by`), so the one-sided `related` list above is a
+README:9 obligation a later editor may choose to complete in the six targets. It was left as authored
+rather than inferred.
