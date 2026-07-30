@@ -169,7 +169,7 @@ The claim that membership is hand-maintained is **TRUE**: `messenger_thread_memb
 `(thread_id, user_id, role, joined_at)` with `PRIMARY KEY (thread_id, user_id)` and nothing deriving
 it. Cost and resolution in §4.8.
 
-### 0.11 `policy_assignment_preview_receipts` is a ceremony, not a simulator — and `policy_versions` is the key
+### 0.11 `policy_assignment_preview_receipts` is a ceremony, not a simulator — and `policy_versions` is HALF the cache key
 
 Confirmed: `0065:159-172` stores `actor_id`, `user_id`, `current_branch_ids`, `current_role_ids`,
 `role_ids` (proposed), `policy_version`, `expires_at`, `consumed_at`. It records the **inputs** of a
@@ -289,7 +289,7 @@ already calls the six roles *"bootstrap columns for migration parity, not the ta
 (`:122-124`) and bans role-string authorization outright in R1 (`:30-39`), so the direction is settled;
 only minting is frozen.
 
-### 0.16 BLOCKING for C5: deleting `Role` deletes the only path to `BranchScope::All`
+### 0.16 BLOCKING: **two** shipped derivations mint `BranchScope::All` from `Role`, and the `org_id` × `BranchScope` divergence they create is PRESENT-tense
 
 `resolve_branch_scope_in_org` (`authz/src/lib.rs:1472-1483`):
 
@@ -533,7 +533,7 @@ This is the current set. It is extended by adding a row, and nothing in the desi
 | **relationships** | a property carrying `config.link` | traversal | `ont_links`; `object_links` (`0102:54`) — **see §0.12** |
 | **approval** | a document class | routed line, signatures | ADR-0023 (§5.2) |
 | **communication** | a channel kind | scoped thread, derived membership | `messenger_threads.kind` (`0012:9`) |
-| **custody/handover** | an assignee edge | transfer, 인계 완료 query | §4.5 |
+| **custody/handover** | an assignee edge | transfer; 인계 완료 as **one audited assertion, not a query and not a gate** | §4.5 |
 | **economics** | a dimension reference | **cost** as a query over voucher lines (revenue/profit need the peer plan's account master — §5.5) | **largely absent** — §5.5 |
 | **structural lineage** | a quantity + a parent edge | split/merge DAG with conservation | **absent** — §5.8 |
 | **measurement** | a metric formula | aggregates | `ont_analytics` (`0152:107`) stores formulas, **no result store** — §0.8 |
@@ -1040,9 +1040,15 @@ Six of these deserve their reason stated:
   `work_order_approval_steps.step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` (`0008:62`)
   forecloses.
 
-### 4.4 Why the existing mechanisms cannot be widened
+### 4.4 What each existing mechanism can and cannot absorb
 
-Structural, not missing features — so the plan builds beside them rather than extending them.
+**The heading used to read "why the existing mechanisms cannot be widened", and three of the four rows below
+contradict it.** `gov_approvals` **is** the signature store and absorbs capacity with nothing relaxed;
+`policy_role_conditions` is **narrowed at the write path** while its DB CHECK stays as the additive extension
+point; `notices` is **extended** and no second ack mechanism is built. Only
+`work_order_approval_steps` is genuinely un-widenable, and it is left alone. The blockers below are
+structural where they are structural and additive where they are additive, per row — which is the whole
+point of stating them per row.
 
 | Mechanism | Executable blocker | Verdict |
 |---|---|---|
@@ -1348,7 +1354,8 @@ scoped in §5.5.
 
 ### 4.8 Ergonomics as acceptance criteria
 
-Each criterion states what it costs, because two of the five were assumed free and are not.
+Seven criteria — E1-E5 in the table, then E6 and E7 below it. Each states what it costs, because two of them
+were assumed free and are not.
 
 | # | Criterion | Substrate | Cost |
 |---|---|---|---|
@@ -1769,7 +1776,7 @@ under what authority. That non-overlap is the design, and the probe that protect
 Replayability is not traded away. It is retained exactly where it is load-bearing — authority, 결재
 audit, and the quantity lineage — and not paid for where it is not (a task's due date).
 
-### 5.8 H — Quantity-bearing lineage: DECIDED — one table, one edge, conservation as a row CHECK
+### 5.8 H — Quantity-bearing lineage: DECIDED — one table, one edge, conservation by a parent-row lock with a row CHECK beneath it
 
 This is **structural** lineage, not temporal: a DAG of quantity-bearing nodes where one splits into
 several and several merge into one. **Do not model it as revisions** — the revision chain gives the
@@ -1945,7 +1952,12 @@ tests alone:
 | position-sourced grants | old closes at 발령일, new opens — two revisions, never an update |
 | open obligation loops | follow the 업무 (§5.2), so they are not lost |
 
-### 5.10 J — Party lifetime derived from a contract: disband vs transfer
+### 5.10 J — A temporary UNIT's lifetime derived from a contract: disband vs transfer
+
+**The heading used to say "Party lifetime", and in this plan `party` is the durable identity handle that is
+永久 and never hard-deleted (§4.1) — the exact opposite of what this section decides.** The subject here is an
+`org_unit` of a bounded kind (팀/TF/사업장), the "party" of the game lens, never the `party` entity. Renamed so a
+lane grepping for party lifetime does not land here and conclude the identity handle expires with a contract.
 
 A temporary unit's existence is **not configured, it is derived** — a 사업장 계약 or a body of work.
 "When does this team stop existing" is answered by data, not by an administrator remembering.
@@ -1966,12 +1978,12 @@ one of the two wrong. This is the same split as operational versus decision scop
 | the unit | ceases — validity interval closes | **persists**, rebinds to a new contract |
 | members | disperse | stay together (ordinary for construction/project crews) |
 | assignment-sourced grants | expire **because the assignment ended** | continue |
-| assigned 업무 + artifacts | must be reassigned or closed; 인계 완료 query gates it | follow the unit |
+| assigned 업무 + artifacts | must be reassigned or closed; the 인계 완료 **assertion records** whether that happened — it does **not** gate the disband (§4.5) | follow the unit |
 | derived chat channel | archived, history retained | persists |
 | open obligation loops | follow the 업무, not the unit | unaffected |
 | in-flight 결재 lines | see below | unaffected — scope persists |
 
-**This is the strongest argument for assignment as a grant source.** When a party dissolves,
+**This is the strongest argument for assignment as a grant source.** When a **unit** dissolves,
 assignment-derived authority expires *because the assignment ended* — no administrator revokes
 anything and nothing dangles. Contrast a design where unit membership grants a role directly:
 dissolution then needs manual cleanup, which is forgotten, which is precisely how orphaned permissions
@@ -2339,7 +2351,6 @@ which **must exist and be reviewed before fanout opens**:
 |---|---|---|
 | `docs/specs/ecosystem-entity-components.tsv` | one row per (entity, component): substrate, tier, status, owning crate. The §4.0.1 and §4.1 tables, machine-readable — so a lane looks up rather than re-derives | `LIFETIMES.tsv` |
 | `docs/specs/ecosystem-PORTING.md` | the **mechanical rule set**, no prose: which tier a new entity takes and why; relationships MUST ride a property `config.link` (§0.12); a published type MUST have a policy attached (§0.13); every consequential mutation is an Action carrying `authorizing_grant_id`; `milli` fixed-point for quantities; `object_types` vs `ont_object_types` (§0.7); migrations start at 0207 | `PORTING.md` |
-
 | `docs/specs/ecosystem-LANES.tsv` | **one row per lane**: crates, owned paths, **migration slot block from 0207**, and the widenings it may take — with W11-W13 in it, since those three are independent (below) | the reservation half of `PORTING.md` |
 
 **The lane table instantiates an existing mechanism; it is not a new one.** `docs/program/LANE-PROTOCOL.md:89`
@@ -2387,8 +2398,8 @@ this plan returns **zero** hits for benchmark, research-, Foundry, Workday, SAP,
 and Salesforce — so the surveys exist and this plan cites none of them, which is either an omission or an
 implicit rejection, and only one of those is admissible.
 
-Both original files are derived from work already done in this plan. Writing them is transcription, not
-design; the lane table and the D3 enumeration are not.
+**The first two rows** are derived from work already done in this plan, so writing them is transcription, not
+design. The lane table, the D3 enumeration and X-CITE are not.
 
 ### Phase 1 — the immutable target
 
@@ -2648,7 +2659,7 @@ expiry, never deletion**.
 | W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, and a **party-keyed recipient** replacing the org-composite FK (`0162:50`) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company**; post-확정 correction GREEN; no second ack mechanism exists |
 | W2 | `employment` revised: `party_id` replaces `person_name`; employer split from worksite | a 파견 employment with employer ≠ worksite round-trips |
 | W3 | `org_unit` kinds/lifetime + `worksite_registration` (Tier T, projected) | duplicate 사업자등록번호 rejected by the DB; a bounded TF expires |
-| W4 | `work` handover + `assignment` as a grant source | scope-bounded handover and 인계 완료 queries GREEN |
+| W4 | `work` handover + `assignment` as a grant source; **and the fixed-authority 인계 완료 count** without which hard-gating is not available (§4.5) | `handover_is_scope_bounded` and `handover_moves_work_artifacts_only` GREEN; the 인계 완료 **assertion** recorded with its asserted count. Hard-gating offboarding lands **only** with the fixed-authority count — until then the assertion is evidence, not a gate |
 | W5 | Remaining grant sources + `position` + `authority_rule` + named `*OrgWide`/`*GroupWide` reach capabilities (§0.17 — no DSL) | **requirement 3 provable**; `fold_is_additive` still GREEN with all five sources |
 | W6 | `employment_type` as authored data; both CHECK vocabularies (`0172:7`, `0187:22`) retired | 파견/도급/일용/프리랜서 expressible; neither CHECK remains |
 | W7 | `party_link` control edges (Tier O) + derived `group_designation` | a joint venture under two groups, a nested group, and a 순환출자 cycle all resolve; `group_memberships UNIQUE (org_id)` (`0060:36`) and `organizations.group_id` (`0060:27`) collapse to one representation |
