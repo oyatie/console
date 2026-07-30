@@ -56,6 +56,7 @@ related: []
 | [ADR-0025](ADR-0025-carbon-copy-console-shared-platform-spine.md) | accepted | Amends ADR-0023 with an isolated carbon-copy `/console` visual system, one shared platform spine, staged rollout, full-stack slice gates, and measured legacy deletion |
 | [ADR-0026](ADR-0026-retire-coss-rn-public-site-surface.md) | accepted | Retire the standalone COSS RN public-site surface; remove it from npm workspaces and do not cite its historical evidence for Console parity or releases |
 | [ADR-0029](ADR-0029-audit-coverage-exclusions-are-two.md) | proposed | Audit-coverage exclusions are two, each bound to a (file, function) pair; proposes reconciling ADR-0002's one-entry sentence with the gate |
+| [ADR-0031](ADR-0031-contracts-crate-single-internal-contract.md) | proposed | A Rust wire-DTO contracts crate is the single internal API contract, with `openapi.yaml` emitted from it and diff-gated; proposes amendments to ADR-0009's contract mechanism |
 
 ## Effective relationship graph
 
