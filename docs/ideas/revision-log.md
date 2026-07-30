@@ -789,3 +789,18 @@ numbers would have shipped that corruption.
   `let mut resource_attrs = HashMap::from([`, the two `Entity::new(… HashSet::new())` calls).
 - **`instances.rs:1166` is the `return Err(` line, not the guard** (`DRAFT:1414`). The rejection is
   `if op != "sum"` at **1165**; the message the sentence quotes begins at **1167**.
+
+## Wave 8 — §5.1 re-validation through §5.5 voucher inventory (`DRAFT:1551`-`DRAFT:1746`)
+
+`UNVERIFIABLE 273 → 238` · `RESOLVES 292 → 327` · `BROKEN 0` · total 715 · **SUSPECT 2 → 1**
+
+One of the two baseline SUSPECT citations is resolved. `DRAFT:1696` cited `ledger :174` where the antecedent
+lived only in the English word "ledger", so the verifier bound it to `ADR-0023` (166 lines) and flagged the
+mismatch. The citation was **correct** — `console-program-ledger.md:174` is the deferred-epics line — and the
+binding was the defect. It now names the file and the `Epics (documented, later):` heading, so nothing has to
+be inferred.
+
+Nothing else in this range was factually wrong. Five accepted-ADR decision citations (`ADR-0021` decisions 1,
+4, 5, 6, 8) now quote the decision sentence instead of numbering its lines, which also removes the failure mode
+this document warned about in its own discipline note: an ADR Decision line is prose about code, and a citation
+that can only be checked by counting lines invites re-numbering to make two prose passages agree.

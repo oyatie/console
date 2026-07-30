@@ -1548,7 +1548,7 @@ implementer looking for DDL.) Every subsequent authority change goes through fou
 one definer that re-validates, following the precedent exactly.** The precedent is
 `PgCedarPolicyStore::load_enforced_object_policy_blocks`
 (`platform/authz-rest/src/store.rs` `pub async fn load_enforced_object_policy_blocks`): it re-runs the validator, compares canonicality, checks
-effect agreement, and **errors the whole load** on any failure — and `0205:69-74` marks that
+effect agreement, and **errors the whole load** on any failure — and `0205` `Delete any one of the` marks that
 re-validation a LIVE CONSTRAINT whose deletion *"would kill this justification silently while every
 test here stays green."*
 
@@ -1565,7 +1565,7 @@ the number cannot rot and so a probe can delete them one at a time:
    unchanged in form. The check is the predicate, not the table — which is why deferring the table does not
    remove a check from Slice 0;
 3. **`chain_linkage`** — each returned revision's `prev_hash` equals its predecessor's `row_hash`
-   (`0155:52-53`), erroring the whole load on the first mismatch;
+   (`0155` `prev_hash       CHAR(64)    NOT NULL,`), erroring the whole load on the first mismatch;
 4. **`scope_containment`** — every returned scope is inside the armed org's reachable scope set.
 
 **No cross-request cache** is a stated property of this read (ADR-0021 decision 4), not a fifth check —
@@ -1574,34 +1574,34 @@ there is nothing to delete to make it RED, so it does not belong in a deletion p
 **Chain linkage, not recomputation — and recomputation is unavailable to anyone.** Hash *recomputation* is
 not available in any language until an explicit key sort plus a re-seal lands with a named audit-chain
 owner, because canonicalization is insertion-order dependent. The measurement is already in the tree, in
-`backend/crates/ontology/adapter-postgres/src/instances.rs`'s **KNOWN DEFECT** block (`:1297-1320`), which
+`backend/crates/ontology/adapter-postgres/src/instances.rs`'s **KNOWN DEFECT** block (`instances.rs` `KNOWN DEFECT, PRE-EXISTING, NOT INTRODUCED BY THE DERIVATION ABOVE`), which
 records `cargo tree -e features -i serde_json` yielding *"`serde_json` feature `preserve_order` ←
 cedar-policy-core v4.11.2"*, reaching that crate through `console-platform-authz`, so *"`serde_json::Map`
 is therefore an insertion-ordered IndexMap, not a BTreeMap, so this canonicalization is order-DEPENDENT"*.
 The lock corroborates the edge: `serde_json 1.0.150` lists `indexmap 2.14.0` among its dependencies
-(`backend/Cargo.lock:6659-6671`), which is exactly what that feature does. And `revision_row_hash` is
+(`backend/Cargo.lock` `"indexmap 2.14.0",`), which is exactly what that feature does. And `revision_row_hash` is
 Rust-side SHA-256 over `serde_json::to_vec`, so plpgsql cannot compute it at all. The same block states the
 consequence verbatim: *"The suite is green because it does not recompute hashes — not because recomputation
 would succeed."* Linkage is what SQL can do, and it is what `backend/crates/ontology/rest/tests/company_conformance.rs` already asserts. If
 this plan later wants recomputation, it is a **Phase-0 prerequisite with a named owner**, never a Slice-0
 check.
 
-**What the precedent is, and what it is not.** `backend/crates/platform/authz-rest/src/store.rs:576-593`
+**What the precedent is, and what it is not.** `backend/crates/platform/authz-rest/src/store.rs` `pub async fn load_enforced_object_policy_blocks`
 is a precedent for **re-validation as a discipline**, and **not** a precedent for reading with RLS off: it
 is validator re-execution plus canonicality plus effect agreement on an ordinary pooled read, containing no
 `row_security` manipulation at all. The one shipped function that does turn `row_security` off —
-`group_role_grants_for_user` (`0060:99-126`) — does it on an **owner-only table carrying no RLS policy**,
+`group_role_grants_for_user` (`0060` `SET LOCAL row_security = off;`) — does it on an **owner-only table carrying no RLS policy**,
 where the switch is nearly inert. `effective_grants_for` reads Tier T rows that **do** carry policies, so
 it is the first place in this repo where the switch is load-bearing. That is why the checks are named and
 individually deletable rather than described.
 
 Payment terms, so this cannot rot the way `0205` warns: an `-- rls-arming: ok` marker naming the
-bargain (gate at `rls-arming/src/lib.rs:69`), and a test that **deletes each named check in turn and must
+bargain (gate at `rls-arming/src/lib.rs` `const ALLOW_MARKER: &str = "rls-arming: ok";`), and a test that **deletes each named check in turn and must
 go RED** (§7). A re-validation nobody has proven RED is not a re-validation.
 
 ### 5.2 B — Finality: **ALREADY DECIDED by ADR-0023.** Delta only.
 
-**Stop deliberating this.** `ADR-0023:79-86` (accepted) decides the answer: a generalized definition
+**Stop deliberating this.** `ADR-0023` `a generalized definition builder for arbitrary approval-line DAGs` (accepted) decides the answer: a generalized definition
 builder for **arbitrary approval-line DAGs** (dynamic 결재선, 검토/승인/합의/참조 roles, enum reasons,
 object-link targets) and a **pre-terminal finalization model** — 최종승인 and 수령확인 are pre-terminal
 `WAITING` nodes, *"never a reopened terminal run"*, with **사후 반려 modeled as a compensating
@@ -1625,9 +1625,9 @@ likewise covered by "arbitrary DAGs" plus the four declared role kinds.
 | **Line-as-raised vs line-as-executed** — both stored | required by the obligation loop's notification scope |
 | **Release-reset on a band crossing** — a signature is a statement about a document **state**, so an amendment that crosses a `delegation_rule` band **invalidates the signatures taken under the prior band** and re-routes | the DAG decision covers routing and finality, not the invalidation of already-taken signatures. Slice 0's **one band and one step cannot surface this** — with one band there is no crossing — so it is recorded here as a delta the slice does not prove. Its probe's known-bad control: an implementation that keeps signatures valid after the amount is raised across a band |
 
-Inherited and unchanged: `ADR-0018:115-116` requires **fresh passkey step-up** for approval/signature,
+Inherited and unchanged: `ADR-0018` `Sensitive actions require fresh passkey step-up` requires **fresh passkey step-up** for approval/signature,
 role/policy change, payroll/HR/legal, asset ownership, financial/payment and cross-org transfer — every
-authority mutation in this plan is in that set. And `ADR-0018:231-233` decides the runtime spine is
+authority mutation in this plan is in that set. And `ADR-0018` `The current runtime spine is deliberately **org-local**.` decides the runtime spine is
 **org-local**, with group-wide flows as a *parent orchestration envelope spawning auditable child runs
 inside each participating org* rather than shared rows crossing RLS. That is the decided answer to the
 group-scope half of 결재, and this plan reconciles **with** it: a cross-company line is an envelope, never
@@ -1638,10 +1638,10 @@ a row spanning tenants.
 
 `ADR-0021` (accepted) decides the strangler: **"PBAC via Cedar, not role-string RBAC… Built-in roles and
 tenant custom roles are subject inputs/policy bundle generators, not authoritative allow decisions by
-themselves"** (decision 1, `:46-48`); the four-mode ladder (decision 6, `:64-66`); compiled-bundle caching
-with **no cross-request allow/deny caching** (decision 4, `:55-56`); `authz_subject_version` freshness
-bumped synchronously by role/assignment/employment/branch/credential changes (decision 5, `:58-60`); and
-**"No live switch in this ADR/G001"** (decision 8, `:70-72`).
+themselves"** (decision 1, `ADR-0021` `PBAC via Cedar, not role-string RBAC.`); the four-mode ladder (decision 6, `ADR-0021` `Enrolled actions have a mode (`); compiled-bundle caching
+with **no cross-request allow/deny caching** (decision 4, `ADR-0021` `It must not cache cross-request allow/deny decisions.`); `authz_subject_version` freshness
+bumped synchronously by role/assignment/employment/branch/credential changes (decision 5, `ADR-0021` `synchronously bump subject/policy versions`); and
+**"No live switch in this ADR/G001"** (decision 8, `ADR-0021` `No live switch in this ADR/G001.`).
 
 The ladder, the end state and the promotion discipline are decided. Not restated here.
 
@@ -1650,10 +1650,10 @@ The ladder, the end state and the promotion discipline are decided. Not restated
 | # | Delta | Note |
 |---|---|---|
 | C1 | A gate asserting `feature_catalog` rows ≡ `Feature::ALL` | makes the enum a vocabulary, not a decision. Known-bad: add a variant without the migration row |
-| C2 | `policy_feature_catalog()` (`identity/rest/src/lib.rs:1433-1448`) sources from `feature_catalog` + grant rows, not `Feature::ALL × Role::ALL × permission_for` | the one endpoint still serving the compile-time matrix |
-| C3 | **`Feature` the enum SURVIVES** — it is Cedar's action id (`engine.rs:430`), §0.2 | corrects the brief's premise; ADR-0021 never asks for its deletion |
-| C4 | `Role` (`authz/src/lib.rs:35`) and `matrix_row` (`:573`) deleted once every map entry reads `cedar_only` | the ladder already gates this |
-| C4b | **BLOCKING:** before `Role` dies, **both** derivations of `BranchScope::All` must come from a **built-in `Feature`** — `resolve_branch_scope_in_org` (`backend/crates/platform/authz/src/lib.rs:1472-1483`) **and** `request-context/src/lib.rs:421-422`'s group-proof mint | §0.16. Needs **D2 (ADR-0028)** on `ADR-0003`'s `## Decision`. **The record's trigger is the present-tense `org_id` × `BranchScope` divergence, not this deletion** — so D2 is owed now and C4b does not gate it. Existing SUPER_ADMIN/EXECUTIVE principals need a migration path, and the onboarding seeder (`platform-rest/src/lib.rs:568`) is a write site it must cover |
+| C2 | `policy_feature_catalog()` (`identity/rest/src/lib.rs` `fn policy_feature_catalog`) sources from `feature_catalog` + grant rows, not `Feature::ALL × Role::ALL × permission_for` | the one endpoint still serving the compile-time matrix |
+| C3 | **`Feature` the enum SURVIVES** — it is Cedar's action id (`cedar_pbac/engine.rs` `entity_uid("Action", request.action.feature().as_str())`), §0.2 | corrects the brief's premise; ADR-0021 never asks for its deletion |
+| C4 | `Role` (`authz/src/lib.rs` `pub enum Role`) and `matrix_row` (`authz/src/lib.rs` `const fn matrix_row`) deleted once every map entry reads `cedar_only` | the ladder already gates this |
+| C4b | **BLOCKING:** before `Role` dies, **both** derivations of `BranchScope::All` must come from a **built-in `Feature`** — `resolve_branch_scope_in_org` (`backend/crates/platform/authz/src/lib.rs` `pub async fn resolve_branch_scope_in_org`) **and** `request-context/src/lib.rs` `effective_branch_scope_for_tenant(BranchScope::All, access_scope, org_id)`'s group-proof mint | §0.16. Needs **D2 (ADR-0028)** on `ADR-0003`'s `## Decision`. **The record's trigger is the present-tense `org_id` × `BranchScope` divergence, not this deletion** — so D2 is owed now and C4b does not gate it. Existing SUPER_ADMIN/EXECUTIVE principals need a migration path, and the onboarding seeder (`platform-rest/src/lib.rs` `async fn create_org`) is a write site it must cover |
 | C5 | Four new coexistence-map entries: `authority.grant`, `approval.line`, `party.identity`, `work.assignment` | `enrolledDomainMissingEntry: "deny"` already handles the runtime side. **This is not the trigger for D2** — see C4b |
 
 ADR-0021 decision 1 also means configurable roles **partially ship today** — `policy_roles` +
@@ -1666,7 +1666,7 @@ The canvas's role half extends shipped data rather than breaking ground.
 **`party` is `(id, org_id, party_kind, status, created_at)` and nothing else** — `org_id` present only because
 the row is an ordinary tenant-classified table pinned to the platform sentinel org (§4.1), which is what earns
 it the RLS floor and the tenant-isolation gate's default classification. **No identifying attribute.** All of
-them stay in tenant-scoped rows under the RLS floor that already protects them — `employees` (`0063:21-25`)
+them stay in tenant-scoped rows under the RLS floor that already protects them — `employees` (`0063` `CREATE POLICY org_isolation ON employees`)
 keeps holding name, and everything more sensitive continues to live in the tenant tier.
 
 Three consequences, and the third is the one that unblocks slice 0:
@@ -1674,11 +1674,11 @@ Three consequences, and the third is the one that unblocks slice 0:
 1. **No new PIPA surface.** Slice 0 stores no personal data anywhere new. It adds a durable opaque
    handle and a tenant-scoped edge. This matters because the HOLD is total and current: the program
    ledger states that *"every jurisdiction `release_disposition`, and every control trace remains
-   `HOLD`"* (`docs/program/console-program-ledger.md:327`) and repeats *"Every capability, evidence
+   `HOLD`"* (`docs/program/console-program-ledger.md` `every control trace remains`) and repeats *"Every capability, evidence
    contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and
-   exposure state remains `HOLD`"* through its most recent entry (`:420`). Decisively, the ledger lists
+   exposure state remains `HOLD`"* through every rebind entry since (`docs/program/console-program-ledger.md` `jurisdiction binding, Korea control, review disposition, legal state, release state, and exposure state remains`). Decisively, the ledger lists
    *"규제 PII/multi-jurisdiction (Jurisdiction/Consent/DSR objects)"* under **"Epics (documented,
-   later)"** (`:174`) — the PII substrate is deliberately not built. `ADR-0023:157` independently names
+   later)"** (`docs/program/console-program-ledger.md` `Epics (documented, later):`) — the PII substrate is deliberately not built. `ADR-0023` `Multi-jurisdiction PII program.` independently names
    the **multi-jurisdiction PII program** as out of scope. So a design that needed it would be blocked by
    an accepted ADR, not merely unbudgeted; this one does not need it.
 2. **Erasure stays possible.** A fixity chain that referenced a person's attributes could not be
@@ -1693,7 +1693,7 @@ Three consequences, and the third is the one that unblocks slice 0:
 **What must be true before a `party` row itself holds real personal data** (i.e. before any widening
 puts an attribute on `party`):
 
-- the deferred **규제 PII/multi-jurisdiction epic** (Jurisdiction/Consent/DSR objects, ledger `:174`)
+- the deferred **규제 PII/multi-jurisdiction epic** (Jurisdiction/Consent/DSR objects, ledger `docs/program/console-program-ledger.md` `Epics (documented, later):`)
   has landed, **and the bar below has been met by a qualified external authority.** The plan previously said
   *"the jurisdiction binding and Korea controls have moved off HOLD"*, which reads as a milestone somebody here
   can reach. It is not one:
@@ -1710,7 +1710,7 @@ puts an attribute on `party`):
 **CTRL-KR-RECORDS-001** (approvals, notices, documents, retention) and **CTRL-KR-WORKFORCE-001** (payroll).
 
 `unhold_authority` is verbatim *"Qualified Korea legal/compliance authority with attributable I2/I3
-candidate-bound receipt."* And `uncertainty_rule` (`:1186`) is verbatim: *"Missing, stale, conflicting, or
+candidate-bound receipt."* And `uncertainty_rule` (`docs/program/console-jurisdiction-register.json` `Missing, stale, conflicting, or unqualified authority is HOLD; agents may not invent certainty.`) is verbatim: *"Missing, stale, conflicting, or
 unqualified authority is HOLD; **agents may not invent certainty**."* **A native agent produces only
 `I1_NON_INDEPENDENT` evidence**, which is by construction below the bar. So this section asserts **no** compliance
 conclusion and proposes **no** unholding; it records what the bar is, so nobody later reads a HOLD as a task.
@@ -1741,9 +1741,9 @@ What actually exists, and its four disqualifying gaps:
 
 | Fact | Citation |
 |---|---|
-| `finance_gl_vouchers` — header FSM `DRAFT/BALANCE_CHECKED/APPROVED/POSTED/REVERSED`, reversal pointers | `0160:22-50`, `:38-39` |
-| `finance_gl_voucher_lines` — `account_code`, `side`, `amount_won` | `0160:57-68` |
-| Real enforcement: balance gate + POSTED/REVERSED immutability trigger; lines append-only | `0160:78-118`, `:122-140`, `:161-164` |
+| `finance_gl_vouchers` — header FSM `DRAFT/BALANCE_CHECKED/APPROVED/POSTED/REVERSED`, reversal pointers | `0160` `CREATE TABLE finance_gl_vouchers`, `0160` `reversal_of_voucher_id    UUID,` |
+| `finance_gl_voucher_lines` — `account_code`, `side`, `amount_won` | `0160` `CREATE TABLE finance_gl_voucher_lines` |
+| Real enforcement: balance gate + POSTED/REVERSED immutability trigger; lines append-only | `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()`, `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_line_draft_only()`, `0160` `REVOKE UPDATE, DELETE ON finance_gl_voucher_lines FROM console_rt;` |
 | SoD: `approved_by` write-once, `CHECK (approved_by <> created_by)` | `0163:19`, `:25-27` |
 | **No business date.** Only `posted_at TIMESTAMPTZ` (`:41`), `created_at` (`:42`) | `0160:41-43` |
 | **No account master.** `account_code TEXT` ≤40, no FK | `0160:62` |
