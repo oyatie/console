@@ -1113,3 +1113,29 @@ have discarded a concurrent writer's commit to produce a tidier history.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — third rebind for one candidate, and what that cost measures
+
+The registers rebind onto the commit that documents `check:doc-citations` in
+`docs/CI-GATES.md`. The foundation gate requires every npm script CI runs to appear
+there, and the candidate had wired the gate into `ci.yml` without listing it.
+
+This is the third rebind of 390 references for a single candidate in one day. The first
+followed the merge recovering the OpenAPI security schemes, the second a concurrent
+writer on the same branch, the third this one-line documentation fix. Recorded as a
+measurement rather than a complaint: **the train makes every post-hoc fix cost a
+390-reference rewrite**, because a fix cannot live in T — T may modify only the three
+authority documents — so each one becomes a new candidate.
+
+That cost is the intended shape of the mechanism and the reason `rebind-candidate.mjs`
+exists; the ledger already attributes lost work across four releases to doing it by
+hand. The observation worth keeping is narrower: the cost is paid per *fix*, not per
+*change*, so it rewards getting the candidate right before the first push and punishes
+iterating against CI. Anyone planning a lane should front-load the gates that can be run
+locally — `check:foundation-gates`, `check:ci-preflight`, `check:doc-citations`,
+`check:adrs`, and the truth-ledger validator against a `commit-tree` simulation of the
+synthetic merge — because each one skipped is a full rebind later.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
