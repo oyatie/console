@@ -51,7 +51,7 @@ unlocatable, **three are named, and two have been read**:
 |---|---|---|
 | 기준소득월액 하한액과 상한액 — 보건복지부고시 제2026-31호 | **Located, body read** | **Yes — match** (§1) |
 | 2026년도 사업종류별 산재보험료율 — 고용노동부고시 제2025-91호 | **Located, body read** | N/A — rates live in its 별지; employer-only rests on 징수법 제13조제5항, not on the 고시 (Q3) |
-| 2026년 적용 최저임금 고시 — 고용노동부고시 제2025-47호 | **Located, body NOT readable as text** | **No** — viewer-rendered attachment (Q4) |
+| 2026년 적용 최저임금 고시 — 고용노동부고시 제2025-47호 | **Located; text reached via its PDF attachment, not the record** | **Two of three — match.** `daily_8h_won` is a derivation, not a 고시 figure. Read by hand-decoded CMap: discovery, not evidence (§1, Q4) |
 | 기준소득월액, 2025-07 window — 보건복지부고시 제2025-24호 | Number known from 부칙 history only | **No** — portal serves consolidated current text only |
 
 **The residue is smaller and differently shaped than "we need a key".** Discovery needed the key and is now
@@ -72,7 +72,7 @@ provision date is what a reviewer needs to diff against.
 | 4 | **장기요양보험** employee share — 0.4724% | 노인장기요양보험법 제9조제2항 (장기요양위원회 심의 + 대통령령) | **노인장기요양보험법 시행령 제4조: 100만분의 9,448** (= 0.9448%). Bearer split arrives **by 준용** — 노인장기요양보험법 제11조 준용s 국민건강보험법 제76조 | 시행령: **대통령령 제36325호** (2026-05-12); 제4조 last amended **2025.12.30**. Act file read: 법률 제21690호 | 시행령: 2026-05-12 (in force). **Act file 시행일자 2026-11-27 — not yet in force** | <https://www.law.go.kr/법령/노인장기요양보험법시행령> · <https://www.law.go.kr/법령/노인장기요양보험법> | **Effectively yes.** 제4조 amended 2008·2009·2017·2018·2019·2020·2021·2022·2023·2025 | **HIGH** for 0.9448%. **MEDIUM-LOW** for modelling it as 0.4724% × 보수월액 (see Q1); **MEDIUM** for the split — a 준용 chain across two future-effective files |
 | 5 | **고용보험 실업급여** employee share — 0.9% | 징수법 제14조제1항 (1000분의 30 범위, 고용보험위원회 심의 + 대통령령). Employee half: 징수법 제13조제2항 | **징수법 시행령 제12조제1항제2호: 1천분의 18** (= 1.8%); employee bears ½ | 시행령: **대통령령 제35935호** (2025-12-23); 제12조 last amended **2023.12.26**. Act file read: 법률 제21532호 | 시행령: 2025-12-23 (in force). **Act file 시행일자 2026-10-08 — not yet in force** | <https://www.law.go.kr/법령/고용보험및산업재해보상보험의보험료징수등에관한법률시행령> | **No fixed cadence.** 제12조 amended 2011·2013·2019·2021·2023 — irregular, so it expires on change, not on a calendar | **HIGH** for 1.8%. **MEDIUM** for the ½ share — 제13조제2항 carries `<개정 2026.3.17>` and sits in a future-effective file |
 | 6 | **산재보험** — employer-only, industry tariff | 징수법 제14조제3항→제6항 (→ 고용노동부령); employer-only per 징수법 제13조제5항 | **Two-layer delegation.** 징수법 시행규칙 제12조: rates are *"고용노동부장관이 정하여 고시"*; the 시행규칙's **별표 1** supplies only 구성과 산정방법. Then 제13조 개별실적요율 experience-rates the result **per employer** | 시행규칙: **고용노동부령 제473호** (2026-07-01); 제12조 last amended 2017.12.28. 고시: **고용노동부고시 제2025-91호**, 발령 **2025-12-31**, 소관 고용노동부(산재보상정책과) | 시행규칙 2026-07-01 (in force). **고시 시행 2026-01-01, and it expires by its own terms 2026-12-31** | 시행규칙: <https://www.law.go.kr/법령/고용보험및산업재해보상보험의보험료징수등에관한법률시행규칙> · 별표 1 (HWP): <https://www.law.go.kr/LSW/flDownload.do?flSeq=166487111> · 고시: <https://www.law.go.kr/행정규칙/2026년도%20사업종류별%20산재보험료율> · body `admRulInfoR.do?admRulSeq=2100000271450` · **the rate table itself is the 고시's 별지**: PDF <https://www.law.go.kr/LSW/flDownload.do?flSeq=160837293> (114,447 B), HWPX <https://www.law.go.kr/LSW/flDownload.do?flSeq=160837289> | **YES — per 보험연도, with an explicit 유효기간 ending 2026-12-31.** 제14조제6항 caps year-on-year movement at ±30% | **HIGH** — 고시 named, fetched and read. Employee share still rests on 징수법 제13조제5항, not on the 고시, which is silent on who bears it |
-| 7 | **최저임금** — 2026 guard data | 최저임금법 제10조 | **고용노동부장관 고시.** 제10조제1항 requires 고시; 제10조제2항 makes it effective **1 January of the following year**. 최저임금법 시행령 is 대통령령 제29469호 of **2018-12-31** and does not carry the amount | **고용노동부고시 제2025-47호** (제정), 발령 **2025-08-05**, 소관 고용노동부(근로기준정책과). Act file read: 법률 제21534호 | 고시 **시행 2026-01-01**, matching 제10조제2항. **Act file 시행일자 2026-12-08 — not yet in force** | 고시: <https://www.law.go.kr/행정규칙/2026년%20적용%20최저임금%20고시> · body `admRulInfoR.do?admRulSeq=2100000262710` — **but served as a viewer-rendered attachment, not text (Q4)**. Act: <https://www.law.go.kr/법령/최저임금법> | **YES — every year**, and issued ~5 months ahead of effect | **HIGH** that this is the instrument. **Its figures are NOT verified here** — the body is not extractable as text |
+| 7 | **최저임금** — 2026 guard data | 최저임금법 제10조 | **고용노동부장관 고시.** 제10조제1항 requires 고시; 제10조제2항 makes it effective **1 January of the following year**. 최저임금법 시행령 is 대통령령 제29469호 of **2018-12-31** and does not carry the amount | **고용노동부고시 제2025-47호** (제정), 발령 **2025-08-05**, 소관 고용노동부(근로기준정책과). Act file read: 법률 제21534호 | 고시 **시행 2026-01-01**, matching 제10조제2항. **Act file 시행일자 2026-12-08 — not yet in force** | 고시: <https://www.law.go.kr/행정규칙/2026년%20적용%20최저임금%20고시> · **the operative text is the attachment, not the record**: PDF <https://www.law.go.kr/flDownload.do?flSeq=155278071> (84,498 B, 1 page, verified 200 `application/pdf`). Act: <https://www.law.go.kr/법령/최저임금법> | **YES — every year**, and issued ~5 months ahead of effect | **HIGH** that this is the instrument. Two of three kernel figures **read and matching**; the third is a derivation, not a 고시 figure — and the read came from a hand-decoded PDF, so it is discovery, not evidence (Q4) |
 | 8 | **소득세** — 근로소득 간이세액표 | 소득세법 제129조제3항 (*"대통령령으로 정하는 근로소득 간이세액표"*) | **소득세법 시행령 별표 2**, per 시행령 제189조제1항. A **대통령령 별표 — not an NTS 고시.** Confirmed fetchable: 172,032 bytes, `application/hwp`, HTTP 200, no auth | **대통령령 제36343호** (공포 2026-05-22) | **2026-07-01** (in force) — note this is *after* 공포 (Q8) | Decree: <https://www.law.go.kr/법령/소득세법시행령> · 별표 2 HWP: <https://www.law.go.kr/LSW/flDownload.do?flSeq=164391981> · PDF: <https://www.law.go.kr/LSW/flDownload.do?flSeq=164391983> | **No annual notice.** It changes when the 별표 is amended | **HIGH** — delegation chain quoted verbatim end to end and the file downloads |
 | 9 | **지방소득세** — 근로소득 특별징수 | 지방세법 제103조의13제1항 | **The act itself** — *"원천징수하는 소득세… 의 100분의 10"*, withheld simultaneously with 소득세 | **법률 제21308호** (2025-12-31) | **2026-01-01** (in force) | <https://www.law.go.kr/법령/지방세법> | **No** | **HIGH** |
 
@@ -100,6 +100,45 @@ upgraded even though the numbers need no change.
 **보건복지부고시 제2025-24호**, but the portal serves only the consolidated current text, so **I did not read
 its amounts.** That row's figures remain unverified here — matching the spec is not the same as matching the
 고시. It needs the same treatment once 제2025-24호's text is in hand.
+
+### The 고시 text against the kernel constant — 최저임금
+
+Second comparison, and it needs its caveat read first because the caveat is load-bearing.
+
+**How the text was obtained.** `admRulInfoR.do` gave 101 characters, all header — the 조문내용 is **empty
+despite 조문형식여부 = Y**, which is why the first pass here concluded the body was unreadable. The general
+route past that: **`lawService.do?target=admrul&ID=<행정규칙일련번호>&type=XML` returns a `<첨부파일>` block**,
+and for 제2025-47호 it names `2026년 적용 최저임금 고시(고용노동부 고시 제2025-47호).pdf` at
+`flDownload.do?flSeq=155278071` — verified here as **HTTP 200, `application/pdf`, 84,498 bytes, 1 page**,
+credential-free. (`flSeq=155278071` is the same id as the viewer's `key` parameter, which independently
+confirms it is this 고시's attachment. A second attachment, 최저임금 고시 재개정 이유서, is at `…flSeq=155278073`,
+88,968 B.) **This is the technique to reach for whenever a 고시's 조문내용 is empty** — the same shape as the
+산재 별지 in item 6, so for 고시 the instrument's text is frequently the attachment rather than the record.
+
+**How the PDF was read, and why that limits what follows.** No `pdftotext` or poppler is available in this
+environment (confirmed), and the PDF uses subset fonts with glyph-index text, so it was decoded by extracting
+the embedded ToUnicode CMaps and mapping content-stream runs by hand. **The reading order comes out
+scrambled** — font switches interleave the runs. So only exact numeric strings are treated as evidence here,
+and the surrounding prose is not quoted at all.
+
+On that basis, against `minimum_wage_rates()` at `backend/crates/payroll/domain/src/lib.rs:585-593`:
+
+| Kernel field | Kernel value | In the 고시 PDF? |
+|---|---|---|
+| `hourly_won` | 10,320 | **Appears exactly once — matches** |
+| `monthly_209h_won` | 2,156,880 | **Appears exactly once — matches** |
+| `daily_8h_won` | 82,560 | **Zero occurrences.** Not a 고시 figure — it is 10,320 × 8 |
+| (209-hour basis) | — | Not cleanly recoverable; the digit stream is scrambled around it, so nothing is claimed |
+
+**The `daily_8h_won` finding is an attribution nuance, not a defect.** The field name discloses the
+derivation, and 82,560 is arithmetically 10,320 × 8. What the register records is that **all three fields
+share one `source`, and that source supplies two of them.** A reviewer signing this row should know the daily
+figure is ours, not the Minister's.
+
+**And this does not make the amount established.** It is an agent's read of an official PDF through a
+scrambled extractor. It raises confidence that the kernel is not wrong; it is not the evidence release-gate
+condition 1 asks for. **A licensed reviewer must open the PDF themselves** before this row is relied on — the
+URL and byte size above are there so they can confirm they have the same file.
 
 ### What this changes about the spec's cited sources
 
@@ -214,19 +253,21 @@ different effective date per business type) is inactive for 2026.
 body's own header line. 시행 2026-01-01 matches 최저임금법 제10조제2항 exactly, and 발령 2025-08-05 puts issue
 ~5 months ahead of effect.
 
-**Why there is no figure comparison here.** Item 2's 고시 rendered its amounts as HTML text, so it could be
-quoted and checked. **This one does not.** Its `admRulInfoR.do` page carries the header and then an empty
-조문 area followed by a Synap document viewer — `/LSW/viewer/skin/doc.html?…key=155278071&contextPath=/viewer/DATA/ADMRUL/2100000262710/2025/08/SKIN/155278071`
-— i.e. the operative text is an attached document rendered for display, not markup. Extracted text length is
-101 characters, all of it header. Three probes at the viewer's data paths returned the JS shell or 404, and
-the page exposes **no `flDownload` attachment** the way the 산재 고시 does.
+**Its figures are now read — via the attachment, and with a caveat.** The first pass here concluded the body
+was unreadable: `admRulInfoR.do` returns 101 characters, all header, because the **조문내용 is empty despite
+조문형식여부 = Y**, and probes at the Synap viewer's data paths returned the JS shell or 404. That was right
+about the HTML and wrong to stop there. The API's detail endpoint —
+**`lawService.do?target=admrul&ID=2100000262710&type=XML`** — exposes a `<첨부파일>` block naming the
+고시 PDF at `flDownload.do?flSeq=155278071` (**84,498 B, 1 page, HTTP 200 `application/pdf`**, verified here,
+credential-free). §1 carries the comparison, the extraction caveat and the general technique.
 
-So, stated plainly rather than papered over: **`minimum_wage_rates()` at
-`backend/crates/payroll/domain/src/lib.rs:585-593` holds hourly 10,320 / daily-8h 82,560 / monthly-209h
-2,156,880, and this register does not verify any of the three against the 고시.** Those figures match
-`docs/specs/payroll.md`, which cites the 최저임금위원회 — but per §1 the Commission is not the instrument, and
-**matching the spec is not matching the 고시.** Anyone with a browser can settle it in seconds at the citation
-URL above; I did not, so I do not claim it.
+**Result in one line:** `hourly_won` 10,320 and `monthly_209h_won` 2,156,880 both appear in the 고시 and match
+the kernel; `daily_8h_won` 82,560 **does not appear** and is a 10,320 × 8 derivation the field name already
+discloses. The 209-hour basis was not cleanly recoverable and nothing is claimed about it. The read came from
+a hand-decoded CMap with scrambled reading order, so **it is discovery, not evidence** — see §1.
+
+Also from that detail response, recorded for the register's fields: 담당부서 고용노동부(근로기준정책과),
+제개정구분 **제정**, 현행여부 **Y**, 시행일자 **20260101**.
 
 **Two forward-dated traps this search surfaced**, both of which a name-match would walk into:
 
@@ -397,10 +438,13 @@ file, not the decree article.
   actually showed is that **the name cannot be guessed** — 5 candidates in the first pass and 12 in the
   second all returned the error page, and the true names (`2026년도 사업종류별 산재보험료율`,
   `2026년 적용 최저임금 고시`) were not among them. **I guessed no 고시 title, number or URL at any point.**
-- **Item 7's body is not extractable as text.** Its operative text is a Synap viewer attachment; three probes
-  at the viewer data paths returned the JS shell or 404, and unlike item 6 the page offers no `flDownload`.
-  Cost: `minimum_wage_rates()`'s three constants are **unverified against the instrument** (Q4). Same class of
-  limit as the 간이세액표 HWP — located and reachable, contents unparsed.
+- **~~Item 7's body is not extractable as text~~ — superseded.** True of the HTML record, false of the
+  instrument: its 조문내용 is empty and the text lives in a PDF attachment the API's `<첨부파일>` block names
+  (§1). Two of `minimum_wage_rates()`'s three constants are now read and matching. **But the read used a
+  hand-built ToUnicode CMap decode with scrambled reading order**, so only exact numeric strings were taken as
+  evidence and no prose from that PDF is quoted anywhere in this document. A licensed reviewer must open it.
+- **Still unparsed: the 간이세액표 별표 2 HWP and the 산재 별지.** Both located, both reachable, contents not
+  read. Unlike item 7 nobody has attempted a decode, so nothing about their contents is claimed at all.
 - **Added 2026-07-30 — how the one 고시 was read, credential-free and repeatable.** Given the exact
   행정규칙명: `GET law.go.kr/행정규칙/{name}` → confirm via `<title>` → extract the frameset's
   `src="/LSW//admRulInfoP.do?admRulSeq=…"`, whose `admRulSeq` **is** the 행정규칙일련번호 → then
@@ -439,10 +483,16 @@ third-party-derived pointer at a document someone must still retrieve from law.g
 regulator, record with `retrieved_at`, and have reviewed by a qualified reviewer. Per the register's
 `uncertainty_rule`, the eight questions in §2 are `HOLD`, not defaults.
 
-**Being named is not being verified.** Three 고시 are now named and two read, which is real progress on
-*discovery* and none at all on *authority*. Condition 1 asks for an official source per statutory item; what
-this document supplies is the identity and location of those sources, one confirmed figure comparison
-(기준소득월액 — match), and an explicit list of what is still unread: **최저임금's three constants, the
-산재 별지 table, the 간이세액표 별표, and 기준소득월액 제2025-24호 for the 2025-07 window.** A qualified
-reviewer still has to retrieve each one, record it with `retrieved_at`, and sign it. Nothing here moves any
-control off `HOLD`.
+**Being named is not being verified, and being read is not being evidenced.** Three 고시 are named and all
+three read — real progress on *discovery*, none at all on *authority*. Two figure comparisons come out
+matching: 기준소득월액 (clean HTML text) and 최저임금's hourly and monthly (hand-decoded PDF, caveat in §1).
+Neither is evidence in the register's sense: one is an agent reading a web page, the other an agent reading a
+PDF with a scrambled extractor.
+
+Still unread: **the 산재 별지 rate table, the 간이세액표 별표 2, and 기준소득월액 제2025-24호 for the 2025-07
+window** — the last of which stays blocked because the portal serves only consolidated current text, and is
+recorded as unverified rather than inferred from the spec. And one kernel figure is ours rather than an
+instrument's: `daily_8h_won`.
+
+A qualified reviewer still has to retrieve each source, record it with `retrieved_at`, and sign it. Nothing
+here moves any control off `HOLD`.
