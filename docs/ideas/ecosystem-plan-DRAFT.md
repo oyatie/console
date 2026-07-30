@@ -216,9 +216,9 @@ wrote **0** edges; the property case wrote edges.
 **Two sharpenings the earlier draft lacked, and both change what an implementer does.**
 
 - **The rule is about *reachable* paths, not about all code.** `PgInstanceStore::create_link`
-  (`backend/crates/ontology/adapter-postgres/src/instances.rs:291`, audited INSERT at `:319`) *does* write an `ont_links` row directly from a bare
+  (`instances.rs` `pub async fn create_link`, audited INSERT at `instances.rs` `INSERT INTO ont_links`) *does* write an `ont_links` row directly from a bare
   `link_type_id` — but **every call site in the repo is under `tests/`**, and `ONTOLOGY_ROUTE_PATHS`
-  (`backend/crates/ontology/rest/src/lib.rs:213-228`) is exactly **14** paths, **none of which creates a link**.
+  (`backend/crates/ontology/rest/src/lib.rs` `pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[`) is exactly **14** paths, **none of which creates a link**.
   So the absolute form of the claim is false and the reachability form is exact. Stated because someone will
   find `create_link` and conclude the trap is not real.
 - **`to_object_type_id` is DECORATION.** It appears **zero** times in the whole write module
@@ -228,14 +228,14 @@ wrote **0** edges; the property case wrote edges.
 **Resolution, chosen over fixing it:** every relationship in §4.3 is specified as travelling through a
 property carrying `config.link = {stable_key, to_type}`. This is not a workaround — it is the only path
 the writer implements, and the shipped `employment` fixture already does exactly this
-(`backend/crates/ontology/rest/tests/company_conformance/fixtures/employment.rs:161`, `:172`). The plan adds one
+(`fixtures/employment.rs` `"link": {"stable_key": "employment_position", "to_type": "job_position"}` and `fixtures/employment.rs` `"link": {"stable_key": "employment_org_unit", "to_type": "org_unit"}`). The plan adds one
 cheap guard instead of a refactor: a check inside `validate_draft` that a link type with `to_object_type_id` set
 has some property referencing its `stable_key`. One check, and it fails closed on the trap rather than leaving
 it armed.
 
 **The guard is absent today, and that is the record the plan's own discipline requires.** `validate_draft`
-exists (`backend/crates/ontology/adapter-postgres/src/lib.rs:416`, `:458`), but its **entire** link-type
-validation is `:1142-1151`, which checks **duplicate `stable_key` only** and nothing about property references.
+exists (`ontology/adapter-postgres/src/lib.rs` `fn validate_draft`, called from both `ontology/adapter-postgres/src/lib.rs` `validate_draft(&draft)?` sites), but its **entire** link-type
+validation is `ontology/adapter-postgres/src/lib.rs` `duplicate link key {key:?} in object type draft`, which checks **duplicate `stable_key` only** and nothing about property references.
 So §7's `link_type_alone_is_rejected` is **observed RED today** — the known-bad control is present behaviour,
 which is exactly the state principle 5 demands before a guard lands.
 
@@ -244,9 +244,9 @@ which is exactly the state principle 5 demands before a guard lands.
 Two findings, and they pull in opposite directions.
 
 **The trap is real and confirmed.** `residual::lower` carries
-`// Deny-by-omission: no applicable permit ⇒ nothing is visible.` followed by
-`if permits.is_empty() { return ResidualFilter::deny_all(); }`
-(`platform/authz/src/cedar_pbac/residual.rs:200-203`). `list_instances` lowers object policies to a SQL
+`cedar_pbac/residual.rs` `// Deny-by-omission: no applicable permit ⇒ nothing is visible.` followed by
+`cedar_pbac/residual.rs` `if permits.is_empty() { return ResidualFilter::deny_all(); }`
+`list_instances` lowers object policies to a SQL
 residual unconditionally, so **a freshly published no-code type lists `[]` forever** with nothing
 attached. Combined with §0.12, the no-code path has **two independent silent-empty traps**: a
 relationship that writes no edge, and a type that returns no rows. Both look like working
@@ -255,9 +255,9 @@ configuration.
 **But the fix is now reachable, and the input document says otherwise.**
 `docs/ideas/no-code-ontology.md` states *"Publish a type … **NOT reachable. This is the one missing
 route.** `ONTOLOGY_ROUTE_PATHS` is exactly 12 paths and none touches the schema FSM."* That is **stale**:
-`OBJECT_TYPE_LIFECYCLE_PATH` (`backend/crates/ontology/rest/src/lib.rs:201`) and `OBJECT_TYPE_POLICIES_PATH`
-(`:202`) both exist and are both registered in `ONTOLOGY_ROUTE_PATHS`, which runs `:213-228` and holds **14**
-paths — not the 12 that document counted, and not the `:213-217` an earlier draft of this plan cited. Landed by
+`OBJECT_TYPE_LIFECYCLE_PATH` (`backend/crates/ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_LIFECYCLE_PATH`) and `OBJECT_TYPE_POLICIES_PATH`
+(`ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_POLICIES_PATH`) both exist and are both registered in `ONTOLOGY_ROUTE_PATHS`, which holds **14**
+paths — not the 12 that document counted. Landed by
 #521 and #525/0205 after that document was written.
 
 The attach path exercised over HTTP is **`POST /api/v1/ontology/object-types/{stable_key}/policies`**
@@ -266,8 +266,8 @@ Measured as X2: `200 OK []` with no policy, then `201 Created` and rows with one
 
 **And the consequence X2 measured is sharper than "visible but unfiltered": an unpoliced entity is ABSENT.**
 A row the list hides is **`404` by id — deliberately**, so a 403 is not an existence oracle
-(`backend/crates/ontology/rest/tests/object_policy_attach_as_runtime_role.rs:133-141`, asserting *"a row the
-list hides must not be fetchable by id"*). This matters for §4.2: deny-by-omission is a confidentiality
+(`object_policy_attach_as_runtime_role.rs` `a row the list hides must not be fetchable by id`). This
+matters for §4.2: deny-by-omission is a confidentiality
 mechanism here, not a usability defect.
 
 **Consequence for this plan:** every Tier N entity must ship with its object policy attached in the same
@@ -285,20 +285,20 @@ review being separate passes is the repo's rule; this is that rule catching a pl
 
 ### 0.15 The `Feature` freeze is on MINTING, not composing — so the canvas costs no amendment
 
-`Feature::ALL` is `[Self; 96]` (`authz/src/lib.rs:372`), not the ~40 the specs assume.
-`docs/specs/rbac-configurable.md:257-259`, under **"Hard invariants (NON-NEGOTIABLE)"**: *"Only the **assignment** of
+`Feature::ALL` is `[Self; 96]` (`authz/src/lib.rs` `pub const ALL: [Self; 96]`), not the ~40 the specs assume.
+`docs/specs/rbac-configurable.md` `System roles immutable; capability catalog fixed.`, under **"Hard invariants (NON-NEGOTIABLE)"**: *"Only the **assignment** of
 the existing `Feature` set is editable. No SQL/console path creates a new `Feature`."*
 
 **A canvas that composes the existing 96 breaks nothing.** Only a canvas that mints capabilities hits that
 invariant. This plan's canvas composes — so the freeze needs no amendment, and the earlier "delete the
 matrix" framing was arguing for a much more expensive change than the requirement needs. The same document
 already calls the six roles *"bootstrap columns for migration parity, not the target operating model"*
-(`:122-124`) and bans role-string authorization outright in R1 (`:30-39`), so the direction is settled;
+(`rbac-configurable.md` `bootstrap columns for migration parity`) and bans role-string authorization outright in R1 (`rbac-configurable.md` `Every one of the 18 enumerated sites converts to a capability check`), so the direction is settled;
 only minting is frozen.
 
 ### 0.16 BLOCKING: **two** shipped derivations mint `BranchScope::All` from `Role`, and the `org_id` × `BranchScope` divergence they create is PRESENT-tense
 
-`resolve_branch_scope_in_org` (`authz/src/lib.rs:1472-1483`):
+`resolve_branch_scope_in_org` (`authz/src/lib.rs` `pub async fn resolve_branch_scope_in_org`):
 
 ```rust
 if roles.iter().any(|role| matches!(role, Role::SuperAdmin | Role::Executive)) {
@@ -311,10 +311,10 @@ cross-branch read depends on it. `ADR-0003`'s `## Decision` says *"`All` for SUP
 explicit branch set otherwise"*.
 
 **It is not the sole one, and that changes what the problem is.** A **second shipped derivation** exists:
-`backend/crates/platform/request-context/src/lib.rs:421-422` mints `BranchScope::All` for a `{Role::Admin}`-only
-principal **after live group-membership proof**, through
-`effective_branch_scope_for_tenant(BranchScope::All, access_scope, org_id)`. The realtime fan-out is in scope
-too: `backend/crates/platform/realtime/src/lib.rs:843`, `:885` and `:899` filter on `user_id` and
+`request-context/src/lib.rs` `effective_branch_scope_for_tenant(BranchScope::All, access_scope, org_id)` mints `BranchScope::All` for a `{Role::Admin}`-only
+principal **after live group-membership proof**.
+The realtime fan-out is in scope
+too: `realtime/src/lib.rs` `slot.principal.user_id == recipient` and, at two further sites, `realtime/src/lib.rs` `slot.principal.branch_scope.allows(branch_id)` filter on `user_id` and
 `branch_scope.allows(branch_id)` and **never compare `org_id`**, so an all-branch scope reaches every branch the
 hub can address.
 
@@ -328,24 +328,24 @@ edges may never be an input to any authorization resolver.** The reason is exact
 designation from control edges (W7) and then feeding it back into that resolver would make an authorization
 scope a function of an inferred graph, which is the one shape a share-percentage cycle can silently widen.
 
-And the obvious replacement is *forbidden*: `rbac-configurable.md:366` — *"Custom role definitions do **not**
+And the obvious replacement is *forbidden*: `rbac-configurable.md` `Custom role definitions do **not** widen` — *"Custom role definitions do **not**
 widen `BranchScope::All`, group scope, or platform scope. Those scopes remain resolved by the existing
 membership/token systems."*
 
 **Resolution (C5, §5.3):** replace **both** derivations with a **built-in `Feature`** check — authored in code,
-not mintable from the console, and not a custom-role definition. That satisfies `:366` (not a custom role) and
-`:257-259` (no console path mints it). The governance record is **D2 (ADR-0028)**, which amends `ADR-0003`'s
+not mintable from the console, and not a custom-role definition. That satisfies `rbac-configurable.md` `Custom role definitions do **not** widen` (not a custom role) and
+`rbac-configurable.md` `No SQL/console path creates a new` (no console path mints it). The governance record is **D2 (ADR-0028)**, which amends `ADR-0003`'s
 `## Decision` in place and **merges what earlier drafts split into G2 and G2b** — because CI cannot detect two
 records editing the same Decision line incompatibly (§5.11). C5 is blocked until D2 is accepted; the **record
 is owed now**, because the divergence it describes is present-tense.
 
 One more write site the `Role`-deletion path must cover, named so it is not missed: the **onboarding seeder**
-inside `create_org` (`backend/crates/platform/platform-rest/src/lib.rs:568`) seeds the first SUPER_ADMIN, so it
+inside `create_org` (`backend/crates/platform/platform-rest/src/lib.rs` `async fn create_org`) seeds the first SUPER_ADMIN, so it
 writes a principal whose scope the deleted match arm used to resolve.
 
 ### 0.17 Scope expressions are already decided against — delete them from this plan
 
-`rbac-configurable.md:421-423` decides: *"model org-wide reach as the `OrgWideQueueTriage` capability (and
+`rbac-configurable.md` `Scope reach as policy:` decides: *"model org-wide reach as the `OrgWideQueueTriage` capability (and
 future `*OrgWide` capabilities), **not a free-form scope DSL** — keeps RLS the hard floor."*
 
 Earlier drafts of this plan carried "scope expressions over the control graph". **Deleted.** Reach is a
@@ -389,15 +389,15 @@ language. Fewer moving parts, smaller attack surface, and it is what the spec al
    GUC (`app.current_org`); it is enforced by `backend/ci/gates/tenant-isolation`. Any design needing
    a second dimension pays the largest cost in the program — so the design must not need one.
 2. **Canvas-configurable and replayable must be free, not built.** The ontology already gives
-   effective-dated, fixity-chained, fold-based state (`0155:37-64`). Entities that take that path cost
+   effective-dated, fixity-chained, fold-based state (`0155` `CREATE TABLE ont_instance_revisions`). Entities that take that path cost
    an authored type; entities that don't cost a migration plus a history mechanism. **Qualified: what is free
    is replay along the VALID-time axis.** Knowledge-time correction is not free and is not built — the
-   append-only trigger (`0155:112-160`) refuses in-place repair by design, so a correcting axis is a decision
+   append-only trigger (`0155` `CREATE OR REPLACE FUNCTION ont_instance_revisions_append_only()`) refuses in-place repair by design, so a correcting axis is a decision
    §5.9 records rather than a property this driver supplies.
 3. **Payroll correctness is the first vertical's acceptance bar, and PII is where it attaches.** Every
    jurisdiction binding and Korea control reads HOLD
-   (`docs/program/console-program-ledger.md:327`, `:420`), and the PII substrate itself
-   (Jurisdiction/Consent/DSR objects) is an explicitly deferred epic (`:174`). The design must let
+   (`docs/program/console-program-ledger.md` `every control trace remains`, restated in every rebind entry since), and the PII substrate itself
+   (Jurisdiction/Consent/DSR objects) is an explicitly deferred epic (`docs/program/console-program-ledger.md` `Epics (documented, later):`). The design must let
    slice 0 land **without** storing any new personal data anywhere new.
 
 ## 3. Viable options
@@ -410,14 +410,14 @@ heading says so because principle 4 turns on the difference.
 
 | Tier | Definition | Gate hook | Runtime reach |
 |---|---|---|---|
-| **G — global read** | no `org_id`, no RLS, `console_rt` may SELECT | `global_table_allowlist()` `:44`, entries `:48-70` | direct |
-| **O — owner-only** | no `org_id`, no RLS, **no runtime grant at all** | `owner_only_table_allowlist()` `:115`, entries `:117-129` | SECURITY DEFINER only |
-| **T — tenant** | `org_id NOT NULL` + `ENABLE`/`FORCE` RLS on `app.current_org` | default classification; anything else is `UnclassifiedTable`, `:804-808` | direct, filtered |
-| **N — ontology instance** | rows in `ont_instances`/`ont_instance_revisions`/`ont_links`, themselves Tier T | `0155:16`, `:37`, `:66` | via ontology API |
+| **G — global read** | no `org_id`, no RLS, `console_rt` may SELECT | `tenant-isolation/src/lib.rs` `pub fn global_table_allowlist()`, entries `tenant-isolation/src/lib.rs` `"canonical object-kind registry, seeded platform-wide, no tenant data"` | direct |
+| **O — owner-only** | no `org_id`, no RLS, **no runtime grant at all** | `tenant-isolation/src/lib.rs` `pub fn owner_only_table_allowlist()`, entries `tenant-isolation/src/lib.rs` `"cross-tenant group membership authorization; resolver only"` | SECURITY DEFINER only |
+| **T — tenant** | `org_id NOT NULL` + `ENABLE`/`FORCE` RLS on `app.current_org` | default classification; anything else is `UnclassifiedTable` (`tenant-isolation/src/lib.rs` `&& !global.contains(table.as_str())`) | direct, filtered |
+| **N — ontology instance** | rows in `ont_instances`/`ont_instance_revisions`/`ont_links`, themselves Tier T | `0155` `CREATE TABLE ont_instances`, `0155` `CREATE TABLE ont_instance_revisions`, `0155` `CREATE TABLE ont_links` | via ontology API |
 
 Two facts about the tiers decide most of §4:
 
-- **Every Tier G rationale is literally "no tenant data"** (`backend/ci/gates/tenant-isolation/src/lib.rs:48-70`).
+- **Every Tier G rationale is literally "no tenant data"** (`backend/ci/gates/tenant-isolation/src/lib.rs` `no tenant data`).
   PII therefore cannot go
   in Tier G. Tier O is where cross-tenant authorization data already lives — `group_memberships` and
   `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`:117-129`).

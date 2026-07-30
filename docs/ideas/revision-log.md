@@ -628,3 +628,39 @@ citation rather than left duplicated.
   fact that two earlier passes conflated them.
 
 No decision, section number, or claim about the system changed in this wave.
+
+## Wave 2 — §0.12-§0.17 and §3.1 (`DRAFT:219`-`DRAFT:420`)
+
+`UNVERIFIABLE 513 → 471` · `RESOLVES 54 → 93` · `BROKEN 0` · total 717 → 714
+
+### Factually wrong, corrected to what the file says
+
+- **`ontology/rest/src/lib.rs:201` and `:202` are `dispatch` internals, not the route consts** (`DRAFT:258`,
+  `DRAFT:259`). `:201` is `target: Some(input.target),` and `:202` is `}),`.
+  `pub const OBJECT_TYPE_LIFECYCLE_PATH` is line **210** and `pub const OBJECT_TYPE_POLICIES_PATH` is line
+  **211** — nine lines below what was cited. The claim (both exist, both registered) is true; the anchors
+  pointed at an unrelated match arm.
+- **`ONTOLOGY_ROUTE_PATHS` is not at `:213-228`** (`DRAFT:221`, `DRAFT:259`). That span is the tail of the
+  path consts; `pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[` is line **222** and the array closes at **237**.
+  The **14** it claims is correct — lines 223-236 are exactly fourteen entries — so only the anchor was wrong,
+  in a sentence whose whole point is that a stale document counted 12.
+- **`ontology/adapter-postgres/src/lib.rs:416` and `:458` are not `validate_draft`** (`DRAFT:237`). `:416` is
+  `})` and `:458` is `&self,`. `fn validate_draft` is line **1124**; its two call sites are **429** and
+  **471**. Now cited as the definition plus `validate_draft(&draft)?`, which occurs exactly twice and so
+  carries the "both sites" claim itself.
+- **`:1142-1151` is the duplicate *property* key check, not link-type validation** (`DRAFT:238`). The sentence
+  claims the entire link-type validation is duplicate-`stable_key`-only; that check is
+  `duplicate link key {key:?} in object type draft` at **1155-1164**. The cited range is a different loop over
+  a different field — the claim is true, the evidence pointed elsewhere.
+
+### Judgement calls recorded rather than hidden
+
+- `DRAFT:399` cited `console-program-ledger.md:327` **and** `:420` for "every jurisdiction binding and Korea
+  control reads HOLD". `:327` states it specifically (`every control trace remains HOLD`). `:420` states it
+  only through the closing sentence that **every rebind entry in that ledger repeats verbatim** — there is no
+  fragment unique to `:420` that supports this claim, and the one thing unique to that line is iOS toolchain
+  evidence. Collapsed to the `:327` anchor plus "restated in every rebind entry since", which is what the
+  ledger actually shows. A per-entry line number here was precision the source does not have.
+- `DRAFT:260` carried *"and not the `:213-217` an earlier draft of this plan cited"* — citation history that
+  means nothing once no citation is a line number. Removed; the surviving fact (that document counted 12, the
+  code has 14) is untouched.
