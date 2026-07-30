@@ -174,3 +174,32 @@ acceptance row said *"`policy_versions` invalidation"* — now both counters. (3
 domain `state.consume(quantity)` at `inventory/adapter-postgres/src/lib.rs:411`; `:411` is the event `INSERT`
 and the domain call is at **`:406`**. Cited both, at their real lines. (4) §2 driver 2 needed the qualification
 the brief asks for in 5.5(a) — added there, since driver 2 is the sentence that promises replay is free.
+
+## Wave 6 — anchors and counted facts
+
+**Changed.** §0.1 is re-anchored on **quoted sentences plus heading names** (`## Where employees belong`,
+`## Recommended Direction`, `## The two hard problems`) with `:89-92`, `:545-546`, `:575-579` and `:83-87`
+dropped and the review's `:116`/`:571`/`:606` **not** substituted; the same treatment was swept across §0.3
+(`:125` was a blank line), §0.5 (`:214-218`), §0.6 (`:378-381`) and §3.2 Option 2 (`:545-546`, `:575-579`).
+The preamble now names **which** citation form applies where and why, and points at X-CITE. §0.12's heading
+and body carry the **reachability** wording, plus the two findings it lacked: `to_object_type_id` appears
+**zero** times in the write module so it is decoration, and the proposed guard is **absent** — `validate_draft`
+exists (`adapter-postgres/src/lib.rs:416`, `:458`) but its entire link-type validation is `:1142-1151` and
+checks duplicate `stable_key` only, so `link_type_alone_is_rejected` is observed RED today. §0.13 corrects the
+route list to `:213-228` and **14** paths, names the attach route
+(`POST /api/v1/ontology/object-types/{stable_key}/policies` backed by `0205`), adds X2's sharper consequence
+(an unpoliced row is `404` by id, deliberately, so a 403 is not an existence oracle), and restates the
+consequence as a `view` permit. Nineteen bare basenames are path-qualified on first use; `README.md:12` →
+`docs/decisions/README.md:12`; `lib.rs` disambiguated at both of its ambiguous sites.
+`fanout-plan-DRAFT.md:243` is cited only for the derived-facts rule, never for anchor discipline.
+
+**Not anticipated by the brief.** Two tables were left structurally broken by earlier waves: the §5.11 SoD row
+(wave 4) and GATE row (wave 3) each carried **three** cells in a four-column table, so both would have rendered
+with a column shifted. Found by a pipe-count check across every table block, now run as a habit at the end of
+each wave. Nothing else in the document mismatches.
+
+**Brief item deviated from on evidence.** Item 6.3 describes `validate_draft` as *"confirmed absent"*. The
+**function** is present at two call sites; what is absent is the **check** the plan proposes to add to it. The
+brief's own evidence (`:1142-1151` is the entire link-type validation) says exactly that, so the conclusion —
+`link_type_alone_is_rejected` is RED today — is unchanged; only the wording is accurate now. Writing "absent"
+would have sent an implementer to create a function that exists.

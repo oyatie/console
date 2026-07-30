@@ -2,7 +2,13 @@
 
 > Status: PENDING APPROVAL
 > RALPLAN-DR planner pass, 2026-07-29. Deliberate mode (auth/security + migrations + PII).
-> Every "what exists" claim cites **executable** code or DDL. Line numbers re-verified this session.
+> Every "what exists" claim cites **executable** code or DDL. **Two citation forms, deliberately:**
+> `path:line` into **unmodified source** (migrations, Rust, specs this revision does not touch) — re-verified;
+> and **quoted sentence plus heading name**, no line number, into any file this session also edits — the three
+> amended ADRs, `docs/ideas/authority-and-approval-model.md`, `docs/program/LANE-PROTOCOL.md`, and this plan
+> itself. The second form exists because adding a header to the input shifted every body line by ~30 and the
+> first repair invalidated itself in the same edit. A mechanical citation audit (**X-CITE**, §8 Phase 0) is a
+> plan deliverable, because the failure was systemic rather than clerical.
 >
 > **This is a DELTA, not a fresh design.** Finality is decided by ADR-0023, the Cedar strangler by
 > ADR-0021, the workflow engine and its org-local spine by ADR-0018, branch scope by ADR-0003, local
@@ -34,21 +40,28 @@ the entity model trips over them. §0.12-§0.14 are corrections to claims made T
 
 ### 0.1 The input's headline cost estimate belongs to a design its own body rejected — BLOCKING
 
-`authority-and-approval-model.md:89-92` retracts group-scoped people: *"The group is not high enough…
-Group-scoping relocates the duplication rather than removing it."* Then `:545-546` recommends exactly
-that — *"People are group-scoped… the group is the tenancy boundary for people"* — and `:575-579`
-sizes `app.current_group` across 141 RLS tables as *"the largest single engineering cost in the chosen
-model."*
+Anchored by **quoted sentence and heading**, never by line number: that file has grown a correction header
+twice, and each time every line-number citation into it silently moved while remaining textually plausible.
 
-That cost is incurred **only** by the retracted option. The body's own conclusion (person at the
-platform, tenant owns the edge, `:83-87`) needs **no second tenancy dimension at all** — see §4.2.
+In `docs/ideas/authority-and-approval-model.md`, under **`## Where employees belong`**, it retracts
+group-scoped people — *"This revises the earlier 'group is the tenancy boundary for people' answer."* and
+*"The group is not high enough … Group-scoping relocates the duplication rather than removing it"*. Then under
+**`## Recommended Direction`** it recommends exactly that — *"**People are group-scoped.** Per the owner's
+choice, the group is the tenancy boundary for people"* — and under **`## The two hard problems`** it sizes
+`app.current_group` across 141 RLS tables as *"This is the largest single engineering cost in the chosen
+model"*.
+
+That cost is incurred **only** by the retracted option. The body's own conclusion — *"The person belongs to the
+platform; the tenant owns the edge"* — needs **no second tenancy dimension at all**, which **X4 later confirmed
+by execution** (`docs/ideas/experiment-x4.md`; see §4.2 for what X4 does and does not cover).
 The largest line item in the input's cost model is an artifact of an internal contradiction.
 
 ### 0.2 `Feature` cannot be deleted — it is Cedar's action vocabulary
 
 `cedar_pbac/engine.rs:430` builds the Cedar action UID from `request.action.feature().as_str()`.
 Delete the enum and Cedar has no action names. The brief and the input both treat
-"`Feature` × 6-role matrix" as one deletable unit (`lib.rs` `:109` and `:573`); they are two things:
+"`Feature` × 6-role matrix" as one deletable unit (`backend/crates/platform/authz/src/lib.rs:109` and `:573`);
+they are two things:
 
 | Thing | Location | Verdict |
 |---|---|---|
@@ -60,11 +73,13 @@ Only the decision is scaffolding. This shrinks problem C rather than deferring i
 
 ### 0.3 Cedar `parents` hierarchy is unimplemented, not merely unused
 
-Both entities ship with an empty parent set: `engine.rs:392` and `:425` pass `HashSet::new()`, and
-`engine.rs:449` hands `Entities::from_entities` exactly two entities, validated against
-`bundle.schema`. "The corporate graph *becomes* the Cedar hierarchy"
-(`authority-and-approval-model.md:125`) is a property of Cedar the library, not of this engine. It
-costs a change at `:392`/`:425`/`:449` plus a schema declaration.
+Both entities ship with an empty parent set: `backend/crates/platform/authz/src/cedar_pbac/engine.rs:392`
+and `:425` pass `HashSet::new()`, and `backend/crates/platform/authz/src/cedar_pbac/engine.rs:449` hands `Entities::from_entities` exactly two entities,
+validated against `bundle.schema`. The input's *"Cedar expresses this natively through entity `parents`, so the
+corporate graph **becomes** the Cedar hierarchy"* (`docs/ideas/authority-and-approval-model.md`, quoted rather
+than line-cited — that file's anchors have moved twice) is a property of **Cedar the library**, not of this
+engine. It costs a change at `:392` / `:425` / `:449` plus a schema declaration. The `engine.rs` line numbers
+stay as line numbers: that file is unmodified source.
 
 ### 0.4 `users` is not keyed `(id, org_id)` — and the keystone is cheaper as a result
 
@@ -82,14 +97,15 @@ DDL permitted by the PK — not a cross-tenant carve-out earned by special desig
 ### 0.5 `org_unit` is not production schema
 
 `parent_org_unit_id` appears only in a conformance **test fixture**
-(`ontology/rest/tests/company_conformance/fixtures/org_unit.rs:146`). The input's *"`org_unit` today
-has only `parent_org_unit_id`… so it is load-bearing while under-specified"* (`:214-218`) describes a
-fixture. Org structure is greenfield in production; `home_branch` in `0166` is a separate real thing.
+(`backend/crates/ontology/rest/tests/company_conformance/fixtures/org_unit.rs:146`). The input's
+*"…so it is load-bearing while under-specified"* (`docs/ideas/authority-and-approval-model.md`, under
+**`## Permanent 부서 and temporary 사업장 are different kinds`**) describes a fixture. Org structure is greenfield in production; `home_branch` in `0166` is a separate real thing.
 
 ### 0.6 `notices` carries the same cross-company blocker the input rejects elsewhere
 
 The input concludes *"So 통지 → 인지 is built. What is missing is narrower than it first appears"*
-(`:378-381`) — naming only the missing content and closure. It missed a third, structural gap:
+(`authority-and-approval-model.md`, under **`## 전자결재 — the line is resolved by competence, not by rank`**)
+— naming only the missing content and closure. It missed a third, structural gap:
 `notice_receipts` has `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)`
 (`0162:50`), so a recipient **must be a user of that org**. That is the same foreign-key blocker the
 input correctly identifies in `gov_approvals` (`0153:78`) and rejects the mechanism for. A group-level
@@ -167,7 +183,7 @@ is **half** of the cache-invalidation key the realtime question needs — it is 
 own it invalidates every client in the tenant on any change, and it is not bumped by assignment writes at all.
 The other half is `authz_subject_version`; §5.6 keys on both.
 
-### 0.12 CONFIRMED: a link type alone produces no edge, ever — every relationship must ride a property
+### 0.12 CONFIRMED: on every *reachable* path, a link type alone produces no edge — every relationship must ride a property
 
 Verified by reading `sync_property_links_tx` (`ontology/adapter-postgres/src/instances.rs:874`) in full.
 The claim is **true**, and it constrains every relationship in §4.3.
@@ -185,17 +201,38 @@ The claim is **true**, and it constrains every relationship in §4.3.
   every built-in catalog type is in that branch.
 
 **So a relationship declared only as a link type — even with `to_object_type_id` correctly set —
-produces zero edges, silently, forever.** A canvas that draws relationships as link types would ship an
-empty graph that looks configured.
+produces zero edges, silently, forever, on every path a user or an API caller can reach.** A canvas that draws
+relationships as link types would ship an empty graph that looks configured. **Executed as X1**
+(`docs/ideas/experiment-x1-x2.md`, re-runnable at `docs/ideas/experiments/x1/run.sh`): the link-type-only case
+wrote **0** edges; the property case wrote edges.
+
+**Two sharpenings the earlier draft lacked, and both change what an implementer does.**
+
+- **The rule is about *reachable* paths, not about all code.** `PgInstanceStore::create_link`
+  (`backend/crates/ontology/adapter-postgres/src/instances.rs:291`, audited INSERT at `:319`) *does* write an `ont_links` row directly from a bare
+  `link_type_id` — but **every call site in the repo is under `tests/`**, and `ONTOLOGY_ROUTE_PATHS`
+  (`backend/crates/ontology/rest/src/lib.rs:213-228`) is exactly **14** paths, **none of which creates a link**.
+  So the absolute form of the claim is false and the reachability form is exact. Stated because someone will
+  find `create_link` and conclude the trap is not real.
+- **`to_object_type_id` is DECORATION.** It appears **zero** times in the whole write module
+  (`instances.rs`). Setting it correctly buys nothing; setting it wrongly costs nothing. Say so, or an
+  implementer will trust it as the declaration of intent it looks like.
 
 **Resolution, chosen over fixing it:** every relationship in §4.3 is specified as travelling through a
 property carrying `config.link = {stable_key, to_type}`. This is not a workaround — it is the only path
 the writer implements, and the shipped `employment` fixture already does exactly this
-(`fixtures/employment.rs:161`, `:172`). The plan adds one cheap guard instead of a refactor: a
-`validate_draft` check that a link type with `to_object_type_id` set has some property referencing its
-`stable_key`. One check, and it fails closed on the trap rather than leaving it armed.
+(`backend/crates/ontology/rest/tests/company_conformance/fixtures/employment.rs:161`, `:172`). The plan adds one
+cheap guard instead of a refactor: a check inside `validate_draft` that a link type with `to_object_type_id` set
+has some property referencing its `stable_key`. One check, and it fails closed on the trap rather than leaving
+it armed.
 
-### 0.13 A published Tier N type lists EMPTY forever until a policy is attached — and `no-code-ontology.md` is now stale on the fix
+**The guard is absent today, and that is the record the plan's own discipline requires.** `validate_draft`
+exists (`backend/crates/ontology/adapter-postgres/src/lib.rs:416`, `:458`), but its **entire** link-type
+validation is `:1142-1151`, which checks **duplicate `stable_key` only** and nothing about property references.
+So §7's `link_type_alone_is_rejected` is **observed RED today** — the known-bad control is present behaviour,
+which is exactly the state principle 5 demands before a guard lands.
+
+### 0.13 A published Tier N type lists EMPTY forever until a policy is attached — and `docs/ideas/no-code-ontology.md` is now stale on the fix
 
 Two findings, and they pull in opposite directions.
 
@@ -211,13 +248,24 @@ configuration.
 **But the fix is now reachable, and the input document says otherwise.**
 `docs/ideas/no-code-ontology.md` states *"Publish a type … **NOT reachable. This is the one missing
 route.** `ONTOLOGY_ROUTE_PATHS` is exactly 12 paths and none touches the schema FSM."* That is **stale**:
-`OBJECT_TYPE_LIFECYCLE_PATH` (`ontology/rest/src/lib.rs:201`) and `OBJECT_TYPE_POLICIES_PATH` (`:202`)
-both exist and are both registered in `ONTOLOGY_ROUTE_PATHS` (`:213-217`) — landed by #521 and #525/0205
-after that document was written.
+`OBJECT_TYPE_LIFECYCLE_PATH` (`backend/crates/ontology/rest/src/lib.rs:201`) and `OBJECT_TYPE_POLICIES_PATH`
+(`:202`) both exist and are both registered in `ONTOLOGY_ROUTE_PATHS`, which runs `:213-228` and holds **14**
+paths — not the 12 that document counted, and not the `:213-217` an earlier draft of this plan cited. Landed by
+#521 and #525/0205 after that document was written.
 
-So publish and policy-attach are both HTTP-reachable, and the empty-list trap is closeable over HTTP.
+The attach path exercised over HTTP is **`POST /api/v1/ontology/object-types/{stable_key}/policies`**
+(`OBJECT_TYPE_POLICIES_PATH`), backed by the audited definer in `0205_ont_policy_api_attach_writer.sql`.
+Measured as X2: `200 OK []` with no policy, then `201 Created` and rows with one attached.
+
+**And the consequence X2 measured is sharper than "visible but unfiltered": an unpoliced entity is ABSENT.**
+A row the list hides is **`404` by id — deliberately**, so a 403 is not an existence oracle
+(`backend/crates/ontology/rest/tests/object_policy_attach_as_runtime_role.rs:133-141`, asserting *"a row the
+list hides must not be fetchable by id"*). This matters for §4.2: deny-by-omission is a confidentiality
+mechanism here, not a usability defect.
+
 **Consequence for this plan:** every Tier N entity must ship with its object policy attached in the same
-change that publishes it, and `tier_n_type_lists_nonempty` is its probe (§7). What remains true from that
+change that publishes it — **which is a `view` permit, and that is all an authored object policy can
+express** — and `tier_n_type_lists_nonempty` is its probe (§7). What remains true from that
 document is the deployment hold (§8), not the missing-route claim.
 
 ### 0.14 Correction to this plan's own §4.1: `work` must be Tier T, not Tier N
@@ -231,7 +279,7 @@ review being separate passes is the repo's rule; this is that rule catching a pl
 ### 0.15 The `Feature` freeze is on MINTING, not composing — so the canvas costs no amendment
 
 `Feature::ALL` is `[Self; 96]` (`authz/src/lib.rs:372`), not the ~40 the specs assume.
-`rbac-configurable.md:257-259`, under **"Hard invariants (NON-NEGOTIABLE)"**: *"Only the **assignment** of
+`docs/specs/rbac-configurable.md:257-259`, under **"Hard invariants (NON-NEGOTIABLE)"**: *"Only the **assignment** of
 the existing `Feature` set is editable. No SQL/console path creates a new `Feature`."*
 
 **A canvas that composes the existing 96 breaks nothing.** Only a canvas that mints capabilities hits that
@@ -356,9 +404,10 @@ Named once here; every entity in §4 refers to them. All four are enforced by
 
 Two facts about the tiers decide most of §4:
 
-- **Every Tier G rationale is literally "no tenant data"** (`lib.rs:48-70`). PII therefore cannot go
+- **Every Tier G rationale is literally "no tenant data"** (`backend/ci/gates/tenant-isolation/src/lib.rs:48-70`).
+  PII therefore cannot go
   in Tier G. Tier O is where cross-tenant authorization data already lives — `group_memberships` and
-  `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`:118-124`).
+  `group_role_grants`, with rationale *"cross-tenant … resolver only"* (`:117-129`).
 - **Tier N cannot hold a cross-tenant edge.** `ont_instances.org_id` is `NOT NULL` (`0155:18`) and
   `ont_links` pins **both** endpoints to the same org via composite FK — `0155:76`
   `FOREIGN KEY (from_instance_id, org_id) REFERENCES ont_instances(id, org_id) ON DELETE CASCADE,` and its
@@ -396,7 +445,7 @@ ontology instance types.
 
 **Pros.** Zero new GUCs, zero changes to the 141 RLS policies, zero new gate classifications. Reuses
 three existing tier classifications, the shipped `SECURITY DEFINER` resolver pattern (`0060:99-126`),
-the `object_links` edge store (`0102:54`), and the re-validating-read bargain (`store.rs:576-593`).
+the `object_links` edge store (`0102:54`), and the re-validating-read bargain (`backend/crates/platform/authz-rest/src/store.rs:576-593`).
 Canvas-editability and replay arrive free for every Tier N entity — the large majority. PII does not
 move. Slice 0 is
 unblocked while every Korea control reads HOLD.
@@ -408,7 +457,8 @@ standing security-review surface that must be re-proven every time it changes.
 
 #### Option 2 — Second tenancy dimension (`app.current_group`)
 
-What the input's Recommended Direction assumes (`:545-546`, `:575-579`).
+What the input's **`## Recommended Direction`** assumes — *"People are group-scoped"* and
+*"the largest single engineering cost in the chosen model"* (§0.1).
 
 **Pros.** A group-scoped person row is directly readable by `console_rt`, so ontology links to it work
 natively and no definer is needed.
@@ -596,7 +646,7 @@ on `audit_events` builds a second ledger, which is the divergence failure by con
 
 Ordered by tier. "Slice 0" marks the minimum shape the proving slice needs; everything else is a widening.
 
-**Vocabulary is adopted, not invented.** `org-editor-primitives-ux.md` already specifies 14 org primitives
+**Vocabulary is adopted, not invented.** `docs/specs/org-editor-primitives-ux.md` already specifies 14 org primitives
 — Group, Org, OrgUnit, Worksite, **Person, Employee, User, Position**, ReportingLine,
 EmploymentAssignment, CrossOrgAssignment, SetupDraft, Audit — with the separation this plan needs at `:256`:
 *"A Person is not automatically an Employee; an Employee is not automatically a User; a Position is not
@@ -791,7 +841,7 @@ now would be speculative.
 
 ### 4.2 Why there is no second tenancy dimension
 
-**Independently confirmed by a shipped spec.** `org-hierarchy.md:3-7` self-declares P0-P3 **IMPLEMENTED**
+**Independently confirmed by a shipped spec.** `docs/specs/org-hierarchy.md:3-7` self-declares P0-P3 **IMPLEMENTED**
 (`backend/crates/platform/group/src/lib.rs` exists) and states the posture verbatim: *"the per-법인
 `app.current_org` boundary is **UNCHANGED**. This spec adds a controlled cross-entity scope **above** that
 boundary; it never punches a hole in it."*
@@ -1307,7 +1357,7 @@ The lock corroborates the edge: `serde_json 1.0.150` lists `indexmap 2.14.0` amo
 (`backend/Cargo.lock:6659-6671`), which is exactly what that feature does. And `revision_row_hash` is
 Rust-side SHA-256 over `serde_json::to_vec`, so plpgsql cannot compute it at all. The same block states the
 consequence verbatim: *"The suite is green because it does not recompute hashes — not because recomputation
-would succeed."* Linkage is what SQL can do, and it is what `company_conformance.rs` already asserts. If
+would succeed."* Linkage is what SQL can do, and it is what `backend/crates/ontology/rest/tests/company_conformance.rs` already asserts. If
 this plan later wants recomputation, it is a **Phase-0 prerequisite with a named owner**, never a Slice-0
 check.
 
@@ -1856,7 +1906,7 @@ ten) records is the allocation table below.
 
 | # | Matter | Status | Required artifact |
 |---|---|---|---|
-| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022** — it decides against a *speculative external IdP seam* and confines `console-identity-application` to local org/account administration. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no platform identity row lands in Slice 0. **Does not block Slice 0** — it *defers* `party` (§4.1) |
+| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022**. Its `## Decision` opens *"Do not ship a speculative external IdP seam."* and confines `console-identity-application` to *"only local org/account administration commands, read models, and audit builders"*. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no platform identity row lands in Slice 0. **Does not block Slice 0** — it *defers* `party` (§4.1) |
 | G2 + G2b | **`org_id` × `BranchScope` composition, and `BranchScope::All` after `Role` deletion** (§0.16) | **documented gap, and it is ONE gap.** `ADR-0003`'s Decision says *"`All` for SUPER_ADMIN/EXECUTIVE rollups, an explicit branch set otherwise"* and has **no org concept**; `ADR-0021` decision 2 makes `org_id` the RLS boundary Cedar may not widen. **No ADR states how they compose** | **D2 → ADR-0028**, one reciprocal pair on `ADR-0003` with its Decision **edited in place** (merging G2 + G2b). Filed as **one** record because CI cannot see a clause collision (above): two pairs against the same Decision line would both pass. `ADR-0021` and `ADR-0018` gain `ADR-0028` in `related`. **BLOCKS Slice 0** |
 | G3 | **전결규정 routing, capacity, obligation loop** | **not greenfield — "zero ADR hits" is struck.** `ADR-0023:81-82` already decides arbitrary approval-line DAGs and the 검토/승인/합의/참조 vocabulary, so this is a **delta on ADR-0023's Engine-Gen**, not new ground | **N3 → ADR-0033**, non-amending, `related: [ADR-0018, ADR-0023]`. **NOT blocking Slice 0** — this is the theme where corrected evidence *removes* work from the critical path. Acceptance condition: the first migration introducing `delegation_rule` carries `CHECK (delegator_id <> delegate_id)` in the same file |
 | G4 | **Quantity lineage** (§5.8) | new; zero ADR hits | **N4 → ADR-0034**, non-amending, `related: [ADR-0001]`. Deferred **with constraints instead of schema** (below); no 0207+ slot |
@@ -1867,8 +1917,8 @@ ten) records is the allocation table below.
 | G9 | **Audit coverage for the new write paths** | **reclassified: BLOCKING, and a retroactive amendment.** `ADR-0002`'s Decision states its *"exclusion set contains exactly one entry"* and that *"a test asserts that is the only exclusion"*. The gate returns **TWO** | **D3 → ADR-0029**, a **retroactive** reciprocal amendment pair on `ADR-0002` whose Decision text is **edited in place** — a reciprocal key alone leaves a false sentence standing. `ADR-0014` gains `ADR-0029` in `related`. **BLOCKS Slice 0** |
 | D4 | **The console rebuild charter and the generated-client reconciliation** | **owner decisions CAPTURED, not accepted.** `docs/ideas/d4-frontend-charter.md` (2026-07-30) records four decisions and splits D4 into two records. So D4 is blocked on **acceptance**, not on an owner decision | **two** pairs: **ADR-0030** (D4-A1, amends `ADR-0025`) and **ADR-0031** (D4-A2, amends `ADR-0009`, Decision edited in place; `ADR-0012` gains `related` only). **NOT on Slice 0's path**, and the record is owed **independently of whether this plan is approved.** `ADR-0025`'s clause 1 — a reachable mounted body for every exposed navigation state — survives **unamended**, and the CI gate asserting the console frontend does not exist **stays**: under the charter it is the enforcement mechanism for "planning only" |
 | N1 | **Where the fold is computed** (§5.6) | not a collision; a mechanism worth recording | **N1 → ADR-0032**, non-amending, `related: [ADR-0021]`. Records that the fold is computed **per request with no cross-request materialisation**. Unblocks §5.6 by making the deleted materialise row a recorded decision rather than an omission |
-| **SoD** | **Segregation of duties: IN, as a grant-authoring-time constraint.** Three shipped specs already decide it is not a UI concern — `docs/specs/cedar-pbac-authorization.md:122` *"Segregation of duties and self-approval checks are PBAC conditions, not UI-only rules."*, `docs/specs/no-code-operational-logic.md:211` *"segregation of duties and self-approval prevention"*, and `docs/specs/operations-intelligence.md:170` *"required evidence, segregation of duties, self-approval restrictions, and conflict-of-interest flags"*. Earlier drafts of this plan mentioned none of them, which read as a silent contradiction rather than a choice | **no new record — it lands inside N3.** Mechanism: **conflict pairs over `Feature`**, evaluated at **grant-authoring time**, in the place the `gov_approvals` four-eyes check already runs. Not a fold-time subtraction — §1 principle 2 is unaffected (see the note there). Widening: **W19**, with probe `conflicting_grant_pair_refused_at_authoring`; known-bad control: **a fold that accumulates a conflicting pair silently**, which is today's behaviour |
-| **GATE** | **What each CI gate pins — and therefore what may and may not be amended.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs:430-453` (`requireOntologyRestItestReachability`) **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`:428`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
+| **SoD** | **Segregation of duties** | **IN, as a grant-authoring-time constraint.** Three shipped specs already decide it is not a UI concern — `docs/specs/cedar-pbac-authorization.md:122` *"Segregation of duties and self-approval checks are PBAC conditions, not UI-only rules."*, `docs/specs/no-code-operational-logic.md:211` *"segregation of duties and self-approval prevention"*, and `docs/specs/operations-intelligence.md:170` *"required evidence, segregation of duties, self-approval restrictions, and conflict-of-interest flags"*. Earlier drafts of this plan mentioned none of them, which read as a silent contradiction rather than a choice | **no new record — it lands inside N3.** Mechanism: **conflict pairs over `Feature`**, evaluated at **grant-authoring time**, in the place the `gov_approvals` four-eyes check already runs. Not a fold-time subtraction — §1 principle 2 is unaffected (see the note there). Widening: **W19**, with probe `conflicting_grant_pair_refused_at_authoring`; known-bad control: **a fold that accumulates a conflicting pair silently**, which is today's behaviour |
+| **GATE** | **What each CI gate pins** | **classification, so amendability is decidable.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs:430-453` (`requireOntologyRestItestReachability`) **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`:428`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
 
 **The allocation, assigned once, here.** Highest issued is **ADR-0026**; `ADR-0013` was never issued and must
 never be reused (`docs/decisions/README.md:13`). True next free: **0027**.
@@ -1914,7 +1964,7 @@ beats a pure function that callers may forget. `0205` set that precedent deliber
 predates this plan. The layer-boundary gate still holds because no domain crate gains a SQL dependency: the
 constraints live in migrations, and the domain crates keep their pure validators. **If the Critic rejects
 that distinction, G8 becomes a reciprocal amendment to ADR-0001, not a silent divergence** — which is what
-`README.md:12` requires either way.
+`docs/decisions/README.md:12` requires either way.
 
 **D3 (ADR-0029) — audit coverage. BLOCKING, and a retroactive amendment, because the ADR is wrong.**
 `ADR-0002`'s `## Decision` states that the CI `audit-coverage` gate's *"exclusion set contains exactly one
@@ -2111,11 +2161,11 @@ session state. Any probe in this section that asserts an absence must state wher
 
 | Probe | Asserts | Known-bad control |
 |---|---|---|
-| `every_entity_declares_its_components` | each §4.1 entity has a row per composed component in `ecosystem-entity-components.tsv` | an entity with no rows — the §4.0.1 completeness test, as a test |
+| `every_entity_declares_its_components` | each §4.1 entity has a row per composed component in `docs/specs/ecosystem-entity-components.tsv` | an entity with no rows — the §4.0.1 completeness test, as a test |
 | `capacity_recorded_on_every_authority_mutation` | reads the **D3 write-path enumeration** (§8 Phase 0) and asserts every enumerated authority-mutating path writes `gov_approvals.authorizing_grant_id`. The `audit_events` pair is **out of scope** until those deferred columns land (§4.0.3) | a mutation writing a null capacity where the enumeration says it is required |
 | `no_duplicated_fact` | `work` (Tier T) and the revision chain never store the same field | a `work.assignee` column duplicating the assignment edge |
 | `projected_mutation_goes_through_the_domain_usecase` | every consequential `work` mutation runs through the audited domain use-case, satisfying DN-0003 invariant 1 for a projected type (§4.0.2) | a write reaching the backing table through an ontology property edit |
-| `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `residual.rs:200-203` (§0.13) |
+| `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `backend/crates/platform/authz/src/cedar_pbac/residual.rs:200-203` (§0.13) |
 | `link_type_alone_is_rejected` | a link type with `to_object_type_id` and no property referencing its `stable_key` fails `validate_draft` | today's behaviour — **must be RED before the guard lands** (§0.12) |
 | `slice0_band_enforced_synchronously` | the ₩100,000 band is refused **at raise**, not flagged at close | a check that only reports at period close |
 | `economics_is_a_view` | `work` cost equals `SUM` over voucher LINES dimensioned to that work; no cost column on `work` | a stored cost column |
@@ -2354,13 +2404,13 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 | Rung | Prepwork item |
 |---|---|
 | — | **The governance records of §5.11**, with the numbers allocated there. Under `README` rules 2-4 these *gate* the work. **D2 (ADR-0028) and D3 (ADR-0029) block slice 0**; D2 subsumes the old G2b, so it is also what gates C5. G1 is withdrawn, G6 and G7 struck |
-| — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `known-bad-controls.tsv` |
+| — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `docs/specs/known-bad-controls.tsv` |
 | **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
 | — | *(moved to Phase 0)* The **D3 write-path enumeration** is a Phase-0 artifact, not Phase-7 prepwork — `capacity_recorded_on_every_authority_mutation` reads it, and a probe cannot precede its own input. **The exclusion set has TWO entries**, each bound to a (file, function) pair; see D3 in §5.11 |
-| — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `PIVOT-2026-07-28.md` §6 describes |
+| — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `docs/PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
-| **③** | `seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
-| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
+| **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
+| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
 
 **Build-system governance is unresolved and this plan must not assume either side — but the status quo is
 healthy, so there is no forced migration.** `docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not
