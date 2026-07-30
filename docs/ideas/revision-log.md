@@ -248,3 +248,164 @@ allocates it with the rest in the same atomic commit.
 
 This is the migration-count lesson arriving live: a derived count restated in a second document went stale
 within one session of being written.
+
+---
+
+## Global-consistency pass — the question the section-clustered waves never asked
+
+Waves 1-7 were section-clustered, and that is why verification returned REGRESSIONS_INTRODUCED twice: a
+wave fixed §4.5 correctly while §5.10 kept asserting the mechanism §4.5 had withdrawn, because no step asked
+*"what else in this document refers to what I just changed?"* This pass asks it exhaustively. The checklist
+below is the deliverable; the seven named repairs are a subset of it.
+
+**Commits:** `4435e94e9` (인계 완료 + four headings + D3), `07bcfde12` (R3 + the 부서 decision),
+`7a54a5d09` (D1), `a94b2586a` (D2 + the citation and audited-table sweep), `36ba15c84` (§9, last),
+`eab23ffa9` (two remaining headings).
+
+### The sweep, by class — what each turned up
+
+**1. Headings advertising a claim the body withdrew.** R4 was one of **seven**.
+- §5.8 *"conservation as a row CHECK"* — the body withdrew sufficiency (two concurrent splits both write
+  (100, 60, 40)). → *"conservation by a parent-row lock with a row CHECK beneath it"*.
+- §0.11 *"`policy_versions` is the key"* — the body says **half** the key. → *"is HALF the cache key"*.
+- §0.16 *"deleting `Role` deletes the **only** path to `BranchScope::All`"* — the body says *"It is not the
+  sole one"* and that `Role` deletion is **not** the trigger. → two derivations, divergence PRESENT-tense.
+- §5.10 *"**Party** lifetime derived from a contract"* — in this plan `party` is the handle that is 永久 and
+  never hard-deleted. The section is about a bounded `org_unit`. → *"A temporary **UNIT's** lifetime"*, and
+  the in-body *"when a party dissolves"* → *"when a unit dissolves"*. **The most dangerous of the seven:** a
+  lane grepping "party lifetime" would have concluded the identity handle expires with a contract.
+- §4.4 *"Why the existing mechanisms cannot be widened"* — three of its four rows extend or narrow.
+  → *"What each existing mechanism can and cannot absorb"*, and its lead sentence with it.
+- §3.1 *"the four storage tiers that already exist"* — the body adds Tier P and wave 6 already corrected
+  principle 4 to *"optionally projected"*. → *"four CI-enforced … plus one CODE-gated projection"*.
+- §4.0.3 *"one missing field"* — two columns, four missing things in its own table, target moved.
+  → the claim without the count.
+
+**2. §9, the ADR block, read against every other section LAST.** Four disagreements, not one.
+- **R1**: still `on audit_events`. Retargeted, with the `built_in_audited_tables()` reversibility argument
+  and the 466-site price of the deferred pair.
+- **Authority "as ontology instance types" stated with no exception** — X4b *measured* that a `Group`-scoped
+  grant cannot be one. §9 would have recorded a claim an experiment refuted.
+- **Drivers (2) still carried "replay must be free" UNQUALIFIED** — the form §2 driver 2 corrected in wave 5.
+  §9 is downstream of §2 and nothing had propagated the valid-time qualification into it.
+- **The cost line, the alternatives list, the standing paragraph and the consequences** all still described
+  the Tier O `party`. All four retargeted after D1.
+- The preamble's *"corrects itself in three places"* → four.
+
+**3. §7 probes binding a mechanism the plan no longer specifies.** D1's two, and no others survived the read.
+- `party_not_readable_as_console_rt` asserted a **denial** — only true of Tier O. Renamed
+  `party_is_invisible_and_unmintable_from_a_tenant`: zero rows, `count(*)` = 0, and a refused INSERT.
+- `no_new_gate_classification` required **both** tables in `owner_only_table_allowlist`. Now exactly one, and
+  an owner-only `party` is one of its known-bad controls.
+- Checked and sound: `fold_is_scope_parameterised` and `requirement_3` (the Tier O store survives),
+  `capacity_recorded_on_every_authority_mutation` (already scoped to `gov_approvals`), `basis_survives_the_chain`
+  (uses the shipped `audit_events.reason`, not the deferred pair), `lot_conservation` (asserts the per-row
+  property only; the concurrency property is a separate probe), `visibility_*`, `definer_*`, `link_type_alone_is_rejected`.
+- **No probe asserted 인계 완료 as a gate** — the withdrawal had reached §7 already. The gate survived only in
+  §5.10's table and W4's acceptance.
+
+**4. Phase 3/4 crate tables, Phase 7 prepwork, W1-W20, Slice 0/1 rows.**
+- **No widening landed the party family at all.** `party`, `party_org_visibility` and the two `party_id`
+  columns were DEFERRED with nothing carrying them. W2 is the first widening that cannot proceed without
+  them; W2 now lands them with acceptance.
+- **W1 said "party-keyed recipient REPLACING the org-composite FK".** `notices` and `notice_receipts` are
+  **both gate-marked audited** (`0162:12`, `:40`), and `recipient_user_id` is `NOT NULL` (`:45`) — so a column
+  swap is a gate violation. W1 and §4.4 now spell the additive form and W1 carries the fourth gap and the
+  non-members-receive-nothing half of its probe, which §4.4 required and W1 omitted.
+- **W4's acceptance still said "인계 완료 queries GREEN"** (R2) — now the assertion, plus the fixed-authority
+  count without which hard-gating is unavailable.
+- **W5** did not carry §4.7's `(period, cumulative_limit)` decision, which named W5. Added, with the
+  `AccessScopeLevel` department-level widening beside it.
+- **§5.11 D3 "two 0207+ rows" vs Phase 7 rung ② "four"** — the same list at two horizons (Slice 0 vs W16).
+  Said so rather than reconciled to one number.
+- Phase 4 crate 1, the Slice-0 `party` row and "Explicitly out of slice 0" all attributed the deferral to
+  **irreversibility**, which is exact only for `users.party_id`. Two reasons now stated separately.
+
+**5. Cost and economics sentences.**
+- §9's cost line: two owner-only tables → **one**, each item priced, and what Slice 0 actually pays.
+- §4.1's Tier O heading: 2 new tables → **1**. The in-body "the second Tier O table" with it.
+- §3.2 Option 1's Pros gained "and no owner-only table for the handle itself".
+- §5.5 item 2 and the Slice-0 voucher row put two columns on `finance_gl_voucher_lines` while the
+  irreversibility warning cited only the header (`0160:21`). The lines carry their own marker at `0160:56`.
+- Checked and sound: the migration count (205 as of `8e76dffb4`), the CI job count ("every job"), the 466
+  `with_audit` sites, the five period-lock call sites, the 27/27 HOLDs, the ADR allocation count.
+
+**6. Enumerations against shipped vocabularies — every one re-read, not sampled.**
+- **R3, the worst of the four regressions.** `AccessScopeLevel` is `{Group, Org, Region, Branch, Worksite}`
+  (`access_scope.rs:28-34`). §4.1's grant row and §4.5's definer trace said
+  `{org_unit, organization, region, branch, worksite}`. Corrected at both, plus §3.1's uniformity sentence
+  and §4.3's published-schema caveat, which named the two vocabularies interchangeably.
+- Verified correct as written: `LinkCardinality` / `ont_link_types.cardinality` (`0152:77`), `ActionDispatch`
+  / `ont_action_types.dispatch` (`0152:99`), `AUTHORING_ACTIONS` = 5 (`authoring.rs:246-252`),
+  `messenger_threads.kind` = 4 (`0012:9`), `notices.status` = 2 (`0162:22`),
+  `work_order_approval_steps.role` = 3 (`0008:63`) and `step_order BETWEEN 1 AND 3` (`:62`),
+  `policy_role_conditions.attribute` = **17** (`0065:110-127`) and `operator` = 3 (`:129`),
+  `clearance_assignments.status` = 3 (`0147:20`), `audit_stream_event_labels.sensitivity` = 3,
+  the voucher FSM = 5 (`0160:28`), `inventory_consumption_events.source_kind` = 2 (`0156:87`),
+  `group_role_grants.group_role` = 3 (`0060:45`), `ont_instances.lifecycle_state` = 5 (`0155:27`),
+  `Feature::ALL` = `[Self; 96]` (`authz/src/lib.rs:372`), `LANE_TYPES: [&str; 5]`,
+  `0130`'s **twelve** seeded `link_types` labels (`:38-49`), the **fourteen** org primitives
+  (`org-editor-primitives-ux.md:468`) and their separation sentence (`:256`).
+- One near-miss recorded: `0172:10` CHECKs a column named `currency`, not `currency_code`.
+
+### The two decisions taken under step 3
+
+**D1 — `party` is NOT in Tier O.** Constraint 4 of the deferral wins and every Tier O reference to `party`
+goes. Four grounds, and it is the smaller claim: (1) the row holds nothing a tenant reads — a tenant already
+has the id from its **own** edge row, and §4.2 already located the confidential fact in
+`party_org_visibility`; (2) **the sentinel org is shipped and already holds platform rows that outlive
+tenants** — `0036:224` seeds `organizations` `…00face`, slug `platform`, status ARCHIVED, its reason in its own
+text at `:217-221`, excluded from `platform_list_organizations()` at `:121`, and
+`0051_platform_remove_organization.sql:34` **re-homes a removed tenant's `audit_events` there** so *"the
+immutable record of the action survives verbatim under the platform tier"*; (3) Tier T + FORCE RLS closes X4's
+measured cardinality leak (`count(*)` = 2 where org A held one edge) **by omission**, which is DN-0003
+invariant 5's own wording, rather than by denial; (4) the same policy's `WITH CHECK` plus a column CHECK
+pinning `org_id` to the sentinel make a tenant-armed INSERT impossible, so *"resolution is a
+platform-principal operation"* is enforced by DDL rather than by a handler nobody has written. Removes one
+allowlist entry, one gate classification and one definer. Tier O is **not** emptied — the `Group`-scoped grant
+store stays, because X4b measured a sibling org reading 0 rows from Tier N.
+
+**R3's 부서 question — decided, not left open.** A 부서-scoped grant has **no scope level** in slices 0/1, and
+the plan does not invent one. `AccessScopeLevel` is matched **exhaustively with no wildcard** at
+`access_scope.rs:86-98` and `authz/src/lib.rs:1524-1538`, so a sixth variant is a kernel change, a compile
+error at both sites and a decided `branch_scope_for_org` projection — code, not an authored row.
+`policy_role_conditions.attribute` **does** hold `department` (`0065:115`) but the resolver evaluates only
+`branch`|`team` (`authz/src/lib.rs:1403-1429`, `_ => return None`), so it is writable and resolver-void, which
+is why §4.4 narrows the write path away from it. Slice 0's scopes are 현장 = `Worksite` and 본사 = `Org`, both
+shipped; a 부서 bounds a decision as a **competent `org_unit` instance** named by `delegation_rule`, an instance
+reference rather than a level. A department level is W5 work and must arrive with its projection arm.
+
+### Not anticipated by the findings
+
+1. **§0.4 contradicted D1's own constraint 1.** It read *"`users.party_id` and `employees.party_id` are plain
+   single-column **FKs** to `party(id)`"* while constraint 1 forbids a cross-tenant identifier as a FOREIGN
+   KEY — the constraint §4.1 cites two paragraphs later to explain why `on_behalf_of_party_id` carries no FK.
+   §0.4's correction of the input is about **single-column versus composite**; that half stands, and all three
+   columns are bare nullable `UUID`s. §4.1's and §4.3's cells said "FK" too; all corrected.
+2. **`gov_approvals`' approver FK is `0153:79`, not `:78`.** `:78` is the `requested_by` twin. Three sites
+   cited `:78` for the approver while §4.1 cited `:79` correctly — one fact, two line numbers, in a claim
+   ("the cross-org FK is the one real blocker") that W1 exists to address.
+3. **`finance_gl_voucher_lines` carries its own audited marker** (`0160:56`). The plan's irreversibility
+   warning named only the header while two of its own items add columns to the lines.
+4. **`derived_from` is already a seeded `link_types` label** (`0130:43`, *"Source was produced from the
+   destination (lineage)"*), which makes N4 constraint 1 — lineage edges may never live in `object_links` —
+   a warning against something that looks pre-built. Named, because that is the concrete shape of the mistake.
+5. **Constraint 5 of the party deferral was dead letter.** *"Any eventual edge FK is `RESTRICT`/`NO ACTION`"*
+   presumes an FK constraint 1 forbids. Bounded as the fallback shape *if* constraint 1 is ever amended,
+   rather than deleted, so the posture survives if the decision is revisited.
+6. **§4.6's reason for `party` not being Tier N was wrong once D1 landed.** `ont_instances.org_id NOT NULL`
+   does not forbid a row homed at the sentinel org. The real reason is that minting is a platform-principal
+   write and **every ontology write runs on the command pool that is `None` wherever this ships** (§8) — so a
+   Tier N handle would be green on every PR and dead in production. A better reason, and it was already in
+   the plan, twenty sections away.
+7. **The Phase 0 lead said "both of which"** after D3 restored the third row to its table.
+
+### Discipline notes
+
+- `git stash` and `git reset` were not used. Every commit staged by path.
+- `Status: PENDING APPROVAL` unchanged. No approval added, no HOLD softened, no gate weakened, no Korea
+  conclusion asserted. `party_is_invisible_and_unmintable_from_a_tenant` and `no_new_gate_classification` are
+  both **stricter** after this pass, not looser.
+- Table-integrity check (pipe count per block, discounting escaped `\|`) run at the end of every commit:
+  clean.
+- No code was executed. Every claim above is a read of the file cited.
