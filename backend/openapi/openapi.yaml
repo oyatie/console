@@ -13051,6 +13051,8 @@ paths:
     get:
       tags: [Evidence]
       operationId: listEvidenceObjects
+      security:
+        - bearerAuth: []
       summary: List EV objects (RLS-scoped) with filters.
       parameters:
         - { name: q, in: query, required: false, schema: { type: string } }
@@ -13071,6 +13073,8 @@ paths:
     get:
       tags: [Evidence]
       operationId: getEvidenceObject
+      security:
+        - bearerAuth: []
       parameters: [ { name: id, in: path, required: true, schema: { type: string, format: uuid } } ]
       responses:
         '200': { description: Full EV object detail., content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceObjectDetail' } } } }
@@ -13079,6 +13083,8 @@ paths:
     post:
       tags: [Evidence]
       operationId: verifyEvidenceObject
+      security:
+        - bearerAuth: []
       summary: Recompute WORM fixity for every copy; audited.
       parameters: [ { name: id, in: path, required: true, schema: { type: string, format: uuid } } ]
       responses:
@@ -13100,6 +13106,8 @@ paths:
     post:
       tags: [Evidence]
       operationId: holdEvidenceObject
+      security:
+        - bearerAuth: []
       summary: Apply or release a legal hold (release is four-eyes gated).
       parameters: [ { name: id, in: path, required: true, schema: { type: string, format: uuid } } ]
       requestBody:
@@ -13113,6 +13121,8 @@ paths:
     post:
       tags: [Governance]
       operationId: createGovernanceApproval
+      security:
+        - bearerAuth: []
       summary: Open a pending four-eyes approval request
       requestBody:
         required: true
@@ -13156,6 +13166,8 @@ paths:
     post:
       tags: [Ontology]
       operationId: commitInstanceLifecycle
+      security:
+        - bearerAuth: []
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
       requestBody:
@@ -13173,6 +13185,8 @@ paths:
     get:
       tags: [Ontology]
       operationId: listInstanceActing
+      security:
+        - bearerAuth: []
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
@@ -13187,6 +13201,8 @@ paths:
     get:
       tags: [Ontology]
       operationId: resolveInstanceByCode
+      security:
+        - bearerAuth: []
       parameters:
         - { name: code, in: query, required: true, schema: { type: string } }
       responses:
@@ -13197,6 +13213,8 @@ paths:
     post:
       tags: [Policy]
       operationId: authorizeBulk
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -13209,6 +13227,8 @@ paths:
     get:
       tags: [Policy]
       operationId: listPolicyDecisions
+      security:
+        - bearerAuth: []
       parameters:
         - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
       responses:
@@ -13489,6 +13509,9 @@ paths:
       tags:
         - office
       operationId: officeCallback
+      security:
+        - officeCallbackToken: []
+          officeDocumentServerToken: []
       summary: DocumentServer force-save callback (machine, JWT-verified)
       description: The unauthenticated (no user principal) machine callback from DocumentServer. Verified by the ONLYOFFICE
         JWT plus a host-issued callback token binding it to (org, document). On status 2 (ready to save) or 6 (force-save)
@@ -17721,6 +17744,22 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    officeCallbackToken:
+      type: apiKey
+      in: query
+      name: ct
+      description: >-
+        HS256 token minted by THIS service, carrying the org and document binding for
+        an ONLYOFFICE editing session. Verified with no clock-skew grace, so it is
+        mandatory and short-lived. Distinct from bearerAuth: it is a query parameter,
+        not a user session.
+    officeDocumentServerToken:
+      type: http
+      scheme: bearer
+      description: >-
+        JWT signed by ONLYOFFICE DocumentServer, NOT by this service's issuer, so it
+        is not bearerAuth. Accepted from the request body `token` field or from this
+        header. Required in addition to officeCallbackToken, never instead of it.
   parameters:
     EvaluationCycleId:
       name: cycle_id
