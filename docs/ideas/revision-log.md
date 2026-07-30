@@ -108,3 +108,41 @@ X9's own "the by-crate queue (Phase 3)"; all four now read Phase 4. Wave 5 item 
 Phase-3 ordering constraint" — that is now **Phase 4**, and wave 5 must write it that way. (2) `tokenize_sql`
 keeps `_` as well as alphanumerics, so the brief's "every non-alphanumeric character" is one character too
 broad; stated precisely instead. The conclusion (`only`/`public` resolve as table names) is unaffected.
+
+## Wave 4 — the governance surface
+
+**Changed.** §5.11's preamble now records that **reciprocity is machine-enforced but clause compatibility is
+not** (`check-adrs.mjs:23-27` reciprocates only `amends`/`supersedes`; the loop at `:399-406` checks only that
+the target declares the key; `related` is validated as an array at `:248-249`) — which is the stated reason
+G2 and G2b merge — and that **numbers are assigned centrally**, naming the observed failure of four judges
+each computing "next free after ADR-0026". The G-table was rewritten row by row into the D/N records with the
+allocation table (ADR-0027 to ADR-0036) and the reciprocation mechanics carried in full, including that
+`ADR-0003`, `ADR-0002`, `ADR-0025`, `ADR-0009` and `ADR-0022` **carry no `amended_by` key today**, so
+reciprocation must create it. G1 → WITHDRAWN (the string "org-scoped" appears **zero** times in ADR-0022;
+`## Context` is at `:23`, `## Decision` at `:31-39`), and its three downstream block-work claims — the header,
+§8 Phase 7's first rung and §9's standing — now name D2 and D3. G6 struck (no charter clause; `ADR-0023:148`
+is a header, the canvas bullet at `:153-154` carries none, *"enters as its own charter"* is at `:156` on a
+different bullet) with W10 marked deferred-by-follow-up rather than charter-gated. G7 struck structurally
+(DN-0003 is a design note and cannot take an ADR pair). G8 reduced to two SQL invariants, with `ADR-0001:23`
+noted as a Consequences bullet. G9 → D3, BLOCKING and retroactive, with the two exclusions bound to
+(file, function) pairs and cited to `audit-coverage/src/lib.rs:90-111` plus the test name — never to the ADR.
+§0.16 lost "sole" and gained the second shipped derivation (`request-context/src/lib.rs:421-422`), the realtime
+fan-out, R11, and a **present-tense** trigger so D2 no longer waits on `Role` deletion; §5.3's C4b and C5 say
+the same, and the onboarding seeder is named as a write site. Segregation of duties is decided **IN**, as a
+grant-authoring-time constraint inside N3 with widening W19 and a probe, and §1 principle 2 gained the note
+that additive-only constrains the fold, not authoring.
+
+**Brief defects recorded — three wrong paths and one unresolvable instruction.**
+(1) Item 4.6(b) cites `docs/ideas/no-code-operational-logic.md:211` and `docs/ideas/operations-intelligence.md:170`.
+Neither exists; both live under **`docs/specs/`**, where the quoted lines resolve exactly. Implemented with the
+corrected paths. (2) Item 4.5's G3 acceptance condition requires *"add the delegation-transitivity arm to
+`backend/crates/governance/adapter-postgres/src/lib.rs:585-604`"*. **Not implemented.** That range is
+`four_eyes_consume_conn` — a bind-match-and-consume `INSERT … ON CONFLICT` for `gov_approval_consumptions` —
+and `grep -n delegat` over that entire file returns **zero hits**. There is no delegation arm there to extend,
+and no substitute was invented. The other half of the acceptance condition, `CHECK (delegator_id <> delegate_id)`
+in the same migration, is self-contained and **was** implemented.
+
+**Not anticipated by the brief.** `ADR-0023:158` is cited in §5.4 for *"the multi-jurisdiction PII program"*; the
+follow-up list actually places that bullet at **`:157`** (`:158` is "Object graph explorer"). Item 6.4 lists
+`ADR-0023:158` among the anchors to *leave as line numbers* — leaving it would have left it wrong. Corrected to
+`:157` here, alongside the `:154-155` → `:153-154` fix in the same family.

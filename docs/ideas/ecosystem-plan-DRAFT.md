@@ -8,8 +8,11 @@
 > ADR-0021, the workflow engine and its org-local spine by ADR-0018, branch scope by ADR-0003, local
 > identity by ADR-0022. Where a matter is accepted, this plan states only the delta and inherits the rest
 > (`docs/decisions/README.md` rules 1-6). **A plan cannot supersede an accepted ADR** (rule 4), so this
-> document's real output is the reciprocal ADR pairs **G1-G9 in §5.11** (G7 needs none) — **G1, G2 and G2b
-> block work**, G2b specifically blocking `Role` deletion (§0.16).
+> document's real output is the governance records of **§5.11**, which carry their own allocated numbers there:
+> five reciprocal amendment pairs (**ADR-0027** through **ADR-0031**) and four or five non-amending records
+> (**ADR-0032** onward). **Two of them block Slice 0: D2 (ADR-0028) and D3 (ADR-0029).** G1 is **withdrawn**
+> (premise false), G6 and G7 are **struck**, and G8 takes no record. Numbers are assigned centrally in the
+> integrator's commit; no lane computes "next free".
 >
 > **It also corrects itself in three places**, because authoring and review are separate passes here:
 > the five-classes/two-spines frame is **retracted** (§4.0 — it re-created the `Feature`-matrix disease);
@@ -240,17 +243,42 @@ if roles.iter().any(|role| matches!(role, Role::SuperAdmin | Role::Executive)) {
 }
 ```
 
-That is the sole tenant-side derivation of `BranchScope::All`, and it keys on `Role`. Every KPI rollup and
-cross-branch read depends on it. `ADR-0003:20` names those two roles in its Decision text.
+That is **a** tenant-side derivation of `BranchScope::All`, and it keys on `Role`. Every KPI rollup and
+cross-branch read depends on it. `ADR-0003`'s `## Decision` says *"`All` for SUPER_ADMIN/EXECUTIVE rollups, an
+explicit branch set otherwise"*.
+
+**It is not the sole one, and that changes what the problem is.** A **second shipped derivation** exists:
+`backend/crates/platform/request-context/src/lib.rs:421-422` mints `BranchScope::All` for a `{Role::Admin}`-only
+principal **after live group-membership proof**, through
+`effective_branch_scope_for_tenant(BranchScope::All, access_scope, org_id)`. The realtime fan-out is in scope
+too: `backend/crates/platform/realtime/src/lib.rs:843`, `:885` and `:899` filter on `user_id` and
+`branch_scope.allows(branch_id)` and **never compare `org_id`**, so an all-branch scope reaches every branch the
+hub can address.
+
+**So the trigger is PRESENT tense.** The `org_id` × `BranchScope` divergence exists **today**, independent of any
+`Role` deletion. C5 / `Role` deletion is therefore **not** the trigger and must not gate the plan on it — the
+record is owed now, and §5.3's C4b and C5 rows say so.
+
+**R11, carried from the group-scope analysis: group designation stays STORED, EXPLICIT and AUDITED, and control
+edges may never be an input to any authorization resolver.** The reason is exactly the second derivation above:
+`group_memberships` is the **sole** input to the cross-entity `{ADMIN}` + all-branch mint. Deriving group
+designation from control edges (W7) and then feeding it back into that resolver would make an authorization
+scope a function of an inferred graph, which is the one shape a share-percentage cycle can silently widen.
 
 And the obvious replacement is *forbidden*: `rbac-configurable.md:366` — *"Custom role definitions do **not**
 widen `BranchScope::All`, group scope, or platform scope. Those scopes remain resolved by the existing
 membership/token systems."*
 
-**Resolution (C5, §5.3):** replace the role match with a **built-in `Feature`** check — authored in code,
-not mintable from the console, and not a custom-role definition. That satisfies `:366` (not a custom role)
-and `:257-259` (no console path mints it). Only `ADR-0003:20`'s Decision text changes, so **one reciprocal
-ADR pair (G2b), and C5 is blocked until it is accepted.**
+**Resolution (C5, §5.3):** replace **both** derivations with a **built-in `Feature`** check — authored in code,
+not mintable from the console, and not a custom-role definition. That satisfies `:366` (not a custom role) and
+`:257-259` (no console path mints it). The governance record is **D2 (ADR-0028)**, which amends `ADR-0003`'s
+`## Decision` in place and **merges what earlier drafts split into G2 and G2b** — because CI cannot detect two
+records editing the same Decision line incompatibly (§5.11). C5 is blocked until D2 is accepted; the **record
+is owed now**, because the divergence it describes is present-tense.
+
+One more write site the `Role`-deletion path must cover, named so it is not missed: the **onboarding seeder**
+inside `create_org` (`backend/crates/platform/platform-rest/src/lib.rs:568`) seeds the first SUPER_ADMIN, so it
+writes a principal whose scope the deleted match arm used to resolve.
 
 ### 0.17 Scope expressions are already decided against — delete them from this plan
 
@@ -270,7 +298,10 @@ language. Fewer moving parts, smaller attack surface, and it is what the spec al
    floor that already exists. Confidentiality comes from the floor, not from an exception to it.
 2. **Additive grants only.** `effective(person, scope) = fold(grants)`. Revocation closes a validity
    interval; it never writes a deny. Routing is a default, never a capability restriction. Standing is
-   membership in the 결재권 graph, never scope descent.
+   membership in the 결재권 graph, never scope descent. **Additive-only constrains the FOLD; it does not
+   forbid an authoring-time exclusion.** Refusing to *create* a grant that would form a conflicting pair
+   (§5.11, SoD) is a check at write time on a set that does not exist yet — it removes nothing from any
+   fold, and conflating the two would make segregation of duties inexpressible.
 3. **The four dimensions are vocabulary, not hierarchy.** 소속 / 직급·직책 / 직무 / 결재선 are
    predicates for writing grant rules. None confers authority.
 4. **Reuse the classification, not just the code.** Every storage decision names one of the four tiers
@@ -1142,7 +1173,7 @@ Each criterion states what it costs, because two of the five were assumed free a
 | E1 | **Explainability surfaced, not just logged.** A user sees "you may approve this because grant G at scope S", and symmetrically why not | `cedar_decision_log.determining_policies JSONB` (`0159:29`) already stores the deciding policy ids | **low** — the payload exists; surfacing is UI. **But** `0159:28-30` notes it is empty on deny-by-omission, so the case a user most needs explained has no explanation. Closing that is real work |
 | E2 | **A character sheet as the unifying screen** — party, positions per scope, the fold per scope, active 업무, pending 결재, delegations in/out | every §4.1 entity has a home on it; `action-inbox` crate exists | medium — and it doubles as the completeness test: an entity with no home on this screen is a modelling smell |
 | E3 | **Progressive disclosure** — controls shown are the fold | falls out of `effective(party, scope)` | **free** |
-| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065:159-172` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023:154-155` says this program ships as *"read-only NL rows + simulation"* | **partly new.** Policy simulation ships; **fold** simulation over a hypothetical grant set does not. Reuse both halves, build only the fold evaluator |
+| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065:159-172` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023:153-154` says this program ships as *"read-only NL rows + simulation"* | **partly new.** Policy simulation ships; **fold** simulation over a hypothetical grant set does not. Reuse both halves, build only the fold evaluator |
 | E5 | **Named entities, not ids** | `ont_object_types.title_property_key` (`0152:23`) and `ont_instances.title` (`0155:21`) already exist | **free** for Tier N; Tier T entities need a display key declared |
 
 **Derived channel membership (E6).** `messenger_thread_members` (`0012:30-36`) is a hand-maintained
@@ -1296,8 +1327,8 @@ The ladder, the end state and the promotion discipline are decided. Not restated
 | C2 | `policy_feature_catalog()` (`identity/rest/src/lib.rs:1433-1448`) sources from `feature_catalog` + grant rows, not `Feature::ALL × Role::ALL × permission_for` | the one endpoint still serving the compile-time matrix |
 | C3 | **`Feature` the enum SURVIVES** — it is Cedar's action id (`engine.rs:430`), §0.2 | corrects the brief's premise; ADR-0021 never asks for its deletion |
 | C4 | `Role` (`authz/src/lib.rs:35`) and `matrix_row` (`:573`) deleted once every map entry reads `cedar_only` | the ladder already gates this |
-| C4b | **BLOCKING:** before `Role` dies, `resolve_branch_scope_in_org` (`authz/src/lib.rs:1472-1483`) must derive `BranchScope::All` from a **built-in `Feature`**, not `Role::SuperAdmin \| Role::Executive` | §0.16. Needs reciprocal pair **G2b** on `ADR-0003:20`; existing SUPER_ADMIN/EXECUTIVE principals need a migration path |
-| C5 | Four new coexistence-map entries: `authority.grant`, `approval.line`, `party.identity`, `work.assignment` | `enrolledDomainMissingEntry: "deny"` already handles the runtime side |
+| C4b | **BLOCKING:** before `Role` dies, **both** derivations of `BranchScope::All` must come from a **built-in `Feature`** — `resolve_branch_scope_in_org` (`backend/crates/platform/authz/src/lib.rs:1472-1483`) **and** `request-context/src/lib.rs:421-422`'s group-proof mint | §0.16. Needs **D2 (ADR-0028)** on `ADR-0003`'s `## Decision`. **The record's trigger is the present-tense `org_id` × `BranchScope` divergence, not this deletion** — so D2 is owed now and C4b does not gate it. Existing SUPER_ADMIN/EXECUTIVE principals need a migration path, and the onboarding seeder (`platform-rest/src/lib.rs:568`) is a write site it must cover |
+| C5 | Four new coexistence-map entries: `authority.grant`, `approval.line`, `party.identity`, `work.assignment` | `enrolledDomainMissingEntry: "deny"` already handles the runtime side. **This is not the trigger for D2** — see C4b |
 
 ADR-0021 decision 1 also means configurable roles **partially ship today** — `policy_roles` +
 `policy_role_permissions` + `user_role_assignments` (`0065`) are the "policy bundle generators" it names.
@@ -1319,7 +1350,7 @@ Three consequences, and the third is the one that unblocks slice 0:
    contract, jurisdiction binding, Korea control, review disposition, legal state, release state, and
    exposure state remains `HOLD`"* through its most recent entry (`:420`). Decisively, the ledger lists
    *"규제 PII/multi-jurisdiction (Jurisdiction/Consent/DSR objects)"* under **"Epics (documented,
-   later)"** (`:174`) — the PII substrate is deliberately not built. `ADR-0023:158` independently names
+   later)"** (`:174`) — the PII substrate is deliberately not built. `ADR-0023:157` independently names
    the **multi-jurisdiction PII program** as out of scope. So a design that needed it would be blocked by
    an accepted ADR, not merely unbudgeted; this one does not need it.
 2. **Erasure stays possible.** A fixity chain that referenced a person's attributes could not be
@@ -1635,24 +1666,77 @@ silent supersession"* (rule 6).
 **This document is a plan. It therefore decides nothing on its own.** Every item below is prepwork that
 gates the fanout, not a paragraph that authorizes it.
 
+**Reciprocity is machine-enforced; clause compatibility is not.** `scripts/check-adrs.mjs:23-27` defines
+`RECIPROCAL_RELATIONSHIPS` as **exactly** `amends`/`amended_by` and `supersedes`/`superseded_by`, and the loop
+at `:399-406` fails only when the *target* does not declare the reciprocal key; `related` is validated only as
+an inline array (`:248-249`). **There is no clause-level collision check anywhere.** So two accepted ADRs that
+both declare `amends: [ADR-0003]` and edit the same Decision line **incompatibly** pass CI and leave the
+authoritative record self-contradictory, with nothing to detect it. **This is the stated reason G2 and G2b
+merge into one record** rather than shipping as two pairs against the same clause.
+
+**ADR numbers are assigned centrally, and the failure this prevents was observed.** Every draft carries
+`ADR-XXXX-DRAFT`; the integrator assigns the number in **one atomic commit** together with the
+`docs/decisions/README.md` index rows (`README:3` — the index *"must be updated atomically with every ADR
+status, identity, amendment, or supersession change"*). **No lane computes "next free".** In the prior review
+run, four independent judges each computed "next free after ADR-0026" and **all four claimed `ADR-0027`** —
+which is what "next free" produces whenever more than one writer is awake. Numbers are also never recycled:
+`ADR-0013` was never issued and `README:13` forbids reuse or backfill, and any allocated-but-unwritten number
+in this plan's set stays an **unused gap** on the same rule. The assignment of record for this plan's nine (or
+ten) records is the allocation table below.
+
 | # | Matter | Status | Required artifact |
 |---|---|---|---|
-| G1 | **Platform-level `party`** | **unauthorized by ADR, but already SPECIFIED.** `ADR-0022:25,33-39` decides identity is local/org-scoped. But `korean-legal-boundaries.md:40-43` decides *"Keep **one** `Person`/identity record for audit and login continuity, but create separate `EmploymentEpisode` records per legal employer"*, and `org-editor-primitives-ux.md:256` *"A Person is not automatically an Employee"* | **new accepted ADR**, arguing **implementation of a specified design**, not a new one |
-| G2b | **`BranchScope::All` after `Role` deletion** (§0.16) | ADR-0003:20 names the roles | reciprocal pair on ADR-0003. **Blocks C5** |
-| G8 | **DB-enforced invariants vs ADR-0001 domain purity** | tension, see below | argue or amend — on the record either way |
-| G9 | **Audit coverage for the new write paths** | unstated | prepwork enumeration, not an ADR |
-| G2 | **`org_id` × `BranchScope` composition** | **documented gap.** `ADR-0003:20` decides `BranchScope` with default-deny and has no org concept; `ADR-0021` decision 2 makes `org_id` the RLS boundary Cedar may not widen. **No ADR states how they compose** | **new accepted ADR** — this is where the competence / decision-scope split belongs. Frame it as *closing* the gap, never as fighting ADR-0003 |
-| G3 | **전결규정, capacity, obligation loop** | new; zero ADR hits | new ADR, `related: [ADR-0018, ADR-0023]` |
-| G4 | **Quantity lineage** (§5.8) | new; zero ADR hits | new ADR |
-| G5 | **Economics spine** (§5.5) | new; zero hits for GL/posting/dimension | new ADR (peer plan owns the rest) |
-| G6 | **The no-code canvas** | **deferred by an accepted ADR.** `ADR-0023:148-155` lists the Contract→Position(인원편성)→PolicyPreset chain editor, covert clearance as a resource, and the no-code policy/workflow visual canvas as out of scope, *needing their own charter* | either accept the deferral (recommended — it is not on the critical path for slices 0/1) or propose the charter. **Do not smuggle it in** |
-| G7 | **DN-0003 bounded extensibility vs open sets** | **NOT a collision** — verified below | none. Aligned as written |
+| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022** — it decides against a *speculative external IdP seam* and confines `console-identity-application` to local org/account administration. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no platform identity row lands in Slice 0. **Does not block Slice 0** — it *defers* `party` (§4.1) |
+| G2 + G2b | **`org_id` × `BranchScope` composition, and `BranchScope::All` after `Role` deletion** (§0.16) | **documented gap, and it is ONE gap.** `ADR-0003`'s Decision says *"`All` for SUPER_ADMIN/EXECUTIVE rollups, an explicit branch set otherwise"* and has **no org concept**; `ADR-0021` decision 2 makes `org_id` the RLS boundary Cedar may not widen. **No ADR states how they compose** | **D2 → ADR-0028**, one reciprocal pair on `ADR-0003` with its Decision **edited in place** (merging G2 + G2b). Filed as **one** record because CI cannot see a clause collision (above): two pairs against the same Decision line would both pass. `ADR-0021` and `ADR-0018` gain `ADR-0028` in `related`. **BLOCKS Slice 0** |
+| G3 | **전결규정 routing, capacity, obligation loop** | **not greenfield — "zero ADR hits" is struck.** `ADR-0023:81-82` already decides arbitrary approval-line DAGs and the 검토/승인/합의/참조 vocabulary, so this is a **delta on ADR-0023's Engine-Gen**, not new ground | **N3 → ADR-0033**, non-amending, `related: [ADR-0018, ADR-0023]`. **NOT blocking Slice 0** — this is the theme where corrected evidence *removes* work from the critical path. Acceptance condition: the first migration introducing `delegation_rule` carries `CHECK (delegator_id <> delegate_id)` in the same file |
+| G4 | **Quantity lineage** (§5.8) | new; zero ADR hits | **N4 → ADR-0034**, non-amending, `related: [ADR-0001]`. Deferred **with constraints instead of schema** (below); no 0207+ slot |
+| G5 | **Economics spine** (§5.5) | new; zero hits for GL/posting/dimension | **N5 → ADR-0035**, non-amending, `related: [ADR-0023]`. The **record** does not block Slice 0; its three **prerequisites** do (§5.5) |
+| G6 | **The no-code canvas** | **STRUCK.** Out-of-scope is **silence, not prohibition** (`docs/decisions/README.md:7` — an accepted ADR is authoritative *within its stated scope*), so no accepted ADR defers the canvas and **there is no charter clause** to amend or satisfy. Verified: `ADR-0023:148` is the header *"Follow-ups (named out of scope for this program)"*; the canvas bullet at `:153-154` carries **no** charter clause; *"enters as its own charter"* is at `:156`, on the Contract→Position(인원편성)→PolicyPreset bullet | **none.** The canvas's exclusion from slices 0/1 is **this plan's own scope choice**, standing on its own merits. *"Do not smuggle it in"* stays, as a scope statement rather than an inherited prohibition. **W10 is deferred-by-follow-up and off the slice-0/1 critical path — it is NOT gated on a charter.** Optionally, **N2 → ADR-0036** records object-policy revocation as a catalog status transition; if it is never written the number stays an unused gap |
+| G7 | **DN-0003 bounded extensibility vs open sets** | **STRUCK on structural grounds, not "aligned as written".** DN-0003 is `kind: design-note`, `authority: subordinate`; `README:26` governs **ADR** relationship keys while design notes declare `parent_adr`. So DN-0003 **cannot take a reciprocal ADR pair at all**, whatever the substance | **none, and none is possible.** The header's *"(G7 needs none)"* stays true, for a better reason than the one given |
+| G8 | **DB-enforced invariants vs ADR-0001 domain purity** | tension, see below. **Two examples, not three** — the lot CHECK is withdrawn (§5.8: a row CHECK does not hold conservation across concurrent splits) | **argue only, no record.** `ADR-0001:23` is a **Consequences** bullet, not the Decision, so no ADR question is engaged unless the argument is rejected |
+| G9 | **Audit coverage for the new write paths** | **reclassified: BLOCKING, and a retroactive amendment.** `ADR-0002`'s Decision states its *"exclusion set contains exactly one entry"* and that *"a test asserts that is the only exclusion"*. The gate returns **TWO** | **D3 → ADR-0029**, a **retroactive** reciprocal amendment pair on `ADR-0002` whose Decision text is **edited in place** — a reciprocal key alone leaves a false sentence standing. `ADR-0014` gains `ADR-0029` in `related`. **BLOCKS Slice 0** |
+| D4 | **The console rebuild charter and the generated-client reconciliation** | **owner decisions CAPTURED, not accepted.** `docs/ideas/d4-frontend-charter.md` (2026-07-30) records four decisions and splits D4 into two records. So D4 is blocked on **acceptance**, not on an owner decision | **two** pairs: **ADR-0030** (D4-A1, amends `ADR-0025`) and **ADR-0031** (D4-A2, amends `ADR-0009`, Decision edited in place; `ADR-0012` gains `related` only). **NOT on Slice 0's path**, and the record is owed **independently of whether this plan is approved.** `ADR-0025`'s clause 1 — a reachable mounted body for every exposed navigation state — survives **unamended**, and the CI gate asserting the console frontend does not exist **stays**: under the charter it is the enforcement mechanism for "planning only" |
+| N1 | **Where the fold is computed** (§5.6) | not a collision; a mechanism worth recording | **N1 → ADR-0032**, non-amending, `related: [ADR-0021]`. Records that the fold is computed **per request with no cross-request materialisation**. Unblocks §5.6 by making the deleted materialise row a recorded decision rather than an omission |
+| **SoD** | **Segregation of duties: IN, as a grant-authoring-time constraint.** Three shipped specs already decide it is not a UI concern — `docs/specs/cedar-pbac-authorization.md:122` *"Segregation of duties and self-approval checks are PBAC conditions, not UI-only rules."*, `docs/specs/no-code-operational-logic.md:211` *"segregation of duties and self-approval prevention"*, and `docs/specs/operations-intelligence.md:170` *"required evidence, segregation of duties, self-approval restrictions, and conflict-of-interest flags"*. Earlier drafts of this plan mentioned none of them, which read as a silent contradiction rather than a choice | **no new record — it lands inside N3.** Mechanism: **conflict pairs over `Feature`**, evaluated at **grant-authoring time**, in the place the `gov_approvals` four-eyes check already runs. Not a fold-time subtraction — §1 principle 2 is unaffected (see the note there). Widening: **W19**, with probe `conflicting_grant_pair_refused_at_authoring`; known-bad control: **a fold that accumulates a conflicting pair silently**, which is today's behaviour |
 | **GATE** | **What each CI gate pins — and therefore what may and may not be amended.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs:430-453` (`requireOntologyRestItestReachability`) **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`:428`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
+
+**The allocation, assigned once, here.** Highest issued is **ADR-0026**; `ADR-0013` was never issued and must
+never be reused (`docs/decisions/README.md:13`). True next free: **0027**.
+
+| Slot | Record | Kind | Counterpart obligations | Blocks Slice 0 |
+|---|---|---|---|---|
+| **ADR-0027** | D1 — identity linkage is human-asserted | amendment pair, **narrowing** | `ADR-0022` gains `amended_by: [ADR-0027]`; its index row → `accepted, amended` | no |
+| **ADR-0028** | D2 — `org_id` × `BranchScope` (merges G2 + G2b) | amendment pair; Decision **edited in place** | `ADR-0003` gains `amended_by` — **the key does not exist today and must be created**; `ADR-0021`, `ADR-0018` gain `related` | **yes** |
+| **ADR-0029** | D3 — audit exclusions are **two**, each bound to a (file, function) pair | amendment pair, **retroactive**; Decision edited in place | `ADR-0002` gains `amended_by` — **key created**; `ADR-0014` gains `related` | **yes** |
+| **ADR-0030** | D4-A1 — console rebuild charter (Leptos) | amendment pair | `ADR-0025` gains `amended_by` — **key created**; index row → `accepted, amended` | no |
+| **ADR-0031** | D4-A2 — generated-client / dual-native reconciliation | amendment pair; Decision edited in place | `ADR-0009` gains `amended_by` — **key created**; `ADR-0012` gains `related` only | no |
+| **ADR-0032** | N1 — fold computed per request, no cross-request cache | non-amending | `related: [ADR-0021]` | no |
+| **ADR-0033** | N3 — 전결규정 / capacity / obligation loop as an ADR-0023 delta | non-amending | `related: [ADR-0018, ADR-0023]` | no |
+| **ADR-0034** | N4 — quantity lineage deferred with constraints | non-amending | `related: [ADR-0001]` | no |
+| **ADR-0035** | N5 — economics spine; COST as a query | non-amending | `related: [ADR-0023]` | prerequisites yes, record no |
+| **ADR-0036** | N2 — *OPTIONAL.* object-policy revocation as a catalog status transition | non-amending | `related: [ADR-0023]` | no |
+
+**Reciprocation mechanics, which no ordered list in earlier drafts covered.** For **each surviving pair**, the
+work is three things and the third is the one that gets forgotten: name the **counterpart record**, name the
+**exact clause amended**, and **add the relationship key on BOTH sides**. `README:9`: *"A later number does not
+win automatically. Amendment or supersession must be explicit in both records."* `README:26`: relationship keys
+*"must be reciprocal where applicable."* **`ADR-0003` carries no `amended_by` key today** — reciprocation must
+**create** it, and the same is true of `ADR-0002`, `ADR-0025`, `ADR-0009` and `ADR-0022`. Pre-acceptance each
+draft carries `status: proposed`, `doc_status: review` and `proposes_amendments_to: [...]`, and **may not declare
+active `amends`** (`README:26`). The index rows land in the **same atomic commit** (`README:3`).
+
+**The pair list is shorter than earlier drafts implied:** G6 and G7 are struck, G1 is withdrawn, G8 takes no
+record. Five amendment pairs (ADR-0027 through ADR-0031) and four or five non-amending records.
 
 **G8 — DB-enforced invariants vs ADR-0001 domain purity. Decided: argue, not amend.**
 `ADR-0001:23` states *"Domain logic stays pure and exhaustively unit-testable"*, gated by a CI
-layer-boundary check. This plan puts three invariants in SQL: lot conservation as a row CHECK (§5.8),
-the voucher balance gate (`0160:78-118`, already shipped), and the authority fold in a definer (§5.1).
+layer-boundary check. Note first that `ADR-0001:23` is a **Consequences** bullet, not the Decision, so no ADR
+*question* is engaged unless the argument below is rejected.
+
+This plan puts **two** invariants in SQL: the voucher balance gate (`0160:78-118`, already shipped) and the
+authority fold in a definer (§5.1). **The third — lot conservation as a row CHECK — is withdrawn**: a row CHECK
+does not hold conservation across concurrent splits (§5.8), so it was never an example of an invariant SQL alone
+enforces.
 
 The argument, on the record: **these are integrity constraints, not domain logic.** Each answers "is this
 row internally coherent", never "what should the business do" — and a constraint that *cannot* be violated
@@ -1662,16 +1746,45 @@ constraints live in migrations, and the domain crates keep their pure validators
 that distinction, G8 becomes a reciprocal amendment to ADR-0001, not a silent divergence** — which is what
 `README.md:12` requires either way.
 
-**G9 — audit coverage. Prepwork, not an ADR.**
-`ADR-0002:20` requires the `with_audit` path and states the CI `audit-coverage` gate's *"exclusion set
-contains exactly one entry"* (ADR-0014 establishes it is `location_pings`, with a test asserting it is the
-only one). This plan routes granting, signing, closing, confirming and linking through `ont_action_types`
-with `dispatch='instance_revision'`. **Nothing states whether that path goes through `with_audit`.**
-Enumerating every new write path — with its `with_audit` status and any gate entry required — is a Phase-7
-prepwork line item (§8). Cheap now; this is the defect shape that has bitten five times.
+**D3 (ADR-0029) — audit coverage. BLOCKING, and a retroactive amendment, because the ADR is wrong.**
+`ADR-0002`'s `## Decision` states that the CI `audit-coverage` gate's *"exclusion set contains exactly one
+entry — the LocationPing ingestion path (ADR-0014) — and a test asserts that is the only exclusion."*
+**That sentence is false, and the code is authoritative.** The gate returns **TWO**, each bound to a
+**(file, function)** pair, not to a table name:
+`backend/ci/gates/audit-coverage/src/lib.rs:90-111` returns
+`location_ping_ingestion` / `record_location_ping` and
+`location_data_retention_purge` / `purge_expired_location_data`, both in
+`crates/compliance/adapter-postgres/src/lib.rs`. And the test is
+`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs:26`
+`fn allowed_exclusion_set_is_the_two_location_carveouts()`, asserting `exclusions.len() == 2`.
 
-**G7 was reported to me as a direct collision. It is not — I verified the invariant.**
-`DN-0003` (design-note, `activation: in_progress` at `:6`) invariant 10 reads, at `:98-100`:
+**Cite the gate and the test name, never `ADR-0002`'s Decision line for this fact.** An ADR Decision line is
+**prose about code**. This one was propagated as a state fact through an entire review pass before anyone opened
+the gate — which is the same failure class as `0153`'s `-- one decision per request` comment (§4.4). Two
+independent instances in one plan is why the plan now cites code even when an authoritative document says
+otherwise.
+
+Because a reciprocal key alone would leave the false sentence standing, D3 **edits `ADR-0002`'s Decision text in
+place** and is therefore **retroactive**: it corrects a statement about behaviour that was already wrong when the
+ADR was accepted. `ADR-0014` gains `ADR-0029` in `related`.
+
+What D3 must also record, so the enumeration is sized rather than labelled:
+
+- This plan routes granting, signing, closing, confirming and linking through `ont_action_types` with
+  `dispatch = 'instance_revision'`, and **nothing states whether that path goes through `with_audit`.** The
+  **write-path enumeration** (Phase 0) answers it, one row per path.
+- **T7 adds zero exclusions.** The enumeration's purpose is coverage, not carve-outs.
+- Two 0207+ migration rows this plan had priced at **zero**: an `object_types` row for `work` and a `link_types`
+  row for `work_artifact` (§4.3).
+- Extending `is_handler_surface` to path component `app` has **UNMEASURED** blast radius. **X-T7a must run
+  first**; the enumeration must not assume it.
+
+**G7 is STRUCK, and on a structural ground that holds regardless of the substance.**
+`DN-0003` is `kind: design-note`, `authority: subordinate`. `docs/decisions/README.md:26` governs **ADR**
+relationship keys, while design notes declare `parent_adr`; and `scripts/check-adrs.mjs:23-27` reciprocates only
+over the ADR map. **So DN-0003 cannot take a reciprocal ADR pair at all** — G7 was never an available action.
+The substance is aligned anyway, and it is worth stating because it is the answer to "how does this tie into
+the engine": `DN-0003` (design-note, `activation: in_progress` at `:6`) invariant 10 reads, at `:97-99`:
 
 > **Extensibility is bounded.** Tenant definitions are declarative; trusted first-party tools are
 > compile-time allowlisted; external connectors are server-side, typed, scoped, audited, idempotent, and
@@ -1680,7 +1793,7 @@ prepwork line item (§8). Cheap now; this is the defect shape that has bitten fi
 The bound falls on **tools and connectors**. The same sentence **affirms that tenant definitions are
 declarative** — the open side. So §4.0.2's boundary (declaring a type is authored; giving a type a new
 concern is code) is not a reconciliation this plan invented; it is DN-0003's own line, restated on the
-axis this plan cares about. **No reciprocal pair is needed and G7 costs nothing.**
+axis this plan cares about. **No reciprocal pair is needed, and none is possible.**
 
 What would be a real collision is a claim that adding a *component* requires no code. This plan does not
 make that claim (§4.0.2 says the opposite, explicitly).
@@ -2067,10 +2180,10 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 
 | Rung | Prepwork item |
 |---|---|
-| — | **The reciprocal ADR pairs G1-G9 (§5.11).** Under README rules 2-4 these *gate* the work; G1 (platform `party`) and G2 (`org_id` × `BranchScope`) block slice 0; **G2b blocks C5** |
+| — | **The governance records of §5.11**, with the numbers allocated there. Under `README` rules 2-4 these *gate* the work. **D2 (ADR-0028) and D3 (ADR-0029) block slice 0**; D2 subsumes the old G2b, so it is also what gates C5. G1 is withdrawn, G6 and G7 struck |
 | — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `known-bad-controls.tsv` |
 | **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
-| — | **G9 audit-coverage enumeration (§5.11):** every new write path, its `with_audit` status, and any `audit-coverage` gate entry required. The exclusion set has exactly one entry (`ADR-0002:20`) and a test asserts it |
+| — | *(moved to Phase 0)* The **D3 write-path enumeration** is a Phase-0 artifact, not Phase-7 prepwork — `capacity_recorded_on_every_authority_mutation` reads it, and a probe cannot precede its own input. **The exclusion set has TWO entries**, each bound to a (file, function) pair; see D3 in §5.11 |
 | — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
 | **③** | `seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
@@ -2196,7 +2309,7 @@ expiry, never deletion**.
 | W7 | `party_link` control edges (Tier O) + derived `group_designation` | a joint venture under two groups, a nested group, and a 순환출자 cycle all resolve; `group_memberships UNIQUE (org_id)` (`0060:36`) and `organizations.group_id` (`0060:27`) collapse to one representation |
 | W8 | Cedar scope hierarchy: populate parents at `engine.rs:392`/`:425`, extend `:449`, declare in schema | a group-scoped approver signs a company-raised document, decided by Cedar alone with no Rust fallback |
 | W9 | `Feature` sequencing C1→C6 (§5.3) | every coexistence-map entry `cedar_only`; `matrix_row` and `Role` deleted; `Feature` retained |
-| W10 | Canvas over the authored types, four-eyes on every authority change | no authority change lands without a `gov_approval_consumptions` row |
+| W10 | Canvas over the authored types, four-eyes on every authority change. **Deferred by follow-up and off the slice-0/1 critical path — NOT gated on a charter** (§5.11 G6: no charter clause exists) | no authority change lands without a `gov_approval_consumptions` row |
 | W11 | Derived channel membership; `messenger_threads.work_order_id` (`0012:11`) generalised to `work` | `channel_membership_is_derived` GREEN; the conversation follows the work on 인계 |
 | W12 | Realtime authority propagation (§5.6): one `RealtimeEvent` variant, one channel, `policy_versions` invalidation | `realtime_push_carries_no_capability` and `stale_client_button_is_refused` GREEN |
 | W13 | `work` metrics: the new fields (§4.1) + cycle-time aggregates over Tier T | `no_duplicated_fact` GREEN; an aggregate over 10k rows does not fold revisions |
@@ -2205,6 +2318,7 @@ expiry, never deletion**.
 | W16 | `lot` + `lot_split` + contract lines (§5.8); `inventory_consumption_events.source_kind` (`0156:87`) generalised | `lot_conservation`, `lot_uom_conversion_recorded`, `lot_traversal_up` GREEN |
 | W17 | E4 fold simulator — the fold against a hypothetical grant set, over the shipped receipt ceremony and Cedar simulation | a role change is inspectable before commit; neither existing half is replaced |
 | W18 | E1 explainability surfaced, incl. a reason for deny-by-omission | `deny_by_omission_is_explained` GREEN |
+| W19 | **Segregation of duties** (§5.11 SoD row): conflict pairs over `Feature`, refused at **grant-authoring time**, where the `gov_approvals` four-eyes check already runs | `conflicting_grant_pair_refused_at_authoring` GREEN, with a fold that accumulates a conflicting pair silently observed RED first |
 
 Ordering notes. W7 collapsing the duplicate org→group representation is a defect fix independent of this
 design and may land earlier if a lane is free. **W11-W13 depend on `work` (slice 0) but not on each
@@ -2241,9 +2355,12 @@ immutability that are the expensive parts. Cost, revenue and profit are queries,
 a design freedom taken deliberately rather than a constraint inherited.
 
 **Standing of this document.** It is a plan, so under `docs/decisions/README.md` rule 4 it decides
-nothing. Its output is the reciprocal ADR pairs **G1-G9 (§5.11)**, of which **G1 and G2 block slice 0** and **G2b
-blocks `Role` deletion**. G1 argues the *implementation of a design the specs already carry*
-(`korean-legal-boundaries.md:40-43`), not a new one. Where a matter is already accepted — finality
+nothing. Its output is the governance records of **§5.11** — five reciprocal amendment pairs (ADR-0027 to
+ADR-0031) and four or five non-amending records (ADR-0032 onward) — of which **D2 (ADR-0028) and D3
+(ADR-0029) block slice 0**. D2 subsumes the old G2b and so is also what gates `Role` deletion. The old G1 is
+**withdrawn**: its premise (that ADR-0022 decides identity is "org-scoped") is false, and its deliverable
+claim was undeliverable, so the governance action is **D1**, a *narrowing* amendment to ADR-0022, not an
+authorisation for a platform identity. Where a matter is already accepted — finality
 (ADR-0023), the Cedar strangler (ADR-0021), the workflow engine and its org-local spine (ADR-0018),
 branch scope (ADR-0003), local identity (ADR-0022) — this plan states **only the delta** and inherits the
 rest.
