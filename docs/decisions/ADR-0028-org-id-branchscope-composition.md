@@ -15,7 +15,7 @@ related: [ADR-0003, ADR-0018, ADR-0021]
 
 **Proposed 2026-07-30 · review.** This record proposes to amend one clause of
 ADR-0003 and closes a documented composition gap under
-`docs/decisions/README.md:6`. It ratifies behaviour already shipped; it
+`docs/decisions/README.md:12` (authority rule 6). It ratifies behaviour already shipped; it
 authorizes no new behaviour, unholds nothing, and asserts no compliance
 conclusion.
 
@@ -25,7 +25,7 @@ conclusion.
 appears in exactly one ADR line — `ADR-0003:20` — and `org_id` in exactly two
 others, `ADR-0021:50` and `ADR-0018:204`. Neither `org_id` line mentions
 `BranchScope` and the `BranchScope` line does not mention `org_id`. Under
-README:6 that is a governance gap to reconcile by decision, not a silent
+README.md:12 that is a governance gap to reconcile by decision, not a silent
 divergence.
 
 `ADR-0003:20` reads, verbatim:
@@ -111,7 +111,7 @@ in. The fix is cheap because the fact is already present:
    `BranchScope::All` for one subsidiary after `group_admin_member_orgs` proves
    ACTIVE membership (`request-context/src/lib.rs:383-434`). This is recorded as
    pre-existing divergence from `ADR-0003:20` brought under governance per
-   README:6, not as new authority.
+   README.md:12, not as new authority.
 
 3. **`effective_branch_scope_for_tenant` (`authz/src/lib.rs:1519-1542`) is the
    sole legal composition of a token scope with a live scope.**
@@ -235,7 +235,7 @@ self-contradictory.
 
 ### Leave `ADR-0003:20` alone and record the divergence elsewhere
 
-Rejected. README:6 makes implementation divergence a governance gap to
+Rejected. README.md:12 makes implementation divergence a governance gap to
 reconcile by decision. A note that does not touch the clause leaves an
 authoritative record asserting a rule the code does not follow — the failure
 mode this repository has already paid for once.
