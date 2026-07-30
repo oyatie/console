@@ -107,3 +107,42 @@ with a candidate-bound I2/I3 receipt in independent custody.
 infrastructure, and it is the kind of architectural tension that is cheap to resolve before a person's data
 is in the system and expensive afterwards. It needs a decision, and the decision needs counsel — but the
 *question* can be written now.
+
+## The official API, and what is known about calling it
+
+`legalize-pipeline` calls **`open.law.go.kr`** — the National Legal Information Center OpenAPI, which **is**
+an `official_legislation_portal` and therefore the one allowed source among everything here. That makes the
+registration step the single thing standing between us and citable evidence for release-gate condition 1.
+
+**The OC key is self-designated.** Per the registration form: *"국가법령정보 OPEN API의 인증키는 사용자가
+직접 지정하여 사용할 수 있습니다"* — the caller chooses the value rather than receiving a generated one, and
+it is passed as the `OC` request parameter. So it is an **identifier, not a bearer secret**: a leak is an
+attribution problem, not a credential compromise. It still comes from the environment (`LAW_OC`) and is
+never committed.
+
+**Operational facts from the pipeline's README, worth not rediscovering:**
+
+| | |
+|---|---|
+| Env var | `LAW_OC` |
+| Throttle | 0.2 s default spacing between calls |
+| Retry | exponential backoff, 2 / 4 / 8 s |
+| Law identifier | **MST** |
+| Detail response | XML, cached as `.cache/detail/{MST}.xml` |
+| Revision history | JSON, cached as `.cache/history/{법령명}.json` |
+| Licence | Apache-2.0 / MIT, so the approach is reusable |
+
+**What is NOT known and must come from the official docs:** the base URL path, endpoint names, and the full
+parameter set. The pipeline's README explicitly does not document them, and `open.law.go.kr`'s own
+documentation requires a logged-in account.
+
+### Why no fetcher has been written yet
+
+Deliberate. Writing one now would mean guessing the endpoint spec and shipping code that has never made a
+real call — which is the exact defect shape this repository has hit five times in a week: correct-looking
+code that executes nowhere. The moment an OC value exists, the fetcher gets built **and verified against a
+live call in the same pass**, so its first green is evidence rather than a hope.
+
+What it should produce when it is written: for each statutory item, the `source_uri`, `retrieved_at`,
+`effective_date` (시행일자) and 공포번호 the jurisdiction register requires as `required_fields` — fetched
+from the official portal, not from the mirror.
