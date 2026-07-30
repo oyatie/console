@@ -419,9 +419,10 @@ Two facts about the tiers decide most of §4:
   `to_instance_id` twin at `:77`. This is structural, not a missing feature. It is the single constraint that
   shapes the entity model.
   **Its consequence, applied where it bites:** an `ont_link` endpoint must be an `ont_instances` row in the
-  same org, so **no scope descriptor can be an `ont_link`** — not `group`, not `organization`, and by the
-  uniformity argument not `org_unit` either. Every scope edge in §4.3 is therefore a property
-  `{level, node_id}` carrying `AccessScope`. This section named the constraint and §4.3 contradicted it; the
+  same org, so **no scope descriptor can be an `ont_link`** — not a `Group`, not an `Org`, and by the
+  uniformity argument not an `org_unit` instance either, even though that one *is* storable. Every scope edge
+  in §4.3 is therefore a property `{level, node_id}` carrying `AccessScope`, whose `level` is one of the five
+  shipped `AccessScopeLevel` variants and nothing else (§4.1). This section named the constraint and §4.3 contradicted it; the
   contradiction is the defect, and X4b measured which side was right.
 
 A fifth path, **Tier P — projected**: `ont_object_types.backing_kind = 'projected'` (`0152:25`,
@@ -741,9 +742,38 @@ chosen because it needs an endpoint this plan has not designed. Constraint 4 abo
 is what **reconciles this with the Tier O heading**: the handle is definer-mediated only if it is ever
 actually placed in Tier O, and constraint 4 says it should not be.
 
-**Group-scoped grants cannot be Tier N at all** — they are the second Tier O table, beside
-`group_role_grants`. Org_unit- and organization-scoped grants stay Tier N: X4b CASE 1 measured that arm
-resolving end to end, with subject, capability and scope folded out of Tier N. The group arm fails
+**The scope vocabulary is the shipped enum and nothing else, and there are FIVE variants.**
+`backend/crates/kernel/core/src/access_scope.rs:28-34` is
+`enum AccessScopeLevel { Group, Org, Region, Branch, Worksite }`. **`org_unit` and `organization` are not
+variants** — `Org` is, `Group` is, and no level names a department. An earlier revision of this section wrote
+`{org_unit, organization, region, branch, worksite}` into the `grant` row and into §4.5's definer trace, which
+is a mismatch against a shipped kernel enum in a **Slice-0 deliverable**. Corrected at both sites, and stated
+here because pre-revision §4.5 carried no enumerated branch at all, so the mismatch was *introduced* by a
+repair.
+
+**Decision — a 부서-scoped grant has NO scope level in slices 0/1, and the plan is not to invent one.** Two
+vocabularies were being conflated, and neither gives 부서 a scope level:
+
+- `AccessScopeLevel` is matched **exhaustively, with no wildcard arm**, in two shipped places —
+  `access_scope.rs:86-98` (`branch_scope_for_org`) and
+  `backend/crates/platform/authz/src/lib.rs:1524-1538` (`effective_branch_scope_for_tenant`). A sixth variant
+  is therefore a change to a **kernel** enum plus a compile error at both sites plus a decided
+  `branch_scope_for_org` projection for the new level. That is code, not an authored row.
+- `policy_role_conditions.attribute` **does** hold `department` (`0065:115`, one of the 17 literals), but the
+  resolver evaluates **only** `branch` and `team` (`authz/src/lib.rs:1403-1429`, `_ => return None`), so a
+  `department` condition is **writable and resolver-void today** — and §4.4 narrows the write path away from it
+  precisely for that reason. It is not a Slice-0 mechanism either.
+
+So: Slice 0's two scopes are 현장 = `Worksite` and 본사 = `Org`, both shipped variants, and a 부서 bounds a
+decision the way the plan already routes — as a **competent `org_unit` instance** named by `delegation_rule`,
+which is an instance reference and not an `AccessScope` level at all. Adding a department level to
+`AccessScopeLevel` is **W5** work and must arrive with its `branch_scope_for_org` arm decided. Taken as the
+smaller honest claim: the alternative is to write a level the kernel does not have into the one deliverable
+Slice 0 must ship.
+
+**`Group`-scoped grants cannot be Tier N at all** — they are the second Tier O table, beside
+`group_role_grants`. `Org`-, `Region`-, `Branch`- and `Worksite`-scoped grants stay Tier N: X4b CASE 1 measured
+that arm resolving end to end, with subject, capability and scope folded out of Tier N. The `Group` arm fails
 structurally: `0155:18` makes `ont_instances.org_id` `NOT NULL`, leaving no third option for the row's
 tenancy, so the grant is homed in exactly one org — and X4b CASE 2c/2d measured org B, a **sibling in the
 same group**, reading **0** rows while RLS-bypassed ground truth showed the revision present. A
@@ -818,7 +848,7 @@ under RLS (`0063:21-25`).
 
 | Entity | Purpose | Identity | Lifetime | Slice 0 |
 |---|---|---|---|---|
-| **`grant`** *(scope.level ∈ {org_unit, organization, region, branch, worksite})* | binds *(subject party, capability, scope, source)*. **Group-scoped grants are NOT here** — they are Tier O, above | instance id | effective-dated; revocation closes `valid_to` | yes — 2, both 현장 scope |
+| **`grant`** *(`scope.level` ∈ {`Org`, `Region`, `Branch`, `Worksite`} — the shipped `AccessScopeLevel` minus `Group`)* | binds *(subject party, capability, scope, source)*. **`Group`-scoped grants are NOT here** — they are Tier O, above | instance id | effective-dated; revocation closes `valid_to` | yes — 2, both `Worksite` (현장) scope |
 | **`org_unit`** | 조직 structure, with **kind** (부서/팀/TF/사업장) and **lifetime** | instance id | permanent, or derived from a contract (§5.10) | yes — 1 (kind = 사업장) |
 | **`delegation_rule`** (전결규정) | (category × amount band × raising scope) → competent unit, terminal? | instance id | effective-dated | yes — 1 row, 1 band |
 | **`approval_template`** | per document class: ordered/parallel steps, each with competent-unit-by-lookup + required capability + mode | instance id | versioned by the registry | yes — 1 step |
@@ -991,7 +1021,8 @@ vocabulary is the shipped one: `backend/crates/kernel/core/src/access_scope.rs:2
 `struct AccessScope { level, node_id }`, specified at `docs/specs/org-hierarchy.md:172-173`.
 
 > **Caveat, and it is a hard one: Slice 0 must not publish a `grant_scope` link type whose declared target
-> set includes `group` or `organization`.** That arm fails at the first write, and by then the schema is
+> set includes the `groups` or `organizations` table** (the *tables*, not the `Group`/`Org` enum variants —
+> the two vocabularies are distinct, §4.1). That arm fails at the first write, and by then the schema is
 > already published — an authored type's published schema is the expensive thing to withdraw, not the row.
 
 **Why the four `work_*` edges are properties: `work` is Tier T projected, and a projected type owns no
@@ -1076,7 +1107,10 @@ already carry operators or attributes the resolver voids, and narrowing the writ
 
 *(b) The plan's four dimensions do not all have a substrate.* `0065:110-127` holds **17** attribute literals and
 **직무 and 직급 are not among them.** So 소속 (`organization`, `department`) and 결재선 (`team`, `position`,
-`assignment`) are expressible, and **직무 / 직급 are not** — widening that CHECK is a migration, and it would be a
+`assignment`) are expressible **as condition attributes** — a different vocabulary from `AccessScopeLevel`, and
+the confusion of the two is what put a non-existent `org_unit` scope level into an earlier revision (§4.1). Note
+that `department` is in this list while **no scope level names a department**, and that the resolver voids a
+`department` condition anyway (above). **직무 / 직급 are in neither vocabulary** — widening that CHECK is a migration, and it would be a
 **third** closed vocabulary. §1 principle 3 names all four as though all four were data; they are not.
 **Decision: 직무 and 직급 have no substrate in slices 0 or 1, and they arrive in W6** with `employment_type`,
 where the accrual/insurance/severance rules that need them already land. They are not built here.
@@ -1125,14 +1159,15 @@ definer effective_grants_for(p_party, p_scope, p_asof)          -- row_security 
   → visibility_predicate  WHERE org_id = current_setting('app.current_org')  -- the visibility gate
                             AND party_id = p_party AND asof ∈ [valid_from, valid_to)
      -- table: party_org_visibility once it lands; the subject's own `users` row in Slice 0 (§5.1)
-  → BRANCH ON p_scope.level                                     -- AccessScope, NOT a DSL (§0.17)
-    ├ org_unit | organization | region | branch | worksite:
+  → BRANCH ON p_scope.level        -- the shipped AccessScopeLevel, NOT a DSL (§0.17)
+                                   -- exactly five variants; there is no org_unit level (§4.1)
+    ├ Org | Region | Branch | Worksite:
     │   → grant instances     WHERE org_id = current_setting('app.current_org')   -- org_predicate
     │                           AND subject = p_party
     │                           AND scope ⊇ p_scope
     │                           AND asof ∈ [valid_from, valid_to)
     │   → grant revisions     WHERE org_id = current_setting('app.current_org')   -- org_predicate
-    └ group:
+    └ Group:
         → the Tier O group-scoped grant store, through ITS definer (§4.1)
           — NOT Tier N: a group-scoped grant cannot live in ont_instances at all,
             measured in X4b, and a sibling org reads zero rows
@@ -2660,7 +2695,7 @@ expiry, never deletion**.
 | W2 | `employment` revised: `party_id` replaces `person_name`; employer split from worksite | a 파견 employment with employer ≠ worksite round-trips |
 | W3 | `org_unit` kinds/lifetime + `worksite_registration` (Tier T, projected) | duplicate 사업자등록번호 rejected by the DB; a bounded TF expires |
 | W4 | `work` handover + `assignment` as a grant source; **and the fixed-authority 인계 완료 count** without which hard-gating is not available (§4.5) | `handover_is_scope_bounded` and `handover_moves_work_artifacts_only` GREEN; the 인계 완료 **assertion** recorded with its asserted count. Hard-gating offboarding lands **only** with the fixed-authority count — until then the assertion is evidence, not a gate |
-| W5 | Remaining grant sources + `position` + `authority_rule` + named `*OrgWide`/`*GroupWide` reach capabilities (§0.17 — no DSL) | **requirement 3 provable**; `fold_is_additive` still GREEN with all five sources |
+| W5 | Remaining grant sources + `position` + `authority_rule` + named `*OrgWide`/`*GroupWide` reach capabilities (§0.17 — no DSL) + `delegation_rule`'s `(period, cumulative_limit)` pair (§4.7) + **a department level on `AccessScopeLevel` if 부서-scoped grants are wanted** (§4.1 — a kernel enum change with two exhaustive `match` sites and its own `branch_scope_for_org` arm) | **requirement 3 provable**; `fold_is_additive` still GREEN with all five sources; and if the department level lands, both `match` sites compile with a decided projection rather than a wildcard |
 | W6 | `employment_type` as authored data; both CHECK vocabularies (`0172:7`, `0187:22`) retired | 파견/도급/일용/프리랜서 expressible; neither CHECK remains |
 | W7 | `party_link` control edges (Tier O) + derived `group_designation` | a joint venture under two groups, a nested group, and a 순환출자 cycle all resolve; `group_memberships UNIQUE (org_id)` (`0060:36`) and `organizations.group_id` (`0060:27`) collapse to one representation |
 | W8 | Cedar scope hierarchy: populate parents at `engine.rs:392`/`:425`, extend `:449`, declare in schema | a group-scoped approver signs a company-raised document, decided by Cedar alone with no Rust fallback |
