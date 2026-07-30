@@ -1178,3 +1178,31 @@ Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
 ||||||| 18a21d7cd
+
+## 2026-07-30 — fourth rebind, and the merge that proves the mechanism works as designed
+
+The registers rebind onto the merge that brings #529 into this branch. #529's squash
+produced a new unsigned tip on `main`, which invalidated this branch's train — the exact
+mechanism that had this PR red for a day, now observed deliberately rather than
+discovered.
+
+Two things this merge preserved that a careless resolution would have destroyed. All
+three authority documents conflicted, because both branches had rebound them to
+different candidates; the two registers were resolved to `main`'s state and then
+rewritten wholesale by the rebind, which is safe precisely because the rebind is total.
+The **ledger was resolved as a union**: `main`'s payroll-binding entry and this branch's
+three entries all survive, ordered `main` first. A `--theirs` resolution on this file
+would have silently deleted three entries, and nothing in the gate would have noticed —
+the train checks that the ledger *changed*, never what it says.
+
+That is worth stating plainly as a limit of the mechanism. `assertAuthorityDiff` requires
+C..T to modify exactly the three documents and verifies mode and status; it does not and
+cannot verify that the ledger's prose is intact, additive, or true. The ledger is
+protected by convention, not by the gate that appears to protect it.
+
+Fourth rebind for this candidate. The three prior costs are recorded above; this one was
+caused by an upstream merge rather than by a fix here, which is the unavoidable kind.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
