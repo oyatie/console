@@ -9,10 +9,12 @@
 -- (ops/postgres-reconcile-topology.sh:382-384, re-asserted at :567). The org
 -- floor therefore still applies inside the definer: it may only narrow.
 --
--- THE DEFINER IS THE SECURITY BOUNDARY, NOT THE ROUTE. It is EXECUTE-granted to
--- `console_rt`, so anyone holding the runtime role calls it directly and skips
--- every check `attach_object_policy` (`ontology/rest/src/lib.rs:503-541`)
--- performs. Two shapes of answer are applied in §4:
+-- THE DEFINER IS A SECURITY BOUNDARY IN ITS OWN RIGHT, NOT ONLY THE ROUTE. It is
+-- EXECUTE-granted to a database login, so anyone holding that credential calls it
+-- directly and skips every check `attach_object_policy`
+-- (`ontology/rest/src/lib.rs`) performs. 0206 narrows WHICH login (see the note
+-- below §4's grants) but does not remove the property: `console_ontology_cmd` is
+-- still a login the application holds. Two shapes of answer are applied in §4:
 --
 --   * DELETION over validation. `stable_key`, `title`, `natural_language_rule`
 --     and the bundle digest are all DERIVABLE, so they are no longer accepted —
@@ -41,37 +43,39 @@
 -- is the fail-closed side of that gap, and row visibility never depended on it.
 --
 -- WHAT STAYS ROUTE-ONLY, and why that is acceptable: the HTTP principal
--- (`authorize_ontology`, no SQL equivalent); Cedar's strict validator verdict
+-- (`authorize_ontology`, no SQL equivalent) and Cedar's strict validator verdict
 -- (`authoring::validate_blocks_with` — re-implementing it in SQL would be a
 -- second copy of the validator living in a migration, which is the divergence
--- that rots); and THE AUDIT ROW.
+-- that rots).
 --
--- The audit row is route-only and this function does not require one. Proven by
--- execution during review, not inferred: a direct call to this definer as
--- `console_rt` persisted one enforced attachment with ZERO audit rows, and
--- flipped an object type's list from `[]` to serving another principal's row.
--- So the audited path is the ROUTE, and the definer is not itself an audited
--- boundary. Anything holding `console_rt` credentials can attach a policy
--- without leaving a trace in the audit chain.
+-- THE AUDIT ROW IS NOT IN THAT LIST. 0206 renames this routine to
+-- `attach_object_policy_rows`, keeps it owner-only, and puts an audited
+-- entrypoint in front of it; the credential that may attach cannot reach this
+-- body at all, so it cannot attach untraced. The residual this migration
+-- escalated — an attachment with no audit event — is discharged there, not here.
 --
--- That is a real residual, deliberately left rather than papered over: making
--- the audit row mandatory here means either a trigger that fabricates an event
--- the caller never described, or a required parameter the caller can fill with
--- anything — neither is an audit trail, both look like one. The honest fix is
--- to remove `console_rt`'s EXECUTE and route every attachment through a command
--- role the app holds only on the audited path; that is a topology change, and
--- it is escalated rather than smuggled into this migration.
+-- The residual capability that remains is therefore only "a row coherent in
+-- every checkable respect that Cedar's validator would nonetheless reject",
+-- which is now always accompanied by an audit event naming who attached it.
 --
--- The residual capability is therefore "a row coherent in every checkable
--- respect that Cedar's validator would nonetheless reject, attached without an
--- audit event".
---
--- >> LIVE CONSTRAINT, not a general safety claim: that residual is acceptable
--- >> ONLY because `PgCedarPolicyStore::load_enforced_object_policy_blocks`
--- >> (`platform/authz-rest/src/store.rs:569-586`) re-runs the validator, the
--- >> canonicality comparison and the effect agreement on EVERY read and errors
--- >> the whole load. Delete that re-validation and this justification dies
--- >> silently while every test here stays green.
+-- >> LIVE CONSTRAINT, not a general safety claim: that remaining residual is
+-- >> bounded by `PgCedarPolicyStore::load_enforced_object_policy_blocks`
+-- >> (`platform/authz-rest/src/store.rs`), whose FOUR arms — the stored row
+-- >> deserializes, the validator verdict, the canonicality comparison, and the
+-- >> effect agreement across blocks, catalog row and attachment — all run on EVERY
+-- >> read and error the whole load. It is DEFENCE IN DEPTH after 0206 rather than
+-- >> the sole justification it was before, and it stays: 0206 narrowed who may
+-- >> mint a non-canonical row, it did not make one readable. Delete any one of the
+-- >> four and a forged row is served.
+-- >>
+-- >> All four are now EXECUTED, which two of them were not when this paragraph
+-- >> was written: the deserialization and effect-agreement arms measured ZERO with
+-- >> the whole suite green, so either could have been deleted without a red test.
+-- >> They are unreachable through the definer and reachable by every other writer
+-- >> of these two tables, and
+-- >> `a_catalog_row_whose_blocks_disagree_with_its_effect_is_refused_on_every_read`
+-- >> plus `a_catalog_row_whose_normalized_row_is_unparseable_is_refused_on_every_read`
+-- >> are what make this paragraph true rather than intended.
 --
 -- DISCLOSURE (owner reuse): `console_ontology_writer` also owns the eleven
 -- `ontology_api` routines, so those inherit the grants below: INSERT on the
@@ -184,8 +188,10 @@ REVOKE INSERT ON public.ont_object_policies FROM console_rt;
 
 -- ---------------------------------------------------------------------------
 -- 4. The audited writer's DB half: one enforced catalog row plus its
---    attachment, in the CALLER's transaction, so the audit row the application
---    appends alongside it commits or rolls back with the policy.
+--    attachment, in the CALLER's transaction. 0206 renames this routine to
+--    `attach_object_policy_rows` and appends the audit row in the wrapper that
+--    calls it, still inside that same transaction, so a policy and the audit
+--    claim that one exists commit or roll back together.
 --
 --    Everything shape-related is already guaranteed by the schema and is NOT
 --    re-implemented here: 0150:11 pins the dotted stable_key, 0150:14-16 the
@@ -311,8 +317,10 @@ END;
 $$;
 
 -- The argument type list is repeated FOUR times. Missing one leaves the old
--- overload EXECUTE-granted to `console_rt` beside the new one: the entire
--- hardening bypassed, with every test still green.
+-- overload EXECUTE-granted beside the new one: the entire hardening bypassed,
+-- with every test still green. 0206 retires this hazard by using 0165's blanket
+-- `REVOKE ALL ON ALL FUNCTIONS IN SCHEMA` form instead, and moves the GRANT below
+-- from `console_rt` to `console_ontology_cmd`.
 ALTER FUNCTION ont_policy_api.attach_object_policy(
     UUID, UUID, UUID, TEXT, JSONB, TEXT
 ) OWNER TO console_ontology_writer;

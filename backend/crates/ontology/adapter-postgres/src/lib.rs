@@ -367,6 +367,19 @@ impl PgOntologyStore {
             .ok_or(PgOntologyError::CommandUnavailable)
     }
 
+    /// The attached command pool, if any — read-only, and `None` on a read-only
+    /// store. `OntologyRestState::new` uses it to wire the object-policy attach
+    /// path with the SAME `console_ontology_cmd` credential the caller already
+    /// supplied here, so no composition root or fixture has to pass it twice.
+    ///
+    /// Declared BELOW `command_pool()` on purpose: `company_conformance/harness.rs`
+    /// cites `command_pool()`'s line range, and that file is owned outside this
+    /// lane. Inserting above it silently moved the citation onto this doc comment.
+    #[must_use]
+    pub fn command_pool_opt(&self) -> Option<&PgPool> {
+        self.command_pool.as_ref()
+    }
+
     /// Atomically install the migration-allowlisted built-in ontology catalog.
     /// The database canonicalizes and hashes the logical JSONB manifest, resolves
     /// same-catalog link stable keys to tenant-local IDs, and rejects every

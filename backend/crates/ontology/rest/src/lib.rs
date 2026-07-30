@@ -103,7 +103,16 @@ impl OntologyRestState {
         governance: PgGovernanceStore,
         jwt_verifier: Option<JwtVerifier>,
     ) -> Self {
-        let policies = PgCedarPolicyStore::new(registry.pool().clone());
+        // The attach route reaches `ont_policy_api.attach_object_policy` as
+        // `console_ontology_cmd` (migration 0206), so the policy store needs the
+        // SAME command credential the registry was built with. Derived from
+        // `registry` rather than taken as a parameter: every composition root and
+        // fixture that already wires the ontology command pool gets the policy one
+        // for free, and none of them changes arity.
+        let mut policies = PgCedarPolicyStore::new(registry.pool().clone());
+        if let Some(command_pool) = registry.command_pool_opt() {
+            policies = policies.with_command_pool(command_pool.clone());
+        }
         Self {
             registry,
             // The public parameter stays a `PgInstanceStore`: sealing is internal
@@ -2336,13 +2345,22 @@ impl RestError {
         }
     }
 
-    /// The Cedar policy store's two-arm error surface. `Domain` already carries
-    /// the kernel `ErrorKind`, so a validation failure at attach maps to 422 with
-    /// the validator's own message and needs no new mapping.
+    /// The Cedar policy store's error surface. `Domain` already carries the
+    /// kernel `ErrorKind`, so a validation failure at attach maps to 422 with the
+    /// validator's own message and needs no new mapping. `CommandUnavailable` is
+    /// a deployment fault and maps to 503, exactly like
+    /// `PgOntologyError::CommandUnavailable`: a 500 would be indistinguishable
+    /// from a real database fault.
     fn from_cedar(error: PgCedarError) -> Self {
         match error {
             PgCedarError::Domain(error) => Self::from_kernel(error),
             PgCedarError::Db(error) => Self::from_db(error),
+            PgCedarError::CommandUnavailable => Self {
+                status: StatusCode::SERVICE_UNAVAILABLE,
+                code: "ontology_command_unavailable",
+                message: "ontology command database is not configured or unavailable".to_owned(),
+                current: None,
+            },
         }
     }
 

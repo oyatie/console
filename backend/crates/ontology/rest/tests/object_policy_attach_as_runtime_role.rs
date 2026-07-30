@@ -21,7 +21,7 @@ use console_ontology_domain::{LinkTypeId, ObjectTypeId};
 use console_ontology_rest::{ONTOLOGY_ROUTE_PATHS, OntologyRestState, router};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use console_platform_authz::cedar_pbac::authoring::{
-    SimEffect, SimRequest, SimResource, SimSubject,
+    Effect, NoCodeBlocks, SimEffect, SimRequest, SimResource, SimSubject,
 };
 use console_platform_request_context::scope_org;
 use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
@@ -37,6 +37,14 @@ use uuid::Uuid;
 
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
+
+/// The trace context every RAW definer probe below supplies as 0206's 7th and 8th
+/// arguments. The audited entrypoint writes them straight onto the audit row
+/// (`audit_events.trace_id CHAR(32)`, `span_id CHAR(16)`); the route supplies a
+/// freshly generated pair instead, which is what the audit-row pin in the first
+/// test measures the length of.
+const PROBE_TRACE_ID: &str = "0123456789abcdef0123456789abcdef";
+const PROBE_SPAN_ID: &str = "0123456789abcdef";
 
 /// The audited writer this slice ships. Every path in this file is spelled as a
 /// literal rather than imported from the crate, so the file pins the wire
@@ -175,6 +183,38 @@ async fn an_attached_permit_is_the_only_thing_that_makes_instances_visible(owner
     .await
     .unwrap();
     assert_eq!(attach_audits, 1, "the attach must be audited, once");
+
+    // The audit row's CONTENT, not just its existence. 0206 moves the INSERT from
+    // `insert_audit_event_tx` in the application into the definer, and every one
+    // of these columns has to survive the move byte-identically: the count above
+    // stays green against a row whose actor, target or org drifted, and a drifted
+    // `actor` would instead throw 23503 on the users FK and surface as a 422.
+    let audit: String = sqlx::query_scalar(
+        "SELECT actor::TEXT || '|' || target_type || '|' || target_id || '|' \
+                || org_id::TEXT || '|' || (before_snap IS NULL)::TEXT || '|' \
+                || coalesce(after_snap->>'resource_type', '<no-normalized-row>') || '|' \
+                || length(trim(trace_id))::TEXT || '|' || length(trim(span_id))::TEXT \
+         FROM audit_events \
+         WHERE org_id = $1 AND action = 'ontology.object_policy.attach'",
+    )
+    .bind(*fx.org.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        audit,
+        format!(
+            "{}|ont_object_policies|{}|{}|true|policyattach|32|16",
+            fx.actor.as_uuid(),
+            type_id.as_uuid(),
+            fx.org.as_uuid()
+        ),
+        "every column of the attach audit row, pinned. `actor` carries a composite \
+         FK to users(id, org_id), so a drifted one throws 23503 and surfaces as a \
+         422 rather than a missing audit row; `before_snap` must be NULL because \
+         an attach creates; `after_snap` must be the canonical normalized row; and \
+         trace/span must be the full 32/16 hex the char(32)/char(16) columns hold"
+    );
 
     let attachments: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM ont_object_policies WHERE org_id = $1 AND object_type_id = $2",
@@ -1262,44 +1302,56 @@ async fn a_row_survives_a_revision_of_its_object_type(owner_pool: PgPool) {
 /// leaves the migration applier as owner -- `console_app` in production and the
 /// sqlx superuser locally, both `BYPASSRLS`. The org floor would be gone and
 /// every other test in this file would stay green.
+///
+/// TOTAL over the schema, like 0206's owner pin and like
+/// `the_attach_schema_grants_exactly_the_audited_command_credential`, and it was
+/// NOT: this query filtered `proname = 'attach_object_policy'`, so it pinned the
+/// 8-argument entrypoint and said nothing about `attach_object_policy_rows` --
+/// the routine that holds 0205's entire envelope and performs both policy
+/// INSERTs. That body calls EIGHT unqualified `pg_catalog` functions
+/// (`gen_random_uuid`, `replace`, `left`, `sha256`, `convert_to`, `encode`,
+/// `jsonb_typeof`, `jsonb_array_length`; `0205` §4's INSERT and its shape
+/// checks), so its `SET search_path = pg_catalog` is the only thing standing
+/// between a SECURITY DEFINER owned by the writer role and a caller-controlled
+/// resolution of those eight names. `ALTER FUNCTION ... RENAME` preserves
+/// `proconfig`, which is why it holds today -- and a later
+/// `CREATE OR REPLACE FUNCTION ont_policy_api.attach_object_policy_rows(...)`
+/// that omitted the two SET clauses would pass every other test in this file.
+/// Measured, not argued: with `ALTER FUNCTION ont_policy_api
+/// .attach_object_policy_rows(...) RESET search_path` appended to 0206, this
+/// assertion fails on `attach_object_policy_rows|true|console_ontology_writer|
+/// false|true` and the other 26 tests in this file all pass. The per-name query
+/// this replaced could not fail on it at all.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_search_path(
     owner_pool: PgPool,
 ) {
-    let definer: (bool, String, Option<Vec<String>>, bool, bool) = sqlx::query_as(
+    let attributes: Vec<String> = sqlx::query_scalar(
         r#"
-        SELECT p.prosecdef,
-               r.rolname,
-               p.proconfig,
-               r.rolsuper,
-               r.rolbypassrls
+        SELECT p.proname || '|' || p.prosecdef::TEXT || '|' || r.rolname || '|'
+               || (COALESCE(p.proconfig, '{}') @> ARRAY['search_path=pg_catalog'])::TEXT || '|'
+               || (COALESCE(p.proconfig, '{}') @> ARRAY['row_security=on'])::TEXT
         FROM pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
         JOIN pg_roles r ON r.oid = p.proowner
-        WHERE n.nspname = 'ont_policy_api' AND p.proname = 'attach_object_policy'
+        WHERE n.nspname = 'ont_policy_api'
+        ORDER BY p.proname
         "#,
     )
-    .fetch_one(&owner_pool)
+    .fetch_all(&owner_pool)
     .await
-    .expect("the attach definer must exist");
-    let (security_definer, owner, config, owner_is_super, owner_bypasses_rls) = definer;
-    assert!(
-        security_definer,
-        "the attach routine must be SECURITY DEFINER"
-    );
-    assert_eq!(owner, "console_ontology_writer");
-    assert!(
-        !owner_is_super && !owner_bypasses_rls,
-        "a superuser/BYPASSRLS definer owner evaporates the org floor with every test green"
-    );
-    let config = config.unwrap_or_default();
-    assert!(
-        config.iter().any(|entry| entry == "search_path=pg_catalog"),
-        "definer must pin search_path, got {config:?}"
-    );
-    assert!(
-        config.iter().any(|entry| entry == "row_security=on"),
-        "definer must keep row security on, got {config:?}"
+    .unwrap();
+    assert_eq!(
+        attributes,
+        vec![
+            "attach_object_policy|true|console_ontology_writer|true|true".to_owned(),
+            "attach_object_policy_rows|true|console_ontology_writer|true|true".to_owned(),
+        ],
+        "every routine in ont_policy_api must be SECURITY DEFINER, owned by the \
+         NOBYPASSRLS writer role, with search_path AND row_security pinned. A \
+         routine here that resolves unqualified names through the CALLER's \
+         search_path is a definer hijack, and the row-writer is the one with a \
+         body full of unqualified pg_catalog calls"
     );
 
     // Total over the new schema, so a future routine added beside it cannot
@@ -1402,7 +1454,7 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
         .await;
     let foreign_org = Uuid::from_u128(0x7777_7777_7777_7777_7777_7777_7777_7777);
     let refused = fx
-        .as_runtime_role(move |tx| {
+        .as_command_role(move |tx| {
             Box::pin(async move {
                 sqlx::query("SELECT set_config('app.current_org', $1, true)")
                     .bind(OrgId::knl().as_uuid().to_string())
@@ -1410,7 +1462,7 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
                     .await
                     .unwrap();
                 sqlx::query_scalar::<_, Uuid>(
-                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
+                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
                 )
                 .bind(foreign_org)
                 .bind(Uuid::new_v4())
@@ -1418,6 +1470,8 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
                 .bind("permit")
                 .bind(canonical_normalized_row("permit", "policyfloor", vec![]))
                 .bind("ontology-runtime-filter-v1")
+                .bind(PROBE_TRACE_ID)
+                .bind(PROBE_SPAN_ID)
                 .fetch_one(&mut **tx)
                 .await
                 .err()
@@ -1430,17 +1484,31 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
         refused.contains("row-level security policy"),
         "the definer must be stopped by the RLS org floor, got: {refused}"
     );
+    // NAMING THE TABLE, not just the mechanism. An audit-FIRST definer refuses
+    // this same call with `... for table "audit_events"`, which satisfies the
+    // table-agnostic assertion above while having moved the org-floor proof off
+    // the policy catalog entirely. The audit INSERT must come LAST.
+    assert!(
+        refused.contains("cedar_policy_catalog_entries"),
+        "the floor must refuse the POLICY CATALOG write; a refusal naming \
+         audit_events instead means the audit row is written before the catalog \
+         row and this probe no longer proves the catalog is org-scoped. Got: {refused}"
+    );
 }
 
 // ---------------------------------------------------------------------------
-// 5a. The definer is the security boundary; the route is not
+// 5a. The definer is a security boundary in its own right, not only the route
 // ---------------------------------------------------------------------------
 
-/// `ont_policy_api.attach_object_policy` is EXECUTE-granted to `console_rt`.
-/// Anyone holding that role can call it directly, skipping every check
+/// `ont_policy_api.attach_object_policy` is EXECUTE-granted to a database login.
+/// Anyone holding that credential can call it directly, skipping every check
 /// `attach_object_policy` (`rest/src/lib.rs:500-557`) performs — a reviewer
 /// minted an `enforced` catalog row carrying arbitrary generated Cedar text that
-/// way. The route is therefore not the boundary; this routine is.
+/// way. The route is therefore not the only boundary; this routine is one too,
+/// and it stays one after 0206 moved EXECUTE to `console_ontology_cmd`: the
+/// command credential is a database login the app holds, so a leak of it must not
+/// buy a forged attachment either. Every forgery below is therefore probed as
+/// `console_ontology_cmd`, the ONE role that can still reach the body.
 ///
 /// Two shapes of fix, both asserted here:
 ///
@@ -1465,8 +1533,9 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
 /// `load_enforced_object_policy_blocks` (`authz-rest/src/store.rs:569-586`);
 /// remove that re-validation and this justification dies silently.
 ///
-/// Every case runs as the genuine `console_rt` — asserted, not assumed — because
-/// a superuser or BYPASSRLS session makes each refusal below vacuous.
+/// Every case runs as a genuine, non-superuser, non-BYPASSRLS login — both roles
+/// asserted, not assumed — because a superuser or BYPASSRLS session makes each
+/// refusal below vacuous.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(owner_pool: PgPool) {
     let fx = Fixture::build(&owner_pool, "definer-hardening").await;
@@ -1495,6 +1564,30 @@ async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(o
          non-superuser, non-BYPASSRLS runtime role"
     );
 
+    // The definer probes below run as `console_ontology_cmd`, so its identity has
+    // to be pinned too — a `SET ROLE` that silently failed would leave them
+    // running as the sqlx superuser, where RLS does not apply and every envelope
+    // refusal below could pass for the wrong reason.
+    let command_role: (String, bool, bool) = fx
+        .as_command_role(|tx| {
+            Box::pin(async move {
+                sqlx::query_as(
+                    "SELECT current_user::TEXT, r.rolsuper, r.rolbypassrls \
+                     FROM pg_roles r WHERE r.rolname = current_user",
+                )
+                .fetch_one(&mut **tx)
+                .await
+                .unwrap()
+            })
+        })
+        .await;
+    assert_eq!(
+        command_role,
+        ("console_ontology_cmd".to_owned(), false, false),
+        "the command credential must be the genuine, non-superuser, \
+         non-BYPASSRLS role or every definer probe below is vacuous"
+    );
+
     // POSITIVE CONTROL, first. A hardened definer that refuses everything would
     // satisfy every negative case below while breaking the product.
     //
@@ -1502,38 +1595,36 @@ async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(o
     // object type's own key and a fresh discriminator, `bundle_digest` is the
     // SHA-256 of the normalized row actually stored beside it, and no Cedar
     // source is stored at all. None of the three was supplied.
-    let actor = fx.actor;
+    // `forge_attach_persisted`, i.e. the SAME hand-crafted call as every forgery
+    // below with the SAME real actor (`created_by` carries a composite FK to
+    // `users(id, org_id)` — 0150:41 — so `Uuid::nil()` would assert only that
+    // referential integrity works), but COMMITTING, because the row has to be
+    // read back on a different connection.
+    let accepted_id = fx
+        .forge_attach_persisted(
+            type_uuid,
+            "permit",
+            canonical_normalized_row("permit", "definerhard", vec![owner_is_subject()]),
+        )
+        .await
+        .expect("a canonical attach must still be accepted");
+    // Read back as `console_rt`, not as the command credential. The command role
+    // is EXECUTE-only by construction (0165's shape: no table privileges at all,
+    // pinned by the `command_audit_table_access` assertion in
+    // `key_revision_migration_upgrade.rs`), so it cannot SELECT the catalog and
+    // must not be granted the ability. `console_rt` holds SELECT and no INSERT
+    // (0150:117-118), which makes this read the stronger statement anyway: a row
+    // the runtime role can see and could never have written.
     let (accepted_key, digest_is_self_consistent, stored_text): (String, bool, Option<String>) = fx
         .as_runtime_role(move |tx| {
             Box::pin(async move {
-                let id: Uuid = sqlx::query_scalar(
-                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
-                )
-                .bind(*OrgId::knl().as_uuid())
-                // A REAL actor, not `Uuid::nil()`: `created_by` carries a
-                // composite FK to `users(id, org_id)` (0150:41), so a nil id can
-                // never satisfy it under ANY implementation of the definer. With
-                // it, this positive control asserted nothing about the
-                // hardening — it asserted that referential integrity works.
-                .bind(*actor.as_uuid())
-                .bind(type_uuid)
-                .bind("permit")
-                .bind(canonical_normalized_row(
-                    "permit",
-                    "definerhard",
-                    vec![owner_is_subject()],
-                ))
-                .bind("ontology-runtime-filter-v1")
-                .fetch_one(&mut **tx)
-                .await
-                .expect("a canonical attach must still be accepted");
                 sqlx::query_as(
                     "SELECT stable_key, \
                             bundle_digest = 'sha256:' || encode(sha256(convert_to(normalized_row::text, 'UTF8')), 'hex'), \
                             generated_policy_text \
                      FROM cedar_policy_catalog_entries WHERE id = $1",
                 )
-                .bind(id)
+                .bind(accepted_id)
                 .fetch_one(&mut **tx)
                 .await
                 .unwrap()
@@ -1641,9 +1732,12 @@ async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(o
          append-only, so an oversized list is permanent work charged to every read",
     );
 
-    // The definer is not even needed today: `0154:105` grants `console_rt` INSERT
-    // on the attachment table outright, so an attacker can bind an existing
-    // enforced catalog policy to any object type with one bare statement.
+    // `0154:105` granted `console_rt` INSERT on the attachment table outright, so
+    // an attacker holding the runtime role could bind an existing enforced catalog
+    // policy to any object type with one bare statement and the definer was not
+    // needed at all. 0205's `REVOKE INSERT ON public.ont_object_policies FROM
+    // console_rt` took it back; this asserts it stays taken back, because with it
+    // every check in the definer is optional again.
     let bare_attachment = fx
         .as_runtime_role(move |tx| {
             Box::pin(async move {
@@ -1691,12 +1785,707 @@ async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(o
     .fetch_all(&owner_pool)
     .await
     .unwrap();
+    // THE ONE SANCTIONED INVERSION. This asserted, until 0206, that `console_rt`
+    // could execute exactly one attach overload. That capability WAS the residual
+    // 0205 escalated: the definer is not an audited boundary, so anything holding
+    // runtime credentials attached a policy untraced. It is now zero overloads,
+    // and the argument-list-repeated-four-times trap the old assertion guarded is
+    // guarded instead by the ACL totality query below, which is total over the
+    // schema rather than over one `proname`.
     assert_eq!(
         executable,
-        vec!["uuid, uuid, uuid, text, jsonb, text".to_owned()],
-        "console_rt must be able to execute exactly ONE attach overload, the \
-         hardened one -- a surviving 11-argument sibling is the whole hardening \
-         bypassed with every test still green"
+        Vec::<String>::new(),
+        "console_rt must be able to execute NO attach overload; one surviving \
+         overload is the whole 0206 topology bypassed with every test still green"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// 5a-bis. 0206: the definer is reachable only by the audited command credential
+// ---------------------------------------------------------------------------
+
+/// The exact inversion of the exploit #525 proved by execution: a direct call to
+/// the definer as `console_rt` persisted one enforced attachment with zero audit
+/// rows. It is now refused at the PERMISSION layer, before the body runs.
+///
+/// BOTH the SQLSTATE and the message, because neither alone discriminates.
+///
+/// The SQLSTATE separates "never got in" from "got in and was stopped by the
+/// body": `console_rt` reaching an envelope check raises `P0001` at
+/// `exec_stmt_raise, pl_exec.c:3923` (measured), which is the exploit's
+/// PRECONDITION, not its closure.
+///
+/// The message separates WHICH permission was missing, and an earlier version of
+/// this comment argued AGAINST asserting it, on the grounds that `42501` /
+/// `aclcheck_error` already proves the credential never got in. Executed against
+/// a migrated database, that is false. Revoking `console_rt`'s USAGE on the
+/// schema yields `42501: permission denied for schema ont_policy_api` from the
+/// IDENTICAL internal raise site, `aclcheck_error, aclchk.c:2795` — the same code
+/// and the same location as the function-level refusal this test exists to pin,
+/// but a different topology from the one 0206 asserts, and one 0206 explicitly
+/// declined. This probe stayed green against it until the message assertion below
+/// existed.
+///
+/// Known ceiling: that substring also prefix-matches `attach_object_policy_rows`.
+/// It cannot arise here, because the call names the 8-argument entrypoint by its
+/// argument list; the sibling probe below carries the same ceiling.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn console_rt_cannot_execute_the_attach_definer_at_all(owner_pool: PgPool) {
+    let fx = Fixture::build(&owner_pool, "rt-definer-revoked").await;
+    let type_id = fx
+        .publish("rtrevoked", instance_type_draft("rtrevoked"))
+        .await;
+    let type_uuid = *type_id.as_uuid();
+    let org = *fx.org.as_uuid();
+    let actor = *fx.actor.as_uuid();
+
+    // A CANONICAL payload for a REAL, resolvable object type with a REAL actor.
+    // Every envelope check inside the definer would pass, so nothing but the
+    // grant topology can refuse this call. A malformed payload would be refused
+    // by the body even with EXECUTE restored, and this test would pass against
+    // the exploit it exists to close.
+    let refusal: Option<(String, String)> = fx
+        .as_runtime_role(move |tx| {
+            Box::pin(async move {
+                sqlx::query_scalar::<_, Uuid>(
+                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
+                )
+                .bind(org)
+                .bind(actor)
+                .bind(type_uuid)
+                .bind("permit")
+                .bind(canonical_normalized_row(
+                    "permit",
+                    "rtrevoked",
+                    vec![owner_is_subject()],
+                ))
+                .bind("ontology-runtime-filter-v1")
+                .bind(PROBE_TRACE_ID)
+                .bind(PROBE_SPAN_ID)
+                .fetch_one(&mut **tx)
+                .await
+                .err()
+                .map(refusal)
+            })
+        })
+        .await;
+
+    let (sqlstate, message) = refusal.expect(
+        "console_rt executing the attach definer is #525's proven exploit: it \
+         persisted an enforced attachment with ZERO audit rows. It must be refused.",
+    );
+    assert_eq!(
+        sqlstate, "42501",
+        "the refusal must come from the PERMISSION layer. P0001 means console_rt \
+         reached the definer body and was stopped by an envelope check -- which is \
+         the exploit's precondition, not its closure. Got {sqlstate}: {message}"
+    );
+    assert!(
+        message.contains("permission denied for function attach_object_policy"),
+        "the refusal must name the FUNCTION. `permission denied for schema \
+         ont_policy_api` is ALSO 42501 and is raised from the same internal site \
+         (`aclcheck_error, aclchk.c:2795`, measured both ways), so the code alone \
+         reads green when console_rt has merely lost schema USAGE -- a topology \
+         0206 declined, not the one it asserts. Got: {message}"
+    );
+}
+
+/// The other half of the same topology: the credential that CAN attach must not be
+/// able to skip the audit row.
+///
+/// 0206 renames 0205's body to `attach_object_policy_rows` and wraps it in an
+/// 8-argument entrypoint that appends the audit row. That split is only worth
+/// anything if the inner, unaudited routine stays owner-only — otherwise the one
+/// credential that can attach at all can still attach untraced, which is the
+/// residual this slice retires, moved one function to the left.
+///
+/// Its own test, not a tail assertion on the one above: behind a failing assert it
+/// would never execute, and an unexecuted probe is not evidence.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_command_credential_cannot_skip_the_audit_row(owner_pool: PgPool) {
+    let fx = Fixture::build(&owner_pool, "cmd-cannot-skip-audit").await;
+    let type_id = fx
+        .publish("skipaudit", instance_type_draft("skipaudit"))
+        .await;
+    let type_uuid = *type_id.as_uuid();
+    let org = *fx.org.as_uuid();
+    let actor = *fx.actor.as_uuid();
+
+    let rows_refusal: Option<(String, String)> = fx
+        .as_command_role(move |tx| {
+            Box::pin(async move {
+                sqlx::query_scalar::<_, Uuid>(
+                    "SELECT ont_policy_api.attach_object_policy_rows($1,$2,$3,$4,$5,$6)",
+                )
+                .bind(org)
+                .bind(actor)
+                .bind(type_uuid)
+                .bind("permit")
+                .bind(canonical_normalized_row(
+                    "permit",
+                    "skipaudit",
+                    vec![owner_is_subject()],
+                ))
+                .bind("ontology-runtime-filter-v1")
+                .fetch_one(&mut **tx)
+                .await
+                .err()
+                .map(refusal)
+            })
+        })
+        .await;
+    let (rows_sqlstate, rows_message) = rows_refusal.expect(
+        "console_ontology_cmd must reach the AUDITED entrypoint only. EXECUTE on \
+         the inner row-writer would make the audit row skippable by the one \
+         credential that can attach at all",
+    );
+    assert_eq!(rows_sqlstate, "42501", "got {rows_message}");
+    // The MESSAGE, not just the SQLSTATE. Missing schema USAGE also raises 42501
+    // (`permission denied for schema ont_policy_api`), so a bare code assertion
+    // here passes today — before 0206 exists and before the routine it names has
+    // even been created — which is the vacuous green this suite exists to refuse.
+    assert!(
+        rows_message.contains("function attach_object_policy_rows"),
+        "the refusal must name the ROW-WRITER FUNCTION. A schema-level 42501 means \
+         the command role lacks USAGE and this probe proved nothing about the \
+         audit row being unskippable. Got: {rows_message}"
+    );
+}
+
+/// The grant topology asserted against `pg_catalog`, TOTAL over the schema.
+///
+/// Per-role `has_function_privilege` answers only the question you thought to
+/// ask: it cannot see a third grantee, and it reads `true` for a role holding
+/// EXECUTE with no schema USAGE — under which every real call fails 42501 naming
+/// the SCHEMA while the probe stays green. `aclexplode(proacl)` over the whole
+/// schema plus an explicit `has_schema_privilege` pair closes both.
+///
+/// `COALESCE(proacl, acldefault(...))` closes a third, which `aclexplode(proacl)`
+/// alone did not: a routine left at DEFAULT privileges has `proacl IS NULL`, which
+/// means EXECUTE to PUBLIC — and `aclexplode(NULL)` returns ZERO rows, so the
+/// vector below matched unchanged with two PUBLIC-executable routines added to the
+/// schema (measured: `has_function_privilege('console_rt', ...)` read `t` for both
+/// while this assertion stayed green). `acldefault` materialises the grant
+/// PostgreSQL implies, so the implied grant is measured like any other. A
+/// PROCEDURE is the same hole with an extra edge: `REVOKE ALL ON ALL FUNCTIONS IN
+/// SCHEMA` does not cover `prokind = 'p'` at all.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_attach_schema_grants_exactly_the_audited_command_credential(owner_pool: PgPool) {
+    let acl: Vec<String> = sqlx::query_scalar(
+        "SELECT p.proname || '|' || a.grantee::regrole::text || '|' || a.privilege_type \
+         FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace, \
+              aclexplode(COALESCE(p.proacl, pg_catalog.acldefault('f', p.proowner))) a \
+         WHERE n.nspname = 'ont_policy_api' \
+         ORDER BY p.proname, a.grantee::regrole::text, a.privilege_type",
+    )
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        acl,
+        vec![
+            "attach_object_policy|console_ontology_cmd|EXECUTE".to_owned(),
+            "attach_object_policy|console_ontology_writer|EXECUTE".to_owned(),
+            "attach_object_policy_rows|console_ontology_writer|EXECUTE".to_owned(),
+        ],
+        "the whole ont_policy_api ACL, so a fourth grantee, a surviving overload, \
+         or a routine left at default privileges cannot hide behind a per-role \
+         probe. console_rt must appear nowhere, and only the OWNER may call the \
+         unaudited row-writer.\n\
+         \n\
+         A LATER MIGRATION ADDING ANY ROUTINE TO ont_policy_api FAILS HERE BY \
+         DESIGN, including a PROCEDURE, which `REVOKE ALL ON ALL FUNCTIONS IN \
+         SCHEMA` does not reach. The correct repair is to REVOKE the implied \
+         PUBLIC grant on the new routine and add the exact row it should have. \
+         Widening this vector to admit `-|EXECUTE` re-opens the hole the COALESCE \
+         exists to close, and `ALTER DEFAULT PRIVILEGES` does not close it either \
+         (measured twice on PG 18.4: pg_default_acl records nothing and the next \
+         routine still lands with proacl NULL)."
+    );
+
+    let schema_usage: (bool, bool) = sqlx::query_as(
+        "SELECT has_schema_privilege('console_ontology_cmd', 'ont_policy_api', 'USAGE'), \
+                has_schema_privilege('console_rt', 'ont_policy_api', 'USAGE')",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert!(
+        schema_usage.0,
+        "0205's `GRANT USAGE ON SCHEMA ont_policy_api TO console_rt` grants schema \
+         USAGE to that role only. Without USAGE for the command role, \
+         has_function_privilege above still reads true while every attach fails \
+         42501 naming the SCHEMA"
+    );
+    assert!(
+        schema_usage.1,
+        "console_rt keeps schema USAGE deliberately: it is what makes its refusal \
+         read `permission denied for function attach_object_policy` instead of a \
+         schema-level message, and USAGE alone grants nothing executable"
+    );
+}
+
+/// A `PgCedarPolicyStore` with NO command pool must REFUSE to attach, typed, and
+/// never fall back to its read pool.
+///
+/// This is the test that makes the other three trustworthy. The fallback that
+/// breaks this slice is one expression — `self.command_pool.as_ref()
+/// .unwrap_or(&self.pool)` — it compiles, it reads as defensive, and it restores
+/// the exact capability 0206 removes. Every other test in this file wires both
+/// pools, so every one of them stays green while the attach path runs on
+/// `console_rt` again. Nothing but an unwired store can see the difference.
+///
+/// `command_pool()?` must short-circuit AFTER `validate_blocks_with` and BEFORE
+/// any connection is taken, so the blocks below are deliberately VALID: an
+/// invalid set would be refused by the validator and this test would pass without
+/// the command-pool check existing at all.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_store_with_no_command_pool_refuses_to_attach_rather_than_using_the_read_pool(
+    owner_pool: PgPool,
+) {
+    let fx = Fixture::build(&owner_pool, "no-cmd-pool").await;
+    let type_id = fx
+        .publish("nocmdpool", instance_type_draft("nocmdpool"))
+        .await;
+
+    // Built exactly like `app/src`'s policy-studio store and every draft-only
+    // test fixture: `new(pool)` and nothing else.
+    let store = console_platform_authz_rest::PgCedarPolicyStore::new(fx.runtime_pool.clone());
+    let outcome = scope_org(fx.org, async {
+        store
+            .attach_object_policy(console_platform_authz_rest::AttachObjectPolicyCommand {
+                actor: fx.actor,
+                object_type_id: *type_id.as_uuid(),
+                blocks: NoCodeBlocks {
+                    effect: Effect::Permit,
+                    action: "view".to_owned(),
+                    resource_type: "nocmdpool".to_owned(),
+                    conditions: vec![],
+                },
+                declared: vec![],
+            })
+            .await
+    })
+    .await;
+
+    match outcome {
+        Err(console_platform_authz_rest::PgCedarError::CommandUnavailable) => {}
+        Ok(id) => panic!(
+            "an unwired store ATTACHED policy {id}: the attach ran on the read \
+             pool, which is the capability 0206 exists to remove"
+        ),
+        Err(other) => panic!(
+            "an unwired store must fail with the typed CommandUnavailable, not \
+             an opaque database error a deployment fault is indistinguishable \
+             from: {other}"
+        ),
+    }
+
+    // Nothing was written. A store that refused AFTER the definer call would
+    // satisfy the match above and still have minted the rows.
+    let written: (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM ont_object_policies WHERE org_id = $1), \
+                (SELECT COUNT(*) FROM audit_events WHERE org_id = $1 \
+                   AND action = 'ontology.object_policy.attach')",
+    )
+    .bind(*fx.org.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        written,
+        (0, 0),
+        "the refusal must precede every write: no attachment and no audit claim \
+         that one happened"
+    );
+}
+
+/// The credential the application now holds on the attach path must reach the
+/// definer's tables ONLY through the definer.
+///
+/// EXECUTE-only is the entire premise of 0206: `console_ontology_cmd` cannot skip
+/// the audit row because it cannot reach `attach_object_policy_rows`, and it
+/// cannot forge one because it cannot INSERT into `audit_events`. Both claims are
+/// stated in 0206's header and neither was asserted anywhere — the `console_rt`
+/// twin of the probe below exists in
+/// `the_attach_definer_refuses_every_forgery_the_route_would_have_refused`, but it
+/// was never re-pointed at the role that inherited the capability.
+///
+/// A blanket `GRANT ... ON ALL TABLES IN SCHEMA public TO console_ontology_cmd` in
+/// some later migration is all it takes: the audited definer becomes optional for
+/// the one credential the attach route holds, and every other test in this file
+/// stays green because they all attach through the route, which would keep
+/// working.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_command_credential_holds_no_direct_write_on_the_tables_the_definer_writes(
+    owner_pool: PgPool,
+) {
+    let fx = Fixture::build(&owner_pool, "cmd-no-table-write").await;
+    fx.publish("cmdnowrite", instance_type_draft("cmdnowrite"))
+        .await;
+    let victim = fx
+        .publish("cmdnowriteb", instance_type_draft("cmdnowriteb"))
+        .await;
+    let victim_uuid = *victim.as_uuid();
+    let org = *fx.org.as_uuid();
+
+    // A REAL enforced catalog row, authored through the audited route, so the bare
+    // statement below is the genuine attack and not an FK violation wearing its
+    // clothes: it binds an existing permit to a SECOND object type that never had
+    // one, with no definer, no envelope checks and no audit row.
+    let authored = fx
+        .post(
+            &policies_path("cmdnowrite"),
+            json!({ "effect": "permit", "conditions": [owner_is_subject()] }),
+        )
+        .await;
+    assert_eq!(authored.status, StatusCode::CREATED, "{:?}", authored.body);
+    let policy_id: Uuid = authored.body["id"].as_str().unwrap().parse().unwrap();
+
+    // EXECUTED, not inferred. `0154:105` granted `console_rt` this exact INSERT and
+    // 0205's `REVOKE INSERT ON public.ont_object_policies FROM console_rt` took it
+    // back; nothing ever asked the same question of the command role.
+    //
+    // `VALUES` and not `INSERT ... SELECT FROM cedar_policy_catalog_entries`, which
+    // is how the `console_rt` twin of this probe is written and is WRONG here: the
+    // command role holds no SELECT on the catalog either, so that form is refused
+    // 42501 for the read and never reaches the INSERT privilege check at all. It
+    // was written that way first and stayed green with `GRANT INSERT ON
+    // ont_object_policies TO console_ontology_cmd` applied.
+    let bare_attachment = fx
+        .as_command_role(move |tx| {
+            Box::pin(async move {
+                sqlx::query(
+                    "INSERT INTO ont_object_policies (org_id, object_type_id, cedar_policy_id, effect) \
+                     VALUES ($1, $2, $3, 'permit')",
+                )
+                .bind(org)
+                .bind(victim_uuid)
+                .bind(policy_id)
+                .execute(&mut **tx)
+                .await
+                .err()
+                .map(refusal)
+            })
+        })
+        .await;
+    let (bare_sqlstate, bare_message) = bare_attachment.expect(
+        "console_ontology_cmd must hold no INSERT on ont_object_policies: with it, \
+         the audited definer is optional for the ONE credential the attach route \
+         holds, which is the whole of 0206 undone",
+    );
+    assert_eq!(bare_sqlstate, "42501", "got {bare_message}");
+    // THIS table's missing GRANT, not any other 42501. Measured with `GRANT INSERT
+    // ON ont_object_policies TO console_ontology_cmd` applied, the same statement
+    // raises `42501: permission denied for table cedar_policy_catalog_entries`,
+    // from `enforce_ont_object_policy_effect_matches_catalog()` -- a BEFORE INSERT
+    // ROW trigger with `prosecdef = false`, so it reads the catalog as the caller
+    // and fires BEFORE RLS is evaluated. RLS is unreachable for THIS role; the
+    // tenancy floor is not what refuses it. Same SQLSTATE, same internal raise site
+    // (`aclcheck_error, aclchk.c:2795`), a different table -- so the code alone
+    // reads green against exactly the grant this test exists to forbid.
+    assert!(
+        bare_message.contains("permission denied for table \"ont_object_policies\"")
+            || bare_message.contains("permission denied for table ont_object_policies"),
+        "the refusal must name ont_object_policies, the table whose INSERT is being \
+         forbidden. A 42501 naming any other table means the command role got past \
+         the write check on this one and was stopped somewhere downstream, which \
+         proves nothing about the grant. Got: {bare_message}"
+    );
+
+    // TOTAL over the three tables the definer writes, so a privilege nobody
+    // thought to execute cannot hide. Absence of the grant is a complete proof of
+    // refusal here (the reverse direction — a grant present with no schema USAGE —
+    // is what makes catalog probes unsafe, and does not apply to tables in
+    // `public`, whose USAGE `console_ontology_cmd` holds).
+    //
+    // Reads are deliberately NOT asserted: SELECT buys no forgery, and pinning it
+    // would fail a future migration that legitimately let the command role read.
+    // The claim being pinned is 0206's, which is about writes.
+    let writable: Vec<String> = sqlx::query_scalar(
+        "SELECT t || ':' || p \
+         FROM unnest(ARRAY['cedar_policy_catalog_entries','ont_object_policies','audit_events']) t, \
+              unnest(ARRAY['INSERT','UPDATE','DELETE']) p \
+         WHERE has_table_privilege('console_ontology_cmd', t, p) \
+         ORDER BY t, p",
+    )
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        writable,
+        Vec::<String>::new(),
+        "console_ontology_cmd must be EXECUTE-only. An INSERT on audit_events in \
+         particular is a forgery channel 0165's protected_audit_writer_guard() \
+         explicitly reasons about, in the ELSIF branch that raises \
+         ontology_audit.command_required, and an INSERT on either policy table \
+         bypasses the definer entirely"
+    );
+}
+
+/// The audit row is written BY THE DEFINER, not by the application.
+///
+/// This is the difference between 0205 and 0206, and no test could see it: the
+/// route-level audit assertions in
+/// `an_attached_permit_is_the_only_thing_that_makes_instances_visible` stay green
+/// whichever side writes the row, so restoring the application-side `with_audit`
+/// and dropping the INSERT from the definer would pass the whole suite while
+/// handing the audit row back to a caller who can choose not to write it. That
+/// regression is precisely the residual 0205 escalated.
+///
+/// Nothing here goes over HTTP. The only thing that runs is one hand-crafted
+/// `console_ontology_cmd` call to the definer, so the application is not in the
+/// picture and the row can only have come from inside the routine.
+///
+/// It also pins 0206's two NEW parameters by VALUE. The route generates its own
+/// pair, so the route-level assertion can only measure their LENGTH (32/16) — and
+/// a definer that ignored arguments 7 and 8 and wrote its own constants would
+/// satisfy that.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_definer_writes_the_audit_row_itself_carrying_the_supplied_trace(owner_pool: PgPool) {
+    let fx = Fixture::build(&owner_pool, "definer-writes-audit").await;
+    let type_id = fx
+        .publish("defineraudit", instance_type_draft("defineraudit"))
+        .await;
+    let normalized_row =
+        canonical_normalized_row("permit", "defineraudit", vec![owner_is_subject()]);
+
+    let policy_id = fx
+        .forge_attach_persisted(*type_id.as_uuid(), "permit", normalized_row.clone())
+        .await
+        .expect("a canonical attach through the audited entrypoint must be accepted");
+
+    let audited: Vec<String> = sqlx::query_scalar(
+        "SELECT actor::TEXT || '|' || target_type || '|' || target_id || '|' \
+                || org_id::TEXT || '|' || (before_snap IS NULL)::TEXT || '|' \
+                || (after_snap = $2)::TEXT || '|' || trim(trace_id) || '|' || trim(span_id) \
+         FROM audit_events \
+         WHERE org_id = $1 AND action = 'ontology.object_policy.attach'",
+    )
+    .bind(*fx.org.as_uuid())
+    .bind(&normalized_row)
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        audited,
+        vec![format!(
+            "{}|ont_object_policies|{}|{}|true|true|{PROBE_TRACE_ID}|{PROBE_SPAN_ID}",
+            fx.actor.as_uuid(),
+            type_id.as_uuid(),
+            fx.org.as_uuid()
+        )],
+        "one audit row, written inside the definer, for a call no application code \
+         took part in. `fetch_all` and not `fetch_one`: a definer that wrote the \
+         row twice is as wrong as one that wrote it never, and `fetch_one` would \
+         report the first of two as success"
+    );
+
+    // The row it audits really exists, so the assertion above cannot be satisfied
+    // by an audit claim about an attach that did not happen.
+    let attached: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM ont_object_policies \
+         WHERE org_id = $1 AND object_type_id = $2 AND cedar_policy_id = $3",
+    )
+    .bind(*fx.org.as_uuid())
+    .bind(type_id.as_uuid())
+    .bind(policy_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        attached, 1,
+        "the audited attachment must be the one on disk"
+    );
+}
+
+/// An audit row that cannot be written must take the policy rows down with it.
+///
+/// "an attach and its audit claim commit or roll back together" is asserted in
+/// prose three times — 0206's header, 0205's §4 header after this lane rewrote it,
+/// and the ledger — and was executed nowhere. Every other probe in this file sees
+/// the two together only when BOTH succeed, which is the one case that cannot
+/// distinguish an atomic pair from an audit INSERT whose failure is swallowed.
+///
+/// The mutation that survives the entire suite is one plausible defensive edit to
+/// 0206 §4 — wrap the audit INSERT in `BEGIN ... EXCEPTION WHEN OTHERS THEN NULL;
+/// END` so an attach never fails on audit trouble — and it re-creates exactly the
+/// residual this slice retires: a policy row that no audit event describes.
+/// Measured with that mutation applied: the call below returns Ok — the definer
+/// accepted an attach it could not audit — and this test is the ONLY one of the 27
+/// in this file that fails. The other 26 never make the audit INSERT fail, so none
+/// of them can tell a swallowed failure from an atomic pair.
+///
+/// The transaction is COMMITTED, not rolled back like `as_command_role` does: on a
+/// rollback the counts are zero whatever the definer did, which is the vacuous
+/// green this file exists to refuse. A NULL `p_trace_id` is the forcing input
+/// because `audit_events.trace_id` is `CHAR(32) NOT NULL` (`0003:16`) and nothing
+/// in the row-writer reads arguments 7 or 8 — so the policy INSERTs have already
+/// happened when the audit INSERT raises, which is the ordering the claim is about.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_unwritable_audit_row_rolls_the_policy_rows_back_with_it(owner_pool: PgPool) {
+    let fx = Fixture::build(&owner_pool, "audit-atomic").await;
+    let type_id = fx
+        .publish("auditatomic", instance_type_draft("auditatomic"))
+        .await;
+
+    // Inline, and neither `forge_attach_persisted` nor `armed_tx`: the NULL trace
+    // below is the forcing input, and this probe's refusal must depend on nothing
+    // but the statement written here. Measured: with `armed_tx` mutated to stop
+    // arming the org, five probes in this file go red and this one stays GREEN on a
+    // refusal it does not assert (`unknown object type`), because zero rows is also
+    // what it expects. Five lines of duplication buys immunity to that.
+    let mut tx = fx.command_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(fx.org.as_uuid().to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let outcome = sqlx::query_scalar::<_, Uuid>(
+        "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
+    )
+    .bind(*fx.org.as_uuid())
+    .bind(*fx.actor.as_uuid())
+    .bind(*type_id.as_uuid())
+    .bind("permit")
+    .bind(canonical_normalized_row(
+        "permit",
+        "auditatomic",
+        vec![owner_is_subject()],
+    ))
+    .bind("ontology-runtime-filter-v1")
+    .bind(Option::<String>::None)
+    .bind(PROBE_SPAN_ID)
+    .fetch_one(&mut *tx)
+    .await;
+    let error = outcome.err().map(|error| error.to_string()).expect(
+        "an attach whose audit row cannot be written must be REFUSED. Accepting \
+             it is the retired residual restored: a policy attached with no audit \
+             event naming who attached it",
+    );
+    // A COMMIT of an aborted transaction rolls back at the server, so this is a
+    // no-op on the correct implementation and the persisting write on a mutated
+    // one. Committing anyway is what makes the counts below evidence.
+    let _ = tx.commit().await;
+
+    let written: (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM ont_object_policies \
+                   WHERE org_id = $1 AND object_type_id = $2), \
+                (SELECT COUNT(*) FROM audit_events WHERE org_id = $1 \
+                   AND action = 'ontology.object_policy.attach')",
+    )
+    .bind(*fx.org.as_uuid())
+    .bind(type_id.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        written,
+        (0, 0),
+        "the policy rows the row-writer already INSERTed must be gone: the audit \
+         INSERT is the LAST statement in the definer, so this is the only ordering \
+         where a swallowed audit failure leaves an untraced attachment. Refusal \
+         was: {error}"
+    );
+}
+
+/// The HTTP surface of the fail-closed path: an ontology registry with no command
+/// pool must make the attach route 503, never 500 and never an attach.
+///
+/// `a_store_with_no_command_pool_refuses_to_attach_rather_than_using_the_read_pool`
+/// pins the typed store error. This pins the two things above it that were
+/// measured unexecuted by the whole suite: the
+/// `PgCedarError::CommandUnavailable => SERVICE_UNAVAILABLE` arm of
+/// `RestError::from_cedar` (`ontology/rest/src/lib.rs`), and the `None` arm of the
+/// derivation in `OntologyRestState::new` — every other construction site in the
+/// tests and in `backend/app/src` passes `.with_command_pool(...)`, so nothing
+/// exercised the case where the registry has none.
+///
+/// The derivation is what makes the deployment coherent: the policy store's
+/// command credential is taken from the registry rather than passed in, so a
+/// composition root that configured no ontology command database gets a policy
+/// store that fails closed too, instead of one silently attaching as `console_rt`.
+///
+/// 503 and not 500 because a missing command database is a deployment fault, and a
+/// 500 is indistinguishable from the database being broken — which is the one
+/// alarm that must not be ambiguous while an operator is deciding whether to roll
+/// back.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_attach_route_is_service_unavailable_when_the_registry_has_no_command_pool(
+    owner_pool: PgPool,
+) {
+    let fx = Fixture::build(&owner_pool, "route-no-cmd-pool").await;
+    // Published through the WIRED fixture: a registry with no command pool cannot
+    // publish either, and this test is about attach, not about publish.
+    let type_id = fx
+        .publish("routenocmd", instance_type_draft("routenocmd"))
+        .await;
+
+    // The same runtime pool, the same verifier, one difference: no command pool.
+    // This is `backend/app/src/lib.rs`'s `DatabaseDependency::NotConfigured` arm.
+    let auth = test_auth(fx.actor, fx.org);
+    let unwired = router(OntologyRestState::new(
+        PgOntologyStore::new(fx.runtime_pool.clone()),
+        PgInstanceStore::new(fx.runtime_pool.clone()),
+        PgGovernanceStore::new(fx.runtime_pool.clone()),
+        Some(auth.verifier),
+    ));
+    let request = Request::builder()
+        .method("POST")
+        .uri(policies_path("routenocmd"))
+        .header(header::AUTHORIZATION, format!("Bearer {}", auth.token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(
+            serde_json::to_vec(&json!({ "effect": "permit", "conditions": [owner_is_subject()] }))
+                .unwrap(),
+        ))
+        .unwrap();
+    let response = unwired.oneshot(request).await.unwrap();
+    let status = response.status();
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), usize::MAX).await.unwrap())
+            .unwrap_or(Value::Null);
+
+    assert_eq!(
+        status,
+        StatusCode::SERVICE_UNAVAILABLE,
+        "an unwired registry must make attach 503, not 500 and not 201: {body:?}"
+    );
+    assert_eq!(
+        body["error"]["code"], "ontology_command_unavailable",
+        "the code is the machine-readable half a deployment alarm keys on. It is \
+         deliberately the SAME code the registry's own CommandUnavailable maps to \
+         (`RestError::from_ontology`): both mean one thing an operator acts on \
+         identically -- ONTOLOGY_COMMAND_DATABASE_URL is missing: {body:?}"
+    );
+
+    // The refusal reached the store, not the router's own guards: a 503 produced by
+    // some earlier check would satisfy the assertions above while the object type
+    // was never even resolved.
+    let resolved = fx.get("/api/v1/ontology/object-types/routenocmd").await;
+    assert_eq!(
+        resolved.status,
+        StatusCode::OK,
+        "the type the unwired route refused to attach to must be resolvable, or the \
+         503 above proves nothing about the command pool: {:?}",
+        resolved.body
+    );
+    assert_eq!(resolved.body["object_type"]["id"], json!(type_id.as_uuid()));
+
+    let written: (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM ont_object_policies WHERE org_id = $1), \
+                (SELECT COUNT(*) FROM audit_events WHERE org_id = $1 \
+                   AND action = 'ontology.object_policy.attach')",
+    )
+    .bind(*fx.org.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        written,
+        (0, 0),
+        "a 503 must mean nothing happened: no attachment, and no audit row claiming \
+         one did"
     );
 }
 
@@ -1813,8 +2602,10 @@ async fn a_definer_minted_row_cannot_choose_the_cedar_that_decides_policy_author
         .await;
 
     // A hand-crafted definer call carrying permit-everything Cedar, exactly the
-    // capability `console_rt` holds. The normalized row is canonical, so every
-    // in-definer envelope check passes and the row really is written.
+    // capability `console_ontology_cmd` holds after 0206 — a leak of that
+    // credential still buys this, which is why the definer stays a boundary in its
+    // own right. The normalized row is canonical, so every in-definer envelope
+    // check passes and the row really is written.
     let forged = fx
         .forge_attach_persisted(
             *type_id.as_uuid(),
@@ -1926,7 +2717,7 @@ async fn a_definer_minted_row_cannot_choose_the_cedar_that_decides_policy_author
          FROM cedar_policy_catalog_entries WHERE id = $1",
     )
     .bind(forged)
-    // rls-arming: ok, reads back the row the console_rt definer call just wrote.
+    // rls-arming: ok, reads back the row the command-role definer call just wrote.
     .fetch_one(&owner_pool)
     .await
     .unwrap();
@@ -1964,10 +2755,17 @@ async fn a_definer_minted_row_cannot_choose_the_cedar_that_decides_policy_author
 /// masks the second and deleting either check alone leaves this green — a probe
 /// that cannot say which arm is load-bearing is not evidence that both are.
 ///
-/// The effect-agreement arm is deliberately absent: `0205:216-219` now refuses a
-/// blocks/attachment effect disagreement in the definer, so it is no longer
-/// reachable from `console_rt` at all. Seeding one as the owning superuser would
-/// test the loader against a row no attacker can mint.
+/// The effect-agreement arm is deliberately absent: the definer refuses a
+/// blocks/attachment effect disagreement, so it is unreachable through the only
+/// credential that can attach. Seeding one as the owning superuser would test the
+/// loader against a row no attacker can mint.
+///
+/// THIS IS THE RESIDUAL 0206 DOES NOT CLOSE, and the reason the on-every-read
+/// re-validation stays. Both forgeries below are minted through the definer as
+/// `console_ontology_cmd` and both SUCCEED: 0206 narrowed WHICH credential can
+/// mint a validator-invalid or non-canonical row from `console_rt` to the command
+/// role, and made the minting audited, but it did not make one unmintable. The
+/// loader still has to refuse it on every read.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed(owner_pool: PgPool) {
     let fx = Fixture::build(&owner_pool, "loader-revalidation").await;
@@ -2004,8 +2802,9 @@ async fn a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed(own
     assert_instance_titles(&honest_list.body, &["honest-and-visible"]);
 
     // The residual capability 0205 names, actually exercised. Both rows are minted
-    // as the genuine `console_rt` through the definer and COMMITTED: `forge_attach`
-    // rolls back, and a forgery that never persists cannot be read back.
+    // as the genuine `console_ontology_cmd` through the definer and COMMITTED:
+    // `forge_attach` rolls back, and a forgery that never persists cannot be read
+    // back.
     //
     // The definer accepting these is the POINT, not a defect: its envelope checks
     // `resource_type`, `action`, `effect` and the condition-list shape, and all
@@ -2141,6 +2940,273 @@ async fn a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed(own
         honest_after.body
     );
     assert_instance_titles(&honest_after.body, &["honest-and-visible"]);
+}
+
+// ---------------------------------------------------------------------------
+// 5b-bis. The two arms of the SAME re-validation that executed nowhere
+// ---------------------------------------------------------------------------
+//
+// MEASURED, not estimated. Region coverage over the whole green suite
+// (`cargo llvm-cov report`, per-segment execution counts) puts two of the four
+// fail-closed arms of `PgCedarPolicyStore::load_enforced_object_policy_blocks` at
+// ZERO executions: the deserialization refusal and the effect-agreement
+// comparison. The other two -- validator verdict and canonicality -- ran 3 times
+// each, from `a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed`.
+//
+// Either uncovered arm could be deleted today with all 24 tests still green,
+// which is precisely what 0205's header says must never be true of this
+// re-validation ("Delete this re-validation and a forged row is served while
+// every test here stays green"). That header claim was two-thirds accurate and is
+// now fully so.
+//
+// WHY the existing forgery test cannot reach them, and rightly does not try: it
+// mints every forgery through the definer as `console_ontology_cmd`, and 0206
+// binds catalog effect, attachment effect and `normalized_row.effect` from ONE
+// parameter it also cross-checks, so a definer-minted row can disagree with
+// nothing. Neither arm is reachable by any credential.
+//
+// They are reachable by every OTHER surface that writes these two tables -- the
+// policy studio, a fixture, a backfill migration. That is the case
+// `attach_enforced_policy` exists for and the case
+// `a_row_hidden_from_the_list_is_refused_by_id_as_of_history_traverse_acting_and_resolve`
+// already names ("the permanent guard for policies attached by any other
+// surface"). Two tests and not one loop: each arm is an independent claim, and an
+// arm sitting behind another arm's failing assert never executes.
+
+/// A `forbid` in the catalog and in the attachment whose stored blocks say
+/// `permit` must fail every read closed.
+///
+/// 0170's trigger compares the ATTACHMENT to the CATALOG only, and 0205 says so
+/// where it declines to re-check that pair inside the definer. Both are `forbid`
+/// here, so the trigger is satisfied and the disagreement is invisible to the
+/// database. The loader's comparison is the only thing that sees it.
+///
+/// The consequence of deleting that comparison is not a wrong error message: the
+/// loader hands the gate `Effect::Permit` with an empty condition list, which
+/// permits every row of the type. A forbid inverts into a blanket permit and the
+/// rows it exists to hide are served, with the catalog still reading `forbid` to
+/// anyone who audits the table.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_catalog_row_whose_blocks_disagree_with_its_effect_is_refused_on_every_read(
+    owner_pool: PgPool,
+) {
+    let fx = Fixture::build(&owner_pool, "effect-drift").await;
+    let honest = fx
+        .publish("driftcontrol", instance_type_draft("driftcontrol"))
+        .await;
+    let drifted = fx
+        .publish("effectdrift", instance_type_draft("effectdrift"))
+        .await;
+    fx.seed_instance(honest, "honest-and-visible", "CODE-DRIFT-OK")
+        .await;
+    let hidden = fx
+        .seed_instance(drifted, "behind-an-inverted-forbid", "CODE-DRIFT-BAD")
+        .await;
+
+    // POSITIVE CONTROL, first and through the real route. Every 5xx below is also
+    // produced by a read path that has stopped serving anything at all.
+    let attached = fx
+        .post(
+            &policies_path("driftcontrol"),
+            json!({ "effect": "permit", "conditions": [owner_is_subject()] }),
+        )
+        .await;
+    assert_eq!(attached.status, StatusCode::CREATED, "{:?}", attached.body);
+    let control = fx
+        .get(&format!("/api/v1/ontology/instances?type={honest}"))
+        .await;
+    assert_instance_titles(&control.body, &["honest-and-visible"]);
+
+    // `forbid` for the catalog row AND the attachment -- so 0170's trigger passes
+    // -- with a normalized row that is canonical and validator-valid for `permit`.
+    // Canonical and valid on purpose: the loader checks the validator verdict and
+    // canonicality BEFORE the effect comparison, so a row that failed either would
+    // be refused by an arm that already has coverage and this test would prove
+    // nothing about the arm it names.
+    attach_enforced_policy(
+        &owner_pool,
+        fx.org,
+        drifted,
+        "object_policy.effectdrift.inverted",
+        "forbid",
+        canonical_normalized_row("permit", "effectdrift", vec![]),
+    )
+    .await;
+
+    let list = fx
+        .get(&format!("/api/v1/ontology/instances?type={drifted}"))
+        .await;
+    assert!(
+        list.status.is_server_error(),
+        "a stored `permit` under a `forbid` catalog row and a `forbid` attachment \
+         must fail the whole load. Serving rows here is the forbid inverted into a \
+         blanket permit -- the loader would lower `Effect::Permit` with no \
+         conditions while the catalog still reads `forbid` to anyone auditing the \
+         table. An empty 200 would be indistinguishable from the forbid working. \
+         Got {}: {:?}",
+        list.status,
+        list.body
+    );
+
+    // By id as well, so the refusal is the LOADER and not the list query: the two
+    // routes share only `load_enforced_object_policy_blocks`.
+    let by_id = fx
+        .get(&format!("/api/v1/ontology/instances/{hidden}"))
+        .await;
+    assert!(
+        by_id.status.is_server_error(),
+        "reading by id must fail the same way the list does, got {}: {:?}",
+        by_id.status,
+        by_id.body
+    );
+    for (route, body) in [("list", &list.body), ("by id", &by_id.body)] {
+        let text = body_text(body);
+        assert!(
+            !text.contains("behind-an-inverted-forbid") && !text.contains(&hidden.to_string()),
+            "the {route} failure discloses the row it could not decide on: {text}"
+        );
+    }
+
+    // SCOPED to the type carrying the drifted row. A loader that 500s the whole
+    // tenant satisfies every assertion above.
+    let control_after = fx
+        .get(&format!("/api/v1/ontology/instances?type={honest}"))
+        .await;
+    assert_eq!(
+        control_after.status,
+        StatusCode::OK,
+        "an honestly authored type must survive a drifted row on another type: {:?}",
+        control_after.body
+    );
+    assert_instance_titles(&control_after.body, &["honest-and-visible"]);
+}
+
+/// A `normalized_row` that is not a `NoCodeBlocks` at all must fail every read
+/// closed, never be skipped.
+///
+/// The arm is one `map_err(...)?`, and the mutation that kills it is the ordinary
+/// defensive one: skip the row you cannot understand, or substitute a default. A
+/// skipped `forbid` is a served row. The loader has to hard-error the whole load
+/// instead, and no other test supplies a row it cannot deserialize -- every
+/// forgery reachable through the definer is well-formed JSONB by construction,
+/// because the definer's own checks read `normalized_row ->> 'effect'`,
+/// `'action'`, `'resource_type'` and `jsonb_array_length(... -> 'conditions')`.
+///
+/// `conditions` as a STRING and not a missing key: a missing key would also be
+/// refused by the definer's `jsonb_typeof(...) IS DISTINCT FROM 'array'` check,
+/// while this row is one the shape checks of 0205 would pass and only serde
+/// rejects -- so the arm under test is the deserialization arm and not a
+/// re-statement of an envelope check.
+///
+/// The unreadable row is attached BESIDE an honest `permit` on the SAME type, and
+/// that is what makes this a security test rather than a message test. Measured on
+/// the two obvious defensive mutations:
+///
+///   * substituting a default block for the one that would not parse is caught
+///     DOWNSTREAM by the canonicality arm, which already has coverage -- so this
+///     test correctly stays green and the arm is not what saved it;
+///   * SKIPPING the row it cannot read serves every row on the type, because the
+///     honest permit beside it survives. That is the mutation this test exists to
+///     fail on, and with only one policy on the type it would instead produce a
+///     deny-by-default `200 []` -- a refusal by accident, which would have made
+///     the red indistinguishable from a fail-closed loader.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_catalog_row_whose_normalized_row_is_unparseable_is_refused_on_every_read(
+    owner_pool: PgPool,
+) {
+    let fx = Fixture::build(&owner_pool, "unparseable-row").await;
+    let scoping = fx
+        .publish("parsecontrol", instance_type_draft("parsecontrol"))
+        .await;
+    let unparseable = fx
+        .publish("unparseable", instance_type_draft("unparseable"))
+        .await;
+    fx.seed_instance(scoping, "honest-and-visible", "CODE-PARSE-OK")
+        .await;
+    let hidden = fx
+        .seed_instance(unparseable, "behind-an-unreadable-policy", "CODE-PARSE-BAD")
+        .await;
+
+    // Two honest permits through the real route: one on the type that will carry
+    // the unreadable row, one on a second type that must survive it.
+    for key in ["parsecontrol", "unparseable"] {
+        let attached = fx
+            .post(
+                &policies_path(key),
+                json!({ "effect": "permit", "conditions": [owner_is_subject()] }),
+            )
+            .await;
+        assert_eq!(
+            attached.status,
+            StatusCode::CREATED,
+            "{key}: {:?}",
+            attached.body
+        );
+    }
+    // POSITIVE CONTROL on the type under test, before the forgery lands: the row
+    // IS served while the policy set is readable, so the 5xx below is the
+    // unreadable row and not a fixture that never served anything.
+    let control = fx
+        .get(&format!("/api/v1/ontology/instances?type={unparseable}"))
+        .await;
+    assert_instance_titles(&control.body, &["behind-an-unreadable-policy"]);
+
+    attach_enforced_policy(
+        &owner_pool,
+        fx.org,
+        unparseable,
+        "object_policy.unparseable.blocks",
+        "permit",
+        json!({
+            "effect": "permit",
+            "action": "view",
+            "resource_type": "unparseable",
+            "conditions": "not-an-array"
+        }),
+    )
+    .await;
+
+    let list = fx
+        .get(&format!("/api/v1/ontology/instances?type={unparseable}"))
+        .await;
+    assert!(
+        list.status.is_server_error(),
+        "an enforced row the loader cannot deserialize must fail the WHOLE load. \
+         Skipping it drops a policy that may be the `forbid` hiding these rows \
+         while the honest permit beside it keeps serving them -- measured: with the \
+         skip applied this route returns 200 carrying \
+         `behind-an-unreadable-policy`. Got {}: {:?}",
+        list.status,
+        list.body
+    );
+
+    let by_id = fx
+        .get(&format!("/api/v1/ontology/instances/{hidden}"))
+        .await;
+    assert!(
+        by_id.status.is_server_error(),
+        "reading by id must fail the same way the list does, got {}: {:?}",
+        by_id.status,
+        by_id.body
+    );
+    for (route, body) in [("list", &list.body), ("by id", &by_id.body)] {
+        let text = body_text(body);
+        assert!(
+            !text.contains("behind-an-unreadable-policy") && !text.contains(&hidden.to_string()),
+            "the {route} failure discloses the row it could not decide on: {text}"
+        );
+    }
+
+    let control_after = fx
+        .get(&format!("/api/v1/ontology/instances?type={scoping}"))
+        .await;
+    assert_eq!(
+        control_after.status,
+        StatusCode::OK,
+        "an honestly authored type must survive an unreadable row on another type: {:?}",
+        control_after.body
+    );
+    assert_instance_titles(&control_after.body, &["honest-and-visible"]);
 }
 
 // ---------------------------------------------------------------------------
@@ -2497,6 +3563,11 @@ struct Fixture {
     token: String,
     owner_pool: PgPool,
     runtime_pool: PgPool,
+    /// A `console_ontology_cmd` connection. After 0206 this is the ONLY
+    /// credential that can reach `ont_policy_api.attach_object_policy`, so every
+    /// definer probe below runs on it; `runtime_pool` keeps the `console_rt`
+    /// probes that assert a REFUSAL.
+    command_pool: PgPool,
     service: axum::Router,
     /// A DISTINCT principal, because publishing is four-eyes: the requester may
     /// not be the decider.
@@ -2509,12 +3580,12 @@ impl Fixture {
         let actor = seed_org_and_super_admin(owner_pool, *org.as_uuid(), tag).await;
         let auth = test_auth(actor, org);
         let runtime_pool = runtime_role_pool(owner_pool).await;
+        let command_pool = command_role_pool(owner_pool).await;
         // Merged exactly as `build_router` merges them: publishing a type
         // consumes four-eyes evidence authored through the governance routes, so
         // a fixture that cannot reach them cannot reach a published type either.
         let service = router(OntologyRestState::new(
-            PgOntologyStore::new(runtime_pool.clone())
-                .with_command_pool(command_role_pool(owner_pool).await),
+            PgOntologyStore::new(runtime_pool.clone()).with_command_pool(command_pool.clone()),
             PgInstanceStore::new(runtime_pool.clone()),
             PgGovernanceStore::new(runtime_pool.clone()),
             Some(auth.verifier.clone()),
@@ -2532,6 +3603,7 @@ impl Fixture {
             approver_token: issue_token(&SIGNING_KEY.with(SigningKey::clone), approver, org),
             owner_pool: owner_pool.clone(),
             runtime_pool,
+            command_pool,
             service,
         }
     }
@@ -2845,10 +3917,25 @@ impl Fixture {
         .await;
     }
 
-    /// Runs a closure on a `console_rt` connection, the way a request-scoped
-    /// connection arms it. `scope_org` alone only sets a task-local: without the
-    /// GUC every RLS read returns zero rows and passes any "no rows" assertion
-    /// while proving nothing.
+    /// A transaction on `pool` with `app.current_org` armed the way a
+    /// request-scoped connection arms it. `scope_org` alone only sets a task-local:
+    /// without the GUC every RLS read returns zero rows and passes any "no rows"
+    /// assertion while proving nothing.
+    ///
+    /// The disposition is the CALLER's: the role runners below roll back, and the
+    /// two probes that have to read their own write back afterwards commit.
+    async fn armed_tx(&self, pool: &PgPool) -> sqlx::Transaction<'static, sqlx::Postgres> {
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(self.org.as_uuid().to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        tx
+    }
+
+    /// Runs a closure on a `console_rt` connection with the org armed, rolled back
+    /// afterwards. See [`Self::armed_tx`] for why the GUC is not optional.
     async fn as_runtime_role<T, F>(&self, body: F) -> T
     where
         F: for<'c> FnOnce(
@@ -2856,73 +3943,94 @@ impl Fixture {
         )
             -> std::pin::Pin<Box<dyn std::future::Future<Output = T> + Send + 'c>>,
     {
-        let mut tx = self.runtime_pool.begin().await.unwrap();
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(self.org.as_uuid().to_string())
-            .execute(&mut *tx)
-            .await
-            .unwrap();
+        let mut tx = self.armed_tx(&self.runtime_pool).await;
         let out = body(&mut tx).await;
         tx.rollback().await.unwrap();
         out
     }
 
-    /// One hand-crafted `attach_object_policy` call as the genuine `console_rt`
-    /// role with the org armed — the exact capability a reviewer used to mint an
-    /// `enforced` catalog row bypassing every check the route performs. The org
-    /// is always the armed one and `created_by` is always this fixture's REAL
-    /// actor, so only the parameter under test differs from a call the route
-    /// itself would have made: an attacker holds a real user id, and a nil one
-    /// would be refused by `created_by`'s composite FK (0150:41) whatever the
-    /// definer did, which is a refusal that proves nothing about the hardening.
+    /// [`Self::as_runtime_role`] on the `console_ontology_cmd` pool instead.
+    ///
+    /// After 0206 the command role is the only credential that may execute the
+    /// attach definer, so every probe of the definer's OWN bounds has to run
+    /// here. Same arming, same rollback — only the role differs, which is what
+    /// keeps each re-pointed probe testing the envelope check it names rather
+    /// than degenerating into a permission assertion.
+    async fn as_command_role<T, F>(&self, body: F) -> T
+    where
+        F: for<'c> FnOnce(
+            &'c mut sqlx::Transaction<'static, sqlx::Postgres>,
+        )
+            -> std::pin::Pin<Box<dyn std::future::Future<Output = T> + Send + 'c>>,
+    {
+        let mut tx = self.armed_tx(&self.command_pool).await;
+        let out = body(&mut tx).await;
+        tx.rollback().await.unwrap();
+        out
+    }
+
+    /// One hand-crafted `attach_object_policy` call as the genuine
+    /// `console_ontology_cmd` role with the org armed — every envelope check the
+    /// definer performs, probed by the ONE credential 0206 leaves able to reach
+    /// it. The org is always the armed one and `created_by` is always this
+    /// fixture's REAL actor, so only the parameter under test differs from a call
+    /// the route itself would have made: a nil id would be refused by
+    /// `created_by`'s composite FK (0150:41) whatever the definer did, which is a
+    /// refusal that proves nothing about the hardening.
+    ///
+    /// This ran as `console_rt` before 0206 — that role now gets 42501 before the
+    /// body, which is asserted on its own in
+    /// `console_rt_cannot_execute_the_attach_definer_at_all`.
     async fn forge_attach(
         &self,
         object_type_id: Uuid,
         effect: &str,
         normalized_row: Value,
     ) -> Result<Uuid, String> {
-        let org = *self.org.as_uuid();
-        let actor = *self.actor.as_uuid();
-        let effect = effect.to_owned();
-        self.as_runtime_role(move |tx| {
-            Box::pin(async move {
-                sqlx::query_scalar::<_, Uuid>(
-                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
-                )
-                .bind(org)
-                .bind(actor)
-                .bind(object_type_id)
-                .bind(effect)
-                .bind(normalized_row)
-                .bind("ontology-runtime-filter-v1")
-                .fetch_one(&mut **tx)
-                .await
-                .map_err(|error| error.to_string())
-            })
-        })
-        .await
+        let mut tx = self.armed_tx(&self.command_pool).await;
+        let forged = self
+            .attach_via_definer(&mut tx, object_type_id, effect, normalized_row)
+            .await;
+        tx.rollback().await.unwrap();
+        forged
     }
 
     /// [`Self::forge_attach`] that COMMITS on success.
     ///
-    /// `as_runtime_role` rolls back, which is right for a probe that only reads
-    /// the refusal and useless for one that has to read the forged row back over
-    /// HTTP afterwards. Same role, same armed org, same parameters — only the
-    /// disposition of the transaction differs.
+    /// Rolling back is right for a probe that only reads the refusal and useless
+    /// for one that has to read the forged row back over HTTP afterwards. Same
+    /// role, same armed org, same statement — only the disposition differs.
     async fn forge_attach_persisted(
         &self,
         object_type_id: Uuid,
         effect: &str,
         normalized_row: Value,
     ) -> Result<Uuid, String> {
-        let mut tx = self.runtime_pool.begin().await.unwrap();
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(self.org.as_uuid().to_string())
-            .execute(&mut *tx)
-            .await
-            .unwrap();
-        let forged = sqlx::query_scalar::<_, Uuid>(
-            "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
+        let mut tx = self.armed_tx(&self.command_pool).await;
+        let forged = self
+            .attach_via_definer(&mut tx, object_type_id, effect, normalized_row)
+            .await;
+        if forged.is_ok() {
+            tx.commit().await.unwrap();
+        } else {
+            tx.rollback().await.unwrap();
+        }
+        forged
+    }
+
+    /// The 8-argument audited entrypoint, with this fixture's org and actor and this
+    /// file's probe trace pair. ONE statement, shared by the rolled-back and the
+    /// committed probe above, so the two cannot drift apart in what they call —
+    /// which is the same reason 0206 renames 0205's body instead of copying it.
+    async fn attach_via_definer(
+        &self,
+        tx: &mut sqlx::Transaction<'static, sqlx::Postgres>,
+        object_type_id: Uuid,
+        effect: &str,
+        normalized_row: Value,
+    ) -> Result<Uuid, String> {
+        sqlx::query_scalar::<_, Uuid>(
+            "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
         )
         .bind(*self.org.as_uuid())
         .bind(*self.actor.as_uuid())
@@ -2930,15 +4038,11 @@ impl Fixture {
         .bind(effect)
         .bind(normalized_row)
         .bind("ontology-runtime-filter-v1")
-        .fetch_one(&mut *tx)
+        .bind(PROBE_TRACE_ID)
+        .bind(PROBE_SPAN_ID)
+        .fetch_one(&mut **tx)
         .await
-        .map_err(|error| error.to_string());
-        if forged.is_ok() {
-            tx.commit().await.unwrap();
-        } else {
-            tx.rollback().await.unwrap();
-        }
-        forged
+        .map_err(|error| error.to_string())
     }
 
     async fn get(&self, uri: &str) -> HttpResponse {
@@ -3242,6 +4346,20 @@ fn canonical_normalized_row(effect: &str, resource_type: &str, conditions: Vec<V
         "resource_type": resource_type,
         "conditions": conditions
     })
+}
+
+/// The SQLSTATE **and** the message of a refusal, because in this file neither
+/// alone discriminates: `42501` is raised alike for a missing function grant, a
+/// missing schema USAGE and a missing table grant, from the identical internal site
+/// (`aclcheck_error, aclchk.c:2795`). Which one it was lives only in the message, so
+/// every caller asserts on both — each with the measurement that forced it recorded
+/// at the call site.
+fn refusal(error: sqlx::Error) -> (String, String) {
+    let code = error
+        .as_database_error()
+        .and_then(|db| db.code().map(|code| code.into_owned()))
+        .unwrap_or_default();
+    (code, error.to_string())
 }
 
 /// A refusal must name the violation it refused. `is_err()` alone is satisfied by

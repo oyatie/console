@@ -6,6 +6,12 @@
 //! CHECKs: a draft can never carry a `shadow`/`enforced` status or a
 //! bundle/policy version — promotion is a separate, gated lane.
 //!
+//! ONE EXCEPTION, and it is stricter rather than looser:
+//! [`PgCedarPolicyStore::attach_object_policy`] uses `with_org_conn` on a separate
+//! `console_ontology_cmd` pool, because migration 0206 writes its audit row inside
+//! the definer — the credential that can attach cannot skip it, which an
+//! application-appended row could never guarantee.
+//!
 //! `ponytail:` the store lives in the thin `authz-rest` crate (its only consumer)
 //! rather than a separate 4-crate hexagon — one vertical slice, no speculative
 //! ports. Split it out if a second consumer ever appears.
@@ -28,6 +34,13 @@ pub enum PgCedarError {
     Db(#[from] DbError),
     #[error(transparent)]
     Domain(#[from] KernelError),
+    /// The audited attach path needs the `console_ontology_cmd` pool and this
+    /// store was not wired with one. Returned by [`PgCedarPolicyStore::command_pool`],
+    /// which is deliberately `ok_or` and never `.unwrap_or(&self.pool)`: the
+    /// fallback compiles, reads as defensive, and restores the exact capability
+    /// 0206 removes while every other test stays green.
+    #[error("cedar policy command database capability is unavailable")]
+    CommandUnavailable,
 }
 
 impl From<sqlx::Error> for PgCedarError {
@@ -39,6 +52,11 @@ impl From<sqlx::Error> for PgCedarError {
 #[derive(Debug, Clone)]
 pub struct PgCedarPolicyStore {
     pool: PgPool,
+    /// The `console_ontology_cmd` credential, the only role migration 0206 leaves
+    /// able to execute `ont_policy_api.attach_object_policy`. `None` on every
+    /// read-only and draft-only construction, and the attach path then fails
+    /// closed rather than reaching for `pool` — see [`PgCedarError::CommandUnavailable`].
+    command_pool: Option<PgPool>,
 }
 
 // -- DTOs --------------------------------------------------------------------
@@ -150,14 +168,38 @@ fn audit_event(
 const DRAFT_TARGET_TYPE: &str = "cedar_policy_draft";
 
 impl PgCedarPolicyStore {
+    /// Construct a store whose object-policy ATTACH path fails closed. Every
+    /// other verb here reads or writes draft/catalog/decision-log tables the
+    /// runtime role owns outright, so `pool` alone is a complete store for them.
     #[must_use]
     pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+        Self {
+            pool,
+            command_pool: None,
+        }
     }
 
+    /// Attach the `console_ontology_cmd` credential that migration 0206 made the
+    /// only executor of the attach definer.
+    #[must_use]
+    pub fn with_command_pool(mut self, command_pool: PgPool) -> Self {
+        self.command_pool = Some(command_pool);
+        self
+    }
+
+    /// The READ pool, deliberately: `authz-rest/src/lib.rs` resolves principals
+    /// with it and the command credential holds no SELECT on `users`.
     #[must_use]
     pub fn pool(&self) -> &PgPool {
         &self.pool
+    }
+
+    /// Copied literally from `PgOntologyStore::command_pool`
+    /// (`ontology/adapter-postgres/src/lib.rs`). NEVER `.unwrap_or(&self.pool)`.
+    fn command_pool(&self) -> Result<&PgPool, PgCedarError> {
+        self.command_pool
+            .as_ref()
+            .ok_or(PgCedarError::CommandUnavailable)
     }
 
     // -- §5a catalog -------------------------------------------------------
@@ -193,13 +235,21 @@ impl PgCedarPolicyStore {
     /// catalog row plus its attachment, audited in the same transaction.
     ///
     /// The runtime role deliberately still has NO INSERT on the catalog
-    /// (`0150:117-118`). The two rows are written by
-    /// `ont_policy_api.attach_object_policy`, a SECURITY DEFINER routine owned
-    /// by the NOBYPASSRLS `console_ontology_writer` role (migration 0205), so
-    /// the RLS org floor still applies to the write and the residual can only
-    /// narrow it. `with_audit` arms `app.current_org` before the call and
-    /// appends the audit row inside the same transaction, so a failed attach
-    /// leaves neither a policy nor an audit claim that one exists.
+    /// (`0150:117-118`) and, since migration 0206, NO EXECUTE on the definer
+    /// either. The two policy rows AND the audit row are written by
+    /// `ont_policy_api.attach_object_policy`, a SECURITY DEFINER routine owned by
+    /// the NOBYPASSRLS `console_ontology_writer` role, so the RLS org floor still
+    /// applies to every one of them and the residual can only narrow it. The only
+    /// credential that may execute it is `console_ontology_cmd`, reached through
+    /// [`Self::command_pool`] — an unwired store fails closed here rather than
+    /// falling back to `pool`, which is the capability 0206 removes.
+    ///
+    /// `with_org_conn` and not `with_audit`: the audit row is no longer appended
+    /// by the application. It is one INSERT inside the definer, after the policy
+    /// rows and in the same transaction, so an attach and its audit claim still
+    /// commit or roll back together — and the command credential cannot write it
+    /// itself (it holds no INSERT on `audit_events`, and no EXECUTE on the inner
+    /// `attach_object_policy_rows`, so it cannot skip it either).
     ///
     /// Validation is the authoring validator's verdict, never re-encoded here:
     /// an invalid policy is a `Validation` error and nothing is written.
@@ -214,24 +264,20 @@ impl PgCedarPolicyStore {
                 validation.errors.join("; "),
             )));
         }
-        let event = audit_event(
-            "ontology.object_policy.attach",
-            "ont_object_policies",
-            command.actor,
-            command.object_type_id,
-        )?
-        .with_org(org)
-        .with_snapshots(None, Some(validation.normalized_row.clone()));
+        // Generated here exactly as `audit_event` generated it per call before the
+        // row moved into the definer, so the trace/span the audit row carries are
+        // unchanged in origin as well as in shape.
+        let trace = TraceContext::generate();
         let actor = *command.actor.as_uuid();
         let org_uuid = *org.as_uuid();
         // All three `effect` writes derive from one value: the loader rejects any
         // disagreement between blocks, catalog and attachment.
         let effect = command.blocks.effect.as_str();
 
-        with_audit::<_, Uuid, PgCedarError>(&self.pool, event, move |tx| {
+        with_org_conn::<_, Uuid, PgCedarError>(self.command_pool()?, org, move |tx| {
             Box::pin(async move {
                 let policy_id: Uuid = sqlx::query_scalar(
-                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6)",
+                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
                 )
                 .bind(org_uuid)
                 .bind(actor)
@@ -250,6 +296,8 @@ impl PgCedarPolicyStore {
                 // everything from this row.
                 .bind(&validation.normalized_row)
                 .bind(authoring::AUTHORING_SCHEMA_VERSION)
+                .bind(trace.trace_id())
+                .bind(trace.span_id())
                 .fetch_one(tx.as_mut())
                 .await?;
                 Ok(policy_id)
