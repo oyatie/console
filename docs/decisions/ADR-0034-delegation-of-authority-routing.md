@@ -19,9 +19,9 @@ with 사후 반려 modelled as a compensating document or event. ADR-0018 decide
 
 This record decides only the delta. It does not restate or reopen either.
 
-Three concepts are absent from the entire accepted record — verified by search across `docs/decisions/`,
-including `notes/`: **전결**, **competence (전담)**, and the **capacity** a signature is made under. They
-are the delta.
+Two concepts are absent from the accepted record — verified by search across `docs/decisions/`, including
+`notes/`: **전결** and the **capacity** a signature is made under. They are the delta. **Competence is not
+one of them**: ADR-0028 Decision 6 decides its shape, and this record defers to it.
 
 ## Decision
 
@@ -30,10 +30,20 @@ scope)* to the unit competent to decide, and the resolved unit may sit **above, 
 raising unit. A 전담 unit holds terminal authority for its category and does not escalate. Modelling this
 as "escalation" would make the common case — a matter closing where it arose — look like an exception.
 
-**Competence is a third relation, separate from control and structure.** Which unit may *decide* is not
-derivable from who owns whom (control) or who reports to whom (structure). ADR-0028 decides the
-composition of `org_id` and `BranchScope`; competence is the relation that sits beside them, and
-nothing in the accepted record expressed it before this one.
+**Competence is authored, and it takes the shape ADR-0028 decided — not a third relation.** Which unit
+may *decide* is not derivable from who owns whom (control) or who reports to whom (structure), so it must
+be authored. But it does **not** need a new relation to be authored: ADR-0028 Decision 6 makes competence
+a **condition attribute on a custom role**, taking the shape the `"team"` arm already has
+(`authz/src/lib.rs:1421-1425`) — a subject-side predicate that gates whether the role applies and leaves
+`BranchScope` untouched. ADR-0028 rejects the third-relation alternative on the merits, and it is right to:
+the shipped `"team"` arm already demonstrates the behaviour without a scope-type change.
+
+**This clause was corrected at acceptance.** The draft asserted competence *was* a third relation, written
+without reading ADR-0028's Decision 6, and both records were accepted in the same pass — so for one commit
+two accepted records decided the same question in opposite directions. Recorded rather than quietly
+rewritten, because a contradiction between accepted records is the one class of governance defect
+`check-adrs.mjs` cannot see: it reciprocates `amends`/`amended_by`, so a `related`-only record can
+contradict its own related target silently.
 
 **A signature records the capacity it was made under**, not only the signer. When one person holds several
 grants that could each authorise the same act, which one applied is what decides whether 전결규정 was
@@ -88,8 +98,8 @@ that whoever implements capacity does not discover the conflict by weakening the
 
 ## Consequences
 
-- Competence becomes a relation to author, so the no-code authoring surface gains a third node vocabulary
-  beside object types and roles.
+- Competence is authored as a role condition attribute per ADR-0028, so the no-code authoring surface
+  extends the existing role vocabulary rather than gaining a third one — cheaper than the draft assumed.
 - Routing resolution becomes a lookup on the raise path, which places it on the latency budget of every
   document raise.
 - Recording capacity requires the authorising grant to be identifiable at signature time, which couples
