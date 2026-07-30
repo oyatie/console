@@ -73,6 +73,54 @@ the product north star: an omni business-operation platform expressing a company
 engine, intuitive surface over uncompromised depth, manageable without developers as far as honestly
 possible. That design is the deep-planning work this charter authorizes and does not pre-empt.
 
+### Repository structure — no stack split; the vertical slice owns its UI
+
+Owner decision, 2026-07-30: **no `frontend/` or `backend/` split.** Follow hyperscaler monorepo
+convention — organise by domain, then by layer within the domain, so a vertical slice is one directory
+rather than two trees that must be kept in step.
+
+**ADR-0001 already agrees, and this is cheaper than it looks.** Its Decision mandates the crate family
+`console-<domain>-{domain,application,adapter-postgres,rest,worker}` — **already domain-first** — and
+says nothing about a `backend/` prefix. So `console-ontology-rest` keeps its name; only the path loses
+its stack prefix. That is a move, not a rename, and it needs **no ADR-0001 amendment**.
+
+```
+ontology/
+  domain/            console-ontology-domain
+  application/       console-ontology-application
+  adapter-postgres/  console-ontology-adapter-postgres
+  rest/              console-ontology-rest
+  ui/                console-ontology-ui        ← new layer
+platform/
+  contracts/         console-platform-contracts ← the wire DTOs
+  authz/  db/  ...
+app/                 the composition root
+```
+
+**Adding `ui` to the family DOES amend ADR-0001**, because the family is enumerated. That amendment is
+worth having for a reason beyond tidiness: ADR-0001 enforces dependency direction *twice* — by crate
+visibility, so the compiler refuses an absent edge, and by the CI layer-boundary gate (T0.2) that fails
+on illegal edges and on `sqlx`/`axum`/`tokio` appearing in domain or application crates. A `ui` layer
+needs its legal edges declared, and the right rule is narrow:
+
+> **A `console-<domain>-ui` crate may depend on `console-platform-contracts` and on other `ui` crates.
+> It may not depend on that domain's `domain`, `application`, `adapter-postgres` or `rest` crates.**
+
+**That rule makes the owner's sequencing constraint a compiler error rather than a policy.** "Backend must
+exist before frontend begins implementation" stops being a rule someone has to remember: a `ui` crate
+cannot compile against a domain whose contracts do not yet exist. Same philosophy as the contracts crate
+and the i18n corpus — drift and premature work become build failures, not review findings.
+
+**Cost, stated plainly.** Dropping the `backend/` prefix touches `backend/Cargo.toml`'s 38 member globs,
+169 generated `BUCK` files (`tools/buck/gen_first_party.py` walks the filesystem, so it regenerates but
+must be re-run and diffed), the `ci.yml` path filters, `sqlx` migration paths, and every `file:line`
+citation in every document — including the ones this session just wrote. **It is a large mechanical
+change with a real chance of silent breakage, and it is not part of this charter's authorized scope.**
+Recommendation: charter the *convention* now so new crates land correctly, and treat the move of the
+existing tree as its own change with its own ADR and its own verification. `gen_first_party.py`
+discovering members by filesystem walk rather than reading `members` (a known silent-divergence risk) is
+the specific hazard to design that verification around.
+
 ## A2 — amends ADR-0009
 
 **Reciprocal record owed.** `ADR-0009` gains `amended_by: [ADR-<A2>]`; index row becomes
@@ -100,12 +148,42 @@ principle in a new record and retire this one whole. **Recommendation: amend**, 
 is load-bearing and cited elsewhere, and note the title's staleness in the amendment itself rather than
 leaving a future reader to trip on it.
 
-**Retained:** one utoipa-emitted `openapi.yaml` as the **single external contract**, and the principle
-that parity is enforced structurally rather than by discipline.
+**Retained:** the *principle* that parity is enforced structurally rather than by discipline.
 
-**Added:** the internal contract is a **shared Rust contracts crate** re-exporting the request and
-response types the handlers use. Structural enforcement moves from a generated-client diff to the
-compiler: a breaking backend change breaks the frontend build immediately.
+**Corrected — ADR-0009's retained half is also false as written.** `utoipa` appears **nowhere in the
+tree**. `openapi.yaml` is a **hand-maintained 35,935-line file** served verbatim via `include_str!`
+(`backend/app/src/lib.rs:214`), and its `info.title` is still `"Maintenance FSM Backend API"` — the
+pre-rename product name, served live at `/openapi/openapi.yaml`. So "one utoipa-emitted openapi.yaml"
+describes machinery that does not exist. The principle survives; the mechanism never did.
+
+Worse for the contract claim: `backend/app/tests/openapi_drift.rs` verifies **route coverage** —
+`configured_route_inventory_includes_each_configured_surface` (`:271`),
+`configured_route_inventory_covers_router_route_calls` (`:304`),
+`openapi_yaml_covers_configured_route_inventory` (`:351`) — plus a handful of hand-written spot-checks on
+specific shapes (`:367`, `:410`, `:426`, `:453`). **Nothing verifies that request and response schemas
+match the handlers.** The YAML's schemas are unverified prose about the API.
+
+**Added — the contracts crate, and openapi.yaml generated from it.** The internal contract is a shared
+Rust crate of **dedicated wire DTOs**, and `openapi.yaml` becomes a **build artifact emitted from those
+same types** with a committed-file diff gate:
+
+```
+contracts crate (DTOs + utoipa derive)
+   ├─> frontend      : drift is a compile error
+   └─> openapi.yaml  : generated, diff-gated
+```
+
+This is the one move that makes ADR-0009's own thesis — *parity enforced structurally, not by
+discipline* — **true for the first time** rather than aspirational, and it retires 36k lines of
+hand-maintained prose. Owner decision, 2026-07-30.
+
+**Dedicated DTOs, not domain types.** ADR-0001's compiler-enforced layer boundary means a frontend crate
+depending on `domain` skips layers; and domain types carry invariants and constructors the wire does not
+need, so exposing them would make every internal refactor a frontend break.
+
+**Cost, corrected from this charter's first draft.** With no utoipa in the tree there are **no existing
+DTOs to extract** — this is new authoring, not a lift. That is a real cost, and it is also why the work
+is worth doing: it is the first structural enforcement these schemas have ever had.
 
 **The cost, stated rather than discovered.** This couples the frontend build to backend crates. That
 coupling is the mechanism, not a side effect — but it means a backend change cannot land while the
@@ -129,7 +207,8 @@ or named by an executed experiment:
 
 | Condition | Status | Evidence |
 |---|---|---|
-| An authored type's rows are readable — policy attachment works through an audited path | **in flight** | X2 CONFIRMED a published type lists `200 OK []` until a policy is attached (`docs/ideas/experiment-x1-x2.md`); migration 0206 is the fix, in lane-1 |
+| An authored type's rows are readable — policy attachment works through an audited path | **CLOSED 2026-07-30** | X2 CONFIRMED a published type lists `200 OK []` until a policy is attached; migration `0206_ont_policy_api_attach_command_role.sql` landed with all ten slice phases including both diff-only reviewers |
+| The contracts crate exists and `openapi.yaml` is generated from it | **OPEN — new** | `utoipa` is absent from the tree; `openapi.yaml` is hand-maintained and only route-coverage-verified. Backend-owned work, sequenced ahead of this gate by owner decision |
 | An authored relationship produces edges | **CONFIRMED, with a rule** | X1: a link type alone writes ZERO edges; **no reachable path** writes one without a property `config.link` |
 | Actions on a projected type do not require a hand-written Rust closure per action | **OPEN** | `ProjectedDispatchRegistry` is a `Default`-empty `HashMap` failing closed on `NotWiredYet`; the no-code-reachable domain-write count is **0 of 15** |
 | A read model exists for aggregate queries | **OPEN** | zero `CREATE MATERIALIZED VIEW` in all 205 migrations; `ont_analytics` is a formula registry with nowhere to put results |
