@@ -832,3 +832,34 @@ that can only be checked by counting lines invites re-numbering to make two pros
 'DECLINING_BALANCE'))`) — one on the equipment config table, one on the purchase-request table — so no
 fragment can distinguish them. Cited once with the two tables named in prose instead of pretending a fragment
 picks one out.
+
+## Wave 10 — §5.6 through §5.11 governance (`DRAFT:1854`-`DRAFT:2233`)
+
+`UNVERIFIABLE 198 → 124` · `RESOLVES 363 → 436` · `BROKEN 0` · total 709
+
+### Factually wrong, corrected to what the file says
+
+- **`0130:43` is `('belongs_to', …)`, not `derived_from`** (`DRAFT:2010`). The seed row
+  `('derived_from',  'Source was produced from the destination (lineage)'),` is line **44**. One line off, in
+  the sentence whose whole point is which of the twelve seeded labels exist.
+- **`0156:107` is the `inventory_stock_locations` FK, not the `work_orders` FK** (`DRAFT:1930`,
+  `DRAFT:2019`). `FOREIGN KEY (work_order_id, org_id) REFERENCES work_orders(id, org_id)` is line **108**.
+  Both sections claim "a hard FK to `work_orders`" and both pointed one line above it.
+- **The `ADR-0022` "Verified:" note was itself off by one, three times** (`DRAFT:2172`). It said `:25` is
+  Context prose, `## Context` is at `:23`, and the `## Decision` block is `:31-39`. In the file, `## Context`
+  is **24**, `:25` is **blank**, the Context prose starts at **26**, `## Decision` is **32** and its clauses run
+  **34-40**. The substantive finding — that the lines G1 was grounded on are Context, not Decision, and that
+  "org-scoped" appears nowhere in ADR-0022 — is **unchanged and still true**; the audit of the citation was
+  performed with the same instrument that produced the error.
+- **`:87` at `DRAFT:2024` and `:23`/`:24` at `DRAFT:2041` were bound to `0072`**, the migration cited two
+  sentences earlier, while the sentences are about `0156` and `0147` respectively.
+
+### Four citations the checker could not see at all
+
+`DRAFT:2039`-`DRAFT:2042` wrapped two quoted DDL fragments across line breaks, leaving an **unbalanced code
+span**. Markdown code spans do not cross newlines, so the scanner paired the stray backticks with the wrong
+partners and `0147:20`, `:21`, `:22` and `:25` were never counted as citations in the first place — they were
+invisible to the audit while looking perfectly cited to a human. (All four were correct.) That is also why
+`:23`/`:24` on the next line inherited `0072`: the `0147` that should have been their antecedent had been
+swallowed by the broken span. A repo-wide scan of the document found **16 lines** with unbalanced spans, eight
+pairs; only this one hid citations, and it is now one fragment per line.

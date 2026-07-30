@@ -1851,7 +1851,7 @@ The transport decides this (§0.9). `NOTIFY_PAYLOAD_LIMIT_BYTES = 8000`
 | Question | Decision |
 |---|---|
 | Change propagation path | grant revision → bump **both** counters (below) → `pg_notify` on a new `authority_changed` channel (a 4th const beside the three in `realtime/src/lib.rs` `MESSAGE_POSTED_CHANNEL`) → WebSocket hub → client re-reads |
-| Invalidation key | **per `(org, user)`, not per org.** `policy_versions` is `PRIMARY KEY (org_id)` (`0065:177-181`), so keying invalidation there alone makes **one grant edit invalidate every connected client in a 10k-employee tenant** |
+| Invalidation key | **per `(org, user)`, not per org.** `policy_versions` is `PRIMARY KEY (org_id)` (`0065` `CREATE TABLE policy_versions`), so keying invalidation there alone makes **one grant edit invalidate every connected client in a 10k-employee tenant** |
 | Which counters a grant revision bumps | **both.** `authz_subject_version` for the subject party's users **and** `policy_versions` for the org. Neither alone is sufficient — see below |
 | What the push carries | **ids and the new version only.** Never capabilities |
 | What is authoritative on disagreement | **the server, always.** Every protected endpoint re-authorizes — the coexistence map's `serverAuthoritative` invariant. A stale client shows a stale button; pressing it is refused |
@@ -1865,8 +1865,8 @@ invalidation row now records. This is a **one-row deletion, not a governance que
 **N1 (ADR-0032)** records the mechanism so the deletion reads as a decision rather than an omission.
 
 **Why both counters, measured.** Assignment writes bump the **subject** counter
-(`backend/crates/identity/adapter-postgres/src/lib.rs:304`, `:672`, `:1606` — `bump_subject_version_tx`), while
-role-definition and role-status edits bump only the **org** counter (`:1284`, `:1369` —
+at three `identity/adapter-postgres/src/lib.rs` `bump_subject_version_tx(tx, org_uuid, *user_id.as_uuid(), occurred_at)` sites, while
+role-definition and role-status edits bump only the **org** counter (at two `identity/adapter-postgres/src/lib.rs` `bump_policy_version_tx(tx, org_uuid, occurred_at)` sites —
 `bump_policy_version_tx`). So keyed on either alone, **a whole class of authority change pings nobody.**
 `ADR-0021` decision 5 requires both directions: *"Role, assignment, **responsibility**, employment state,
 branch/team, or credential changes synchronously bump subject/policy versions so stale subject material cannot
@@ -1875,11 +1875,11 @@ is strictly coarser**: any grant change would invalidate every party's fold in t
 measure**. Probe: `grant_write_bumps_subject_version`; known-bad control: a grant write that bumps only
 `policy_versions`.
 
-Cost: one `RealtimeEvent` variant (`realtime/src/lib.rs:318-337`), one channel const, one notifier
-following `PostgresNotificationNotifier` (`:273`). The `pg_notify` call sites carry
-`// rls-arming: ok pg_notify is not a tenant-table read` (`:148`, `:177`) — copy that marker.
+Cost: one `RealtimeEvent` variant (`realtime/src/lib.rs` `pub enum RealtimeEvent`), one channel const, one notifier
+following `realtime/src/lib.rs` `pub struct PostgresNotificationNotifier`. The `pg_notify` call sites carry
+`realtime/src/lib.rs` `// rls-arming: ok pg_notify is not a tenant-table read`, at both call sites — copy that marker.
 
-`DisconnectReason` / `DisconnectNotice` (`:407`, `:414`) already exist, so a demotion that must force
+`realtime/src/lib.rs` `pub enum DisconnectReason` / `realtime/src/lib.rs` `pub struct DisconnectNotice` already exist, so a demotion that must force
 re-auth has a mechanism.
 
 **What is visible in realtime, and to whom:** presence, who holds which 업무, live 결재 status, the
@@ -1898,7 +1898,7 @@ first, and it would need its own invalidation, rebuild and staleness semantics.
 |---|---|---|
 | *"What could this person approve on 2026-03-01?"* | Tier N revisions — `grant`, `assignment`, `approval_line` | fold + fixity chain; this is what replay is for |
 | *"Average cycle time across 10,000 tasks"* | Tier T tables — `work`, postings | ordinary indexed SQL |
-| *"Show me this work in the canvas"* | Tier P projection of `work` | one match arm in `instances.rs:1479-1498` |
+| *"Show me this work in the canvas"* | Tier P projection of `work` | one match arm in `instances.rs` `fn allowlisted_projected_table` |
 
 Authoritative on disagreement: **the Tier N revision chain for anything authority- or
 approval-related; the Tier T row for its own current state.** They cannot disagree about the same fact
@@ -1920,21 +1920,21 @@ Name: **`lot`**. Chosen over `allocation` (which reads as the act, not the thing
 word that will not survive contact with an accountant).
 
 **Prior art exists and it is closer than I first wrote.** `inventory_consumption_events`
-(`0156:81-111`) is already a quantity-bearing, cost-carrying movement event:
+(`0156` `CREATE TABLE inventory_consumption_events`) is already a quantity-bearing, cost-carrying movement event:
 
-- `quantity_before_milli`, `quantity_consumed_milli`, `quantity_after_milli` (`0156:90-92`)
-- **`CHECK (quantity_before_milli - quantity_consumed_milli = quantity_after_milli)`** (`0156:103`) — a
+- `quantity_before_milli`, `quantity_consumed_milli`, `quantity_after_milli` (`0156` `quantity_before_milli BIGINT NOT NULL CHECK (quantity_before_milli >= 0)`)
+- **`0156` `CHECK (quantity_before_milli - quantity_consumed_milli = quantity_after_milli)`** — a
   conservation invariant as a plain row-level CHECK, which works because the whole triple is on one row
-- `unit_cost_won` + `cost_won` (`0156:93-94`) — the economics already ride the movement
-- `source_kind CHECK (source_kind IN ('WORK_ORDER','P1_DISPATCH'))` (`:87`) with
-  `work_order_id NOT NULL` (`:88`) and a hard FK (`:107`) — consumption **already links to work**, but
+- `unit_cost_won` + `cost_won` (`0156` `unit_cost_won BIGINT NULL CHECK (unit_cost_won IS NULL OR unit_cost_won >= 0)`) — the economics already ride the movement
+- `0156` `source_kind TEXT NOT NULL CHECK (source_kind IN ('WORK_ORDER','P1_DISPATCH'))` with
+  `0156` `work_order_id              UUID        NOT NULL,` and a hard FK `0156` `FOREIGN KEY (work_order_id, org_id) REFERENCES work_orders(id, org_id)` — consumption **already links to work**, but
   only to `work_orders`, not to a generic dimension
 - `milli` fixed-point integers throughout — the repo's quantity convention
 
-`production_demand_contracts` (`0173:6`) is already a contract entity for the production case, and
+`production_demand_contracts` (`0173` `CREATE TABLE production_demand_contracts`) is already a contract entity for the production case, and
 **`production_operations`** — not `production_plans` — already carries `output_quantity` / `scrap_quantity`
-(`CREATE TABLE` at `0173:75`, columns at `:81-82`), so scrap is a modelled concept rather than a new one.
-`production_plans` carries only `quantity` (`0173:50`); the distinction matters because a lane looking for scrap
+(`0173` `CREATE TABLE production_operations`, with `0173` `scrap_quantity BIGINT NOT NULL DEFAULT 0 CHECK (scrap_quantity >= 0),`), so scrap is a modelled concept rather than a new one.
+`production_plans` carries only `quantity` (`0173` `quantity BIGINT NOT NULL CHECK (quantity > 0),`); the distinction matters because a lane looking for scrap
 on the wrong table concludes it does not exist.
 
 **What is genuinely missing is only the derivation edge.** Linear stock decrement exists; the
@@ -1948,7 +1948,7 @@ split/merge tree does not. So:
 
 **The row-level CHECK stays, and it is NOT sufficient on its own.**
 `CHECK (parent_qty_before_milli - split_qty_milli = parent_qty_after_milli)` on each `lot_split` row is exactly
-the `0156:103` pattern and it is worth having. But **two concurrent splits of a 100-unit lot can both write
+the `0156` `CHECK (quantity_before_milli - quantity_consumed_milli = quantity_after_milli)` pattern and it is worth having. But **two concurrent splits of a 100-unit lot can both write
 (100, 60, 40)**: each row satisfies the CHECK in isolation, and the lot is over-allocated by 20. A per-row
 constraint cannot see a sibling row, so an earlier draft's claim that it *"makes conservation unviolatable
 without any procedural code"* is **withdrawn**, along with the claim that *"a definer is needed when an
@@ -1958,9 +1958,9 @@ on one row removes the span **within** a row, not **across** concurrent writers.
 **The mechanism, copied from the precedent that actually handles this.** The split write **locks the parent lot
 row `FOR UPDATE` inside the action's transaction**, derives `parent_qty_before_milli` **from the locked row and
 never from the request**, and updates `lot.quantity_milli` in the same transaction. The shipped shape is
-`backend/crates/inventory/adapter-postgres/src/lib.rs:394` `fetch_item_for_update_tx`, layered on
-`lock_consumption_idempotency_key_tx` at `:376` and a domain `state.consume(quantity)` at `:406`, with the event
-INSERT at `:411`. Three guards — idempotency lock, row lock, domain check — with the row CHECK underneath all of
+`backend/crates/inventory/adapter-postgres/src/lib.rs` `fetch_item_for_update_tx`, layered on
+`inventory/adapter-postgres/src/lib.rs` `lock_consumption_idempotency_key_tx(tx, org, &idempotency_key)` and a domain `inventory/adapter-postgres/src/lib.rs` `state.consume(quantity)`, with the event
+INSERT `inventory/adapter-postgres/src/lib.rs` `INSERT INTO inventory_consumption_events (`. Three guards — idempotency lock, row lock, domain check — with the row CHECK underneath all of
 them. Probe: `lot_concurrent_split_cannot_overallocate`, whose **known-bad control is the row-CHECK-only
 implementation**, i.e. this plan's previous design.
 
@@ -1974,7 +1974,7 @@ aggregate (*"sum(leaf lots) + sum(scrap lots) must equal it"*) a few lines below
 unviolatable.
 
 A merge is the same row read in the other direction. Yield loss, scrap and shrinkage are **explicit child
-lots**, never silent slack — and `production_operations.scrap_quantity` (`0173:82`) shows the repo already
+lots**, never silent slack — and `production_operations.scrap_quantity` (`0173` `scrap_quantity BIGINT NOT NULL DEFAULT 0 CHECK (scrap_quantity >= 0),`) shows the repo already
 treats scrap as a first-class quantity.
 
 **The structural echo, reused rather than reinvented:** a contract line's **declared** quantity and its
@@ -2003,11 +2003,11 @@ belongs to 업무, so it follows the work on 인계 like any other artifact.
 **Non-foreclosure constraints while lineage is deferred (N4 / ADR-0034, §5.11).** W16 has no 0207+ slot, so the
 constraints are recorded instead of the schema:
 
-1. **Quantity-bearing or lineage edges may never live in `object_links`.** `0102:68` permits exactly one edge per
-   `(org, src, dst, link_type)`, and `:86` grants `console_rt` `SELECT, INSERT, DELETE` — **no UPDATE**. A
+1. **Quantity-bearing or lineage edges may never live in `object_links`.** `0102` `UNIQUE (org_id, src_kind, src_id, dst_kind, dst_id, link_type)` permits exactly one edge per
+   `(org, src, dst, link_type)`, and `0102` `GRANT SELECT, INSERT, DELETE ON object_links TO console_rt;` grants no UPDATE. A
    quantity that cannot be updated and cannot repeat is not a quantity. **The temptation is concrete, not
    hypothetical:** `derived_from` — *"Source was produced from the destination (lineage)"* — is **already one of
-   the twelve seeded `link_types` labels** (`0130:43`), so the edge kind §4.3 names `derived_from` looks
+   the twelve seeded `link_types` labels** (`0130` `('derived_from',  'Source was produced from the destination (lineage)'),`), so the edge kind §4.3 names `derived_from` looks
    pre-built. It is not: it is the wrong store for it.
 2. **A `TRANSFER` movement carries its from/to pair on ONE row**, for the same reason the conservation triple
    does: a pair split across two rows is a span no row constraint can close.
@@ -2015,13 +2015,13 @@ constraints are recorded instead of the schema:
    shipped precedent in this tree locks exactly **one** row, so a merge is the first case with no precedent to
    copy, and lock order is where that becomes a deadlock rather than a bug.
 
-**Adjacent precedents, and what each lacks.** `inventory_consumption_events` (`0156:81`) — quantity,
-cost and conservation, but linear and bound to `work_orders` by FK (`:107`) rather than a generic
-dimension. `production_demand_contracts` (`0173:6`) and `production_operations` scrap (`0173:81-82`) — the
-contract and scrap concepts. `equipment_ownership_transfer_requests` / `_events` (`0072:8`, `:35`) — a
+**Adjacent precedents, and what each lacks.** `inventory_consumption_events` (`0156` `CREATE TABLE inventory_consumption_events`) — quantity,
+cost and conservation, but linear and bound to `work_orders` by `0156` `FOREIGN KEY (work_order_id, org_id) REFERENCES work_orders(id, org_id)` rather than a generic
+dimension. `production_demand_contracts` (`0173` `CREATE TABLE production_demand_contracts`) and `production_operations` scrap (`0173` `scrap_quantity BIGINT NOT NULL DEFAULT 0 CHECK (scrap_quantity >= 0),`) — the
+contract and scrap concepts. `equipment_ownership_transfer_requests` / `_events` (`0072` `CREATE TABLE equipment_ownership_transfer_requests` and `0072` `CREATE TABLE equipment_ownership_transfer_events`) — a
 request/event custody-transfer pair, the right shape for *movement* but carrying no quantity and no
 derivation. **Extend these rather than adding a parallel model:** the honest new surface is `lot` +
-`lot_split`, and generalising `inventory_consumption_events.source_kind` (`:87`) from its two-value CHECK
+`lot_split`, and generalising `0156` `source_kind TEXT NOT NULL CHECK (source_kind IN ('WORK_ORDER','P1_DISPATCH'))` from its two-value CHECK
 to the `work` dimension.
 
 ### 5.9 I — Promotion and demotion: promotion is slice 1, the write path
@@ -2036,10 +2036,10 @@ Minimum entity shape for slice 1: `position` ×2 (from, to), `assignment` (close
 `gov_approvals.authorizing_grant_id` column. No new entity classes.
 
 **Demotion is grant EXPIRY, not deletion.** Otherwise replay dies. The shape to generalise is already
-shipped and verified: `clearance_assignments` carries `status TEXT CHECK (status IN
-('ACTIVE','REVOKED','EXPIRED'))` (`0147:20`), `starts_at` (`:21`), `expires_at` (`:22`), `granted_by`
-(`:23`), `revoked_by` (`:24`) and `grant_reason TEXT NOT NULL CHECK (char_length(grant_reason) BETWEEN
-1 AND 512)` (`:25`). That generalises to every grant source unchanged — a mandatory reason on every
+shipped and verified: `clearance_assignments` carries `0147` `status TEXT NOT NULL CHECK (status IN ('ACTIVE','REVOKED','EXPIRED'))`,
+`0147` `starts_at      TIMESTAMPTZ NOT NULL DEFAULT now(),`, `0147` `expires_at     TIMESTAMPTZ NULL,`, `0147` `granted_by     UUID        NULL,`,
+`0147` `revoked_by     UUID        NULL,` and `0147` `grant_reason   TEXT        NOT NULL CHECK (char_length(grant_reason) BETWEEN 1 AND 512)`.
+That generalises to every grant source unchanged — a mandatory reason on every
 authority change is exactly what 강등-as-징계 needs. **Adopt it verbatim rather than inventing a grant
 lifecycle.**
 
@@ -2051,7 +2051,7 @@ routing. Confirmed by construction; the probe is `demoted_member_retains_standin
 
 **The correction axis is decided before Slice 1, and this plan takes the DEFERRAL with its consequence named.**
 An erroneous revision **cannot be repaired in place**, and the substrate is explicit about it:
-`0155_create_ontology_instances.sql:112-160` — `ont_instance_revisions_append_only()` raises on any DELETE,
+`0155` `CREATE OR REPLACE FUNCTION ont_instance_revisions_append_only()` raises on any DELETE,
 raises if `OLD.valid_to IS NOT NULL`, and raises unless the **only** changed column is `valid_to`, so
 `attributes`, `valid_from`, `version`, `prev_hash` and `row_hash` are all pinned. With
 `CHECK (valid_to IS NULL OR valid_to > valid_from)` and `idx_ont_instance_revisions_one_open`, an erroneous
@@ -2073,7 +2073,7 @@ that no application path tries.
 
 **The basis carries through the whole chain**, and this is the one place the current design would drop
 it: 발령 (the 결재 document's own record) → grant expiry (`grant_reason`, above) → audit event
-(`audit_events.reason`, `0149:13`). All three links exist. The gap is that nothing *enforces* the basis
+(`audit_events.reason`, `0149` `ADD COLUMN reason TEXT;`). All three links exist. The gap is that nothing *enforces* the basis
 is the same across them, so the probe is `basis_survives_the_chain` and the enforcement is that the
 grant revision and the audit event both reference the 결재 line id.
 
@@ -2129,7 +2129,7 @@ accumulate. Least privilege and correct teardown are the same property here, and
 closed-interval instance, never deleted. Reasons: (a) `approval_line` instances reference the scope, and
 migrating standing on disband would rewrite history and break the fixity chain; (b) the ontology already
 has terminal soft states (`ont_instances.lifecycle_state` includes `archived` and `disposed`,
-`0155:27`) and no hard delete anywhere; (c) "what could this person approve on 2026-03-01" must still
+`0155` `CHECK (lifecycle_state IN ('draft','active','locked','archived','disposed'))`) and no hard delete anywhere; (c) "what could this person approve on 2026-03-01" must still
 resolve a scope that no longer exists operationally.
 
 So: **standing does not migrate; the scope persists in a terminal state.** Transfer is the easy case
@@ -2149,42 +2149,42 @@ silent supersession"* (rule 6).
 **This document is a plan. It therefore decides nothing on its own.** Every item below is prepwork that
 gates the fanout, not a paragraph that authorizes it.
 
-**Reciprocity is machine-enforced; clause compatibility is not.** `scripts/check-adrs.mjs:23-27` defines
+**Reciprocity is machine-enforced; clause compatibility is not.** `scripts/check-adrs.mjs` `const RECIPROCAL_RELATIONSHIPS = [` defines
 `RECIPROCAL_RELATIONSHIPS` as **exactly** `amends`/`amended_by` and `supersedes`/`superseded_by`, and the loop
-at `:399-406` fails only when the *target* does not declare the reciprocal key; `related` is validated only as
-an inline array (`:248-249`). **There is no clause-level collision check anywhere.** So two accepted ADRs that
+at `check-adrs.mjs` `for (const [key, reciprocalKey] of RECIPROCAL_RELATIONSHIPS)` fails only when the *target* does not declare the reciprocal key; `related` is validated only as
+an inline array (`check-adrs.mjs` `related must use an inline list, including [] when empty`). **There is no clause-level collision check anywhere.** So two accepted ADRs that
 both declare `amends: [ADR-0003]` and edit the same Decision line **incompatibly** pass CI and leave the
 authoritative record self-contradictory, with nothing to detect it. **This is the stated reason G2 and G2b
 merge into one record** rather than shipping as two pairs against the same clause.
 
 **ADR numbers are assigned centrally, and the failure this prevents was observed.** Every draft carries
 `ADR-XXXX-DRAFT`; the integrator assigns the number in **one atomic commit** together with the
-`docs/decisions/README.md` index rows (`README:3` — the index *"must be updated atomically with every ADR
+`docs/decisions/README.md` index rows (`docs/decisions/README.md` `must be updated atomically with every ADR status` — the index *"must be updated atomically with every ADR
 status, identity, amendment, or supersession change"*). **No lane computes "next free".** In the prior review
 run, four independent judges each computed "next free after ADR-0026" and **all four claimed `ADR-0027`** —
 which is what "next free" produces whenever more than one writer is awake. Numbers are also never recycled:
-`ADR-0013` was never issued and `README:13` forbids reuse or backfill, and any allocated-but-unwritten number
+`ADR-0013` was never issued and `docs/decisions/README.md` `Do not reuse or backfill the number.` forbids reuse or backfill, and any allocated-but-unwritten number
 in this plan's set stays an **unused gap** on the same rule. The assignment of record for this plan's nine (or
 ten) records is the allocation table below.
 
 | # | Matter | Status | Required artifact |
 |---|---|---|---|
-| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022**. Its `## Decision` opens *"Do not ship a speculative external IdP seam."* and confines `console-identity-application` to *"only local org/account administration commands, read models, and audit builders"*. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no durable identity row lands in Slice 0. **Narrower still after §4.1's tier decision:** the handle is an ordinary tenant-classified row homed at the platform sentinel org, not a Tier O carve-out and not a new gate classification — so what D1 records is a *linkage* rule, not a new tier or a new privileged read. **Does not block Slice 0** — it *defers* `party` to W2 (§4.1) |
+| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"ADR-0022 decides identity is local/org-scoped"*, citing two line spans. Verified against the file: the lines it named are `ADR-0022` `## Context` prose, not the decision, and the string **"org-scoped" appears nowhere in ADR-0022**. `ADR-0022` `Do not ship a speculative external IdP seam.` is what its `## Decision` opens with, and it confines `console-identity-application` to `ADR-0022` `only local org/account administration commands, read models, and audit builders`. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no durable identity row lands in Slice 0. **Narrower still after §4.1's tier decision:** the handle is an ordinary tenant-classified row homed at the platform sentinel org, not a Tier O carve-out and not a new gate classification — so what D1 records is a *linkage* rule, not a new tier or a new privileged read. **Does not block Slice 0** — it *defers* `party` to W2 (§4.1) |
 | G2 + G2b | **`org_id` × `BranchScope` composition, and `BranchScope::All` after `Role` deletion** (§0.16) | **documented gap, and it is ONE gap.** `ADR-0003`'s Decision says *"`All` for SUPER_ADMIN/EXECUTIVE rollups, an explicit branch set otherwise"* and has **no org concept**; `ADR-0021` decision 2 makes `org_id` the RLS boundary Cedar may not widen. **No ADR states how they compose** | **D2 → ADR-0028**, one reciprocal pair on `ADR-0003` with its Decision **edited in place** (merging G2 + G2b). Filed as **one** record because CI cannot see a clause collision (above): two pairs against the same Decision line would both pass. `ADR-0021` and `ADR-0018` gain `ADR-0028` in `related`. **BLOCKS Slice 0** |
-| G3 | **전결규정 routing, capacity, obligation loop** | **not greenfield — "zero ADR hits" is struck.** `ADR-0023:81-82` already decides arbitrary approval-line DAGs and the 검토/승인/합의/참조 vocabulary, so this is a **delta on ADR-0023's Engine-Gen**, not new ground | **N3 → ADR-0033**, non-amending, `related: [ADR-0018, ADR-0023]`. **NOT blocking Slice 0** — this is the theme where corrected evidence *removes* work from the critical path. Acceptance condition: the first migration introducing `delegation_rule` carries `CHECK (delegator_id <> delegate_id)` in the same file |
+| G3 | **전결규정 routing, capacity, obligation loop** | **not greenfield — "zero ADR hits" is struck.** `ADR-0023` `a generalized definition builder for arbitrary approval-line DAGs` already decides arbitrary approval-line DAGs and the 검토/승인/합의/참조 vocabulary, so this is a **delta on ADR-0023's Engine-Gen**, not new ground | **N3 → ADR-0033**, non-amending, `related: [ADR-0018, ADR-0023]`. **NOT blocking Slice 0** — this is the theme where corrected evidence *removes* work from the critical path. Acceptance condition: the first migration introducing `delegation_rule` carries `CHECK (delegator_id <> delegate_id)` in the same file |
 | G4 | **Quantity lineage** (§5.8) | new; zero ADR hits | **N4 → ADR-0034**, non-amending, `related: [ADR-0001]`. Deferred **with constraints instead of schema** (below); no 0207+ slot |
 | G5 | **Economics spine** (§5.5) | new; zero hits for GL/posting/dimension | **N5 → ADR-0035**, non-amending, `related: [ADR-0023]`. The **record** does not block Slice 0; its three **prerequisites** do (§5.5) |
-| G6 | **The no-code canvas** | **STRUCK.** Out-of-scope is **silence, not prohibition** (`docs/decisions/README.md:7` — an accepted ADR is authoritative *within its stated scope*), so no accepted ADR defers the canvas and **there is no charter clause** to amend or satisfy. Verified: `ADR-0023:148` is the header *"Follow-ups (named out of scope for this program)"*; the canvas bullet at `:153-154` carries **no** charter clause; *"enters as its own charter"* is at `:156`, on the Contract→Position(인원편성)→PolicyPreset bullet | **none.** The canvas's exclusion from slices 0/1 is **this plan's own scope choice**, standing on its own merits. *"Do not smuggle it in"* stays, as a scope statement rather than an inherited prohibition. **W10 is deferred-by-follow-up and off the slice-0/1 critical path — it is NOT gated on a charter.** Optionally, **N2 → ADR-0036** records object-policy revocation as a catalog status transition; if it is never written the number stays an unused gap |
-| G7 | **DN-0003 bounded extensibility vs open sets** | **STRUCK on structural grounds, not "aligned as written".** DN-0003 is `kind: design-note`, `authority: subordinate`; `README:26` governs **ADR** relationship keys while design notes declare `parent_adr`. So DN-0003 **cannot take a reciprocal ADR pair at all**, whatever the substance | **none, and none is possible.** The header's *"(G7 needs none)"* stays true, for a better reason than the one given |
-| G8 | **DB-enforced invariants vs ADR-0001 domain purity** | tension, see below. **Two examples, not three** — the lot CHECK is withdrawn (§5.8: a row CHECK does not hold conservation across concurrent splits) | **argue only, no record.** `ADR-0001:23` is a **Consequences** bullet, not the Decision, so no ADR question is engaged unless the argument is rejected |
+| G6 | **The no-code canvas** | **STRUCK.** Out-of-scope is **silence, not prohibition** (`docs/decisions/README.md` `An **accepted** local ADR is authoritative within its stated scope.`), so no accepted ADR defers the canvas and **there is no charter clause** to amend or satisfy. Verified: `ADR-0023` `## Follow-ups (named out of scope for this program)` is the header; the canvas bullet `ADR-0023` `read-only NL rows + simulation and defers the canvas` carries **no** charter clause; `ADR-0023` `enters as its own charter` sits on the Contract→Position(인원편성)→PolicyPreset bullet | **none.** The canvas's exclusion from slices 0/1 is **this plan's own scope choice**, standing on its own merits. *"Do not smuggle it in"* stays, as a scope statement rather than an inherited prohibition. **W10 is deferred-by-follow-up and off the slice-0/1 critical path — it is NOT gated on a charter.** Optionally, **N2 → ADR-0036** records object-policy revocation as a catalog status transition; if it is never written the number stays an unused gap |
+| G7 | **DN-0003 bounded extensibility vs open sets** | **STRUCK on structural grounds, not "aligned as written".** DN-0003 is `kind: design-note`, `authority: subordinate`; `docs/decisions/README.md` `is always required and uses an inline list` governs **ADR** relationship keys while design notes declare `parent_adr`. So DN-0003 **cannot take a reciprocal ADR pair at all**, whatever the substance | **none, and none is possible.** The header's *"(G7 needs none)"* stays true, for a better reason than the one given |
+| G8 | **DB-enforced invariants vs ADR-0001 domain purity** | tension, see below. **Two examples, not three** — the lot CHECK is withdrawn (§5.8: a row CHECK does not hold conservation across concurrent splits) | **argue only, no record.** `ADR-0001` `Domain logic stays pure and exhaustively unit-testable` is a **Consequences** bullet, not the Decision, so no ADR question is engaged unless the argument is rejected |
 | G9 | **Audit coverage for the new write paths** | **reclassified: BLOCKING, and a retroactive amendment.** `ADR-0002`'s Decision states its *"exclusion set contains exactly one entry"* and that *"a test asserts that is the only exclusion"*. The gate returns **TWO** | **D3 → ADR-0029**, a **retroactive** reciprocal amendment pair on `ADR-0002` whose Decision text is **edited in place** — a reciprocal key alone leaves a false sentence standing. `ADR-0014` gains `ADR-0029` in `related`. **BLOCKS Slice 0** |
 | D4 | **The console rebuild charter and the generated-client reconciliation** | **owner decisions CAPTURED, not accepted.** `docs/ideas/d4-frontend-charter.md` (2026-07-30) records four owner decisions and splits D4 into **at least two** amendment records. So D4 is blocked on **acceptance**, not on an owner decision | **at least two** pairs: **ADR-0030** (D4-A1, amends `ADR-0025`) and **ADR-0031** (D4-A2, amends `ADR-0009`, Decision edited in place; `ADR-0012` gains `related` only). **The count is the charter's to state at acceptance, not this plan's to restate** — the charter is a live document and already names a **third** target: adding a `ui` layer to `ADR-0001`'s **enumerated** crate family amends it. That number is allocated by the integrator with the rest, in the same atomic commit; no lane computes it. **NOT on Slice 0's path**, and the record is owed **independently of whether this plan is approved.** `ADR-0025`'s clause 1 — a reachable mounted body for every exposed navigation state — survives **unamended**, and the CI gate asserting the console frontend does not exist **stays**: under the charter it is the enforcement mechanism for "planning only" |
 | N1 | **Where the fold is computed** (§5.6) | not a collision; a mechanism worth recording | **N1 → ADR-0032**, non-amending, `related: [ADR-0021]`. Records that the fold is computed **per request with no cross-request materialisation**. Unblocks §5.6 by making the deleted materialise row a recorded decision rather than an omission |
-| **SoD** | **Segregation of duties** | **IN, as a grant-authoring-time constraint.** Three shipped specs already decide it is not a UI concern — `docs/specs/cedar-pbac-authorization.md:122` *"Segregation of duties and self-approval checks are PBAC conditions, not UI-only rules."*, `docs/specs/no-code-operational-logic.md:211` *"segregation of duties and self-approval prevention"*, and `docs/specs/operations-intelligence.md:170` *"required evidence, segregation of duties, self-approval restrictions, and conflict-of-interest flags"*. Earlier drafts of this plan mentioned none of them, which read as a silent contradiction rather than a choice | **no new record — it lands inside N3.** Mechanism: **conflict pairs over `Feature`**, evaluated at **grant-authoring time**, in the place the `gov_approvals` four-eyes check already runs. Not a fold-time subtraction — §1 principle 2 is unaffected (see the note there). Widening: **W19**, with probe `conflicting_grant_pair_refused_at_authoring`; known-bad control: **a fold that accumulates a conflicting pair silently**, which is today's behaviour |
-| **GATE** | **What each CI gate pins** | **classification, so amendability is decidable.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs:430-453` (`requireOntologyRestItestReachability`) **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`:428`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
+| **SoD** | **Segregation of duties** | **IN, as a grant-authoring-time constraint.** Three shipped specs already decide it is not a UI concern — `docs/specs/cedar-pbac-authorization.md` `Segregation of duties and self-approval checks` *"Segregation of duties and self-approval checks are PBAC conditions, not UI-only rules."*, `docs/specs/no-code-operational-logic.md` `segregation of duties and self-approval prevention;`, and `docs/specs/operations-intelligence.md` `required evidence, segregation of duties, self-approval restrictions` *"required evidence, segregation of duties, self-approval restrictions, and conflict-of-interest flags"*. Earlier drafts of this plan mentioned none of them, which read as a silent contradiction rather than a choice | **no new record — it lands inside N3.** Mechanism: **conflict pairs over `Feature`**, evaluated at **grant-authoring time**, in the place the `gov_approvals` four-eyes check already runs. Not a fold-time subtraction — §1 principle 2 is unaffected (see the note there). Widening: **W19**, with probe `conflicting_grant_pair_refused_at_authoring`; known-bad control: **a fold that accumulates a conflicting pair silently**, which is today's behaviour |
+| **GATE** | **What each CI gate pins** | **classification, so amendability is decidable.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs` `function requireOntologyRestItestReachability` **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`check-ci-preflight.mjs` `a per-crate decision with the same shape as this one, not a cleverer regex`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
 
 **The allocation, assigned once, here.** Highest issued is **ADR-0026**; `ADR-0013` was never issued and must
-never be reused (`docs/decisions/README.md:13`). True next free: **0027**.
+never be reused (`docs/decisions/README.md` `Do not reuse or backfill the number.`). True next free: **0027**.
 
 | Slot | Record | Kind | Counterpart obligations | Blocks Slice 0 |
 |---|---|---|---|---|
@@ -2202,12 +2202,12 @@ never be reused (`docs/decisions/README.md:13`). True next free: **0027**.
 
 **Reciprocation mechanics, which no ordered list in earlier drafts covered.** For **each surviving pair**, the
 work is three things and the third is the one that gets forgotten: name the **counterpart record**, name the
-**exact clause amended**, and **add the relationship key on BOTH sides**. `README:9`: *"A later number does not
-win automatically. Amendment or supersession must be explicit in both records."* `README:26`: relationship keys
+**exact clause amended**, and **add the relationship key on BOTH sides**. `docs/decisions/README.md` `A later number does not win automatically.`: *"A later number does not
+win automatically. Amendment or supersession must be explicit in both records."* `docs/decisions/README.md` `Relationship keys (`: relationship keys
 *"must be reciprocal where applicable."* **`ADR-0003` carries no `amended_by` key today** — reciprocation must
 **create** it, and the same is true of `ADR-0002`, `ADR-0025`, `ADR-0009` and `ADR-0022`. Pre-acceptance each
 draft carries `status: proposed`, `doc_status: review` and `proposes_amendments_to: [...]`, and **may not declare
-active `amends`** (`README:26`). The index rows land in the **same atomic commit** (`README:3`).
+active `amends`** (`docs/decisions/README.md` `Relationship keys (`). The index rows land in the **same atomic commit** (`docs/decisions/README.md` `must be updated atomically with every ADR status`).
 
 **The pair list is shorter than earlier drafts implied:** G6 and G7 are struck, G1 is withdrawn, G8 takes no
 record. Five amendment pairs are allocated here (ADR-0027 through ADR-0031) plus four or five non-amending records. D4
@@ -2215,11 +2215,11 @@ may add a sixth pair — the charter is live and gained an `ADR-0001` target aft
 precisely why the count is not restated as a fact.
 
 **G8 — DB-enforced invariants vs ADR-0001 domain purity. Decided: argue, not amend.**
-`ADR-0001:23` states *"Domain logic stays pure and exhaustively unit-testable"*, gated by a CI
-layer-boundary check. Note first that `ADR-0001:23` is a **Consequences** bullet, not the Decision, so no ADR
+`ADR-0001` `Domain logic stays pure and exhaustively unit-testable` states *"Domain logic stays pure and exhaustively unit-testable"*, gated by a CI
+layer-boundary check. Note first that it is a **Consequences** bullet, not the Decision, so no ADR
 *question* is engaged unless the argument below is rejected.
 
-This plan puts **two** invariants in SQL: the voucher balance gate (`0160:78-118`, already shipped) and the
+This plan puts **two** invariants in SQL: the voucher balance gate (`0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()`, already shipped) and the
 authority fold in a definer (§5.1). **The third — lot conservation as a row CHECK — is withdrawn**: a row CHECK
 does not hold conservation across concurrent splits (§5.8), so it was never an example of an invariant SQL alone
 enforces.
@@ -2230,7 +2230,7 @@ beats a pure function that callers may forget. `0205` set that precedent deliber
 predates this plan. The layer-boundary gate still holds because no domain crate gains a SQL dependency: the
 constraints live in migrations, and the domain crates keep their pure validators. **If the Critic rejects
 that distinction, G8 becomes a reciprocal amendment to ADR-0001, not a silent divergence** — which is what
-`docs/decisions/README.md:12` requires either way.
+`docs/decisions/README.md` `that is a governance gap, not silent supersession` requires either way.
 
 **D3 (ADR-0029) — audit coverage. BLOCKING, and a retroactive amendment, because the ADR is wrong.**
 `ADR-0002`'s `## Decision` states that the CI `audit-coverage` gate's *"exclusion set contains exactly one
