@@ -288,11 +288,35 @@ pub struct PayrollRunTransition {
 /// Fail closed unless an existing run has an exact org/month attendance close,
 /// its active payroll period lock, and no unresolved attendance exceptions.
 ///
-/// This pure guard is intentionally reusable by every persistence/transport
-/// adapter. It permits only the approval transition. Calculation remains
-/// blocked until immutable, validated release-gate evidence can be persisted;
-/// issuance remains blocked until a step-up-authorized actor, audit evidence,
-/// and immutable issuance artifact can be persisted together.
+/// It permits only the approval transition: `Calculate` and `MarkIssued` return
+/// `Conflict` unconditionally.
+///
+/// # NOTHING IN PRODUCTION CALLS THIS
+///
+/// Read the previous sentence as a statement about this function only, never
+/// about the system. This guard has **no non-test caller**: every call site is
+/// inside this file's `#[cfg(test)] mod tests`. The doc comment here previously
+/// said it was "intentionally reusable by every persistence/transport adapter"
+/// and that calculation and issuance "remain blocked" — and both readings were
+/// false at the system level:
+///
+/// - **Calculation is not blocked.** It ships and works, through
+///   `console_payroll_adapter_postgres::lifecycle::calculate_run_in_tx`, a
+///   parallel path added later that never consults this function. That path
+///   gates on a raw string compare, `run.status != "ATTENDANCE_CLOSED"`, as do
+///   the submit, decide, schedule-disbursement and attest steps.
+/// - **Issuance is not gated on step-up.** No step-up mechanism exists anywhere
+///   in the payroll crates; the only occurrence of the phrase in the whole
+///   payroll tree is a test name below. The mechanism does exist elsewhere
+///   (`verify_step_up` in the inbox, financial and identity REST crates) and is
+///   simply not wired here.
+///
+/// So this is a pure FSM kept for its shape, not an enforced boundary. Wiring
+/// production through it — or deleting it — is a decision this comment does not
+/// make. What it must not do is let a reader mistake it for the guard that
+/// blocks payment, because the release gate is consulted in exactly one place
+/// (`load_payslip_issuance_in_tx`, after `status == "PAID"`), which withholds
+/// the 임금명세서 and not the money.
 pub fn transition_payroll_run(
     current: PayrollRunStatus,
     command: PayrollRunCommand,
@@ -1044,8 +1068,14 @@ mod tests {
         }
     }
 
+    // These two tests pin the FSM's own refusals. They are named for the
+    // function, not for the system, because `transition_payroll_run` has no
+    // production caller — see its doc comment. A name like
+    // `calculation_is_blocked_without_...` asserted a system property this
+    // repository does not have, and would have become a CI-endorsed falsehood
+    // the moment this target was wired into a workflow.
     #[test]
-    fn calculation_is_blocked_without_persisted_validated_release_evidence() {
+    fn fsm_refuses_calculate_command_unconditionally() {
         let error = transition_payroll_run(
             PayrollRunStatus::Staged,
             PayrollRunCommand::Calculate,
@@ -1061,8 +1091,11 @@ mod tests {
         );
     }
 
+    // The refusal message names step-up, audit evidence and an immutable
+    // artifact. None of those three is implemented on the production issuance
+    // path — this asserts the STRING, which is why the name says so.
     #[test]
-    fn issuance_is_blocked_without_step_up_audit_and_immutable_artifact() {
+    fn fsm_refuses_mark_issued_command_citing_unimplemented_controls() {
         let error = transition_payroll_run(
             PayrollRunStatus::Approved,
             PayrollRunCommand::MarkIssued,

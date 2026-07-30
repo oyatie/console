@@ -32,6 +32,7 @@ const consoleTrainDerivation = [
 const buckPostgresEnvironmentTestCommand = "tools/buck/run_test_with_postgres_env.test.sh";
 const buckPostgresHarnessTestCommand = "tools/buck/test_needs_postgres.test.sh";
 const supportDomainUnitCommand = "tools/buck2 test //backend/crates/support/domain:console-support-domain-unit";
+const payrollDomainUnitCommand = "tools/buck2 test //backend/crates/payroll/domain:console-payroll-domain-unit";
 const postgresDomainReachabilityCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
   "//tools/buck:dispatch-p1-postgres \\",
@@ -99,6 +100,11 @@ const protectedJobs = [
   "kubernetes-manifests",
   "generated-face-authority",
   "support-domain-unit",
+  // Protected from the day it was added, not after it drifted. The payroll
+  // kernel's 16 unit tests ran in no workflow at all until 2026-07-30 — they
+  // were only compiled, by `cargo clippy --all-targets`. Listing the job here
+  // makes its deletion a gate failure rather than a silent return to that state.
+  "payroll-domain-unit",
   "postgres-domain-reachability",
 ];
 
@@ -679,6 +685,14 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     const steps = stepBlocks(supportDomainUnit);
     requireUnconditionalRun(steps, supportDomainUnitCommand, "support-domain-unit", failures);
     requireOnlyLockedRuns(steps, [dotSlashBootstrap, supportDomainUnitCommand], "support-domain-unit", failures);
+  }
+  // The job's existence is already mandatory via protectedJobs; this pins WHAT it
+  // runs, so the job cannot survive as a green no-op with its test command removed.
+  const payrollDomainUnit = jobBlock(workflow, "payroll-domain-unit");
+  if (payrollDomainUnit) {
+    const steps = stepBlocks(payrollDomainUnit);
+    requireUnconditionalRun(steps, payrollDomainUnitCommand, "payroll-domain-unit", failures);
+    requireOnlyLockedRuns(steps, [dotSlashBootstrap, payrollDomainUnitCommand], "payroll-domain-unit", failures);
   }
 
   requirePostgresWrapperContracts(buckBuildFile, failures);
