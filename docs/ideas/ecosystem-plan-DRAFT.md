@@ -1212,12 +1212,12 @@ invents work.
 **What capacity costs here: two nullable columns, and nothing relaxed.** 전결 by delegated authority is
 already two rows (same `approver_id`, different `request_ref`, same `requested_by`), and 전결 where the
 competent authority **is** the drafter needs **zero** approval nodes — the self-approval CHECK is never
-reached because no signature is required. The cross-org approver FK (`0153:79`) remains the one real blocker,
+reached because no signature is required. The cross-org approver FK (`0153` `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT`) remains the one real blocker,
 and W1 is where it is addressed.
 
 **`notices`' fourth gap is a confidentiality regression, not a missing feature.** W1's party-keyed recipient
 fixes the cross-org FK; it does **not** fix the **org-wide fan-out**.
-`backend/crates/notices/adapter-postgres/src/lib.rs:413-433` publishes through two SQL variants keyed on
+`backend/crates/notices/adapter-postgres/src/lib.rs` `let snapshot_sql = if audience_scope == "branches"` publishes through two SQL variants keyed on
 `audience_scope == "branches"`, and **both end `WHERE … org_id = $1 AND is_active = true`** — the branch variant
 joins `user_branches` and `notice_audience_branches` but is still org-wide *within the selected branches*, and
 the else-branch is `SELECT $1, $2, id FROM users WHERE org_id = $1 AND is_active = true`, i.e. every active user
@@ -1227,11 +1227,11 @@ The fix is **per-recipient audience targeting** with its own DDL: an explicit re
 (`notice_audience_parties (org_id, notice_id, party_id)`), with the snapshot INSERT selecting from it rather than
 from `users`.
 
-**And that DDL must be ADDITIVE, because both tables are gate-marked audited.** `0162:12` is
-`-- console-gate: audited-table notices` and `0162:40` is `-- console-gate: audited-table notice_receipts`,
-which `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs:174-187`) folds into the same
+**And that DDL must be ADDITIVE, because both tables are gate-marked audited.** `0162` `-- console-gate: audited-table notices` is the marker, and
+`0162` `-- console-gate: audited-table notice_receipts` is its sibling,
+which `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs` `fn discover_audited_tables`) folds into the same
 set as the five built-ins — so **`DROP COLUMN` on either is a gate violation**, exactly as for `audit_events`
-(§4.0.3) and the voucher (§5.5). `notice_receipts.recipient_user_id` is `NOT NULL` (`0162:45`). So W1's
+(§4.0.3) and the voucher (§5.5). `notice_receipts.recipient_user_id` is `0162` `recipient_user_id  UUID        NOT NULL,`. So W1's
 "party-keyed recipient **replacing** the org-composite FK" is precisely: `ALTER COLUMN recipient_user_id DROP
 NOT NULL`, `DROP CONSTRAINT` on the composite FK, `ADD COLUMN recipient_party_id UUID` — and **never** a
 `DROP COLUMN`. The new `notice_audience_parties` table is greenfield and therefore free. Recorded here because
@@ -1329,15 +1329,15 @@ party, incoming party, relinquished scope, and the count **as asserted**:
 **Offboarding cannot be hard-gated on 인계 완료 in Slice 0.** An incomplete handover is visible and
 provable, but not blocking, because a completeness count over heterogeneous artifact edges is
 **principal-relative**. `resolve_head` says so in its own comment — *"`Ok(None)` is byte-identical to 'not
-found'/'not visible', so no existence oracle"* (`backend/app/src/objects.rs:690-697`) — and DN-0003
+found'/'not visible', so no existence oracle"* (`backend/app/src/objects.rs` `byte-identical to "not found"/"not visible", so no`) — and DN-0003
 invariant 5 makes omission-including-counts **binding**: *"Denied data is omitted, including counts and
-relationship existence"* (`DN-0003:85-86`). So two people run this and get two different answers, and the
+relationship existence"* (`DN-0003` `Denied data is omitted, including counts and relationship existence.`). So two people run this and get two different answers, and the
 delta may not be exposed to either of them. A gate that blocks 퇴사 on a number one principal cannot see is
 a gate that blocks the wrong people; the assertion records who asserted what they could see, which is
 auditable and honest. Hard-gating is a widening (W4) that needs a fixed-authority count first.
 
 **No frequency is claimed for orphan edges.** `object_links.src_id` and `.dst_id` carry **no FK** to any
-endpoint (`0102:57`, `:59`), so orphans are structurally possible — but no delete path was traced, so this
+endpoint (`0102` `src_id TEXT NOT NULL CHECK (char_length(btrim(src_id)) BETWEEN 1 AND 200)` and `0102` `dst_id TEXT NOT NULL CHECK (char_length(btrim(dst_id)) BETWEEN 1 AND 200)`), so orphans are structurally possible — but no delete path was traced, so this
 plan states the possibility and does **not** assert how often it happens.
 
 **"Why may this person do this?"** — the audit answer, against the signature store that actually ships
@@ -1353,8 +1353,8 @@ gov_approvals row → authorizing_grant_id → grant → {source, scope, valid_f
 
 The mapping is the input's, and it holds: archetype → object type; entity → instance; component →
 typed property / link with cardinality; system → action with dispatch
-(`ActionDispatch::{ProjectedUsecase, InstanceRevision}`, `ontology/domain/src/lib.rs:213-218`;
-`ont_action_types.dispatch` CHECK at `0152:99`); deterministic replay → effective-dated
+(`ActionDispatch::{ProjectedUsecase, InstanceRevision}`, `ontology/domain/src/lib.rs` `pub enum ActionDispatch`;
+`ont_action_types.dispatch` CHECK at `0152` `dispatch TEXT NOT NULL CHECK (dispatch IN ('projected_usecase','instance_revision'))`); deterministic replay → effective-dated
 fixity-chained revisions where state is a fold.
 
 What the plan adds:
@@ -1362,7 +1362,7 @@ What the plan adds:
 - **Authored types get canvas + replay for free.** Most of the new entities are Tier N (§4.1 is the
   list; no count is restated here, because counts in this plan have rotted twice).
   Their history, as-of queries and tamper-evidence come from `ont_instance_revisions.prev_hash` /
-  `row_hash` (`0155:52-53`), the one-open-revision index (`:57-58`) and the as-of index (`:59-60`).
+  `row_hash` (`0155` `row_hash        CHAR(64)    NOT NULL,`), the one-open-revision index (`0155` `CREATE UNIQUE INDEX idx_ont_instance_revisions_one_open`) and the as-of index (`0155` `CREATE INDEX idx_ont_instance_revisions_asof`).
   This is what makes
   *"what could this person approve on 2026-03-01?"* answerable rather than reconstructed.
 - **Three entities must be ordinary tables rather than ontology instances, each for a stated reason — and
@@ -1379,15 +1379,15 @@ What the plan adds:
 - **What Cedar reads, and how.** Cedar decides capabilities; Postgres decides row reach — the
   invariant the coexistence map already states as `rlsHardBoundary`. Today the subject entity carries
   `org`, `roles` (a set of **strings**), `subject_version`, `clearance_keys`
-  (`engine.rs:370-391`); the resource carries `org`, `resource_type`, `resource_id`, `branch`
-  (`:403-424`); the action id is `Feature::as_str()` (`:430`).
+  (`cedar_pbac/engine.rs` `let subject_attrs = HashMap::from([`); the resource carries `org`, `resource_type`, `resource_id`, `branch`
+  (`cedar_pbac/engine.rs` `let mut resource_attrs = HashMap::from([`); the action id is `Feature::as_str()` (`cedar_pbac/engine.rs` `entity_uid("Action", request.action.feature().as_str())`).
   - The fold's output enters as **two new subject attributes**: `capabilities: Set<String>` and
     `scopes: Set<String>`. `roles` is already a string set, so authored role keys need no schema
     change to that attribute.
   - **All three new attributes must be declared in the bundle schema BEFORE any code reads the fold.**
     `Schema::from_str(schema_src)`
-    (`backend/crates/platform/authz/src/cedar_pbac/engine.rs:306`) parses the bundle schema, and
-    `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))` (`:449`) **validates against
+    (`backend/crates/platform/authz/src/cedar_pbac/engine.rs` `let schema = Schema::from_str(schema_src)`) parses the bundle schema, and
+    `cedar_pbac/engine.rs` `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))` **validates against
     it** — so an undeclared attribute fails entity construction, and a failed entity construction
     **denies everything**. This applies to `capabilities: Set<String>`, to `scopes: Set<String>` and to the
     decision-scope resource attribute, not only to the hierarchy. §8 carries it as a **hard Phase-4 ordering
@@ -1395,23 +1395,23 @@ What the plan adds:
   - **Decision scope is a new resource attribute**, beside `branch` — not a replacement.
     `branch` stays the operational scope (ADR-0003, and the non-null `branch_id` on every operational
     row). This is how decision scope splits from operational scope without touching the floor.
-  - Hierarchy requires populating the parent sets at `engine.rs:392`/`:425` and adding the scope
-    entities to `Entities::from_entities` (`:449`), plus declaring them in the bundle schema (§0.3).
+  - Hierarchy requires populating the parent sets at `cedar_pbac/engine.rs` `Entity::new(subject_uid.clone(), subject_attrs, HashSet::new())` and `cedar_pbac/engine.rs` `Entity::new(resource_uid.clone(), resource_attrs, HashSet::new())`, and adding the scope
+    entities to `cedar_pbac/engine.rs` `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))`, plus declaring them in the bundle schema (§0.3).
     Not free.
   - Caching: `crossRequestAllowDecisionCache: false` in the coexistence map already forbids caching
     a fold across requests. Do not add one. Recorded as **N1 (ADR-0032)** so the absence is a decision.
 
 **What already ships declaratively, stated so this plan is not later read as understating the substrate.** Two
 **type-agnostic declarative systems are executable code today**, not roadmap:
-`sync_property_links_tx` (`backend/crates/ontology/adapter-postgres/src/instances.rs:874`, called at `:723` and
-`:836`) and `resolve_derived_attributes_tx` (`:1142`, called at `:681` and `:769`). And plpgsql itself INSERTs a
-generic `create` action on publish — `0165:1024-1041` builds `params_schema` and `edits` from
+`instances.rs` `async fn sync_property_links_tx` (called at two sites, both `instances.rs` `sync_property_links_tx(`)
+and `instances.rs` `async fn resolve_derived_attributes_tx` (called at two sites, both `instances.rs` `resolve_derived_attributes_tx(tx, &props, &mut attributes, valid_from).await?;`). And plpgsql itself INSERTs a
+generic `create` action on publish — `0165` `IF p_to_state = 'published' AND v_backing_kind = 'instance'` builds `params_schema` and `edits` from
 `ont_property_defs` and inserts an `ont_action_types` row with `dispatch = 'instance_revision'`, for any type
 that has no instance-revision action yet.
 
 So extensibility is **open in the entity dimension and closed in the verb dimension** — which is DN-0003
 invariant 10 **already implemented**, not a gap. The cheap axis is therefore widening the `derive` op set:
-`instances.rs:1166` rejects every op but `sum` with *"property '…' declares derivation op '{op}', which this
+`instances.rs` `if op != "sum"` rejects every op but `sum` with *"property '…' declares derivation op '{op}', which this
 engine does not implement"*. One arm per op, no new mechanism.
 
 ### 4.7 The game-system lens (requirement 8)
@@ -1429,7 +1429,7 @@ are load-bearing and the rest are confirmations.
 | **guild rank editor** | the no-code role canvas | direct prior art for requirement 6 |
 | **guild bank limit per rank per tab per day** | **전결규정** | direct prior art; sets the ergonomics bar |
 | **guild bank / guild log** | the `record` component, self-describing | **exposes the capacity gap** (§4.0.3) |
-| guild / party / whisper channels | 전사 / 부서 / 프로젝트 / DM | `messenger_threads.kind` already has all four (`0012:9`) |
+| guild / party / whisper channels | 전사 / 부서 / 프로젝트 / DM | `messenger_threads.kind` already has all four (`0012` `CHECK (kind IN ('work_order','team','dm','group'))`) |
 | quest, quest log, inventory | 업무 + linked artifacts | `work` + `object_links` |
 | quest share / handoff | 분배 / 인계 | assignee edges (§4.5) |
 | raid lead and assist | 대리 / 대결 | `on_behalf_of_party_id` (§4.0.1) |
@@ -1463,7 +1463,7 @@ checked **when the purchase is raised**, and `slice0_band_enforced_synchronously
 **4. The differentiator is regulation-centric RENDERABILITY, and every probe in this plan misses it.** SAP's
 named failure is *"Approval authority as an intersection of process config and role assignment, with no readable
 artefact … You cannot print 'what is Kim's authority as of today' … A 전결규정 has legal force; if the system
-cannot render it, a spreadsheet becomes the source of truth"* (`docs/ideas/research-sap.md:937-939`). Every
+cannot render it, a spreadsheet becomes the source of truth"* (`docs/ideas/research-sap.md` `Approval authority as an intersection of process config and role assignment`). Every
 `slice0_*` probe and E1-E6 is **person-centric**: they ask what one person may do. **None renders the
 regulation.** So the probe: the complete 전결규정 — (category × band × scope) → competent unit, terminal? —
 renders as **one artefact as of an arbitrary date**; known-bad control: routing expressed only inside approval
@@ -1487,17 +1487,17 @@ were assumed free and are not.
 
 | # | Criterion | Substrate | Cost |
 |---|---|---|---|
-| E1 | **Explainability surfaced, not just logged.** A user sees "you may approve this because grant G at scope S", and symmetrically why not | `cedar_decision_log.determining_policies JSONB` (`0159:29`) already stores the deciding policy ids | **low** — the payload exists; surfacing is UI. **But** `0159:28-30` notes it is empty on deny-by-omission, so the case a user most needs explained has no explanation. Closing that is real work |
+| E1 | **Explainability surfaced, not just logged.** A user sees "you may approve this because grant G at scope S", and symmetrically why not | `cedar_decision_log.determining_policies JSONB` (`0159` `determining_policies JSONB       NOT NULL DEFAULT '[]'::jsonb`) already stores the deciding policy ids | **low** — the payload exists; surfacing is UI. **But** `0159` `(empty on deny-by-omission)` notes it is empty on deny-by-omission, so the case a user most needs explained has no explanation. Closing that is real work |
 | E2 | **A character sheet as the unifying screen** — party, positions per scope, the fold per scope, active 업무, pending 결재, delegations in/out | every §4.1 entity has a home on it; `action-inbox` crate exists | medium. **Ships in W20 with an EXECUTABLE completeness test**: one row per §4.1 entity mapped to its character-sheet section, and `every_entity_has_a_home` fails on an unmapped entity. Previously the completeness test was prose, no widening shipped E2 at all (W17 ships E4, W18 ships E1, W11 ships E6), and §7's `every_entity_declares_its_components` asserts rows in a TSV — not homes on a screen |
 | E3 | **Progressive disclosure** — controls shown are the fold | falls out of `effective(party, scope)` | **free** |
-| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065:159-172` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023:153-154` says this program ships as *"read-only NL rows + simulation"* | **partly new, and the fold simulator inherits NOTHING from Cedar simulation.** `simulate_inner` simulates **policy** decisions over Cedar's own entities; a fold over a hypothetical **grant** set is a different evaluator over a different input, and treating one as a free extension of the other is how E4 gets under-budgeted. Reuse both halves as *surfaces*; build the fold evaluator as new work |
-| E5 | **Named entities, not ids** | `ont_object_types.title_property_key` (`0152:23`) and `ont_instances.title` (`0155:21`) already exist | **free** for Tier N; Tier T entities need a display key declared |
+| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065` `CREATE TABLE policy_assignment_preview_receipts` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023` `read-only NL rows + simulation and defers the canvas` says this program ships as *"read-only NL rows + simulation"* | **partly new, and the fold simulator inherits NOTHING from Cedar simulation.** `simulate_inner` simulates **policy** decisions over Cedar's own entities; a fold over a hypothetical **grant** set is a different evaluator over a different input, and treating one as a free extension of the other is how E4 gets under-budgeted. Reuse both halves as *surfaces*; build the fold evaluator as new work |
+| E5 | **Named entities, not ids** | `ont_object_types.title_property_key` (`0152` `title_property_key TEXT NULL`) and `ont_instances.title` (`0155` `title                 TEXT        NOT NULL CHECK (char_length(title) BETWEEN 1 AND 200),`) already exist | **free** for Tier N; Tier T entities need a display key declared |
 
-**Derived channel membership (E6).** `messenger_thread_members` (`0012:30-36`) is a hand-maintained
+**Derived channel membership (E6).** `messenger_thread_members` (`0012` `CREATE TABLE messenger_thread_members`) is a hand-maintained
 roster (§0.10). It becomes a **projection maintained by the assignment action** — not a view, because
-the inbox needs the `(user_id, thread_id)` index at `0012:38-39`, and not hand-maintained, because
+the inbox needs the `(user_id, thread_id)` index at `0012` `CREATE INDEX idx_messenger_thread_members_user`, and not hand-maintained, because
 nobody maintains guild chat rosters by hand. Cost: one write path per membership-changing action, plus
-a rebuild-from-graph routine. Generalising `messenger_threads.work_order_id` (`0012:11`) to a `work`
+a rebuild-from-graph routine. Generalising `messenger_threads.work_order_id` (`0012` `work_order_id UUID        REFERENCES work_orders(id) ON DELETE CASCADE,`) to a `work`
 reference is the same change that gives 업무-scoped channels, and the conversation then follows the work
 on 인계 for free.
 
@@ -1516,8 +1516,8 @@ without them fails requirement 8.
 
 **A realtime feed is an access-control surface**, so it is governed by the same authority model —
 and the gate already exists: `audit_stream_event_labels` with
-`sensitivity IN ('STANDARD','COVERT','CEO_COVERT')` (`0147:46-55`), deny-by-omission, read against
-`clearance_assignments` (`0147:14-32`). The activity feed is `audit_events` projected through those
+`sensitivity IN ('STANDARD','COVERT','CEO_COVERT')` (`0147` `sensitivity    TEXT        NOT NULL CHECK (sensitivity IN ('STANDARD','COVERT','CEO_COVERT')),`), deny-by-omission, read against
+`clearance_assignments` (`0147` `CREATE TABLE clearance_assignments`). The activity feed is `audit_events` projected through those
 labels. No new visibility mechanism.
 
 **No AI/LLM judgment.** Game systems are deterministic rule engines, so this lens pushes toward
@@ -1534,20 +1534,20 @@ Two distinct circles; the input names only the second.
 **The genesis circle** — the first grant in an org cannot be granted by a grant. **Resolved outside the
 tenant plane.** Genesis is a **platform-principal** capability, never a tenant capability: org creation is
 gated on `PlatformFeature::TenantCreate`
-(`backend/crates/platform/platform-rest/src/lib.rs:574`, on the live route registered at `:235`,
+(`platform-rest/src/lib.rs` `.authorize(PlatformFeature::TenantCreate)`, on the live route `platform-rest/src/lib.rs` `.route(PLATFORM_ORGS_PATH, get(list_orgs).post(create_org))`,
 `PLATFORM_ORGS_PATH … .post(create_org)`), and the extension point that mints the genesis grant is the
-seed-first-SUPER_ADMIN step already inside `create_org` (`:568`), whose own doc header reads *"POST
+seed-first-SUPER_ADMIN step already inside `platform-rest/src/lib.rs` `async fn create_org`, whose own doc header reads *"POST
 /api/platform/orgs — onboard a NEW tenant (the only place org rows are created by the app), seed its first
 SUPER_ADMIN, and return a one-time OTP."* So no **tenant**-authenticated path can mint authority from
 nothing; the path that can is authenticated as the platform and audited. (The earlier framing — "genesis is
 a migration fact" — was wrong: it is a live handler, and calling it a migration would have sent an
 implementer looking for DDL.) Every subsequent authority change goes through four-eyes (`gov_approvals`,
-`0153:65-79`).
+`0153` `CREATE TABLE gov_approvals`).
 
 **The read circle** — Cedar gates instance reads, so reading a grant would need a grant. **Resolved by
 one definer that re-validates, following the precedent exactly.** The precedent is
 `PgCedarPolicyStore::load_enforced_object_policy_blocks`
-(`platform/authz-rest/src/store.rs:576-593`): it re-runs the validator, compares canonicality, checks
+(`platform/authz-rest/src/store.rs` `pub async fn load_enforced_object_policy_blocks`): it re-runs the validator, compares canonicality, checks
 effect agreement, and **errors the whole load** on any failure — and `0205:69-74` marks that
 re-validation a LIVE CONSTRAINT whose deletion *"would kill this justification silently while every
 test here stays green."*

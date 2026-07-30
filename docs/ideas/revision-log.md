@@ -767,3 +767,25 @@ The batch rewriter used `String.prototype.replace(find, repl)`. In the replaceme
 `DRAFT:1132`. `verify-doc-citations.mjs` reported it as **BROKEN** on the next run — the only BROKEN this sweep
 has produced — and it was fixed by passing a function replacer. A citation checker that only counted line
 numbers would have shipped that corruption.
+
+## Wave 7 — §4.4 notices through §5.1 authority mechanics (`DRAFT:1215`-`DRAFT:1550`)
+
+`UNVERIFIABLE 322 → 273` · `RESOLVES 245 → 292` · `BROKEN 0` · total 715
+
+### Factually wrong, corrected to what the file says
+
+- **`0152:99` is `control_points`, not `dispatch`** (`DRAFT:1357`). The sentence cites the
+  `ont_action_types.dispatch` CHECK; that is
+  `dispatch TEXT NOT NULL CHECK (dispatch IN ('projected_usecase','instance_revision'))` at **97**. Two lines
+  low, onto the JSONB column below `dispatch_target`.
+- **`0152:23` for `title_property_key` recurs** (`DRAFT:1494`) — third appearance of the same off-by-one, same
+  fix as `DRAFT:551`.
+- **`0153:79` for the approver FK, a fourth time** (`DRAFT:1215`).
+- **`engine.rs:370-391`, `:403-424`, `:392`/`:425`, `:449` were bound to nothing checkable**
+  (`DRAFT:1382`, `DRAFT:1383`, `DRAFT:1398`, `DRAFT:1399`). `engine.rs` alone is ambiguous —
+  `platform/authz/src/cedar_pbac/engine.rs` and `workflow/runtime/src/engine.rs` both match — so the verifier
+  could not bind the bare continuations at all, and a reader following them had two candidate files. Now
+  `cedar_pbac/engine.rs` plus the actual expressions (`let subject_attrs = HashMap::from([`,
+  `let mut resource_attrs = HashMap::from([`, the two `Entity::new(… HashSet::new())` calls).
+- **`instances.rs:1166` is the `return Err(` line, not the guard** (`DRAFT:1414`). The rejection is
+  `if op != "sum"` at **1165**; the message the sentence quotes begins at **1167**.
