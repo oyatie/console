@@ -804,3 +804,31 @@ Nothing else in this range was factually wrong. Five accepted-ADR decision citat
 4, 5, 6, 8) now quote the decision sentence instead of numbering its lines, which also removes the failure mode
 this document warned about in its own discipline note: an ADR Decision line is prose about code, and a citation
 that can only be checked by counting lines invites re-numbering to make two prose passages agree.
+
+## Wave 9 — §5.5 GL inventory through §5.6 propagation (`DRAFT:1747`-`DRAFT:1853`)
+
+`UNVERIFIABLE 238 → 198` · `RESOLVES 327 → 363` · `BROKEN 0` · total 710
+
+### Bare `:N` bound to the wrong file by the table it sits in
+
+- `DRAFT:1748` — `Only posted_at TIMESTAMPTZ (:41), created_at (:42) | 0160:41-43 |`. The bare `:41`/`:42`
+  inherit the row above, which cited `0163`, so following them lands on
+  `IF OLD.approved_by IS NOT NULL AND NEW.approved_by IS DISTINCT FROM OLD.approved_by` — the approver-
+  immutability trigger, nothing to do with business dates. The trailing `0160:41-43` in the same cell was the
+  correct target. One cell, two files, three numbers; now one anchored citation to
+  `posted_at TIMESTAMPTZ,`.
+- `DRAFT:1853` — *"a 4th const beside `0012`-era `:37-39`"*. The three channel consts are in
+  `realtime/src/lib.rs`, not in migration `0012`; the bare `:37-39` bound to `0012`, where it lands on
+  `CREATE INDEX idx_messenger_thread_members_user`. "0012-era" was a note about *when*, which the citation
+  grammar read as *where*.
+- `DRAFT:1777` cited `0015:45` for "gate-marked audited". Line 45 is `CREATE TABLE equipment_cost_ledger (`;
+  the marker `-- console-gate: audited-table equipment_cost_ledger` is **44**. Both cells of that row pointed
+  at the same line while claiming two different things.
+
+### No stable anchor, cited by shared text with the ambiguity stated
+
+`DRAFT:1834` cited `0015:16-18` **and** `:88-90` for the depreciation-method CHECK. Both spans are
+**byte-identical** (`depreciation_method TEXT NOT NULL CHECK (depreciation_method IN ('STRAIGHT_LINE',
+'DECLINING_BALANCE'))`) — one on the equipment config table, one on the purchase-request table — so no
+fragment can distinguish them. Cited once with the two tables named in prose instead of pretending a fragment
+picks one out.

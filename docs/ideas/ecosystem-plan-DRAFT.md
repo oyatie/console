@@ -1744,20 +1744,20 @@ What actually exists, and its four disqualifying gaps:
 | `finance_gl_vouchers` — header FSM `DRAFT/BALANCE_CHECKED/APPROVED/POSTED/REVERSED`, reversal pointers | `0160` `CREATE TABLE finance_gl_vouchers`, `0160` `reversal_of_voucher_id    UUID,` |
 | `finance_gl_voucher_lines` — `account_code`, `side`, `amount_won` | `0160` `CREATE TABLE finance_gl_voucher_lines` |
 | Real enforcement: balance gate + POSTED/REVERSED immutability trigger; lines append-only | `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()`, `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_line_draft_only()`, `0160` `REVOKE UPDATE, DELETE ON finance_gl_voucher_lines FROM console_rt;` |
-| SoD: `approved_by` write-once, `CHECK (approved_by <> created_by)` | `0163:19`, `:25-27` |
-| **No business date.** Only `posted_at TIMESTAMPTZ` (`:41`), `created_at` (`:42`) | `0160:41-43` |
-| **No account master.** `account_code TEXT` ≤40, no FK | `0160:62` |
-| **No currency.** Hard-coded in the column name `amount_won BIGINT` | `0160:64` |
-| **No line-level dimension.** The object ref is header-only and untyped | `0160:34-35`, lines `:57-68` |
+| SoD: `approved_by` write-once, `CHECK (approved_by <> created_by)` | `0163` `ADD COLUMN approved_by UUID,`, `0163` `ADD CONSTRAINT finance_gl_vouchers_sod CHECK (` |
+| **No business date.** Only `posted_at TIMESTAMPTZ` and `created_at` | `0160` `posted_at                 TIMESTAMPTZ,` |
+| **No account master.** `account_code TEXT` ≤40, no FK | `0160` `char_length(account_code) <= 40` |
+| **No currency.** Hard-coded in the column name `amount_won BIGINT` | `0160` `amount_won BIGINT NOT NULL CHECK (amount_won > 0)` |
+| **No line-level dimension.** The object ref is header-only and untyped | `0160` `source_object_type TEXT CHECK`, lines `0160` `CREATE TABLE finance_gl_voucher_lines` |
 
 **Consequence the earlier draft got wrong: period locks cannot apply to a voucher.**
-`assert_period_open(tx, domain, date)` (`platform/db/src/period_lock.rs:60-96`) is keyed on a **DATE**,
+`assert_period_open(tx, domain, date)` (`platform/db/src/period_lock.rs` `pub async fn assert_period_open`) is keyed on a **DATE**,
 and the voucher has none. Worse, the lock **does not enforce itself**: nothing in the database applies it
-to any other table — the only triggers protect the lock row (`0107:59-88`) — so enforcement is an opt-in
-Rust call with **five** non-test sites: `backend/crates/financial/adapter-postgres/src/lib.rs:1254`,
-`backend/crates/workflow/adapter-postgres/src/lib.rs:792`,
-`backend/crates/orgchange/adapter-postgres/src/lib.rs:611` **and** `:744` (two separate guards, not one),
-and `backend/app/src/hr.rs:1706`. **`finance-gl` is not among them.** Omit the call and the write succeeds.
+to any other table — the only triggers protect the lock row (`0107` `CREATE OR REPLACE FUNCTION period_locks_unlock_only()`) — so enforcement is an opt-in
+Rust call with **five** non-test sites: `backend/crates/financial/adapter-postgres/src/lib.rs` `console_platform_db::assert_period_open(`,
+`backend/crates/workflow/adapter-postgres/src/lib.rs` `console_platform_db::assert_period_open_range(`,
+`backend/crates/orgchange/adapter-postgres/src/lib.rs` `match assert_period_open(tx, domain, effective_date).await {` **twice** (two separate guards, not one),
+and `backend/app/src/hr.rs` `console_platform_db::assert_period_open(`. **`finance-gl` is not among them.** Omit the call and the write succeeds.
 The count is corrected because it is checkable: a lane that greps, finds five, and reads "four" stops trusting
 the paragraph — and the paragraph's substantive point is the one thing here that must be trusted.
 
@@ -1765,8 +1765,8 @@ the paragraph — and the paragraph's substantive point is the one thing here th
 
 | Option | Verdict |
 |---|---|
-| **Extend the voucher** ← chosen | It already owns the two hardest parts: a DB-enforced double-entry balance gate and POSTED immutability (`0160:78-118`), plus reversal linkage (`:38-39`) and SoD (`0163:25-27`). Those are the parts that are expensive to get right and easy to get wrong. What is missing — a business date, an account master, a currency column, a line-level dimension — is additive DDL. **That "no production data" claim is an ASSERTION, not a verified fact, and the DDL is IRREVERSIBLE once landed:** `0160_create_finance_gl_vouchers.sql:21` is `-- console-gate: audited-table finance_gl_vouchers`, and `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs:174-187`) folds that marker into the same audited set as the five built-ins — so `DROP COLUMN` on the voucher is a **gate violation**. Additive here means permanent. |
-| Build a parallel spine | Two records of the same money diverge; that is a certainty, not a risk. And it would need its own balance and immutability enforcement, re-deriving `0160:78-118`. **Rejected.** |
+| **Extend the voucher** ← chosen | It already owns the two hardest parts: a DB-enforced double-entry balance gate and POSTED immutability (`0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()`), plus reversal linkage (`0160` `reversal_of_voucher_id    UUID,`) and SoD (`0163` `ADD CONSTRAINT finance_gl_vouchers_sod CHECK (`). Those are the parts that are expensive to get right and easy to get wrong. What is missing — a business date, an account master, a currency column, a line-level dimension — is additive DDL. **That "no production data" claim is an ASSERTION, not a verified fact, and the DDL is IRREVERSIBLE once landed:** `0160_create_finance_gl_vouchers.sql` `-- console-gate: audited-table finance_gl_vouchers` marks it, and `discover_audited_tables` (`backend/ci/gates/migration-safety/src/lib.rs` `fn discover_audited_tables`) folds that marker into the same audited set as the five built-ins — so `DROP COLUMN` on the voucher is a **gate violation**. Additive here means permanent. |
+| Build a parallel spine | Two records of the same money diverge; that is a certainty, not a risk. And it would need its own balance and immutability enforcement, re-deriving `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()`. **Rejected.** |
 
 **"Two records of the same money diverge" has already happened three times in this tree, and the reconciliation
 backlog belongs to the peer plan.** Naming them, because a certainty stated in the future tense reads as
@@ -1774,18 +1774,18 @@ caution rather than as a debt:
 
 | Parallel money store | Guard |
 |---|---|
-| `equipment_cost_ledger` (`0015:45-58`) | gate-marked audited (`0015:45`) |
-| `equipment_3r_dispositions.cost_minor` / `.sale_amount_minor` (`0182:96-97`) | **no period-lock guard** |
-| `equipment_3r_rental_cases.monthly_rate_minor` (`0182:33`) | **no period-lock guard** |
+| `equipment_cost_ledger` (`0015` `CREATE TABLE equipment_cost_ledger`) | gate-marked audited (`0015` `-- console-gate: audited-table equipment_cost_ledger`) |
+| `equipment_3r_dispositions.cost_minor` / `.sale_amount_minor` (`0182` `cost_minor BIGINT NULL CHECK (cost_minor IS NULL OR cost_minor >= 0),`) | **no period-lock guard** |
+| `equipment_3r_rental_cases.monthly_rate_minor` (`0182` `monthly_rate_minor BIGINT NOT NULL CHECK (monthly_rate_minor > 0),`) | **no period-lock guard** |
 
 The additive delta, smallest first:
 
 1. **`accounting_date DATE NOT NULL`** on the voucher — unlocks `assert_period_open`, and the guard must
    be called in the finance-gl store (the omission above is a live gap, not a new requirement).
 2. **Push the object dimension down to the line** and **type it**: `source_object_type` FK →
-   `object_types(kind)`, which already seeds `'voucher'` (`0102:40`). Typing it closes the "any string is
+   `object_types(kind)`, which already seeds `'voucher'` (`0102` `('voucher', 'Financial voucher / expenditure')`). Typing it closes the "any string is
    accepted" hole; pushing it to the line is what makes per-object economics a real query rather than a
-   header approximation. **`finance_gl_voucher_lines` carries its own audited marker (`0160:56`)**, so these
+   header approximation. **`finance_gl_voucher_lines` carries its own audited marker (`0160` `-- console-gate: audited-table finance_gl_voucher_lines`)**, so these
    columns are as permanent as the header's — the same "additive means permanent" warning, on the table this
    item actually alters.
 3. Account master and currency — **the peer plan** (below).
@@ -1802,7 +1802,7 @@ looks like in practice.
 1. **`accounting_date DATE NOT NULL`** distinct from `posted_at` — irreversible once landed (above);
 2. **a line-level `branch_id`** — without it a posting cannot be attributed to the scope that authorised it;
 3. **an `assert_period_open(tx, PeriodLockDomain::Accounting, accounting_date)` caller in the finance-gl store**
-   — while `backend/crates/finance-gl/rest/src/lib.rs:28` is
+   — while `backend/crates/finance-gl/rest/src/lib.rs` `const VOUCHER_FEATURE: Feature = Feature::PeriodLockManage;` is
    `const VOUCHER_FEATURE: Feature = Feature::PeriodLockManage;`, i.e. the crate already names period locks as
    its capability while enforcing none.
 
@@ -1825,16 +1825,16 @@ evidence the dimension shape is settled** — one line against one object cannot
 design from the distributed one.
 
 **`economics_is_a_view` has an unmeasured dependency.** It groups by `account_code`, and **X-T9b predicts that
-is not reproducible**: `0160:62` rejects blank but stores untrimmed, so `'100'` and `' 100'` are two groups
+is not reproducible**: `0160` `CHECK (btrim(account_code) <> '' AND char_length(account_code) <= 40)` rejects blank but stores untrimmed, so `'100'` and `' 100'` are two groups
 holding the same account. Free-text-versus-account-master is an open owner question, and the probe inherits it.
 
 **Explicitly a peer plan, argued rather than dropped:** account master / chart of accounts, multi-currency
-and FX (the degenerate single-value CHECKs at `0179:68` and `0182:35` on `currency_code`, and `0172:10` on a
+and FX (the degenerate single-value CHECKs at `0179` `currency_code TEXT NOT NULL CHECK (currency_code = 'KRW')` and `0182` `currency_code TEXT NOT NULL CHECK (currency_code = 'KRW'),` on `currency_code`, and `0172` `currency          TEXT NOT NULL DEFAULT 'KRW' CHECK (currency = 'KRW'),` on a
 column simply named `currency`, show the convention is single-currency throughout), depreciation and accrual posting — today depreciation is only a
-synchronous pricing formula on quotes (`0015:16-18`, `:88-90`, computed at
-`financial/domain/src/lib.rs:203`, emitted as a `"DEPRECIATION"` quote line at `:214`) and is **never
+synchronous pricing formula on quotes (`0015` `depreciation_method             TEXT        NOT NULL CHECK (` on both the equipment config and the purchase-request table, computed at
+`financial/domain/src/lib.rs` `div_ceil_i64(depreciable, i64::from(input.config.useful_life_months))`, emitted as `financial/domain/src/lib.rs` `quote_line("DEPRECIATION", "감가상각비", depreciation)`) and is **never
 posted**; nothing schedule-driven writes any ledger despite `workflow_schedules.cron_expr` existing
-(`0106:18-22`). Also peer: overhead allocation, shared-service charge-out, inter-company charges.
+(`0106` `CREATE TABLE workflow_schedules`). Also peer: overhead allocation, shared-service charge-out, inter-company charges.
 
 **What the entity model must not foreclose:** allocated cost is an explicit, audited, reproducible posting
 with its basis recorded — never an implicit derivation in a report; asset economics are generated over
@@ -1845,12 +1845,12 @@ charges are allocation with a recorded basis, not taxation.
 ### 5.6 F — Realtime authority propagation: DECIDED — invalidate, never push the fold
 
 The transport decides this (§0.9). `NOTIFY_PAYLOAD_LIMIT_BYTES = 8000`
-(`platform/realtime/src/lib.rs:40`) means a computed capability set cannot travel over
+(`platform/realtime/src/lib.rs` `pub const NOTIFY_PAYLOAD_LIMIT_BYTES: usize = 8000;`) means a computed capability set cannot travel over
 `LISTEN/NOTIFY`. So:
 
 | Question | Decision |
 |---|---|
-| Change propagation path | grant revision → bump **both** counters (below) → `pg_notify` on a new `authority_changed` channel (a 4th const beside `0012`-era `:37-39`) → WebSocket hub → client re-reads |
+| Change propagation path | grant revision → bump **both** counters (below) → `pg_notify` on a new `authority_changed` channel (a 4th const beside the three in `realtime/src/lib.rs` `MESSAGE_POSTED_CHANNEL`) → WebSocket hub → client re-reads |
 | Invalidation key | **per `(org, user)`, not per org.** `policy_versions` is `PRIMARY KEY (org_id)` (`0065:177-181`), so keying invalidation there alone makes **one grant edit invalidate every connected client in a 10k-employee tenant** |
 | Which counters a grant revision bumps | **both.** `authz_subject_version` for the subject party's users **and** `policy_versions` for the org. Neither alone is sufficient — see below |
 | What the push carries | **ids and the new version only.** Never capabilities |
