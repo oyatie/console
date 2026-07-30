@@ -20,10 +20,12 @@
 > (premise false), G6 and G7 are **struck**, and G8 takes no record. Numbers are assigned centrally in the
 > integrator's commit; no lane computes "next free".
 >
-> **It also corrects itself in three places**, because authoring and review are separate passes here:
+> **It also corrects itself in four places**, because authoring and review are separate passes here:
 > the five-classes/two-spines frame is **retracted** (§4.0 — it re-created the `Feature`-matrix disease);
-> `work` moves Tier N → Tier T (§0.14); and the "make the object a dimension on the existing GL" premise
-> is **dead** — there is no general ledger (§5.5).
+> `work` moves Tier N → Tier T (§0.14); the "make the object a dimension on the existing GL" premise
+> is **dead** — there is no general ledger (§5.5); and **`party` moves out of Tier O** to an ordinary
+> tenant-classified row homed at the platform sentinel org, which removes a gate classification, an
+> owner-only allowlist entry and a definer (§4.1, decided against the plan's own earlier text).
 >
 > Input challenged: `docs/ideas/authority-and-approval-model.md`. Mechanisms owned elsewhere are
 > referenced, not restated: `docs/ideas/fanout-plan-DRAFT.md` §5/§5.1/§6/§6.5/§7,
@@ -2257,8 +2259,10 @@ What D3 must also record, so the enumeration is sized rather than labelled:
   `dispatch = 'instance_revision'`, and **nothing states whether that path goes through `with_audit`.** The
   **write-path enumeration** (Phase 0) answers it, one row per path.
 - **T7 adds zero exclusions.** The enumeration's purpose is coverage, not carve-outs.
-- Two 0207+ migration rows this plan had priced at **zero**: an `object_types` row for `work` and a `link_types`
-  row for `work_artifact` (§4.3).
+- Two 0207+ migration rows **in Slice 0** this plan had priced at **zero**: an `object_types` row for `work`
+  and a `link_types` row for `work_artifact` (§4.3). Phase 7 rung ② names **four** because it also carries the
+  widening-time pair — an `object_types` row for `lot` (W16) and a `link_types` row for `person_artifact` — so
+  the two counts are the same list at two horizons, not a disagreement.
 - Extending `is_handler_surface` to path component `app` has **UNMEASURED** blast radius. **X-T7a must run
   first**; the enumeration must not assume it.
 
@@ -2829,18 +2833,36 @@ recorded basis.
 
 ## 9. ADR block
 
-**Decision (1 of 2 — identity and authority).** Introduce one platform-level, attribute-free `party` identity in the owner-only tier,
-made visible to tenants through an ordinary org-scoped `party_org_visibility` edge under the existing
-`app.current_org` RLS floor, and model authority and 전자결재 as ontology instance types whose effective
-state is an additive fold over effective-dated, fixity-chained grants. `work` is a Tier T table projected
-into the ontology, because aggregate metrics cannot come from a revision fold and no read model exists.
-Retain the `Feature` enum as the capability and Cedar action vocabulary; delete `Role` and `matrix_row`.
+**Decision (1 of 2 — identity and authority).** Introduce one attribute-free `party` identity handle as an
+**ordinary tenant-classified row homed at the existing platform sentinel org**
+`00000000-0000-0000-0000-00000000face` (`0036:224`) under the standard `org_isolation` policy — **not** an
+owner-only carve-out, no new GUC, no definer-mediated read, and no new gate classification (§4.1). It is made
+visible to tenants through an ordinary org-scoped `party_org_visibility` edge under the same
+`app.current_org` RLS floor, and both are **DEFERRED out of Slice 0** and land in W2. Model authority and
+전자결재 as ontology instance types whose effective state is an additive fold over effective-dated,
+fixity-chained grants — **with one measured exception: a `Group`-scoped grant cannot be an ontology instance
+at all** (X4b: the edge is FK-rejected and a sibling org in the same group reads **0** rows), so it lives in
+the plan's single new owner-only table beside `group_role_grants`, reached only through its definer.
+A grant's `scope.level` is one of the five shipped `AccessScopeLevel` variants — `Group`, `Org`, `Region`,
+`Branch`, `Worksite` (`backend/crates/kernel/core/src/access_scope.rs:28-34`) — and **no other**; there is no
+`org_unit` level, so a 부서-scoped grant is not expressible in slices 0/1 (§4.1). `work` is a Tier T table
+projected into the ontology, because aggregate metrics cannot come from a revision fold and no read model
+exists. Retain the `Feature` enum as the capability and Cedar action vocabulary; delete `Role` and
+`matrix_row`.
 
 **Decision (2 of 2 — components).** Model concerns as **components** with contracts, and entities as
 compositions of them (§4.0). Both sets are open; any table in this plan is the current set plus a stated
 extension mechanism. Extend the **`record`** component's contract with `authorizing_grant_id` +
-`on_behalf_of_party_id` on `audit_events` — a gap every entity composing `record` inherits, which is what
-makes two nullable columns the highest-leverage change here. Build the **`economics`** component by
+`on_behalf_of_party_id` — a gap every entity composing `record` inherits, which is what
+makes two nullable columns the highest-leverage change here. **In Slice 0 those two columns land on
+`gov_approvals`, NOT on `audit_events`, and the `audit_events` pair is DEFERRED** (§4.0.3): `audit_events` is
+in `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so a column there is
+**permanent from the day it lands** and a shape Slice 0 has not yet exercised must not be the shape that can
+never be withdrawn. `gov_approvals` is in neither that list nor the `-- console-gate: audited-table` marker
+set, so the same two columns there are reversible, and its additive-column precedent is in the same table
+(`0164_bind_consume_four_eyes.sql:34`). The deferred pair is also **priced rather than scheduled**: `AuditEvent`
+(`backend/crates/kernel/core/src/audit.rs:83`) carries no capacity field, and there are **466** non-test
+`with_audit` references under `backend/crates`. Build the **`economics`** component by
 **extending `finance_gl_vouchers`** with a business date and a typed, line-level object dimension: there is
 no general ledger to reconcile to, and the voucher already owns the DB-enforced balance gate and POSTED
 immutability that are the expensive parts. **Cost** is a query over voucher lines, never a stored field — a
@@ -2852,37 +2874,59 @@ nothing. Its output is the governance records of **§5.11** — five reciprocal 
 ADR-0031) and four or five non-amending records (ADR-0032 onward) — of which **D2 (ADR-0028) and D3
 (ADR-0029) block slice 0**. D2 subsumes the old G2b and so is also what gates `Role` deletion. The old G1 is
 **withdrawn**: its premise (that ADR-0022 decides identity is "org-scoped") is false, and its deliverable
-claim was undeliverable, so the governance action is **D1**, a *narrowing* amendment to ADR-0022, not an
-authorisation for a platform identity. Where a matter is already accepted — finality
+claim was undeliverable, so the governance action is **D1**, a *narrowing* amendment to ADR-0022 recording that
+cross-org identity linkage is **human-asserted** — not an authorisation for a new privileged identity tier, and
+after §4.1's tier decision not for any new tier at all. Where a matter is already accepted — finality
 (ADR-0023), the Cedar strangler (ADR-0021), the workflow engine and its org-local spine (ADR-0018),
 branch scope (ADR-0003), local identity (ADR-0022) — this plan states **only the delta** and inherits the
 rest.
 
 **Drivers.** (1) The 141-table org-isolation floor must not be weakened or duplicated. (2)
-Canvas-editability and replay must be free, which means Tier N wherever possible. (3) Payroll is the
-first vertical and PII is where its obligations attach, while every Korea control reads HOLD.
+Canvas-editability and replay must be free, which means Tier N wherever possible — **and "replay" here means
+replay along the VALID-time axis only.** Knowledge-time correction is **not** free and is not built: the
+append-only trigger (`0155:112-160`) refuses in-place repair by design, so the correcting axis is a decision
+§5.9 records as a **stated deferral with its consequence named**, not a property this driver supplies. §2
+driver 2 carries the same qualification; an earlier revision of this ADR block carried the unqualified form.
+(3) Payroll is the first vertical and PII is where its obligations attach, while every Korea control reads
+HOLD.
 
 **Alternatives considered.** A second tenancy dimension `app.current_group` — invalidated by the
 requirement it serves, since a person can work across groups. `party` in the global-read tier —
-invalidated by confidentiality and by the tier's own "no tenant data" meaning. `party` in the tenant
-tier with a matching service — invalidated as the status quo, whose own backfill declines every
+invalidated by confidentiality and by the tier's own "no tenant data" meaning. **A party row per tenant**,
+deduplicated by a matching service — invalidated as the status quo, whose own backfill declines every
 ambiguous row (`0076:40-46`) and carries a confidence model
-(`0075_employee_identity_resolution.sql:6`, `:13`).
+(`0075_employee_identity_resolution.sql:6`, `:13`). Note the chosen option **also** puts the handle under
+ordinary tenant RLS; what separates them is **cardinality**, one row per human rather than one per tenant, not
+the tier (§3.2). And **`party` in the owner-only tier** — the shape earlier revisions of this block recorded —
+rejected because the row holds nothing a tenant reads, so the definer and the gate entry buy nothing (§4.1).
 
 **Why chosen.** It is the only option that meets the confidentiality requirement without a second
-tenancy dimension, and it reuses four shipped mechanisms rather than adding any: the tier
+tenancy dimension, and it reuses **five** shipped mechanisms rather than inventing any: the tier
 classifications the CI gate already enforces, the `SECURITY DEFINER` resolver pattern (`0060:99-126`),
-the `object_links` edge store (`0102:54`), and the re-validating-read bargain
-(`backend/crates/platform/authz-rest/src/store.rs:576-593`, `0205:69-74`). The cost, corrected: **two
-owner-only tables** — `party` **and** the group-scoped grant store — each carrying its own
-`owner_only_table_allowlist` classification and its own audited definer, so **one definer per owner-only
-store**, not one in total; two tenant tables; and two nullable columns on `gov_approvals`. Both owner-only
-tables are deferred out of Slice 0 (§4.1), so Slice 0 pays for **one** tenant table and the two columns.
+the `object_links` edge store (`0102:54`), the re-validating-read bargain
+(`backend/crates/platform/authz-rest/src/store.rs:576-593`, `0205:69-74`), and — added with the tier decision
+— **the platform sentinel org itself** (`0036:224`), which `0051:34` already uses as the home for rows that
+must outlive the tenants they came from. **The cost, corrected twice — first
+upward, then back down, and this is the settled figure:**
+
+- **ONE new owner-only table:** the `Group`-scoped grant store, carrying its own
+  `owner_only_table_allowlist` classification and its own audited definer. An earlier revision said **two**,
+  counting `party`; `party` is not owner-only (Decision 1 of 2), which removes one allowlist entry, one gate
+  classification and one definer from this figure.
+- **Three new tenant tables:** `party` (sentinel-homed), `party_org_visibility`, `work`. Plus
+  `worksite_registration`, `worksite_contract` and the `lot` pair at their widenings.
+- **Two nullable columns** on `gov_approvals`, and **two more deferred** on `audit_events`.
+- **Slice 0 pays for exactly one of those tables — `work` — plus the two `gov_approvals` columns and the
+  definer.** The owner-only store is deferred to W5/W8; `party` and `party_org_visibility` to W2.
 
 **Consequences.** A standing `SECURITY DEFINER` surface that must be re-proven on every change, with
-the parameter-trust weakness of its own precedent as the named failure mode. Cross-store pointers mean
-party-rooted queries are two hops in two stores and referential integrity to `party(id)` is
-app-enforced. `Feature` survives, so the "delete the matrix" work is smaller than the input estimated
+the parameter-trust weakness of its own precedent as the named failure mode — **one in Slice 0**
+(`effective_grants_for`, and it is the first place in this repo where `row_security = off` is load-bearing over
+tables that actually carry policies, §5.1), a **second** when the owner-only `Group`-grant store lands.
+Cross-store pointers mean party-rooted queries are two hops in two stores, and referential integrity to
+`party(id)` is **app-enforced by decision, not by omission**: constraint 1 forbids a cross-tenant identifier as
+a FOREIGN KEY, so `users.party_id`, `employees.party_id` and `gov_approvals.on_behalf_of_party_id` are all bare
+nullable `UUID`s and a later lane must not "complete" them (§0.4, §4.1). `Feature` survives, so the "delete the matrix" work is smaller than the input estimated
 and the ~500 call sites are never touched. Personal data never moves, so the HOLD controls do not gate
 slice 0 — and never putting attributes on `party` becomes a permanent invariant, not a staging posture.
 
