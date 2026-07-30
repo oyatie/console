@@ -21,8 +21,30 @@ disagrees, item by item, and **the archive's text wins**:
 - **지방소득세 10% is in the act.** Cleanest citation on the list.
 - Only **건강보험 / 장기요양 / 고용보험** follow the expected act→시행령 shape.
 
-Four numbers are set by **고시**, and no 고시 is in the archive or resolvable by name on the public portal.
-Those four are the whole reason this register needs a second source route.
+Four numbers are set by **고시**, and no 고시 is in the archive. Those four are the whole reason this
+register needs a second source route.
+
+## Correction, 2026-07-30 — the 고시 are reachable, and one is now resolved
+
+**What the first version of this document said, and got wrong:** *"no 고시 is … resolvable by name on the
+public portal"*, and in §6, that five candidate names *"returned the error page"* — presented as evidence
+about the documents. It was evidence about **my names**. Corrected, with the original claim left above so the
+change is visible:
+
+- The 고시 **are** indexed, under `target=admrul` — a different target from the `target=law` the earlier probes
+  assumed. Hit counts, from searches supplied to me rather than run here: 기준소득월액 → 5, 산재보험료율 → 2,
+  최저임금 → 6.
+- Given the **exact canonical 행정규칙명**, the public `law.go.kr/행정규칙/{name}` URL resolves
+  **credential-free**. Confirmed for the 국민연금 고시: title echoes back, 1,273 B against the 1,196 B error
+  control.
+- So the API key is needed for **discovery** — learning the exact name — **not for citation, and not for the
+  text.** Once the 행정규칙일련번호 is known, `law.go.kr/LSW/admRulInfoR.do?admRulSeq=<seq>` serves the full
+  고시 body with no credential at all. That is how item 2 below was read.
+
+**Q2 is resolved** (§2). **Q3 and Q4 remain open, for a narrower reason than before:** not that the documents
+are unreachable, but that this session had no `LAW_OC` value with which to run the admrul search that yields
+their exact names. Twelve candidate names for those two were probed against the portal and all twelve missed
+— which is now reported as a failure of name-guessing, not as evidence about the documents.
 
 ## 1. The fetch list
 
@@ -33,7 +55,7 @@ provision date is what a reviewer needs to diff against.
 | # | Statutory item | Authorising act | Instrument that sets the number | 공포번호 | 시행일자 | Official URL to cite | Annually re-published? | Confidence |
 |---|---|---|---|---|---|---|---|---|
 | 1 | **국민연금** employee share — 4.75% (2026) | 국민연금법 제88조제3항 | **The act itself.** 제88조제3항 reads 기준소득월액의 1천분의 65; for 2026 it is displaced by **부칙 <법률 제20903호, 2025.4.2> 제4조제1항제1호: 1만분의 475** | operative 부칙: **법률 제20903호** (공포 2025-04-02). File read: 법률 제21689호 | 부칙 제1조: **2026-01-01**. File: 2026-05-26 (in force) | <https://www.law.go.kr/법령/국민연금법> | **No — legislated schedule.** 2026 4.75%, 2027 5.00%, 2028 5.25%, 2029 5.50%, 2030 5.75%, 2031 6.00%, 2032 6.25%, then 제88조제3항's 6.5% | **HIGH** — quoted verbatim from a file whose 시행일자 is in force |
-| 2 | **국민연금 기준소득월액** cap and floor | 국민연금법 제3조제1항제5호 | Split: **국민연금법 시행령 제5조** sets the indexation formula and orders publication; the **amounts are a 보건복지부장관 고시** issued by 3월 31일 each year (제5조제3항), applying **해당 연도 7월 ~ 다음 연도 6월** (제5조제4항) | 시행령: **대통령령 제35909호** (2025-12-16). 고시: no 공포번호 | 시행령: 2025-12-16 (in force). Amounts: July→June window | Decree: <https://www.law.go.kr/법령/국민연금법시행령> · **고시: NOT ESTABLISHED** (see Q2) | **YES — annual 고시 by 3월 31일** | **HIGH** for the mechanism and the July–June window; the 고시 document itself **NOT LOCATED** |
+| 2 | **국민연금 기준소득월액** cap and floor | 국민연금법 제3조제1항제5호 | Split: **국민연금법 시행령 제5조** sets the indexation formula and orders publication; the amounts are set by **「국민연금 기준소득월액 하한액과 상한액」, 보건복지부고시 제2026-31호** (일부개정), issued by 3월 31일 each year per 제5조제3항, applying **해당 연도 7월 ~ 다음 연도 6월** per 제5조제4항 | 시행령: **대통령령 제35909호** (2025-12-16). 고시: **발령번호 제2026-31호**, 발령일자 **2026-02-02**, 소관 보건복지부(국민연금정책과) | 시행령: 2025-12-16 (in force). **고시 시행일자 2026-07-01** | Decree: <https://www.law.go.kr/법령/국민연금법시행령> · 고시: <https://www.law.go.kr/행정규칙/국민연금%20기준소득월액%20하한액과%20상한액> · body (no credential): `law.go.kr/LSW/admRulInfoR.do?admRulSeq=2100000274228` | **YES — annual 고시 by 3월 31일.** Its own 부칙 history is one amendment per year, 제2012-31호 through 제2026-31호 — 15 consecutive years | **HIGH** — 고시 named, fetched and read; amounts compared against the kernel below |
 | 3 | **건강보험** employee share — 3.595% | 국민건강보험법 제73조제1항 (1천분의 80 범위, 심의위원회 의결 + 대통령령) | **국민건강보험법 시행령 제44조제1항: 1만분의 719** (= 7.19%). The 50/50 split is in the act — **국민건강보험법 제76조제1항: 100분의 50씩** | 시행령: **대통령령 제36116호** (2026-02-19); 제44조 last amended **2025.12.23**. Act file read: 법률 제21687호 | 시행령: 2026-02-19 (in force). **Act file 시행일자 2027-01-01 — not yet in force** | <https://www.law.go.kr/법령/국민건강보험법시행령> · <https://www.law.go.kr/법령/국민건강보험법> | **Effectively yes.** 제44조's 개정 list is 2012·2013·2014·2015·2017·2018·2019·2020·2021·2022·2024·2025 — almost always December | **HIGH** for 7.19%. **MEDIUM** for the 50/50 split — read from a future-effective act file (see Q5) |
 | 4 | **장기요양보험** employee share — 0.4724% | 노인장기요양보험법 제9조제2항 (장기요양위원회 심의 + 대통령령) | **노인장기요양보험법 시행령 제4조: 100만분의 9,448** (= 0.9448%). Bearer split arrives **by 준용** — 노인장기요양보험법 제11조 준용s 국민건강보험법 제76조 | 시행령: **대통령령 제36325호** (2026-05-12); 제4조 last amended **2025.12.30**. Act file read: 법률 제21690호 | 시행령: 2026-05-12 (in force). **Act file 시행일자 2026-11-27 — not yet in force** | <https://www.law.go.kr/법령/노인장기요양보험법시행령> · <https://www.law.go.kr/법령/노인장기요양보험법> | **Effectively yes.** 제4조 amended 2008·2009·2017·2018·2019·2020·2021·2022·2023·2025 | **HIGH** for 0.9448%. **MEDIUM-LOW** for modelling it as 0.4724% × 보수월액 (see Q1); **MEDIUM** for the split — a 준용 chain across two future-effective files |
 | 5 | **고용보험 실업급여** employee share — 0.9% | 징수법 제14조제1항 (1000분의 30 범위, 고용보험위원회 심의 + 대통령령). Employee half: 징수법 제13조제2항 | **징수법 시행령 제12조제1항제2호: 1천분의 18** (= 1.8%); employee bears ½ | 시행령: **대통령령 제35935호** (2025-12-23); 제12조 last amended **2023.12.26**. Act file read: 법률 제21532호 | 시행령: 2025-12-23 (in force). **Act file 시행일자 2026-10-08 — not yet in force** | <https://www.law.go.kr/법령/고용보험및산업재해보상보험의보험료징수등에관한법률시행령> | **No fixed cadence.** 제12조 amended 2011·2013·2019·2021·2023 — irregular, so it expires on change, not on a calendar | **HIGH** for 1.8%. **MEDIUM** for the ½ share — 제13조제2항 carries `<개정 2026.3.17>` and sits in a future-effective file |
@@ -41,6 +63,31 @@ provision date is what a reviewer needs to diff against.
 | 7 | **최저임금** — 2026 guard data | 최저임금법 제10조 | **고용노동부장관 고시.** 제10조제1항 requires 고시; 제10조제2항 makes it effective **1 January of the following year**. 최저임금법 시행령 is 대통령령 제29469호 of **2018-12-31** and does not carry the amount | 고시 has no 공포번호. Act file read: 법률 제21534호 | Effect date fixed by 제10조제2항: **2026-01-01**. **Act file 시행일자 2026-12-08 — not yet in force** | **고시: NOT LOCATED** on law.go.kr by name (Q4). Act: <https://www.law.go.kr/법령/최저임금법> | **YES — every year** | **HIGH** on the instrument type and its effect date; the document **NOT LOCATED** |
 | 8 | **소득세** — 근로소득 간이세액표 | 소득세법 제129조제3항 (*"대통령령으로 정하는 근로소득 간이세액표"*) | **소득세법 시행령 별표 2**, per 시행령 제189조제1항. A **대통령령 별표 — not an NTS 고시.** Confirmed fetchable: 172,032 bytes, `application/hwp`, HTTP 200, no auth | **대통령령 제36343호** (공포 2026-05-22) | **2026-07-01** (in force) — note this is *after* 공포 (Q8) | Decree: <https://www.law.go.kr/법령/소득세법시행령> · 별표 2 HWP: <https://www.law.go.kr/LSW/flDownload.do?flSeq=164391981> · PDF: <https://www.law.go.kr/LSW/flDownload.do?flSeq=164391983> | **No annual notice.** It changes when the 별표 is amended | **HIGH** — delegation chain quoted verbatim end to end and the file downloads |
 | 9 | **지방소득세** — 근로소득 특별징수 | 지방세법 제103조의13제1항 | **The act itself** — *"원천징수하는 소득세… 의 100분의 10"*, withheld simultaneously with 소득세 | **법률 제21308호** (2025-12-31) | **2026-01-01** (in force) | <https://www.law.go.kr/법령/지방세법> | **No** | **HIGH** |
+
+### The 고시 text against the kernel constant — 기준소득월액
+
+The only item on this list whose 고시 I could read. Quoted in full because it is four lines, and stated as a
+factual comparison of two figures — not as a conclusion that either is legally correct.
+
+**보건복지부고시 제2026-31호** `[시행 2026. 7. 1.] [보건복지부고시 제2026-31호, 2026. 2. 2., 일부개정]`,
+보건복지부(국민연금정책과), retrieved 2026-07-30 from `admRulInfoR.do?admRulSeq=2100000274228`:
+
+> 1. 국민연금 기준소득월액 — 가. 하한액 : **410천원** / 나. 상한액 : **6,590천원**
+> 2. 적용기간 : **2026년도 7월분부터 2027년도 6월분까지**
+
+`backend/crates/payroll/domain/src/lib.rs:575-580`, second `MonthlyBaseLimit`:
+period `2026-07-01 .. 2027-07-01`, `minimum_won: 410_000`, `maximum_won: 6_590_000`.
+
+**They match.** 410천원 = 410,000원 and 6,590천원 = 6,590,000원; and the 고시's 적용기간 — July 2026 through
+June 2027 — is the same span as the kernel's half-open `2026-07-01 .. 2027-07-01`. The kernel's cited
+`authority`/`url` for this row is an NPS page; the **instrument** is this 고시, so the citation can now be
+upgraded even though the numbers need no change.
+
+**The kernel's other row is not verified.** `lib.rs:570-573` holds `2025-07-01 .. 2026-07-01` with
+400,000 / 6,370,000. The 부칙 history dates the governing instrument for that window to
+**보건복지부고시 제2025-24호**, but the portal serves only the consolidated current text, so **I did not read
+its amounts.** That row's figures remain unverified here — matching the spec is not the same as matching the
+고시. It needs the same treatment once 제2025-24호's text is in hand.
 
 ### What this changes about the spec's cited sources
 
@@ -71,26 +118,64 @@ describe a rate on 보수월액. It describes: take the 건강보험료액, **su
   **Question:** is the direct-rate model acceptable for the in-scope population, and if so under what
   documented assumption? *(I make no claim that either result is correct.)*
 
-**Q2 — which document is the 기준소득월액 상한액·하한액 고시?**
-국민연금법 시행령 제5조제3항 requires 보건복지부장관 to 고시 the amounts by 3월 31일 annually. I could not
-locate that 고시 as a document: absent from the archive, and not resolvable by name on the public portal.
-The spec quotes the 2025-07~2026-06 and 2026-07~2027-06 figures from an NPS page — which matches 제5조제4항's
-July–June window exactly. **Question:** what is the 고시's official title, number and citable URL, and is
+**Q2 — which document is the 기준소득월액 상한액·하한액 고시? — ANSWERED 2026-07-30.**
+*Original question, left as asked:* 국민연금법 시행령 제5조제3항 requires 보건복지부장관 to 고시 the amounts by
+3월 31일 annually. I could not locate that 고시 as a document: absent from the archive, and not resolvable by
+name on the public portal. **Question:** what is the 고시's official title, number and citable URL, and is
 the NPS page a reproduction of it or an independent publication?
 
-**Q3 — which document is the 사업종류별 산재보험료율 고시?**
-징수법 시행규칙 제12조 delegates the actual rates to a 고용노동부장관 고시. Not in the archive; not resolvable
-by name. **Question:** the 고시 title/number for 보험연도 2026, and separately — since 제13조 개별실적요율
-experience-rates per employer — **is any single 산재 rate ever correct for a tenant, or must it always be a
-per-employer input?** The spec already treats 산재 as "industry-tariff-required"; this question asks whether
-"industry" is even the right granularity.
+**What answered it:** a `target=admrul` search of the official API — the target the earlier probes did not try
+— returning 「**국민연금 기준소득월액 하한액과 상한액**」, 종류 **고시**, 소관부처 **보건복지부**, 발령일자
+**2026-02-02**, 발령번호 **제2026-31호**, 시행일자 **2026-07-01**, 행정규칙ID 2035959, 행정규칙일련번호
+2100000274228, 현행연혁구분 현행.
 
-**Q4 — which document is the 2026 최저임금 고시, and is the 최저임금위원회 table the instrument?**
+**Provenance, stated exactly because it matters.** That search row was **supplied to me, not run by me** — I
+had no `LAW_OC`. So I treated it as a lead and confirmed it against the portal directly. Independently
+verified, credential-free: the 행정규칙명 (echoed in the page `<title>`), the 행정규칙일련번호 (appears as
+`admRulSeq=2100000274228` in the portal's own frameset `src`), and — from the 고시 body's own header line —
+`[시행 2026. 7. 1.] [보건복지부고시 제2026-31호, 2026. 2. 2., 일부개정]`, which confirms 종류, 소관부처,
+발령번호, 발령일자 and 시행일자 from the document itself. **Only 행정규칙ID 2035959 and 현행연혁구분 rest on
+the supplied row alone.** Nothing load-bearing here depends on an unverified hand-off.
+
+Two things the answer settled beyond what was asked. **The July–June window is confirmed by the document
+itself** — 적용기간 2026년 7월분 ~ 2027년 6월분 — so it is no longer only an inference from 시행령 제5조제4항.
+And **발령 2026-02-02 is before the 3월 31일 deadline** 제5조제3항 sets, so the statutory cadence and the
+document's actual behaviour agree.
+
+**Still open, narrowly:** whether the NPS page the spec cites reproduces this 고시 or publishes
+independently. Nothing here establishes that, and the 고시 is the better citation either way.
+
+**Q3 — which document is the 사업종류별 산재보험료율 고시? — STILL OPEN, and now cheap to close.**
+징수법 시행규칙 제12조 delegates the actual rates to a 고용노동부장관 고시. **Question:** the 고시 title/number
+for 보험연도 2026, and separately — since 제13조 개별실적요율 experience-rates per employer — **is any single
+산재 rate ever correct for a tenant, or must it always be a per-employer input?** The spec already treats
+산재 as "industry-tariff-required"; this question asks whether "industry" is even the right granularity.
+
+**Narrowed 2026-07-30.** `target=admrul&query=산재보험료율` returns **2 hits**, so the document is indexed and
+the earlier "not resolvable by name" was wrong (see Correction). It is unresolved here only because this
+session had no `LAW_OC` value; six candidate names were probed against the public portal and all six missed.
+**What closes it:** the 행정규칙명 and 행정규칙일련번호 from either of those 2 hits. The 일련번호 alone is
+enough — the body then reads credential-free. The second half of the question (per-employer 개별실적요율) is
+unaffected and still needs a professional.
+
+**And this 고시 is very likely the fix for a live defect.** `backend/crates/payroll/domain/src/lib.rs:555-560`
+cites `https://total.comwel.or.kr/` as the 산재보험 source. **That URL answers HTTP 400** — verified
+2026-07-30, as does `https://www.comwel.or.kr/`. It is a dead evidence anchor in the kernel today, and the
+Q3 고시 is its correct replacement.
+
+**Q4 — which document is the 2026 최저임금 고시, and is the 최저임금위원회 table the instrument? — STILL OPEN,
+and now cheap to close.**
 최저임금법 제10조 makes the 고용노동부장관 고시 the operative instrument. The spec cites
 `minimumwage.go.kr`, which is the **Commission** — a 심의 body whose 최저임금안 goes to the Minister under
 제8조·제9조. **Question:** confirm the 고시 is the instrument and the Commission table is a summary, and
 supply the 고시's citable identifier. Also confirm whether 제10조제2항's proviso (the Minister may set a
 different effective date per business type) is inactive for 2026.
+
+**Narrowed 2026-07-30.** `target=admrul&query=최저임금` returns **6 hits** — indexed, so again the earlier
+"not resolvable by name" was wrong. Six candidate names missed on the public portal; the blocker is the
+missing `LAW_OC`, not the document. **What closes it:** the 행정규칙명 + 행정규칙일련번호 of whichever of the
+6 is the 2026 결정 고시. Its body will also settle the 제10조제2항 proviso question directly, and lets
+`minimum_wage_rates()` at `lib.rs:585-593` be compared figure-for-figure the way item 2 was.
 
 **Q5 — for a payroll pay date, which *version* of a law governs, and how do we know we read that one?**
 This is the most dangerous gap and it is procedural, not legal. **6 of the 27 archive files I sampled carry a
@@ -139,9 +224,27 @@ payroll specifically needs it for** — the two families above, named for the as
 account. They do not: `open.law.go.kr/LSO/openApi/guideList.do` is **publicly readable without any key**
 (fetched 2026-07-30, "총 191 건") and enumerates the endpoint families by name — including
 `행정규칙 목록 조회` / `행정규칙 본문 조회` and `현행법령(시행일) 목록 조회` / `현행법령(시행일) 본문 조회`.
-So the **endpoint names are now known**; the **base URL path and parameter set are still not**, and those are
-what remain behind the login. This narrows the gap, it does not close it — and it does not change that
-gate condition 1 needs the key.
+
+**And the base URL is no longer unknown either** — `scripts/korean-legal/fetch-statutory-source.mjs` was
+built and live-tested after the first version of this document, and its header records the two things that
+cost the most to learn: **the API host is `www.law.go.kr/DRF/`, not `open.law.go.kr`** (the latter is the
+registration portal and 404s on the DRF path), and **the API echoes the OC back inside every
+법령상세링크/행정규칙상세링크**, so raw responses contain the credential and must never be cached or committed.
+The 고시 layer is reached by the same `lawSearch.do` with **`target=admrul`** instead of `target=law`, whose
+row fields are 행정규칙명 / 행정규칙종류 / 발령일자 / 발령번호 / 시행일자 / 행정규칙ID / 소관부처명, with detail
+at `lawService.do?target=admrul&ID=<행정규칙일련번호>`.
+
+**Two operational facts worth having before the next attempt.** First, the `OC` is **bound to registered
+IP/domain**, not just to an account: a rejected call answers with *"사용자 정보 검증에 실패하였습니다 …
+서버장비의 IP주소 및 도메인주소를 등록해 주세요"*, so a key that works from one machine can refuse from
+another. Second — and this is why §6's "not found" results deserved less trust than they got — **that refusal
+arrives as HTTP 200 with no `resultCode`**, so it used to parse to zero rows and print
+`NO EXACT MATCH — do not guess; refine the name`. An API refusal read exactly like an absent document. Guarded
+now, in the same script, with the refusal surfaced as an error instead.
+
+**What needs no key at all**, confirmed 2026-07-30: citing a 고시 (`law.go.kr/행정규칙/{exact name}`) and
+**reading its full text** (`law.go.kr/LSW/admRulInfoR.do?admRulSeq=<행정규칙일련번호>`). Item 2 was read that
+way. So the key buys **discovery** — the exact name and 일련번호 — and nothing downstream of it.
 
 What does **not** need a key, confirmed by fetch today:
 - **별표/서식 file downloads** — `www.law.go.kr/LSW/flDownload.do?flSeq=…` served the 간이세액표 as a
@@ -161,7 +264,7 @@ returned **404**. This is a finding, not a failure: it tells us exactly which it
 
 | Not in the archive | Instrument | Where it must come from instead |
 |---|---|---|
-| **기준소득월액 상한액·하한액** (item 2) | 보건복지부장관 고시, annually by 3월 31일 | 보건복지부 / NPS as `official_regulator`, **or** law.go.kr 행정규칙 via the OC key. The NPS page in the spec is the practical starting point — but establish whether it reproduces the 고시 (Q2) |
+| **기준소득월액 상한액·하한액** (item 2) — **located 2026-07-30** | 보건복지부고시 제2026-31호, annually by 3월 31일 | **Resolved:** law.go.kr 행정규칙. Discovery needed the OC key (`target=admrul`); citation and body did not. Still open: whether the NPS page reproduces it (Q2) |
 | **사업종류별 산재보험료율** (item 6) | 고용노동부장관 고시, per 보험연도 | 고용노동부 / 근로복지공단 as `official_regulator`, **or** law.go.kr 행정규칙 via OC. The 시행규칙 별표 1 (already fetchable) gives only the calculation method, not the rates |
 | **2026 최저임금** (item 7) | 고용노동부장관 고시 | 고용노동부 as `official_regulator`. 최저임금위원회 is a 심의 body — treat its table as corroboration, not as the instrument (Q4) |
 | **The version in force on a pay date** (Q5) | n/a — a retrieval capability, not a document | OpenAPI 현행법령(시행일) endpoints. Nothing in the archive can supply this |
@@ -181,7 +284,7 @@ below is a scheduled invalidation of every golden case and professional-validati
 
 | When | What changes | `change_rule` consequence |
 |---|---|---|
-| **Every 3월 31일** | 기준소득월액 상한액·하한액 고시 (item 2) | New effective-date → dependent evidence invalid. Note the new amounts apply from **1 July**, so the 고시 and its effect are ~3 months apart |
+| **Every 3월 31일** | 기준소득월액 상한액·하한액 고시 (item 2) | New effective-date → dependent evidence invalid. **No longer an inference:** the 고시's own 부칙 history runs 제2012-31호, 제2013-47호 … 제2024-6호, 제2025-24호, 제2026-31호 — **15 consecutive annual amendments.** 제2026-31호 was 발령 2026-02-02 for effect 2026-07-01, so issue and effect sit ~5 months apart |
 | **Every 1 July** | The July→June cap/floor window turns over (item 2) | An effective-date change even in a year with no rate change |
 | **Every 1 January, 2027 through 2033** | 국민연금 employee share steps 5.00 → 5.25 → 5.50 → 5.75 → 6.00 → 6.25 → 6.5% (item 1) | Seven scheduled invalidations. **Already knowable and citable today** — the only expiry on this list that can be pre-empted rather than watched |
 | **Every 1 January** | 최저임금 고시 takes effect (item 7) | 최저임금법 제10조제2항. New source document each year |
@@ -220,20 +323,46 @@ file, not the decree article.
 
 **What I could not reach, and what that costs.**
 
-- **No `open.law.go.kr` OpenAPI access** (no `LAW_OC`). Cost: cannot reach 행정규칙 (the 고시 layer), and
-  cannot request the text in force on a specific date. These are exactly the two gaps in §2 and §3.
-- **No 고시 located for items 2, 6, 7.** Absent from the archive (5/5 probes 404) and not resolvable by name
-  through the `/행정규칙/{name}` URL pattern — all five candidate names returned the error page, identically
-  to the bogus control. **I did not guess a 고시 title, number or URL**, which is why those cells read
-  NOT ESTABLISHED rather than carrying a plausible-looking citation.
+- **No `LAW_OC` value in this session** — neither in the environment nor, correctly, in the tree. Cost: could
+  not run the `target=admrul` search that yields the exact 행정규칙명 for items 6 and 7. This is the *only*
+  reason Q3 and Q4 are still open; it is a missing credential, not a missing document.
+- **~~No 고시 located for items 2, 6, 7~~ — superseded, see Correction.** Item 2 is located, fetched and read.
+  Items 6 and 7 are indexed under `target=admrul` (2 and 6 hits) but unnamed here. The original claim —
+  *"not resolvable by name through the `/행정규칙/{name}` URL pattern"* — was wrong about the pattern: it
+  resolves fine given the exact canonical name, which item 2 demonstrates. What the failed probes actually
+  showed is that **the name cannot be guessed** — 5 candidates in the first pass and 12 in the second all
+  returned the error page. **I still did not guess a 고시 title, number or URL**, which is why items 6 and 7
+  read NOT ESTABLISHED rather than carrying something plausible.
+- **Added 2026-07-30 — how the one 고시 was read, credential-free and repeatable.** Given the exact
+  행정규칙명: `GET law.go.kr/행정규칙/{name}` → confirm via `<title>` → extract the frameset's
+  `src="/LSW//admRulInfoP.do?admRulSeq=…"`, whose `admRulSeq` **is** the 행정규칙일련번호 → then
+  `GET law.go.kr/LSW/admRulInfoR.do?admRulSeq=<seq>`, which returns the full body (13,983 B for item 2). The
+  outer `admRulInfoP.do` page is chrome only and contains none of the text; `admRulInfoR.do` is the one that
+  carries it. **So the 일련번호 alone unlocks any 고시 body without a key.**
+- **Could not reach the 고시 for the kernel's earlier 기준소득월액 row.** The portal serves consolidated
+  current text, so 제2025-24호's amounts (kernel `400_000` / `6_370_000`) are **unverified** — only its
+  existence and number are established, from the 부칙 history.
+- **Did not extend the fetch script to `admrul`.** Deliberate: with no key I could not make a single live
+  call, and this repo's own rule — recorded in that script's header and in
+  `docs/ideas/korean-legal-sources.md` — is that a fetcher gets built and verified against a real call in the
+  same pass. Shipping an untested admrul path would be the exact defect that rule exists to prevent. What I
+  did add is a guard for a defect I *could* reproduce: a refused OC returned HTTP 200 with no `resultCode`
+  and printed `NO EXACT MATCH — do not guess; refine the name`, making an API refusal indistinguishable from
+  an absent document. Verified before and after.
 - **Did not open the 별표 files.** I confirmed the 간이세액표 link serves 172 KB of `application/hwp` with
   HTTP 200; I did not parse the HWP, so **nothing in this register asserts anything about the table's
   contents** — only about where it lives and that it is reachable.
-- **Did not verify law.go.kr against the archive.** Every 공포번호 and 시행일자 here comes from the archive's
-  frontmatter, which is derived from the official OpenAPI but is a third-party copy. Each one must be
-  re-verified against law.go.kr before it becomes evidence. The frame-loaded page body (§3) is why I could
-  not do that with curl today.
+- **Still have not verified law.go.kr against the archive, item by item.** Every 공포번호 and 시행일자 in §1
+  comes from the archive's frontmatter — derived from the official OpenAPI, but a third-party copy. Each must
+  be re-verified against law.go.kr before it becomes evidence. The earlier version blamed the frame-loaded
+  page body; that excuse is gone, since the frame's inner `lsInfoP.do` URL is extractable the same way
+  `admRulInfoR.do` was. It simply was not done for all 27, and remains outstanding.
 - **Six sampled files are future-effective** (Q5). Items 3, 4 and 5 inherit MEDIUM confidence from this.
+  **Corroborated 2026-07-30 from the portal's own choice of version:** for 최저임금법 the public page loads
+  `lsInfoP.do?lsiSeq=218303&efYd=20200526` — the text **in force** — while the archive's `main` file for the
+  same law is 법률 제21534호 with 시행일자 **2026-12-08**. The two disagree about what "the current 최저임금법"
+  means, and for a pay date the portal's answer is the relevant one. That is Q5 restated as an observation
+  rather than a worry.
 - **No commit hash anywhere in this document.** The archive's README warns force-push may rewrite every
   hash; anchoring is on 공포번호 + 시행일자 + the law.go.kr URL, per `docs/ideas/korean-legal-sources.md`.
 

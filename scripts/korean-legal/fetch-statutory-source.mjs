@@ -96,6 +96,16 @@ async function resolve(name) {
     throw new Error(`API resultCode ${code}: ${textOf(xml, 'resultMsg')}`);
   }
 
+  // A rejected OC answers HTTP 200 with <Response><result>사용자 정보 검증에 실패하였습니다.</result>
+  // and no resultCode — so without this guard it parses to zero rows and reports
+  // "NO EXACT MATCH", which reads as "the document does not exist". That false negative is
+  // how docs/ideas/payroll-statutory-sources.md came to say four 고시 were unresolvable.
+  // An API refusal must never look like an absent document.
+  if (!xml.includes('<law ')) {
+    const rejection = textOf(xml, 'result');
+    if (rejection) throw new Error(`API refused the call: ${rejection} ${textOf(xml, 'msg')}`.trim());
+  }
+
   const blocks = [...xml.matchAll(/<law id="\d+">([\s\S]*?)<\/law>/g)].map((m) => m[1]);
   const rows = blocks.map((b) => ({
     name: textOf(b, '법령명한글'),
