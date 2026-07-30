@@ -400,7 +400,7 @@ applicable. All three of the following landed atomically with acceptance:
    - `:51-53` — "The target authenticated console is the in-repository
      application rooted at `web/src/console/` and mounted at `/console/*`."
      This names a path CI asserts is absent
-     (`scripts/console/route-inventory.test.mjs:36`). It must be edited to
+     (`scripts/console/route-inventory.test.mjs:36`). It was edited to
      record that the path and mount are amended by ADR-0030 and that the
      console is a Leptos workspace crate family.
    - `:70-76` — the prohibition on inheriting visuals from
@@ -410,9 +410,9 @@ applicable. All three of the following landed atomically with acceptance:
      ("must not be copied into a console-private client, auth system, policy
      engine, or backend contract").
    - `:77-82` — the `ConsoleShell`/`AppShell` naming-ambiguity clause, whose
-     three named files no longer exist. It must be edited to record that the
+     three named files no longer exist. It was edited to record that the
      two-shell composition is amended by ADR-0030.
-   - `:59-68` — the spine-boundary table. It must be edited to record that
+   - `:59-68` — the spine-boundary table. It was edited to record that
      the enumeration is amended by ADR-0030 and that the underlying principle
      (the console owns its surface and reuses the platform rather than forking
      it) is retained.
