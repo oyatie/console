@@ -6,11 +6,21 @@
 > This document was authored in one session by one hand. Its successor's §0 finds **nine further
 > errors** in it beyond the four it retracts itself, one marked BLOCKING:
 >
-> - **§0.1 — a live internal contradiction.** `:89-92` below retracts group-scoped people ("the group
->   is not high enough"), then `:545-546` recommends exactly that, and `:575-579` sizes
->   `app.current_group` across 141 RLS tables as "the largest single engineering cost". That cost is
->   incurred **only by the retracted option**; the conclusion this document actually reaches — party at
->   the platform, tenant owns the edge (`:83-87`) — needs **no second tenancy dimension at all**.
+> - **§0.1 — a live internal contradiction.** Under *"Where employees belong"* this document retracts
+>   group-scoped people — **"The group is not high enough."** Then under *"Recommended Direction"* it
+>   recommends exactly that — **"People are group-scoped. Per the owner's choice, the group is the
+>   tenancy boundary for people"** — and under *"The two hard problems"* sizes `app.current_group`
+>   across 141 RLS tables as **"the largest single engineering cost in the chosen model."** That cost is
+>   incurred **only by the retracted option**. The conclusion this document actually reaches — party at
+>   the platform, tenant owns the edge — needs **no second tenancy dimension at all**, which experiment
+>   X4 later confirmed by execution (`docs/ideas/experiment-x4.md`).
+>
+> **Citation warning, and it is this document's second lesson.** Adding this header shifted every body
+> line by ~30, so the successor's `§0.1` citations into this file pointed at the wrong passages while
+> remaining textually plausible — the claims were true, the anchors were not. The first attempt to fix
+> that used corrected line numbers and **invalidated itself in the same edit**, because the correction
+> added lines above the lines it cited. Line numbers are not stable anchors within a file you are
+> editing, and a superseding header is such an edit. Quote the sentence, or name the heading.
 > - **§0.2** — `Feature` cannot be deleted; it is Cedar's action vocabulary (`cedar_pbac/engine.rs:430`)
 >   with ~500 call sites. Only `Role` and `matrix_row` are scaffolding.
 > - **§0.3** — Cedar's `parents` hierarchy is **unimplemented** here (`engine.rs:392`, `:425`, `:449`),
