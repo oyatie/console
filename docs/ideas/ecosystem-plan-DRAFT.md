@@ -60,34 +60,34 @@ The largest line item in the input's cost model is an artifact of an internal co
 
 ### 0.2 `Feature` cannot be deleted — it is Cedar's action vocabulary
 
-`cedar_pbac/engine.rs:430` builds the Cedar action UID from `request.action.feature().as_str()`.
+`cedar_pbac/engine.rs` `let action_uid = entity_uid("Action", request.action.feature().as_str())` builds the Cedar action UID.
 Delete the enum and Cedar has no action names. The brief and the input both treat
-"`Feature` × 6-role matrix" as one deletable unit (`backend/crates/platform/authz/src/lib.rs:109` and `:573`);
+"`Feature` × 6-role matrix" as one deletable unit (`backend/crates/platform/authz/src/lib.rs` `pub enum Feature` and `authz/src/lib.rs` `const fn matrix_row`);
 they are two things:
 
 | Thing | Location | Verdict |
 |---|---|---|
-| `pub enum Feature` — capability *name*, ~500 call sites across 25+ crates | `authz/src/lib.rs:109` | **KEEP.** Cedar's action id; already mirrored as data in `feature_catalog` (`0065:11-14`) |
-| `pub enum Role` — the 6 demo roles | `authz/src/lib.rs:35` | **DELETE** |
-| `const fn matrix_row(self) -> [PermissionLevel; 6]` — the *decision* | `authz/src/lib.rs:573` | **DELETE** |
+| `pub enum Feature` — capability *name*, ~500 call sites across 25+ crates | `authz/src/lib.rs` `pub enum Feature` | **KEEP.** Cedar's action id; already mirrored as data in `feature_catalog` (`0065` `CREATE TABLE feature_catalog`) |
+| `pub enum Role` — the 6 demo roles | `authz/src/lib.rs` `pub enum Role` | **DELETE** |
+| `const fn matrix_row(self) -> [PermissionLevel; 6]` — the *decision* | `authz/src/lib.rs` `const fn matrix_row` | **DELETE** |
 
 Only the decision is scaffolding. This shrinks problem C rather than deferring it (§5.3).
 
 ### 0.3 Cedar `parents` hierarchy is unimplemented, not merely unused
 
-Both entities ship with an empty parent set: `backend/crates/platform/authz/src/cedar_pbac/engine.rs:392`
-and `:425` pass `HashSet::new()`, and `backend/crates/platform/authz/src/cedar_pbac/engine.rs:449` hands `Entities::from_entities` exactly two entities,
+Both entities ship with an empty parent set: `cedar_pbac/engine.rs` `Entity::new(subject_uid.clone(), subject_attrs, HashSet::new())`
+and `cedar_pbac/engine.rs` `Entity::new(resource_uid.clone(), resource_attrs, HashSet::new())` pass an empty one too, and `cedar_pbac/engine.rs` `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))` hands it exactly two entities,
 validated against `bundle.schema`. The input's *"Cedar expresses this natively through entity `parents`, so the
 corporate graph **becomes** the Cedar hierarchy"* (`docs/ideas/authority-and-approval-model.md`, quoted rather
 than line-cited — that file's anchors have moved twice) is a property of **Cedar the library**, not of this
-engine. It costs a change at `:392` / `:425` / `:449` plus a schema declaration. The `engine.rs` line numbers
-stay as line numbers: that file is unmodified source.
+engine. It costs a change at both `cedar_pbac/engine.rs` `Entity::new` sites and at `cedar_pbac/engine.rs` `Entities::from_entities`, plus a schema
+declaration. Anchored by symbol rather than by line: a symbol survives the edits that move lines.
 
 ### 0.4 `users` is not keyed `(id, org_id)` — and the keystone is cheaper as a result
 
-`0002_create_users.sql:8` is `id UUID PRIMARY KEY`. `0034_enforce_org_id_rollout.sql:122` **adds**
-`users_id_org_key UNIQUE (id, org_id)` so children can pin the tenant via a composite FK; it does not
-replace the PK. `employees` is the same shape: `0063:3` PK on `id`, `0076:10` adds the composite
+`0002_create_users.sql` `id UUID PRIMARY KEY` is the whole `users` key. The composite is **added** later by
+`0034_enforce_org_id_rollout.sql` `ADD CONSTRAINT users_id_org_key UNIQUE (id, org_id)`, so children can pin the tenant via a composite FK; it does not
+replace the PK. `employees` is the same shape: `0063` `id UUID PRIMARY KEY` is the PK, and `0076` `ADD CONSTRAINT employees_id_org_key UNIQUE (id, org_id)` adds the composite
 UNIQUE.
 
 The input's *consequence* stands (a user row carries one `org_id`, so one human at two companies is
@@ -97,13 +97,13 @@ two rows). Its *mechanism* is wrong, and the correction is load-bearing: **`user
 non-foreclosure constraint 1 forbids a cross-tenant identifier as a FOREIGN KEY, so both are bare nullable
 `UUID`s, app-validated — §4.1. An earlier draft of this section said "plain single-column FKs", which
 contradicted that constraint; the single-column half is the part that corrects the input.)
-Relatedly, `group_role_grants.user_id UUID NOT NULL REFERENCES users(id)` (`0060:43`) is ordinary
+Relatedly, `group_role_grants` (`0060` `user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE`) is ordinary
 DDL permitted by the PK — not a cross-tenant carve-out earned by special design.
 
 ### 0.5 `org_unit` is not production schema
 
 `parent_org_unit_id` appears only in a conformance **test fixture**
-(`backend/crates/ontology/rest/tests/company_conformance/fixtures/org_unit.rs:146`). The input's
+(`backend/crates/ontology/rest/tests/company_conformance/fixtures/org_unit.rs` `key: "parent_org_unit_id"`). The input's
 *"…so it is load-bearing while under-specified"* (`docs/ideas/authority-and-approval-model.md`, under
 **`## Permanent 부서 and temporary 사업장 are different kinds`**) describes a fixture. Org structure is greenfield in production; `home_branch` in `0166` is a separate real thing.
 
@@ -112,22 +112,22 @@ DDL permitted by the PK — not a cross-tenant carve-out earned by special desig
 The input concludes *"So 통지 → 인지 is built. What is missing is narrower than it first appears"*
 (`authority-and-approval-model.md`, under **`## 전자결재 — the line is resolved by competence, not by rank`**)
 — naming only the missing content and closure. It missed a third, structural gap:
-`notice_receipts` has `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)`
-(`0162:50`), so a recipient **must be a user of that org**. That is the same foreign-key blocker the
-input correctly identifies in `gov_approvals` (`0153:79` — the *approver* FK; `:78` is the `requested_by`
-twin, and earlier drafts of this plan cited `:78` for both) and rejects the mechanism for. A group-level
+`notice_receipts` pins every recipient to the notice's own org:
+`0162` `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)`, so a recipient **must be a user of that org**. That is the same foreign-key blocker the
+input correctly identifies in `gov_approvals` (`0153` `FOREIGN KEY (approver_id, org_id)` — the *approver* FK; its `requested_by`
+twin is `0153` `FOREIGN KEY (requested_by, org_id)`, and two earlier passes conflated the two) and rejects the mechanism for. A group-level
 line member in another company cannot be notified. Resolved in §5.2 gap 3.
 
 ### 0.7 Two object registries exist, and one warned against the other
 
 Two registries hold object kinds, and both are executable:
 
-- `object_types` (`0102:19`) — global, non-RLS, `kind TEXT PRIMARY KEY`, seeding `person` (`:32`) and
-  `org_unit` (`:33`). Tier G.
-- `ont_object_types` (`0152:18`) — per-org, versioned, `UNIQUE (org_id, stable_key, schema_version)`
-  (`:33`). Tier T.
+- `object_types` (`0102` `CREATE TABLE object_types`) — global, non-RLS, `kind TEXT PRIMARY KEY`, seeding `person` (`0102` `('person', 'Employee / person record')`) and
+  `org_unit` (`0102` `('org_unit', 'Organizational unit (region/branch/worksite)')`). Tier G.
+- `ont_object_types` (`0152` `CREATE TABLE ont_object_types`) — per-org, versioned, keyed
+  `0152` `UNIQUE (org_id, stable_key, schema_version)`. Tier T.
 
-`0115_seed_identity_object_kinds.sql:13` executes `INSERT INTO object_types` — the global one — while
+`0115_seed_identity_object_kinds.sql` `INSERT INTO object_types (kind, description) VALUES` writes to the global one, while
 that migration's own header warns against *"a second registry."* Not this plan's defect to fix, but
 every new entity must state which registry names it, or it will be seeded into the wrong one. This
 plan's answer: `work` gets an `object_types` row (it is an `object_links` endpoint kind, §4.3); all
@@ -138,16 +138,16 @@ Tier N types in §4.1 are `ont_object_types` rows only.
 I was told `BackingKind::{Projected, Instance}` means "a projection concept exists rather than needing
 invention." **Partly true, and the useful half is missing.**
 
-- `list_projected_rows_tx` (`ontology/adapter-postgres/src/instances.rs:1522`) is a **live
+- `list_projected_rows_tx` (`ontology/adapter-postgres/src/instances.rs` `async fn list_projected_rows_tx`) is a **live
   read-through** — it SELECTs the backing table per call and synthesises `InstanceState`s. Not
   materialized, no cache, and `version` is always 1 with empty fixity hashes.
-- `ont_analytics` (`0152:107-119`) stores `key`, `title`, `formula JSONB`, `result_type JSONB`. It is a
+- `ont_analytics` (`0152` `CREATE TABLE ont_analytics`) stores `key`, `title`, `formula JSONB`, `result_type JSONB`. It is a
   **formula registry with nowhere to put results.**
 - **Zero `CREATE MATERIALIZED VIEW` in all 205 `.sql` migrations in the main checkout as of `8e76dffb4`.**
   Verified repo-wide by `ls backend/crates/platform/db/migrations/*.sql | wc -l` = **205**, highest
   `0205_ont_policy_api_attach_writer.sql`; the 206th directory entry is `BUCK`, which is why three places in
   this plan said 206. Reservations start at **0207** (0205 landed, 0206 is in flight in lane-1). Restating a
-  derived fact in prose is what `docs/ideas/fanout-plan-DRAFT.md:243` warns against, using the migration count
+  derived fact in prose is what `docs/ideas/fanout-plan-DRAFT.md` `Restating derived facts in prose across multiple documents` warns against, using the migration count
   as its own worked example — *"simultaneously wrong in three planning docs"*. The claim itself is unchanged;
   only the count moves.
 
@@ -157,34 +157,34 @@ it. Resolved in §5.7 by putting the two questions in two stores rather than bui
 ### 0.9 Realtime is shipped, and the transport forces the answer
 
 `backend/crates/platform/realtime/src/lib.rs` already implements Postgres `LISTEN/NOTIFY` →
-local `axum` WebSocket hub: `WebSocketUpgrade` (`:11`), `PostgresMessageNotifier` (`:120`),
-`PostgresNotificationNotifier` (`:273`), `pg_notify` calls (`:145`, `:174`), three channel consts
-(`:37-39`), and the `RealtimeEvent` enum (`:318-337`).
+local `axum` WebSocket hub: `realtime/src/lib.rs` `WebSocketUpgrade`, `realtime/src/lib.rs` `pub struct PostgresMessageNotifier`,
+`realtime/src/lib.rs` `pub struct PostgresNotificationNotifier`, two `realtime/src/lib.rs` `SELECT pg_notify($1, $2)` calls, three channel consts
+(`realtime/src/lib.rs` `MESSAGE_POSTED_CHANNEL`, `realtime/src/lib.rs` `MESSAGE_ACK_CHANNEL`, `realtime/src/lib.rs` `NOTIFICATION_CREATED_CHANNEL`), and the `RealtimeEvent` enum (`realtime/src/lib.rs` `pub enum RealtimeEvent`).
 
-The decisive line is `pub const NOTIFY_PAYLOAD_LIMIT_BYTES: usize = 8000;` (`:40`). **A computed fold
+The decisive line is `realtime/src/lib.rs` `pub const NOTIFY_PAYLOAD_LIMIT_BYTES: usize = 8000;`. **A computed fold
 cannot be pushed over this transport.** So "materialise or compute on demand" is not an open design
 choice at the notification layer — the push carries ids and the client re-reads. Resolved in §5.6.
 
 ### 0.10 Scoped channels are cheaper than stated — the kinds already exist
 
-`messenger_threads.kind CHECK (kind IN ('work_order','team','dm','group'))` (`0012:9`) is already the
-four channel kinds the game lens asks for, and `0012:16-19` + the partial unique index `0012:22-24`
+`0012` `kind TEXT NOT NULL CHECK (kind IN ('work_order','team','dm','group'))` on `messenger_threads` is already the
+four channel kinds the game lens asks for, and `0012` `(kind = 'work_order' AND work_order_id IS NOT NULL)` + the partial unique index `0012` `CREATE UNIQUE INDEX idx_messenger_threads_work_order`
 already give **exactly one channel per work order** — so "the conversation follows the work" is
 structurally present, not new.
 
-The claim that membership is hand-maintained is **TRUE**: `messenger_thread_members` (`0012:30-36`) is
+The claim that membership is hand-maintained is **TRUE**: `messenger_thread_members` (`0012` `CREATE TABLE messenger_thread_members`) is
 `(thread_id, user_id, role, joined_at)` with `PRIMARY KEY (thread_id, user_id)` and nothing deriving
 it. Cost and resolution in §4.8.
 
 ### 0.11 `policy_assignment_preview_receipts` is a ceremony, not a simulator — and `policy_versions` is HALF the cache key
 
-Confirmed: `0065:159-172` stores `actor_id`, `user_id`, `current_branch_ids`, `current_role_ids`,
+Confirmed: `0065` `CREATE TABLE policy_assignment_preview_receipts` stores `actor_id`, `user_id`, `current_branch_ids`, `current_role_ids`,
 `role_ids` (proposed), `policy_version`, `expires_at`, `consumed_at`. It records the **inputs** of a
 proposed change with expiry and single consumption — a real preview→receipt→consume ceremony, but it
 never stores a computed outcome. So "simulate a role or 전결규정 change before committing" is **new
 work with a cost** (§4.8), not a free reuse.
 
-The more valuable find sits four lines below: **`policy_versions`** (`0065:177-181`), a per-org
+The more valuable find sits four lines below: **`policy_versions`** (`0065` `CREATE TABLE policy_versions`), a per-org
 monotonic version bumped on every role write, and already a required cache-key part in the coexistence map. It
 is **half** of the cache-invalidation key the realtime question needs — it is `PRIMARY KEY (org_id)`, so on its
 own it invalidates every client in the tenant on any change, and it is not bumped by assignment writes at all.
@@ -192,19 +192,19 @@ The other half is `authz_subject_version`; §5.6 keys on both.
 
 ### 0.12 CONFIRMED: on every *reachable* path, a link type alone produces no edge — every relationship must ride a property
 
-Verified by reading `sync_property_links_tx` (`ontology/adapter-postgres/src/instances.rs:874`) in full.
+Verified by reading `sync_property_links_tx` (`ontology/adapter-postgres/src/instances.rs` `async fn sync_property_links_tx`) in full.
 The claim is **true**, and it constrains every relationship in §4.3.
 
-- `:888-891` — the loop iterates **properties**, and
+- `instances.rs` `for prop in props` — the loop iterates **properties**, and
   `let Some(link) = prop.config.get("link") else { continue; };` skips any property without
   `config.link`.
-- `:895-904` — `stable_key` and `to_type` come from **the property's `config.link`**.
-- `:906-919` — the link type is resolved by `SELECT id FROM ont_link_types WHERE object_type_id = $1 AND
-  stable_key = $2`. It selects `id` only. **`to_object_type_id` is never read.**
-- `:954-981` — the target-type check compares the referent's actual `ont_object_types.stable_key`
-  against `to_type` **from the property config** (`:973-979`), not against the link type's declared
+- `instances.rs` `link.get("stable_key").and_then(serde_json::Value::as_str)` — `stable_key` and `to_type` come from **the property's `config.link`**.
+- `instances.rs` `SELECT id FROM ont_link_types WHERE object_type_id = $1 AND stable_key = $2` resolves the link type.
+  It selects `id` only. **`to_object_type_id` is never read.**
+- `instances.rs` `JOIN ont_object_types t ON t.id = i.object_type_id` — the target-type check compares the referent's actual `ont_object_types.stable_key`
+  against `to_type` **from the property config** (`instances.rs` `Some(actual) if actual != to_type`), not against the link type's declared
   target.
-- `:986-988` — `if link_type_ids.is_empty()`, the type "touches `ont_links` at all", and the code notes
+- `instances.rs` `if link_type_ids.is_empty()` — the type "touches `ont_links` at all", and the code notes
   every built-in catalog type is in that branch.
 
 **So a relationship declared only as a link type — even with `to_object_type_id` correctly set —

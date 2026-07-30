@@ -584,3 +584,47 @@ the document's own failure mode reappearing in the tool:
 citation and on any *growth* in the unverifiable count, so the number can only go down. Wave 1 is the rewrite:
 each `:N` becomes a symbol or a quoted fragment at least as specific as the line number it replaces, and the
 pin drops to match.
+
+---
+
+## Wave 1 — §0 corrections (`DRAFT:63`-`DRAFT:207`)
+
+`UNVERIFIABLE 566 → 513` · `RESOLVES 2 → 54` · `BROKEN 0` · total 719 → 717
+
+Citation form used throughout the sweep: `` `path` `fragment` `` — a path span immediately followed by a
+symbol or a quoted fragment of the line, which is what `verify-doc-citations.mjs` can confirm by grep. Where
+the prose already quoted the target text and a `(`path:N`)` followed it, the two are merged into one anchored
+citation rather than left duplicated.
+
+### Factually wrong, corrected to what the file says
+
+- **`0153:79` was not the approver FK** (`DRAFT:117`). Line 79 of `0153_create_governance.sql` is `);`.
+  `FOREIGN KEY (approver_id, org_id)` is line 78 and `FOREIGN KEY (requested_by, org_id)` is line 77 — so the
+  parenthetical was wrong twice over: it named `:79` for the approver FK and `:78` for the `requested_by`
+  twin, when `:78` *is* the approver FK. The previous pass had changed three correct `:78` cites to `:79` to
+  agree with this one wrong one. Both now cite their own FOREIGN KEY text and the file decides.
+- **`0102:19` was a comment, not the table** (`DRAFT:125`). Line 19 is
+  `-- Canonical snake_case kind slug; mirrors the existing object_type CHECK`. `CREATE TABLE object_types` is
+  line 18 and `kind TEXT PRIMARY KEY` — the text the sentence claims is at `:19` — is line 21.
+- **`0152:33` was a comment, not the UNIQUE constraint** (`DRAFT:128`). Line 33 is
+  `-- projected types must name their backing table + PK; instance types must not.`;
+  `UNIQUE (org_id, stable_key, schema_version)` is line 32. Off by one.
+- **`0152:18` named a column, not the table** (`DRAFT:127`). Line 18 is `id UUID PRIMARY KEY DEFAULT
+  gen_random_uuid(),`; `CREATE TABLE ont_object_types` is line 17.
+- **`:392` / `:425` / `:449` at `DRAFT:83` were bound to the wrong file.** They intend
+  `cedar_pbac/engine.rs`, but the nearest preceding resolvable citation is
+  `docs/ideas/authority-and-approval-model.md`, so a reader following the document's own convention lands on
+  approval prose (`:392` there is *"D must be notified even though D never saw the matter"*). The bare `:N`
+  form binds to whatever precedes it, not to what the sentence means.
+
+### Prose about citations that the sweep made false, and had to move with it
+
+- `DRAFT:84` said *"The `engine.rs` line numbers stay as line numbers: that file is unmodified source."* That
+  was the justification for the two-form policy; with the line numbers gone it now reads: anchored by symbol
+  rather than by line. **The document header still describes the old two-form policy and is corrected in the
+  last wave, not this one** — it is one edit and belongs with the final count.
+- `DRAFT:118` carried *"earlier drafts of this plan cited `:78` for both"*, a note that only means anything
+  while the citations are line numbers. Replaced by the two distinct FOREIGN KEY fragments plus the surviving
+  fact that two earlier passes conflated them.
+
+No decision, section number, or claim about the system changed in this wave.
