@@ -886,3 +886,57 @@ pairs; only this one hid citations, and it is now one fragment per line.
 file, so no tool could bind them and only a human who already knew the repo could follow them. Each is now
 `ci.yml` plus the job key itself — which is what the line number was standing in for. The document's own
 instruction two sentences later, *"Cite the job by name"*, is now what the citations do.
+
+## Wave 12 — §8 tail through §10, plus the header and the pin (`DRAFT:2684`-`DRAFT:2952`)
+
+`UNVERIFIABLE 49 → 0` · `RESOLVES 498 → 548` · `BROKEN 0` · total 695 · **SUSPECT 0**
+
+```
+$ npm run check:doc-citations
+  total citations : 695
+  RESOLVES        : 548
+  UNVERIFIABLE    : 0     (max allowed 0)
+  BROKEN          : 0
+  FILE-ONLY       : 126
+  MISSING         : 21    (non-fatal)
+EXIT=0
+```
+
+### Factually wrong, corrected to what the file says
+
+- **`ontology/rest/src/lib.rs:201-202` for the two route consts, a fifth time** (`DRAFT:2944`) — the same
+  defect as `DRAFT:258`, `:259`, `:580`, `:581`. They are **210** and **211**.
+- **`0156:107` for the `work_orders` FK, a third time** (`DRAFT:2950`) — it is **108**.
+- **`ontology/rest/src/lib.rs:1786-1790` is `fn digest_hex`** (`DRAFT:2720`), cited as the evidence that
+  `command_pool()` is `None` unless `ONTOLOGY_COMMAND_DATABASE_URL` is set. It is a hex-formatting helper in the
+  wrong crate. The real evidence is `ontology/adapter-postgres/src/lib.rs` `fn command_pool` (**364**, with
+  `command_pool: None` at **339**); the companion cite `backend/app/src/lib.rs:2925-2930` was correct.
+- **The second baseline SUSPECT is resolved** (`DRAFT:2684`). `:89` and `:268-269` both intended
+  `docs/program/LANE-PROTOCOL.md` — the file the sentence is *about* — but the nearest preceding resolvable
+  citation was `console-program-ledger.md`, so `:89` landed on a `moduleScreens.ts` row and `:268-269` past the
+  end of migration `0204`. Both numbers were right about LANE-PROTOCOL and bound to the wrong file, which is
+  precisely the failure the bare `:N` form guarantees.
+
+### One line-number citation the checker could not see, inside a fenced block
+
+`DRAFT:2624` carried `` `.github/workflows/ci.yml:239` `` **inside a fenced code block**, which the verifier
+skips by design (fences hold sample code, not citations). It was correct, and it sat one line above the
+document's own sentence *"Target names rather than line numbers, because the line numbers in that chain have
+already drifted once."* It now names the workflow step, per that rule.
+
+### The header and the pin
+
+- The header described **two citation forms**, one of them `path:line` "into unmodified source — re-verified".
+  That justification is what the sweep disproves: 566 of 568 content-bearing citations were line numbers, and
+  every defect two consecutive passes introduced was an off-by-one in one of them. It now describes one form
+  and points at the gate.
+- `npm run check:doc-citations` drops `--max-unverifiable=566`. The default is **0**, so any line-number
+  citation added to this document from now on fails CI, and the control fixture still exits 1 on its four
+  planted BROKEN citations.
+
+### No stable anchor found
+
+One case, recorded rather than papered over: `DRAFT:1834` cites the depreciation-method CHECK, which exists
+**twice, byte-identically**, in `0015_create_financial.sql` (equipment config and purchase request). No fragment
+can distinguish the two occurrences, so the citation names the text once and the two tables in prose. Every
+other citation in the document resolves to something a reader can grep and land on.

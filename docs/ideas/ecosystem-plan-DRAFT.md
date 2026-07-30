@@ -2,13 +2,15 @@
 
 > Status: PENDING APPROVAL
 > RALPLAN-DR planner pass, 2026-07-29. Deliberate mode (auth/security + migrations + PII).
-> Every "what exists" claim cites **executable** code or DDL. **Two citation forms, deliberately:**
-> `path:line` into **unmodified source** (migrations, Rust, specs this revision does not touch) — re-verified;
-> and **quoted sentence plus heading name**, no line number, into any file this session also edits — the three
-> amended ADRs, `docs/ideas/authority-and-approval-model.md`, `docs/program/LANE-PROTOCOL.md`, and this plan
-> itself. The second form exists because adding a header to the input shifted every body line by ~30 and the
-> first repair invalidated itself in the same edit. A mechanical citation audit (**X-CITE**, §8 Phase 0) is a
-> plan deliverable, because the failure was systemic rather than clerical.
+> Every "what exists" claim cites **executable** code or DDL. **One citation form:** the file, then the symbol
+> or the quoted fragment it claims — `` `authz/src/lib.rs` `pub enum Feature` ``,
+> `` `0153` `CHECK (approver_id <> requested_by)` ``. **No line numbers.** A line number cannot be checked: a
+> reader can confirm the file has that many lines and nothing more, so an off-by-one survives every review that
+> does not open both files side by side, and two consecutive consistency passes over this document introduced
+> nothing but off-by-one citation errors. A symbol or a fragment either greps or it does not.
+> `npm run check:doc-citations` enforces this — `node scripts/console/verify-doc-citations.mjs` fails on any
+> broken citation and on any line-number citation at all. A mechanical citation audit (**X-CITE**, §8 Phase 0)
+> remains a plan deliverable, because the failure was systemic rather than clerical.
 >
 > **This is a DELTA, not a fresh design.** Finality is decided by ADR-0023, the Cedar strangler by
 > ADR-0021, the workflow engine and its org-local spine by ADR-0018, branch scope by ADR-0003, local
@@ -2619,7 +2621,8 @@ all four links through a real test:
 test file    backend/crates/ontology/rest/tests/object_policy_attach_as_runtime_role.rs
 rust_test    //backend/crates/ontology/rest:console-ontology-rest-itest-object_policy_attach_as_runtime_role
 sh_test      //tools/buck:ontology-object-policy-attach-postgres        (the Postgres wrapper)
-workflow     the step listing that sh_test target (`.github/workflows/ci.yml:239`)
+workflow     .github/workflows/ci.yml, step "Serialized disposable PostgreSQL integration targets",
+             which lists that sh_test target by name
 ```
 
 Target names rather than line numbers, because the line numbers in that chain have already drifted once.
@@ -2681,7 +2684,7 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
 | **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md` `③ SERIALISED — the real lock`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
 | — | **Correction rung: `docs/program/CATALOG.md` `identity only; employment is a separate object, not a field` lists a type set that never shipped.** It names OrgUnit / Position / Person / Employment / PayRun; the shipped set is company / org_unit / job_position / employment / pay_run — **`Person` never landed**. Correct it to the shipped names, or the next plan budgets against a catalog that does not exist |
-| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
+| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md` `the fan-out is green, and the rules that let it nearly not be` and `console-program-ledger.md` `The company-conformance suite is green.`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water `docs/program/LANE-PROTOCOL.md` `single global sequence, highest` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `docs/program/LANE-PROTOCOL.md` `still unconfigured and worth fixing` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml` `[profile.dev]` and `backend/Cargo.toml` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md` `had never executed once`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
 
 **Build-system governance is unresolved and this plan must not assume either side — but the status quo is
 healthy, so there is no forced migration.** `docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not
@@ -2710,14 +2713,14 @@ with five `ci.yml` `tools/buck2 test` invocations) and
 it was load-bearing for nothing. Cite **the job by name** instead. Phase 7's *"targeting the CI that exists
 (buck2 live)"* is therefore **positively grounded**, not a bet.
 
-Also: `rust-toolchain.toml` pins **1.97.1**; `docs/specs/foundation-gates.md:60`'s 1.96.0 is stale
-(`backend/Cargo.toml:53` `rust-version = "1.96"` is the MSRV floor, not the toolchain).
+Also: `rust-toolchain.toml` pins **1.97.1**; `docs/specs/foundation-gates.md` `Rust is pinned to 1.96.0 for CI/local parity.` is stale
+(`backend/Cargo.toml` `rust-version = "1.96"` is the MSRV floor, not the toolchain).
 
 **Deployment dependency this plan does not own and must not plan to flip:** every ontology WRITE runs on
 the command pool, `command_pool()` is `None` unless `ONTOLOGY_COMMAND_DATABASE_URL` is set, no production
 overlay references the component — *"green on every PR and dead where it ships"*
-(`docs/ideas/no-code-ontology.md`, evidence at `backend/app/src/lib.rs:2925-2930` and
-`backend/crates/ontology/rest/src/lib.rs:1786-1790`). **So slice 0's Tier T half is CI-provable; exposure
+(`docs/ideas/no-code-ontology.md`, evidence at `backend/app/src/lib.rs` `DatabaseDependency::NotConfigured => PgOntologyStore::new(pool.clone()),` and
+`ontology/adapter-postgres/src/lib.rs` `fn command_pool`). **So slice 0's Tier T half is CI-provable; exposure
 remains HOLD for both halves.** The earlier wording — *"lands and ships"* — claimed a release this plan
 cannot grant. `docs/program/console-capability-registry.json` carries `"implementation": "HOLD"` on **27 of
 27** capabilities and `"exposure": "HOLD"` on **27 of 27** (counted), and
@@ -2732,7 +2735,7 @@ commands and ownership roots. This is a **governance step required by `dispatch_
 `dispatch_rule` and `hold_rule` have **no executable reader**: `grep -rn dispatch_rule scripts/ backend/
 tools/ .github/` returns **nothing**, so both are fields nothing enforces. The constraints that *are*
 executable, and that a registry row must therefore satisfy, are in
-`scripts/console/validate-console-truth-ledger.mjs:254-257`: buck2 targets are keyed on
+`scripts/console/validate-console-truth-ledger.mjs` `Rust-required delivery unit has empty Buck targets`: buck2 targets are keyed on
 `delivery.rust_status`, a `REQUIRED` unit with empty targets fails, a `REQUIRED_UNRESOLVED` unit must stay
 `HOLD`, and **every declared target must resolve**. Plus the jurisdiction-control HOLD loop in the same file.
 No Buck2-clause amendment is proposed or needed — see the build-system paragraph below.
@@ -2747,7 +2750,7 @@ Minimum shape of each entity, and nothing more:
 | `party_org_visibility` | **not in Slice 0** — deferred with `party`, same reason. `visibility_predicate` (§5.1) binds against `users.org_id = current_setting('app.current_org')` until the edge table lands, which is the same predicate against a table that already exists |
 | `users.party_id` | **not in Slice 0** — `users` is audited, so the column is permanent once landed (§4.1) |
 | `org_unit` | 1 instance, `kind = 사업장`. No legal attributes. |
-| `work` | **1 `work` ROW written by the domain use-case, listed through the projection** — a projected type has no instance-create path (`instances.rs:1443-1450`) — with `work_scope` as a scope-descriptor property naming that 현장 |
+| `work` | **1 `work` ROW written by the domain use-case, listed through the projection** — a projected type has no instance-create path (`instances.rs` `owns no store of its own`) — with `work_scope` as a scope-descriptor property naming that 현장 |
 | `grant` | 2 instances: `purchase.approve` at 현장 scope (authorises) + one at a **different** 현장 (must not) |
 | `delegation_rule` | 2 rows: the ≤₩1,000,000 band → 현장 terminal; the >band → 본사 |
 | `approval_template` | 1 template, 1 step, `mode = terminal_if_전결` |
@@ -2765,7 +2768,7 @@ the wrong thing:
 | Entity | Slice-0 minimum | Why it cannot wait |
 |---|---|---|
 | `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
-| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160:21`), a line-level `branch_id` and a line dimensioned to the work (**also irreversible** — `finance_gl_voucher_lines` carries its own marker at `0160:56`, which earlier drafts did not say while putting two new columns on it), and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
+| `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160` `-- console-gate: audited-table finance_gl_vouchers`), a line-level `branch_id` and a line dimensioned to the work (**also irreversible** — `finance_gl_voucher_lines` carries its own `0160` `-- console-gate: audited-table finance_gl_voucher_lines`, which earlier drafts did not say while putting two new columns on it), and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
 
 **Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 — the
 tables because Slice 0 does not need them, `users.party_id` on irreversibility; they land together in **W2**),
@@ -2796,22 +2799,22 @@ expiry, never deletion**.
 
 | # | Widening | Acceptance |
 |---|---|---|
-| W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, a **party-keyed recipient** superseding the org-composite FK (`0162:50`), and **per-recipient audience targeting** (§4.4's fourth gap). **All of it ADDITIVE — `notices` and `notice_receipts` are both gate-marked audited (`0162:12`, `:40`), so no `DROP COLUMN` is available** (§4.4) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company and with every non-member receiving nothing**, against the shipped org-wide snapshot as its known-bad control; post-확정 correction GREEN; no second ack mechanism exists; and `recipient_user_id` still present, nullable |
+| W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, a **party-keyed recipient** superseding the org-composite FK (`0162` `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT`), and **per-recipient audience targeting** (§4.4's fourth gap). **All of it ADDITIVE — `notices` and `notice_receipts` are both gate-marked audited (`0162` `-- console-gate: audited-table notices` and `0162` `-- console-gate: audited-table notice_receipts`), so no `DROP COLUMN` is available** (§4.4) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company and with every non-member receiving nothing**, against the shipped org-wide snapshot as its known-bad control; post-확정 correction GREEN; no second ack mechanism exists; and `recipient_user_id` still present, nullable |
 | W2 | **The party family lands here** — no other widening carried it, and W2 is the first that cannot proceed without it: the `party` table (sentinel-homed, §4.1), `party_org_visibility`, `users.party_id`, `employees.party_id`. Then `employment` revised: `party_id` replaces `person_name`; employer split from worksite | `party_is_invisible_and_unmintable_from_a_tenant`, `visibility_edge_rls` and `visibility_unique_key_leads_with_org_id` GREEN with their controls RED; `visibility_predicate` (§5.1) moves from `users` to `party_org_visibility` **unchanged in form**; a 파견 employment with employer ≠ worksite round-trips |
 | W3 | `org_unit` kinds/lifetime + `worksite_registration` (Tier T, projected) | duplicate 사업자등록번호 rejected by the DB; a bounded TF expires |
 | W4 | `work` handover + `assignment` as a grant source; **and the fixed-authority 인계 완료 count** without which hard-gating is not available (§4.5) | `handover_is_scope_bounded` and `handover_moves_work_artifacts_only` GREEN; the 인계 완료 **assertion** recorded with its asserted count. Hard-gating offboarding lands **only** with the fixed-authority count — until then the assertion is evidence, not a gate |
 | W5 | Remaining grant sources + `position` + `authority_rule` + named `*OrgWide`/`*GroupWide` reach capabilities (§0.17 — no DSL) + `delegation_rule`'s `(period, cumulative_limit)` pair (§4.7) + **a department level on `AccessScopeLevel` if 부서-scoped grants are wanted** (§4.1 — a kernel enum change with two exhaustive `match` sites and its own `branch_scope_for_org` arm) | **requirement 3 provable**; `fold_is_additive` still GREEN with all five sources; and if the department level lands, both `match` sites compile with a decided projection rather than a wildcard |
-| W6 | `employment_type` as authored data; both CHECK vocabularies (`0172:7`, `0187:22`) retired | 파견/도급/일용/프리랜서 expressible; neither CHECK remains |
-| W7 | `party_link` control edges (Tier O) + derived `group_designation` | a joint venture under two groups, a nested group, and a 순환출자 cycle all resolve; `group_memberships UNIQUE (org_id)` (`0060:36`) and `organizations.group_id` (`0060:27`) collapse to one representation |
-| W8 | Cedar scope hierarchy: populate parents at `engine.rs:392`/`:425`, extend `:449`, declare in schema | a group-scoped approver signs a company-raised document, decided by Cedar alone with no Rust fallback |
+| W6 | `employment_type` as authored data; both CHECK vocabularies (`0172` `employment_type   TEXT NOT NULL CHECK (employment_type IN ('REGULAR', 'CONTRACT', 'PART_TIME', 'INTERN'))` and `0187` `employment_type TEXT        NOT NULL CHECK (employment_type IN ('REGULAR','RESIDENT_SHIFT','PART_TIME','POOL_DAILY'))`) retired | 파견/도급/일용/프리랜서 expressible; neither CHECK remains |
+| W7 | `party_link` control edges (Tier O) + derived `group_designation` | a joint venture under two groups, a nested group, and a 순환출자 cycle all resolve; `group_memberships` `0060` `UNIQUE (org_id)` and `organizations.group_id` (`0060` `ADD COLUMN group_id UUID NULL REFERENCES groups(id) ON DELETE RESTRICT;`) collapse to one representation |
+| W8 | Cedar scope hierarchy: populate the parent sets in `cedar_pbac/engine.rs` `Entity::new(subject_uid.clone(), subject_attrs, HashSet::new())` and `cedar_pbac/engine.rs` `Entity::new(resource_uid.clone(), resource_attrs, HashSet::new())`, extend `cedar_pbac/engine.rs` `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))`, declare in schema | a group-scoped approver signs a company-raised document, decided by Cedar alone with no Rust fallback |
 | W9 | `Feature` sequencing C1→C6 (§5.3) | every coexistence-map entry `cedar_only`; `matrix_row` and `Role` deleted; `Feature` retained |
 | W10 | Canvas over the authored types, four-eyes on every authority change. **Deferred by follow-up and off the slice-0/1 critical path — NOT gated on a charter** (§5.11 G6: no charter clause exists) | no authority change lands without a `gov_approval_consumptions` row |
-| W11 | Derived channel membership; `messenger_threads.work_order_id` (`0012:11`) generalised to `work` | `channel_membership_is_derived` GREEN; the conversation follows the work on 인계 |
+| W11 | Derived channel membership; `messenger_threads.work_order_id` (`0012` `work_order_id UUID        REFERENCES work_orders(id) ON DELETE CASCADE,`) generalised to `work` | `channel_membership_is_derived` GREEN; the conversation follows the work on 인계 |
 | W12 | Realtime authority propagation (§5.6): one `RealtimeEvent` variant, one channel, invalidation keyed per `(org, user)` bumping **both** counters | `realtime_push_carries_no_capability` and `stale_client_button_is_refused` GREEN |
 | W13 | `work` metrics: the new fields (§4.1) + cycle-time aggregates over Tier T | `no_duplicated_fact` GREEN; an aggregate over 10k rows does not fold revisions |
-| W14 | The pre-terminal finalization path (ADR-0023) end to end, incl. the compensating document and its contra voucher | `posted_voucher_cannot_be_rewritten` GREEN via the `0160:78-118` trigger; **and** `assert_period_open` called from finance-gl |
+| W14 | The pre-terminal finalization path (ADR-0023) end to end, incl. the compensating document and its contra voucher | `posted_voucher_cannot_be_rewritten` GREEN via the `0160` `CREATE OR REPLACE FUNCTION finance_gl_enforce_voucher_rules()` trigger; **and** `assert_period_open` called from finance-gl |
 | W15 | `worksite_contract` + disband/transfer (§5.10) | all four disband/transfer probes GREEN |
-| W16 | `lot` + `lot_split` + contract lines (§5.8); `inventory_consumption_events.source_kind` (`0156:87`) generalised | `lot_conservation`, `lot_uom_conversion_recorded`, `lot_traversal_up` GREEN |
+| W16 | `lot` + `lot_split` + contract lines (§5.8); `inventory_consumption_events.source_kind` (`0156` `source_kind                TEXT        NOT NULL CHECK (source_kind IN ('WORK_ORDER','P1_DISPATCH')),`) generalised | `lot_conservation`, `lot_uom_conversion_recorded`, `lot_traversal_up` GREEN |
 | W17 | E4 fold simulator — the fold against a hypothetical grant set, over the shipped receipt ceremony and Cedar simulation | a role change is inspectable before commit; neither existing half is replaced |
 | W18 | E1 explainability surfaced, incl. a reason for deny-by-omission | `deny_by_omission_is_explained` GREEN |
 | W19 | **Segregation of duties** (§5.11 SoD row): conflict pairs over `Feature`, refused at **grant-authoring time**, where the `gov_approvals` four-eyes check already runs | `conflicting_grant_pair_refused_at_authoring` GREEN, with a fold that accumulates a conflicting pair silently observed RED first |
@@ -2836,7 +2839,7 @@ recorded basis.
 
 **Decision (1 of 2 — identity and authority).** Introduce one attribute-free `party` identity handle as an
 **ordinary tenant-classified row homed at the existing platform sentinel org**
-`00000000-0000-0000-0000-00000000face` (`0036:224`) under the standard `org_isolation` policy — **not** an
+`00000000-0000-0000-0000-00000000face` (`0036` `'00000000-0000-0000-0000-00000000face'::uuid,`) under the standard `org_isolation` policy — **not** an
 owner-only carve-out, no new GUC, no definer-mediated read, and no new gate classification (§4.1). It is made
 visible to tenants through an ordinary org-scoped `party_org_visibility` edge under the same
 `app.current_org` RLS floor, and both are **DEFERRED out of Slice 0** and land in W2. Model authority and
@@ -2845,7 +2848,7 @@ fixity-chained grants — **with one measured exception: a `Group`-scoped grant 
 at all** (X4b: the edge is FK-rejected and a sibling org in the same group reads **0** rows), so it lives in
 the plan's single new owner-only table beside `group_role_grants`, reached only through its definer.
 A grant's `scope.level` is one of the five shipped `AccessScopeLevel` variants — `Group`, `Org`, `Region`,
-`Branch`, `Worksite` (`backend/crates/kernel/core/src/access_scope.rs:28-34`) — and **no other**; there is no
+`Branch`, `Worksite` (`backend/crates/kernel/core/src/access_scope.rs` `pub enum AccessScopeLevel`) — and **no other**; there is no
 `org_unit` level, so a 부서-scoped grant is not expressible in slices 0/1 (§4.1). `work` is a Tier T table
 projected into the ontology, because aggregate metrics cannot come from a revision fold and no read model
 exists. Retain the `Feature` enum as the capability and Cedar action vocabulary; delete `Role` and
@@ -2857,12 +2860,12 @@ extension mechanism. Extend the **`record`** component's contract with `authoriz
 `on_behalf_of_party_id` — a gap every entity composing `record` inherits, which is what
 makes two nullable columns the highest-leverage change here. **In Slice 0 those two columns land on
 `gov_approvals`, NOT on `audit_events`, and the `audit_events` pair is DEFERRED** (§4.0.3): `audit_events` is
-in `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so a column there is
+in `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs` `fn built_in_audited_tables`), so a column there is
 **permanent from the day it lands** and a shape Slice 0 has not yet exercised must not be the shape that can
 never be withdrawn. `gov_approvals` is in neither that list nor the `-- console-gate: audited-table` marker
 set, so the same two columns there are reversible, and its additive-column precedent is in the same table
-(`0164_bind_consume_four_eyes.sql:34`). The deferred pair is also **priced rather than scheduled**: `AuditEvent`
-(`backend/crates/kernel/core/src/audit.rs:83`) carries no capacity field, and there are **466** non-test
+(`0164_bind_consume_four_eyes.sql` `ADD COLUMN target_ref UUID;`). The deferred pair is also **priced rather than scheduled**: `AuditEvent`
+(`kernel/core/src/audit.rs` `pub struct AuditEvent`) carries no capacity field, and there are **466** non-test
 `with_audit` references under `backend/crates`. Build the **`economics`** component by
 **extending `finance_gl_vouchers`** with a business date and a typed, line-level object dimension: there is
 no general ledger to reconcile to, and the voucher already owns the DB-enforced balance gate and POSTED
@@ -2885,7 +2888,7 @@ rest.
 **Drivers.** (1) The 141-table org-isolation floor must not be weakened or duplicated. (2)
 Canvas-editability and replay must be free, which means Tier N wherever possible — **and "replay" here means
 replay along the VALID-time axis only.** Knowledge-time correction is **not** free and is not built: the
-append-only trigger (`0155:112-160`) refuses in-place repair by design, so the correcting axis is a decision
+append-only trigger (`0155` `CREATE OR REPLACE FUNCTION ont_instance_revisions_append_only()`) refuses in-place repair by design, so the correcting axis is a decision
 §5.9 records as a **stated deferral with its consequence named**, not a property this driver supplies. §2
 driver 2 carries the same qualification; an earlier revision of this ADR block carried the unqualified form.
 (3) Payroll is the first vertical and PII is where its obligations attach, while every Korea control reads
@@ -2895,18 +2898,18 @@ HOLD.
 requirement it serves, since a person can work across groups. `party` in the global-read tier —
 invalidated by confidentiality and by the tier's own "no tenant data" meaning. **A party row per tenant**,
 deduplicated by a matching service — invalidated as the status quo, whose own backfill declines every
-ambiguous row (`0076:40-46`) and carries a confidence model
-(`0075_employee_identity_resolution.sql:6`, `:13`). Note the chosen option **also** puts the handle under
+ambiguous row (`0076` `HAVING count(*) = 1`) and carries a confidence model
+(`0075_employee_identity_resolution.sql` `ADD COLUMN identity_resolution_strategy` and `0075_employee_identity_resolution.sql` `ADD COLUMN identity_resolution_confidence`). Note the chosen option **also** puts the handle under
 ordinary tenant RLS; what separates them is **cardinality**, one row per human rather than one per tenant, not
 the tier (§3.2). And **`party` in the owner-only tier** — the shape earlier revisions of this block recorded —
 rejected because the row holds nothing a tenant reads, so the definer and the gate entry buy nothing (§4.1).
 
 **Why chosen.** It is the only option that meets the confidentiality requirement without a second
 tenancy dimension, and it reuses **five** shipped mechanisms rather than inventing any: the tier
-classifications the CI gate already enforces, the `SECURITY DEFINER` resolver pattern (`0060:99-126`),
-the `object_links` edge store (`0102:54`), the re-validating-read bargain
-(`backend/crates/platform/authz-rest/src/store.rs:576-593`, `0205:69-74`), and — added with the tier decision
-— **the platform sentinel org itself** (`0036:224`), which `0051:34` already uses as the home for rows that
+classifications the CI gate already enforces, the `SECURITY DEFINER` resolver pattern (`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)`),
+the `object_links` edge store (`0102` `CREATE TABLE object_links`), the re-validating-read bargain
+(`authz-rest/src/store.rs` `pub async fn load_enforced_object_policy_blocks`, `0205` `Delete any one of the`), and — added with the tier decision
+— **the platform sentinel org itself** (`0036` `'00000000-0000-0000-0000-00000000face'::uuid,`), which `0051_platform_remove_organization.sql` `UPDATE audit_events` already uses as the home for rows that
 must outlive the tenants they came from. **The cost, corrected twice — first
 upward, then back down, and this is the settled figure:**
 
@@ -2934,22 +2937,22 @@ slice 0 — and never putting attributes on `party` becomes a permanent invarian
 **Follow-ups.**
 - `docs/specs/cedar-pbac-coexistence-map.json` gains a terminal end state and four new domain entries
   (§5.3 C4).
-- `group_role_grants.group_role` is a CHECK over three literals (`0060:45`); configurable group roles
+- `group_role_grants.group_role` is a CHECK over three literals (`0060` `CHECK (group_role IN ('GROUP_ADMIN', 'GROUP_VIEWER', 'GROUP_FINANCE'))`); configurable group roles
   require it to become a reference — a migration on an owner-only table.
 - Two object registries coexist (§0.7); every new entity must declare which one names it.
 - Open: **who may author authority, and in which scope?** Four-eyes answers *how many*, not *which
   scope*. A group-scoped authority editor can grant into every company in the group. This is not
   resolved by this plan and should not be treated as resolved.
 - **`docs/ideas/no-code-ontology.md` is stale** on the publish route (§0.13): `OBJECT_TYPE_LIFECYCLE_PATH`
-  and `OBJECT_TYPE_POLICIES_PATH` now exist (`ontology/rest/src/lib.rs:201-202`). Correct it or the next
+  and `OBJECT_TYPE_POLICIES_PATH` now exist (`ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_LIFECYCLE_PATH` and `ontology/rest/src/lib.rs` `pub const OBJECT_TYPE_POLICIES_PATH`). Correct it or the next
   plan will re-derive a blocker that has been removed.
 - **The two silent-empty traps (§0.12, §0.13) deserve one gate between them**, not two guards in two
   plans: a published type with no attached policy, and a link type with no property referencing its
   `stable_key`, are the same class of "configuration that looks correct".
 - `inventory_consumption_events.source_kind` is a two-value CHECK bound to `work_orders` by FK
-  (`0156:87`, `:107`); generalising it to the `work` dimension is W16's prerequisite.
-- The GL has no account master (`account_code` is free `TEXT`, `0160:62`) and is single-currency
-  (`amount_won BIGINT`, `:64`). Both belong to the peer finance plan, named so it is not discovered late.
+  (`0156` `source_kind                TEXT        NOT NULL CHECK (source_kind IN ('WORK_ORDER','P1_DISPATCH')),` and `0156` `FOREIGN KEY (work_order_id, org_id) REFERENCES work_orders(id, org_id)`); generalising it to the `work` dimension is W16's prerequisite.
+- The GL has no account master (`account_code` is free `TEXT`, `0160` `char_length(account_code) <= 40`) and is single-currency
+  (`0160` `amount_won    BIGINT   NOT NULL CHECK (amount_won > 0),`). Both belong to the peer finance plan, named so it is not discovered late.
 - `docs/ideas/authority-and-approval-model.md` should be marked SUPERSEDED by this document, or have
   §0.1's contradiction corrected in place — its Recommended Direction currently contradicts its own
   body.
