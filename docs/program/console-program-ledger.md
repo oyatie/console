@@ -1043,3 +1043,13 @@ What the candidate contains is recorded in its own seven entries above and is no
 One property is worth recording at the authority layer, because a green train invites an inference it does not support. The candidate retires the residual `0205` escalated by name — the runtime credential can no longer attach an object policy untraced — and it does **not** retire the second residual, which the lane found was untested rather than untestable. A green authority train records that the candidate is bound. It does not record that the candidate's claims are proven, and the distinction matters most exactly when the candidate is a security change.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for the authentication the contract omitted
+
+The registers rebind to the openapi security candidate. The candidate documents authentication that ten operations already require: the handlers were correct and the served contract said they were public.
+
+Nothing in the candidate changes what any capability may do. It changes what the contract says about what they already require, which is a documentation correctness fix on a live client-facing artifact rather than a change in exposure.
+
+One property is worth recording at the authority layer. The candidate's own commit message records that each of the ten was verified against its handler by symbol rather than taken from the audit that found them — the audit's line numbers were wrong twice, and two of its handler names resolved to store methods with similar names. A finding is not evidence until the thing it names has been read.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and exposure state remains `HOLD`; this authority-only child makes no completion, deployment, or production-exposure claim.
