@@ -1647,6 +1647,7 @@ gates the fanout, not a paragraph that authorizes it.
 | G5 | **Economics spine** (§5.5) | new; zero hits for GL/posting/dimension | new ADR (peer plan owns the rest) |
 | G6 | **The no-code canvas** | **deferred by an accepted ADR.** `ADR-0023:148-155` lists the Contract→Position(인원편성)→PolicyPreset chain editor, covert clearance as a resource, and the no-code policy/workflow visual canvas as out of scope, *needing their own charter* | either accept the deferral (recommended — it is not on the critical path for slices 0/1) or propose the charter. **Do not smuggle it in** |
 | G7 | **DN-0003 bounded extensibility vs open sets** | **NOT a collision** — verified below | none. Aligned as written |
+| **GATE** | **What each CI gate pins — and therefore what may and may not be amended.** A gate pinning a **safety property** (`tenant-isolation`'s classification of every table, `migration-safety`'s audited-table `DROP COLUMN` refusal, `rls-arming`, `audit-coverage`) is **never weakened**, and no item in this plan asks for one to be. A gate pinning a **decision** by asserting literal sameness (`ADR-0025`'s console-absence assertion; `route-inventory`'s and `check-ci-preflight`'s generated-artifact equality; `command-database`) is amendable **with its ADR**, and the replacement is derivation per crate rather than a widened literal. **Prerequisites 5.7a and 5.7b (Phase 0) are gate hardening, not gate weakening.** And the Phase-4 CI-wiring cost is a **defect to delete, not a toll to pay**: `scripts/check-ci-preflight.mjs:430-453` (`requireOntologyRestItestReachability`) **already** derives the requirement from the generated BUCK file and walks the whole itest → `sh_test` → `ci.yml` chain, failing with *"`ci.yml` must execute … or `{itest}` runs nowhere"*. Its own header says the fix is *"a per-crate decision with the same shape as this one, not a cleverer regex"* (`:428`). So the per-test wiring step exists only where that pattern was not adopted | none — this row is a classification, not an ADR question. It exists because §5.11 named no gate at all, while five of them bind this plan |
 
 **G8 — DB-enforced invariants vs ADR-0001 domain purity. Decided: argue, not amend.**
 `ADR-0001:23` states *"Domain logic stays pure and exhaustively unit-testable"*, gated by a CI
@@ -1883,23 +1884,105 @@ which **must exist and be reviewed before fanout opens**:
 | `docs/specs/ecosystem-entity-components.tsv` | one row per (entity, component): substrate, tier, status, owning crate. The §4.0.1 and §4.1 tables, machine-readable — so a lane looks up rather than re-derives | `LIFETIMES.tsv` |
 | `docs/specs/ecosystem-PORTING.md` | the **mechanical rule set**, no prose: which tier a new entity takes and why; relationships MUST ride a property `config.link` (§0.12); a published type MUST have a policy attached (§0.13); every consequential mutation is an Action carrying `authorizing_grant_id`; `milli` fixed-point for quantities; `object_types` vs `ont_object_types` (§0.7); migrations start at 0207 | `PORTING.md` |
 
-Both are derived from work already done in this plan. Writing them is transcription, not design.
+| `docs/specs/ecosystem-LANES.tsv` | **one row per lane**: crates, owned paths, **migration slot block from 0207**, and the widenings it may take — with W11-W13 in it, since those three are independent (below) | the reservation half of `PORTING.md` |
+
+**The lane table instantiates an existing mechanism; it is not a new one.** `docs/program/LANE-PROTOCOL.md:89`
+already says migrations are *"single global sequence, highest `0204`. Blocks assigned per lane in the Phase-0
+commit; take the number immediately before push"*. **That quoted high-water is stale — 0205 landed and 0206
+is in flight in lane-1, so blocks are assigned from 0207** (Phase 7 carries the correction rung). This table
+is that Phase-0 commit's artifact. Two facts
+make it the binding constraint rather than a convenience:
+
+- **Nine 0207+ slots are already claimed** against an unallocated serial resource — D2/T5 ≤2, T2 1, D3 2,
+  N3 1, N5 1, N1 1, T10 1 — before any lane opens.
+- `check_migration_versions` (`backend/ci/gates/migration-safety/src/lib.rs:131-141`) enforces **gap-free
+  contiguity**: a missing version between two present ones is a `NonContiguousMigrationVersion` violation. So
+  a lane cannot hold a reserved number open while another lane lands past it. **The version space serialises
+  Phase 4** — this, not any CI collision, is what orders the work.
+- **Non-foreclosure: no migration 0207+ may hard-code `'KR'` or `'KRW'`.** Korea is HOLD (§5.4); a literal in
+  DDL is the one form of that assumption that cannot be withdrawn later.
+
+Two further Phase-0 artifacts, and they are prerequisites rather than deliverables:
+
+| Artifact | Content |
+|---|---|
+| **the D3 write-path enumeration** | one row per authority-mutating write path, in `docs/specs/ecosystem-entity-components.tsv`: the path, its `with_audit` status, and whether a null capacity there is a defect. Moved here from Phase-7 prepwork because it is the artifact `capacity_recorded_on_every_authority_mutation` (§7) **reads** — a probe cannot precede the list it asserts over |
+| **X-CITE** | a mechanical citation audit of this plan, as a plan deliverable. The citation failures found in review were **systemic, not clerical** — an ADR Decision line was propagated as a state fact for hours, and adding a header to an upstream file invalidated every line-number anchor into it at once. A one-time human pass does not close a systemic defect |
+
+**Prerequisite 5.7a — harden the audited-table `DROP COLUMN` resolver — gates ANY migration 0207+, and Slice
+0 lands migrations at 0207+.** Verified by direct read: `table_name_after_alter_table`
+(`backend/ci/gates/migration-safety/src/lib.rs:314-322`) advances past only `if exists`; `tokenize_sql`
+(`:443-460`) emits a token boundary at **every** character that is neither ASCII-alphanumeric nor `_` —
+including `.`; and
+`built_in_audited_tables()` (`:164-172`) holds neither `only` nor `public`. So
+`ALTER TABLE ONLY users DROP COLUMN x` resolves the table name to **`only`** and
+`ALTER TABLE public.users DROP COLUMN x` resolves it to **`public`**, and neither raises
+`DropAuditedColumn`. The `#[test]` count in that file is **0**. The fix is one negative unit case per
+spelling.
+
+**Prerequisite 5.7b — a Leptos-shape extractor in `route-inventory.mjs` plus the reciprocal assertion in
+`validate-console-truth-ledger.mjs` — gates any console surface.** Not on Slice 0's path, recorded so it is
+not discovered by the first lane that needs it.
+
+**One reconciliation line, owed and not yet done:** reconcile §4 and §5 against the benchmark matrix and the
+four research surveys, recording adopt / reject / contradict per row with the source's own confidence label
+carried through, and **no plan decision resting on an UNCERTAIN or UNKNOWN row**. Today a grep over all of
+this plan returns **zero** hits for benchmark, research-, Foundry, Workday, SAP, Odoo, NetSuite, ServiceNow
+and Salesforce — so the surveys exist and this plan cites none of them, which is either an omission or an
+implicit rejection, and only one of those is admissible.
+
+Both original files are derived from work already done in this plan. Writing them is transcription, not
+design; the lane table and the D3 enumeration are not.
 
 ### Phase 1 — the immutable target
 
-Bun's was the existing test suite: **60,624 tests, 0 skipped, 0 deleted.** A target you cannot renegotiate
+Bun's was the existing test suite: **60,624 tests on Linux x64** (macOS arm64 58,850, Windows x64 57,337),
+**0 skipped, 0 deleted.** The platform qualifier matters because the figure is a per-platform count, not a
+suite total; the *0 skipped, 0 deleted* half is what actually transfers. A target you cannot renegotiate
 is what makes a large diff safe. Ours, and it must exist before fanout:
 
 | Target | Rule |
 |---|---|
-| The 14 CI jobs in `.github/workflows/ci.yml` | pass unchanged. No gate weakened, no allowlist widened without its own justified commit |
+| **Every job in `.github/workflows/ci.yml`** | pass unchanged. No gate weakened, no allowlist widened without its own justified commit. **No count is restated** — there are ten as of `8e76dffb4` (`preflight:75`, `support-domain-unit:163`, `postgres-domain-reachability:194`, `company-conformance:244`, `generated-face-authority:291`, `backend:340`, `dev-up-smoke:684`, `repo-gates:741`, `api-contract:827`, `kubernetes-manifests:906`), the plan previously said 14, and a number in prose rots while "every job" does not |
 | `tools/lanes/fanout.py run` | **0 out-of-slice writes.** Already tooling; do not build another |
 | `docs/specs/known-bad-controls.tsv` | **the real immutable artifact.** One row per probe: probe name, known-bad input, and the commit where it was **observed RED**. **No probe may enter the suite without a RED record.** |
 
 That last row is the direct analogue of Bun's "0 skipped". Six probes were defective in one session here;
 a GREEN with no recorded RED is not evidence, and the ledger makes that structural rather than cultural.
 
-### Phase 2 — the trial run (before any scale)
+### Phase 2 — the experiments (before the design is trusted, and before the trial run)
+
+**Renumbered from Phase 6.** This phase's own heading always claimed the order the numbering contradicted —
+*"before the design is trusted"*, and X4's row says *"so test it first"*. Principle 5 (§1) is the authority: a
+probe is untrusted until it has been RED, so the experiments cannot follow the slice they exist to justify.
+This is a renumber, not a redesign.
+
+Each has a falsifiable prediction and a known-bad control. A probe proven RED on a known-bad input before
+its GREEN is the only kind that counts.
+
+| # | Experiment | Prediction | Known-bad control | ANSWERED | If refuted |
+|---|---|---|---|---|---|
+| X1 | **Edges from an authored type.** Publish a type whose relationship is declared *only* as a link type, then again with a property carrying `config.link` | first writes 0 edges, second writes edges | the link-type-only case must be **RED** (it is today's behaviour, §0.12) | **YES — CONFIRMED.** `docs/ideas/experiment-x1-x2.md`; re-runnable at `docs/ideas/experiments/x1/run.sh`. Sharpened to *no **reachable** path* (§4.3) | the canvas cannot express relationships; §0.12's guard becomes a blocking fix |
+| X2 | **A published type lists rows.** Publish with, and without, an attached object policy | without → `[]`; with → rows | the no-policy case must be RED (`residual.rs:200-203`) | **YES — CONFIRMED.** `experiment-x1-x2.md`; `experiments/x2/run.sh`. Measured `200 OK []` then `201 Created` → rows | every Tier N entity is unusable; Tier T for all of them |
+| X3 | **The definer survives attack.** Build `effective_grants_for`, then run the #525 exploit shape and a foreign-org party id against it | both refused **by execution**, not by argument | a definer filtering on a parameter instead of `app.current_org` must leak — the `0060:99` shape copied verbatim | **no — and it CANNOT be prepwork.** It needs `effective_grants_for` to exist, so it is **slice-0 work**, run at ladder rung 4 | the bootstrap resolution fails; grants cannot be read outside the gate |
+| X4 | **No second RLS dimension is needed.** Answer `effective(party, scope)` for a person in two orgs using only `app.current_org` + the visibility edge. **Bounded to visibility of a known party within the armed org**; the falsifying case is a **group**-scope step whose only qualifying holder is a user of a sibling org, which X4b measured returning 0 rows (§4.2) | answerable with zero new GUCs, for the bounded claim | an attempt that requires `app.current_group`. **Instrument control:** a GUC inventory read from `pg_settings` rather than from stored policy expressions returns 0 rows and looks like a pass (§7 preamble) | **YES — CONFIRMED.** `docs/ideas/experiment-x4.md`; `experiments/x4/run.sh`. 30 assertions, 3 controls RED, zero new GUCs, the 141 RLS policies untouched | §4.2 collapses and the 141-table cost returns — this is the plan's central claim, so test it first |
+| **X4b** | **Can a group-scoped grant live in Tier N?** Attempt the `grant → group` edge, then read a group-scoped grant revision from a sibling org in the same group | the edge is storable and the sibling reads it | the FK rejection, and the sibling's row count, both measured rather than argued | **YES — CONFIRMED, and it REFUTED the plan.** `docs/ideas/experiment-x4b.md`; `experiments/x4b/run.sh`. The `organization → group` edge is FK-rejected and a sibling org reads **0** rows. §4.1 and §4.3 are corrected accordingly; **Slice 0 is not blocked**, because its grants are 현장-scoped and intra-org | (already refuted — the correction is the group-scoped grant store in Tier O) |
+| X5 | **Cedar decides alone.** Encode the four grant sources over one person in two companies as a **constructed query with an expected-fail baseline**, in X4's shipped form: the four sources written out, the specific decision Cedar must reach named, and the **concrete input** on which a Rust-fallback implementation is RED | Cedar alone decides, on that named input | **a specific input, not a scenario:** the encoded four-source case run against an implementation that consults a companion Rust evaluator, which must be RED. (Its previous control — *"a case needing a companion evaluator"* — is a refutation *scenario*, not an observable input, which principle 5 forbids) | **no — and it CANNOT be prepwork.** Needs `effective_grants_for`; **slice-0 work**, ladder rung 4 | two evaluators will diverge; the fold moves entirely into Cedar or entirely out |
+| X6 | **Fold cost per request.** Measure `effective(party, scope)` at realistic grant counts, materialized vs on-demand | on-demand is acceptable at slice-0 scale; materialization keyed on `policy_versions` if not | a fold whose cost grows with total org grants rather than the person's | **no — and it CANNOT be prepwork.** Needs `effective_grants_for` **and** realistic grant counts; **slice-0 work**, ladder rung 4 | §5.6's invalidation design becomes load-bearing earlier |
+| X7 | **Draft-PR CI coverage.** Push a backend-touching commit and a docs-only commit to a draft PR; compare required contexts | backend runs every job in `.github/workflows/ci.yml`; docs-only runs none | trusting the UI's absence of red as green | **no — unrun for a different reason.** It requires **pushing a branch**, so it is outward-facing and needs **explicit authorization**. It is not a pending prediction; it is a blocked action | the one-PR model needs an explicit verification checkpoint per rung |
+| X8 | **How do the CI buck2 jobs currently pass?** | they pass by an identifiable mechanism that must be named before any test is wired to them | this is an **investigation, not a probe** — there is no GREEN to distrust, so the proven-RED discipline does not apply to it in this form | **YES — ANSWERED.** `docs/ideas/experiment-results.md`. `.buckconfig:15-16` `[external_cells]` / `prelude = bundled` supplies the prelude from inside the binary; `tools/buck2:1` is a blake3-pinned DotSlash launcher; the required job **"Support domain — Buck2 unit reachability"** (`ci.yml:164`) runs a real `tools/buck2 test` at `:192`. **buck2 is fully functional**; the earlier "the graph is broken" claim was WRONG | (already answered — no forced migration; the governance question stands) |
+| X9 | **Trace one new test end to end:** test file → `rust_test` target → Postgres `sh_test` wrapper → workflow step | each link nameable **by target name** | a test that passes locally and never executes in CI | **YES — ANSWERED.** `experiment-results.md`, traced through a real test (§8 Phase 4) | the work queue (Phase 4) needs a **per-test** CI wiring step |
+
+**The gate, stated so it is not circular.** **X1, X2, X4, X4b, X8 and X9 must have recorded outcomes before
+the first implementation commit** — all six do. **X3, X5 and X6 must have recorded outcomes before Slice 0
+may be declared green.** The stricter form ("no implementation commit until X1-X5 and X8-X9 are recorded")
+forbids the commit those experiments require, because three of them cannot run until the definer exists.
+
+`ADR-0023:79-86` already specifies its own **1-2 day Engine-Gen spike** validating the pre-terminal FSM
+shape, with *"if structurally infeasible, execution stops and returns to consensus"*. That is X0 and it is
+already decided — reference it, do not duplicate it.
+
+### Phase 3 — the trial run (before any scale)
 
 Bun converted **3 files** with 1 implementer + 2 adversarial reviewers, and only then did all 1,448.
 
@@ -1908,7 +1991,7 @@ Ours: **slice 0, the ₩100,000 비품 purchase.** One implementer, two adversar
 slice 0 is green *and* every slice-0 probe has a RED record. If slice 0 refutes the model, the cost is one
 slice.
 
-### Phase 3 — the work queue, by crate
+### Phase 4 — the work queue, by crate
 
 Next crate activates only when the current one is clean. Derived from §4.1, in dependency order:
 
@@ -1923,23 +2006,45 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 | 7 | `messenger` + `platform/realtime` | derived membership; the `authority_changed` event |
 | 8 | `app` | wiring, `/overview` surface |
 
-### Phase 4 — the progressive verification ladder
+**CI wiring is per TEST, not per crate — and the template is a worked one, cited by target name.** X9 traced
+all four links through a real test:
 
-Bun's was `cargo check` → `bun --version` → one test file → 100 sharded random files → full suite on 6
-platforms. Ours, cheapest first, each rung gating the next:
+```
+test file    backend/crates/ontology/rest/tests/object_policy_attach_as_runtime_role.rs
+rust_test    //backend/crates/ontology/rest:console-ontology-rest-itest-object_policy_attach_as_runtime_role
+sh_test      //tools/buck:ontology-object-policy-attach-postgres        (the Postgres wrapper)
+workflow     the step listing that sh_test target (`.github/workflows/ci.yml:239`)
+```
+
+Target names rather than line numbers, because the line numbers in that chain have already drifted once.
+
+**Why per test and not per crate:** `mapped_srcs` hand-lists every file a test crate reads, and **buck2 does
+not glob**. So a file added later to a shared harness is invisible to the target until that list is edited —
+which is exactly how link 2 or link 3 goes missing while the test passes locally and **nothing fails**. A
+per-crate step cannot see that; only a per-test assertion can. `scripts/check-ci-preflight.mjs:430-453`
+already enforces this shape for `ontology/rest`, and its own header says the fix elsewhere is *"a per-crate
+decision with the same shape as this one, not a cleverer regex"* (`:428`) — so this is adoption, not
+invention.
+
+### Phase 5 — the progressive verification ladder
+
+Bun's was `cargo check` → `bun --version` → one test file → 100 sharded random files → **full CI on all
+platforms** (the primary source supports "all platforms"; no primary reading supports six). Ours, cheapest
+first, each rung gating the next:
 
 1. `cargo check` on the touched crate
 2. the migration applies, and **re-applies onto a populated DB**
 3. the tenant-isolation gate classifies every new table (`tenant-isolation/src/lib.rs:804-808`)
 4. the definer probes — `definer_ignores_parameter_org`, `definer_returns_no_foreign_org_grant`, and the
    named re-validation deletions (`org_predicate`, `visibility_predicate`, `chain_linkage`,
-   `scope_containment`)
+   `scope_containment`). **`X3`, `X5` and `X6` run here**, not in Phase 2: all three need
+   `effective_grants_for` to exist, so they are slice-0 work rather than prepwork (Phase 2)
 5. slice 0 end-to-end, with its RED records
 6. slice 1 (promotion) end-to-end
-7. the 14 CI jobs
+7. every job in `.github/workflows/ci.yml`
 8. `tools/lanes/fanout.py run` — 0 out-of-slice writes
 
-### Phase 5 — one PR
+### Phase 6 — one PR
 
 Single long-lived consolidation branch, **one PR, no incremental merges**. A permanently-open **draft PR**
 gives CI on every push, because `pull_request:` (`.github/workflows/ci.yml:36`) has **no `branches:`
@@ -1954,27 +2059,6 @@ filter** while `push:` covers only `main` and tags (`:3-8`).
   intermediate runs are **cancelled, not verified**. Verify at rung boundaries deliberately rather than
   assuming per-commit CI.
 
-### Phase 6 — experiments (their own phase, before the design is trusted)
-
-Each has a falsifiable prediction and a known-bad control. A probe proven RED on a known-bad input before
-its GREEN is the only kind that counts.
-
-| # | Experiment | Prediction | Known-bad control | If refuted |
-|---|---|---|---|---|
-| X1 | **Edges from an authored type.** Publish a type whose relationship is declared *only* as a link type, then again with a property carrying `config.link` | first writes 0 edges, second writes edges | the link-type-only case must be **RED** (it is today's behaviour, §0.12) | the canvas cannot express relationships; §0.12's guard becomes a blocking fix |
-| X2 | **A published type lists rows.** Publish with, and without, an attached object policy | without → `[]`; with → rows | the no-policy case must be RED (`residual.rs:200-203`) | every Tier N entity is unusable; Tier T for all of them |
-| X3 | **The definer survives attack.** Build `effective_grants_for`, then run the #525 exploit shape and a foreign-org party id against it | both refused **by execution**, not by argument | a definer filtering on a parameter instead of `app.current_org` must leak — the `0060:99` shape copied verbatim | the bootstrap resolution fails; grants cannot be read outside the gate |
-| X4 | **No second RLS dimension is needed.** Answer `effective(party, scope)` for a person in two orgs using only `app.current_org` + the visibility edge. **Bounded to visibility of a known party within the armed org**; the falsifying case is a **group**-scope step whose only qualifying holder is a user of a sibling org, which X4b measured returning 0 rows (§4.2) | answerable with zero new GUCs, for the bounded claim | an attempt that requires `app.current_group`. **Instrument control:** a GUC inventory read from `pg_settings` rather than from stored policy expressions returns 0 rows and looks like a pass (§7 preamble) | §4.2 collapses and the 141-table cost returns — this is the plan's central claim, so test it first |
-| X5 | **Cedar decides alone.** Encode four grant sources over one person in two companies; confirm requirement 3 with no Rust fallback | Cedar alone decides | a case needing a companion evaluator | two evaluators will diverge; the fold moves entirely into Cedar or entirely out |
-| X6 | **Fold cost per request.** Measure `effective(party, scope)` at realistic grant counts, materialized vs on-demand | on-demand is acceptable at slice-0 scale; materialization keyed on `policy_versions` if not | a fold whose cost grows with total org grants rather than the person's | §5.6's invalidation design becomes load-bearing earlier |
-| X7 | **Draft-PR CI coverage.** Push a backend-touching commit and a docs-only commit to a draft PR; compare required contexts | backend runs all 14; docs-only runs none | trusting the UI's absence of red as green | the one-PR model needs an explicit verification checkpoint per rung |
-
-| X8 | **How do the CI buck2 jobs currently pass?** `prelude/` is **missing** (verified: no `prelude` dir), yet 169 `BUCK` files, `.buckconfig` and five buck steps live in `ci.yml` (`:103`, `:119-120`, `:148-149`, `:151-152`) plus a required job *"Support domain — Buck2 unit reachability"* (`:164`) that passed on #525 | they pass by some mechanism that must be identified before any test is wired to them | wiring a new test and assuming it runs | every new test file is invisible to CI — the exact defect shape that has produced five instances this week, most recently a build failure with zero tests run |
-| X9 | **Trace one new test end to end:** test file → BUCK target → wrapper → workflow step | each link nameable | a test that passes locally and never executes in CI | the by-crate queue (Phase 3) needs a per-crate CI wiring step |
-
-`ADR-0023:79-86` already specifies its own **1-2 day Engine-Gen spike** validating the pre-terminal FSM
-shape, with *"if structurally infeasible, execution stops and returns to consensus"*. That is X0 and it is
-already decided — reference it, do not duplicate it.
 
 ### Phase 7 — prepwork before fanout, enumerated
 
@@ -1987,26 +2071,64 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 | — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `known-bad-controls.tsv` |
 | **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
 | — | **G9 audit-coverage enumeration (§5.11):** every new write path, its `with_audit` status, and any `audit-coverage` gate entry required. The exclusion set has exactly one entry (`ADR-0002:20`) and a test asserts it |
-| — | **CI wiring per crate**, targeting the CI that **exists** (buck2 live) not the one `PIVOT-2026-07-28.md` §6 describes. X8 runs first |
+| — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
-| **③** | `seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
+| **③** | `seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
+| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
 
-**Build-system governance is unresolved and this plan must not assume either side.**
-`docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not buck2"* — **unexecuted**: buck2 is live in
-CI now (five steps + a required reachability job), while `prelude/` is missing so the buck2 graph is
-already broken. Three documents hold three positions (`governed-object-engine-PLAN.md:75` "buck2
-RETAINED" vs its own `:301-302` "dropped"; `no-code-ontology.md:133-141` builds on Buck wiring). And
-`PIVOT-2026-07-28.md` **is not in `docs/decisions/`**, so under `README.md` rules 1-2 it binds nothing.
-**Flagged as an open governance question, not a premise.** X8 establishes the empirical answer before any
-test is wired. Also: `rust-toolchain.toml` pins **1.97.1**; `foundation-gates.md:60`'s 1.96.0 is stale
-(`Cargo.toml:53` `rust-version = "1.96"` is the MSRV floor, not the toolchain).
+**Build-system governance is unresolved and this plan must not assume either side — but the status quo is
+healthy, so there is no forced migration.** `docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not
+buck2"* — **unexecuted**. And `PIVOT-2026-07-28.md` **is not in `docs/decisions/`**, so under
+`docs/decisions/README.md` rules 1-2 it binds nothing; neither cargo nor buck2 is an accepted decision. Three
+documents hold three positions (`docs/ideas/governed-object-engine-PLAN.md:75` "buck2 RETAINED" vs its own
+`:301-302` "dropped"; `docs/ideas/no-code-ontology.md:133-141` builds on Buck wiring). **Flagged as an open
+governance question, not a premise.**
+
+**What is NOT open, and what this plan said wrongly: buck2 is fully functional.** An earlier draft here said
+*"`prelude/` is missing so the buck2 graph is already broken"*, and inferred that CI's buck2 jobs must pass
+by some accident. Both halves are false, and X8 measured the chain:
+
+- `prelude/`'s **absence is correct**. `.buckconfig:15-16` declares `[external_cells]` / `prelude = bundled`,
+  which is buck2's own mechanism for supplying the prelude **from inside the binary**. There is nothing to
+  vendor.
+- `tools/buck2:1` is `#!/usr/bin/env dotslash`, a launcher with **per-platform blake3-pinned digests** — the
+  runtime is hash-pinned, not floating.
+- The required job **"Support domain — Buck2 unit reachability"** (`.github/workflows/ci.yml:164`) passes
+  because `:192` runs a real
+  `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit`. Not a no-op, not a path
+  filter, not a cached graph.
+
+The **five buck steps** count is also dropped: it was wrong (install steps appear at `:103`, `:176`, `:215`,
+`:271`, `:307`, `:398`, `:703`, `:860`, with `tools/buck2 test` at `:192`, `:465`, `:660`, `:664`, `:675`) and
+it was load-bearing for nothing. Cite **the job by name** instead. Phase 7's *"targeting the CI that exists
+(buck2 live)"* is therefore **positively grounded**, not a bet.
+
+Also: `rust-toolchain.toml` pins **1.97.1**; `docs/specs/foundation-gates.md:60`'s 1.96.0 is stale
+(`backend/Cargo.toml:53` `rust-version = "1.96"` is the MSRV floor, not the toolchain).
 
 **Deployment dependency this plan does not own and must not plan to flip:** every ontology WRITE runs on
 the command pool, `command_pool()` is `None` unless `ONTOLOGY_COMMAND_DATABASE_URL` is set, no production
 overlay references the component — *"green on every PR and dead where it ships"*
 (`docs/ideas/no-code-ontology.md`, evidence at `backend/app/src/lib.rs:2925-2930` and
-`ontology/rest/src/lib.rs:1786-1790`). **So slice 0's Tier T half lands and ships; its Tier N half is
-CI-provable but not deployable.** A second, independent reason `work` is Tier T.
+`backend/crates/ontology/rest/src/lib.rs:1786-1790`). **So slice 0's Tier T half is CI-provable; exposure
+remains HOLD for both halves.** The earlier wording — *"lands and ships"* — claimed a release this plan
+cannot grant. `docs/program/console-capability-registry.json` carries `"implementation": "HOLD"` on **27 of
+27** capabilities and `"exposure": "HOLD"` on **27 of 27** (counted), and
+`scripts/console/validate-console-truth-ledger.mjs` fails any jurisdiction control whose
+`release_disposition` is not `HOLD`. `docs/program/console-program-ledger.md` states it outright: *"Nothing
+in the idea document is approved work."* CI-provable and deployable are different claims, and only the first
+is available. This is still a second, independent reason `work` is Tier T.
+
+**One Phase-7 rung follows from that, and its enforceability must be stated with it.** Slice 0 and each
+widening group are registered as capability rows carrying a signature story, an `evidence_path`, leaf
+commands and ownership roots. This is a **governance step required by `dispatch_rule` prose** — and
+`dispatch_rule` and `hold_rule` have **no executable reader**: `grep -rn dispatch_rule scripts/ backend/
+tools/ .github/` returns **nothing**, so both are fields nothing enforces. The constraints that *are*
+executable, and that a registry row must therefore satisfy, are in
+`scripts/console/validate-console-truth-ledger.mjs:254-257`: buck2 targets are keyed on
+`delivery.rust_status`, a `REQUIRED` unit with empty targets fails, a `REQUIRED_UNRESOLVED` unit must stay
+`HOLD`, and **every declared target must resolve**. Plus the jurisdiction-control HOLD loop in the same file.
+No Buck2-clause amendment is proposed or needed — see the build-system paragraph below.
 
 ### Slice 0 — the ₩100,000 비품 purchase, terminal at a 현장
 

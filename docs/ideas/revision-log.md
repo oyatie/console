@@ -71,3 +71,40 @@ Also: §3.1's `owner_only_table_allowlist` entry anchor `:118-124` was stale (th
 identity per natural or legal person, across every tenant and vertical"* from the §4.1 `party` purpose cell
 landed here, because item 2.2 rewrote that same cell. Wave 4 still owes the G1 row itself and the three
 block-work claims.
+
+## Wave 3 — exposure, gates, slots, the CI premise
+
+**Changed.** §8 Phase 7's *"lands and ships"* became *"CI-provable; exposure remains HOLD for both halves"*
+on the counted 27/27 `implementation`/`exposure` HOLDs plus the ledger's *"Nothing in the idea document is
+approved work"*, with the capability-row registration rung added and `dispatch_rule`/`hold_rule` named as
+fields **nothing enforces** (`grep` returns nothing) against the executable
+`validate-console-truth-ledger.mjs:254-257`. The buck2 "graph is already broken" clause is deleted and
+replaced with the measured chain (`.buckconfig:15-16` `prelude = bundled`, blake3-pinned DotSlash launcher,
+the required job at `ci.yml:164` running a real `tools/buck2 test` at `:192`); X8 is **ANSWERED** and the
+wrong "five buck steps" count is dropped for the job name. Phase 0 gained the per-lane 0207+ slot table
+(instantiating `LANE-PROTOCOL.md:89`, with the nine already-claimed slots and gap-free contiguity as the
+Phase-4 serialiser), the D3 write-path enumeration, prerequisites 5.7a and 5.7b, the benchmark/survey
+reconciliation line, the `'KR'`/`'KRW'` non-foreclosure constraint, and X-CITE. §5.11 gained a GATE row
+classifying safety pins vs decision pins. The experiment phase was renumbered **6 → 2** and moved before the
+trial run (2→3, 3→4, 4→5, 5→6), gained an **ANSWERED** column with record paths and `run.sh` probes, gained
+**X4b** as its own row, marked X3/X5/X6 as slice-0 work at ladder rung 4, restated X5 as a constructed query
+with a concrete RED input, explained why X7 is blocked rather than pending, and de-circularised the gate.
+CI wiring is now per **test** with the four-link chain cited by target name; "14 CI jobs" → every job (ten,
+listed once, at a named commit); Bun's 60,624 qualified as Linux x64; "6 platforms" → all platforms; and a
+Phase-7 correction rung records LANE-PROTOCOL's three stale spots including **why `.cargo/config.toml` must
+stay absent**.
+
+**Brief defect recorded — item 3.4's path does not resolve.** The brief cites
+`scripts/console/check-ci-preflight.mjs:430-453`. That file does not exist; the real path is
+`scripts/check-ci-preflight.mjs`, where `requireOntologyRestItestReachability` does span `:430-453` and does
+exactly what the brief claims. Implemented with the corrected path, plus its own header at `:428` (*"a
+per-crate decision with the same shape as this one, not a cleverer regex"*), which turned out to be better
+evidence than the line range — it makes the point in the repo's own voice. Recorded because the same wrong
+path appears in item 3.1's sibling citation style and a future pass should not re-derive it.
+
+**Not anticipated by the brief.** (1) The renumber invalidated three internal cross-references to "Phase 3"
+(the version-space serialisation line, the GATE row's CI-wiring clause, and Phase 7's CI-wiring rung) plus
+X9's own "the by-crate queue (Phase 3)"; all four now read Phase 4. Wave 5 item 5.3(a) speaks of "a hard
+Phase-3 ordering constraint" — that is now **Phase 4**, and wave 5 must write it that way. (2) `tokenize_sql`
+keeps `_` as well as alphanumerics, so the brief's "every non-alphanumeric character" is one character too
+broad; stated precisely instead. The conclusion (`only`/`public` resolve as table names) is unaffected.
