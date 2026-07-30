@@ -94,3 +94,27 @@ Two things the primary source adds that the distillations lost:
 - How long may a consolidation branch live before it is a liability? Bun accepted 11 days with one
   human watching. Nothing here defines the ceiling.
 - Should the slice script grow the fixer role that §7 already specifies?
+
+## Measured 2026-07-30 — the pre-merge rebind bound a commit that no longer exists
+
+`fanout-plan-DRAFT.md` §6.5 argues the ~390-reference pre-merge authority rebind is waste, because the
+repo is squash-only so the commit the registers bind is destroyed by the very merge it authorizes, while
+`bind-merged-console-authority-squash` binds the surviving SHA afterwards. It cited #506–#508 as evidence
+and recommended reducing the pre-merge rebind to one per batch.
+
+PR #526 supplied direct evidence on our own work:
+
+- The train was built and verified: 390 references rebound to `f9ea7b7e0`, `authenticate-console-authority`
+  **SUCCESS**, shape verified as T being C's single-parent child touching only the three authority documents.
+- The PR squash-merged to `a9e51e7b7`. **`f9ea7b7e0` is not in `main`.** Every one of the 390 bindings now
+  points at a commit reachable only from a merged branch ref.
+- `bind-merged-console-authority-squash` reported **SUCCESS** on close, binding the surviving squash SHA.
+
+So both halves of §6.5's claim are now measured rather than inferred: the pre-merge rebind is paid to bind a
+doomed commit, and the post-merge binder — which is the real provenance anchor — works. The recommendation
+remains unexecuted, and this is the second time in one session it cost real effort.
+
+The cost is not the rebind itself; `rebind-authority-train.mjs` does it in seconds. The cost is that **every
+PR needs a signed authority tip whose content is a governance claim**, which is a human decision per PR
+rather than per batch. That is what makes it a per-lane tax rather than a per-batch one, and it is the
+concrete argument for the consolidation-branch shape this document proposes.
