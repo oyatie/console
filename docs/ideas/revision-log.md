@@ -736,3 +736,34 @@ one-column claim, which is the vagueness this sweep is supposed to remove, not i
 The five DB-enforced four-eyes CHECKs (`DRAFT:886`-`DRAFT:888`) were all cited correctly and now each carries
 its own CHECK expression, so the count claim "five" is checkable one grep at a time instead of resting on five
 line numbers in four migrations.
+
+## Wave 6 — §4.3 relationships and §4.4 substrate table (`DRAFT:1034`-`DRAFT:1208`)
+
+`UNVERIFIABLE 367 → 322` · `RESOLVES 201 → 245` · `BROKEN 0` · total 717
+
+### The origin of the `:79` propagation, found and corrected
+
+`DRAFT:1167` is where it started. The cell read:
+
+> `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` **`0153:79`** — … (`:78` is the
+> `requested_by` FK; three sites in earlier drafts cited `:78` for the approver, and §4.1 already cited `:79`
+> correctly — one fact, two line numbers, now one.)
+
+Every part of that parenthetical is false. In `0153_create_governance.sql`, **`:77` is
+`FOREIGN KEY (requested_by, org_id)`, `:78` is `FOREIGN KEY (approver_id, org_id)`, and `:79` is `);`.** The
+three sites that said `:78` for the approver were **right**, and this cell is the reason a later pass
+"corrected" them to `:79`. A note claiming to have reconciled one fact to one number had reconciled it to the
+wrong one — which is exactly why the sweep replaces the number with the FK text and lets the file decide.
+
+The cell now carries both FOREIGN KEY expressions verbatim, and the citation-history note is reduced to the one
+thing that is true: two earlier passes read the approver FK one line low and then rewrote the sites that had
+it right.
+
+### A tooling near-miss worth recording, because the gate caught it
+
+The batch rewriter used `String.prototype.replace(find, repl)`. In the replacement string, `$'` means
+"everything after the match", so the DDL fragment
+`CHECK (link_type ~ '^[a-z][a-z0-9_]{1,63}$')` silently rewrote itself into the rest of the line at
+`DRAFT:1132`. `verify-doc-citations.mjs` reported it as **BROKEN** on the next run — the only BROKEN this sweep
+has produced — and it was fixed by passing a function replacer. A citation checker that only counted line
+numbers would have shipped that corruption.

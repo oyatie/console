@@ -1031,13 +1031,13 @@ The input's "largest single engineering cost" does not arise.
 The one new mechanism is a resolver, and its pattern is already shipped:
 `group_role_grants_for_user` (`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)`) — `SECURITY DEFINER`, `SET search_path = public,
 pg_temp`, `SET LOCAL row_security = off`, a narrow parameterised query, `SET LOCAL row_security = on`,
-an `EXCEPTION WHEN OTHERS` handler that restores it before re-raising (`0060:90-92`),
+an `EXCEPTION WHEN OTHERS` handler that restores it before re-raising (`0060` `EXCEPTION WHEN OTHERS THEN`),
 `REVOKE ALL … FROM PUBLIC`,
 `GRANT EXECUTE … TO console_rt`, and an `-- rls-arming: ok` marker for the gate at
-`backend/ci/gates/rls-arming/src/lib.rs:69`.
+`backend/ci/gates/rls-arming/src/lib.rs` `const ALLOW_MARKER: &str = "rls-arming: ok";`.
 
 **One deliberate deviation from that precedent, and it is a security fix.**
-`group_role_grants_for_user(p_user UUID)` (`0060:99`) resolves "own grants only" by trusting the
+`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)` resolves "own grants only" by trusting the
 caller to pass its own user id — the function itself never reads `app.current_org`. **`effective_grants_for`
 must not copy that** (there is no separate "party resolver" — the handle needs none, §4.1): it filters on
 `current_setting('app.current_org')`, not on a parameter, or any org reads any org's grants. Stated here
@@ -1047,8 +1047,8 @@ probe.
 ### 4.3 Relationships
 
 Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany, ManyMany}`
-(`ontology/domain/src/lib.rs:184-188`); `ont_link_types.cardinality` CHECKs the same three at
-`0152:77`.
+(`ontology/domain/src/lib.rs` `pub enum LinkCardinality`); `ont_link_types.cardinality` CHECKs the same three at
+`0152` `cardinality TEXT NOT NULL CHECK (cardinality IN ('one_one','one_many','many_many'))`.
 
 | Relationship | From → To | Card. | Tenant-scoped | Stored as | Owner |
 |---|---|---|---|---|---|
@@ -1071,7 +1071,7 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 | `work_jurisdiction` (결재 관할) | work → a scope descriptor | OneOne | yes | **property `{level, node_id}`** on the `work` row | tenant |
 | `work_assignee` | work → party | ManyMany | yes | property set + `assignment` | tenant |
 | `work_artifact` | work → email_thread \| document \| … | ManyMany | yes | `object_links` row | tenant |
-| **`person_artifact`** | person → email_thread \| document \| … | ManyMany | yes | `object_links` row on the **seeded `person` kind** (`0102:32`) | tenant |
+| **`person_artifact`** | person → email_thread \| document \| … | ManyMany | yes | `object_links` row on the **seeded `person` kind** (`0102` `('person', 'Employee / person record')`) | tenant |
 | `competent_for` (전담) | org_unit → (category, band, scope) | ManyMany | yes | `delegation_rule` | tenant |
 | `line_step` | approval_line → step | OneMany ×2 sets | yes | `ont_link` (raised / executed) | tenant |
 | `step_edge_kind` | step → {결재, 협조, 보고} | — | yes | property on step | tenant |
@@ -1083,22 +1083,22 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 `config.link = {stable_key, to_type}`** — §0.12. A link type alone writes no edge on any path a user or an
 API caller can reach. This is a hard specification, not a style preference. **The one exception, named so
 nobody discovers it and thinks the rule is false:** `PgInstanceStore::create_link`
-(`backend/crates/ontology/adapter-postgres/src/instances.rs:291`, INSERT at `:319`) writes a row directly
+(`instances.rs` `pub async fn create_link`, INSERT at `instances.rs` `INSERT INTO ont_links (`) writes a row directly
 from a bare `link_type_id` — but every call site in the repo is under `tests/`, so it has **zero non-test
 callers**. `grep 'INSERT INTO ont_links'` finds **two** sites and only one of them is the property
 mechanism.
 
 **Why every scope edge above is a property and not an `ont_link` — measured, not argued.** An `ont_link`
-endpoint must be an `ont_instances` row **in the same org**: `0155:76-77` FKs both
+endpoint must be an `ont_instances` row **in the same org**: `0155` `FOREIGN KEY (from_instance_id, org_id) REFERENCES ont_instances(id, org_id)` FKs both
 `(from_instance_id, org_id)` and `(to_instance_id, org_id)` to `ont_instances(id, org_id)`. Neither an
 `organization` nor a `group` is an `ont_instances` row, so `grant → group` and `grant → organization` are
 **not storable at all**. X4b CASE 3a executed the write and got
 `ERROR: insert or update on table "ont_links" violates foreign key constraint "ont_links_to_instance_id_org_id_fkey"`.
 The `org_unit` arm *is* storable, but it is made a property too, so there is **one** storage form and the
 fold reads `AccessScope` uniformly instead of branching on how the scope happened to be recorded. The
-vocabulary is the shipped one: `backend/crates/kernel/core/src/access_scope.rs:28-34`
-`enum AccessScopeLevel { Group, Org, Region, Branch, Worksite }` and `:37-40`
-`struct AccessScope { level, node_id }`, specified at `docs/specs/org-hierarchy.md:172-173`.
+vocabulary is the shipped one: `backend/crates/kernel/core/src/access_scope.rs` `pub enum AccessScopeLevel`
+`enum AccessScopeLevel { Group, Org, Region, Branch, Worksite }` and `access_scope.rs` `pub struct AccessScope`
+`struct AccessScope { level, node_id }`, specified at `docs/specs/org-hierarchy.md` `level ∈ {Group,Org,Region,Branch,Worksite}`.
 
 > **Caveat, and it is a hard one: Slice 0 must not publish a `grant_scope` link type whose declared target
 > set includes the `groups` or `organizations` table** (the *tables*, not the `Group`/`Org` enum variants —
@@ -1106,7 +1106,7 @@ vocabulary is the shipped one: `backend/crates/kernel/core/src/access_scope.rs:2
 > already published — an authored type's published schema is the expensive thing to withdraw, not the row.
 
 **Why the four `work_*` edges are properties: `work` is Tier T projected, and a projected type owns no
-instances.** `backend/crates/ontology/adapter-postgres/src/instances.rs:1443-1450` states it: *"A
+instances.** `backend/crates/ontology/adapter-postgres/src/instances.rs` `This is a READ-ONLY view` states it: *"A
 `projected` object type owns no store of its own … This is a READ-ONLY view … there is no create/stage path
 here, only list."* So `work` has no `ont_instances` row to be an `ont_link` endpoint, and all four edges are
 rejected by referential integrity **today**. They become scope-descriptor properties on the `work` row — or
@@ -1122,17 +1122,17 @@ Six of these deserve their reason stated:
   position per person, so no correction was needed — but the scope link was implicit and is now
   explicit.
 
-- **`work_artifact` uses `object_links` (`0102:54`), not `ont_links` — and a new edge kind IS a
+- **`work_artifact` uses `object_links` (`0102` `CREATE TABLE object_links`), not `ont_links` — and a new edge kind IS a
   migration.** The storage choice stands: `object_links` addresses endpoints as `src_kind`/`src_id` and
-  `dst_kind`/`dst_id` (`0102:57`, `:59`) with **no FK to either endpoint id**, which is exactly a
+  `dst_kind`/`dst_id` (`0102` `src_id TEXT NOT NULL CHECK (char_length(btrim(src_id)) BETWEEN 1 AND 200)` and `0102` `dst_id TEXT NOT NULL CHECK (char_length(btrim(dst_id)) BETWEEN 1 AND 200)`) with **no FK to either endpoint id**, which is exactly a
   work→artifact edge across heterogeneous stores, already
-  `UNIQUE (org_id, src_kind, src_id, dst_kind, dst_id, link_type)` (`0102:68`). Both `person` and `org_unit`
-  are already seeded kinds (`0102:32-33`); `work` needs one appended row.
+  `0102` `UNIQUE (org_id, src_kind, src_id, dst_kind, dst_id, link_type)`. Both `person` and `org_unit`
+  are already seeded kinds (`0102` `('person', 'Employee / person record')` and `0102` `('org_unit', 'Organizational unit (region/branch/worksite)')`); `work` needs one appended row.
   **The reason previously given for it is struck.** The plan said *"`link_type` is validated only by slug
-  regex (`0102:63`) — so a new edge kind needs no migration."* That went stale at `0130`/`0132`:
-  `0130_create_link_types.sql` created the registry, seeded **twelve** labels (`:37-49`, none of them
-  `work_artifact`), granted `console_rt` **SELECT only** (`:52`), and added
-  `object_links_link_type_fkey … ON DELETE RESTRICT NOT VALID` (`:75`), validated by `0132:8`. `console_rt`
+  regex (`0102` `link_type TEXT NOT NULL CHECK (link_type ~ '^[a-z][a-z0-9_]{1,63}$')`) — so a new edge kind needs no migration."* That went stale at `0130`/`0132`:
+  `0130_create_link_types.sql` created the registry, seeded **twelve** labels (`0130` `INSERT INTO link_types (link_type, description) VALUES`, none of them
+  `work_artifact`), granted `console_rt` **SELECT only** (`0130` `GRANT SELECT ON link_types TO console_rt;`), and added
+  `object_links_link_type_fkey … ON DELETE RESTRICT NOT VALID` (`0130` `ADD CONSTRAINT object_links_link_type_fkey`), validated by `0132` `VALIDATE CONSTRAINT object_links_link_type_fkey;`. `console_rt`
   cannot INSERT a `link_type` — measured: *"permission denied for table link_types"* (X4b S1). So **a new
   edge kind is one appended `link_types` row per kind in a migration**, exactly like the `object_types` kind
   row this plan already budgets. Carry the per-kind cost D3 names: one `RESOLVABLE_KIND_AUTH` row, one
@@ -1141,14 +1141,14 @@ Six of these deserve their reason stated:
 - **`person_artifact` is declared, not left to a probe to discover.** The PII and handover boundary rests on
   the distinction between an artifact linked to a **work** and one linked to a **person**, and until now that
   distinction existed only inside §4.5's 인계 완료 clause 2 and the `handover_moves_work_artifacts_only`
-  probe. It is an `object_links` row on the already-seeded `person` kind (`0102:32`), ManyMany, owned by the
+  probe. It is an `object_links` row on the already-seeded `person` kind (`0102` `('person', 'Employee / person record')`), ManyMany, owned by the
   tenant, and 인계 완료 clause 2 now references it by name.
 - **Three edge kinds, not one with a flag.** 결재 / 협조 / 보고 differ in direction and meaning; 보고
   is the return leg C and D owe B. A flag on a signing edge cannot carry a reverse-direction
   obligation.
 - **합의 is a parallel branch, so a step index cannot express the line.** Steps carry a
   `branch_group` and a `mode ∈ {serial, parallel_합의, terminal_if_전결}`. This is precisely what
-  `work_order_approval_steps.step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` (`0008:62`)
+  `0008` `step_order SMALLINT NOT NULL CHECK (step_order BETWEEN 1 AND 3)` on `work_order_approval_steps`
   forecloses.
 
 ### 4.4 What each existing mechanism can and cannot absorb
@@ -1163,29 +1163,29 @@ point of stating them per row.
 
 | Mechanism | Executable blocker | Verdict |
 |---|---|---|
-| `work_order_approval_steps` | `step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` `0008:62`; `role CHECK (role IN ('MECHANIC','ADMIN','EXECUTIVE'))` `:63`; `UNIQUE (work_order_id, role)` `:71` | 3 steps max, demo roles, each role once, serial only. 합의 inexpressible. **Leave alone.** |
-| `gov_approvals` | `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` **`0153:79`** — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. (`:78` is the `requested_by` FK; three sites in earlier drafts cited `:78` for the approver, and §4.1 already cited `:79` correctly — one fact, two line numbers, now one.) `UNIQUE (org_id, request_ref)` `0153:76` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
-| `policy_role_conditions` | `attribute CHECK` over **17** literals `0065:110-127`; `operator CHECK (operator IN ('equals','not_equals','in'))` `0065:129`. **The resolver evaluates far less than the CHECK admits:** `backend/crates/platform/authz/src/lib.rs:1404-1430` returns `None` unless the operator is `equals`\|`in` **and** the attribute is `branch`\|`team` | **Narrow the WRITE PATH to `{branch, team}` × `{equals, in}`**, with a test asserting write-accepted ⊆ resolver-evaluated; leave the DB CHECK permissive as the additive extension point. `not_equals` stays writable-but-unwritten rather than removed. **Two of the four dimensions have no substrate at all** — see below |
-| `notices` / `notice_receipts` | `notice_receipts` is `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)` `0162:41-51` — **no content column**; `notices.status CHECK (status IN ('draft','published'))` `0162:22` — **no closure state**; `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)` `0162:50` — **recipient must be a user of that org**; and **no per-recipient audience targeting at all** — see below | 통지 → 인지 is built. **Four** gaps, two of them structural. **Extend; never build a second ack mechanism.** |
+| `work_order_approval_steps` | `0008` `step_order SMALLINT NOT NULL CHECK (step_order BETWEEN 1 AND 3)`; `0008` `role TEXT NOT NULL CHECK (role IN ('MECHANIC','ADMIN','EXECUTIVE'))`; `0008` `UNIQUE (work_order_id, role),` | 3 steps max, demo roles, each role once, serial only. 합의 inexpressible. **Leave alone.** |
+| `gov_approvals` | **`0153` `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT`** — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. (Its twin is `0153` `FOREIGN KEY (requested_by, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT`; two earlier passes read the approver FK one line low, then rewrote the sites that had it right — the FK text now decides.) `0153` `UNIQUE (org_id, request_ref),` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
+| `policy_role_conditions` | `attribute CHECK` over **17** literals (`0065` `attribute         TEXT        NOT NULL CHECK (attribute IN (`); `0065` `operator TEXT NOT NULL CHECK (operator IN ('equals','not_equals','in'))`. **The resolver evaluates far less than the CHECK admits:** `backend/crates/platform/authz/src/lib.rs` `match condition.attribute.as_str()` returns `None` unless the operator is `equals`\|`in` **and** the attribute is `branch`\|`team` | **Narrow the WRITE PATH to `{branch, team}` × `{equals, in}`**, with a test asserting write-accepted ⊆ resolver-evaluated; leave the DB CHECK permissive as the additive extension point. `not_equals` stays writable-but-unwritten rather than removed. **Two of the four dimensions have no substrate at all** — see below |
+| `notices` / `notice_receipts` | `notice_receipts` is `0162` `CREATE TABLE notice_receipts`, i.e. `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)`, — **no content column**; `0162` `status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published'))` — **no closure state**; `0162` `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id) ON DELETE RESTRICT` — **recipient must be a user of that org**; and **no per-recipient audience targeting at all** — see below | 통지 → 인지 is built. **Four** gaps, two of them structural. **Extend; never build a second ack mechanism.** |
 
 **`policy_role_conditions`: the vocabulary is narrower than "already exists as data", in two ways.**
 
 *(a) The resolver's fail-closed whole-role void is CORRECT and must never be relaxed.* When
 `effective_scope_for_custom_role_conditions` returns `None`, the caller at
-`backend/crates/platform/authz/src/lib.rs:1350-1360` does `else { continue; }` — **it drops the whole role**, not
+`backend/crates/platform/authz/src/lib.rs` `let mut effective_scopes_by_role = BTreeMap::new();` does `else { continue; }` — **it drops the whole role**, not
 the one condition it could not evaluate. That is the safe direction, and it must never be "improved" into
 per-condition ignoring, which would silently grant a role whose narrowing condition the evaluator did not
-understand. The contrary comment at `0065:101-103` — *"unsupported conditions remain review/audit metadata until
+understand. The contrary comment at `0065` `unsupported conditions remain review/audit` — *"unsupported conditions remain review/audit metadata until
 a richer evaluator lands"* — is **struck**: it describes the conditions as inert, when in fact they void the
 role. Both readings are fail-closed; only one is true, and the false one invites the relaxation.
 
 **Competence** enters as a **subject-side condition attribute** in exactly the shape the `"team"` arm already has
-(`authz/src/lib.rs:1421-1425`) — not a third relation, and not a change to the scope type.
+(`authz/src/lib.rs` `if !team_condition_matches(user_team, &condition.condition_values)`) — not a third relation, and not a change to the scope type.
 
 A read-only **inert-condition census (X-T2f)** must run **before** the narrowed write path ships: today's rows may
 already carry operators or attributes the resolver voids, and narrowing the write path does not migrate them.
 
-*(b) The plan's four dimensions do not all have a substrate.* `0065:110-127` holds **17** attribute literals and
+*(b) The plan's four dimensions do not all have a substrate.* `0065` `attribute         TEXT        NOT NULL CHECK (attribute IN (` holds **17** attribute literals and
 **직무 and 직급 are not among them.** So 소속 (`organization`, `department`) and 결재선 (`team`, `position`,
 `assignment`) are expressible **as condition attributes** — a different vocabulary from `AccessScopeLevel`, and
 the confusion of the two is what put a non-existent `org_unit` scope level into an earlier revision (§4.1). Note
@@ -1198,14 +1198,14 @@ where the accrual/insurance/severance rules that need them already land. They ar
 **`gov_approvals` already runs an N-node 결재 line, and the plan misread it.** The blocker cell used to
 read *"`UNIQUE (org_id, request_ref)` — one decision per request"*, which would have made a multi-step line
 inexpressible and is the reason an earlier draft invented an `approval_signature` entity. It is wrong.
-`backend/crates/orgchange/adapter-postgres/src/lib.rs:1477-1488` — the newest approval domain in the repo —
+`backend/crates/orgchange/adapter-postgres/src/lib.rs` `VALUES ($1, $2, 'org_change_step', $3, $4, $5, $6)` — the newest approval domain in the repo —
 INSERTs into `gov_approvals` binding `request_ref` to **`step_id`** and `requested_by` to
 `request.drafted_by`, with its own comment *"Record the decision through `gov_approvals` so the DB-level
 approver <> requester CHECK is the second SoD net."* So an eight-step `org_change_request` writes **eight**
 immutable rows. The constraint is **one signature per node**, not one per request.
 
 **Name the failure mode, because it is the same one `ADR-0002` produced.** The plan cited the migration's
-own inline comment (`-- one decision per request`, `0153:76`) instead of reading the caller. A comment in a
+own inline comment (`0153` `UNIQUE (org_id, request_ref),                 -- one decision per request`) instead of reading the caller. A comment in a
 migration is prose about code, exactly like an ADR Decision line, and it was wrong in the direction that
 invents work.
 
