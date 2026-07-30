@@ -122,14 +122,28 @@ async function resolve(name) {
 // force. This is a staleness report, not a legal check — it asserts nothing about Korean
 // law, only about whether our own citations still point at the live instrument.
 //
-// It found two real defects on its first run, which is why it exists:
-//   - The 고용보험 rate's source pins `efYd=20251001`, and `payroll_sources_verified_on()`
-//     is 2026-06-27. Meanwhile 고용보험법 시행령 currently in force was promulgated 2026-06-30
-//     effective 2026-07-01, and 시행규칙 2026-07-01. So the kernel's verification date falls
-//     BEFORE the promulgation of the instruments now in force — it cannot have read them,
-//     whatever they say. (Whether `lsiSeq=280527` is itself that 시행령 is NOT established
-//     here; the staleness holds on dates alone and needs no such claim.)
-//   - total.comwel.or.kr (the 산재보험 anchor) answers 400.
+// It found one real defect on its first run: **total.comwel.or.kr, the 산재보험 anchor,
+// answers 400** — a dead evidence anchor.
+//
+// IT ALSO PRODUCED ONE FALSE POSITIVE, WHICH IS THE MORE USEFUL LESSON.
+//
+// I read "고용보험법 시행령, effective 2026-07-01, promulgated 2026-06-30" against
+// `payroll_sources_verified_on() == 2026-06-27` and concluded the kernel's 고용보험 citation
+// was stale. It is not. The 고용보험 employee rate is set in a DIFFERENT decree — 징수법
+// 시행령 제12조제1항제2호 (1천분의 18, employee bears ½) — and the kernel cites exactly that:
+// `lsiSeq=280527` resolves to 「고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 시행령」,
+// 대통령령 제35935호, 공포 2025-12-23, 시행 2025-10-01 — which matches the pinned
+// efYd=20251001 and predates 2026-06-27. The citation is correct and fresh.
+//
+// The error was inferring a delegation chain from a NAME MATCH: 고용보험법 sounds like it
+// governs 고용보험 rates, so I assumed it did. It does not. See
+// docs/ideas/payroll-statutory-sources.md, which read the chains and found the layer is
+// different for every single item — 국민연금 4.75% is in an act 부칙, the 간이세액표 is 별표 2 of a
+// 대통령령, 산재 is delegated twice.
+//
+// So this mode cannot conclude staleness from dates alone, and does not try to. It reports
+// what resolves and what each URL pins; deciding whether a pin is the RIGHT instrument
+// requires reading the delegation chain, which is a human job.
 async function checkKernel() {
   const { readFileSync } = await import('node:fs');
   const KERNEL = 'backend/crates/payroll/domain/src/lib.rs';
@@ -162,8 +176,9 @@ async function checkKernel() {
   }
 
   if (retrievedOn) {
-    console.log(`\nTo prove freshness, every cited instrument's 공포일자 must be <= ${retrievedOn}.`);
-    console.log('Pass the instrument names to this script (without --check-kernel) to get their 공포일자.');
+    console.log(`\nFreshness needs the instrument's 공포일자 <= ${retrievedOn} — but ONLY for the`);
+    console.log('instrument that actually sets the number. A name-similar law is not it: see the');
+    console.log('false positive in this file\'s header. Read the delegation chain, do not infer it.');
   }
   if (bad > 0) {
     console.error(`\n${bad} of ${urls.length} cited source URLs do not resolve.`);
