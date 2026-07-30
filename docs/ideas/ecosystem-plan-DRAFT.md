@@ -90,7 +90,11 @@ UNIQUE.
 
 The input's *consequence* stands (a user row carries one `org_id`, so one human at two companies is
 two rows). Its *mechanism* is wrong, and the correction is load-bearing: **`users.party_id` and
-`employees.party_id` are plain single-column FKs to `party(id)`.** No key surgery on either table.
+`employees.party_id` are single-column references, not composite ones.** No key surgery on either table.
+(Whether that reference is an enforced FK is a *different* question, and the answer is no: D1's
+non-foreclosure constraint 1 forbids a cross-tenant identifier as a FOREIGN KEY, so both are bare nullable
+`UUID`s, app-validated — §4.1. An earlier draft of this section said "plain single-column FKs", which
+contradicted that constraint; the single-column half is the part that corrects the input.)
 Relatedly, `group_role_grants.user_id UUID NOT NULL REFERENCES users(id)` (`0060:43`) is ordinary
 DDL permitted by the PK — not a cross-tenant carve-out earned by special design.
 
@@ -443,14 +447,16 @@ canvas must see it.
 
 ### 3.2 The options
 
-#### Option 1 — Global opaque handle + tenant edge + Tier N authority  ← RECOMMENDED
+#### Option 1 — Platform-homed opaque handle + tenant edge + Tier N authority  ← RECOMMENDED
 
-`party` in Tier O holding no PII; `party_org_visibility` in Tier T under ordinary
-`app.current_org` RLS; one re-validating definer; the authority/approval entities of §4.1 as
-ontology instance types.
+`party` as an attribute-free row **homed at the platform sentinel org** under the ordinary `org_isolation`
+policy, so it is invisible and un-mintable from every tenant without a carve-out (§4.1);
+`party_org_visibility` in Tier T under the same ordinary `app.current_org` RLS; one re-validating definer for
+the **authority fold**; the authority/approval entities of §4.1 as ontology instance types.
 
-**Pros.** Zero new GUCs, zero changes to the 141 RLS policies, zero new gate classifications. Reuses
-three existing tier classifications, the shipped `SECURITY DEFINER` resolver pattern (`0060:99-126`),
+**Pros.** Zero new GUCs, zero changes to the 141 RLS policies, zero new gate classifications, **and no
+owner-only table for the handle itself**. Reuses the existing tier classifications unchanged, the shipped
+`SECURITY DEFINER` resolver pattern (`0060:99-126`),
 the `object_links` edge store (`0102:54`), and the re-validating-read bargain (`backend/crates/platform/authz-rest/src/store.rs:576-593`).
 Canvas-editability and replay arrive free for every Tier N entity — the large majority. PII does not
 move. Slice 0 is
@@ -486,7 +492,12 @@ learn its employee also works at company B), and every existing Tier G rationale
 tenant data"* (`tenant-isolation/src/lib.rs:48-70`). Adding PII-adjacent identity there breaks the
 allowlist's own stated meaning.
 
-#### Option 4 — `party` in Tier T, deduplicated by a matching service
+#### Option 4 — a party row **per tenant**, deduplicated by a matching service
+
+**Not Option 1 with different words, and the distinction is the whole point.** Option 1 also puts the handle
+under ordinary RLS (§4.1) — but at **one** home, the platform sentinel org, so there is exactly one row per
+human and no matching. Option 4 is one row **per tenant** with a service guessing which rows are the same
+person. The tier is not what separates them; the cardinality is.
 
 **Pros.** No new tier usage at all; every row stays under the existing floor.
 
@@ -683,30 +694,78 @@ the org-editor spec's **"Position"**, the seeded built-in **`position`**, the sh
 this plan's 직책 type. **Record the mapping across all four in `docs/specs/ecosystem-PORTING.md`** (Phase 0);
 do not resolve it by picking a name in prose here.
 
-#### Tier O — platform, definer-mediated (2 new tables, **both DEFERRED out of Slice 0**)
+#### Tier O — platform, definer-mediated (**1** new table, DEFERRED out of Slice 0)
 
 | Entity | Purpose | Identity / key | Lifetime | Slice 0 shape |
 |---|---|---|---|---|
-| **`party`** | a durable identity handle reused across tenants and verticals, in the scope this plan can actually deliver | `id UUID PRIMARY KEY` (plain, per §0.4) |永久; never hard-deleted, terminal soft state only | **DEFERRED** — see below. Slice 0 does not need it |
-| **group-scoped grant store** | grants whose `scope.level = group`; unreachable from Tier N | `(id, org_id_of_grantor, …)`, keyed inside its definer | effective-dated | **DEFERRED** — W5/W8 |
+| **group-scoped grant store** | grants whose `scope.level = Group`; unreachable from Tier N | `(id, org_id_of_grantor, …)`, keyed inside its definer | effective-dated | **DEFERRED** — W5/W8 |
+
+**`party` is NOT in this tier — decided here, and it was the last contradiction left standing in this plan.**
+Constraint 4 of the deferral (below) said the handle lands as *"an ordinary tenant-scoped row homed at the
+existing sentinel org … **not** a Tier O carve-out, **no** new GUC, **no** definer-mediated read"*, while this
+heading, §3.2, §4.2, §4.6, two §7 probes and §9 all still put it in Tier O. **Constraint 4 wins, on four
+grounds, and it is the smaller claim:**
+
+1. **The row holds nothing a tenant needs to read.** `party` is `(id, org_id, party_kind, status,
+   created_at)` and no attributes (§5.4). The only useful field is the id, and a tenant already has it from
+   its **own** `party_org_visibility` row. §4.2 already says the confidential fact is *"which parties does
+   org A hold edges to"*, not *"who is this party"* — so no tenant read path is being taken away.
+2. **The sentinel org already exists and is already the home for platform-owned rows that outlive tenants.**
+   `0036_platform_onboarding.sql:224` INSERTs `organizations` id
+   `00000000-0000-0000-0000-00000000face`, slug `platform`, status `ARCHIVED`, with the reason in its own
+   text at `:217-221`: *"The platform sentinel needs an `organizations` row so the FK from `users.org_id` is
+   satisfiable for the platform admin. It is NOT a tenant … Status ARCHIVED so it can never be mistaken for
+   an onboardable/active tenant."* It is excluded from `platform_list_organizations()` (`:121`), and
+   `0051_platform_remove_organization.sql:34` **re-homes a deleted tenant's `audit_events` rows to it** so
+   *"the immutable record of the action survives verbatim under the platform tier"*. A durable handle that
+   must outlive every tenant is exactly that shape, already shipped.
+3. **Tier T + FORCE RLS closes the cardinality leak by OMISSION, which is DN-0003 invariant 5's own word.**
+   X4 measured `SELECT count(*) FROM x4probe_party` returning **2** where org A held one edge, and invariant 5
+   is *"Denied data is omitted, including counts and relationship existence"* (`DN-0003:85-86`). Under
+   `org_isolation` on `app.current_org` a tenant-armed `SELECT count(*) FROM party` returns **0** — omitted,
+   not denied-with-an-error.
+4. **The same policy's `WITH CHECK` makes minting platform-only for free.** With
+   `CHECK (org_id = '00000000-0000-0000-0000-00000000face'::uuid)` on the column and `org_isolation` armed, a
+   tenant-armed INSERT cannot satisfy both predicates at once. So *"resolution is a platform-principal
+   operation, never a tenant capability"* (decided below) is enforced by the two constraints rather than by a
+   definer anyone has to review.
+
+**What this removes from the plan:** one `owner_only_table_allowlist` entry, one gate classification, and one
+audited `SECURITY DEFINER` surface. **What it does not remove:** Tier O itself — the group-scoped grant store
+stays there, because X4b measured a sibling org reading **0** rows from Tier N and `group_role_grants` is the
+exact shipped precedent (§4.2). Tier O is used once, for the case that genuinely needs a cross-org read.
 
 `party_kind ∈ {NATURAL, LEGAL}`. **The row holds no personal data** — no name, no phone, no
 주민등록번호. It is an opaque durable handle. That is what makes §5.4 (PII) and erasure tractable, and
 it is why the row is safe to exist while every Korea control reads HOLD.
 
-Why Tier O and not the alternatives: Tier T reintroduces the duplication the entity exists to remove;
-Tier G would let any tenant enumerate every party on the platform, contradicting the confidentiality
-requirement and every Tier G rationale; Tier N is forbidden by `0155:18`.
+Why the sentinel-homed tenant row and not the alternatives: **Tier O** buys a definer and a gate entry for a
+read nobody performs (above); **Tier T homed in a tenant org** reintroduces the duplication the entity exists
+to remove, and lets that tenant read and mint handles; **Tier G** would let any tenant enumerate every party on
+the platform, contradicting the confidentiality requirement and every Tier G rationale; **Tier N** is not
+forbidden by `0155:18` once the row is homed at the sentinel — it is rejected because minting is a
+platform-principal write and **every ontology write runs on the command pool, which is `None` wherever this
+ships** (§8), so a Tier N handle would be green on every PR and dead in production.
 
 Named `party`, not `employee`, so the sales, procurement and governance verticals reuse one identity.
 Employment is one relationship kind among `CUSTOMER`, `SUPPLIER`, `DIRECTOR`, `CONTRACTOR`.
 
 **`party` and its three companions are DEFERRED out of Slice 0, and Slice 0 does not wait on them.** Struck
-from the 0207+ list: the Tier O `party` table and the Tier T rows `party_org_visibility`, `users.party_id`
-and `employees.party_id`. The reason is irreversibility, not doubt about the design: `users` is in
-`built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so `DROP COLUMN` on
-`users.party_id` is a gate violation — **a column added today is permanent, while adding it later is purely
-additive**. Slice 0's two grants are 현장-scoped and intra-org (§8), and its capacity recording lands on
+from the 0207+ list: the `party` table and the Tier T rows `party_org_visibility`, `users.party_id`
+and `employees.party_id`. **Two different reasons, named separately, because only one of them is
+irreversibility:**
+
+- **`users.party_id` is irreversible.** `users` is in `built_in_audited_tables()`
+  (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so `DROP COLUMN` on it is a gate violation —
+  **a column added today is permanent, while adding it later is purely additive**. (`employees` is **not** in
+  that list and carries no `-- console-gate: audited-table` marker, so `employees.party_id` is reversible; it
+  is deferred with `party` only because it has nothing to point at.)
+- **`party` and `party_org_visibility` are new tables and therefore droppable.** They are deferred because
+  **Slice 0 does not need them** — its grant `subject` is the raiser's `users.id` — and because the
+  resolution mechanism below is a named pre-condition rather than a Slice-0 design. Stating this as
+  "irreversibility" would have been the wrong reason attached to the right decision.
+
+Slice 0's two grants are `Worksite`-scoped and intra-org (§8), and its capacity recording lands on
 `gov_approvals`, so **no lane waits on the party**.
 
 Five non-foreclosure constraints hold while it is deferred, so the deferral cannot become a foreclosure:
@@ -717,10 +776,14 @@ Five non-foreclosure constraints hold while it is deferred, so the deferral cann
 3. **`0075_employee_identity_resolution.sql:16-17`'s
    `CHECK (identity_name_only_merge = FALSE)` is never dropped or relaxed.** Name-only merge is the failure
    mode this whole entity exists to remove.
-4. When the handle lands it is **an ordinary tenant-scoped row homed at the existing sentinel org**
-   `00000000-0000-0000-0000-00000000face`, under the standard `org_isolation` policy — **not** a Tier O
-   carve-out, **no** new GUC, **no** definer-mediated read.
-5. Any eventual edge FK is `RESTRICT` / `NO ACTION`, never `CASCADE`.
+4. **DECIDED, not merely constrained** (above): when the handle lands it is **an ordinary tenant-scoped row
+   homed at the existing sentinel org** `00000000-0000-0000-0000-00000000face` (`0036:224`), carrying
+   `org_id NOT NULL` + a CHECK pinning it to that id + `ENABLE`/`FORCE ROW LEVEL SECURITY` under the standard
+   `org_isolation` policy — **not** a Tier O carve-out, **no** new GUC, **no** definer-mediated read, **no**
+   `owner_only_table_allowlist` entry.
+5. Any eventual edge FK is `RESTRICT` / `NO ACTION`, never `CASCADE` — **if** constraint 1 is ever amended to
+   permit one at all. As it stands constraint 1 forbids the FK, so this constraint is the fallback shape and
+   not a licence.
 
 **`party_org_visibility`'s key order is a security control, not a style choice.**
 `UNIQUE (org_id, party_id, relationship_kind, valid_from)` — **`org_id` leads the key because a unique index
@@ -738,9 +801,10 @@ an audit record, never a tenant capability.** A tenant-side "is this the same pe
 service §3.2 Option 4 already rejects, and it would let one tenant probe another's roster. Option (a) —
 `party` minted per passkey credential and self-linked by the human at second-org onboarding — remains
 admissible and ADR-0022 permits it, because it is **local** identity rather than federation; it is not
-chosen because it needs an endpoint this plan has not designed. Constraint 4 above governs either way, which
-is what **reconciles this with the Tier O heading**: the handle is definer-mediated only if it is ever
-actually placed in Tier O, and constraint 4 says it should not be.
+chosen because it needs an endpoint this plan has not designed. Constraint 4 above governs either way, and
+under it the mechanism is **enforced by DDL rather than by an endpoint's authorization check**: the
+`org_isolation` policy's `WITH CHECK` plus the sentinel-pinning column CHECK make a tenant-armed INSERT into
+`party` impossible, so "platform-principal only" holds even if a later handler forgets to assert it.
 
 **The scope vocabulary is the shipped enum and nothing else, and there are FIVE variants.**
 `backend/crates/kernel/core/src/access_scope.rs:28-34` is
@@ -771,8 +835,9 @@ which is an instance reference and not an `AccessScope` level at all. Adding a d
 smaller honest claim: the alternative is to write a level the kernel does not have into the one deliverable
 Slice 0 must ship.
 
-**`Group`-scoped grants cannot be Tier N at all** — they are the second Tier O table, beside
-`group_role_grants`. `Org`-, `Region`-, `Branch`- and `Worksite`-scoped grants stay Tier N: X4b CASE 1 measured
+**`Group`-scoped grants cannot be Tier N at all** — they are the **one** new Tier O table this plan adds,
+beside `group_role_grants`. (An earlier revision called this "the second Tier O table", counting `party` as the
+first; `party` is not in Tier O, above.) `Org`-, `Region`-, `Branch`- and `Worksite`-scoped grants stay Tier N: X4b CASE 1 measured
 that arm resolving end to end, with subject, capability and scope folded out of Tier N. The `Group` arm fails
 structurally: `0155:18` makes `ont_instances.org_id` `NOT NULL`, leaving no third option for the row's
 tenancy, so the grant is homed in exactly one org — and X4b CASE 2c/2d measured org B, a **sibling in the
@@ -785,19 +850,21 @@ every group-scoped authority read today. A new Tier O grant store must therefore
 **authorisation-complete inside the definer**, keyed on the **authenticated principal** — never on a
 caller-supplied org id or group id. `group_role_grants` is already in `owner_only_table_allowlist`
 (`backend/ci/gates/tenant-isolation/src/lib.rs:115-129`), so the new store takes the same classification and
-the same review posture, and `no_new_gate_classification` (§7) names **both** owner-only tables.
+the same review posture. **It is the ONE owner-only table this plan adds** — `party` is not one (above) — and
+`no_new_gate_classification` (§7) names it alone.
 
 #### Tier T — tenant, ordinary RLS (Slice 0: **1** new table and **2** new columns; the party rows are deferred)
 
 | Entity | Purpose | Identity / key | Lifetime | Slice 0 |
 |---|---|---|---|---|
+| **`party`** | the durable identity handle, **homed at the platform sentinel org** and therefore invisible and un-mintable from every tenant (above) | `id UUID PRIMARY KEY` (plain, per §0.4); `org_id NOT NULL` CHECKed `= …00face` | 永久; never hard-deleted, terminal soft state only | **DEFERRED** — Slice 0 does not need it |
 | **`party_org_visibility`** | **the keystone edge.** The tenant-owned fact that this org holds a relationship to this party | `(id)`; `UNIQUE (org_id, party_id, relationship_kind, valid_from)` — **`org_id` leads the key as a security control**, above | effective-dated interval | **DEFERRED** with `party` |
 | **`work`** (업무) | first-class work; the join point for artifacts, actions, handover, ledger and metrics | `(id, org_id)` | open → closed | yes — one row |
 | **`worksite_registration`** | 사업장 legal attributes: 4대보험 registration unit, optional 사업자등록번호 | `(id, org_id)`; `UNIQUE (org_id, business_registration_no)` | permanent per site | **no** — W3 |
 | **`worksite_contract`** (사업장 계약) | the contract a temporary unit's existence is DERIVED from | `(id, org_id)` | a term | **no** — W15 |
 | **`lot`** | quantity-bearing node: the splittable/mergeable unit (§5.8) | `(id, org_id)` | until consumed | **no** — W16 |
-| `users.party_id` | link the per-org account to the durable identity | nullable FK `→ party(id)` | — | **DEFERRED** — `users` is audited, so the column is permanent once landed |
-| `employees.party_id` | link the imported HR row to the durable identity | nullable FK `→ party(id)` | — | **DEFERRED** with `party` |
+| `users.party_id` | link the per-org account to the durable identity | **bare nullable `UUID`, app-validated** — constraint 1 below forbids a cross-tenant identifier as an FK, so this is not an FK; §0.4's point is only that a *single-column* reference suffices | — | **DEFERRED** — `users` is audited, so the column is permanent once landed |
+| `employees.party_id` | link the imported HR row to the durable identity | **bare nullable `UUID`**, same posture | — | **DEFERRED** with `party` |
 | `gov_approvals.authorizing_grant_id`, `.on_behalf_of_party_id` | **capacity** — §4.0.1, §4.0.3 | two nullable additive columns | — | **yes** |
 
 **The capacity columns land on `gov_approvals`, not on `audit_events`** (§4.0.3). Two nullable additive
@@ -892,9 +959,10 @@ Three notes where Tier N bites:
 
 **`party_link`** — control edges `(holder_party, held_party, basis, share_bp, valid_from, valid_to,
 reason)` between LEGAL parties. ManyMany; **cycles permitted** (순환출자); group designation is
-derived, never stored. It is cross-tenant by construction, so it is **Tier O** and reuses the `party`
-definer pattern. Slice 0 does not touch it and neither does any widening before W7; designing its DDL
-now would be speculative.
+derived, never stored. Its rows must be **read across orgs** by the group-designation derivation, which is the
+one property `party` does not have, so it is **Tier O** and reuses the shipped `group_role_grants` definer
+pattern (§4.2) — not a "`party` definer", which this plan does not build (§4.1). Slice 0 does not touch it and
+neither does any widening before W7; designing its DDL now would be speculative.
 
 ### 4.2 Why there is no second tenancy dimension
 
@@ -933,18 +1001,22 @@ dimension" is true, and "everything resolves in one query under `app.current_org
 
 **Which of the two readings of the definer this plan means: Variant B.** The party/edge join runs **inside**
 the definer, which re-derives the org floor from `current_setting('app.current_org')` and never accepts an
-org from the caller. §7 already decides it — `party_not_readable_as_console_rt` asserts the direct SELECT is
-denied, which is only consistent with Variant B. Variant A (the join outside, the definer answering
-narrow questions) is rejected on measurement, not taste: it leaves **platform-wide party cardinality
-readable by any tenant**. X4 measured `SELECT count(*) FROM x4probe_party` returning **`2`** where org A held
+org from the caller. Under the tier decision of §4.1, Variant A (the join outside, the definer answering
+narrow questions) is not merely undesirable — **it is not implementable**: the outside half of the join would
+read `party` as `console_rt` armed to a tenant, and `org_isolation` returns **zero rows** there. Variant A was
+already rejected on measurement, and the measurement is why the handle may never be granted to `console_rt`
+unfiltered: X4 measured `SELECT count(*) FROM x4probe_party` returning **`2`** where org A held
 an edge to only one — and DN-0003 invariant 5 makes that a violation, not an inelegance: *"Denied data is
-omitted, including counts and relationship existence"* (`DN-0003:85-86`).
+omitted, including counts and relationship existence"* (`DN-0003:85-86`). The sentinel-homed row satisfies
+invariant 5 in its own terms: the count is **omitted** (0), not refused with an error.
 
 The confidential fact is not *"who is this party"* — it is *"which parties does org A hold edges to"*.
 That fact lives in `party_org_visibility`, which names exactly one `org_id` per row. Ordinary
 `app.current_org` RLS therefore gives the whole requirement: org A reads only its own edges and
-**cannot observe that org B holds an edge to the same party**. The `party` row itself is Tier O with
-no `console_rt` grant, so it is never directly readable.
+**cannot observe that org B holds an edge to the same party**. The `party` row itself is homed at the platform
+sentinel org under the same policy, so a tenant-armed read returns nothing and a tenant-armed INSERT is
+refused by the policy's own `WITH CHECK` (§4.1) — **one mechanism covering both the handle and the edge**,
+which is why no second one is specified.
 
 Consequences: **zero new GUCs. Zero changes to the 141 RLS policies. Zero new gate classifications.**
 The input's "largest single engineering cost" does not arise.
@@ -959,10 +1031,11 @@ an `EXCEPTION WHEN OTHERS` handler that restores it before re-raising (`0060:90-
 
 **One deliberate deviation from that precedent, and it is a security fix.**
 `group_role_grants_for_user(p_user UUID)` (`0060:99`) resolves "own grants only" by trusting the
-caller to pass its own user id — the function itself never reads `app.current_org`. The party
-resolver must **not** copy that: it filters on `current_setting('app.current_org')`, not on a
-parameter, or any org can enumerate any party. Stated here because copying the precedent verbatim is
-the likely failure.
+caller to pass its own user id — the function itself never reads `app.current_org`. **`effective_grants_for`
+must not copy that** (there is no separate "party resolver" — the handle needs none, §4.1): it filters on
+`current_setting('app.current_org')`, not on a parameter, or any org reads any org's grants. Stated here
+because copying the precedent verbatim is the likely failure, and `definer_ignores_parameter_org` (§7) is the
+probe.
 
 ### 4.3 Relationships
 
@@ -973,8 +1046,8 @@ Cardinality uses the engine's own vocabulary, `LinkCardinality::{OneOne, OneMany
 | Relationship | From → To | Card. | Tenant-scoped | Stored as | Owner |
 |---|---|---|---|---|---|
 | `party_visible_to_org` | party → organization | ManyMany | **yes** (T) | `party_org_visibility` row | tenant |
-| `account_of` | users → party | OneOne per org | yes | `users.party_id` FK | tenant |
-| `hr_record_of` | employees → party | OneOne per org | yes | `employees.party_id` FK | tenant |
+| `account_of` | users → party | OneOne per org | yes | `users.party_id` — a bare `UUID`, **no FK** (§0.4, constraint 1) | tenant |
+| `hr_record_of` | employees → party | OneOne per org | yes | `employees.party_id` — a bare `UUID`, **no FK** | tenant |
 | `controls` | party(LEGAL) → party(LEGAL) | ManyMany, cyclic | no (O) | `party_link` row | platform |
 | `parent_org_unit` | org_unit → org_unit | OneMany | yes | `ont_link` | tenant |
 | `worksite_legal_reg` | org_unit → worksite_registration | OneOne | yes | FK (T) + projection | tenant |
@@ -1275,10 +1348,13 @@ What the plan adds:
   `row_hash` (`0155:52-53`), the one-open-revision index (`:57-58`) and the as-of index (`:59-60`).
   This is what makes
   *"what could this person approve on 2026-03-01?"* answerable rather than reconstructed.
-- **Three entities must be platform tables, each for a stated reason.** `party` — cross-tenant, and
-  `ont_instances.org_id` is `NOT NULL` (`0155:18`). `party_org_visibility` — it *is* the RLS-bearing
-  row, and it must be an ordinary Tier T table to get the floor for free. `worksite_registration` —
-  needs a UNIQUE constraint and an FK an attribute bag cannot express.
+- **Three entities must be ordinary tables rather than ontology instances, each for a stated reason — and
+  all three are Tier T, none is Tier O.** `party` — minting it is a platform-principal write, and every
+  ontology write runs on the command pool that is `None` wherever this ships (§8), so a Tier N handle would be
+  green on every PR and dead in production; homed at the platform sentinel org it needs no carve-out at all
+  (§4.1). `party_org_visibility` — it *is* the RLS-bearing row, and it must be an ordinary Tier T table to get
+  the floor for free. `worksite_registration` — needs a UNIQUE constraint and an FK an attribute bag cannot
+  express.
 - **Actions dispatch, they do not bypass.** Granting, signing, closing, confirming and linking are all
   `ont_action_types` with `dispatch = 'instance_revision'`, except the four-eyes-gated authority
   changes, which are `'projected_usecase'` routing through `gov_approvals` /
@@ -1570,8 +1646,10 @@ The canvas's role half extends shipped data rather than breaking ground.
 
 ### 5.4 D — PII: DECIDED — the durable handle holds no personal data
 
-**`party` is `(id, party_kind, status, created_at)` and nothing else.** All identifying attributes stay
-in tenant-scoped rows under the RLS floor that already protects them — `employees` (`0063:21-25`)
+**`party` is `(id, org_id, party_kind, status, created_at)` and nothing else** — `org_id` present only because
+the row is an ordinary tenant-classified table pinned to the platform sentinel org (§4.1), which is what earns
+it the RLS floor and the tenant-isolation gate's default classification. **No identifying attribute.** All of
+them stay in tenant-scoped rows under the RLS floor that already protects them — `employees` (`0063:21-25`)
 keeps holding name, and everything more sensitive continues to live in the tenant tier.
 
 Three consequences, and the third is the one that unblocks slice 0:
@@ -1592,7 +1670,8 @@ Three consequences, and the third is the one that unblocks slice 0:
    the person stays erased. The handle-only design is an **erasure requirement**, not merely PII
    hygiene.
 3. **Cross-tenant inference is closed by RLS, not by policy.** The only cross-tenant fact is "the same
-   handle appears in two orgs", and no tenant can read another's `party_org_visibility` rows.
+   handle appears in two orgs", and no tenant can read another's `party_org_visibility` rows — nor the
+   `party` row itself, for the same reason and under the same policy (§4.1). One mechanism, not two.
 
 **What must be true before a `party` row itself holds real personal data** (i.e. before any widening
 puts an attribute on `party`):
@@ -2068,7 +2147,7 @@ ten) records is the allocation table below.
 
 | # | Matter | Status | Required artifact |
 |---|---|---|---|
-| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022**. Its `## Decision` opens *"Do not ship a speculative external IdP seam."* and confines `console-identity-application` to *"only local org/account administration commands, read models, and audit builders"*. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no platform identity row lands in Slice 0. **Does not block Slice 0** — it *defers* `party` (§4.1) |
+| G1 | **Platform-level `party`** | **WITHDRAWN — premise false; there is no clause to amend.** G1 grounded on *"`ADR-0022:25,33-39` decides identity is local/org-scoped"*. Verified: `:25` is **Context prose** (`## Context` is at `:23`), the `## Decision` block is `:31-39`, and the string **"org-scoped" appears nowhere in ADR-0022**. Its `## Decision` opens *"Do not ship a speculative external IdP seam."* and confines `console-identity-application` to *"only local org/account administration commands, read models, and audit builders"*. Nothing there forbids a durable handle | **D1 → ADR-0027**, a reciprocal amendment pair that **narrows** ADR-0022: identity linkage across orgs is **human-asserted**, and no durable identity row lands in Slice 0. **Narrower still after §4.1's tier decision:** the handle is an ordinary tenant-classified row homed at the platform sentinel org, not a Tier O carve-out and not a new gate classification — so what D1 records is a *linkage* rule, not a new tier or a new privileged read. **Does not block Slice 0** — it *defers* `party` to W2 (§4.1) |
 | G2 + G2b | **`org_id` × `BranchScope` composition, and `BranchScope::All` after `Role` deletion** (§0.16) | **documented gap, and it is ONE gap.** `ADR-0003`'s Decision says *"`All` for SUPER_ADMIN/EXECUTIVE rollups, an explicit branch set otherwise"* and has **no org concept**; `ADR-0021` decision 2 makes `org_id` the RLS boundary Cedar may not widen. **No ADR states how they compose** | **D2 → ADR-0028**, one reciprocal pair on `ADR-0003` with its Decision **edited in place** (merging G2 + G2b). Filed as **one** record because CI cannot see a clause collision (above): two pairs against the same Decision line would both pass. `ADR-0021` and `ADR-0018` gain `ADR-0028` in `related`. **BLOCKS Slice 0** |
 | G3 | **전결규정 routing, capacity, obligation loop** | **not greenfield — "zero ADR hits" is struck.** `ADR-0023:81-82` already decides arbitrary approval-line DAGs and the 검토/승인/합의/참조 vocabulary, so this is a **delta on ADR-0023's Engine-Gen**, not new ground | **N3 → ADR-0033**, non-amending, `related: [ADR-0018, ADR-0023]`. **NOT blocking Slice 0** — this is the theme where corrected evidence *removes* work from the critical path. Acceptance condition: the first migration introducing `delegation_rule` carries `CHECK (delegator_id <> delegate_id)` in the same file |
 | G4 | **Quantity lineage** (§5.8) | new; zero ADR hits | **N4 → ADR-0034**, non-amending, `related: [ADR-0001]`. Deferred **with constraints instead of schema** (below); no 0207+ slot |
@@ -2293,14 +2372,14 @@ session state. Any probe in this section that asserts an absence must state wher
 
 | Probe | Asserts | Known-bad control |
 |---|---|---|
-| `party_not_readable_as_console_rt` | direct `SELECT * FROM party` as `console_rt` is **denied** | a `GRANT SELECT … TO console_rt` on `party` |
+| `party_is_invisible_and_unmintable_from_a_tenant` | armed to any tenant org as `console_rt`: `SELECT * FROM party` returns **zero rows** and `SELECT count(*)` returns **0** (omitted, not refused — DN-0003 invariant 5), **and** an INSERT is refused by the `org_isolation` `WITH CHECK` + the sentinel-pinning column CHECK (§4.1). Renamed from `party_not_readable_as_console_rt`, which asserted a **denial** — the Tier O reading the plan no longer takes | the table without `FORCE` RLS, or without the sentinel CHECK: the SELECT then returns platform-wide cardinality, which is exactly what X4 measured (`count(*)` = **2** where org A held one edge) |
 | `visibility_edge_rls` | org A cannot see org B's `party_org_visibility` rows for the same party | RLS not FORCEd, or policy omitted |
 | `definer_ignores_parameter_org` | passing another org's party id returns **zero rows** | a definer that filters on a parameter instead of `app.current_org` — i.e. `0060:99` copied verbatim |
 | `definer_revalidation_each_check` | baseline GREEN with all named checks of §5.1 present; then deleting **`org_predicate`**, **`visibility_predicate`**, **`chain_linkage`** and **`scope_containment`** each in turn fails the suite | each named deletion individually RED. The probe **names each check** rather than carrying a count, so the number cannot rot |
 | `definer_returns_no_foreign_org_grant` | one party with a visibility edge in **both** orgs and one grant in each; armed as org A, the call returns exactly **one** row | the definer as §4.5 specified it before this revision — no `org_id` predicate on the grant read |
 | `row_security_restored_on_error` | an exception inside the definer leaves `row_security = on` | a definer without the `EXCEPTION WHEN OTHERS` restore of `0060:88-91` |
 | `genesis_grant_mintable_only_by_platform_principal` | a grant with no authorising grant can be minted **only** on the platform-principal path gated by `PlatformFeature::TenantCreate` (§5.1) | a **tenant**-authenticated endpoint creating a grant with no authorising grant |
-| `no_new_gate_classification` | the tenant-isolation gate passes with **both** owner-only tables — `party` **and** the group-scoped grant store — in `owner_only_table_allowlist`, and `party_org_visibility` unlisted | either owner-only table added to `global_table_allowlist` (must be RED per §3.2 Option 3) |
+| `no_new_gate_classification` | the tenant-isolation gate passes with **exactly one** new `owner_only_table_allowlist` entry — the group-scoped grant store — and with `party`, `party_org_visibility` and `work` **unlisted**, i.e. taking the default Tier T classification. `party` is deliberately **not** an owner-only table (§4.1) | the grant store added to `global_table_allowlist` (must be RED per §3.2 Option 3); **and** `party` added to `owner_only_table_allowlist`, which must also be RED — an owner-only `party` is the Tier O reading this plan withdrew, and it would silently remove the RLS floor that carries the confidentiality property |
 | `visibility_unique_key_leads_with_org_id` | an insert into `party_org_visibility` that collides **only** with an invisible other-org row is **accepted** | the same table keyed `UNIQUE (party_id, relationship_kind, valid_from)` — must be RED with `23505` (X4 CONTROL 3) |
 | `ont_link_to_projected_row_is_rejected` | an `ont_links` INSERT naming a **projected** type's row as an endpoint fails **on the FK** (`0155:76-77`) | the four `work_*` edges as §4.3 specified them before this revision, i.e. as `ont_link`s |
 | `worksite_reg_no_unique` | duplicate 사업자등록번호 rejected by the DB | the constraint expressed only in app code |
@@ -2499,7 +2578,7 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 
 | # | Crate | Ships |
 |---|---|---|
-| 1 | `platform/db` | migrations 0207+: `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer. **`party` and `party_org_visibility` are struck** — deferred out of Slice 0 on irreversibility (§4.1) |
+| 1 | `platform/db` | migrations 0207+: `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer. **`party` and `party_org_visibility` are struck** — deferred out of Slice 0 because Slice 0 does not need them; `users.party_id` is struck on irreversibility, which is a different reason (§4.1) |
 | 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs. **HARD ORDERING: the bundle-schema declaration of `capabilities`, `scopes` and the decision-scope resource attribute lands FIRST** — `Entities::from_entities` validates against the schema (`engine.rs:449`), so an undeclared attribute denies everything (§4.6) |
 | 3 | `platform/authz-rest` | the re-validating definer read path (§5.1) |
 | 4 | `ontology/*` | the Tier N types + their attached policies; `allowlisted_projected_table` arm for `work` |
@@ -2639,8 +2718,8 @@ Minimum shape of each entity, and nothing more:
 
 | Entity | Slice-0 minimum |
 |---|---|
-| `party` | **not in Slice 0** — deferred on irreversibility (§4.1). The grant's `subject` is the raiser's `users.id`, an ordinary tenant-scoped UUID |
-| `party_org_visibility` | **not in Slice 0** — deferred with `party`. `visibility_predicate` (§5.1) binds against `users.org_id = current_setting('app.current_org')` until the edge table lands, which is the same predicate against a table that already exists |
+| `party` | **not in Slice 0** — deferred because Slice 0 does not need it, **not** on irreversibility: it is a new table and therefore droppable (§4.1). The grant's `subject` is the raiser's `users.id`, an ordinary tenant-scoped UUID |
+| `party_org_visibility` | **not in Slice 0** — deferred with `party`, same reason. `visibility_predicate` (§5.1) binds against `users.org_id = current_setting('app.current_org')` until the edge table lands, which is the same predicate against a table that already exists |
 | `users.party_id` | **not in Slice 0** — `users` is audited, so the column is permanent once landed (§4.1) |
 | `org_unit` | 1 instance, `kind = 사업장`. No legal attributes. |
 | `work` | **1 `work` ROW written by the domain use-case, listed through the projection** — a projected type has no instance-create path (`instances.rs:1443-1450`) — with `work_scope` as a scope-descriptor property naming that 현장 |
@@ -2663,8 +2742,9 @@ the wrong thing:
 | `gov_approvals.authorizing_grant_id` + `.on_behalf_of_party_id` | both columns land; `authorizing_grant_id` is populated on the one signature, and `on_behalf_of_party_id` is **exercised** by `daeri_records_both_parties` (§7) rather than shipped unused | the capacity field is what makes the signature a signature (§4.0.1) — and pre-mortem 4's named failure **is** a capacity column nothing writes, so a column landing unexercised is the failure, not the mitigation |
 | `finance_gl_vouchers` | 1 posted voucher with `accounting_date` (**irreversible once landed** — the table is gate-marked audited, `0160:21`), a line-level `branch_id`, a line dimensioned to the work, and the `assert_period_open` call the crate does not make today | the purchase has a cost; the header dimension pair already exists, the date and line-level push are §5.5 items 1-2. **One voucher is not evidence the dimension shape is settled** (§5.5) |
 
-**Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 —
-deferred on irreversibility), group-scoped grants and the Tier O store that would hold them, control edges,
+**Explicitly out of slice 0:** `party` and `party_org_visibility` and the two `party_id` columns (§4.1 — the
+tables because Slice 0 does not need them, `users.party_id` on irreversibility; they land together in **W2**),
+group-scoped grants and the one Tier O store that would hold them, control edges,
 group designation, `Feature` work, the canvas, 합의, 협조/보고 edges, employment, employment type, PII
 attributes, retroactive linking, lots, metrics, allocation.
 
@@ -2692,7 +2772,7 @@ expiry, never deletion**.
 | # | Widening | Acceptance |
 |---|---|---|
 | W1 | Obligation loop: extend `notices` with a content-bearing 조치보고 leg, an originator closure state, and a **party-keyed recipient** replacing the org-composite FK (`0162:50`) | `obligation_notifies_line_as_raised` GREEN **including a recipient in another company**; post-확정 correction GREEN; no second ack mechanism exists |
-| W2 | `employment` revised: `party_id` replaces `person_name`; employer split from worksite | a 파견 employment with employer ≠ worksite round-trips |
+| W2 | **The party family lands here** — no other widening carried it, and W2 is the first that cannot proceed without it: the `party` table (sentinel-homed, §4.1), `party_org_visibility`, `users.party_id`, `employees.party_id`. Then `employment` revised: `party_id` replaces `person_name`; employer split from worksite | `party_is_invisible_and_unmintable_from_a_tenant`, `visibility_edge_rls` and `visibility_unique_key_leads_with_org_id` GREEN with their controls RED; `visibility_predicate` (§5.1) moves from `users` to `party_org_visibility` **unchanged in form**; a 파견 employment with employer ≠ worksite round-trips |
 | W3 | `org_unit` kinds/lifetime + `worksite_registration` (Tier T, projected) | duplicate 사업자등록번호 rejected by the DB; a bounded TF expires |
 | W4 | `work` handover + `assignment` as a grant source; **and the fixed-authority 인계 완료 count** without which hard-gating is not available (§4.5) | `handover_is_scope_bounded` and `handover_moves_work_artifacts_only` GREEN; the 인계 완료 **assertion** recorded with its asserted count. Hard-gating offboarding lands **only** with the fixed-authority count — until then the assertion is evidence, not a gate |
 | W5 | Remaining grant sources + `position` + `authority_rule` + named `*OrgWide`/`*GroupWide` reach capabilities (§0.17 — no DSL) + `delegation_rule`'s `(period, cumulative_limit)` pair (§4.7) + **a department level on `AccessScopeLevel` if 부서-scoped grants are wanted** (§4.1 — a kernel enum change with two exhaustive `match` sites and its own `branch_scope_for_org` arm) | **requirement 3 provable**; `fold_is_additive` still GREEN with all five sources; and if the department level lands, both `match` sites compile with a decided projection rather than a wildcard |
