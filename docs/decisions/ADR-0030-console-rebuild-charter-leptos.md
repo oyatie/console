@@ -37,7 +37,7 @@ authority. This record is where that becomes authoritative.
 shapes the route inventory parses are
 `web/src/console/shell/nav.ts` and `web/src/console/screens/registry.ts`
 (`scripts/console/route-inventory.mjs:4-5`) — the same
-`web/src/console/**` tree ADR-0025:51-56 designates as the target application
+`web/src/console/**` tree ADR-0025's `## Decision` designates as the target application
 root. `scripts/console/route-inventory.test.mjs:36` asserts that HEAD tracks
 neither file, and CI runs that assertion at `.github/workflows/ci.yml:137`. So
 the repository's own executable gate proves the absence that ADR-0025's
@@ -89,18 +89,18 @@ nothing to omit late. Any measured performance benefit is incidental.
 Three structural prescriptions cease to bind. Each is withdrawn because it names
 machinery absent from HEAD, not because it has merely aged:
 
-1. **The carbon-copy visual authority** — ADR-0025:233-234's "one carbon-copy
+1. **The carbon-copy visual authority** — ADR-0025's "one carbon-copy
    visual system" end state and `:70-76`'s prohibition on inheriting target
    visuals from `web/src/components/shell/**`, `web/src/components/ui/**`, the
    legacy `AppShell`, shadcn styling, or legacy Tailwind composition. A
    prohibition against inheriting from a deleted tree constrains nothing, and
    an end state defined as a copy of a deleted surface is unreachable.
 2. **The `web/src/console/**` path and the two-shell composition** —
-   ADR-0025:49-56 and `:77-82`. A Leptos application is a workspace crate, so
+   ADR-0025's `## Decision` and its boundary table. A Leptos application is a workspace crate, so
    surface ownership must be stated in crate terms. The *intent* — one owner
    per surface, no forking of shared machinery — is retained and restated in
    §5 and §6.
-3. **The spine boundary as enumerated** — ADR-0025:59-68. Its rows "Generated
+3. **The spine boundary as enumerated** — ADR-0025's shared-versus-console boundary table. Its rows "Generated
    OpenAPI types and the single typed client/cache", "frontend
    policy-decision adapters", and "Internationalization corpus and string
    gates" are stack-specific and describe machinery that no longer exists. The
@@ -328,7 +328,7 @@ measured gaps.
   contracts crate owned by the ADR-0009 record. Neither is decided here, and
   §6 is inert until the first lands.
 - − The i18n corpus and string gates were enumerated in the withdrawn spine
-  boundary (ADR-0025:66) and are not replaced. Korean is the product's primary
+  boundary (ADR-0025's boundary-table row `Generated OpenAPI types and the single typed client/cache`) and are not replaced. Korean is the product's primary
   language and `scripts/check-i18n.mjs` is absent from HEAD, so the repository
   has no string gate meanwhile. This is a known, recorded gap.
 - − Charter-without-implementation means the stack choice stays unvalidated by

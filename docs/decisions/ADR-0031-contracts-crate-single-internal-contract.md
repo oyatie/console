@@ -24,7 +24,7 @@ its own decision rather than as a clause of a frontend record.
 ## Context
 
 ADR-0009 is accepted and its Decision (`ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md:20`)
-reads, in part: *"one utoipa-emitted `openapi.yaml` is the single contract; CI generates
+read, **before this record amended it**, in part: *"one utoipa-emitted `openapi.yaml` is the single contract; CI generates
 ts/swift/kotlin clients and fails on drift (T1.9); both apps build from every release tag (T1.8
 dual-build gate)"*. Both halves of that sentence describe machinery that is absent from HEAD.
 An ADR Decision line is prose about code, not code, so each claim below was checked against the
@@ -186,7 +186,7 @@ status change:
    a false sentence standing in an authoritative record.** In the sentence at `ADR-0009:20`, the
    clause
 
-   > one utoipa-emitted `openapi.yaml` is the single contract
+   > one utoipa-emitted `openapi.yaml` is the single contract   ← as it read before this amendment
 
    is false as verified above and became
 
