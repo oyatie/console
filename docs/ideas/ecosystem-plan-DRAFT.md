@@ -583,9 +583,9 @@ composition and the reason a fixed list of spines was wrong.
 | **authority** | partly | **code**: a `Feature` variant — Cedar's action id (§0.2) |
 | **tenancy** | — | **code**: a migration, if it needs a table |
 | **economics / lineage** | — | **code**: today both substrates are absent |
-| **projected backing** | — | **code**: one arm in `allowlisted_projected_table` (`instances.rs:1479`) |
-| **an action on a projected type** | — | **code**: one `ProjectedDispatchRegistry` handler per action. `backend/crates/ontology/rest/src/lib.rs:160-195` — `pub struct ProjectedDispatchRegistry { handlers: HashMap<String, ProjectedHandler> }`, a chainable `register(target, handler)` builder, and a `dispatch` returning `ActionError::NotWiredYet`. Registered in the App composition root; **unwired = `NotWiredYet`**, which is fail-closed but is still code |
-| **the authoring-action vocabulary** | — | **code, and it is CLOSED at five elements**: `backend/crates/platform/authz/src/cedar_pbac/authoring.rs:246-252` `AUTHORING_ACTIONS` = `view`, `edit`, `read_field`, `console:configure`, `console:deploy`. A sixth authoring verb is a code change, not an authored row |
+| **projected backing** | — | **code**: one arm in `allowlisted_projected_table` (`instances.rs` `fn allowlisted_projected_table`) |
+| **an action on a projected type** | — | **code**: one `ProjectedDispatchRegistry` handler per action. `backend/crates/ontology/rest/src/lib.rs` `pub struct ProjectedDispatchRegistry { handlers: HashMap<String, ProjectedHandler>, }`, a chainable `register(target, handler)` builder, and a `dispatch` returning `ActionError::NotWiredYet`. Registered in the App composition root; **unwired = `NotWiredYet`**, which is fail-closed but is still code |
+| **the authoring-action vocabulary** | — | **code, and it is CLOSED at five elements**: `backend/crates/platform/authz/src/cedar_pbac/authoring.rs` `const AUTHORING_ACTIONS: &[&str] = &[` = `view`, `edit`, `read_field`, `console:configure`, `console:deploy`. A sixth authoring verb is a code change, not an authored row |
 
 **So "manageable without developers" is true for the dimension side and false for the component side.**
 Declaring a new *type* is authored; giving it a *new concern* is code. That boundary is the honest answer
@@ -600,11 +600,11 @@ number rather than as the word "wiring". One `ProjectedDispatchRegistry` handler
 
 **DN-0003 invariant 1 for Tier T and Tier P, answered before `work` is built.** The invariant is *"Every
 consequential mutation is an Action. Direct object-property edits are not the normal operational write path"*
-(`DN-0003:73-74`). `work` is Tier T projected, and a projected type's domain use-case remains the sole writer
-(`instances.rs:1443-1450`) — so the two paths must be reconciled explicitly, not assumed. This plan takes the
+(`DN-0003` `Every consequential mutation is an Action.`). `work` is Tier T projected, and a projected type's domain use-case remains the sole writer
+(`instances.rs` `owns no store of its own`) — so the two paths must be reconciled explicitly, not assumed. This plan takes the
 **bounded exception**: `work`'s consequential mutations run through the domain use-case, which is the *normal*
 write path for that table and is itself audited, while the ontology surface is read-only over it. The gate that
-holds the exception is the projected-type read-only contract in `instances.rs:1443-1450` plus the audited
+holds the exception is the projected-type read-only contract in `instances.rs` `This is a READ-ONLY view` plus the audited
 domain use-case; what is forfeited is the **revision history** — a projected type has no fixity chain and no
 as-of replay (§3.1), which is exactly why authority does **not** live in Tier T. Probe:
 `projected_mutation_goes_through_the_domain_usecase`; known-bad control: a write reaching the backing table
@@ -613,12 +613,12 @@ through an ontology property edit.
 
 #### 4.0.3 The headline finding: the `record` contract cannot say under WHAT AUTHORITY — and every entity composing it inherits the gap
 
-`audit_events` current shape is `0003:11-28` plus `org_id` (`0032:84`) plus
-`ip, user_agent, auth_method, device, classification_badges, anomaly, reason` (`0149:6-13`).
+`audit_events` current shape is `0003` `CREATE TABLE audit_events` plus `org_id` (`0032` `ALTER TABLE audit_events ADD COLUMN org_id UUID;`) plus
+`ip, user_agent, auth_method, device, classification_badges, anomaly, reason` (`0149` `ADD COLUMN classification_badges TEXT[],`).
 
-It carries: `actor` (`0003:13`), `action` (`:16`), `target_type`/`target_id` (`:17-18`),
-`branch_id` (`:20`), `before_snap`/`after_snap` (`:22-23`), `trace_id`/`span_id` (`:25-26`),
-`occurred_at` (`:27`), `reason` (`0149:13`).
+It carries: `actor` (`0003` `actor UUID REFERENCES users(id)`), `action` (`0003` `action TEXT NOT NULL CHECK`), `target_type`/`target_id` (`0003` `target_type TEXT NOT NULL` and `0003` `target_id TEXT NOT NULL`),
+`branch_id` (`0003` `branch_id UUID REFERENCES branches(id)`), `before_snap`/`after_snap` (`0003` `before_snap JSONB` and `0003` `after_snap JSONB`), `trace_id`/`span_id` (`0003` `trace_id CHAR(32)` and `0003` `span_id CHAR(16)`),
+`occurred_at` (`0003` `occurred_at TIMESTAMPTZ NOT NULL,`), `reason` (`0149` `ADD COLUMN reason TEXT;`).
 
 It does **not** carry:
 
@@ -637,23 +637,23 @@ feed, the audit trail, and any ledger line.
 **Where the two columns land in Slice 0: `gov_approvals`, not `audit_events`.** The finding stands; its
 target moved, and the reason is reversibility.
 
-- `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs:164-172`) is exactly
+- `built_in_audited_tables()` (`backend/ci/gates/migration-safety/src/lib.rs` `fn built_in_audited_tables`) is exactly
   `audit_events, regions, branches, users, user_branches`, so **a column on `audit_events` is permanent from
   the day it lands** — `DROP COLUMN` on an audited table is a gate violation. A Slice-0 shape that has not
   yet been exercised should not be the shape that can never be withdrawn.
 - `gov_approvals` is in **neither** that built-in list **nor** the `-- console-gate: audited-table` marker
-  set that `discover_audited_tables` (`:174-187`) folds into it, so the same two columns there are
+  set that `discover_audited_tables` (`migration-safety/src/lib.rs` `fn discover_audited_tables`) folds into it, so the same two columns there are
   reversible. Its additive-column precedent is in the same table
-  (`0164_bind_consume_four_eyes.sql:34`, §4.1).
+  (`0164_bind_consume_four_eyes.sql` `ADD COLUMN target_ref UUID;`, §4.1).
 - The probe that would give the `audit_events` pair meaning —
   `capacity_recorded_on_every_authority_mutation` (§7) — needs the **D3 write-path enumeration** (§8 Phase 0)
   to exist first. Landing a permanent column ahead of the artifact that says where null is a defect is the
   wrong order.
 
 **The `audit_events` pair is therefore DEFERRED, and it is priced rather than scheduled.** Its DDL is two
-nullable columns and the `0149:6-13` precedent is exact — that migration added seven nullable columns to
+nullable columns and the `0149` `ADD COLUMN classification_badges TEXT[],` precedent is exact — that migration added seven nullable columns to
 this same append-only table. The real cost is not the DDL: it is **reaching the value**. `AuditEvent`
-(`backend/crates/kernel/core/src/audit.rs:83`) carries `id, actor, action, target_type, target_id,
+(`kernel/core/src/audit.rs` `pub struct AuditEvent`) carries `id, actor, action, target_type, target_id,
 branch_id, org_id, before, after, request_context, classification, trace, occurred_at` and **no capacity
 field**, so every site that wants to populate the column must have the authorising grant id in hand at the
 call. There are **466** non-test `with_audit` references under `backend/crates`. An
@@ -670,12 +670,12 @@ on `audit_events` builds a second ledger, which is the divergence failure by con
 
 Ordered by tier. "Slice 0" marks the minimum shape the proving slice needs; everything else is a widening.
 
-**Vocabulary is adopted, not invented.** `docs/specs/org-editor-primitives-ux.md:468` names **fourteen** org
+**Vocabulary is adopted, not invented.** `docs/specs/org-editor-primitives-ux.md` `Section 4 defines Group/HQ, Organization, OrgUnit` names **fourteen** org
 primitives: Group/HQ, Organization, OrgUnit, Worksite/Cell, **Person, Employee, User, Position**,
 **PolicyRole hook**, ReportingLine, EmploymentAssignment, CrossOrgAssignment, SetupDraft, Audit — with the
-separation this plan needs at `:256`: *"A Person is not automatically an Employee; an Employee is not
+separation this plan needs (`org-editor-primitives-ux.md` `A Person is not automatically an Employee`): *"A Person is not automatically an Employee; an Employee is not
 automatically a User; a Position is not automatically an access Role."* **None of them is built** (no
-`positions`, `org_units`, `persons`, `reporting_lines` or `worksites` table exists; the spec admits it at `:25`).
+`positions`, `org_units`, `persons`, `reporting_lines` or `worksites` table exists; the spec admits it — `org-editor-primitives-ux.md` `Today several concepts still appear as strings or partial views`).
 So this is specified-and-unbuilt: use those names.
 
 **All fourteen are listed above, including the one an earlier draft dropped.** The dropped primitive was the
@@ -695,7 +695,7 @@ and a reporting line that confers nothing is an org-chart rendering concern. It 
 or with 인원편성, whichever lands first, and it must not become a grant source when it does.
 
 **직책 needs a non-colliding `stable_key`, and the collision is with a shipped built-in.**
-`backend/crates/ontology/adapter-postgres/src/seed.rs:74` is `pub const POSITION_KEY: &str = "position";`, so a
+`backend/crates/ontology/adapter-postgres/src/seed.rs` `pub const POSITION_KEY: &str = "position";` is shipped, so a
 Tier N type keyed `position` collides with a seeded catalog type. Four names now point at overlapping concepts —
 the org-editor spec's **"Position"**, the seeded built-in **`position`**, the shipped **`job_position`**, and
 this plan's 직책 type. **Record the mapping across all four in `docs/specs/ecosystem-PORTING.md`** (Phase 0);
@@ -718,17 +718,17 @@ grounds, and it is the smaller claim:**
    its **own** `party_org_visibility` row. §4.2 already says the confidential fact is *"which parties does
    org A hold edges to"*, not *"who is this party"* — so no tenant read path is being taken away.
 2. **The sentinel org already exists and is already the home for platform-owned rows that outlive tenants.**
-   `0036_platform_onboarding.sql:224` INSERTs `organizations` id
+   `0036_platform_onboarding.sql` `'00000000-0000-0000-0000-00000000face'::uuid,` INSERTs `organizations` id
    `00000000-0000-0000-0000-00000000face`, slug `platform`, status `ARCHIVED`, with the reason in its own
-   text at `:217-221`: *"The platform sentinel needs an `organizations` row so the FK from `users.org_id` is
+   text (`0036` `The platform sentinel needs an`): *"The platform sentinel needs an `organizations` row so the FK from `users.org_id` is
    satisfiable for the platform admin. It is NOT a tenant … Status ARCHIVED so it can never be mistaken for
-   an onboardable/active tenant."* It is excluded from `platform_list_organizations()` (`:121`), and
-   `0051_platform_remove_organization.sql:34` **re-homes a deleted tenant's `audit_events` rows to it** so
+   an onboardable/active tenant."* It is excluded from `platform_list_organizations()` (`0036` `WHERE o.id <> '00000000-0000-0000-0000-00000000face'::uuid;`), and
+   `0051_platform_remove_organization.sql` `UPDATE audit_events` **re-homes a deleted tenant's `audit_events` rows to it** so
    *"the immutable record of the action survives verbatim under the platform tier"*. A durable handle that
    must outlive every tenant is exactly that shape, already shipped.
 3. **Tier T + FORCE RLS closes the cardinality leak by OMISSION, which is DN-0003 invariant 5's own word.**
    X4 measured `SELECT count(*) FROM x4probe_party` returning **2** where org A held one edge, and invariant 5
-   is *"Denied data is omitted, including counts and relationship existence"* (`DN-0003:85-86`). Under
+   is *"Denied data is omitted, including counts and relationship existence"* (`DN-0003` `Denied data is omitted, including counts and relationship existence.`). Under
    `org_isolation` on `app.current_org` a tenant-armed `SELECT count(*) FROM party` returns **0** — omitted,
    not denied-with-an-error.
 4. **The same policy's `WITH CHECK` makes minting platform-only for free.** With
@@ -750,7 +750,7 @@ Why the sentinel-homed tenant row and not the alternatives: **Tier O** buys a de
 read nobody performs (above); **Tier T homed in a tenant org** reintroduces the duplication the entity exists
 to remove, and lets that tenant read and mint handles; **Tier G** would let any tenant enumerate every party on
 the platform, contradicting the confidentiality requirement and every Tier G rationale; **Tier N** is not
-forbidden by `0155:18` once the row is homed at the sentinel — it is rejected because minting is a
+forbidden by `0155` `CREATE TABLE ont_instances` once the row is homed at the sentinel — it is rejected because minting is a
 platform-principal write and **every ontology write runs on the command pool, which is `None` wherever this
 ships** (§8), so a Tier N handle would be green on every PR and dead in production.
 
@@ -763,7 +763,7 @@ and `employees.party_id`. **Two different reasons, named separately, because onl
 irreversibility:**
 
 - **`users.party_id` is irreversible.** `users` is in `built_in_audited_tables()`
-  (`backend/ci/gates/migration-safety/src/lib.rs:164-172`), so `DROP COLUMN` on it is a gate violation —
+  (`backend/ci/gates/migration-safety/src/lib.rs` `fn built_in_audited_tables`), so `DROP COLUMN` on it is a gate violation —
   **a column added today is permanent, while adding it later is purely additive**. (`employees` is **not** in
   that list and carries no `-- console-gate: audited-table` marker, so `employees.party_id` is reversible; it
   is deferred with `party` only because it has nothing to point at.)
@@ -780,11 +780,11 @@ Five non-foreclosure constraints hold while it is deferred, so the deferral cann
 1. **No cross-tenant identifier as a FOREIGN KEY**, and none in any UNIQUE constraint or index **whose key
    does not lead with `org_id`** — see the security-control note below, measured in X4 CONTROL 3.
 2. **The authorization path never reads `employees`.** It is an HR projection, not an identity.
-3. **`0075_employee_identity_resolution.sql:16-17`'s
-   `CHECK (identity_name_only_merge = FALSE)` is never dropped or relaxed.** Name-only merge is the failure
+3. **`0075_employee_identity_resolution.sql` `CHECK (identity_name_only_merge = FALSE)`
+   is never dropped or relaxed.** Name-only merge is the failure
    mode this whole entity exists to remove.
 4. **DECIDED, not merely constrained** (above): when the handle lands it is **an ordinary tenant-scoped row
-   homed at the existing sentinel org** `00000000-0000-0000-0000-00000000face` (`0036:224`), carrying
+   homed at the existing sentinel org** `00000000-0000-0000-0000-00000000face` (`0036` `'00000000-0000-0000-0000-00000000face'::uuid,`), carrying
    `org_id NOT NULL` + a CHECK pinning it to that id + `ENABLE`/`FORCE ROW LEVEL SECURITY` under the standard
    `org_isolation` policy — **not** a Tier O carve-out, **no** new GUC, **no** definer-mediated read, **no**
    `owner_only_table_allowlist` entry.
@@ -814,7 +814,7 @@ under it the mechanism is **enforced by DDL rather than by an endpoint's authori
 `party` impossible, so "platform-principal only" holds even if a later handler forgets to assert it.
 
 **The scope vocabulary is the shipped enum and nothing else, and there are FIVE variants.**
-`backend/crates/kernel/core/src/access_scope.rs:28-34` is
+`backend/crates/kernel/core/src/access_scope.rs` `pub enum AccessScopeLevel` is
 `enum AccessScopeLevel { Group, Org, Region, Branch, Worksite }`. **`org_unit` and `organization` are not
 variants** — `Org` is, `Group` is, and no level names a department. An earlier revision of this section wrote
 `{org_unit, organization, region, branch, worksite}` into the `grant` row and into §4.5's definer trace, which
@@ -826,8 +826,8 @@ repair.
 vocabularies were being conflated, and neither gives 부서 a scope level:
 
 - `AccessScopeLevel` is matched **exhaustively, with no wildcard arm**, in two shipped places —
-  `access_scope.rs:86-98` (`branch_scope_for_org`) and
-  `backend/crates/platform/authz/src/lib.rs:1524-1538` (`effective_branch_scope_for_tenant`). A sixth variant
+  `access_scope.rs` `pub fn branch_scope_for_org` and
+  `backend/crates/platform/authz/src/lib.rs` `pub fn effective_branch_scope_for_tenant`. A sixth variant
   is therefore a change to a **kernel** enum plus a compile error at both sites plus a decided
   `branch_scope_for_org` projection for the new level. That is code, not an authored row.
 - `policy_role_conditions.attribute` **does** hold `department` (`0065:115`, one of the 17 literals), but the

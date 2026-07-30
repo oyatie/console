@@ -697,3 +697,24 @@ No decision, section number, or claim about the system changed in this wave.
 `org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,` is **not unique** in that migration —
 all three tables declare it, differing only in alignment padding. An anchor that resolves by whitespace is
 worse than one that names the table containing the column. The claim is unchanged and one grep away.
+
+## Wave 4 — §4.0.2 record contract through §4.1 constraints (`DRAFT:586`-`DRAFT:830`)
+
+`UNVERIFIABLE 439 → 401` · `RESOLVES 125 → 166` · `BROKEN 0` · total 717
+
+### Factually wrong, corrected to what the file says
+
+- **`0051_platform_remove_organization.sql:34` is a comment, not the re-home** (`DRAFT:726`). Line 34 reads
+  `--      rows to the platform sentinel org (...00face, an existing organizations`. The statement that
+  actually re-homes a removed tenant's audit trail is `UPDATE audit_events` / `SET org_id = sentinel_org` at
+  **195-199**, guarded by `PERFORM set_config('app.audit_rehome', 'on', true)` at **194**. The plan cited the
+  prose *about* the mechanism where it meant the mechanism — the same class of error as citing an ADR Decision
+  line for what a gate returns.
+
+### Per-column citations kept per-column
+
+`DRAFT:619`-`DRAFT:621` cited nine individual `audit_events` columns by line (`:13`, `:16`, `:17-18`, `:20`,
+`:22-23`, `:25-26`, `:27`). All nine were **correct**. Each is now its own DDL fragment
+(`actor UUID REFERENCES users(id)`, `trace_id CHAR(32)`, …) rather than being collapsed into one
+`CREATE TABLE audit_events` anchor: collapsing would have made the reader scan eighteen lines to check a
+one-column claim, which is the vagueness this sweep is supposed to remove, not introduce.
