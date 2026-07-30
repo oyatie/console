@@ -359,9 +359,14 @@ language. Fewer moving parts, smaller attack surface, and it is what the spec al
    (§5.11, SoD) is a check at write time on a set that does not exist yet — it removes nothing from any
    fold, and conflating the two would make segregation of duties inexpressible.
 3. **The four dimensions are vocabulary, not hierarchy.** 소속 / 직급·직책 / 직무 / 결재선 are
-   predicates for writing grant rules. None confers authority.
-4. **Reuse the classification, not just the code.** Every storage decision names one of the four tiers
-   the CI gates already enforce (§3.1). A new tier is a plan defect.
+   predicates for writing grant rules. None confers authority. **Two of the four have no substrate today** —
+   `policy_role_conditions.attribute` holds 17 literals and 직무/직급 are not among them, so they arrive in W6
+   rather than in slices 0/1 (§4.4). Stated here because this is the principle that reads as though all four
+   were already data.
+4. **Reuse the classification, not just the code.** Every storage decision names **one of the four
+   CI-enforced tiers, optionally projected** (§3.1 adds Tier P — projected — twenty-odd lines later, and Phase
+   0's `ecosystem-PORTING.md` is meant to be looked up rather than re-derived). A new *tier* is a plan defect;
+   a projection is not.
 5. **A probe is untrusted until it has been RED.** Six probes were defective in one session here. No
    acceptance criterion counts without its known-bad control (§7).
 6. **Concerns are components; entities compose them, and both sets are open** (§4.0). No closed,
@@ -646,14 +651,36 @@ on `audit_events` builds a second ledger, which is the divergence failure by con
 
 Ordered by tier. "Slice 0" marks the minimum shape the proving slice needs; everything else is a widening.
 
-**Vocabulary is adopted, not invented.** `docs/specs/org-editor-primitives-ux.md` already specifies 14 org primitives
-— Group, Org, OrgUnit, Worksite, **Person, Employee, User, Position**, ReportingLine,
-EmploymentAssignment, CrossOrgAssignment, SetupDraft, Audit — with the separation this plan needs at `:256`:
-*"A Person is not automatically an Employee; an Employee is not automatically a User; a Position is not
-automatically an access Role."* **None of them is built** (no `positions`, `org_units`, `persons`,
-`reporting_lines` or `worksites` table exists; the spec admits it at `:25`). So this is
-specified-and-unbuilt: use those names. `party` is this plan's only rename, and only because later verticals
-need customers and suppliers under one identity — noted so the mapping to `Person` stays obvious.
+**Vocabulary is adopted, not invented.** `docs/specs/org-editor-primitives-ux.md:468` names **fourteen** org
+primitives: Group/HQ, Organization, OrgUnit, Worksite/Cell, **Person, Employee, User, Position**,
+**PolicyRole hook**, ReportingLine, EmploymentAssignment, CrossOrgAssignment, SetupDraft, Audit — with the
+separation this plan needs at `:256`: *"A Person is not automatically an Employee; an Employee is not
+automatically a User; a Position is not automatically an access Role."* **None of them is built** (no
+`positions`, `org_units`, `persons`, `reporting_lines` or `worksites` table exists; the spec admits it at `:25`).
+So this is specified-and-unbuilt: use those names.
+
+**All fourteen are listed above, including the one an earlier draft dropped.** The dropped primitive was the
+**PolicyRole hook** — which is the one carrying this plan's own quoted separation (*"a Position is not
+automatically an access Role"*), so dropping it silently read as an oversight exactly where principle 3 is
+weakest. It is **not** an entity here: it is §5.3's `Feature` work. Thirteen of the fourteen are entities in
+this section; the fourteenth is a capability hook.
+
+`party` is this plan's only rename, and only because later verticals need customers and suppliers under one
+identity — noted so the mapping to `Person` stays obvious.
+
+**`ReportingLine` is EXCLUDED from slices 0/1, and the exclusion is defended rather than silent.** It would be
+`reporting_line` (position → position, Tier N, with the spec's cycle and single-primary-path validation). It is
+excluded because **nothing in this plan's authority model reads it**: routing resolves through
+`delegation_rule` (category × band × scope → competent unit), never up a reporting chain — that is principle 3,
+and a reporting line that confers nothing is an org-chart rendering concern. It arrives with the canvas (W10)
+or with 인원편성, whichever lands first, and it must not become a grant source when it does.
+
+**직책 needs a non-colliding `stable_key`, and the collision is with a shipped built-in.**
+`backend/crates/ontology/adapter-postgres/src/seed.rs:74` is `pub const POSITION_KEY: &str = "position";`, so a
+Tier N type keyed `position` collides with a seeded catalog type. Four names now point at overlapping concepts —
+the org-editor spec's **"Position"**, the seeded built-in **`position`**, the shipped **`job_position`**, and
+this plan's 직책 type. **Record the mapping across all four in `docs/specs/ecosystem-PORTING.md`** (Phase 0);
+do not resolve it by picking a name in prose here.
 
 #### Tier O — platform, definer-mediated (2 new tables, **both DEFERRED out of Slice 0**)
 
@@ -1021,8 +1048,32 @@ Structural, not missing features — so the plan builds beside them rather than 
 |---|---|---|
 | `work_order_approval_steps` | `step_order SMALLINT CHECK (step_order BETWEEN 1 AND 3)` `0008:62`; `role CHECK (role IN ('MECHANIC','ADMIN','EXECUTIVE'))` `:63`; `UNIQUE (work_order_id, role)` `:71` | 3 steps max, demo roles, each role once, serial only. 합의 inexpressible. **Leave alone.** |
 | `gov_approvals` | `FOREIGN KEY (approver_id, org_id) REFERENCES users(id, org_id)` `0153:78` — the approver **must** be a user of that org, so a group-level approver is forbidden by the FK. `UNIQUE (org_id, request_ref)` `0153:76` is **not** a blocker — see below | **This IS the signature store.** The cross-org FK is the real limit and it stands. Capacity costs two nullable columns and **nothing has to be relaxed.** |
-| `policy_role_conditions` | `attribute CHECK (… 'group','organization','department','team','position','assignment','site','branch' …)` `0065:110-128`; `operator CHECK (operator IN ('equals','not_equals','in'))` `0065:129` | The predicate vocabulary the plan needs **already exists as data** — but `not_equals` makes it subtractive-capable, and the fold must be additive. **Reuse the attribute vocabulary; never its operator set.** |
-| `notices` / `notice_receipts` | `notice_receipts` is `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)` `0162:41-51` — **no content column**; `notices.status CHECK (status IN ('draft','published'))` `0162:22` — **no closure state**; `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)` `0162:50` — **recipient must be a user of that org** | 통지 → 인지 is built. Three gaps, one of them structural (see below). **Extend; never build a second ack mechanism.** |
+| `policy_role_conditions` | `attribute CHECK` over **17** literals `0065:110-127`; `operator CHECK (operator IN ('equals','not_equals','in'))` `0065:129`. **The resolver evaluates far less than the CHECK admits:** `backend/crates/platform/authz/src/lib.rs:1404-1430` returns `None` unless the operator is `equals`\|`in` **and** the attribute is `branch`\|`team` | **Narrow the WRITE PATH to `{branch, team}` × `{equals, in}`**, with a test asserting write-accepted ⊆ resolver-evaluated; leave the DB CHECK permissive as the additive extension point. `not_equals` stays writable-but-unwritten rather than removed. **Two of the four dimensions have no substrate at all** — see below |
+| `notices` / `notice_receipts` | `notice_receipts` is `(id, org_id, notice_id, recipient_user_id, acknowledged_at, created_at)` `0162:41-51` — **no content column**; `notices.status CHECK (status IN ('draft','published'))` `0162:22` — **no closure state**; `FOREIGN KEY (recipient_user_id, org_id) REFERENCES users(id, org_id)` `0162:50` — **recipient must be a user of that org**; and **no per-recipient audience targeting at all** — see below | 통지 → 인지 is built. **Four** gaps, two of them structural. **Extend; never build a second ack mechanism.** |
+
+**`policy_role_conditions`: the vocabulary is narrower than "already exists as data", in two ways.**
+
+*(a) The resolver's fail-closed whole-role void is CORRECT and must never be relaxed.* When
+`effective_scope_for_custom_role_conditions` returns `None`, the caller at
+`backend/crates/platform/authz/src/lib.rs:1350-1360` does `else { continue; }` — **it drops the whole role**, not
+the one condition it could not evaluate. That is the safe direction, and it must never be "improved" into
+per-condition ignoring, which would silently grant a role whose narrowing condition the evaluator did not
+understand. The contrary comment at `0065:101-103` — *"unsupported conditions remain review/audit metadata until
+a richer evaluator lands"* — is **struck**: it describes the conditions as inert, when in fact they void the
+role. Both readings are fail-closed; only one is true, and the false one invites the relaxation.
+
+**Competence** enters as a **subject-side condition attribute** in exactly the shape the `"team"` arm already has
+(`authz/src/lib.rs:1421-1425`) — not a third relation, and not a change to the scope type.
+
+A read-only **inert-condition census (X-T2f)** must run **before** the narrowed write path ships: today's rows may
+already carry operators or attributes the resolver voids, and narrowing the write path does not migrate them.
+
+*(b) The plan's four dimensions do not all have a substrate.* `0065:110-127` holds **17** attribute literals and
+**직무 and 직급 are not among them.** So 소속 (`organization`, `department`) and 결재선 (`team`, `position`,
+`assignment`) are expressible, and **직무 / 직급 are not** — widening that CHECK is a migration, and it would be a
+**third** closed vocabulary. §1 principle 3 names all four as though all four were data; they are not.
+**Decision: 직무 and 직급 have no substrate in slices 0 or 1, and they arrive in W6** with `employment_type`,
+where the accrual/insurance/severance rules that need them already land. They are not built here.
 
 **`gov_approvals` already runs an N-node 결재 line, and the plan misread it.** The blocker cell used to
 read *"`UNIQUE (org_id, request_ref)` — one decision per request"*, which would have made a multi-step line
@@ -1043,6 +1094,20 @@ already two rows (same `approver_id`, different `request_ref`, same `requested_b
 competent authority **is** the drafter needs **zero** approval nodes — the self-approval CHECK is never
 reached because no signature is required. The cross-org FK (`0153:78`) remains the one real blocker, and W1
 is where it is addressed.
+
+**`notices`' fourth gap is a confidentiality regression, not a missing feature.** W1's party-keyed recipient
+fixes the cross-org FK; it does **not** fix the **org-wide fan-out**.
+`backend/crates/notices/adapter-postgres/src/lib.rs:413-433` publishes through two SQL variants keyed on
+`audience_scope == "branches"`, and **both end `WHERE … org_id = $1 AND is_active = true`** — the branch variant
+joins `user_branches` and `notice_audience_branches` but is still org-wide *within the selected branches*, and
+the else-branch is `SELECT $1, $2, id FROM users WHERE org_id = $1 AND is_active = true`, i.e. every active user
+in the org. So until this is fixed, **a 반려 notice on a 결재 matter reaches every active user in the org.**
+
+The fix is **per-recipient audience targeting** with its own DDL: an explicit recipient list keyed by party
+(`notice_audience_parties (org_id, notice_id, party_id)`), with the snapshot INSERT selecting from it rather than
+from `users`. And `obligation_notifies_line_as_raised` (§7) must assert that **non-members receive nothing**,
+with **the shipped org-wide snapshot as its known-bad control** — the probe as previously written asserts only
+that truncated member D *is* notified, which the current org-wide fan-out satisfies trivially.
 
 ### 4.5 The traversals
 
@@ -1240,14 +1305,19 @@ are load-bearing and the rest are confirmations.
 **1. The account/character split validates the keystone — it does not contradict it.** One account, many
 characters, each in a different guild at a different rank, is structurally identical to one `party`,
 many per-org `users` rows (`users.party_id`, §0.4), and many concurrent positions at different scopes.
-Games have shipped this for 25 years with untrained users, which is the strongest available evidence
-that `party`-above-`users` is the natural model rather than an architectural indulgence. Note the game
+Games have shipped this for 25 years with untrained users, which is **the strongest evidence cited here**
+that `party`-above-`users` is the natural model rather than an architectural indulgence — "strongest available"
+would need a ranked corpus, and this plan cites none. Note the game
 also confirms the confidentiality design: your guildmates see your character, never your account roster.
 That is exactly `party_org_visibility` under RLS (§4.2).
 
 **2. Guild-bank withdrawal limits are 전결규정, and they set the acceptance bar.** "Rank X may withdraw
-N per day from tab Y" is (role × amount band × category) → permitted, authored in a grid by
-non-technical users. **If the 전결규정 authoring surface is harder to use than a guild bank UI, the
+N **per day** from tab Y" is (role × amount band × category × **period**) → permitted, authored in a grid by
+non-technical users. **The per-day half is a real gap, not a rounding of the metaphor:** `delegation_rule`
+carries **no periodic or cumulative quota** in §4.1 or §4.3, so as specified it authorises an unbounded number of
+₩1,000,000 approvals per day. **Decision: `delegation_rule` gains a nullable `(period, cumulative_limit)` pair**,
+null meaning per-transaction only — additive, and it keeps the guild-bank shape whole. It is **not** in slice 0
+(one band, one approval), and its widening is W5. **If the 전결규정 authoring surface is harder to use than a guild bank UI, the
 design is wrong.** That is a testable bar, not a sentiment (§4.8).
 
 **3. Enforcement is synchronous, at the transaction.** A guild bank refuses the withdrawal when the
@@ -1255,6 +1325,17 @@ button is pressed. It does not permit it and flag it at month-end. So 전결규�
 the transaction path**, not in reconciliation — a real departure from the common enterprise pattern of
 approve → spend → discover the overspend at close. Applied to the proving slice: the ₩100,000 band is
 checked **when the purchase is raised**, and `slice0_band_enforced_synchronously` is its probe (§7).
+
+**4. The differentiator is regulation-centric RENDERABILITY, and every probe in this plan misses it.** SAP's
+named failure is *"Approval authority as an intersection of process config and role assignment, with no readable
+artefact … You cannot print 'what is Kim's authority as of today' … A 전결규정 has legal force; if the system
+cannot render it, a spreadsheet becomes the source of truth"* (`docs/ideas/research-sap.md:937-939`). Every
+`slice0_*` probe and E1-E6 is **person-centric**: they ask what one person may do. **None renders the
+regulation.** So the probe: the complete 전결규정 — (category × band × scope) → competent unit, terminal? —
+renders as **one artefact as of an arbitrary date**; known-bad control: routing expressed only inside approval
+templates, so the regulation can only be reconstructed by reading every template. Framed as **current-state
+renderability** ("as of today"), **not** historical replay — the "as of 2026-07-01" phrasing that appeared in an
+earlier draft came from a mis-transcribed quote, and replay is §5.7's concern, not this one.
 
 **Where the lens does NOT transfer, and it matters.** A game rank change is instant and
 consequence-free. 강등 under 근로기준법 can constitute 징계 requiring procedural justification (§5.9).
@@ -1272,9 +1353,9 @@ Each criterion states what it costs, because two of the five were assumed free a
 | # | Criterion | Substrate | Cost |
 |---|---|---|---|
 | E1 | **Explainability surfaced, not just logged.** A user sees "you may approve this because grant G at scope S", and symmetrically why not | `cedar_decision_log.determining_policies JSONB` (`0159:29`) already stores the deciding policy ids | **low** — the payload exists; surfacing is UI. **But** `0159:28-30` notes it is empty on deny-by-omission, so the case a user most needs explained has no explanation. Closing that is real work |
-| E2 | **A character sheet as the unifying screen** — party, positions per scope, the fold per scope, active 업무, pending 결재, delegations in/out | every §4.1 entity has a home on it; `action-inbox` crate exists | medium — and it doubles as the completeness test: an entity with no home on this screen is a modelling smell |
+| E2 | **A character sheet as the unifying screen** — party, positions per scope, the fold per scope, active 업무, pending 결재, delegations in/out | every §4.1 entity has a home on it; `action-inbox` crate exists | medium. **Ships in W20 with an EXECUTABLE completeness test**: one row per §4.1 entity mapped to its character-sheet section, and `every_entity_has_a_home` fails on an unmapped entity. Previously the completeness test was prose, no widening shipped E2 at all (W17 ships E4, W18 ships E1, W11 ships E6), and §7's `every_entity_declares_its_components` asserts rows in a TSV — not homes on a screen |
 | E3 | **Progressive disclosure** — controls shown are the fold | falls out of `effective(party, scope)` | **free** |
-| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065:159-172` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023:153-154` says this program ships as *"read-only NL rows + simulation"* | **partly new.** Policy simulation ships; **fold** simulation over a hypothetical grant set does not. Reuse both halves, build only the fold evaluator |
+| E4 | **Reversible exploration** — simulate a role or 전결규정 change before committing | Two halves exist: the preview→receipt→consume **ceremony** (`policy_assignment_preview_receipts`, `0065:159-172` — stores inputs, never an outcome, §0.11) and Cedar policy **simulation** (`cedar_pbac/authoring.rs` `simulate_inner`), which `ADR-0023:153-154` says this program ships as *"read-only NL rows + simulation"* | **partly new, and the fold simulator inherits NOTHING from Cedar simulation.** `simulate_inner` simulates **policy** decisions over Cedar's own entities; a fold over a hypothetical **grant** set is a different evaluator over a different input, and treating one as a free extension of the other is how E4 gets under-budgeted. Reuse both halves as *surfaces*; build the fold evaluator as new work |
 | E5 | **Named entities, not ids** | `ont_object_types.title_property_key` (`0152:23`) and `ont_instances.title` (`0155:21`) already exist | **free** for Tier N; Tier T entities need a display key declared |
 
 **Derived channel membership (E6).** `messenger_thread_members` (`0012:30-36`) is a hand-maintained
@@ -1284,6 +1365,15 @@ nobody maintains guild chat rosters by hand. Cost: one write path per membership
 a rebuild-from-graph routine. Generalising `messenger_threads.work_order_id` (`0012:11`) to a `work`
 reference is the same change that gives 업무-scoped channels, and the conversation then follows the work
 on 인계 for free.
+
+**E7 — the ergonomics criterion §4.7 promises, made a criterion.** §4.7 asserts of the guild-bank comparison
+*"That is a testable bar, not a sentiment (§4.8)"*, and E1-E6 contained no such test. Here it is: **authoring one
+complete 전결규정 band — (category × amount band × raising scope) → competent unit, terminal? — takes no more
+steps and no more distinct screens than setting one guild-bank rank limit**, counted on the shipped surface, by a
+participant who has not seen the schema. Substrate: the authored `delegation_rule` grid. Cost: **medium**, and it
+is a measurement rather than an opinion — the step and screen counts are recorded in
+`docs/specs/known-bad-controls.tsv` beside the probes, with the known-bad control being an authoring flow that
+requires editing an approval template per band (which is SAP's failure, §4.7 point 4). Ships in W20 with E2.
 
 **The governing constraint.** Intuitive surface, uncompromised depth. The quest log is the UX; the
 ledger and the metrics are what must not be simplified away (§5.7). Any design delivering the metaphor
@@ -1466,16 +1556,41 @@ Three consequences, and the third is the one that unblocks slice 0:
 puts an attribute on `party`):
 
 - the deferred **규제 PII/multi-jurisdiction epic** (Jurisdiction/Consent/DSR objects, ledger `:174`)
-  has landed, and the jurisdiction binding and Korea controls have moved off HOLD;
+  has landed, **and the bar below has been met by a qualified external authority.** The plan previously said
+  *"the jurisdiction binding and Korea controls have moved off HOLD"*, which reads as a milestone somebody here
+  can reach. It is not one:
 - every `party_org_visibility` edge carries a **lawful basis** and a retention clock, not just a
   `reason`;
 - 주민등록번호 gets its own design — encrypted at rest, a separate access capability, and its own
   audit stream (the `clearance_assignments` + covert-stream substrate at `0147` is the shape);
 - an erasure procedure exists that provably does not break `prev_hash`/`row_hash` continuity.
 
-**Recommendation: never put personal attributes on `party`.** The four preconditions above are the
-cost of doing so, and the tenant tier already holds that data correctly. Keeping `party` attribute-free
-permanently is the cheaper end state, not a staging posture.
+**The bar, stated verbatim, because it is what a later lane will mistake for satisfiable.** Six controls in
+`docs/program/console-jurisdiction-register.json` all carry `release_disposition: HOLD`:
+**CTRL-KR-PRIVACY-001**, **CTRL-KR-WORKFORCE-001**, **CTRL-KR-SAFETY-001**, **CTRL-KR-FINANCE-001**,
+**CTRL-KR-LOCATION-001**, **CTRL-KR-RECORDS-001**. Two of the six are the ones this plan touches:
+**CTRL-KR-RECORDS-001** (approvals, notices, documents, retention) and **CTRL-KR-WORKFORCE-001** (payroll).
+
+`unhold_authority` is verbatim *"Qualified Korea legal/compliance authority with attributable I2/I3
+candidate-bound receipt."* And `uncertainty_rule` (`:1186`) is verbatim: *"Missing, stale, conflicting, or
+unqualified authority is HOLD; **agents may not invent certainty**."* **A native agent produces only
+`I1_NON_INDEPENDENT` evidence**, which is by construction below the bar. So this section asserts **no** compliance
+conclusion and proposes **no** unholding; it records what the bar is, so nobody later reads a HOLD as a task.
+
+**Recommendation: never put personal attributes on `party` — and here is what the alternative costs, priced the
+way §5.7 prices its three.** The alternative is not "the same design plus four preconditions". It is:
+
+| If attributes go on `party` | Cost |
+|---|---|
+| the six HOLD controls | must be unheld by a **qualified external authority** with an I2/I3 receipt — not a schedulable engineering task, and no agent here can produce the evidence |
+| the fixity chain | a chain over person attributes **cannot be erased without breaking tamper-evidence**, so erasure and audit become mutually exclusive rather than both satisfied |
+| 주민등록번호 | its own encrypted-at-rest design, a separate access capability and its own audit stream (`0147` is the shape) — a subsystem, not a column |
+| every `party_org_visibility` edge | a lawful basis and a retention clock, retroactively, on rows already written |
+| the erasure procedure | must be **proven** not to break `prev_hash`/`row_hash` continuity, which is the recomputation problem §5.1 already shows is unavailable |
+
+**Against that: keeping `party` attribute-free costs one extra join** from the handle to the tenant-scoped row
+that already holds the attribute under RLS — a hop this plan already pays for and already lists as a Con in §3.2.
+That is the whole trade, and it is why attribute-free is the cheaper **end state** rather than a staging posture.
 
 ### 5.5 E — Economics: DECIDED — there is no GL; build the spine, seeded by the voucher
 
@@ -2152,7 +2267,7 @@ session state. Any probe in this section that asserts an absence must state wher
 | `slice0_closed_grant_refused` | a grant closed at the decision timestamp cannot authorise | a fold using `now()` instead of the decision timestamp |
 | `slice0_본사_may_still_approve` | 본사 retains `purchase.approve` at company scope; routing did not restrict it | routing implemented as a capability restriction |
 | `retroactive_반려_after_확정` | emits a `correction`; the original stays `confirmed` in history | an implementation that transitions or rewrites the original |
-| `obligation_notifies_line_as_raised` | truncated member D is notified though D never saw the matter | notification over the executed line |
+| `obligation_notifies_line_as_raised` | truncated member D is notified though D never saw the matter, **and every non-member of the line receives nothing** | notification over the executed line; **and the shipped org-wide snapshot** (`notices/adapter-postgres/src/lib.rs:413-433`), which notifies every active user in the org and would pass the first half alone |
 | `handover_is_scope_bounded` | relinquishing a group duty leaves the subsidiary post's work in place | handover moving everything the person holds |
 | `handover_moves_work_artifacts_only` | person-linked material does not transfer | handover moving all artifacts |
 | `link_email_is_authorized` | an unauthorised actor cannot link an email into a work | an open triage queue |
@@ -2162,12 +2277,14 @@ session state. Any probe in this section that asserts an absence must state wher
 | Probe | Asserts | Known-bad control |
 |---|---|---|
 | `every_entity_declares_its_components` | each §4.1 entity has a row per composed component in `docs/specs/ecosystem-entity-components.tsv` | an entity with no rows — the §4.0.1 completeness test, as a test |
+| `every_entity_has_a_home` | each §4.1 entity maps to a character-sheet section (E2, §4.8) — a **screen** completeness test, distinct from the TSV one above | an entity with no section mapping |
 | `capacity_recorded_on_every_authority_mutation` | reads the **D3 write-path enumeration** (§8 Phase 0) and asserts every enumerated authority-mutating path writes `gov_approvals.authorizing_grant_id`. The `audit_events` pair is **out of scope** until those deferred columns land (§4.0.3) | a mutation writing a null capacity where the enumeration says it is required |
 | `no_duplicated_fact` | `work` (Tier T) and the revision chain never store the same field | a `work.assignee` column duplicating the assignment edge |
 | `projected_mutation_goes_through_the_domain_usecase` | every consequential `work` mutation runs through the audited domain use-case, satisfying DN-0003 invariant 1 for a projected type (§4.0.2) | a write reaching the backing table through an ontology property edit |
 | `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `backend/crates/platform/authz/src/cedar_pbac/residual.rs:200-203` (§0.13) |
 | `link_type_alone_is_rejected` | a link type with `to_object_type_id` and no property referencing its `stable_key` fails `validate_draft` | today's behaviour — **must be RED before the guard lands** (§0.12) |
 | `slice0_band_enforced_synchronously` | the ₩100,000 band is refused **at raise**, not flagged at close | a check that only reports at period close |
+| `regulation_renders_as_one_artefact` | the complete 전결규정 — (category × band × scope) → competent unit, terminal? — renders as **one artefact as of an arbitrary date** (§4.7 point 4). Current-state renderability, **not** historical replay | routing expressed only inside approval templates, so the regulation can be reconstructed only by reading every template — SAP's named failure (`docs/ideas/research-sap.md:937-939`) |
 | `economics_is_a_view` | `work` cost equals `SUM` over voucher LINES dimensioned to that work; no cost column on `work` | a stored cost column |
 | `posted_voucher_cannot_be_rewritten` | a post-확정 반려 produces a contra voucher; the original stays POSTED | code attempting to UPDATE a POSTED voucher — the `0160:79` trigger must fire |
 | `demoted_member_retains_standing` | a demoted member may still 반려 a line already joined | standing re-resolved from current grants |
@@ -2410,6 +2527,7 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 | — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `docs/PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
 | **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
+| — | **Correction rung: `docs/program/CATALOG.md:62-68` lists a type set that never shipped.** It names OrgUnit / Position / Person / Employment / PayRun; the shipped set is company / org_unit / job_position / employment / pay_run — **`Person` never landed**. Correct it to the shipped names, or the next plan budgets against a catalog that does not exist |
 | — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
 
 **Build-system governance is unresolved and this plan must not assume either side — but the status quo is
@@ -2543,6 +2661,7 @@ expiry, never deletion**.
 | W17 | E4 fold simulator — the fold against a hypothetical grant set, over the shipped receipt ceremony and Cedar simulation | a role change is inspectable before commit; neither existing half is replaced |
 | W18 | E1 explainability surfaced, incl. a reason for deny-by-omission | `deny_by_omission_is_explained` GREEN |
 | W19 | **Segregation of duties** (§5.11 SoD row): conflict pairs over `Feature`, refused at **grant-authoring time**, where the `gov_approvals` four-eyes check already runs | `conflicting_grant_pair_refused_at_authoring` GREEN, with a fold that accumulates a conflicting pair silently observed RED first |
+| W20 | **E2 the character sheet + E7 the authoring-effort bar** (§4.8) | `every_entity_has_a_home` GREEN over one row per §4.1 entity, failing on an unmapped one; and the 전결규정-band authoring step/screen count recorded against the guild-bank baseline |
 
 Ordering notes. W7 collapsing the duplicate org→group representation is a defect fix independent of this
 design and may land earlier if a lane is free. **W11-W13 depend on `work` (slice 0) but not on each

@@ -203,3 +203,31 @@ each wave. Nothing else in the document mismatches.
 brief's own evidence (`:1142-1151` is the entire link-type validation) says exactly that, so the conclusion —
 `link_type_alone_is_rejected` is RED today — is unchanged; only the wording is accurate now. Writing "absent"
 would have sent an implementer to create a function that exists.
+
+## Wave 7 — vocabulary, ergonomics, recorded costs
+
+**Changed.** §4.4's `policy_role_conditions` row narrows the **write path** to `{branch, team}` × `{equals, in}`
+(the resolver returns `None` on anything else, `authz/src/lib.rs:1404-1430`) while the DB CHECK stays permissive;
+the fail-closed **whole-role void** is recorded as CORRECT and never to be relaxed, `0065:101-103`'s contrary
+"inert metadata" comment is struck, competence is placed as a subject-side condition attribute, X-T2f is required
+first, and **직무/직급 are decided as having no substrate** (17 attribute literals, neither among them) arriving
+in W6. `notices` gains a **fourth** gap — the org-wide fan-out at `notices/adapter-postgres/src/lib.rs:413-433`,
+where **both** SQL variants end `org_id = $1 AND is_active = true`, so a 반려 notice reaches every active user in
+the org — with per-recipient DDL and the shipped snapshot as `obligation_notifies_line_as_raised`'s known-bad
+control. §4.1's vocabulary paragraph lists all **fourteen** primitives including the dropped PolicyRole hook,
+defends `ReportingLine`'s exclusion, and records the four-way `position` `stable_key` collision for PORTING.md.
+§4.7 gained the regulation-renderability differentiator and its probe, the per-day cumulative quota decision, and
+the superlative is qualified to "cited here". §4.8 gained E7 (the bar §4.7 promised), an executable E2
+completeness test, W20 to ship both, and E4 qualified so the fold simulator inherits nothing from Cedar
+simulation. §1 principles 3 and 4 corrected. §5.4 now prices the alternative in a table, names all six control
+ids, and quotes `unhold_authority` and `uncertainty_rule` verbatim — asserting no conclusion and proposing no
+unholding.
+
+**Not anticipated by the brief.** Item 7.4(a) says to give E2 "a widening with acceptance" but no widening
+existed and the widening list ends at W18; added **W20** rather than overloading an existing row, and put E7
+there too since both are measurements on the same surface. Item 7.1(b) offers "either add 직무/직급 to §4.1 or
+state which widening brings them" — chose the second, and named **W6** specifically, because that is where
+`employment_type`'s accrual/insurance/severance rules already need them.
+
+**Table-integrity check is now part of each wave.** Two four-column §5.11 rows written in waves 3 and 4 had only
+three cells; caught in wave 6, and the check passes over every table block at wave 7.
