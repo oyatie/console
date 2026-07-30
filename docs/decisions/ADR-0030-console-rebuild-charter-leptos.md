@@ -1,11 +1,11 @@
 ---
 id: ADR-0030
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
 decision: console-rebuild-chartered-on-leptos-planning-only
-proposes_amendments_to: [ADR-0025]
+amends: [ADR-0025]
 related: [ADR-0001, ADR-0009, ADR-0012, ADR-0018, ADR-0021, ADR-0022, ADR-0023, ADR-0025]
 ---
 
@@ -13,12 +13,12 @@ related: [ADR-0001, ADR-0009, ADR-0012, ADR-0018, ADR-0021, ADR-0022, ADR-0023, 
 
 ## Status
 
-**Proposed 2026-07-30.** Source: D4 (theme T12) in
+**Accepted 2026-07-30.** Source: D4 (theme T12) in
 `docs/ideas/adr-adjudication.md`, resolved with owner decisions captured
-2026-07-30 in `docs/ideas/d4-frontend-charter.md`. This record proposes
-amendments to ADR-0025 and declares none; on acceptance the withdrawals in
-§3 take effect and the reciprocal edits in the final section become owed.
-Until then ADR-0025 stands whole and every clause below is a proposal.
+2026-07-30 in `docs/ideas/d4-frontend-charter.md`. This record amends ADR-0025.
+The withdrawals in §3 are in effect and the reciprocal edits in the final section
+landed with acceptance. ADR-0025 remains accepted and authoritative for
+everything §3 does not name.
 
 ## Context
 
@@ -84,11 +84,10 @@ of denied objects in the client's hands. Server rendering keeps the fold on
 the server: markup for a denied surface is never generated, so there is
 nothing to omit late. Any measured performance benefit is incidental.
 
-### 3. What is proposed for withdrawal from ADR-0025
+### 3. What is withdrawn from ADR-0025
 
-On acceptance, three structural prescriptions cease to bind. Each is proposed
-for withdrawal because it names machinery absent from HEAD, not because it has
-merely aged:
+Three structural prescriptions cease to bind. Each is withdrawn because it names
+machinery absent from HEAD, not because it has merely aged:
 
 1. **The carbon-copy visual authority** — ADR-0025:233-234's "one carbon-copy
    visual system" end state and `:70-76`'s prohibition on inheriting target
@@ -128,7 +127,7 @@ explicit legacy-parity coverage or an owner-approved deferral. Incomplete
 navigation entries stay hidden or classified DARK and are never counted as
 product breadth (`:144-147`).
 
-This is why the proposed amendment is narrow. Everything withdrawn in §3
+This is why the amendment is narrow. Everything withdrawn in §3
 prescribes *how* the console is built. The bar constrains *what counts as
 built*, and it is the strongest anti-stub defence in the record. Retaining it
 is what makes withdrawing the rest safe.
@@ -362,32 +361,30 @@ measured gaps.
    require for a Leptos surface — persona-based real-backend E2E and the
    console-error gate — since the React instruments are gone.
 
-## Reciprocal record owed on acceptance
+## Reciprocal record landed on acceptance
 
 `docs/decisions/README.md:9` requires amendment to be explicit in **both**
 records, and `:26` requires relationship keys to be reciprocal where
-applicable. A proposed record carries no active amendment, so nothing below is
-owed yet and no existing record is edited by this change. On acceptance, all
-three of the following are owed atomically:
+applicable. All three of the following landed atomically with acceptance:
 
 1. **Frontmatter key on the amended record.**
    `docs/decisions/ADR-0025-carbon-copy-console-shared-platform-spine.md`
-   gains `amended_by: [ADR-0030]`. Verified against HEAD: ADR-0025's
-   frontmatter (`:1-10`) carries `amends: [ADR-0023]` and
-   `related: [ADR-0009, ADR-0018, ADR-0021, ADR-0022, ADR-0023]` and **has no
-   `amended_by` key**, so this **creates** the key rather than appending to
-   it. `ADR-0030` is also added to ADR-0025's `related`. Note the gate's
+   gained `amended_by: [ADR-0030]`. Before this change ADR-0025's
+   frontmatter (`:1-10`) carried `amends: [ADR-0023]` and
+   `related: [ADR-0009, ADR-0018, ADR-0021, ADR-0022, ADR-0023]` and **no
+   `amended_by` key**, so this **created** the key rather than appending to
+   it. `ADR-0030` was also added to ADR-0025's `related`. Note the gate's
    ordering constraint: `scripts/check-adrs.mjs:411-419` requires an
-   `amended_by` target to be `accepted`, so ADR-0025 may not gain the key
-   before this record's status changes in the same commit.
+   `amended_by` target to be `accepted`, so ADR-0025 could not gain the key
+   before this record's status changed in the same commit.
 
 2. **Index row changes in `docs/decisions/README.md`.** ADR-0025's row
-   (`:56`) changes status cell from `accepted` to `accepted, amended` and its
+   changed status cell from `accepted` to `accepted, amended` and its
    scope cell gains: "structural prescriptions — carbon-copy visual
    authority, the `web/src/console/**` path and two-shell composition, and the
    spine boundary as enumerated — amended by ADR-0030; its §4 nine-item slice
    bar and §3 product semantics remain in force". This record's own row
-   changes status from `proposed` to `accepted`. A bullet is added to the
+   changed status from `proposed` to `accepted`. A bullet was added to the
    *Effective relationship graph* section stating that the ADR-0025 clauses
    amended by ADR-0030 are its stack-bound structural prescriptions only —
    the carbon-copy visual authority, the `web/src/console/**` path and
@@ -397,8 +394,8 @@ three of the following are owed atomically:
    workflow/policy authority, and rollout discipline.
 
 3. **Sentence edits in ADR-0025's Decision text, because a reciprocal key
-   alone would leave false sentences standing.** Each edit below is in place,
-   marking the clause as amended rather than deleting the history:
+   alone would leave false sentences standing.** Each edit below was made in
+   place, marking the clause as amended rather than deleting the history:
 
    - `:51-53` — "The target authenticated console is the in-repository
      application rooted at `web/src/console/` and mounted at `/console/*`."

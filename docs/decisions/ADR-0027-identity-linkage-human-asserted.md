@@ -1,11 +1,11 @@
 ---
 id: ADR-0027
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
 decision: identity-linkage-is-human-asserted
-proposes_amendments_to: [ADR-0022]
+amends: [ADR-0022]
 related: [ADR-0002, ADR-0003, ADR-0004, ADR-0010, ADR-0017, ADR-0021, ADR-0022, ADR-0025]
 ---
 
@@ -13,12 +13,12 @@ related: [ADR-0002, ADR-0003, ADR-0004, ADR-0010, ADR-0017, ADR-0021, ADR-0022, 
 
 ## Status
 
-**Proposed 2026-07-30 · doc_status `review`.** On acceptance this record would narrow
-ADR-0022 by adding one prohibition its integration bullet does not cover, and would
-defer the durable platform identity handle out of Slice 0. It is a **narrowing**
-proposal: it grants no new capability, opens no new read path, and consumes no
-migration slot, which is what makes it safe to accept while the handle itself stays
-deferred. Until it is accepted it has no authority over ADR-0022 (README:2, README:4).
+**Accepted 2026-07-30 · doc_status `review`.** This record narrows ADR-0022 by adding
+one prohibition its integration bullet does not cover, and defers the durable platform
+identity handle out of Slice 0. It is a **narrowing**: it grants no new capability,
+opens no new read path, and consumes no migration slot, which is what made it safe to
+accept while the handle itself stays deferred. It is authoritative over ADR-0022 within
+that stated scope (README:7, README:9).
 
 Source: theme T1 / draft D1 of `docs/ideas/adr-adjudication.md`. Where that
 adjudication's evidence disagrees with the code, the code is followed and the
@@ -216,10 +216,14 @@ The candidate resolutions, and what each still needs:
   behind a *partial* unique index (`0076:22-24`), leaving every duplicate unlinked. It
   would also let one tenant probe another's roster.
 
-**The acceptance decision must pick (a) or (b) and name its endpoint, or record
-explicitly that the duplication `party` exists to remove is not removed.** Accepting
-this record without answering that would put an unachievable guarantee inside an
-authoritative scope (README:1).
+**The acceptance decision took the second of the two admissible branches: it is recorded
+explicitly here that the duplication `party` exists to remove is not removed.** Neither
+(a) nor (b) is chosen, and no endpoint is named, because Decision 1 creates no `party`
+row in Slice 0 and there is therefore nothing yet for a resolution mechanism to resolve.
+Cross-group deduplication is not guaranteed (Decision 4), and no guarantee of one durable
+identity per person is asserted anywhere in this record's scope — which is what keeps an
+unachievable guarantee out of an authoritative scope (README:7). Follow-up 4 keeps the
+mechanism a precondition on the migration that creates `party`, not on this record.
 
 ### No compliance conclusion is asserted
 
@@ -335,19 +339,17 @@ build.
 5. **Carry constraint 1 into the migration text** that creates the visibility edge, as
    a comment stating why `org_id` leads the unique key.
 
-## Reciprocal record owed on acceptance
+## Reciprocal record landed on acceptance
 
 `docs/decisions/README.md:9` requires amendment to be explicit in **both** records, and
-`README.md:26` requires relationship keys to be reciprocal where applicable. A
-`proposed` record has no active amendment, so nothing is owed yet and ADR-0022 is
-deliberately left untouched by this change. On acceptance, the following three edits
-land in the same commit that flips this record's status:
+`README.md:26` requires relationship keys to be reciprocal where applicable. All three
+edits below landed in the same commit that flipped this record's status to `accepted`:
 
 1. **Frontmatter key on ADR-0022.** `docs/decisions/ADR-0022-local-identity-no-external-idp.md`
-   gains `amended_by: [ADR-0027]`, and gains `ADR-0027` in its `related` list.
-   **Verified: ADR-0022 has no `amended_by` key today** — its relationship keys are
-   `amends: [ADR-0010]` (`:8`), `supersedes: [ADR-0017]` (`:9`), and
-   `related: [ADR-0004, ADR-0010, ADR-0017]` (`:10`). **This creates the key; it does
+   gained `amended_by: [ADR-0027]`, and gained `ADR-0027` in its `related` list.
+   **ADR-0022 carried no `amended_by` key before this change** — its relationship keys
+   were `amends: [ADR-0010]` (`:8`), `supersedes: [ADR-0017]` (`:9`), and
+   `related: [ADR-0004, ADR-0010, ADR-0017]` (`:10`). **This created the key; it did
    not append to an existing one.** Without it, the reciprocity check at
    `scripts/check-adrs.mjs:399-409` fails the build, and the `amended_by` target must be
    `accepted` by `:411-420`.
@@ -357,25 +359,25 @@ land in the same commit that flips this record's status:
 
    > `| [ADR-0022](ADR-0022-local-identity-no-external-idp.md) | accepted, amended | Local passkey identity; no speculative external IdP seam; cross-tenant identity linkage narrowed to a human assertion by ADR-0027 |`
 
-   The ADR-0027 row's own status cell changes from `proposed` to `accepted` in the same
+   The ADR-0027 row's own status cell changed from `proposed` to `accepted` in the same
    edit; `scripts/check-adrs.mjs:461-464` fails the build if the index status and the
    frontmatter status disagree.
 3. **One sentence edited in place in ADR-0022's Decision.** A reciprocal key alone would
-   leave a false sentence standing in an authoritative record. `ADR-0022:38` currently
-   enumerates what an HR/roster/attendance/payroll integration must not do —
+   leave a false sentence standing in an authoritative record. `ADR-0022:38` previously
+   enumerated what an HR/roster/attendance/payroll integration must not do —
    *"They must not authenticate users, assert sessions, grant roles, or decide account
    status unless a separate identity-federation ADR names the real IdP/protocol/claims
-   and passes security review."* That enumeration is **incomplete as of this record's
-   acceptance**, because linking two accounts to one identity is not on the list and is
+   and passes security review."* That enumeration was **incomplete as of this record's
+   acceptance**, because linking two accounts to one identity was not on the list and is
    the route by which imported roster data would confer group authority. The edit
-   inserts the missing verb into that sentence:
+   inserted the missing verb into that sentence:
 
    > They must not authenticate users, assert sessions, grant roles, **link two
    > accounts to one identity,** or decide account status unless a separate
    > identity-federation ADR names the real IdP/protocol/claims and passes security
    > review.
 
-   No other sentence in ADR-0022 becomes false. `ADR-0022:33` and `:36` remain exactly
+   No other sentence in ADR-0022 became false. `ADR-0022:33` and `:36` remain exactly
    correct — the scope finding in this record's Context is about text ADR-0022 never
-   contained, not about text it got wrong, so `:36` gains a clarifying cross-reference
+   contained, not about text it got wrong, so `:36` gained a clarifying cross-reference
    to ADR-0027 rather than a correction.

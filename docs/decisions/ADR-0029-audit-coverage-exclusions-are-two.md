@@ -1,11 +1,11 @@
 ---
 id: ADR-0029
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
 decision: audit-coverage-exclusion-cardinality-and-binding
-proposes_amendments_to: [ADR-0002]
+amends: [ADR-0002, ADR-0014]
 related: [ADR-0002, ADR-0014]
 ---
 
@@ -13,12 +13,14 @@ related: [ADR-0002, ADR-0014]
 
 ## Status
 
-**Proposed 2026-07-30.** A retroactive reconciliation under README:6: the code is
-right and the record is false. On acceptance this record would amend ADR-0002's
-audit-coverage exclusion sentence and would authorise no new carve-out. ADR-0014's
-destructible-store decision is unaffected, but its closing Decision sentence
-repeats the same false count; the correction owed there is named in the final
-section.
+**Accepted 2026-07-30.** A retroactive reconciliation under README:6: the code is
+right and the record was false. This record amends ADR-0002's audit-coverage
+exclusion sentence and authorises no new carve-out. ADR-0014's destructible-store
+decision is unaffected, but its closing Decision sentence repeated the same false
+count, so at acceptance the owner took the first of the two remedies this record's
+final section names and widened its scope to `amends: [ADR-0002, ADR-0014]` — both
+false sentences are corrected here rather than one, and the ADR-0014 reciprocity is
+carried in the final section alongside ADR-0002's.
 
 ## Context
 
@@ -98,9 +100,12 @@ bound reason twice is `DuplicateAuditExclusion` (`src/lib.rs:192-201`).
    retention purge erases expired location-derived data to honour the retention
    window ADR-0014 requires, which is why it is data-lifecycle maintenance rather
    than an auditable business write (`src/lib.rs:97-100`).
-5. **The three stale prose sites are corrected in the same change**, as
-   documentation: `src/lib.rs:9-11`, `backend/crates/kernel/core/src/audit.rs:2-4`,
-   and the sentences named in the final section.
+5. **All three stale prose sites must be corrected**, as documentation. The two ADR
+   sentences named in the final section are corrected in the acceptance change itself.
+   The two source comments — `backend/ci/gates/audit-coverage/src/lib.rs:9-11` and
+   `backend/crates/kernel/core/src/audit.rs:2-4` — were **not** corrected in the
+   acceptance change, which touched `docs/decisions/` only; they remain owed at
+   Follow-up 2 and no further decision is needed to make them.
 
 ## Alternatives considered
 
@@ -161,35 +166,44 @@ belongs to a decision about the write path, not to the exclusion set.
    unknown, not zero, until that runs; the change is not proposed by this record.
 2. **Correct the two source comments** at
    `backend/ci/gates/audit-coverage/src/lib.rs:9-11` and
-   `backend/crates/kernel/core/src/audit.rs:2-4` in the change that carries this
-   record's acceptance.
+   `backend/crates/kernel/core/src/audit.rs:2-4`. **Outstanding:** the acceptance
+   change was documentation-only and did not reach either file, so both still read
+   "the only carve-out" against a gate that returns two.
 3. **Sweep planning evidence under `docs/program` and `docs/ideas`** for the
    one-exclusion count and for citations of `ADR-0002:20` as authority on it.
 
-## Reciprocal record owed on acceptance
+## Reciprocal records landed on acceptance
 
 README:9 requires amendment to be explicit in both records, and README:26 requires
-relationship keys to be reciprocal where applicable. Nothing below is owed while
-this record is `proposed` — a proposed record carries no active amendment, and
-`check-adrs.mjs:414-419` rejects an `amended_by` pointing at a non-accepted ADR.
-All of it lands in the same change as the status flip.
+relationship keys to be reciprocal where applicable. All of the below landed in the
+same change as the status flip; `check-adrs.mjs:414-419` rejects an `amended_by`
+pointing at a non-accepted ADR, so the status flip and the keys are one commit.
 
-**1. ADR-0002 frontmatter.** `ADR-0002-auditfirst-transactional-discipline-audit-event-in.md`
-gains `amended_by: [ADR-0029]`. Verified: its frontmatter (`ADR-0002:1-9`) carries
+**Scope at acceptance.** Item 5 below offered the owner two remedies for ADR-0014's
+twin false sentence. The first was taken: this record's `amends` names **both**
+ADR-0002 and ADR-0014, and items 1-3 carry ADR-0014's reciprocity alongside
+ADR-0002's. No separate record was issued.
+
+**1. ADR-0002 and ADR-0014 frontmatter.**
+`ADR-0002-auditfirst-transactional-discipline-audit-event-in.md`
+gained `amended_by: [ADR-0029]`. Its frontmatter (`ADR-0002:1-9`) carried
 `id, status, doc_status, date, owner, consensus, related` and no relationship key
-other than `related: [ADR-0014]` (`:8`) — so this **creates** the key rather than
-appending to it. `related` becomes `[ADR-0014, ADR-0029]`. This record's
-`proposes_amendments_to` is replaced by `amends: [ADR-0002]` at the same moment;
-`check-adrs.mjs:405` fails the build if either half is missing.
+other than `related: [ADR-0014]` (`:8`) — so this **created** the key rather than
+appending to it. `related` became `[ADR-0014, ADR-0029]`, and gained `ADR-0032`,
+`ADR-0035`, and `ADR-0036` from their own acceptances in the same pass.
+`ADR-0014-locationping-destructible-store-carved-out-of.md` likewise gained
+`amended_by: [ADR-0029]` — also a created key — and `ADR-0029` in its `related`.
+This record's `proposes_amendments_to` was replaced by `amends: [ADR-0002, ADR-0014]`
+at the same moment; `check-adrs.mjs:405` fails the build if either half is missing.
 
-**2. ADR-0002's Decision text, edited in place.** `ADR-0002:20` currently reads:
+**2. ADR-0002's Decision text, edited in place.** `ADR-0002:20` previously read:
 
 > A CI `audit-coverage` gate (T0.4) fails the build if a state-changing handler
 > emits no audit event; its exclusion set contains exactly one entry — the
 > LocationPing ingestion path (ADR-0014) — and a test asserts that is the only
 > exclusion.
 
-That clause is replaced with:
+That clause was replaced with:
 
 > A CI `audit-coverage` gate (T0.4) fails the build if a state-changing handler
 > emits no audit event; its exclusion set contains exactly two entries — the
@@ -197,31 +211,37 @@ That clause is replaced with:
 > (ADR-0014, ADR-0029) — each bound to a specific (file, function) pair, and a
 > test asserts that set in full.
 
-**3. README index row.** `docs/decisions/README.md:33` changes status
-`accepted` → `accepted, amended` and gains the scope note, following the ADR-0005
+**3. README index rows.** The ADR-0002 row changed status `accepted` →
+`accepted, amended` and gained the scope note, following the ADR-0005
 and ADR-0023 precedent:
 
 > | [ADR-0002](ADR-0002-auditfirst-transactional-discipline-audit-event-in.md) | accepted, amended | Audit event in the same transaction; append-only audit store; exclusion-set cardinality and binding amended by ADR-0029 |
 
-ADR-0029's own row moves from `proposed` to `accepted`, and the effective
-relationship graph (README:59-66) gains: "ADR-0029 narrowly amends ADR-0002's
-audit-coverage exclusion sentence, records a pre-existing governance gap under
-authority rule 6, and does not amend ADR-0002's same-transaction or append-only
-decisions."
+The ADR-0014 row changed the same way, keeping its own authored scope sentence and
+gaining the amendment clause. ADR-0029's own row moved from `proposed` to
+`accepted`, and the effective relationship graph gained: "ADR-0029 narrowly amends
+the audit-coverage exclusion sentence in ADR-0002 and in ADR-0014, records a
+pre-existing governance gap under authority rule 6, and does not amend ADR-0002's
+same-transaction or append-only decisions or ADR-0014's destructible-store
+decision."
 
-**4. A correction owed in ADR-0014, outside this record's declared scope.**
-`ADR-0014:20` ends: "The audit-coverage gate's exclusion set contains exactly this
-one path, and a test asserts it is the only exclusion." That sentence is false for
-the same reason and against the same evidence. ADR-0014's decision — a separate
-destructible store, coordinates never entering `audit_events`, consent lifecycle
-audited — is untouched; only the cardinality clause is wrong, and it should read:
+**4. ADR-0014's Decision text, edited in place.**
+`ADR-0014:20` previously ended: "The audit-coverage gate's exclusion set contains
+exactly this one path, and a test asserts it is the only exclusion." That sentence
+was false for the same reason and against the same evidence. ADR-0014's decision — a
+separate destructible store, coordinates never entering `audit_events`, consent
+lifecycle audited — is untouched; only the cardinality clause was wrong, and it now
+reads:
 
 > The audit-coverage gate's exclusion set contains this path bound to its exact
 > writer, alongside the expired-location-data retention purge recorded in
 > ADR-0029, and a test asserts that set in full.
 
-This record's `proposes_amendments_to` names ADR-0002 only, as assigned, so that
-edit is not authorised here. Before acceptance the owner must either extend this
-record to `proposes_amendments_to: [ADR-0002, ADR-0014]` and add the ADR-0014
-reciprocal to items 1-3, or issue a separate record for it. Accepting item 2 alone
-would fix one false sentence and leave its twin standing.
+**5. Why this record amends two ADRs rather than one.** As drafted, this record's
+`proposes_amendments_to` named ADR-0002 only, which left the twin sentence in
+ADR-0014 standing — fixing one false sentence and leaving its identical partner in
+place. The draft required the owner, before acceptance, either to extend the record
+to both targets and carry the ADR-0014 reciprocity in items 1-3, or to issue a
+separate record. **The first was chosen at acceptance**, because both sentences are
+false against the same two lines of the same gate and a second record would have
+split one evidentiary finding across two decisions.

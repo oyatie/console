@@ -5,7 +5,8 @@ doc_status: published
 date: 2026-06-12
 owner: jasonlee
 consensus: ralplan iteration 3 (Planner/Architect/Critic APPROVE, 2026-06-12)
-related: [ADR-0012]
+amended_by: [ADR-0031]
+related: [ADR-0012, ADR-0031]
 ---
 
 # ADR-0009 — Dual-native (Swift+Kotlin) parity strategy via single OpenAPI contract + CI parity gate
@@ -17,7 +18,7 @@ Accepted (consensus-approved plan §2.9).
 The user chose native Swift (iOS) + Kotlin (Android) apps over a single React Native codebase (informed decision, interview R6) for maximal mobile UX. Two codebases create parity-drift risk — the plan's #1 pre-mortem scenario.
 
 ## Decision
-Parity is enforced structurally, not by discipline: one utoipa-emitted `openapi.yaml` is the single contract; CI generates ts/swift/kotlin clients and fails on drift (T1.9); both apps build from every release tag (T1.8 dual-build gate); a per-release parity checklist (same user-visible capabilities) gates release; per-slice sequencing ships web+Android first, iOS immediately after, within the same milestone.
+Parity is enforced structurally, not by discipline: one `openapi.yaml` emitted from the ADR-0031 wire-DTO contracts crate is the single contract, with a CI diff gate failing when the committed document differs from the emitted one; CI generates ts/swift/kotlin clients and fails on drift (T1.9); both apps build from every release tag (T1.8 dual-build gate); a per-release parity checklist (same user-visible capabilities) gates release; per-slice sequencing ships web+Android first, iOS immediately after, within the same milestone.
 
 ## Consequences
 + Best platform UX (camera pipeline, push handling, passkeys are platform-native anyway).

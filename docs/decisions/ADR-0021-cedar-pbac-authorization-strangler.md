@@ -5,7 +5,7 @@ doc_status: published
 date: 2026-07-03
 owner: jasonlee
 acceptance_scope: target baseline only; live Cedar enforcement requires explicit promotion evidence
-related: [ADR-0003, ADR-0004, ADR-0022, ADR-0023]
+related: [ADR-0003, ADR-0004, ADR-0022, ADR-0023, ADR-0028]
 ---
 
 # ADR-0021: Cedar PBAC authorization strangler

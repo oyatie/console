@@ -1,11 +1,11 @@
 ---
 id: ADR-0028
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
 decision: org-id-branchscope-composition
-proposes_amendments_to: [ADR-0003]
+amends: [ADR-0003]
 related: [ADR-0003, ADR-0018, ADR-0021]
 ---
 
@@ -13,7 +13,7 @@ related: [ADR-0003, ADR-0018, ADR-0021]
 
 ## Status
 
-**Proposed 2026-07-30 · review.** This record proposes to amend one clause of
+**Accepted 2026-07-30 · review.** This record amends one clause of
 ADR-0003 and closes a documented composition gap under
 `docs/decisions/README.md:12` (authority rule 6). It ratifies behaviour already shipped; it
 authorizes no new behaviour, unholds nothing, and asserts no compliance
@@ -287,38 +287,39 @@ same behaviour.
    give `dispatch_notification` an org parameter, and add a test that a
    `pool: None` hub built through `for_tests` still refuses cross-org delivery.
 
-## Reciprocal record owed on acceptance
+## Reciprocal record landed on acceptance
 
-Reciprocity is owed at acceptance, not now: a proposed record carries no active
-amendment, so `ADR-0003` must not gain `amended_by` yet
-(`docs/decisions/README.md:26`, "reciprocal where applicable"). On acceptance,
-three edits are owed atomically in one commit (README:3).
+Reciprocity landed with acceptance (`docs/decisions/README.md:26`, "reciprocal
+where applicable"). All three edits below landed atomically in the one commit
+that flipped this record's status (README:3).
 
 **1. Frontmatter key on `ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md`.**
-Verified: that file's frontmatter is `id`, `status`, `doc_status`, `date`,
-`owner`, `consensus`, `related: []` — it carries **no `amended_by` key today**,
-so this **creates** the key rather than appending to it:
+Before this change that file's frontmatter was `id`, `status`, `doc_status`, `date`,
+`owner`, `consensus`, `related: []` — it carried **no `amended_by` key**,
+so this **created** the key rather than appending to it:
 
 ```yaml
 amended_by: [ADR-0028]
 related: [ADR-0028]
 ```
 
-`related` also changes from `[]` to `[ADR-0028]`. `scripts/check-adrs.mjs:399-409`
-then requires this record to declare `amends: [ADR-0003]`, which replaces
+`related` also changed from `[]` to include `ADR-0028` (ADR-0032 and ADR-0036 added
+their own `related` entries to the same list in the same acceptance pass).
+`scripts/check-adrs.mjs:399-409`
+then requires this record to declare `amends: [ADR-0003]`, which replaced
 `proposes_amendments_to` at the same moment; `:422-424` permits `amends` only on
 an accepted record, and `:414-418` requires the `amended_by` target to be
-accepted, so the two status changes and the two key changes are one commit or
+accepted, so the two status changes and the two key changes were one commit or
 none.
 
-**2. Index row in `docs/decisions/README.md`.** The ADR-0003 row changes from
+**2. Index row in `docs/decisions/README.md`.** The ADR-0003 row changed from
 `accepted` to:
 
 ```
 | [ADR-0003](ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md) | accepted, amended | Non-null branch scope and default-deny authorization; `BranchScope::All` derivation and `org_id` composition amended by ADR-0028 |
 ```
 
-The ADR-0028 row changes from `proposed` to `accepted`. A bullet is added to the
+The ADR-0028 row changed from `proposed` to `accepted`. A bullet was added to the
 "Effective relationship graph" section recording that ADR-0003 remains accepted
 for its `Branch`/`Region` day-1 schema, default-deny repository filtering, and
 branch-scoped broadcast/rollup rules, with only the `BranchScope::All`
@@ -331,7 +332,7 @@ the specific failure this section exists to prevent. The sentence
 > Principals carry a `BranchScope` (kernel type): `All` for SUPER_ADMIN/EXECUTIVE
 > rollups, an explicit branch set otherwise.
 
-is to be replaced by
+was replaced by
 
 > Principals carry a `BranchScope` (kernel type): `All` only where a built-in
 > `Feature` capability or a live database membership proof derives it — never
@@ -340,5 +341,5 @@ is to be replaced by
 > existing SUPER_ADMIN/EXECUTIVE principals are governed by ADR-0028.
 
 The remaining three sentences of `ADR-0003:20` are unchanged. `ADR-0018` and
-`ADR-0021` each gain `ADR-0028` in their own `related` list and need no other
+`ADR-0021` each gained `ADR-0028` in their own `related` list and needed no other
 edit; neither is amended by this record.

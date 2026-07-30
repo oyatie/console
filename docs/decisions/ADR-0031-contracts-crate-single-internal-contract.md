@@ -1,11 +1,11 @@
 ---
 id: ADR-0031
-status: proposed
+status: accepted
 doc_status: review
 date: 2026-07-30
 owner: jasonlee
 decision: contracts-crate-single-internal-contract
-proposes_amendments_to: [ADR-0009]
+amends: [ADR-0009]
 related: [ADR-0001, ADR-0009, ADR-0012]
 ---
 
@@ -13,8 +13,8 @@ related: [ADR-0001, ADR-0009, ADR-0012]
 
 ## Status
 
-**Proposed 2026-07-30 · doc_status `review`.** Source: owner decision 2026-07-30, reached
-independently of the twelve-theme ADR adjudication. This record proposes amendments to the
+**Accepted 2026-07-30 · doc_status `review`.** Source: owner decision 2026-07-30, reached
+independently of the twelve-theme ADR adjudication. This record amends the
 *contract mechanism* half of ADR-0009 only. Its dual-native client-generation, dual-build, and
 per-slice sequencing clauses are equally divergent from HEAD (evidence below) but are outside this
 record's scope and need their own decision. Deliberately split from the console frontend charter:
@@ -66,7 +66,7 @@ discipline — is correct and load-bearing. Only its named mechanism was never b
 
 ## Decision
 
-*Proposed; nothing below is in force until this record is accepted.*
+*Accepted; everything below is in force.*
 
 1. **A dedicated contracts crate is the single internal API contract.** It holds wire DTOs plus the
    OpenAPI derive metadata, and it is the only artifact both the backend REST layer and any
@@ -162,34 +162,33 @@ no gate has ever verified.
 5. Record the landing-model constraint from the coupling consequence wherever branch/landing shape
    is decided.
 
-## Reciprocal record owed on acceptance
+## Reciprocal record landed on acceptance
 
 `docs/decisions/README.md:9` requires amendment to be explicit in both records and `:26` requires
-relationship keys to be reciprocal where applicable. A proposed record carries no active amendment,
-so no existing ADR is edited now. On acceptance, the following edits are owed atomically with the
+relationship keys to be reciprocal where applicable. The following edits landed atomically with the
 status change:
 
-1. **`ADR-0009` frontmatter gains a key that does not exist today.** Its frontmatter is
+1. **`ADR-0009` frontmatter gained a key it did not carry.** Its frontmatter was
    `id`, `status`, `doc_status`, `date`, `owner`, `consensus`, `related`
    (`ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md:1`–`:9`), with
-   `related: [ADR-0012]` at `:8`. There is **no `amended_by` key**, so this creates it rather than
+   `related: [ADR-0012]` at `:8`. There was **no `amended_by` key**, so this created it rather than
    appending: `amended_by: [ADR-0031]`. `scripts/check-adrs.mjs:399`–`:409` makes that reciprocal
    edit mandatory in the same commit as this record declaring `amends: [ADR-0009]`, which
    `:421`–`:425` permits only once this record's status is `accepted`.
-2. **`ADR-0009`'s README index row changes.** `docs/decisions/README.md:40` currently reads
+2. **`ADR-0009`'s README index row changed.** It previously read
    `| [ADR-0009](…) | accepted | Dual-native Swift/Kotlin employee apps from one OpenAPI contract; `coss-rn` is outside this scope |`.
-   Its status cell becomes `accepted, amended` and its scope cell must name this amendment, in the
-   style already used for ADR-0005 and ADR-0015 at `:36` and `:46`.
-3. **This record's own index row moves from `proposed` to `accepted`**, and the *Effective
-   relationship graph* section gains a bullet stating that the contract-mechanism clause of
+   Its status cell became `accepted, amended` and its scope cell names this amendment, in the
+   style already used for ADR-0005 and ADR-0015.
+3. **This record's own index row moved from `proposed` to `accepted`**, and the *Effective
+   relationship graph* section gained a bullet stating that the contract-mechanism clause of
    ADR-0009 is amended while its dual-native scope is untouched by this record.
-4. **`ADR-0009`'s Decision text must be edited in place, because a reciprocal key alone would leave
+4. **`ADR-0009`'s Decision text was edited in place, because a reciprocal key alone would leave
    a false sentence standing in an authoritative record.** In the sentence at `ADR-0009:20`, the
    clause
 
    > one utoipa-emitted `openapi.yaml` is the single contract
 
-   is false as verified above and becomes
+   is false as verified above and became
 
    > one `openapi.yaml` emitted from the ADR-0031 wire-DTO contracts crate is the single contract,
    > with a CI diff gate failing when the committed document differs from the emitted one
