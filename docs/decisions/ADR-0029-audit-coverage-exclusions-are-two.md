@@ -100,7 +100,7 @@ bound reason twice is `DuplicateAuditExclusion` (`src/lib.rs:192-201`).
    retention purge erases expired location-derived data to honour the retention
    window ADR-0014 requires, which is why it is data-lifecycle maintenance rather
    than an auditable business write (`src/lib.rs:97-100`).
-5. **All three stale prose sites must be corrected**, as documentation. The two ADR
+5. **All four stale prose sites must be corrected**, as documentation. The two ADR
    sentences named in the final section are corrected in the acceptance change itself.
    The two source comments — `backend/ci/gates/audit-coverage/src/lib.rs:9-11` and
    `backend/crates/kernel/core/src/audit.rs:2-4` — were **not** corrected in the
