@@ -863,3 +863,26 @@ invisible to the audit while looking perfectly cited to a human. (All four were 
 `:23`/`:24` on the next line inherited `0072`: the `0147` that should have been their antecedent had been
 swallowed by the broken span. A repo-wide scan of the document found **16 lines** with unbalanced spans, eight
 pairs; only this one hid citations, and it is now one fragment per line.
+
+## Wave 11 — §6 probes through §8 lane protocol (`DRAFT:2240`-`DRAFT:2709`)
+
+`UNVERIFIABLE 124 → 49` · `RESOLVES 436 → 498` · `BROKEN 0` · total 696
+
+### Factually wrong, corrected to what the file says
+
+- **`0160:79` is `RETURNS TRIGGER AS $$`, not the trigger body** (`DRAFT:2443`). The known-bad control says
+  "the trigger must fire"; what fires is
+  `RAISE EXCEPTION 'finance_gl voucher % is posted and immutable'` at **86**, inside the function that starts
+  at **78**. Now anchored on the exception text, which is what a failing test would actually observe.
+- **`0060:88-91` is the `RETURN QUERY SELECT`, not the `EXCEPTION` restore** (`DRAFT:2405`).
+  `EXCEPTION WHEN OTHERS THEN` / `SET LOCAL row_security = on;` is **90-92**. The cited span starts two lines
+  early and stops one line short of the thing named.
+
+### Opaque targets that were never citations at all
+
+`preflight:75`, `support-domain-unit:163`, `postgres-domain-reachability:194`, `company-conformance:244`,
+`generated-face-authority:291`, `backend:340`, `dev-up-smoke:684`, `repo-gates:741`, `api-contract:827`,
+`kubernetes-manifests:906` (`DRAFT:2552`) and `realtime:40` (`DRAFT:2453`) name a **job or a crate**, not a
+file, so no tool could bind them and only a human who already knew the repo could follow them. Each is now
+`ci.yml` plus the job key itself — which is what the line number was standing in for. The document's own
+instruction two sentences later, *"Cite the job by name"*, is now what the citations do.

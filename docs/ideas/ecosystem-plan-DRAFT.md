@@ -2237,11 +2237,11 @@ that distinction, G8 becomes a reciprocal amendment to ADR-0001, not a silent di
 entry — the LocationPing ingestion path (ADR-0014) — and a test asserts that is the only exclusion."*
 **That sentence is false, and the code is authoritative.** The gate returns **TWO**, each bound to a
 **(file, function)** pair, not to a table name:
-`backend/ci/gates/audit-coverage/src/lib.rs:90-111` returns
+`backend/ci/gates/audit-coverage/src/lib.rs` `pub fn allowed_audit_exclusions` returns
 `location_ping_ingestion` / `record_location_ping` and
 `location_data_retention_purge` / `purge_expired_location_data`, both in
 `crates/compliance/adapter-postgres/src/lib.rs`. And the test is
-`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs:26`
+`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs` `fn allowed_exclusion_set_is_the_two_location_carveouts`
 `fn allowed_exclusion_set_is_the_two_location_carveouts()`, asserting `exclusions.len() == 2`.
 
 **Cite the gate and the test name, never `ADR-0002`'s Decision line for this fact.** An ADR Decision line is
@@ -2268,11 +2268,11 @@ What D3 must also record, so the enumeration is sized rather than labelled:
   first**; the enumeration must not assume it.
 
 **G7 is STRUCK, and on a structural ground that holds regardless of the substance.**
-`DN-0003` is `kind: design-note`, `authority: subordinate`. `docs/decisions/README.md:26` governs **ADR**
-relationship keys, while design notes declare `parent_adr`; and `scripts/check-adrs.mjs:23-27` reciprocates only
+`DN-0003` is `kind: design-note`, `authority: subordinate`. `docs/decisions/README.md` `is always required and uses an inline list` governs **ADR**
+relationship keys, while design notes declare `parent_adr`; and `scripts/check-adrs.mjs` `const RECIPROCAL_RELATIONSHIPS = [` reciprocates only
 over the ADR map. **So DN-0003 cannot take a reciprocal ADR pair at all** — G7 was never an available action.
 The substance is aligned anyway, and it is worth stating because it is the answer to "how does this tie into
-the engine": `DN-0003` (design-note, `activation: in_progress` at `:6`) invariant 10 reads, at `:97-99`:
+the engine": `DN-0003` (design-note, `DN-0003` `activation: in_progress`) invariant 10 reads, at `DN-0003` `Extensibility is bounded.`:
 
 > **Extensibility is bounded.** Tenant definitions are declarative; trusted first-party tools are
 > compile-time allowlisted; external connectors are server-side, typed, scoped, audited, idempotent, and
@@ -2301,10 +2301,10 @@ widened scope and are, on current evidence, the more likely ones.
 
 ### Scenario 1 — The definer becomes the hole it was built to avoid
 
-`effective_grants_for` is copied from `group_role_grants_for_user` (`0060:99`) *including* its
+`effective_grants_for` is copied from `group_role_grants_for_user` (`0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)`) *including* its
 trust-the-parameter weakness (§4.2). A caller passes another org's party id; the definer has
 `row_security = off`; it returns grants from an org the caller cannot see. The org floor evaporates
-while every test stays green — precisely the failure `0205:69-74` warns about in the analogous case.
+while every test stays green — precisely the failure `0205` `Delete any one of the` warns about in the analogous case.
 
 **Leading indicator.** Any definer body that reads a party or grant without a literal
 `current_setting('app.current_org')` predicate. Gate it as a grep, not a review habit — the review
@@ -2312,9 +2312,9 @@ habit is what failed in the precedent.
 
 ### Scenario 2 — Grants quietly become subtractive
 
-`policy_role_conditions` already models two of the four dimensions as data (`attribute` CHECK, `0065:110-127`
+`policy_role_conditions` already models two of the four dimensions as data (`attribute` CHECK, `0065` `attribute         TEXT        NOT NULL CHECK (attribute IN (`
 — §4.4(b): 직무 and 직급 are not literals there)
-— and its operator set is `CHECK (operator IN ('equals','not_equals','in'))` (`0065:129`). **`not_equals`
+— and its operator set is `CHECK (operator IN ('equals','not_equals','in'))` (`0065` `operator TEXT NOT NULL CHECK (operator IN ('equals','not_equals','in'))`). **`not_equals`
 is already in the shipped vocabulary.** The path of least resistance is to reuse that table and its
 resolver, and the moment one condition narrows rather than adds, `effective(P, B) > effective(Q, B)`
 (requirement 3) stops holding, delegation starts removing authority, and routing becomes a capability
@@ -2399,14 +2399,14 @@ session state. Any probe in this section that asserts an absence must state wher
 |---|---|---|
 | `party_is_invisible_and_unmintable_from_a_tenant` | armed to any tenant org as `console_rt`: `SELECT * FROM party` returns **zero rows** and `SELECT count(*)` returns **0** (omitted, not refused — DN-0003 invariant 5), **and** an INSERT is refused by the `org_isolation` `WITH CHECK` + the sentinel-pinning column CHECK (§4.1). Renamed from `party_not_readable_as_console_rt`, which asserted a **denial** — the Tier O reading the plan no longer takes | the table without `FORCE` RLS, or without the sentinel CHECK: the SELECT then returns platform-wide cardinality, which is exactly what X4 measured (`count(*)` = **2** where org A held one edge) |
 | `visibility_edge_rls` | org A cannot see org B's `party_org_visibility` rows for the same party | RLS not FORCEd, or policy omitted |
-| `definer_ignores_parameter_org` | passing another org's party id returns **zero rows** | a definer that filters on a parameter instead of `app.current_org` — i.e. `0060:99` copied verbatim |
+| `definer_ignores_parameter_org` | passing another org's party id returns **zero rows** | a definer that filters on a parameter instead of `app.current_org` — i.e. `0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)` copied verbatim |
 | `definer_revalidation_each_check` | baseline GREEN with all named checks of §5.1 present; then deleting **`org_predicate`**, **`visibility_predicate`**, **`chain_linkage`** and **`scope_containment`** each in turn fails the suite | each named deletion individually RED. The probe **names each check** rather than carrying a count, so the number cannot rot |
 | `definer_returns_no_foreign_org_grant` | one party with a visibility edge in **both** orgs and one grant in each; armed as org A, the call returns exactly **one** row | the definer as §4.5 specified it before this revision — no `org_id` predicate on the grant read |
-| `row_security_restored_on_error` | an exception inside the definer leaves `row_security = on` | a definer without the `EXCEPTION WHEN OTHERS` restore of `0060:88-91` |
+| `row_security_restored_on_error` | an exception inside the definer leaves `row_security = on` | a definer without the restore in `0060` `EXCEPTION WHEN OTHERS THEN` |
 | `genesis_grant_mintable_only_by_platform_principal` | a grant with no authorising grant can be minted **only** on the platform-principal path gated by `PlatformFeature::TenantCreate` (§5.1) | a **tenant**-authenticated endpoint creating a grant with no authorising grant |
 | `no_new_gate_classification` | the tenant-isolation gate passes with **exactly one** new `owner_only_table_allowlist` entry — the group-scoped grant store — and with `party`, `party_org_visibility` and `work` **unlisted**, i.e. taking the default Tier T classification. `party` is deliberately **not** an owner-only table (§4.1) | the grant store added to `global_table_allowlist` (must be RED per §3.2 Option 3); **and** `party` added to `owner_only_table_allowlist`, which must also be RED — an owner-only `party` is the Tier O reading this plan withdrew, and it would silently remove the RLS floor that carries the confidentiality property |
 | `visibility_unique_key_leads_with_org_id` | an insert into `party_org_visibility` that collides **only** with an invisible other-org row is **accepted** | the same table keyed `UNIQUE (party_id, relationship_kind, valid_from)` — must be RED with `23505` (X4 CONTROL 3) |
-| `ont_link_to_projected_row_is_rejected` | an `ont_links` INSERT naming a **projected** type's row as an endpoint fails **on the FK** (`0155:76-77`) | the four `work_*` edges as §4.3 specified them before this revision, i.e. as `ont_link`s |
+| `ont_link_to_projected_row_is_rejected` | an `ont_links` INSERT naming a **projected** type's row as an endpoint fails **on the FK** (`0155` `FOREIGN KEY (to_instance_id, org_id) REFERENCES ont_instances(id, org_id)`) | the four `work_*` edges as §4.3 specified them before this revision, i.e. as `ont_link`s |
 | `worksite_reg_no_unique` | duplicate 사업자등록번호 rejected by the DB | the constraint expressed only in app code |
 
 ### End-to-end (the proving slice)
@@ -2416,12 +2416,12 @@ session state. Any probe in this section that asserts an absence must state wher
 | `slice0_terminal_at_현장` | ₩100,000 비품 raised at 현장 R resolves to a terminal 현장 signature | routing that escalates to 본사 |
 | `slice0_negative_scope` | a grant at a *different* 현장 does not authorise | a fold ignoring scope |
 | `slice0_second_band` | ₩100,000,000 re-routes by the same lookup, no special case | a hard-coded escalation path |
-| `slice0_capacity_recorded` | the `gov_approvals` row carries `authorizing_grant_id` beside *(signer, scope)* | a signature recording only the signer — today's `gov_approvals.approver_id`-only shape (`0153:71`, no capacity column) |
+| `slice0_capacity_recorded` | the `gov_approvals` row carries `authorizing_grant_id` beside *(signer, scope)* | a signature recording only the signer — today's `gov_approvals.approver_id`-only shape (`0153` `approver_id      UUID        NOT NULL,`, no capacity column) |
 | `daeri_records_both_parties` | a 대리 signature records the outgoing signer **and** `on_behalf_of_party_id` | a 대리 signature whose `on_behalf_of_party_id` is null |
 | `slice0_closed_grant_refused` | a grant closed at the decision timestamp cannot authorise | a fold using `now()` instead of the decision timestamp |
 | `slice0_본사_may_still_approve` | 본사 retains `purchase.approve` at company scope; routing did not restrict it | routing implemented as a capability restriction |
 | `retroactive_반려_after_확정` | emits a `correction`; the original stays `confirmed` in history | an implementation that transitions or rewrites the original |
-| `obligation_notifies_line_as_raised` | truncated member D is notified though D never saw the matter, **and every non-member of the line receives nothing** | notification over the executed line; **and the shipped org-wide snapshot** (`notices/adapter-postgres/src/lib.rs:413-433`), which notifies every active user in the org and would pass the first half alone |
+| `obligation_notifies_line_as_raised` | truncated member D is notified though D never saw the matter, **and every non-member of the line receives nothing** | notification over the executed line; **and the shipped org-wide snapshot** (`notices/adapter-postgres/src/lib.rs` `SELECT $1, $2, id FROM users WHERE org_id = $1 AND is_active = true`), which notifies every active user in the org and would pass the first half alone |
 | `handover_is_scope_bounded` | relinquishing a group duty leaves the subsidiary post's work in place | handover moving everything the person holds |
 | `handover_moves_work_artifacts_only` | person-linked material does not transfer | handover moving all artifacts |
 | `link_email_is_authorized` | an unauthorised actor cannot link an email into a work | an open triage queue |
@@ -2435,12 +2435,12 @@ session state. Any probe in this section that asserts an absence must state wher
 | `capacity_recorded_on_every_authority_mutation` | reads the **D3 write-path enumeration** (§8 Phase 0) and asserts every enumerated authority-mutating path writes `gov_approvals.authorizing_grant_id`. The `audit_events` pair is **out of scope** until those deferred columns land (§4.0.3) | a mutation writing a null capacity where the enumeration says it is required |
 | `no_duplicated_fact` | `work` (Tier T) and the revision chain never store the same field | a `work.assignee` column duplicating the assignment edge |
 | `projected_mutation_goes_through_the_domain_usecase` | every consequential `work` mutation runs through the audited domain use-case, satisfying DN-0003 invariant 1 for a projected type (§4.0.2) | a write reaching the backing table through an ontology property edit |
-| `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `deny_all()` at `backend/crates/platform/authz/src/cedar_pbac/residual.rs:200-203` (§0.13) |
+| `tier_n_type_lists_nonempty` | a published Tier N type returns rows | a type published with no object policy attached — `cedar_pbac/residual.rs` `return ResidualFilter::deny_all();` (§0.13) |
 | `link_type_alone_is_rejected` | a link type with `to_object_type_id` and no property referencing its `stable_key` fails `validate_draft` | today's behaviour — **must be RED before the guard lands** (§0.12) |
 | `slice0_band_enforced_synchronously` | the ₩100,000 band is refused **at raise**, not flagged at close | a check that only reports at period close |
-| `regulation_renders_as_one_artefact` | the complete 전결규정 — (category × band × scope) → competent unit, terminal? — renders as **one artefact as of an arbitrary date** (§4.7 point 4). Current-state renderability, **not** historical replay | routing expressed only inside approval templates, so the regulation can be reconstructed only by reading every template — SAP's named failure (`docs/ideas/research-sap.md:937-939`) |
+| `regulation_renders_as_one_artefact` | the complete 전결규정 — (category × band × scope) → competent unit, terminal? — renders as **one artefact as of an arbitrary date** (§4.7 point 4). Current-state renderability, **not** historical replay | routing expressed only inside approval templates, so the regulation can be reconstructed only by reading every template — SAP's named failure (`docs/ideas/research-sap.md` `Approval authority as an intersection of process config and role assignment`) |
 | `economics_is_a_view` | `work` cost equals `SUM` over voucher LINES dimensioned to that work; no cost column on `work` | a stored cost column |
-| `posted_voucher_cannot_be_rewritten` | a post-확정 반려 produces a contra voucher; the original stays POSTED | code attempting to UPDATE a POSTED voucher — the `0160:79` trigger must fire |
+| `posted_voucher_cannot_be_rewritten` | a post-확정 반려 produces a contra voucher; the original stays POSTED | code attempting to UPDATE a POSTED voucher — the `0160` `is posted and immutable` trigger must fire |
 | `demoted_member_retains_standing` | a demoted member may still 반려 a line already joined | standing re-resolved from current grants |
 | `basis_survives_the_chain` | 발령 → grant `grant_reason` → `audit_events.reason` all reference the same 결재 line | a grant expiry with no basis |
 | `disband_retains_scope` | after disband, "what could P approve on <date>" still resolves the dissolved scope | hard-deleting the `org_unit` |
@@ -2450,11 +2450,11 @@ session state. Any probe in this section that asserts an absence must state wher
 | `lot_concurrent_split_cannot_overallocate` | two concurrent splits of the same lot cannot both commit an over-allocating pair; the parent is locked `FOR UPDATE` and `parent_qty_before_milli` comes from the locked row (§5.8) | the **row-CHECK-only** implementation — two writes of (100, 60, 40) both satisfy the CHECK and over-allocate by 20 |
 | `lot_uom_conversion_recorded` | a cross-UoM split stores its factor | an implicit conversion |
 | `lot_traversal_up` | a finished good enumerates every contributing contract line | a broken derivation chain |
-| `realtime_push_carries_no_capability` | the NOTIFY payload contains ids and a version only | a payload containing a capability set — must also fail the 8000-byte cap (`realtime:40`) |
+| `realtime_push_carries_no_capability` | the NOTIFY payload contains ids and a version only | a payload containing a capability set — must also fail the 8000-byte cap (`realtime/src/lib.rs` `pub const NOTIFY_PAYLOAD_LIMIT_BYTES: usize = 8000;`) |
 | `grant_write_bumps_subject_version` | a grant revision bumps `authz_subject_version` for the subject party's users **and** `policy_versions` for the org (§5.6) | a grant write that bumps only `policy_versions` — a whole class of authority change then pings nobody |
 | `stale_client_button_is_refused` | pressing a stale action after demotion is denied server-side | trusting the client projection |
-| `channel_membership_is_derived` | changing an assignment updates the thread roster with no manual step | a hand-maintained roster (today's `0012:30-36`) |
-| `deny_by_omission_is_explained` | a refusal a user sees carries a reason | `determining_policies` empty with no fallback (today, `0159:29`) |
+| `channel_membership_is_derived` | changing an assignment updates the thread roster with no manual step | a hand-maintained roster (today's `0012` `CREATE TABLE messenger_thread_members`) |
+| `deny_by_omission_is_explained` | a refusal a user sees carries a reason | `determining_policies` empty with no fallback (today, `0159` `determining_policies JSONB       NOT NULL DEFAULT '[]'::jsonb`) |
 
 ### Observability
 
@@ -2492,7 +2492,7 @@ all of which must exist and be reviewed before fanout opens**:
 | `docs/specs/ecosystem-PORTING.md` | the **mechanical rule set**, no prose: which tier a new entity takes and why; relationships MUST ride a property `config.link` (§0.12); a published type MUST have a policy attached (§0.13); every consequential mutation is an Action carrying `authorizing_grant_id`; `milli` fixed-point for quantities; `object_types` vs `ont_object_types` (§0.7); migrations start at 0207 | `PORTING.md` |
 | `docs/specs/ecosystem-LANES.tsv` | **one row per lane**: crates, owned paths, **migration slot block from 0207**, and the widenings it may take — with W11-W13 in it, since those three are independent (below) | the reservation half of `PORTING.md` |
 
-**The lane table instantiates an existing mechanism; it is not a new one.** `docs/program/LANE-PROTOCOL.md:89`
+**The lane table instantiates an existing mechanism; it is not a new one.** `docs/program/LANE-PROTOCOL.md` `single global sequence, highest`
 already says migrations are *"single global sequence, highest `0204`. Blocks assigned per lane in the Phase-0
 commit; take the number immediately before push"*. **That quoted high-water is stale — 0205 landed and 0206
 is in flight in lane-1, so blocks are assigned from 0207** (Phase 7 carries the correction rung). This table
@@ -2501,7 +2501,7 @@ make it the binding constraint rather than a convenience:
 
 - **Nine 0207+ slots are already claimed** against an unallocated serial resource — D2/T5 ≤2, T2 1, D3 2,
   N3 1, N5 1, N1 1, T10 1 — before any lane opens.
-- `check_migration_versions` (`backend/ci/gates/migration-safety/src/lib.rs:131-141`) enforces **gap-free
+- `check_migration_versions` (`backend/ci/gates/migration-safety/src/lib.rs` `fn check_migration_versions`) enforces **gap-free
   contiguity**: a missing version between two present ones is a `NonContiguousMigrationVersion` violation. So
   a lane cannot hold a reserved number open while another lane lands past it. **The version space serialises
   Phase 4** — this, not any CI collision, is what orders the work.
@@ -2517,10 +2517,10 @@ Two further Phase-0 artifacts, and they are prerequisites rather than deliverabl
 
 **Prerequisite 5.7a — harden the audited-table `DROP COLUMN` resolver — gates ANY migration 0207+, and Slice
 0 lands migrations at 0207+.** Verified by direct read: `table_name_after_alter_table`
-(`backend/ci/gates/migration-safety/src/lib.rs:314-322`) advances past only `if exists`; `tokenize_sql`
-(`:443-460`) emits a token boundary at **every** character that is neither ASCII-alphanumeric nor `_` —
+(`backend/ci/gates/migration-safety/src/lib.rs` `fn table_name_after_alter_table`) advances past only `if exists`; `tokenize_sql`
+(`migration-safety/src/lib.rs` `fn tokenize_sql`) emits a token boundary at **every** character that is neither ASCII-alphanumeric nor `_` —
 including `.`; and
-`built_in_audited_tables()` (`:164-172`) holds neither `only` nor `public`. So
+`built_in_audited_tables()` (`migration-safety/src/lib.rs` `fn built_in_audited_tables`) holds neither `only` nor `public`. So
 `ALTER TABLE ONLY users DROP COLUMN x` resolves the table name to **`only`** and
 `ALTER TABLE public.users DROP COLUMN x` resolves it to **`public`**, and neither raises
 `DropAuditedColumn`. The `#[test]` count in that file is **0**. The fix is one negative unit case per
@@ -2549,7 +2549,7 @@ is what makes a large diff safe. Ours, and it must exist before fanout:
 
 | Target | Rule |
 |---|---|
-| **Every job in `.github/workflows/ci.yml`** | pass unchanged. No gate weakened, no allowlist widened without its own justified commit. **No count is restated** — there are ten as of `8e76dffb4` (`preflight:75`, `support-domain-unit:163`, `postgres-domain-reachability:194`, `company-conformance:244`, `generated-face-authority:291`, `backend:340`, `dev-up-smoke:684`, `repo-gates:741`, `api-contract:827`, `kubernetes-manifests:906`), the plan previously said 14, and a number in prose rots while "every job" does not |
+| **Every job in `.github/workflows/ci.yml`** | pass unchanged. No gate weakened, no allowlist widened without its own justified commit. **No count is restated** — there are ten as of `8e76dffb4` (`ci.yml` `  preflight:`, `ci.yml` `  support-domain-unit:`, `ci.yml` `  postgres-domain-reachability:`, `ci.yml` `  company-conformance:`, `ci.yml` `  generated-face-authority:`, `ci.yml` `  backend:`, `ci.yml` `  dev-up-smoke:`, `ci.yml` `  repo-gates:`, `ci.yml` `  api-contract:`, `ci.yml` `  kubernetes-manifests:`), the plan previously said 14, and a number in prose rots while "every job" does not |
 | `tools/lanes/fanout.py run` | **0 out-of-slice writes.** Already tooling; do not build another |
 | `docs/specs/known-bad-controls.tsv` | **the real immutable artifact.** One row per probe: probe name, known-bad input, and the commit where it was **observed RED**. **No probe may enter the suite without a RED record.** |
 
@@ -2569,14 +2569,14 @@ its GREEN is the only kind that counts.
 | # | Experiment | Prediction | Known-bad control | ANSWERED | If refuted |
 |---|---|---|---|---|---|
 | X1 | **Edges from an authored type.** Publish a type whose relationship is declared *only* as a link type, then again with a property carrying `config.link` | first writes 0 edges, second writes edges | the link-type-only case must be **RED** (it is today's behaviour, §0.12) | **YES — CONFIRMED.** `docs/ideas/experiment-x1-x2.md`; re-runnable at `docs/ideas/experiments/x1/run.sh`. Sharpened to *no **reachable** path* (§4.3) | the canvas cannot express relationships; §0.12's guard becomes a blocking fix |
-| X2 | **A published type lists rows.** Publish with, and without, an attached object policy | without → `[]`; with → rows | the no-policy case must be RED (`residual.rs:200-203`) | **YES — CONFIRMED.** `experiment-x1-x2.md`; `experiments/x2/run.sh`. Measured `200 OK []` then `201 Created` → rows | every Tier N entity is unusable; Tier T for all of them |
-| X3 | **The definer survives attack.** Build `effective_grants_for`, then run the #525 exploit shape and a foreign-org party id against it | both refused **by execution**, not by argument | a definer filtering on a parameter instead of `app.current_org` must leak — the `0060:99` shape copied verbatim | **no — and it CANNOT be prepwork.** It needs `effective_grants_for` to exist, so it is **slice-0 work**, run at ladder rung 4 | the bootstrap resolution fails; grants cannot be read outside the gate |
+| X2 | **A published type lists rows.** Publish with, and without, an attached object policy | without → `[]`; with → rows | the no-policy case must be RED (`residual.rs` `return ResidualFilter::deny_all();`) | **YES — CONFIRMED.** `experiment-x1-x2.md`; `experiments/x2/run.sh`. Measured `200 OK []` then `201 Created` → rows | every Tier N entity is unusable; Tier T for all of them |
+| X3 | **The definer survives attack.** Build `effective_grants_for`, then run the #525 exploit shape and a foreign-org party id against it | both refused **by execution**, not by argument | a definer filtering on a parameter instead of `app.current_org` must leak — the `0060` `CREATE OR REPLACE FUNCTION group_role_grants_for_user(p_user UUID)` shape copied verbatim | **no — and it CANNOT be prepwork.** It needs `effective_grants_for` to exist, so it is **slice-0 work**, run at ladder rung 4 | the bootstrap resolution fails; grants cannot be read outside the gate |
 | X4 | **No second RLS dimension is needed.** Answer `effective(party, scope)` for a person in two orgs using only `app.current_org` + the visibility edge. **Bounded to visibility of a known party within the armed org**; the falsifying case is a **group**-scope step whose only qualifying holder is a user of a sibling org, which X4b measured returning 0 rows (§4.2) | answerable with zero new GUCs, for the bounded claim | an attempt that requires `app.current_group`. **Instrument control:** a GUC inventory read from `pg_settings` rather than from stored policy expressions returns 0 rows and looks like a pass (§7 preamble) | **YES — CONFIRMED.** `docs/ideas/experiment-x4.md`; `experiments/x4/run.sh`. 30 assertions, 3 controls RED, zero new GUCs, the 141 RLS policies untouched | §4.2 collapses and the 141-table cost returns — this is the plan's central claim, so test it first |
 | **X4b** | **Can a group-scoped grant live in Tier N?** Attempt the `grant → group` edge, then read a group-scoped grant revision from a sibling org in the same group | the edge is storable and the sibling reads it | the FK rejection, and the sibling's row count, both measured rather than argued | **YES — CONFIRMED, and it REFUTED the plan.** `docs/ideas/experiment-x4b.md`; `experiments/x4b/run.sh`. The `organization → group` edge is FK-rejected and a sibling org reads **0** rows. §4.1 and §4.3 are corrected accordingly; **Slice 0 is not blocked**, because its grants are 현장-scoped and intra-org | (already refuted — the correction is the group-scoped grant store in Tier O) |
 | X5 | **Cedar decides alone.** Encode the four grant sources over one person in two companies as a **constructed query with an expected-fail baseline**, in X4's shipped form: the four sources written out, the specific decision Cedar must reach named, and the **concrete input** on which a Rust-fallback implementation is RED | Cedar alone decides, on that named input | **a specific input, not a scenario:** the encoded four-source case run against an implementation that consults a companion Rust evaluator, which must be RED. (Its previous control — *"a case needing a companion evaluator"* — is a refutation *scenario*, not an observable input, which principle 5 forbids) | **no — and it CANNOT be prepwork.** Needs `effective_grants_for`; **slice-0 work**, ladder rung 4 | two evaluators will diverge; the fold moves entirely into Cedar or entirely out |
 | X6 | **Fold cost per request.** Measure `effective(party, scope)` at realistic grant counts, materialized vs on-demand | on-demand is acceptable at slice-0 scale; materialization keyed on `policy_versions` if not | a fold whose cost grows with total org grants rather than the person's | **no — and it CANNOT be prepwork.** Needs `effective_grants_for` **and** realistic grant counts; **slice-0 work**, ladder rung 4 | §5.6's invalidation design becomes load-bearing earlier |
 | X7 | **Draft-PR CI coverage.** Push a backend-touching commit and a docs-only commit to a draft PR; compare required contexts | backend runs every job in `.github/workflows/ci.yml`; docs-only runs none | trusting the UI's absence of red as green | **no — unrun for a different reason.** It requires **pushing a branch**, so it is outward-facing and needs **explicit authorization**. It is not a pending prediction; it is a blocked action | the one-PR model needs an explicit verification checkpoint per rung |
-| X8 | **How do the CI buck2 jobs currently pass?** | they pass by an identifiable mechanism that must be named before any test is wired to them | this is an **investigation, not a probe** — there is no GREEN to distrust, so the proven-RED discipline does not apply to it in this form | **YES — ANSWERED.** `docs/ideas/experiment-results.md`. `.buckconfig:15-16` `[external_cells]` / `prelude = bundled` supplies the prelude from inside the binary; `tools/buck2:1` is a blake3-pinned DotSlash launcher; the required job **"Support domain — Buck2 unit reachability"** (`ci.yml:164`) runs a real `tools/buck2 test` at `:192`. **buck2 is fully functional**; the earlier "the graph is broken" claim was WRONG | (already answered — no forced migration; the governance question stands) |
+| X8 | **How do the CI buck2 jobs currently pass?** | they pass by an identifiable mechanism that must be named before any test is wired to them | this is an **investigation, not a probe** — there is no GREEN to distrust, so the proven-RED discipline does not apply to it in this form | **YES — ANSWERED.** `docs/ideas/experiment-results.md`. `.buckconfig` `prelude = bundled` under `[external_cells]` supplies the prelude from inside the binary; `tools/buck2` `#!/usr/bin/env dotslash` is a blake3-pinned launcher; the required job `ci.yml` `name: Support domain — Buck2 unit reachability` runs a real `ci.yml` `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit`. **buck2 is fully functional**; the earlier "the graph is broken" claim was WRONG | (already answered — no forced migration; the governance question stands) |
 | X9 | **Trace one new test end to end:** test file → `rust_test` target → Postgres `sh_test` wrapper → workflow step | each link nameable **by target name** | a test that passes locally and never executes in CI | **YES — ANSWERED.** `experiment-results.md`, traced through a real test (§8 Phase 4) | the work queue (Phase 4) needs a **per-test** CI wiring step |
 
 **The gate, stated so it is not circular.** **X1, X2, X4, X4b, X8 and X9 must have recorded outcomes before
@@ -2584,7 +2584,7 @@ the first implementation commit** — all six do. **X3, X5 and X6 must have reco
 may be declared green.** The stricter form ("no implementation commit until X1-X5 and X8-X9 are recorded")
 forbids the commit those experiments require, because three of them cannot run until the definer exists.
 
-`ADR-0023:79-86` already specifies its own **1-2 day Engine-Gen spike** validating the pre-terminal FSM
+`ADR-0023` `Engine-Gen opens with a 1–2 day spike validating` already specifies its own **Engine-Gen spike** validating the pre-terminal FSM
 shape, with *"if structurally infeasible, execution stops and returns to consensus"*. That is X0 and it is
 already decided — reference it, do not duplicate it.
 
@@ -2604,7 +2604,7 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 | # | Crate | Ships |
 |---|---|---|
 | 1 | `platform/db` | migrations 0207+: `work`, the **`gov_approvals`** capacity columns (§4.0.3 — the `audit_events` pair is deferred), voucher `accounting_date`, the definer. **`party` and `party_org_visibility` are struck** — deferred out of Slice 0 because Slice 0 does not need them; `users.party_id` is struck on irreversibility, which is a different reason (§4.1) |
-| 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs. **HARD ORDERING: the bundle-schema declaration of `capabilities`, `scopes` and the decision-scope resource attribute lands FIRST** — `Entities::from_entities` validates against the schema (`engine.rs:449`), so an undeclared attribute denies everything (§4.6) |
+| 2 | `platform/authz` | `feature_catalog` ≡ `Feature` gate (C1); grant fold; Cedar subject/resource attrs. **HARD ORDERING: the bundle-schema declaration of `capabilities`, `scopes` and the decision-scope resource attribute lands FIRST** — `Entities::from_entities` validates against the schema (`cedar_pbac/engine.rs` `Entities::from_entities([subject, resource_entity], Some(&bundle.schema))`), so an undeclared attribute denies everything (§4.6) |
 | 3 | `platform/authz-rest` | the re-validating definer read path (§5.1) |
 | 4 | `ontology/*` | the Tier N types + their attached policies; `allowlisted_projected_table` arm for `work` |
 | 5 | `identity/rest` | C2 — `policy_feature_catalog()` off data |
@@ -2627,9 +2627,9 @@ Target names rather than line numbers, because the line numbers in that chain ha
 **Why per test and not per crate:** `mapped_srcs` hand-lists every file a test crate reads, and **buck2 does
 not glob**. So a file added later to a shared harness is invisible to the target until that list is edited —
 which is exactly how link 2 or link 3 goes missing while the test passes locally and **nothing fails**. A
-per-crate step cannot see that; only a per-test assertion can. `scripts/check-ci-preflight.mjs:430-453`
+per-crate step cannot see that; only a per-test assertion can. `scripts/check-ci-preflight.mjs` `function requireOntologyRestItestReachability`
 already enforces this shape for `ontology/rest`, and its own header says the fix elsewhere is *"a per-crate
-decision with the same shape as this one, not a cleverer regex"* (`:428`) — so this is adoption, not
+decision with the same shape as this one, not a cleverer regex"* (`check-ci-preflight.mjs` `a per-crate decision with the same shape as this one, not a cleverer regex`) — so this is adoption, not
 invention.
 
 ### Phase 5 — the progressive verification ladder
@@ -2640,7 +2640,7 @@ first, each rung gating the next:
 
 1. `cargo check` on the touched crate
 2. the migration applies, and **re-applies onto a populated DB**
-3. the tenant-isolation gate classifies every new table (`tenant-isolation/src/lib.rs:804-808`)
+3. the tenant-isolation gate classifies every new table (`tenant-isolation/src/lib.rs` `&& !global.contains(table.as_str())`)
 4. the definer probes — `definer_ignores_parameter_org`, `definer_returns_no_foreign_org_grant`, and the
    named re-validation deletions (`org_predicate`, `visibility_predicate`, `chain_linkage`,
    `scope_containment`). **`X3`, `X5` and `X6` run here**, not in Phase 2: all three need
@@ -2653,15 +2653,15 @@ first, each rung gating the next:
 ### Phase 6 — one PR
 
 Single long-lived consolidation branch, **one PR, no incremental merges**. A permanently-open **draft PR**
-gives CI on every push, because `pull_request:` (`.github/workflows/ci.yml:36`) has **no `branches:`
-filter** while `push:` covers only `main` and tags (`:3-8`).
+gives CI on every push, because `.github/workflows/ci.yml` `  pull_request:` has **no `branches:`
+filter** while `ci.yml` `  push:` covers only `main` and tags.
 
 **Two caveats I verified, and both bite this plan specifically:**
 
-- `pull_request:` carries a **`paths:` filter** (`:37-61`) that does **not** include `docs/ideas/**`. So a
+- `pull_request:` carries a **`paths:` filter** (`ci.yml` `      - "backend/**"`) that does **not** include `docs/ideas/**`. So a
   docs-only commit gets **no checks at all** — and *no checks* looks identical to *passing checks* in the
   UI. Silence is not success.
-- `concurrency` sets `cancel-in-progress: true` for PRs (`:72`). On a branch taking many commits, most
+- `concurrency` sets `ci.yml` `cancel-in-progress: ${{ github.event_name == 'pull_request' }}` for PRs. On a branch taking many commits, most
   intermediate runs are **cancelled, not verified**. Verify at rung boundaries deliberately rather than
   assuming per-commit CI.
 
@@ -2675,38 +2675,38 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 |---|---|
 | — | **The governance records of §5.11**, with the numbers allocated there. Under `README` rules 2-4 these *gate* the work. **D2 (ADR-0028) and D3 (ADR-0029) block slice 0**; D2 subsumes the old G2b, so it is also what gates C5. G1 is withdrawn, G6 and G7 struck |
 | — | Phase 0 reference documents; Phase 1 immutable target incl. the empty `docs/specs/known-bad-controls.tsv` |
-| **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs:184`); `allowlisted_projected_table` arms (`instances.rs:1479-1498`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
+| **②** | ONE pre-reservation commit: `LANE_TYPES: [&str; 5]` widened (`ontology/rest/tests/company_conformance.rs` `const LANE_TYPES: [&str; 5] = [`); `allowlisted_projected_table` arms (`instances.rs` `fn allowlisted_projected_table`); `object_types` kind rows for `work`/`lot`; **`link_types` rows for each new edge kind** (`work_artifact`, `person_artifact` — §4.3: `console_rt` has SELECT only, so each is a migration); `RealtimeEvent` variants + channel consts; migration slots 0207+ |
 | — | *(moved to Phase 0)* The **D3 write-path enumeration** is a Phase-0 artifact, not Phase-7 prepwork — `capacity_recorded_on_every_authority_mutation` reads it, and a probe cannot precede its own input. **The exclusion set has TWO entries**, each bound to a (file, function) pair; see D3 in §5.11 |
 | — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `docs/PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
-| **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md:90`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
-| — | **Correction rung: `docs/program/CATALOG.md:62-68` lists a type set that never shipped.** It names OrgUnit / Position / Person / Employment / PayRun; the shipped set is company / org_unit / job_position / employment / pay_run — **`Person` never landed**. Correct it to the shipped names, or the next plan budgets against a catalog that does not exist |
+| **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md` `③ SERIALISED — the real lock`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
+| — | **Correction rung: `docs/program/CATALOG.md` `identity only; employment is a separate object, not a field` lists a type set that never shipped.** It names OrgUnit / Position / Person / Employment / PayRun; the shipped set is company / org_unit / job_position / employment / pay_run — **`Person` never landed**. Correct it to the shipped names, or the next plan budgets against a catalog that does not exist |
 | — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md:769` (*"the fan-out is green"*) and `:751`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water at `:89` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `:268-269` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml:359` `[profile.dev]`, `:362` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md:675`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
 
 **Build-system governance is unresolved and this plan must not assume either side — but the status quo is
 healthy, so there is no forced migration.** `docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not
 buck2"* — **unexecuted**. And `PIVOT-2026-07-28.md` **is not in `docs/decisions/`**, so under
 `docs/decisions/README.md` rules 1-2 it binds nothing; neither cargo nor buck2 is an accepted decision. Three
-documents hold three positions (`docs/ideas/governed-object-engine-PLAN.md:75` "buck2 RETAINED" vs its own
-`:301-302` "dropped"; `docs/ideas/no-code-ontology.md:133-141` builds on Buck wiring). **Flagged as an open
+documents hold three positions (`docs/ideas/governed-object-engine-PLAN.md` `**buck2 RETAINED** (decision corrected 2026-07-28)` vs its own
+`governed-object-engine-PLAN.md` `buck2, which is dropped now that every non-Rust` says dropped; `docs/ideas/no-code-ontology.md` `Buck2 does not glob` builds on Buck wiring). **Flagged as an open
 governance question, not a premise.**
 
 **What is NOT open, and what this plan said wrongly: buck2 is fully functional.** An earlier draft here said
 *"`prelude/` is missing so the buck2 graph is already broken"*, and inferred that CI's buck2 jobs must pass
 by some accident. Both halves are false, and X8 measured the chain:
 
-- `prelude/`'s **absence is correct**. `.buckconfig:15-16` declares `[external_cells]` / `prelude = bundled`,
+- `prelude/`'s **absence is correct**. `.buckconfig` `prelude = bundled` declares it under `[external_cells]`,
   which is buck2's own mechanism for supplying the prelude **from inside the binary**. There is nothing to
   vendor.
-- `tools/buck2:1` is `#!/usr/bin/env dotslash`, a launcher with **per-platform blake3-pinned digests** — the
+- `tools/buck2` `#!/usr/bin/env dotslash` is a launcher with **per-platform blake3-pinned digests** — the
   runtime is hash-pinned, not floating.
-- The required job **"Support domain — Buck2 unit reachability"** (`.github/workflows/ci.yml:164`) passes
-  because `:192` runs a real
+- The required job **"Support domain — Buck2 unit reachability"** (`.github/workflows/ci.yml` `name: Support domain — Buck2 unit reachability`) passes
+  because `ci.yml` `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit` runs a real
   `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit`. Not a no-op, not a path
   filter, not a cached graph.
 
-The **five buck steps** count is also dropped: it was wrong (install steps appear at `:103`, `:176`, `:215`,
-`:271`, `:307`, `:398`, `:703`, `:860`, with `tools/buck2 test` at `:192`, `:465`, `:660`, `:664`, `:675`) and
+The **five buck steps** count is also dropped: it was wrong (eight `ci.yml` `run: tools/buck/install_dotslash.sh` steps,
+with five `ci.yml` `tools/buck2 test` invocations) and
 it was load-bearing for nothing. Cite **the job by name** instead. Phase 7's *"targeting the CI that exists
 (buck2 live)"* is therefore **positively grounded**, not a bet.
 
