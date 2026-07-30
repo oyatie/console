@@ -58,6 +58,9 @@ related: []
 | [ADR-0028](ADR-0028-org-id-branchscope-composition.md) | proposed | Proposes `org_id` × `BranchScope` composition, capability-or-membership-derived `BranchScope::All`, and an explicit tenant predicate on realtime fan-out; proposes amendments to ADR-0003 |
 | [ADR-0029](ADR-0029-audit-coverage-exclusions-are-two.md) | proposed | Audit-coverage exclusions are two, each bound to a (file, function) pair; proposes reconciling ADR-0002's one-entry sentence with the gate |
 | [ADR-0031](ADR-0031-contracts-crate-single-internal-contract.md) | proposed | A Rust wire-DTO contracts crate is the single internal API contract, with `openapi.yaml` emitted from it and diff-gated; proposes amendments to ADR-0009's contract mechanism |
+| [ADR-0035](ADR-0035-conserved-quantity-lineage.md) | proposed | Quantity-bearing split/merge lineage deferred; conservation requires row-level `FOR UPDATE` locking and a pure domain predicate, and the row CHECK is a per-row backstop only |
+| [ADR-0033](ADR-0033-object-policy-revocation.md) | proposed | An over-broad object-policy permit is correctable by attaching a forbid; a mistaken forbid has no reversal write. Records the asymmetry and specifies revocation as a one-landing catalog status transition, unbuilt until an incident is counted |
+| [ADR-0036](ADR-0036-object-dimensioned-economics.md) | proposed | Cost is a query over the double-entry voucher dimensioned by object reference; the finance subsystem is a peer plan, and the missing line dimension, `accounting_date` + period-lock caller, account master, and currency shape must stay additive |
 
 ## Effective relationship graph
 
