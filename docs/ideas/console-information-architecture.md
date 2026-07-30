@@ -73,32 +73,26 @@ design.
 **The claim worth testing in surface 2** is that table, board, calendar and map are *presentations* rather
 than surfaces. If a calendar needs metadata no other presentation needs, it is a surface.
 
-## What the game metaphors are actually for
+## The comprehensibility bar
 
-Owner clarification, 2026-07-30: the RPG references — character sheet, quest log, inventory — are **a way
-of conveying required intent, not a specification.** Nothing here should ship a game term or a game visual.
-What transfers is the *feeling*: a game panel is comprehensible at a glance, shows state without hunting,
-and needs no manual. That is the bar, and it applies to **all seven surfaces**, not to one screen.
-
-Stated as acceptance criteria, because a feeling that is not testable will not survive contact with a
-deadline:
+The requirement behind this whole model is that the console feel easy — state visible at a glance, no
+manual needed. That is a quality bar on **all seven surfaces**, not a feature of one screen, and it needs
+to be testable or it will not survive a deadline:
 
 - **Glanceable.** A user's own state — what is mine, what is waiting on me, what I may do here — is
   readable without navigating or expanding anything.
-- **Refusals explain themselves.** A game always says *why* an action is unavailable. We log Cedar
-  decisions already (`0159_create_cedar_decision_log.sql`); the bar is that a user sees "you may not
-  approve this because…" and, symmetrically, "you may because grant G at scope S". In the fold model that
-  is a traversal, so it is a feature to build rather than a report to run.
-- **Same shape every time.** The learnability the derived arrangement buys. Two types render the same way,
-  so knowing one screen means knowing all of them.
+- **Refusals explain themselves.** A user sees "you may not approve this because…" and, symmetrically,
+  "you may, because grant G at scope S". We already log Cedar decisions
+  (`0159_create_cedar_decision_log.sql`); in the fold model the explanation is a traversal, so this is a
+  feature to build rather than a report to run.
+- **Same shape every time.** What the derived arrangement buys: knowing one type's screen means knowing
+  every type's screen.
 - **State is visible in form, not only in text.** A pill, a chip, a severity stripe — what needs attention
   reads before it is read.
-- **No dead ends.** Every object reachable from every object it relates to, which the link graph provides
-  and surface 7 exposes.
+- **No dead ends.** Every object reachable from every object it relates to.
 
-These are the same criteria a game satisfies by design and enterprise software usually fails by accretion.
-They belong in the acceptance path alongside ADR-0025 §7's nine-item bar, which covers correctness and
-completeness but says nothing about whether the result is comprehensible.
+These sit alongside ADR-0025 §7's nine-item bar, which covers correctness and completeness but says nothing
+about whether the result is comprehensible.
 
 ## Navigation — derived, not authored
 
@@ -148,6 +142,18 @@ property belongs in the acceptance criteria of every object route, not in a secu
 published DESC`, so publishing v2 currently orphans v1's instances. A URL that survives a type version
 bump must address the stable key. The version-orphaning defect is the plan's own open item; the routes
 must not encode the bug.
+
+## The identity dependency, stated rather than discovered
+
+`/me`, the derived navigation and the scope switcher all need an identity to hang off — and the plan
+**defers `party`**. In Slice 0 the only identity available is the org-scoped `users` row, which works for
+one company and breaks the moment a person is at two, since one human at two companies is two unrelated
+rows with two ids.
+
+So the identity-bearing surfaces have a **reduced form** until the handle lands: `/me` resolves to the
+current org's user, and the scope switcher has exactly one scope. That is coherent for Slice 0, and it means
+the multi-company behaviour this IA describes is **specified but not reachable** until the party decision is
+taken. Recorded here so `/me` is not built as though the handle exists.
 
 ## Key Assumptions to Validate
 
