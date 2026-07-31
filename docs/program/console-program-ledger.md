@@ -1932,3 +1932,33 @@ next change is expected to reduce.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — 385 copies of one SHA, of which 33 were doing work
+
+Rebind onto the denormalisation candidate — and the last one that will cost 390 references.
+
+Every rebind rewrote 385 `candidate_sha`/`source_sha` leaves holding the value already declared
+at `registry.candidate.sha`. Three pull requests landed today cost five rebinds between them, and
+the registers conflicted on every concurrent merge because every lane rewrote every leaf.
+
+**352 removed, 33 kept, and which 33 was not obvious.** Ten agents were tasked with refuting the
+claim that all 385 were safe. Two refutations held, and both would have been silent gate removals:
+
+- `controls[].candidate_evidence.candidate_sha` — the `?.` in
+  `control.candidate_evidence?.candidate_sha !== candidate.sha` sits on the **parent**, making that
+  one expression both the candidate binding and the only existence gate for control evidence
+  anywhere. Without it, a control with no candidate evidence validates clean, and so does one bound
+  to a previous candidate — the failure mode a union merge produces.
+- `capabilities[].candidate_evidence.candidate_sha` — the sole equality binding on a sub-object
+  whose `status` gates every non-HOLD benchmark verdict.
+
+Removing `capability_traceability[].candidate_sha` deleted the only executable tie between the
+jurisdiction register and the candidate. The document already declared `jurisdiction.candidate.sha`
+and nothing read it; one assertion now does what 162 leaves did redundantly.
+
+Verified by running 13 structural mutations against the validator and documents before and after:
+nothing that failed before passes now, and two cases that previously validated clean — a stale and
+an absent `jurisdiction.candidate.sha` — are now caught. Rebind cost 390 -> 38.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and
+exposure state remains `HOLD`.

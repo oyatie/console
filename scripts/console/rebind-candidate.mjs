@@ -27,7 +27,16 @@ export const AUTHORITY_DOCUMENTS = [
 
 const FULL_SHA = /^[0-9a-f]{40}$/;
 
-/** Every SHA-shaped string carried by a `candidate_sha`/`source_sha` leaf. */
+/**
+ * Every SHA-shaped string carried by a `candidate_sha`/`source_sha` leaf, PLUS the
+ * top-level `candidate.sha` declaration.
+ *
+ * The declaration has to be in this set, not merely tolerated beside it. Inference below
+ * demands exactly one distinct value across the documents, and it used to read the
+ * denormalised leaves alone — so a document reduced to its single declaration inferred
+ * `found 0` and threw. That made the leaves load-bearing for the rebind tool itself, which
+ * is circular: they exist to be rewritten by the thing that cannot run without them.
+ */
 export function candidateShasIn(json) {
   const found = new Set();
   const walk = (node) => {
@@ -37,6 +46,10 @@ export function candidateShasIn(json) {
       for (const [key, value] of Object.entries(node)) {
         if ((key === "candidate_sha" || key === "source_sha") && typeof value === "string") {
           found.add(value);
+        }
+        // `candidate: { sha }` — the one authoritative declaration each document carries.
+        if (key === "candidate" && value && typeof value === "object" && typeof value.sha === "string") {
+          found.add(value.sha);
         }
         walk(value);
       }

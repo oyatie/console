@@ -251,7 +251,11 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (!STATES.has(evidence.status)) fail(`${cap.id} candidate evidence status is invalid`);
     nonempty(evidence.reason, `${cap.id} candidate evidence reason`);
     object(evidence.contract, `${cap.id} candidate evidence contract`);
-    for (const key of ['source_sha', 'backend_binary_digest_or_build_sha', 'database', 'api', 'browser', 'trace_logs']) nonempty(evidence.contract[key], `${cap.id} candidate evidence contract ${key}`);
+    // `source_sha` was in this list and is gone. It was the weakest leaf in either document:
+    // required non-empty, never compared to anything, and holding a copy of the candidate SHA
+    // that no reader ever checked. A required-but-unchecked field is not a control, it is a
+    // rebind cost. `evidence.candidate_sha` above is the binding that was doing the real work.
+    for (const key of ['backend_binary_digest_or_build_sha', 'database', 'api', 'browser', 'trace_logs']) nonempty(evidence.contract[key], `${cap.id} candidate evidence contract ${key}`);
     const benchmark = object(cap.benchmark, `${cap.id} per-module benchmark`);
     for (const key of ['category', 'non_goals', 'evidence_binding']) nonempty(benchmark[key], `${cap.id} benchmark ${key}`);
     const sources = array(benchmark.comparator_sources);
@@ -307,6 +311,16 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     const [aId, a] = privateRoots[i], [bId, b] = privateRoots[j];
     if (aId !== bId && (a === b || a.startsWith(`${b.replace(/\/\*\*$/, '')}/`) || b.startsWith(`${a.replace(/\/\*\*$/, '')}/`))) fail(`overlapping private roots: ${aId}:${a} and ${bId}:${b}`);
   }
+  // THE tie between this document and the candidate, and there is exactly one.
+  //
+  // It used to be enforced 162 times over, once per `capability_traceability[].candidate_sha`
+  // leaf, while `jurisdiction.candidate.sha` — the declaration the document already carried —
+  // was read by nothing. Removing those leaves without this line would have left the whole
+  // jurisdiction register unbound to any candidate: the validator reads only `.schema_version`,
+  // `.target_jurisdiction_set`, `.jurisdictions` and `.controls` off it, none of which mention a
+  // SHA. A stale register would then have validated clean.
+  sha(jurisdiction.candidate?.sha, 'jurisdiction candidate sha');
+  if (jurisdiction.candidate.sha !== candidate.sha) fail('jurisdiction register is not bound to the candidate');
   const targets = array(jurisdiction.target_jurisdiction_set); const jurisdictionRows = array(jurisdiction.jurisdictions);
   if (targets.length !== 1 || targets[0] !== 'KR' || jurisdictionRows.length !== 1 || jurisdictionRows[0]?.id !== 'JUR-KR-001' || jurisdictionRows[0]?.country_code !== 'KR') fail('jurisdiction target must be exactly KR / JUR-KR-001');
   const controls = new Map(); for (const control of array(jurisdiction.controls)) { if (controls.has(control.id)) fail(`duplicate control id: ${control.id}`); controls.set(control.id, control); }
@@ -315,14 +329,16 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (control.release_disposition !== 'HOLD') fail(`jurisdiction control ${control.id} must remain HOLD without qualified authority`);
     nonempty(control.freshness?.status, `${control.id} freshness status`);
     nonempty(control.unhold_authority, `${control.id} explicit unhold authority`);
-    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}|${trace.candidate_sha}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); if (trace.candidate_sha !== candidate.sha) fail(`${control.id} trace is not candidate-bound`); } if (control.candidate_evidence?.candidate_sha !== candidate.sha) fail(`${control.id} control evidence is not candidate-bound`);
+    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); } if (control.candidate_evidence?.candidate_sha !== candidate.sha) fail(`${control.id} control evidence is not candidate-bound`);
   }
-  const bindingTuples = new Set(); for (const cap of registry.capabilities) for (const binding of cap.jurisdiction_bindings) { const tuple=`${binding.control_id}|${cap.id}|${binding.candidate_sha}`; if (bindingTuples.has(tuple)) fail(`${cap.id} duplicate jurisdiction binding`); bindingTuples.add(tuple);
+  const bindingTuples = new Set(); for (const cap of registry.capabilities) for (const binding of cap.jurisdiction_bindings) { const tuple=`${binding.control_id}|${cap.id}`; if (bindingTuples.has(tuple)) fail(`${cap.id} duplicate jurisdiction binding`); bindingTuples.add(tuple);
     if (binding.jurisdiction_id !== 'JUR-KR-001' || !controls.has(binding.control_id)) fail(`${cap.id} has missing jurisdiction control ${binding.control_id}`);
-    if (binding.candidate_sha !== candidate.sha) fail(`${cap.id} jurisdiction binding is not candidate-bound`);
-    if (!array(controls.get(binding.control_id).capability_traceability).some((trace) => trace.capability_id === cap.id && trace.candidate_sha === candidate.sha)) fail(`${cap.id} jurisdiction trace is not bidirectional`);
+    if (!array(controls.get(binding.control_id).capability_traceability).some((trace) => trace.capability_id === cap.id)) fail(`${cap.id} jurisdiction trace is not bidirectional`);
   }
-  const expectedBindings = new Set(registry.capabilities.flatMap((cap) => array(cap.jurisdiction_bindings).map((binding) => `${binding.control_id}|${cap.id}|${candidate.sha}`))); const actualTraces = new Set([...controls.values()].flatMap((control) => array(control.capability_traceability).map((trace) => `${control.id}|${trace.capability_id}|${trace.candidate_sha}`))); if (expectedBindings.size !== actualTraces.size || [...expectedBindings].some((tuple) => !actualTraces.has(tuple))) fail('Korea control trace is not an exact capability binding bijection');
+  // Both sides of the bijection dropped a term that was the SAME CONSTANT on both sides. The
+  // expected side never read a per-row leaf even before — it interpolated `candidate.sha`
+  // directly — so the equality it tests is unchanged, only shorter.
+  const expectedBindings = new Set(registry.capabilities.flatMap((cap) => array(cap.jurisdiction_bindings).map((binding) => `${binding.control_id}|${cap.id}`))); const actualTraces = new Set([...controls.values()].flatMap((control) => array(control.capability_traceability).map((trace) => `${control.id}|${trace.capability_id}`))); if (expectedBindings.size !== actualTraces.size || [...expectedBindings].some((tuple) => !actualTraces.has(tuple))) fail('Korea control trace is not an exact capability binding bijection');
     if (routeFacts) { const owners = registry.capabilities.flatMap((cap) => cap.route_presentation.route_keys.map((key) => `cap:${cap.id}:${key}`)).concat(array(registry.source_inventory?.unmodeled_keys).map((entry) => `unmodeled:${entry.key}`)); const keys=owners.map((entry) => entry.split(':').at(-1)); const actual=new Set(Object.keys(routeFacts.facts ?? {})); if (new Set(keys).size !== keys.length || keys.length !== actual.size || [...actual].some((key)=>!keys.includes(key))) fail('source route inventory is not a complete bijection'); }
   validatedRegistries.set(registry, ledgerDigest(registry));
   return { capability_count: registry.capabilities.length, candidate_sha: candidate.sha, verdict: 'STRUCTURALLY_VALID_HOLD_PRESERVED' };
