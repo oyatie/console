@@ -193,6 +193,30 @@ this option is *shorten the window for everything*.
 ADR-0015 makes, and shrinking it is an amendment to an accepted record, not a
 configuration tweak.
 
+> **Retracted 2026-07-31 — the paragraph above overstates what ADR-0015 says.** ADR-0015
+> states no window length anywhere. Its sentence is
+> `ADR-0015` `targets RPO ≤5min and RTO ≤1h must be proven by restore to an arbitrary timestamp`,
+> and *arbitrary* there governs **which** instant inside the recoverable range may be
+> demanded of a restore drill — it is the proof method for RPO/RTO, not an assertion that
+> the range is unbounded. An unbounded archive is what the absence of a `retentionPolicy`
+> produced; it is not something ADR-0015 requires.
+>
+> This matters because the two readings were both in circulation and could not both be
+> right: the pull request that first proposed a finite window recorded that
+> "ADR-0015 constrains recovery *speed* … and says nothing about window *length*", which is
+> the opposite of the paragraph above. Reading it as an amendment would have made a
+> one-line manifest default require a new accepted ADR — and `scripts/check-adrs.mjs`
+> forbids a `proposed` record from declaring `amends`, so this record could not have
+> carried it. A control that expensive gets routed around rather than obeyed.
+>
+> **Setting a finite window is therefore not an amendment and not the adoption of this
+> option.** Option B is proposed here as an *answer to the erasure conflict*, and a finite
+> window is not one: 35 days of reconstruction is still 35 days, and whether a bounded
+> window means anything is exactly what this record still refuses to decide. Every option
+> above, including A and C, wants a finite window underneath it for storage reasons alone.
+> What changed in the manifest is a default that was never chosen; what stays open is the
+> question.
+
 **Costs.**
 - It buys a bounded window, not erasure: data still reconstructs for N days after
   deletion. Whether a bounded window means anything is exactly the question this record
@@ -381,13 +405,75 @@ vendor found that also bounds **key material itself** (≤45 days) — the loop 
 crypto-shredding design must close, since keys backed up indefinitely defeat the shred. AWS
 publishes no deletion SLA at all and assigns backups to the customer.
 
-**Korea is not the European position, and is not established either.** 백업 appears **zero
-times** in PIPA and in its 시행령. The 「개인정보의 안전성 확보조치 기준 안내서」(2025.11) treats
-backup media as a place where destruction is *performed*, offering deletion plus supervision
-against restoration and exclusion from subsequent backups — with no grace period and no
-alternative where a backup set cannot be selectively edited. A search for a Korean equivalent
-of "beyond use" across four PIPC instruments found none; recorded as **not established**,
-which is not the same as absent.
+**Korea is not the European position, and is not established either.** The
+「개인정보의 안전성 확보조치 기준 안내서」(2025.11) treats backup media as a place where
+destruction is *performed*, offering deletion plus supervision against restoration and
+exclusion from subsequent backups — with no grace period and no alternative where a backup
+set cannot be selectively edited. A search for a Korean equivalent of "beyond use" across
+four PIPC instruments found none; recorded as **not established**, which is not the same
+as absent.
+
+### Correction: 백업 is in the 고시, and the earlier search did not reach it
+
+This record previously stated that 백업 appears **zero times** in PIPA and its 시행령. That
+is true of those two instruments and false as a claim about Korean law, because the
+binding security standard is neither of them — it is a 고시, which is 행정규칙 and a
+different search target. Searching `target=law` for it returns nothing, and that null
+result was read as absence. The same mistake had already been made once in this repository
+with four payroll 고시, and it is written into
+`scripts/korean-legal/fetch-statutory-source.mjs` as the reason `--admrul` exists. The
+search was run against the wrong target anyway.
+
+Retrieved 2026-07-31 from the 국가법령정보센터 API,
+**개인정보의 안전성 확보조치 기준** (고시, 개인정보보호위원회 제2026-9호, 시행 2026-07-01,
+<https://www.law.go.kr/행정규칙/개인정보의 안전성 확보조치 기준>). 백업 appears **once**:
+
+> 제11조(재해ㆍ재난 대비 안전조치) 10만명 이상의 정보주체에 관하여 개인정보를 처리하는
+> 대기업ㆍ중견기업ㆍ공공기관 또는 100만명 이상의 정보주체에 관하여 개인정보를 처리하는
+> 중소기업ㆍ단체에 해당하는 개인정보처리자는 […] 2. **개인정보처리시스템 백업 및 복구를
+> 위한 계획을 마련**
+
+**It requires a plan, and states no period.** That is the whole of Korean privacy law on
+backups. The finding therefore strengthens rather than weakens what this record already
+said: there is no Korean retention *duration* for a backup archive to satisfy — and the
+obligation that does exist is a document, above a subject-count threshold this deployment
+is nowhere near.
+
+### The retention floors that do exist attach to other stores
+
+Every figure below was retrieved from the instrument itself on 2026-07-31 via
+`scripts/korean-legal/fetch-statutory-source.mjs --article`, not recalled. This states what
+the instruments say; it does not state that any of them applies to this system, which is a
+finding for counsel.
+
+| Store | Instrument | Period |
+| --- | --- | --- |
+| 근로자 명부, 근로계약 서류 | 근로기준법 제42조 (시행 2025-10-23) + 시행령 제22조 | **3년**, from the nine start dates 시행령 제22조제2항 enumerates |
+| 장부 및 증거서류 | 국세기본법 제85조의3제2항 (시행 2026-07-01) | **5년**, 7년 for 역외거래, from the day after the 법정신고기한 |
+| 접속기록 | 안전성 확보조치 기준 제8조제1항 | **1년**; **2년** where the system handles ≥50,000 subjects **or 고유식별정보 or 민감정보** |
+| Backup / PITR archive | 안전성 확보조치 기준 제11조 | **a plan; no period** |
+
+Two consequences follow, and they point in opposite directions.
+
+**The backup window has no floor.** A backup taken today already contains all three and
+five years of those records — window length is how far *back* one may rewind, not how old
+the data inside is. Importing 5년 from 국세기본법 into `retentionPolicy` would buy no
+compliance and would triple the erasure horizon. It would also fail 법 제21조제3항, which
+requires data preserved under the 제21조제1항 단서 to be stored **분리하여** — and a PITR
+archive is an undifferentiated copy of the entire cluster, the opposite of separate
+storage. The archive cannot be the statutory preservation medium.
+
+**접속기록 has a floor this system will hit.** Korean payroll processes 주민등록번호, and
+`개인정보 보호법 시행령` 제19조제1호 (시행 2026-05-19) names 「주민등록법」 제7조의2제1항에
+따른 주민등록번호 as 고유식별정보. 제8조제1항 sets 1년 이상 and then 2년 이상
+`다음 각 호의 어느 하나에 해당하는 경우` — **any one** of the listed cases — of which 제2호 is
+`고유식별정보 또는 민감정보를 처리하는 개인정보처리시스템`. So the floor is **2년**
+irrespective of headcount: the 50,000-subject test in 제1호 is an independent trigger, not a
+qualifier on 제2호.
+
+That is a floor on a real table, and it is the first Korean retention obligation found in
+this work that binds regardless of scale. It is out of scope for this record, which is
+about the archive, and is written down here so it is not lost.
 
 ## What this record does not know
 

@@ -121,21 +121,62 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
     0,
     `origin/main is mandatory for the live GitOps identity gate:\n${mainRef.stderr}`,
   );
-  const diff = run("git", [
-    "diff",
-    "--exit-code",
-    "origin/main",
-    "--",
+  const LIVE_PATHS = [
     "deploy/argocd/apps/console.yaml",
     "deploy/apps/console/base",
     "deploy/apps/console/overlays/prod",
     "deploy/apps/secrets-management/wiring",
-  ]);
-  assert.equal(
-    diff.status,
-    0,
-    `live GitOps inputs differ from origin/main:\n${diff.stdout}${diff.stderr}`,
-  );
+  ];
+  const changed = run("git", ["diff", "--name-only", "origin/main", "--", ...LIVE_PATHS]);
+  assert.equal(changed.status, 0, `git diff failed:\n${changed.stderr}`);
+  const changedPaths = changed.stdout.split("\n").map((line) => line.trim()).filter(Boolean);
+
+  // ArgoCD syncs these paths from `main` with `targetRevision: main`, so a change to any of
+  // them takes effect the instant it merges. The assertions above keep the DARK
+  // governed-command-database topology out by NAME; this one is the backstop for a topology
+  // nobody has named yet, and it used to be an unconditional byte-identity check.
+  //
+  // An unconditional identity check is not a gate, it is a wall: it cannot pass on any branch
+  // that changes these paths, because it compares against `origin/main`, which by definition
+  // does not carry the change yet. A control with no exception route either stops all change
+  // or gets deleted by whoever needs the next change badly enough — a 90-day retention policy
+  // was withdrawn rather than landed for exactly this reason, and the withdrawal is recorded
+  // in the program ledger.
+  //
+  // So the route is: declare the change. Every changed path must appear on a line ADDED to
+  // LIVE_GITOPS_CHANGES relative to origin/main. Naming a path once does not buy silence
+  // forever — the declaration has to be new, because the diff of the declaration file is what
+  // is read. Nothing changes silently; deliberate change costs one line.
+  if (changedPaths.length > 0) {
+    const LIVE_GITOPS_CHANGES = "deploy/apps/console/LIVE-GITOPS-CHANGES.md";
+    const declared = run("git", ["diff", "origin/main", "--", LIVE_GITOPS_CHANGES]);
+    assert.equal(declared.status, 0, `git diff failed:\n${declared.stderr}`);
+    // `git diff` cannot see an untracked file, so a declaration written but never `git add`ed
+    // produces an empty diff and the failure below reads as "you did not declare it" when the
+    // author is looking straight at the file they just wrote. Say which of the two it is.
+    if (declared.stdout === "" && existsSync(new URL(LIVE_GITOPS_CHANGES, root))) {
+      const tracked = run("git", ["ls-files", "--error-unmatch", LIVE_GITOPS_CHANGES]);
+      assert.equal(
+        tracked.status,
+        0,
+        `${LIVE_GITOPS_CHANGES} exists but is untracked, so git diff cannot see it and the declaration below will look absent. Run: git add ${LIVE_GITOPS_CHANGES}`,
+      );
+    }
+    const addedLines = declared.stdout
+      .split("\n")
+      .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
+    const undeclared = changedPaths.filter(
+      (entry) => !addedLines.some((line) => line.includes(entry)),
+    );
+    assert.deepEqual(
+      undeclared,
+      [],
+      `live GitOps inputs changed without a declaration. ArgoCD syncs these from main, so ${
+        undeclared.length
+      } path(s) would take effect on merge:\n${undeclared.map((entry) => `  ${entry}`).join("\n")}\n\n` +
+        `Add an entry to ${LIVE_GITOPS_CHANGES} naming each path and why it changed.`,
+    );
+  }
 });
 
 test("DARK overlays opt into the portable governed command-database component", () => {

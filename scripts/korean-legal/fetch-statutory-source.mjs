@@ -32,6 +32,8 @@
 // --check-kernel) any cited source URL that does not resolve.
 
 const API = 'https://www.law.go.kr/DRF/lawSearch.do';
+// Search returns metadata; only lawService returns 조문 text. Two endpoints, one host.
+const SERVICE = 'https://www.law.go.kr/DRF/lawService.do';
 // 고시/훈령/예규 are 행정규칙, a DIFFERENT target from 법령. Four of the nine payroll
 // statutory items are set by 고시, and searching target=law for them returns nothing —
 // which is how they came to be recorded as 'not resolvable on the public portal'.
@@ -50,6 +52,7 @@ const args = process.argv.slice(2);
 const asJson = args.includes('--json');
 const wantKernelCheck = args.includes('--check-kernel');
 const wantAdmrul = args.includes('--admrul');
+const wantArticle = args.includes('--article');
 const names = args.filter((a) => !a.startsWith('--'));
 if (names.length === 0 && !wantKernelCheck) {
   console.error('Usage: LAW_OC=... node scripts/korean-legal/fetch-statutory-source.mjs <법령명> [...]');
@@ -133,6 +136,69 @@ async function resolve(name) {
   // 근로기준법 시행령 and 시행규칙 — which are usually the instruments that carry the rate.
   const exact = rows.filter((r) => r.name === name);
   return { query: name, exact, related: rows.filter((r) => r.name !== name) };
+}
+
+// lawSearch.do returns only instrument METADATA. A retention floor is stated in an
+// ARTICLE, so evidence for "the law requires N years" cannot come from the search
+// endpoint at all — it needs lawService.do, a different call against the 법령일련번호
+// that search returns. Reciting article text from memory is how a wrong instrument
+// gets cited with a right-looking URL, which already happened once here.
+async function article(name, jo) {
+  const { exact } = await resolve(name);
+  if (exact.length === 0) throw new Error(`no exact match for ${name}`);
+  const { mst, effective_date, promulgation_no, source_uri } = exact[0];
+  await sleep(THROTTLE_MS);
+  const xml = await fetchWithRetry(
+    `${SERVICE}?OC=${encodeURIComponent(OC)}&target=law&MST=${encodeURIComponent(mst)}&type=XML`,
+  );
+  if (!/<조문단위[\s>]/.test(xml)) {
+    const rejection = textOf(xml, 'result');
+    throw new Error(`lawService returned no articles${rejection ? `: ${rejection}` : ''}`);
+  }
+  const units = [...xml.matchAll(/<조문단위[^>]*>([\s\S]*?)<\/조문단위>/g)].map((m) => m[1]);
+  // Two filters, each load-bearing:
+  //   조문여부 — every article number appears TWICE when it opens a 장, once as 전문 (the
+  //     chapter heading, e.g. "제3장 임금") and once as the article. Taking the first match
+  //     returns a heading with no rule in it.
+  //   조문가지번호 — 제85조의3 is 조문번호 85 + 조문가지번호 3. Matching 조문번호 alone
+  //     returns 제85조, a different article with a different rule.
+  const [num, branch = ''] = String(jo).split('의');
+  const hit = units.find(
+    (u) => textOf(u, '조문번호') === num
+      && (textOf(u, '조문가지번호') || '') === branch
+      && textOf(u, '조문여부') === '조문',
+  );
+  if (!hit) throw new Error(`${name} has no 제${jo}조`);
+  const body = textOf(hit, '조문내용');
+  // 항 and 호 must BOTH be walked, and 호 must stay under its own 항. An article that
+  // says "다음 각 호의 서류" carries its entire substance in the 호 — extracting 항 alone
+  // prints the sentence introducing a list and then no list, which reads as "the list is
+  // empty" rather than "the extractor stopped early".
+  const inner = [];
+  for (const h of hit.matchAll(/<항>([\s\S]*?)<\/항>/g)) {
+    const clause = textOf(h[1], '항내용');
+    if (clause) inner.push(clause);
+    for (const ho of h[1].matchAll(/<호>([\s\S]*?)<\/호>/g)) {
+      const item = textOf(ho[1], '호내용');
+      if (item) inner.push(`  ${item}`);
+    }
+  }
+  // Articles with no 항 hang their 호 directly off the 조문단위.
+  if (inner.length === 0) {
+    for (const ho of hit.matchAll(/<호>([\s\S]*?)<\/호>/g)) {
+      const item = textOf(ho[1], '호내용');
+      if (item) inner.push(`  ${item}`);
+    }
+  }
+  const clauses = inner;
+  return {
+    law: name,
+    article: `제${jo}조`,
+    effective_date,
+    promulgation_no,
+    source_uri,
+    text: [body, ...clauses].filter(Boolean).join('\n'),
+  };
 }
 
 async function resolveAdmrul(name) {
@@ -252,6 +318,36 @@ async function checkKernel() {
 if (wantKernelCheck) {
   await checkKernel();
   if (names.length === 0) process.exit(0);
+}
+
+// --article takes PAIRS: 법령명 조문 [법령명 조문 ...]. Anything else is a usage error
+// rather than a partial run, because a dropped pair would silently print fewer articles
+// than were asked for and read as "that article does not exist".
+if (wantArticle) {
+  if (names.length === 0 || names.length % 2 !== 0) {
+    console.error('Usage: --article <법령명> <조문번호> [<법령명> <조문번호> ...]   (조문번호 e.g. 42 or 85의3)');
+    process.exit(1);
+  }
+  const out = [];
+  let bad = 0;
+  for (let i = 0; i < names.length; i += 2) {
+    if (i > 0) await sleep(THROTTLE_MS);
+    try {
+      out.push(await article(names[i], names[i + 1]));
+    } catch (err) {
+      bad += 1;
+      out.push({ law: names[i], article: `제${names[i + 1]}조`, error: scrub(String(err.message)) });
+    }
+  }
+  if (asJson) console.log(scrub(JSON.stringify(out, null, 2)));
+  else for (const a of out) {
+    console.log(`\n### ${a.law} ${a.article}`);
+    if (a.error) { console.log(`  ERROR: ${a.error}`); continue; }
+    console.log(`  시행 ${a.effective_date}  공포 제${a.promulgation_no}호`);
+    console.log(`  ${a.source_uri}\n`);
+    console.log(a.text.split('\n').map((l) => `  ${l}`).join('\n'));
+  }
+  process.exit(bad > 0 ? 1 : 0);
 }
 
 const retrieved_at = new Date().toISOString();

@@ -1883,3 +1883,52 @@ resolution is clean rather than trusting that it is.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the live GitOps freeze gains a door, and the backup window gains a bound
+
+Rebind onto the retention candidate.
+
+The entry of 2026-07-31 recorded that there was no documented route by which the live GitOps
+inputs could legitimately change, and that a control with no exception either stops all
+change or gets deleted by whoever needs the next change badly enough. There is now a route:
+every changed live path must appear on a line ADDED to
+`deploy/apps/console/LIVE-GITOPS-CHANGES.md` relative to `origin/main`. The gate reads that
+file's diff, not its contents, so naming a path once does not buy silence for a later change.
+The DARK-topology `doesNotMatch` assertions are untouched.
+
+`console-backups` now declares `retentionPolicy: "35d"`, where it previously declared none
+and point-in-time recovery reached back to the first base backup forever.
+
+**A prior finding in ADR-0037 was wrong and is corrected there.** That record stated 백업
+appears zero times in PIPA and its 시행령 — true of those two instruments, and false as a
+claim about Korean law, because the binding security standard is a 고시, which is 행정규칙 and
+a different search target. 개인정보의 안전성 확보조치 기준 (제2026-9호, 시행 2026-07-01) 제11조
+requires a backup-and-recovery **plan** above a subject-count threshold and states no period.
+
+**No Korean legal conclusion is asserted.** The 35-day figure is not derived from any statute;
+it is derived from the payroll cycle, because no instrument found sets a duration for a backup
+archive. ADR-0037 remains `proposed`, decides nothing, and adopts none of its four options.
+Whether a bounded window means anything is routed to privacy counsel, unchanged.
+
+ADR-0037's option B claimed that shortening the window amends accepted ADR-0015. That
+paragraph is retracted in this candidate: ADR-0015 states no window length anywhere.
+
+Recorded and out of scope: 안전성 확보조치 기준 제8조제1항제2호 sets a 2년 floor on 접속기록 for
+any system processing 고유식별정보, which `개인정보 보호법 시행령` 제19조제1호 defines to include
+주민등록번호.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #543 under the retention candidate
+
+Mechanical rebind. No claim in the candidate changes, and no Korean legal conclusion is
+asserted by it.
+
+Fifth rebind of the day across three landed pull requests. Each rewrites the same ~390
+denormalised leaves, every one of which carries the single value declared at
+`registry.candidate.sha`. Recorded as a measurement, not a complaint: it is the cost the
+next change is expected to reduce.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
