@@ -1548,3 +1548,88 @@ only reason it surfaced before merge rather than after.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the candidate binding for the finite backup window
+
+The registers rebind to the retention candidate. The backup ObjectStore gains a finite
+90d retention policy, and ADR-0037 gains the research and one corrected citation.
+
+Two properties are worth recording at the authority layer.
+
+**The change was free only because it was made before deployment.** Verified: no CNPG
+cluster in the tenancy declares a backup, the barmancloud ObjectStore CRD is not installed,
+and the target namespace does not exist. There are no backups for the policy to prune.
+ADR-0037 had said this was cheap to resolve before a person's data is in the system and
+expensive afterwards; that window was still open, and is now used rather than merely
+observed.
+
+**A cited article was wrong, and the correction strengthened the finding.** The record had
+grounded 복구 또는 재생 in 법 제21조제2항 alone. The owner pointed at the deletion-request
+path and named 시행령 제43조제2항, which on fetch is procedural and carries no such wording —
+but 법 제36조제3항 does, for subject-requested deletion, alongside a 단서 barring deletion
+where another statute designates the data for collection. The substance held, the location
+moved, and the standard turns out to bind on both the 파기 and the request paths. Recorded
+because a citation corrected upward is worth as much as one retracted.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — a retraction the owner caught, and the rule it broke
+
+The registers rebind after ADR-0037 retracted a claim of its own making.
+
+The record had argued that Korea's 복구 또는 재생 wording made the European deferred-overwrite
+package a poor fit, and elevated crypto-shredding accordingly. The owner disputed it. The
+statute settles it against the record: 법 제21조제1항 and 법 제36조제2항 both say 지체 없이,
+not 즉시 — the same 'without undue delay' standard the European position is built on.
+
+The rule that was broken is worth stating because this program keeps meeting it from both
+directions. The research had already found that Korea's silence on backups is **an absence,
+not a permission**. The retracted draft converted the same silence into a **prohibition**.
+Both are the same error wearing opposite signs: treating the absence of authority as
+authority. The uncertainty_rule says missing or unqualified authority is HOLD — not
+permissive, not restrictive, HOLD.
+
+No gate could have caught this either. The record was structurally valid and every citation
+resolved; what was wrong was an inference drawn from correctly quoted text.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| f41cc847b
+
+## 2026-07-31 — the live GitOps inputs are frozen, and nothing said so
+
+Rebind after the retention change was withdrawn from this candidate.
+
+`scripts/check-command-database-wiring.test.mjs` asserts
+`git diff --exit-code origin/main` across `deploy/argocd/apps/console.yaml`,
+`deploy/apps/console/base`, `deploy/apps/console/overlays/prod` and
+`deploy/apps/secrets-management/wiring`. ArgoCD syncs those paths from `main` with
+`targetRevision: main`, so a branch change to any of them fails the gate and would take
+effect the instant it merged.
+
+**Verified: no file under `deploy/apps/console/base/` has changed since that gate landed.**
+`database.yaml`'s last change (`a17acf14f`, #495) predates the gate (`962fb98b7`, #503).
+This candidate was the first to touch those paths since, which is why the freeze surfaced
+now rather than earlier.
+
+The gate's stated purpose is keeping the DARK governed-command-database topology out of
+live wiring, and it does that with explicit `doesNotMatch` patterns. The blanket diff is a
+separate, stronger assertion that cannot distinguish a retention policy from a topology
+leak. It was not weakened to land a one-line change; the change was withdrawn instead.
+
+What this leaves open, and it is an owner decision rather than an engineering one: **there
+is no documented route by which the live GitOps inputs may legitimately change.** A control
+with no defined exception either stops all change or gets weakened by whoever needs the
+next change badly enough. Recorded so that the next person to need one finds this entry
+rather than the assertion.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+||||||| 0f7e71baa
+
+## 2026-07-31 — rebind after #536 moved the tip under the ADR-0037 candidate
+
+Mechanical rebind. No claim in the candidate changes.

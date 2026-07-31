@@ -298,6 +298,97 @@ against an unbounded archive*, but *which data may we erase at all, when does ea
 and what does separating retained data mean for a system whose backups are one undifferentiated
 stream*. The last of those is squarely architectural, and it is unanswered here.
 
+### 복구 또는 재생: the standard appears twice, and on the request path too
+
+The record first cited only 법 제21조제2항 (파기). The owner pointed at the deletion-request
+path; verified 2026-07-31 against the official portal, the same standard appears there as
+well, in the parent Act rather than in 시행령 제43조:
+
+> **법 제36조(개인정보의 정정ㆍ삭제)**
+> ① … 정정 또는 삭제를 요구할 수 있다. **다만, 다른 법령에서 그 개인정보가 수집 대상으로
+> 명시되어 있는 경우에는 그 삭제를 요구할 수 없다.**
+> ③ 개인정보처리자가 제2항에 따라 개인정보를 삭제할 때에는 **복구 또는 재생되지 아니하도록**
+> 조치하여야 한다.
+
+시행령 제43조, which implements 제36조, is procedural only — request method, notification to a
+providing processor, and a 10-day result notice. It carries no 복구 또는 재생 wording.
+
+Two architectural consequences, stated as observations rather than legal conclusions:
+
+**Correction, same day: an earlier draft of this section overstated.** It argued that because
+the standard is phrased as 복구 또는 재생, the European package — deferral to a scheduled
+overwrite — "maps poorly" to Korea, and that crypto-shredding was therefore the better-fitting
+mechanism. The owner disputed it, and the statute supports the owner.
+
+**The trigger standard is 지체 없이, not 즉시.** 법 제21조제1항 and 법 제36조제2항 both require
+action 지체 없이 — without undue delay. That is the same standard as GDPR Art. 17(1), and it is
+the standard the European position is built on. 시행령 제43조제3항's ten-day result-notice window
+points the same way: deletion is treated as a process with an operational horizon, not an
+instant. Nothing found requires immediate unrecoverability in every copy.
+
+So **both readings are available and neither is established:**
+
+- *A scheduled overwrite satisfies it.* 지체 없이 admits a reasonable operational window; 복구
+  또는 재생되지 아니하도록 describes the measures taken when deleting, not a requirement that
+  every replica become unrecoverable in the same instant. On this reading the European package
+  — erase live, backup expires on a finite written cycle, erasure log kept outside it and
+  re-applied on restore — is a coherent answer, and the finite window is the load-bearing part.
+- *Recoverability is the test.* The standard is written about the state of the data rather than
+  the schedule, and the PIPC 안내서 treats backup media as a place where destruction is
+  performed, with no grace period stated.
+
+The earlier draft asserted the second and dismissed the first. That was the mirror image of the
+error this record's research warned against: the Korean material's silence on backups is **an
+absence, not a permission** — and equally, it is not a prohibition. Converting silence into
+either is the mistake.
+
+**What this changes about the options: nothing is reordered.** Option B (a finite window) is
+not subordinate to option A. It is the element the only articulated international position
+depends on, and it remains the cheapest thing that moves this system from unbounded to bounded.
+A and B are complementary rather than competing — B bounds the exposure, A shortens it further
+where the archive already exists. Which combination is adequate is for counsel.
+
+**제36조제1항 단서 confirms the retention dimension** recorded above from 제21조제1항 단서, and
+sharpens it: where another statute designates the data as subject to collection, the subject
+*cannot require* deletion. So the disposal primitive must resolve, per data class, whether a
+pin exists before it can act — which is a lookup this system cannot currently perform.
+
+### What others do — European practice and the hyperscalers
+
+Researched 2026-07-31 across regulator text, hyperscaler documentation and engineering
+write-ups, then adversarially fact-checked. Reported as what sources say.
+
+**The European consensus is narrower than it is usually quoted as.** It is not "deferral". It
+is: erase from live systems; do not surgically edit backups; hold the backup so that it is
+used for nothing but restore; let it expire on a **finite, written, scheduled cycle**; keep a
+data-minimised **erasure log outside the backup**; and **re-apply that log after any restore**.
+The UK ICO frames it as data held "beyond use" and "replaced in line with an established
+schedule". Germany's DSK Standard-Datenschutzmodell Module 60 permits deferral to a
+*planmäßiges Überschreiben* while **explicitly rejecting** policy-based non-use — a staff
+prohibition or an undertaking not to use the data does not discharge the obligation.
+
+**There is no EDPB guideline on Art. 17 and backups.** The EDPB's CEF 2025 report (adopted
+2026-02-10) is deliberately non-committal and lists further guidance as work not yet done;
+Sweden, Portugal and Hungary formally asked for it. A record citing such a guideline is citing
+a document that does not exist.
+
+**The hyperscalers' mechanism is key destruction, and the published window is a bit-lifetime
+rather than a recoverability window.** Google's data-deletion whitepaper says it outright:
+cryptographic erasure "might occur before the backup that contains customer data has expired…
+the customer data is unrecoverable even during its remaining lifespan on Google's backup
+systems." Microsoft deletes per-chunk encryption keys on hard delete. Google is the only
+vendor found that also bounds **key material itself** (≤45 days) — the loop that a
+crypto-shredding design must close, since keys backed up indefinitely defeat the shred. AWS
+publishes no deletion SLA at all and assigns backups to the customer.
+
+**Korea is not the European position, and is not established either.** 백업 appears **zero
+times** in PIPA and in its 시행령. The 「개인정보의 안전성 확보조치 기준 안내서」(2025.11) treats
+backup media as a place where destruction is *performed*, offering deletion plus supervision
+against restoration and exclusion from subsequent backups — with no grace period and no
+alternative where a backup set cannot be selectively edited. A search for a Korean equivalent
+of "beyond use" across four PIPC instruments found none; recorded as **not established**,
+which is not the same as absent.
+
 ## What this record does not know
 
 Stated rather than papered over, because two of the four options cannot be fully costed
