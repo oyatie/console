@@ -1280,3 +1280,43 @@ rather than swallowing it.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the erasure-versus-PITR question
+
+The registers rebind to the ADR-0037 candidate: one `proposed` decision record, its index
+row, and a pointer from the Korean legal source notes. No code, no migration, no gate. The
+record decides nothing — its Decision section says so in its first line.
+
+Three properties are worth recording at the authority layer.
+
+**The record found a condition sharper than the one it was asked to describe.** The brief
+posed a general conflict between an erasure obligation and point-in-time recovery. The
+record established from `deploy/apps/console/base/database.yaml` that the backup
+`ObjectStore` declares **no retention policy at all** — the manifest's own comment states
+PITR *"reaches back to the first backup forever"* and that storage grows unbounded, and the
+ops runbook confirms the indefinite retention is intentional and dated. The window is not
+merely long; it is unbounded, by decision. A `DELETE` is therefore not destruction at any
+horizon, which is stronger than the question began with.
+
+**The record was incomplete on first writing, and no gate could have caught it.** It framed
+two forces — a destruction duty against a recovery capability — and omitted a third that
+dominates an HR and payroll product: data other statutes oblige the operator to keep. That
+omission was found by the owner reading the record. `check:adrs` verifies structure and
+`check:doc-citations` verifies that cited code exists; neither can observe that a record
+reasons about two forces where three apply. Both gates were green over the incomplete
+draft. That is the standing limit of this program's document gates, and it is recorded here
+so that passing gates are not read as completeness.
+
+**The review already planned does not cover this.** A 노무사 is a labour professional and a
+세무사 a tax professional; the payroll sign-off this program has scheduled is neither privacy
+counsel nor able to answer this question. The record says so explicitly so the coverage is
+not assumed.
+
+The record quotes 개인정보 보호법 제21조 verbatim from the official portal and draws only
+architectural observations from its vocabulary, concluding nothing about what it requires.
+It adopts no option, prices four against ADR-0015's restore proof, and carries `status:
+proposed`.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.

@@ -65,6 +65,7 @@ related: []
 | [ADR-0034](ADR-0034-delegation-of-authority-routing.md) | accepted | 전결규정 routing as a delta on ADR-0023's approval-line model: routing is a lookup that may resolve above, laterally or below the raising unit; competence is a third relation beside control and structure; a signature records the capacity it was made under |
 | [ADR-0035](ADR-0035-conserved-quantity-lineage.md) | accepted | Quantity-bearing split/merge lineage deferred; conservation requires row-level `FOR UPDATE` locking and a pure domain predicate, and the row CHECK is a per-row backstop only |
 | [ADR-0036](ADR-0036-object-dimensioned-economics.md) | accepted | Cost is a query over the double-entry voucher dimensioned by object reference; the finance subsystem is a peer plan, and the missing line dimension, `accounting_date` + period-lock caller, account master, and currency shape must stay additive |
+| [ADR-0037](ADR-0037-erasure-versus-pitr-conflict.md) | proposed, question only | Names the conflict between ADR-0014's shipped destruction paths and ADR-0015's restore to an arbitrary timestamp over an archive with no retention policy, prices crypto-shredding, a shortened window, a segregated store and an accepted conflict against that proof, and routes the choice to privacy counsel — distinct from the 노무사/세무사 payroll sign-off; decides nothing and asserts no Korean legal conclusion |
 
 ## Effective relationship graph
 

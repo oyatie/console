@@ -1,0 +1,362 @@
+---
+id: ADR-0037
+status: proposed
+doc_status: review
+date: 2026-07-31
+owner: jasonlee
+decision: erasure-versus-pitr-conflict
+related: [ADR-0002, ADR-0005, ADR-0014, ADR-0015, ADR-0024, ADR-0029]
+---
+
+# ADR-0037: Erasure versus point-in-time recovery — the conflict, the options, and why this record does not decide it
+
+## Status
+
+**Proposed 2026-07-31.** This record decides nothing. It states a conflict between two
+things the repository already ships, prices four ways out of it, and routes the choice
+to an authority that has not yet been engaged. It amends and supersedes no record, and
+it carries no `amends` key — `scripts/check-adrs.mjs` `proposed ADR cannot declare`
+forbids one on a proposed record, and the prohibition is correct here: a record that
+poses a question has no authority to narrow an accepted one.
+
+It asserts no Korean legal conclusion. It does not state what any statute requires, what
+a retention period is, or whether any option below is sufficient for anything. Those are
+findings for qualified counsel, and
+`docs/program/console-jurisdiction-register.json` `Missing, stale, conflicting, or unqualified authority is HOLD; agents may not invent certainty.`
+binds this record as it binds every other.
+
+## Context
+
+`docs/ideas/korean-legal-sources.md` `Name the erasure-versus-PITR conflict in a record`
+recorded this as an open follow-up. That document states the conflict; this one prices
+it. Neither restates the other.
+
+### The two shipped facts that collide
+
+**ADR-0015 requires a restore to an arbitrary past timestamp.** Its Decision reads
+`ADR-0015` `Postgres continuous WAL archiving with point-in-time recovery remains mandatory`,
+and the proof obligation is
+`ADR-0015` `targets RPO ≤5min and RTO ≤1h must be proven by restore to an arbitrary timestamp`.
+The word doing the work is *arbitrary*. A recovery target that may be any past instant is
+a recovery target that can land immediately before any deletion.
+
+**A destruction path already ships, and it is already the reason a table exists.**
+ADR-0014 carved a destructible store out of the append-only audit store precisely so that
+data could be physically removed:
+`ADR-0014` `Destruction-on-withdrawal is physically realizable (drop partitions)`.
+The mechanism is real, not planned. Consent withdrawal runs three deletions inside one
+transaction, gated on `backend/crates/compliance/adapter-postgres/src/lib.rs:destroy_location_data`
+— among them
+`backend/crates/compliance/adapter-postgres/src/lib.rs` `DELETE FROM location_pings WHERE user_id = $1`
+— and a separate retention routine,
+`0005_create_compliance_location_store.sql` `purge_expired_location_data`, drops whole
+day partitions and deletes collection logs on a cutoff.
+
+**So the conflict is not prospective.** It is not waiting on personal-data infrastructure
+that does not exist yet. Every `DELETE` and every `DROP TABLE` those two paths execute
+today is executed against a cluster whose write-ahead log is being archived continuously,
+and a restore to a timestamp before the deletion returns the deleted rows. Deleting a row
+does not make it unreconstructable while the archive covering its lifetime is retained.
+
+### The window is unbounded, and that was a decision
+
+The sharpest fact in this record is a comment in a live manifest.
+`deploy/apps/console/base/database.yaml` `never prunes base backups / WALs` — the
+`ObjectStore` named `console-backups` declares no retention policy at all, and the comment
+that records why is dated and attributed to the owner. The same manifest offers the
+remedy it did not take:
+`deploy/apps/console/base/database.yaml` `re-add e.g. retentionPolicy: "90d"`.
+`deploy/OPS-RUNBOOK.md` documents the same posture in prose. Nothing else in `deploy/`
+sets a retention policy, and no overlay patches one in.
+
+The reconstruction window is therefore not long. It is **open-ended by design**, reaching
+back to the first base backup and never closing. Any framing of this conflict as "data
+survives for N days" is wrong about this deployment.
+
+### What does not exist, verified rather than assumed
+
+There is no personal-data, retention-policy, erasure, or data-subject-request table. The
+search was over every migration:
+
+```
+$ ls backend/crates/platform/db/migrations/ | grep -Ei 'pii|personal_data|retention_polic|erasure|dsr|subject_request|data_subject|anonymization|redaction|purge'
+(no output)
+
+$ grep -rhoiE 'CREATE TABLE (IF NOT EXISTS )?[a-z0-9_."]+' backend/crates/platform/db/migrations/ \
+    | sed -E 's/CREATE TABLE (IF NOT EXISTS )?//I' | tr -d '"' | sort -u \
+    | grep -Ei 'pii|personal_data|retention_polic|erasure|dsr|subject_request|data_subject|anonymization|redaction|purge'
+(no output)
+```
+
+282 distinct table names across 206 migrations, highest `0206_ont_policy_api_attach_command_role.sql`;
+none matches. The only consent tables are `location_consents` and `location_consent_ledger`,
+both created by `0005_create_compliance_location_store.sql`, and both are location-tracking
+consent. The `purge` term does appear in the tree — as the routine named above, not as a
+table — so the absence is of a *schema* for erasure, not of a destruction *mechanism*.
+
+**The absence is what makes this cheap now.** An encryption boundary chosen before rows
+exist costs a column type. Chosen after, it cannot reach backwards: rows already written
+as plaintext are already plaintext in the archive, and re-encrypting them in place writes
+a new version while leaving every prior version recoverable. Whatever this conflict is
+resolved with, the resolution is strictly cheaper before personal data lands than after.
+
+### The review already planned does not cover this
+
+Payroll is blocked behind a professional sign-off:
+`docs/specs/payroll.md` `Production payroll remains blocked until a licensed 노무사/세무사 validates the worked examples and signs the release gate`.
+A 노무사 is a **labour** professional and a 세무사 is a **tax** professional. That review is
+scoped to wage computation, statutory deductions and filing — and it is the only external
+professional review this program has planned.
+
+**It is not privacy counsel and cannot be read as covering this question.** Booking it does
+not advance this record one step. This is easy to miss precisely because the payroll gate
+is the most visible "we are waiting on a professional" hold in the repository, and it is
+tempting to treat one pending expert as coverage for another domain. It is not.
+
+## Decision
+
+Nothing here is decided. The record fixes four things so that the open question stays open
+honestly rather than being closed by accident.
+
+1. **The conflict is recorded as a live architectural condition, not a future risk.** Two
+   accepted records — ADR-0014's destructible store and ADR-0015's arbitrary-timestamp
+   restore — are simultaneously in force and pull in opposite directions on the same rows.
+   Under README authority rule 6 that is a governance gap to reconcile through a decision,
+   not a defect in either record.
+
+2. **No option below is adopted, and none may be treated as chosen** because it appears
+   here. The costs are stated so counsel and the owner can choose against a real price.
+
+3. **A `DELETE` may not be described as destruction without naming the archive.** Any
+   design note, ADR, test name, code comment or product statement that claims data is
+   destroyed must say whether it means the row is gone from the live cluster or gone from
+   everything that can reconstruct the live cluster. Those are different claims and only
+   the first is currently true of anything in this repository. This constraint is
+   architectural, not legal, and it binds prose from the moment this record is read —
+   there is no gate that enforces it.
+
+4. **The question is routed to privacy counsel** as its own engagement, distinct from the
+   labour/tax sign-off described above. Until such an authority speaks with a
+   candidate-bound receipt, no option here is sufficient for anything and this record must
+   not be cited as though one were.
+
+## Decision drivers
+
+- **Timing dominates cost.** The encryption boundary is nearly free before rows exist and
+  unreachable-backwards after, and no personal-data table exists today. The window in
+  which this is a cheap decision is open now and closes on the first migration that stores
+  personal data.
+- **The reconstruction window does not expire on its own.** With no retention policy the
+  conflict has no natural end date, so "wait and it ages out" is not an available answer.
+- **Two of the four options change what ADR-0015 proves**, and one does not. That
+  difference is the main axis of the choice, so each option below states it explicitly.
+- **Nothing here needs a legal conclusion to be worth writing.** That a restore returns
+  deleted rows is a property of write-ahead logs, checkable without any statute.
+
+## Options and what each costs
+
+### A. Crypto-shredding — encrypt per subject, destroy the key
+
+Personal data is written encrypted under a per-subject key held outside the database;
+erasure destroys the key rather than the rows.
+
+**Effect on ADR-0015's proof: none.** This is the only option here that leaves
+`restore to an arbitrary timestamp` intact, because it never touches the archive. A
+restore to any past instant still succeeds and still meets RPO/RTO; what changes is that
+the restored cluster yields ciphertext for shredded subjects. The DR contract and the
+erasure path stop competing for the same mechanism.
+
+**Costs, and they are real.**
+- The key store becomes the thing that must *not* be recoverable, which inverts every
+  instinct ADR-0015 encodes. If the key store is itself backed up with a PITR window, the
+  keys come back and the shred is undone — so it needs its own DR posture whose failure
+  mode is permanent, unrecoverable data loss by design. That posture has to be designed,
+  not assumed.
+- Key loss is indistinguishable from key destruction after the fact. An operational
+  mistake and a lawful erasure look identical, so the record of *why* a key is gone
+  becomes the evidence, and that record has to live somewhere it cannot itself be erased.
+- Every read of personal data acquires a key fetch on the path.
+- It is retrofit-hostile, per the timing argument above. Applied after plaintext rows
+  exist, it protects new writes only and leaves history in the archive.
+
+### B. Shorten the PITR window for personal-data tables
+
+**This option is not expressible in the shipped posture, and that is a finding rather
+than an opinion.** WAL is a physical log of the entire cluster; Barman retention is
+configured per `ObjectStore`, and there is exactly one — `console-backups` — with one
+archiver, `deploy/apps/console/base/database.yaml` `isWALArchiver: true`. There is no
+mechanism to retain WAL covering one table and not another. The only reachable version of
+this option is *shorten the window for everything*.
+
+**Effect on ADR-0015's proof: it narrows it.** "Restore to an arbitrary timestamp" becomes
+"restore to an arbitrary timestamp within N days". That is a smaller claim than the one
+ADR-0015 makes, and shrinking it is an amendment to an accepted record, not a
+configuration tweak.
+
+**Costs.**
+- It buys a bounded window, not erasure: data still reconstructs for N days after
+  deletion. Whether a bounded window means anything is exactly the question this record
+  refuses to answer.
+- It trades against the reason the window was left open. The owner chose indefinite
+  retention on a recorded date; reversing that is a decision with its own consequences for
+  recovery from a slow-discovered corruption.
+- Storage cost falls, which is the one unambiguous benefit and the reason the manifest
+  comment already contemplates it.
+
+### C. Segregate personal data into a separately-backed store
+
+A second database or cluster holds personal data with its own, shorter or absent, archive.
+
+**Effect on ADR-0015's proof: it splits it.** Two stores means two DR postures, two RPO/RTO
+targets, and two restore drills — and a restore that lands the two stores at different
+timestamps, which is a consistency problem ADR-0015 currently does not have.
+
+**Costs, one of which is a direct collision with an accepted record.**
+- **ADR-0002 requires the audit event in the same transaction** as the mutation. Its
+  Decision states `ADR-0002` `is append-only: UPDATE/DELETE revoked and additionally blocked by trigger`
+  for `audit_events`, written through `with_audit` in the mutating transaction. A personal-data
+  write in a different database cannot share that transaction. This option therefore cannot
+  be adopted without deciding what replaces same-transaction auditing at that seam.
+- The append-only audit store is itself unerasable by construction, before PITR is even
+  considered. ADR-0014 already handled this for coordinates by keeping them out of
+  `audit_events`; segregation does not remove that obligation for anything else, and any
+  personal data that reaches the audit store is beyond every option in this record.
+- It multiplies the portability surface ADR-0024 governs: a second store needs a
+  context-native adapter in every deployment context, not just the live one.
+- Operational cost is the highest of the four.
+
+### D. Accept the conflict with a documented compensating control
+
+The window stays open; a procedure re-applies erasures after any restore.
+
+**Effect on ADR-0015's proof: none.** The DR contract is untouched, which is why this is
+the cheapest option to adopt and the most expensive to rely on.
+
+**Costs.**
+- The control is procedural and fires at the worst possible moment — during a disaster
+  recovery, under time pressure, executed by a human. It has no technical enforcement and
+  no gate could check it, which puts it in the weakest class of control this repository
+  recognises.
+- It requires a durable list of every erasure ever performed, so that the list can be
+  replayed after a restore. That list is itself a record of who asked to be erased, which
+  is a new store of exactly the kind of data this record is about.
+- **Accepting a conflict is a decision only counsel can make.** Engineering can say the
+  conflict is survivable technically; it cannot say the acceptance is available. Choosing
+  D without that authority is the failure the `uncertainty_rule` names.
+
+### The dimension this record first omitted: data we are obliged to KEEP
+
+The first draft framed a two-force problem — a destruction duty against a recovery
+capability. It missed a third force, and for an HR and payroll product that third force is
+dominant: much of this data is data someone is **obliged to retain**. Raised by the owner;
+recorded here rather than corrected silently.
+
+Quoted verbatim from the official legislation portal, 개인정보 보호법 법률 제20897호, 시행
+2025-10-02, retrieved 2026-07-31 from `https://www.law.go.kr/법령/개인정보보호법`:
+
+> **제21조(개인정보의 파기)**
+> ① 개인정보처리자는 보유기간의 경과, 개인정보의 처리 목적 달성, 가명정보의 처리 기간 경과 등 그
+> 개인정보가 불필요하게 되었을 때에는 지체 없이 그 개인정보를 파기하여야 한다. **다만, 다른 법령에
+> 따라 보존하여야 하는 경우에는 그러하지 아니하다.**
+> ② 개인정보처리자가 제1항에 따라 개인정보를 파기할 때에는 **복구 또는 재생되지 아니하도록** 조치하여야 한다.
+> ③ 개인정보처리자가 제1항 단서에 따라 개인정보를 파기하지 아니하고 보존하여야 하는 경우에는 해당
+> 개인정보 또는 개인정보파일을 **다른 개인정보와 분리하여서 저장ㆍ관리**하여야 한다.
+> ④ 개인정보의 파기방법 및 절차 등에 필요한 사항은 대통령령으로 정한다.
+
+**This record states no conclusion about what that text requires of us.** It quotes the
+instrument and observes that its vocabulary lands on architectural questions this record
+already had open. Whether and how it applies is for qualified counsel, and every Korea
+control remains `HOLD`.
+
+Three observations, all architectural rather than legal:
+
+**A blanket erase-on-request design would be wrong for this product.** The 제1항 단서 carves
+out data retained under other statutes, and payroll is dense with such duties — the register
+in `docs/ideas/payroll-statutory-sources.md` already tracks nine statutory items for
+contribution and withholding purposes alone, without yet touching record-retention periods.
+So the operative primitive is not "delete on request" but **retention-class-aware disposal**:
+a data class, a duty that pins it, and a disposal action that becomes available only when the
+pin lifts. This system has neither the classes nor the pins — no retention table exists in
+any migration.
+
+**The statute's disposal wording and our PITR posture use the same vocabulary.** 제2항 speaks
+of 복구 또는 재생 — restoration or reproduction. That is what point-in-time recovery is for.
+This record's central observation was already that a `DELETE` is not destruction while the
+archive can reconstruct it; the instrument's own language describes that same distinction.
+Noted as a convergence, not as a finding of compliance or its absence.
+
+**Segregation appears in the text, which bears on option C.** 제3항 addresses data kept under
+the 단서 and uses 분리하여서 저장ㆍ관리. Option C below was priced as one of four neutral
+alternatives. It should be re-read knowing that separation is the shape the instrument
+describes for retained data — which may make C serve two purposes at once rather than one,
+and changes its cost/benefit relative to A and B. **This record does not adopt it on that
+basis**; it flags that the option was priced without this input and should be re-priced with
+it.
+
+What this adds to the counsel engagement below: the question is not only *how do we erase
+against an unbounded archive*, but *which data may we erase at all, when does each duty lift,
+and what does separating retained data mean for a system whose backups are one undifferentiated
+stream*. The last of those is squarely architectural, and it is unanswered here.
+
+## What this record does not know
+
+Stated rather than papered over, because two of the four options cannot be fully costed
+without it.
+
+- **Whether the backup bucket is retention-locked is undetermined.** ADR-0005's WORM rule
+  binds evidence objects — `ADR-0005` `every evidence object must reach a retention-locked copy in an independent failure domain`,
+  proven by `ADR-0005` `put-retention COMPLIANCE → version-delete attempt must fail`. No
+  manifest in the tree applies an equivalent lock to `s3://mnt-db-backups/`, and
+  `deploy/apps/object-store/README.md` `WORM/object-lock validation` lists that validation
+  as work not yet run. If the backup bucket turns out to carry a compliance-mode lock, then
+  option B is unavailable too — a retention policy cannot prune objects the store refuses
+  to delete — and option A becomes the only one that does not require changing the bucket.
+  **This is checkable against the live tenancy and should be checked before any option is
+  weighed.**
+- **No legal question here has an answer in this repository**, including whether any
+  bounded window, any encryption scheme, or any procedure is adequate. This record's whole
+  contribution is that the architectural question is now written down with prices attached.
+
+## Consequences
+
+- **Positive: the conflict stops being invisible.** It currently exists between two
+  accepted records with nothing pointing from either to the other, which is how a
+  contradiction survives review.
+- **Positive: the cheap moment is named while it is still open.** The record states
+  explicitly that the resolution costs less before personal data lands, so a later
+  migration that stores it is a decision to pay more, taken knowingly.
+- **Positive: constraint 3 stops the misdescription from spreading** into the prose that a
+  later design would be built from — the same failure mode ADR-0035 records for
+  conservation and the row CHECK.
+- **Negative: the location paths that ship today keep this property for as long as the
+  record stays proposed.** `destroy_location_data` and `purge_expired_location_data` run
+  against an unbounded archive now, and nothing in this record changes that.
+- **Negative: constraint 3 has no automated enforcement.** No gate distinguishes "deleted"
+  from "unreconstructable" in prose. Only review does, which is weaker than the property it
+  protects, and is recorded as such rather than overstated.
+- **Negative: this record consumes an ADR number for a question rather than an answer**,
+  and will need a successor. That is the intended trade: an open question in the decision
+  log beats a closed one decided by whoever writes the next migration.
+
+## Follow-ups
+
+1. **Determine the object-lock posture of `s3://mnt-db-backups/` against the live
+   tenancy.** It is a read-only check, it gates the availability of option B, and no option
+   should be weighed before it is known.
+2. **Engage privacy counsel as an engagement distinct from the 노무사/세무사 payroll
+   sign-off.** Name the four options and ask which are available, not which is best — the
+   architecture question is answered here, the availability question is not.
+3. **Do not write a personal-data migration before this record has a successor.** The
+   timing argument is the whole reason this was worth writing now; the first such migration
+   spends the option it names.
+4. **If option A is chosen, design the key store's DR posture as its own decision.** A
+   store whose correct failure mode is permanent loss cannot inherit ADR-0015's contract,
+   and treating it as ordinary infrastructure would silently undo every shred.
+5. **Re-check the reciprocal obligations before acceptance.** This record declares
+   `related` only and asks for no key in any target, so no target ADR is edited by its
+   acceptance; that claim should be re-verified against the six targets at the time,
+   because `related` reciprocity is not machine-enforced.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this record poses a question, records no
+decision, and makes no completion, deployment, or production-exposure claim.
