@@ -2710,6 +2710,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-platform-erasure-ledger"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-test-support",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "console-platform-excel"
 version = "0.1.0"
 dependencies = [

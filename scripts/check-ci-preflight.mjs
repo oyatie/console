@@ -65,7 +65,8 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:ontology-object-policy-attach-postgres \\",
   "//tools/buck:ontology-action-execute-postgres \\",
   "//tools/buck:ontology-gaps-postgres \\",
-  "//tools/buck:ontology-projected-dispatch-postgres",
+  "//tools/buck:ontology-projected-dispatch-postgres \\",
+  "//tools/buck:platform-erasure-ledger-postgres",
 ];
 const postgresWrapperContracts = [
   ["dispatch-p1-postgres", "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres-itest-p1_dispatch"],
@@ -91,6 +92,7 @@ const postgresWrapperContracts = [
   ["ontology-action-execute-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-action_execute_as_runtime_role"],
   ["ontology-gaps-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-ont_gaps_as_runtime_role"],
   ["ontology-projected-dispatch-postgres", "//backend/crates/ontology/rest:console-ontology-rest-itest-projected_dispatch_as_runtime_role"],
+  ["platform-erasure-ledger-postgres", "//backend/crates/platform/erasure-ledger:console-platform-erasure-ledger-itest-erasure_ledger_as_runtime_role"],
 ];
 const postgresWrapperLoader = "run_test_with_postgres_env.sh";
 const postgresWrapperLabels = '["test.integration", "resource.postgres", "needs-postgres"]';

@@ -705,6 +705,11 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-email': {
         'unit': 'none',
     },
+    'console-platform-erasure-ledger': {
+        'integration': {
+            'tests/erasure_ledger_as_runtime_role.rs': 'postgres',
+        },
+    },
     'console-platform-excel': {
         'integration': {
             'tests/template_fidelity.rs': 'none',

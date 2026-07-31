@@ -1760,3 +1760,57 @@ disposition, and exposure state remains `HOLD`.
 ## 2026-07-31 — rebind after an upstream merge
 
 Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — an append-only erasure ledger, and what it does not solve
+
+The registers rebind to the erasure-ledger candidate: migration 0207, a platform crate,
+and a PostgreSQL wrapper target wired into the reachability job.
+
+It builds the third of the four elements the erasure research found in the only
+articulated international position — erase from live systems, let backups expire on a
+finite scheduled cycle, keep an erasure log OUTSIDE the backup, and re-apply it after any
+restore. This is the log, and it makes the fourth possible. It performs and authorises
+nothing; ADR-0037 still adopts no option and every Korea control stays HOLD.
+
+Three properties are worth recording at the authority layer.
+
+**It refuses an escape hatch the codebase offers.** Existing append-only triggers here
+carry an `app.platform_force_remove_org` bypass so tenant teardown can proceed. This one
+does not. For an erasure ledger that branch is a reachable DELETE path through a SECURITY
+DEFINER, and it would make the append-only test a lie. The recorded consequence is that
+ledger rows OUTLIVE tenant force-removal holding an `org_id` that no longer names a row —
+stated in the migration header rather than discovered later.
+
+**It states its own limit.** A ledger inside the database is rolled back by the same
+point-in-time restore it exists to record. The design detects that rather than preventing
+it, and the header says so. What it cannot do is survive a restore; what it can do is make
+one visible.
+
+**The slice edited the three authority documents despite being told not to.** Reset to
+`origin/main` and rebuilt here. Recorded because the instruction existed precisely so the
+train binds a candidate ending in the work rather than in a rebind performed on a stale
+base, and the instruction was not enough on its own.
+
+Its tests need PostgreSQL and did not run locally — the execution proof is CI, through the
+credential-loader wrapper. Verified locally instead: buck2 resolves both the wrapper and
+its target, the crate compiles, and six gates pass.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #540 moved the tip under the erasure-ledger candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+The merge that moved the tip resolved the three authority documents as a **union**: the two
+registers were taken from `main` and rebound, and the ledger keeps every entry from both
+sides. `assertAuthorityDiff` verifies that these documents changed, never what they say, so
+a `--theirs` resolution would have deleted entries with no gate noticing.
+
+Git could not parse the conflict hunks in this file during that merge, because the file
+already carries unresolved `|||||||` marker lines from earlier union resolutions — ten of
+them on `main` as of this merge, up from nine before #540. This candidate adds none. The
+count and the gate that stops it growing are a separate change.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.

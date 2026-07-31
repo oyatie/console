@@ -281,7 +281,8 @@ jobs:
             //tools/buck:ontology-object-policy-attach-postgres \
             //tools/buck:ontology-action-execute-postgres \
             //tools/buck:ontology-gaps-postgres \
-            //tools/buck:ontology-projected-dispatch-postgres
+            //tools/buck:ontology-projected-dispatch-postgres \
+            //tools/buck:platform-erasure-ledger-postgres
 
   company-conformance:
     # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and

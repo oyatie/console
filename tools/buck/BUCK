@@ -315,3 +315,15 @@ sh_test(
     deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-projected_dispatch_as_runtime_role"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+# The erasure ledger's refusals (42501 as console_rt, P0001 as the owner) and
+# its restore verdicts. Wired here deliberately: the sibling audit-chain itest
+# has a rust_test target, no wrapper, no contract and no workflow step, so it
+# executes nowhere. A rust_test target alone is not wiring.
+sh_test(
+    name = "platform-erasure-ledger-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/erasure-ledger:console-platform-erasure-ledger-itest-erasure_ledger_as_runtime_role)"],
+    deps = ["//backend/crates/platform/erasure-ledger:console-platform-erasure-ledger-itest-erasure_ledger_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
