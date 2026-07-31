@@ -192,9 +192,20 @@ jobs:
         # So every buck2 job here was a cold build, every run, with no cache to
         # restore. cargo's target/ does survive, via rust-cache below.
         #
+        # --lib is load-bearing: the adapter crate also carries tests/ integration
+        # suites that need PostgreSQL (payroll_lifecycle_rls_as_runtime_role), and
+        # this job has no database. Those belong to postgres-domain-reachability.
+        # All three crates keep their unit tests inside src/lib.rs, so --lib loses
+        # nothing here.
+        #
+        # The adapter crate is here because its 12 pure #[test] cases — the
+        # parse_release_gate half that decides what a stored gate record may parse
+        # INTO — ran in NO workflow. The domain half decides whether a parsed gate
+        # is satisfied; without the adapter half the release gate is half-proven.
+        # They need no database (zero #[sqlx::test]), so they belong in this job.
         # Runs the SAME 15 tests as the retired Buck2 target, verified by count.
         # --locked so a drifted Cargo.lock fails rather than silently resolving.
-        run: SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain
+        run: SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted

@@ -31,7 +31,7 @@ const consoleTrainDerivation = [
 ];
 const buckPostgresEnvironmentTestCommand = "tools/buck/run_test_with_postgres_env.test.sh";
 const buckPostgresHarnessTestCommand = "tools/buck/test_needs_postgres.test.sh";
-const domainUnitCommand = "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain";
+const domainUnitCommand = "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib";
 const postgresDomainReachabilityCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
   "//tools/buck:dispatch-p1-postgres \\",

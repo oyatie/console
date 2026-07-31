@@ -188,6 +188,12 @@ pub struct GoldenPayrollCase {
     pub case_id: String,
     pub rate_table_version: String,
     pub professionally_validated: bool,
+    /// The case's own declared kernel inputs, embedded WHOLE rather than
+    /// copied field-by-field: [`build_line_calculation`] consumes exactly this
+    /// type, so when the kernel's input vocabulary moves, every golden-case
+    /// construction site fails to COMPILE and must be re-signed. A copied
+    /// field set would rot silently while still reading green.
+    pub inputs: LineCalculationInput,
     pub expected_total_employee_deductions_won: i64,
 }
 
@@ -1006,6 +1012,37 @@ pub fn validate_release_gate(input: &PayrollReleaseGateInput) -> Result<(), Kern
             "professional validation reviewer reference is required",
         ));
     }
+    // The golden case is RE-EXECUTED, not merely stored: until this loop
+    // existed the professionals' signed figure was compared to nothing, so a
+    // golden case could not fail. LAST on purpose — every check above returns
+    // on its first failure, so running the arithmetic earlier would surface a
+    // mismatch message in place of the specific pre-existing condition that
+    // actually regressed.
+    //
+    // Strictly stricter, and it admits a THIRD failure class to the gate:
+    // `build_line_calculation`'s own refusals (blank tax table_version,
+    // negative amounts, a pay_date outside the in-crate rate windows) now fail
+    // the GATE, not just line calculation. That is deliberate — a case whose
+    // declared inputs the kernel cannot execute is not a case that passed.
+    for case in &input.golden_cases {
+        // .clone() is mandatory: build_line_calculation takes its input by
+        // value and moves tax_row.table_version, while this function only
+        // borrows &PayrollReleaseGateInput.
+        let computed = build_line_calculation(case.inputs.clone()).map_err(|err| {
+            KernelError::validation(format!(
+                "golden case {} could not be recomputed: {}",
+                case.case_id, err.message
+            ))
+        })?;
+        if computed.total_employee_deductions_won != case.expected_total_employee_deductions_won {
+            return Err(KernelError::validation(format!(
+                "golden case {} expects total employee deductions {} but the payroll kernel computed {}",
+                case.case_id,
+                case.expected_total_employee_deductions_won,
+                computed.total_employee_deductions_won
+            )));
+        }
+    }
     Ok(())
 }
 
@@ -1184,6 +1221,22 @@ mod tests {
         assert_eq!(error.kind, console_kernel_core::ErrorKind::Forbidden);
     }
 
+    /// The declared kernel inputs behind the 373,302 figure every golden-case
+    /// fixture in this crate already stores. Pinned green independently by
+    /// `builds_employee_deduction_draft_from_effective_rates_and_supplied_nts_row`.
+    fn golden_case_inputs() -> LineCalculationInput {
+        LineCalculationInput {
+            pay_date: date!(2026 - 06 - 27),
+            gross_won: 3_000_000,
+            pension_standard_monthly_income_won: None,
+            tax_row: VerifiedNtsTaxRow {
+                table_version: "NTS-간이세액표-fixture-row-v1".to_owned(),
+                monthly_income_tax_won: 74_350,
+                local_income_tax_won: 7_430,
+            },
+        }
+    }
+
     fn fixture_tax_row() -> NtsWithholdingTaxRow {
         NtsWithholdingTaxRow {
             table_version: "NTS-간이세액표-fixture-row-v1",
@@ -1325,6 +1378,7 @@ mod tests {
                 case_id: "golden-fixture-unvalidated".to_string(),
                 rate_table_version: "KR-2026-official-rates-v1".to_string(),
                 professionally_validated: false,
+                inputs: golden_case_inputs(),
                 expected_total_employee_deductions_won: 373_302,
             }],
             professional_validation: None,
@@ -1343,6 +1397,7 @@ mod tests {
                 case_id: "golden-fixture-professionally-reviewed".to_string(),
                 rate_table_version: "KR-2026-official-rates-v1".to_string(),
                 professionally_validated: true,
+                inputs: golden_case_inputs(),
                 expected_total_employee_deductions_won: 373_302,
             }],
             professional_validation: Some(ProfessionalValidation {
@@ -1354,6 +1409,229 @@ mod tests {
             }),
         };
         validate_release_gate(&validated).unwrap();
+    }
+
+    /// A gate input that satisfies every condition. Each test below mutates
+    /// EXACTLY ONE field of it, so a failure names one defect.
+    fn satisfied_release_gate() -> PayrollReleaseGateInput {
+        PayrollReleaseGateInput {
+            rate_table_version: "KR-2026-official-rates-v1".to_string(),
+            official_source_urls: vec![nps_source().url.to_string(), nhis_source().url.to_string()],
+            golden_cases: vec![GoldenPayrollCase {
+                case_id: "GC-FIXTURE-A".to_string(),
+                rate_table_version: "KR-2026-official-rates-v1".to_string(),
+                professionally_validated: true,
+                inputs: golden_case_inputs(),
+                expected_total_employee_deductions_won: 373_302,
+            }],
+            professional_validation: Some(ProfessionalValidation {
+                reviewer_kind: ProfessionalReviewerKind::LaborAttorney,
+                reviewed_on: date!(2026 - 06 - 27),
+                // Placeholder digest, and it STAYS a placeholder.
+                artifact_sha256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                    .to_string(),
+                reviewer_reference: "licensed-reviewer-record".to_string(),
+            }),
+        }
+    }
+
+    #[test]
+    fn release_gate_rejects_a_golden_case_total_the_kernel_does_not_recompute() {
+        // THE LOAD-BEARING TEST. Until this passes, a golden case is a stored
+        // assertion that cannot fail: the professionals' signed figure is never
+        // compared to anything the kernel produces. Only the EXPECTATION moves;
+        // the declared inputs are the ones that really compute 373,302.
+        let mut disagrees = satisfied_release_gate();
+        disagrees.golden_cases[0].expected_total_employee_deductions_won = 373_303;
+
+        let error = validate_release_gate(&disagrees).unwrap_err();
+
+        assert_eq!(
+            error.message,
+            "golden case GC-FIXTURE-A expects total employee deductions 373303 \
+             but the payroll kernel computed 373302"
+        );
+    }
+
+    #[test]
+    fn release_gate_accepts_a_golden_case_whose_declared_inputs_recompute_to_its_expected_total() {
+        validate_release_gate(&satisfied_release_gate()).unwrap();
+    }
+
+    #[test]
+    fn release_gate_rejects_a_blank_rate_table_version() {
+        // ONE field, like every other test here. Blanking the golden case's
+        // copy too was unreachable setup — the blank check returns before the
+        // mismatch check is reached — and it cost the test its grip on that
+        // precedence: with both blank they matched, so a reordering that put
+        // the mismatch check first went unnoticed. Leaving the case's version
+        // intact makes this record mismatched as well as blank, so the pinned
+        // message now asserts WHICH refusal wins.
+        let mut blank = satisfied_release_gate();
+        blank.rate_table_version = "  ".to_string();
+
+        assert_eq!(
+            validate_release_gate(&blank).unwrap_err().message,
+            "payroll rate table version is required"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_an_empty_official_source_url_list() {
+        let mut no_urls = satisfied_release_gate();
+        no_urls.official_source_urls = vec![];
+
+        assert_eq!(
+            validate_release_gate(&no_urls).unwrap_err().message,
+            "at least one official source URL is required"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_a_case_marked_not_professionally_validated() {
+        let mut unvalidated = satisfied_release_gate();
+        unvalidated.golden_cases[0].professionally_validated = false;
+
+        assert_eq!(
+            validate_release_gate(&unvalidated).unwrap_err().message,
+            "golden case GC-FIXTURE-A lacks professional validation"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_an_absent_professional_validation() {
+        let mut unsigned = satisfied_release_gate();
+        unsigned.professional_validation = None;
+
+        assert_eq!(
+            validate_release_gate(&unsigned).unwrap_err().message,
+            "노무사/세무사 professional validation is required"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_an_artifact_digest_that_is_not_64_hex() {
+        let mut not_hex = satisfied_release_gate();
+        not_hex
+            .professional_validation
+            .as_mut()
+            .unwrap()
+            .artifact_sha256 = "z".repeat(64);
+
+        assert_eq!(
+            validate_release_gate(&not_hex).unwrap_err().message,
+            "professional validation artifact_sha256 must be a 64-character hex digest"
+        );
+    }
+
+    #[test]
+    fn release_gate_names_the_case_whose_declared_inputs_cannot_be_recomputed() {
+        // 2027-03-01 is inside the pension base-limit window (ends 2027-07-01)
+        // but outside the contribution-rate window (ends 2027-01-01), so the
+        // kernel refuses rather than mismatching. The gate must attribute that
+        // refusal to a case_id; only the gate-owned prefix is pinned here, not
+        // the inner kernel text.
+        let mut unrecomputable = satisfied_release_gate();
+        unrecomputable.golden_cases[0].inputs.pay_date = date!(2027 - 03 - 01);
+
+        let message = validate_release_gate(&unrecomputable).unwrap_err().message;
+
+        assert!(
+            message.starts_with("golden case GC-FIXTURE-A could not be recomputed: "),
+            "expected a case-attributed recomputation failure, got: {message}"
+        );
+    }
+
+    #[test]
+    fn release_gate_recomputes_every_golden_case_and_not_only_the_first() {
+        // Line coverage cannot see this: the loop body's lines are already
+        // executed by every single-case test. `for case in &input.golden_cases`
+        // narrowed to `.first()` or `[0]` would keep them green while every
+        // case after the first went unchecked — a signed batch where only the
+        // first figure is ever re-derived.
+        let mut two_cases = satisfied_release_gate();
+        let mut second = two_cases.golden_cases[0].clone();
+        second.case_id = "GC-FIXTURE-B".to_string();
+        second.expected_total_employee_deductions_won = 373_303;
+        two_cases.golden_cases.push(second);
+
+        assert_eq!(
+            validate_release_gate(&two_cases).unwrap_err().message,
+            "golden case GC-FIXTURE-B expects total employee deductions 373303 \
+             but the payroll kernel computed 373302"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_a_gate_carrying_no_golden_case_at_all() {
+        // The recomputation loop is VACUOUS over an empty list — it iterates
+        // nothing and returns Ok. This check is therefore the only thing
+        // between "the gate re-executes the signed figures" and "the gate
+        // passed having compared nothing", and it had no test of its own.
+        let mut caseless = satisfied_release_gate();
+        caseless.golden_cases.clear();
+
+        assert_eq!(
+            validate_release_gate(&caseless).unwrap_err().message,
+            "at least one payroll golden case is required"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_a_case_signed_against_a_different_rate_table_version() {
+        // Recomputation cannot catch this. `rate_table_version` is a label: it
+        // reaches no kernel input, so a case signed against last year's table
+        // still recomputes to its own expected total and passes the arithmetic.
+        // Only this string compare notices.
+        let mut mismatched = satisfied_release_gate();
+        mismatched.golden_cases[0].rate_table_version = "KR-2025-official-rates-v1".to_string();
+
+        assert_eq!(
+            validate_release_gate(&mismatched).unwrap_err().message,
+            "golden case GC-FIXTURE-A uses mismatched rate table version"
+        );
+    }
+
+    #[test]
+    fn release_gate_rejects_a_blank_reviewer_reference() {
+        // The remaining unexercised pre-existing condition. A 노무사/세무사
+        // sign-off whose reviewer cannot be identified is an anonymous one.
+        let mut anonymous = satisfied_release_gate();
+        anonymous
+            .professional_validation
+            .as_mut()
+            .unwrap()
+            .reviewer_reference = "   ".to_string();
+
+        assert_eq!(
+            validate_release_gate(&anonymous).unwrap_err().message,
+            "professional validation reviewer reference is required"
+        );
+    }
+
+    #[test]
+    fn release_gate_recomputes_a_case_on_its_declared_pension_standard_monthly_income() {
+        // `pension_standard_monthly_income_won` is the one optional kernel
+        // input, and it is the only one that changes a figure without changing
+        // the gross. 2,000,000 sits inside the 2026-06 base window
+        // (400,000..6,370,000), so the clamp does not erase it: the 국민연금
+        // line drops by 47,500 and the total with it. A gate that ignored the
+        // declared basis would compute 373,302 here.
+        let mut capped = satisfied_release_gate();
+        capped.golden_cases[0]
+            .inputs
+            .pension_standard_monthly_income_won = Some(2_000_000);
+        capped.golden_cases[0].expected_total_employee_deductions_won = 325_802;
+
+        validate_release_gate(&capped).unwrap();
+
+        // ...and the gross-based figure is now the WRONG answer for this case.
+        capped.golden_cases[0].expected_total_employee_deductions_won = 373_302;
+        assert_eq!(
+            validate_release_gate(&capped).unwrap_err().message,
+            "golden case GC-FIXTURE-A expects total employee deductions 373302 \
+             but the payroll kernel computed 325802"
+        );
     }
 
     #[test]

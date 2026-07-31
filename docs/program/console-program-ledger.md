@@ -1448,3 +1448,103 @@ a queued job costs more wall-clock than a serial step inside a job already holdi
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for the payroll tests that ran nowhere
+
+The registers rebind to the payroll CI candidate. The candidate wires
+`//backend/crates/payroll/domain:console-payroll-domain-unit` into a workflow for the
+first time: its 16 tests were compiled by `cargo clippy --all-targets` and never
+executed, which is the fifth instance of that class this week.
+
+Nothing in the candidate changes what any capability may do. It changes which tests
+run, and it renames two of them.
+
+Three properties are worth recording at the authority layer, because a green train
+invites inferences it does not support.
+
+The candidate **renames two tests, and the rename is the load-bearing part** rather
+than cosmetic. `transition_payroll_run` has no non-test caller, and two tests were
+named for system properties this repository does not have — that calculation is
+blocked without validated release evidence, and that issuance is blocked without
+step-up. Wiring them into CI unrenamed would have converted a dormant falsehood into
+a CI-endorsed one: a green check certifying guarantees the production path does not
+implement. No assertion was deleted or weakened; both tests pin exactly what they
+pinned before.
+
+The candidate does **not** make payroll safe to release. The release gate is consulted
+in exactly one place, inside payslip issuance and after the run reaches `PAID`, so the
+lifecycle through payment remains ungated and the gate withholds the 임금명세서 rather
+than the money. A separate audit recorded 19 blocking golden-case gaps against this
+kernel on the same day. Running the unit tests proves the unit tests run.
+
+The candidate's integration coverage is **still not wired and is not claimed to be**.
+`run_lifecycle_api.rs` holds the only gate-blocks-issuance assertion, needs PostgreSQL,
+and belongs in a wrapper target under `postgres-domain-reachability`. It was left out
+because it could not be verified locally, and an unverified wrapper is the defect the
+candidate exists to stop repeating.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| 18a21d7cd
+
+## 2026-07-31 — the candidate binding for the executable golden case
+
+The registers rebind to the golden-case candidate. It closes ONE of the nineteen blocking
+gaps recorded in `docs/ideas/payroll-goldencase-gaps.md` — B-03/M-02 — and does not close
+the other eighteen.
+
+Before this candidate, `expected_total_employee_deductions_won` was declared, parsed, and
+compared to nothing. A golden case was a stored assertion that **could not fail**: no gross,
+no pay date, no NTS row, so no code could recompute the figure a professional signed. If a
+rate constant or a rounding rule changed, nothing detected that the kernel no longer
+reproduced the approved numbers.
+
+The case now carries `LineCalculationInput` whole rather than field-by-field, and the gate
+re-executes `build_line_calculation` for every case, failing closed and naming the case, the
+expected figure and the computed one.
+
+Three properties are worth recording at the authority layer.
+
+**The comparison is load-bearing, proven by mutation.** Neutering it to `if false` fails
+three tests, not one. A single failing test would have left open the possibility that the
+others passed for unrelated reasons.
+
+**The silent-zero path is gone, and that was the load-bearing requirement rather than the
+arithmetic.** `parse_release_gate` previously defaulted an absent expectation to `0` with
+`.unwrap_or(0)`, so a stored case that could not be recomputed read as satisfied. It now
+errors. Arithmetic that runs on cases nobody can supply would have been decoration.
+
+**This does not make payroll releasable and must not be read that way.** The gate is still
+consulted in exactly one place — inside payslip issuance, after the run reaches `PAID` — so
+the lifecycle through payment remains ungated and the gate withholds the 임금명세서 rather
+than the money. Eighteen blocking gaps remain, including the absent pay-item model, which
+means a case can still only express a single scalar gross. What changed is that a signed
+figure can now fail; what did not change is how much of payroll a signed figure covers.
+
+Asserts no Korean legal conclusion: the candidate makes an arithmetic comparison executable
+and decides nothing about which figures are correct.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| f41cc847b
+
+## 2026-07-31 — rebind after #534 moved the tip under the golden-case candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — rebind after the adapter half was given somewhere to run
+
+The registers rebind. The candidate adds `console-payroll-adapter-postgres` to the
+consolidated unit job, because 12 pure `#[test]` cases — the `parse_release_gate` half of
+the release gate, including the removal of the silent-zero default — executed in no
+workflow at all.
+
+Worth recording: this was caught by an assertion the slice itself wrote to prevent it, and
+broken by a consolidation in a different pull request by the same hand. Two changes, each
+correct alone, produced a gap neither would have produced by itself. The assertion is the
+only reason it surfaced before merge rather than after.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
