@@ -786,6 +786,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run test:adrs
 
+      - name: Executed-tests ratchet — a test file must have a path from a workflow step
+        if: ${{ !cancelled() }}
+        run: npm run check:executed-tests
+
       - name: ADR governance gate
         if: ${{ !cancelled() }}
         run: npm run check:adrs

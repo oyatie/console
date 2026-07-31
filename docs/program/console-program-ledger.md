@@ -1687,3 +1687,40 @@ disposition, and exposure state remains `HOLD`.
 ## 2026-07-31 — rebind after an upstream merge under the cache-shape candidate
 
 Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — 287 of 314 Rust test files execute nowhere
+
+The registers rebind to the executed-tests candidate, which computes for the first time
+what fraction of this repository's Rust tests are reachable from a workflow step.
+
+**314 defined, 28 reachable, 287 executing nowhere.** The meta-finding in
+`false-green-gate-holes.md` said gate coverage is not correctness coverage and that this
+program had been reading the former as the latter. This is that statement with a number
+attached, and the number is worse than the document implied: H-8 had found one wrapper
+covering 1 of 63 app story-test files, and the same shape holds across the tree.
+
+Two properties are worth recording at the authority layer.
+
+**The candidate found a bug in itself before shipping, and the counts did not reveal it.**
+Its `cargo test` matcher consumed the trailing backslash of a shell line-continuation, so
+every flag on a following line was invisible. The resulting numbers were entirely
+plausible. What caught it was a named anchor asserting that one specific known-executed
+file must resolve. A resolver that degrades reports a smaller executed set and a larger
+gap — which reads as a finding rather than as a broken tool, and that asymmetry is why
+counts cannot guard themselves.
+
+**The ratchet states its own cost.** From now on a test file must be wired in the pull
+request that adds it. An adversarial review of the plan that produced this gate objected
+that 'may only shrink' contradicts adding new files unless the implication is stated
+outright. It is now stated outright rather than discovered later by whoever hits it.
+
+This number is a measurement, not a claim of readiness, and it lowers no control: nothing
+here makes any currently-dark test execute. It makes the count visible and monotone.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+||||||| da8cc4011
+
+## 2026-07-31 — rebind after #537 under the executed-tests candidate
+
+Mechanical rebind. The 287/314 measurement is unchanged.

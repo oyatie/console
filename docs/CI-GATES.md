@@ -89,6 +89,7 @@ npm run test:adrs
 npm run check:adrs
 for s in \
   check:foundation-gates \
+  check:executed-tests \
   check:request-body-contract \
   check:doc-citations \
   check:package-lock \
@@ -208,6 +209,7 @@ names only, not incidental workflow prose or runner setup text.
 - `check:ci-preflight`
 - `check:console-truth-ledger`
 - `check:doc-citations`
+- `check:executed-tests`
 - `check:foundation-gates`
 - `check:g004-identity-foundation`
 - `check:g005-workflow-lifecycle`

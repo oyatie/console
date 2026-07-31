@@ -66,7 +66,8 @@
     "check:node-audit-exceptions": "node scripts/check-node-audit-exceptions.mjs",
     "test:node-audit-exceptions": "node --test scripts/check-node-audit-exceptions.test.mjs",
     "check:trivy-dev-codegen-exceptions": "node scripts/generate-trivy-dev-codegen-exceptions.mjs --check",
-    "test:trivy-dev-codegen-exceptions": "node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs"
+    "test:trivy-dev-codegen-exceptions": "node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs",
+    "check:executed-tests": "node scripts/check-executed-tests.mjs"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"
