@@ -1177,7 +1177,6 @@ synthetic merge — because each one skipped is a full rebind later.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| 18a21d7cd
 
 ## 2026-07-30 — fourth rebind, and the merge that proves the mechanism works as designed
 
@@ -1369,7 +1368,6 @@ the next push fails and costs a rebind either way.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| 0d895e79d
 
 ## 2026-07-31 — the candidate binding for the gate-integrity adjudication
 
@@ -1406,7 +1404,6 @@ floor rather than a claim; two further unowned escalations are named in the hole
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| dbae0352f
 
 ## 2026-07-31 — rebind after #531 moved the tip under the gate-integrity candidate
 
@@ -1486,7 +1483,6 @@ candidate exists to stop repeating.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| 18a21d7cd
 
 ## 2026-07-31 — the candidate binding for the executable golden case
 
@@ -1528,7 +1524,6 @@ and decides nothing about which figures are correct.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| f41cc847b
 
 ## 2026-07-31 — rebind after #534 moved the tip under the golden-case candidate
 
@@ -1597,7 +1592,6 @@ resolved; what was wrong was an inference drawn from correctly quoted text.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| f41cc847b
 
 ## 2026-07-31 — the live GitOps inputs are frozen, and nothing said so
 
@@ -1628,7 +1622,6 @@ rather than the assertion.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
-||||||| 0f7e71baa
 
 ## 2026-07-31 — rebind after #536 moved the tip under the ADR-0037 candidate
 
@@ -1682,7 +1675,6 @@ you.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
-||||||| bec30abaa
 
 ## 2026-07-31 — rebind after an upstream merge under the cache-shape candidate
 
@@ -1719,7 +1711,6 @@ here makes any currently-dark test execute. It makes the count visible and monot
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
-||||||| da8cc4011
 
 ## 2026-07-31 — rebind after #537 under the executed-tests candidate
 
@@ -1755,7 +1746,6 @@ of failing.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
-||||||| 52a3e234f
 
 ## 2026-07-31 — rebind after an upstream merge
 
@@ -1811,6 +1801,29 @@ Git could not parse the conflict hunks in this file during that merge, because t
 already carries unresolved `|||||||` marker lines from earlier union resolutions — ten of
 them on `main` as of this merge, up from nine before #540. This candidate adds none. The
 count and the gate that stops it growing are a separate change.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the ledger carried unresolved merge markers, and nothing looked
+
+Rebind onto the merge-hygiene candidate.
+
+`docs/program/console-program-ledger.md` carried ten lines beginning `|||||||`, with zero
+`<<<<<<<` and zero `>>>>>>>`. The asymmetry is the diagnosis: the authority documents
+conflict on nearly every merge, the correct resolution is a **union** — nothing verifies
+what this file SAYS, only that it changed — and a union done by hand strips two markers out
+of three. Every one of the ten sat on a clean boundary between two complete entries, so the
+resolutions were right and only the litter was wrong.
+
+The count grew by one per merge. Nine at `810f7c81a`, ten after #540. Git failed to parse
+the conflict hunks while merging #541, because the markers already in the file are not
+valid conflict syntax — so the litter had begun to break the machinery that produces it.
+
+`assertNoUnresolvedMerge` now reads the three authority documents at the integration tip and
+refuses any line starting `<<<<<<<`, `|||||||` or `>>>>>>>`. It runs inside train validation,
+which is already unconditional on every PR. `=======` is deliberately exempt: it is a Markdown
+setext heading rule, and that exemption is proven by a test rather than asserted in a comment.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.

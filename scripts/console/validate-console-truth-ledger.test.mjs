@@ -255,6 +255,32 @@ test('a real SSH-signed canonical Git receipt is the only non-HOLD admission pat
     const authorityTip = run(['rev-parse', 'HEAD']);
     run(['config', '--unset', 'gpg.ssh.allowedSignersFile']);
     assert.equal(createConsoleCandidateSourceResolver(root, candidateSha, authorityTip, { candidateSigningAuthority }).readText('candidate.txt'), 'candidate\n');
+    // A union merge resolution that keeps both entries but leaves the marker line behind is
+    // otherwise invisible: the tip is correctly signed, is the candidate's only child, and
+    // modifies exactly the three authority documents. Nine such lines reached main. Each of
+    // the three asymmetric markers must fail on its own — a resolution that stripped two of
+    // three is exactly what happened, so testing only `<<<<<<<` would have passed on the
+    // real defect.
+    for (const marker of ['<<<<<<< ours', '||||||| 18a21d7cd', '>>>>>>> theirs']) {
+      run(['checkout', '-B', `marker-${marker.slice(0, 3)}`, candidateSha]);
+      for (const file of ['console-capability-registry.json', 'console-jurisdiction-register.json', 'console-program-ledger.md']) writeFileSync(path.join(root, 'docs/program', file), 'authority\n');
+      writeFileSync(path.join(root, 'docs/program/console-program-ledger.md'), `authority\n${marker}\nboth entries kept\n`);
+      run(['add', '.']); run(['commit', '-S', '-m', 'authority control with unresolved marker']);
+      assert.throws(
+        () => createConsoleCandidateSourceResolver(root, candidateSha, run(['rev-parse', 'HEAD']), { candidateSigningAuthority }),
+        /unresolved merge marker/,
+        `a tip whose ledger line starts with ${marker.split(' ')[0]} must be refused`,
+      );
+    }
+    // `=======` is a Markdown setext heading rule as well as a conflict marker. Failing on it
+    // would fail the ledger on ordinary prose, so it is not a marker here — and that
+    // exemption has to stay proven, not just commented.
+    run(['checkout', '-B', 'setext-authority', candidateSha]);
+    for (const file of ['console-capability-registry.json', 'console-jurisdiction-register.json', 'console-program-ledger.md']) writeFileSync(path.join(root, 'docs/program', file), 'authority\n');
+    writeFileSync(path.join(root, 'docs/program/console-program-ledger.md'), 'A heading\n=======\n');
+    run(['add', '.']); run(['commit', '-S', '-m', 'authority control with setext heading']);
+    assert.doesNotThrow(() => createConsoleCandidateSourceResolver(root, candidateSha, run(['rev-parse', 'HEAD']), { candidateSigningAuthority }));
+    run(['checkout', authorityTip]);
     const hostileHome = mkdtempSync(path.join(tmpdir(), 'console-hostile-home-'));
     const hostileVerifier = path.join(hostileHome, 'forged-ssh-keygen'); const hostileMarker = path.join(hostileHome, 'invoked');
     writeFileSync(hostileVerifier, `#!/bin/sh\ntouch '${hostileMarker}'\nprintf '%s\\n' 'Good "git" signature for ${candidateSigningAuthority.principal} with ED25519 key ${fingerprint}'\n`); chmodSync(hostileVerifier, 0o700);

@@ -60,6 +60,27 @@ function assertAuthorityOnlyDiff(repoRoot, candidateSha, integrationTipSha) {
     changed.add(paths[0]);
   }
   if (changed.size !== AUTHORITY_CONTROL_PATHS.size || [...AUTHORITY_CONTROL_PATHS].some((entry) => !changed.has(entry))) fail('integration tip must modify exactly the three authority documents');
+  assertNoUnresolvedMerge(repoRoot, integrationTipSha);
+}
+
+// The authority documents conflict on nearly every merge, and the correct resolution is a
+// UNION — both entries kept — because nothing here verifies what the ledger SAYS, only that
+// it changed. A union resolution done by hand leaves the marker lines behind, and nine of
+// them reached main undetected before this check existed: `|||||||` with no `<<<<<<<` and no
+// `>>>>>>>`, the signature of stripping two markers out of three.
+//
+// `=======` is deliberately NOT a marker here. It is also a Markdown setext heading rule, so
+// matching it would fail the ledger on ordinary prose. The three asymmetric markers are
+// unambiguous and each of them alone proves the resolution was left unfinished.
+const MERGE_MARKERS = ['<<<<<<<', '|||||||', '>>>>>>>'];
+function assertNoUnresolvedMerge(repoRoot, integrationTipSha) {
+  for (const entry of AUTHORITY_CONTROL_PATHS) {
+    const lines = git(repoRoot, ['show', `${integrationTipSha}:${entry}`]).split('\n');
+    for (const [index, line] of lines.entries()) {
+      const marker = MERGE_MARKERS.find((candidate) => line.startsWith(candidate));
+      if (marker) fail(`${entry}:${index + 1} carries an unresolved merge marker (${marker}). Resolve the conflict as a union of both entries and delete the marker lines.`);
+    }
+  }
 }
 
 /**
