@@ -868,6 +868,14 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run check:payroll-release-gate
 
+      - name: Undeclared imports — every bare specifier must be declared
+        if: ${{ !cancelled() }}
+        run: npm run check:undeclared-imports
+
+      - name: Request-body contract — spec fields must exist on the handler
+        if: ${{ !cancelled() }}
+        run: npm run check:request-body-contract
+
   api-contract:
     name: API contract — app-served OpenAPI
     runs-on: ubuntu-latest

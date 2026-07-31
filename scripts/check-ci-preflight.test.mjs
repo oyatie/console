@@ -845,4 +845,42 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       .replace("      - name: Reconcile portable PostgreSQL role topology\n", "      - name: PR 473 migration operational contract tests\n");
     expectFailure(pr473ContractAfterTopology, "backend must preserve the locked fail-fast step order");
   });
+
+  // repo-gates steps are otherwise unlocked: deleting `run: npm run check:adrs` from it today
+  // yields zero preflight failures. Wiring a gate into ci.yml is not the same as protecting it,
+  // and an unprotected step is a slot in the job list that reads as coverage.
+  it("locks the undeclared-imports gate step in repo-gates", () => {
+    const step = "      - name: Undeclared imports — every bare specifier must be declared\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:undeclared-imports\n";
+    assert.ok(workflow.includes(step), "repo-gates does not run the undeclared-imports gate");
+
+    expectFailure(
+      workflow.replace(step, ""),
+      "repo-gates must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  });
+
+  // Wired by 4e7da6b52 and unprotected until this lock: with the step present, deleting it
+  // returned zero preflight failures. Being wired into ci.yml is not the same as being protected.
+  it("locks the request-body-contract gate step in repo-gates", () => {
+    const step = "      - name: Request-body contract — spec fields must exist on the handler\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:request-body-contract\n";
+    assert.ok(workflow.includes(step), "repo-gates does not run the request-body-contract gate");
+
+    expectFailure(
+      workflow.replace(step, ""),
+      "repo-gates must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    // The order matters as much as the presence: this gate must not be moved above the cheap
+    // undeclared-imports scan that fails in under a second.
+    expectFailure(
+      workflow.replace(step, "").replace(
+        "      - name: Undeclared imports — every bare specifier must be declared\n",
+        `${step}      - name: Undeclared imports — every bare specifier must be declared\n`,
+      ),
+      "repo-gates must preserve the locked fail-fast step order",
+    );
+  });
 });

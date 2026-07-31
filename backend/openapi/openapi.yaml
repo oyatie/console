@@ -33597,8 +33597,8 @@ components:
     ConsumeInventoryItemRequest:
       type: object
       additionalProperties: false
-      required: [source, quantity_consumed_milli, idempotency_key]
-      properties: { source: { $ref: '#/components/schemas/InventoryConsumptionSource' }, quantity_consumed_milli: { type: integer, format: int64, minimum: 1 }, occurred_at: { type: string, format: date-time, nullable: true }, memo: { type: string, nullable: true }, idempotency_key: { type: string, minLength: 16, maxLength: 200 } }
+      required: [source, quantityConsumedMilli, idempotencyKey]
+      properties: { source: { $ref: '#/components/schemas/InventoryConsumptionSource' }, quantityConsumedMilli: { type: integer, format: int64, minimum: 1 }, occurredAt: { type: string, format: date-time, nullable: true }, memo: { type: string, nullable: true }, idempotencyKey: { type: string, minLength: 16, maxLength: 200 } }
 
     RecordInventoryReceiptRequest:
       type: object

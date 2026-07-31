@@ -1320,3 +1320,95 @@ proposed`.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for two comments that miscounted a carve-out set
+
+The registers rebind to the audit carve-out candidate. The candidate changes two comments
+and no logic: both said the audit-coverage carve-out set had a single member —
+*"the only carve-out is LocationPing ingestion"* — against a gate whose
+`allowed_audit_exclusions()` returns two and whose own test asserts `len() == 2`.
+
+Nothing in the candidate changes what any capability may do. No gate logic, no assertion,
+no threshold. The set was already two and the test already proved it; only the prose was
+wrong.
+
+One property is worth recording at the authority layer. This closes the last of ten
+findings from an ADR acceptance-verification pass, and it belongs to a class that
+recurred all day: **four comments outlived the problem they described, and three were
+written by the hand that then closed the gap.** A comment is the one artifact in this
+repository with no gate behind it — `check:doc-citations` now verifies that documents
+cite code that exists, but nothing verifies that a comment still describes the code
+beneath it. The counts here were falsifiable only because someone thought to count.
+
+Fifth and final rebind of the day. The candidate is two comments; the binding cost 390
+references. That ratio is the mechanism working as designed, not a complaint — but it is
+the strongest argument yet for batching small corrections rather than landing them one at
+a time.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — sixth rebind, and the update-branch button as a train breaker
+
+The registers rebind again. A branch-update merge reached the remote while this train was
+being built locally, so the tip this branch's registers had just been bound to was no
+longer the tip. Its content was redundant with the local merge — the same two commits,
+verified by diff — but including it was still required to push without force.
+
+This is the second time today the same shape occurred: a second writer produces a
+content-identical merge, and the cost is a full 390-reference rebind because the candidate
+SHA moved. The first instance was a subagent, this one an interface button.
+
+The observation the ledger should carry forward is that **the train binds a SHA, so
+anything that changes the tip invalidates it, including operations that change no
+content.** A no-op merge is not a no-op to this mechanism. Where a branch has a train
+built, the update-branch button should not be used — refresh by rebuilding the train, or
+the next push fails and costs a rebind either way.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| 0d895e79d
+
+## 2026-07-31 — the candidate binding for the gate-integrity adjudication
+
+The registers rebind to the gate-integrity candidate: four false-green holes adjudicated by
+execution, two new gates wired, and one live client-facing defect fixed.
+
+The adjudication itself is the property worth recording. `docs/program/false-green-gate-holes.md`
+asserted that H-1 through H-4 lacked checks. Re-verified against code rather than accepted,
+they resolved as **one OPEN, three MISSTATED** — and the document's claim that
+`0196_platform_force_command_and_fk_closure.sql` does not exist on `main` was itself stale,
+since it does. Two holes received checks; two received dated in-place corrections. Building
+gates for the two MISSTATED holes to reach a tidy four-of-four would have shipped exactly
+the unfalsifiable gate this work exists to eliminate — a gate with zero possible inputs
+cannot be proven red, and a gate that cannot fail is the meta-finding, not its cure.
+
+**A gate found a live defect on its first run.** `ConsumeInventoryItemRequest` published
+`quantity_consumed_milli`, `occurred_at` and `idempotency_key` while the bound handler is
+`rename_all = "camelCase"` with `deny_unknown_fields` — so every spec-conformant request to
+that endpoint was rejected with 422, not merely mis-parsed. The sibling receipt body already
+used camelCase, so the contract was the outlier and has been corrected to the shipped
+behaviour. The gate was deliberately NOT wired while red, and NOT allowlisted around the
+defect; the defect was fixed and then the gate wired.
+
+**The archived-evidence exception is named rather than hidden.** The undeclared-imports gate
+would otherwise be permanently red on an evidence artifact whose subject was deleted — a
+script cited four times by a verification record, one citation recording `10/10 checks
+passed`. Deleting an audit artifact to make a gate green trades evidence integrity for a
+green light. Instead the exclusion is a named export, its count is printed every run, and a
+test observes the gate go red when the classification is removed.
+
+Residuals recorded and not papered over: the request-body gate compares 51 of 223 bodies, a
+floor rather than a claim; two further unowned escalations are named in the holes document.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| dbae0352f
+
+## 2026-07-31 — rebind after #531 moved the tip under the gate-integrity candidate
+
+Mechanical rebind. #531 merged, producing a new squash tip and invalidating this branch's
+train. No claim in the candidate changes.
