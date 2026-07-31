@@ -181,6 +181,17 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
+          # One shared entry, not one per job. rust-cache keys on job name by
+          # default, so these two maintained separate near-duplicate copies of the
+          # same workspace and evicted each other out of the 10GB LRU budget.
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          # RESTORE-ONLY. This job compiles three crates; `backend` compiles the whole
+          # workspace. Under a shared key without this, whichever finishes first wins —
+          # so a three-crate target dir could become the cache `backend` then restores.
+          # Sharing a key without deciding who writes it is the same poisoning bug as
+          # letting a Buck2 job save a directory it never populated, one level down.
+          save-if: false
 
       - name: Domain crate unit tests
         # cargo, not buck2. MEASURED 2026-07-31 on this crate: buck2 cold 118.4s
@@ -238,10 +249,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Serialized disposable PostgreSQL integration targets
         run: |
@@ -294,10 +301,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Company conformance against disposable PostgreSQL
         run: |
@@ -431,6 +434,16 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
+          # One shared entry, not one per job. rust-cache keys on job name by
+          # default, so these two maintained separate near-duplicate copies of the
+          # same workspace and evicted each other out of the 10GB LRU budget.
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          # The ONLY writer. `backend` runs clippy --all-targets over the whole
+          # workspace, a strict superset of every other cargo job, so its target dir
+          # is the one worth sharing. Saving only from main keeps PR branches from
+          # publishing a cache shaped by their own diff.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: rustfmt check
         run: cargo fmt --all -- --check
@@ -726,10 +739,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -894,10 +903,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0

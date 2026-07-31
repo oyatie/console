@@ -519,12 +519,17 @@ const apiContractCaptureCommands = [
   'test -x "${console_app_bin}"',
   "printf 'CONSOLE_APP_BIN=%s\\n' \"${console_app_bin}\" >> \"${GITHUB_ENV}\"",
 ];
+// The Swatinem/rust-cache step was REMOVED from this list on 2026-07-31. api-contract
+// builds //backend/app:console-app with Buck2 — see scripts/check-openapi-app.mjs, which
+// spawns a Buck2-built binary from .tmp/buck2/api-contract/console-app — and Buck2 never
+// writes backend/target. The job therefore restored and saved a cache it could not use,
+// paying transfer cost on every run and occupying an LRU slot against a 10GB repository
+// budget shared with the two jobs that DO run cargo.
 const apiContractAllowedSteps = [
   "name: Checkout\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
   "name: Install pinned DotSlash runtime\n        run: tools/buck/install_dotslash.sh",
   "name: Free runner disk for API contract\n        uses: ./.github/actions/free-runner-disk",
   "name: Install Rust toolchain (pinned via rust-toolchain.toml)\n        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable\n        with:\n          toolchain: \"1.97.1\"",
-  "name: Cache Rust dependencies + build artifacts\n        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1\n        with:\n          workspaces: backend",
   "name: Set up Node.js\n        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0\n        with:\n          node-version: \"24\"\n          cache: npm",
   "name: Install client tooling\n        run: npm ci",
   "name: OpenAPI app-served drift gate\n        if: ${{ !cancelled() }}\n        run: npm run check:openapi-app",
@@ -904,6 +909,52 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
   for (const job of ["backend", "dev-up-smoke"]) {
     const block = jobBlock(workflow, job);
     if (block) requireEffectiveDotSlashBootstrap(block, job, failures);
+  }
+
+  // The two jobs that actually run cargo must SHARE one rust-cache entry.
+  //
+  // MEASURED 2026-07-31: six jobs carried Swatinem/rust-cache, all with
+  // `workspaces: backend` and none with a shared-key. rust-cache keys on job name by
+  // default, so those were six separate near-duplicate caches of one workspace competing
+  // for a 10GB repository LRU budget — they evicted each other. Four of the six never ran
+  // cargo at all (Buck2 does not write backend/target) and were removed outright.
+  //
+  // Without this assertion, deleting `shared-key` silently refragments them: CI stays
+  // green, nothing reports it, and the caches quietly stop being shared. Verified that a
+  // deletion passed every gate before this block existed.
+  for (const job of ["domain-unit", "backend"]) {
+    const block = jobBlock(workflow, job);
+    if (!block) continue;
+    if (!/shared-key:\s*backend-cargo/.test(block)) {
+      failures.push(`${job} must share the rust-cache entry via shared-key: backend-cargo`);
+    }
+    if (!/cache-all-crates:\s*"true"/.test(block)) {
+      failures.push(`${job} must set cache-all-crates: "true" on rust-cache`);
+    }
+  }
+  // Exactly ONE writer. Sharing a key without deciding who saves it means whichever job
+  // finishes first publishes the cache — so domain-unit's three crates could become the
+  // entry `backend` restores for a whole-workspace clippy. `backend` runs
+  // clippy --all-targets, a strict superset, so it is the writer and every other cargo
+  // job is restore-only.
+  {
+    const writers = ["domain-unit", "backend"].filter((job) => {
+      const block = jobBlock(workflow, job);
+      return block && !/save-if:\s*false/.test(block);
+    });
+    if (writers.length !== 1 || writers[0] !== "backend") {
+      failures.push(
+        `exactly one cargo job may write the shared rust-cache and it must be backend; found: ${writers.join(", ") || "none"}`,
+      );
+    }
+  }
+  // Buck2 never writes backend/target, so a rust-cache step on a Buck2-only job is pure
+  // transfer cost and an LRU slot taken from the jobs that do use it.
+  for (const job of ["postgres-domain-reachability", "company-conformance", "dev-up-smoke", "api-contract"]) {
+    const block = jobBlock(workflow, job);
+    if (block && /Swatinem\/rust-cache/.test(block)) {
+      failures.push(`${job} runs no cargo and must not carry a rust-cache step`);
+    }
   }
 
   for (const job of protectedJobs) {

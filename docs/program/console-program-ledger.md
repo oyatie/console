@@ -1633,3 +1633,57 @@ disposition, and exposure state remains `HOLD`.
 ## 2026-07-31 — rebind after #536 moved the tip under the ADR-0037 candidate
 
 Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — four jobs cached a directory their build system never writes
+
+The registers rebind to the CI cache-shape candidate.
+
+Six jobs carried a Rust build cache; four of them run Buck2, which does not write
+`backend/target`. Those four restored and saved a cache they could not use, and — because
+`rust-cache` keys on job name by default and none set a shared key — the six entries were
+near-duplicates of one workspace evicting each other from a 10GB budget.
+
+Worth recording at the authority layer: **the obvious fix was worse than the defect.**
+Adding a shared key to all six would let a Buck2-only job finish first and save a
+near-empty `backend/target` under the shared key, poisoning it for the two jobs that
+actually compile. The correct shape was the opposite of the intuitive one — remove the
+cache where it is unused, share it only between the jobs that populate it.
+
+Also recorded: the candidate adds a guard for its own change. Deleting the shared key
+passed every gate before that guard existed, verified by execution, so the consolidation
+could have silently refragmented while CI stayed green. A cache optimisation with no
+protection against its own reversion is the same defect class this program keeps meeting —
+a green signal that has stopped meaning anything.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a shared cache key with no named writer poisons itself
+
+Rebind after designating the single writer of the shared Rust build cache.
+
+The previous entry recorded that four jobs cached a directory Buck2 never writes. This one
+records the same defect one level down, inside the two jobs that DO compile: `domain-unit`
+builds three crates, `backend` builds the whole workspace. Sharing a key without deciding
+who saves it means whichever finishes first publishes the entry — so a three-crate target
+directory could become the cache a whole-workspace lint then restores.
+
+`backend` is now the only writer, and only from `main`, so a pull-request branch cannot
+publish a cache shaped by its own diff.
+
+Worth recording: this was found by an adversarial review of a separate migration plan,
+which recommended the same `save-if` discipline. The same review recommended KEEPING the
+cache on two jobs it had measured at a stale commit. Re-verified against `origin/main`
+before acting: six cache blocks rather than seven, and zero cargo references in either job
+or any npm script they invoke. **The refinement was taken and the contradicting
+recommendation was refused, both on the same re-measurement.** A review is evidence, not
+authority, and the difference is whether its claims still hold at the commit in front of
+you.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+||||||| bec30abaa
+
+## 2026-07-31 — rebind after an upstream merge under the cache-shape candidate
+
+Mechanical rebind. No claim in the candidate changes.
