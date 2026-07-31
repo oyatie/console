@@ -6,7 +6,8 @@ date: 2026-07-13
 owner: jasonlee
 decision: isolated-carbon-copy-console-with-shared-platform-spine
 amends: [ADR-0023]
-related: [ADR-0009, ADR-0018, ADR-0021, ADR-0022, ADR-0023]
+amended_by: [ADR-0030]
+related: [ADR-0009, ADR-0018, ADR-0021, ADR-0022, ADR-0023, ADR-0030]
 ---
 
 # ADR-0025: Carbon-copy Console with an isolated visual system and shared platform spine
@@ -48,13 +49,25 @@ proof gaps. Directional alignment is not readiness evidence.
 
 ### 1. Isolate the visual application; share the platform spine
 
-The target authenticated console is the in-repository application rooted at
-`web/src/console/` and mounted at `/console/*`. It owns the whole application
-viewport and its visual behavior. It remains part of the existing repository,
-web build, router, deployment, and backend; this is not a separate package,
-repository, service, or product.
+**Amended by ADR-0030: the `web/src/console/` root and the `/console/*` mount are
+withdrawn.** `web/` is absent from HEAD, and CI asserts that neither console route
+source is tracked (`scripts/console/route-inventory.test.mjs:36`, run at
+`.github/workflows/ci.yml:137`). The target authenticated console is a Leptos
+workspace crate family (ADR-0030 §1, §5, §6), and its implementation is gated by
+ADR-0030 §7. What survives here unamended: the console owns the whole application
+viewport and its visual behavior, and it remains part of the existing repository,
+build, router, deployment, and backend; this is not a separate package, repository,
+service, or product.
 
-The boundary is:
+**The boundary as enumerated below is amended by ADR-0030.** Its rows "Generated
+OpenAPI types and the single typed client/cache", "frontend policy-decision
+adapters", and "Internationalization corpus and string gates" name machinery that
+no longer exists, and the table is retained for history rather than as a live
+enumeration. The principle it expressed is retained and binding: the console owns
+its surface and reuses the platform rather than forking auth, contracts, policy,
+audit, or telemetry.
+
+The boundary as originally enumerated was:
 
 | Shared platform spine | Carbon-copy visual ownership |
 |---|---|
@@ -67,19 +80,19 @@ The boundary is:
 | Rollout flags, route telemetry, RUM, and error reporting | Prototype-to-build screen captures |
 | Real-backend persona/E2E harness | Carbon-copy screen implementations |
 
-`web/src/console/**` must not inherit target visuals from
-`web/src/components/shell/**`, `web/src/components/ui/**`, the legacy
-`AppShell`, shadcn styling, or legacy Tailwind utility composition. Reusable
-nonvisual behavior may be imported or extracted into shell-neutral modules; it
-must not be copied into a console-private client, auth system, policy engine, or
-backend contract.
+**Amended by ADR-0030: the inheritance prohibition is withdrawn.** It named
+`web/src/components/shell/**`, `web/src/components/ui/**`, the legacy `AppShell`,
+shadcn styling, and legacy Tailwind utility composition — every one of which is
+deleted from HEAD, so the prohibition constrains nothing. The non-forking rule
+survives and is the operative sentence: reusable nonvisual behavior may be imported
+or extracted into shell-neutral modules; it must not be copied into a
+console-private client, auth system, policy engine, or backend contract.
 
-For avoidance of naming ambiguity:
-
-- `web/src/console/shell/ConsoleShell.tsx` is the target carbon-copy shell.
-- `web/src/components/shell/ConsoleShell.tsx` and `AppShell` are legacy migration
-  surfaces. They may remain operational during rollout, but they do not co-own
-  the target visual grammar.
+**Amended by ADR-0030: the two-shell naming-ambiguity clause is withdrawn.** It
+disambiguated `web/src/console/shell/ConsoleShell.tsx` from
+`web/src/components/shell/ConsoleShell.tsx` and `AppShell`; none of those three
+files exists at HEAD, and the Leptos crate family has no two-shell composition to
+disambiguate.
 
 ### 2. Make the design mirror a fidelity acceptance gate
 
@@ -125,6 +138,12 @@ force. Mobile employee-app parity remains outside this web-console ADR and is
 governed by ADR-0009.
 
 ### 4. Ship only complete vertical slices
+
+**Survives the ADR-0030 amendment in full**, and governs every future console
+screen on the Leptos stack. Item 2's "shared typed contract" and item 8's
+"fidelity" gate are read against whatever contract and design authority the
+accepted records then name; the obligation does not lapse because its instrument
+changed.
 
 A navigation label, component gallery, screenshot, stub, fixture-only screen,
 or mounted empty shell is not a completed capability. A console screen may be
@@ -230,8 +249,10 @@ Legacy deletion requires:
 - removal of redundant shell, visual primitive, route, and compatibility code
   in the same convergence program.
 
-The target end state is one carbon-copy visual system on one shared platform
-spine, not two maintained frontend products.
+**Amended by ADR-0030: the carbon-copy half of this end state is withdrawn** — an
+end state defined as a copy of a deleted surface is unreachable. The surviving half
+stands alone: the target end state is one shared platform spine, not two maintained
+frontend products.
 
 ## Alternatives considered
 

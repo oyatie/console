@@ -5,7 +5,7 @@ doc_status: published
 date: 2026-06-12
 owner: jasonlee
 consensus: ralplan iteration 3 (Planner/Architect/Critic APPROVE, 2026-06-12)
-related: [ADR-0012]
+related: [ADR-0012, ADR-0035]
 ---
 
 # ADR-0001 — Modular-monolith Cargo workspace with compiler-enforced clean-architecture layering

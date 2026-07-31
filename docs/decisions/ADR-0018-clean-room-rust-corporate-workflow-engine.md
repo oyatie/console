@@ -4,7 +4,7 @@ status: accepted
 doc_status: published
 date: 2026-06-30
 owner: jasonlee
-related: [ADR-0021, ADR-0023]
+related: [ADR-0021, ADR-0023, ADR-0028, ADR-0035]
 ---
 
 # ADR-0018: Clean-room Rust corporate workflow engine benchmarked against n8n-style canvas mechanics

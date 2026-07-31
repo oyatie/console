@@ -1091,3 +1091,118 @@ candidate exists to stop repeating.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for the ecosystem plan and its adversarial review
+
+The registers rebind to the ecosystem-plan candidate. The candidate is documentation and
+tooling: the policy/organization/user/approvals plan, its adversarial review, ten accepted
+ADRs, six experiments run rather than designed, a payroll golden-case audit, a Korean
+statutory source register, and three scripts — an additive ADR index generator, a
+doc-citation verifier now wired into the repo gates, and a client for the official
+legislation API.
+
+Nothing in the candidate changes what any capability may do. No migration, no route, no
+gate threshold, no exposure.
+
+Three properties are worth recording at the authority layer.
+
+The candidate **corrects itself in place rather than presenting a clean history.** Its own
+documents record fourteen corrections to their input, four retracted claims, and — on the
+day of this binding — a retracted staleness finding of my own: I called the kernel's 고용보험
+citation stale by matching a law's *name* instead of reading its delegation chain, and the
+rate is set in 징수법 시행령 rather than 고용보험법 시행령. The retraction is a commit, not an
+edit. A reader should treat the correction record as part of the deliverable.
+
+The candidate asserts **no Korean legal conclusion and moves no Korea control**. Its
+statutory register names instruments and quotes their dates and figures; where a document
+could not be read, it says so and leaves the row unverified. One figure was verified
+against a 고시 body — 기준소득월액 하한 410천원 / 상한 6,590천원 for the July 2026 window, which
+matches the kernel — and the adjacent window's figures were explicitly left unverified
+because the portal serves only consolidated current text. Matching the spec is not matching
+the instrument.
+
+The candidate **found a silent revert in itself before this binding.** Diffed against main
+it showed 39 deletions in the served OpenAPI contract: the branch predated the security
+schemes added for ten operations, so merging it would have removed them. The merge that
+fixes this is the candidate commit. A draft branch left red for a day accumulates reverts
+that no gate reports, because the gate never ran.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — rebind after reconciling a concurrent writer on the same branch
+
+The registers rebind again, onto the merge that reconciles a teammate's independent
+main-merge with this branch's own. Both writers had merged main to recover the OpenAPI
+security schemes the branch would otherwise have reverted; the teammate's merge carried
+no content this branch lacked.
+
+This entry exists because the rebind happened twice in one day for one candidate, and
+that is the cost the lane protocol's "one writer per lane" rule is meant to avoid. Two
+writers on one branch means 390 references are rewritten once per writer, and the only
+thing that made the second rebind cheap was that it is scripted. The protocol was not
+violated by anyone here — a subagent and its parent are one writer by intent and two by
+mechanism, which is a gap in the rule rather than a breach of it.
+
+Recorded rather than smoothed over, because the alternative was a force-push that would
+have discarded a concurrent writer's commit to produce a tidier history.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — third rebind for one candidate, and what that cost measures
+
+The registers rebind onto the commit that documents `check:doc-citations` in
+`docs/CI-GATES.md`. The foundation gate requires every npm script CI runs to appear
+there, and the candidate had wired the gate into `ci.yml` without listing it.
+
+This is the third rebind of 390 references for a single candidate in one day. The first
+followed the merge recovering the OpenAPI security schemes, the second a concurrent
+writer on the same branch, the third this one-line documentation fix. Recorded as a
+measurement rather than a complaint: **the train makes every post-hoc fix cost a
+390-reference rewrite**, because a fix cannot live in T — T may modify only the three
+authority documents — so each one becomes a new candidate.
+
+That cost is the intended shape of the mechanism and the reason `rebind-candidate.mjs`
+exists; the ledger already attributes lost work across four releases to doing it by
+hand. The observation worth keeping is narrower: the cost is paid per *fix*, not per
+*change*, so it rewards getting the candidate right before the first push and punishes
+iterating against CI. Anyone planning a lane should front-load the gates that can be run
+locally — `check:foundation-gates`, `check:ci-preflight`, `check:doc-citations`,
+`check:adrs`, and the truth-ledger validator against a `commit-tree` simulation of the
+synthetic merge — because each one skipped is a full rebind later.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+||||||| 18a21d7cd
+
+## 2026-07-30 — fourth rebind, and the merge that proves the mechanism works as designed
+
+The registers rebind onto the merge that brings #529 into this branch. #529's squash
+produced a new unsigned tip on `main`, which invalidated this branch's train — the exact
+mechanism that had this PR red for a day, now observed deliberately rather than
+discovered.
+
+Two things this merge preserved that a careless resolution would have destroyed. All
+three authority documents conflicted, because both branches had rebound them to
+different candidates; the two registers were resolved to `main`'s state and then
+rewritten wholesale by the rebind, which is safe precisely because the rebind is total.
+The **ledger was resolved as a union**: `main`'s payroll-binding entry and this branch's
+three entries all survive, ordered `main` first. A `--theirs` resolution on this file
+would have silently deleted three entries, and nothing in the gate would have noticed —
+the train checks that the ledger *changed*, never what it says.
+
+That is worth stating plainly as a limit of the mechanism. `assertAuthorityDiff` requires
+C..T to modify exactly the three documents and verifies mode and status; it does not and
+cannot verify that the ledger's prose is intact, additive, or true. The ledger is
+protected by convention, not by the gate that appears to protect it.
+
+Fourth rebind for this candidate. The three prior costs are recorded above; this one was
+caused by an upstream merge rather than by a fix here, which is the unavoidable kind.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.

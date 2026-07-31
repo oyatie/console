@@ -805,6 +805,9 @@ jobs:
       - name: ADR governance gate
         if: ${{ !cancelled() }}
         run: npm run check:adrs
+      - name: Doc citations — every code citation must resolve
+        if: ${{ !cancelled() }}
+        run: npm run check:doc-citations
 
       - name: Foundation gate contract
         if: ${{ !cancelled() }}
