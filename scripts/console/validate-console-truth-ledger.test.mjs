@@ -223,6 +223,34 @@ test('non-HOLD promotion requires canonical trusted immutable receipt fields', (
   assert.throws(() => validateConsoleTruthLedger(trusted, jurisdiction, { expectedCandidateSha: registry.candidate.sha,  }), /canonical repository root/);
 });
 
+test('a passing verdict cannot be self-asserted by declaring no independent review', () => {
+  // The receipt machinery above is rigorous ONLY on the `status !== 'HOLD'` branch. Leaving the
+  // review at HOLD while claiming a passing verdict skipped every one of those controls,
+  // including the prohibition on reviewing your own capability — a prohibition that is not a
+  // control while "no reviewer" remains an accepted answer. Both words a capability owner would
+  // have to write here are written by that same owner.
+  const selfAsserted = structuredClone(registry); const cap = selfAsserted.capabilities[0];
+  cap.benchmark.verdict = 'MEET';
+  cap.candidate_evidence.status = 'VERIFIED';
+  assert.equal(cap.benchmark.independent_outcome_review.status, 'HOLD');
+  assert.throws(
+    () => validateConsoleTruthLedger(selfAsserted, jurisdiction, { expectedCandidateSha: registry.candidate.sha }),
+    /non-HOLD benchmark requires a non-HOLD independent outcome review/,
+  );
+
+  // The gate must bind the VERDICT, not merely the evidence word beside it: flipping evidence
+  // back to HOLD has to keep failing, or the two assertions would be satisfiable one at a time.
+  const evidenceHeld = structuredClone(registry); const held = evidenceHeld.capabilities[0];
+  held.benchmark.verdict = 'MEET';
+  assert.throws(
+    () => validateConsoleTruthLedger(evidenceHeld, jurisdiction, { expectedCandidateSha: registry.candidate.sha }),
+    /non-HOLD benchmark requires verified candidate evidence/,
+  );
+
+  // And it must stay inert for the shipped documents, where everything is HOLD.
+  assert.doesNotThrow(() => validateConsoleTruthLedger(structuredClone(registry), jurisdiction, { expectedCandidateSha: registry.candidate.sha }));
+});
+
 test('Korea trace bijection rejects missing trace', () => {
   const bad=structuredClone(jurisdiction); bad.controls[0].capability_traceability.pop();
   assert.throws(() => validateConsoleTruthLedger(registry,bad,{expectedCandidateSha:registry.candidate.sha}),/bidirectional|bijection/);

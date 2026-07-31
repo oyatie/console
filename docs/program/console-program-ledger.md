@@ -2025,3 +2025,32 @@ the registers no longer carry a per-row copy of the candidate for every lane to 
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a passing verdict was self-assertable by declaring no reviewer
+
+Rebind onto the self-assertion candidate.
+
+`benchmark.verdict: MEET` with `candidate_evidence.status: VERIFIED` and
+`independent_outcome_review.status: HOLD` validated clean. Both of the first two words are written
+by the hand that owns the capability, so a passing verdict needed no second party.
+
+The controls existed and were unreachable. Everything under `independent_outcome_review` — the
+SSH-signed review commit, the canonical registry and jurisdiction digests pinned into the receipt,
+the receipt path bound to capability and candidate, and the outright refusal of
+`review.reviewer_id === cap.owner` — hangs off the `status !== 'HOLD'` branch. Leaving the review
+at HOLD skipped all of it. **A prohibition on reviewing your own work is not a control while "no
+reviewer" is an accepted answer.**
+
+Proven before the fix against the real registers: a MEET verdict with a HOLD review was ACCEPTED,
+while a MEET verdict without verified evidence and a non-HOLD review without a real receipt were
+both REFUSED. The two adjacent controls worked; the one joining them did not exist.
+
+A non-HOLD verdict now requires a non-HOLD independent review, which forces the receipt chain that
+was already written. Inert on this candidate — all 27 capabilities are HOLD on verdict, review and
+evidence — which is exactly why it was cheap to add now rather than at the first promotion.
+
+Found while verifying #545, where it was recorded as pre-existing rather than fixed inside a
+refactor.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.

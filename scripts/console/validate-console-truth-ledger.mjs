@@ -270,6 +270,20 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (!VERDICTS.has(benchmark.verdict)) fail(`${cap.id} benchmark verdict is invalid`);
     nonempty(benchmark.independent_outcome_review?.status, `${cap.id} independent outcome review status`);
     if (benchmark.verdict !== 'HOLD' && evidence.status !== 'VERIFIED') fail(`${cap.id} non-HOLD benchmark requires verified candidate evidence`);
+    // The independent review was OPTIONAL, and that made every control below it optional too.
+    //
+    // `verdict: MEET` + `candidate_evidence.status: VERIFIED` + `independent_outcome_review.status:
+    // HOLD` validated clean. Both words are written by the same hand that owns the capability, so a
+    // passing verdict was self-assertable. The receipt machinery underneath is rigorous — signed
+    // commit, canonical registry+jurisdiction digests, and `review.reviewer_id === cap.owner`
+    // refused — but ALL of it hangs off the `status !== 'HOLD'` branch below, so declaring no
+    // review at all skipped it. A prohibition on reviewing your own work is not a control if
+    // "no reviewer" is an accepted answer.
+    //
+    // Inert on this candidate: all 27 capabilities are HOLD on verdict, review and evidence. That
+    // is precisely why it is cheap to add now — the first capability to claim a passing verdict is
+    // the one that would otherwise have spent the gap.
+    if (benchmark.verdict !== 'HOLD' && benchmark.independent_outcome_review.status === 'HOLD') fail(`${cap.id} non-HOLD benchmark requires a non-HOLD independent outcome review`);
     if (benchmark.independent_outcome_review.status !== 'HOLD') { const review=benchmark.independent_outcome_review; const reviewer=array(registry.review_authority?.reviewers).find((entry) => entry.id === review.reviewer_id); const authorityDigests=promotionAuthorityDigests(registry, jurisdiction); if (!reviewer || review.reviewer_id === cap.owner || review.capability_id !== cap.id || review.candidate_sha !== candidate.sha || !Array.isArray(review.outcome_ids) || !review.outcome_ids.length || new Set(review.outcome_ids).size !== review.outcome_ids.length || !review.outcome_ids.every((id) => outcomeIds.has(id)) || !/^[0-9a-f]{64}$/.test(review.evidence_digest ?? '') || !SHA.test(review.review_commit ?? '') || !/^[0-9a-f]{64}$/.test(review.receipt_sha256 ?? '') || !/^[0-9a-f]{64}$/.test(review.receipt_canonical_sha256 ?? '') || !/^[0-9a-f]{64}$/.test(review.registry_canonical_sha256 ?? '') || !/^[0-9a-f]{64}$/.test(review.jurisdiction_canonical_sha256 ?? '')) fail(`${cap.id} non-HOLD review receipt schema is invalid`); const attestation=verifyImmutableReviewReceipt(repoRoot, reviewer, cap, candidate, outcomeIds, review, authorityDigests); if (!immutableReceiptAttestations.has(attestation)) fail(`${cap.id} internal receipt attestation was not minted`); }
     const delivery = object(cap.delivery_unit, `${cap.id} delivery unit`);
     nonempty(delivery.id, `${cap.id} delivery unit id`);
