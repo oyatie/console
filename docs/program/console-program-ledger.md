@@ -1412,3 +1412,39 @@ completion, deployment, or production-exposure claim.
 
 Mechanical rebind. #531 merged, producing a new squash tip and invalidating this branch's
 train. No claim in the candidate changes.
+
+## 2026-07-31 — the candidate binding for the CI build-system measurement
+
+The registers rebind to the CI cargo candidate. Two leaf unit jobs move from buck2 to
+cargo and consolidate into one, on measurement rather than preference.
+
+MEASURED on `console-payroll-domain`: buck2 cold 118.4s (176 commands, `cached: 0`)
+against cargo cold 6.5s. The decisive datum is the third measurement, not the first: with
+`buck-out` **intact** and only the daemon killed, all 176 actions re-ran. Buck2 keeps no
+persistent local action cache — reuse lives in the daemon's in-memory graph — so every CI
+job was a cold build and no `actions/cache` on `buck-out` could have changed that.
+Caching `buck-out` would have recovered the fetch and materialisation (118s → ~29s) and
+never the compilation.
+
+Two properties are worth recording at the authority layer.
+
+**This is not a judgement that cargo beats buck2.** It is a judgement that buck2
+unconfigured beats nothing. The repo declares no `[buck2_re_client]`, so every build
+reports `remote: 0`; buck2's incrementality and caching are switched off, while its
+DotSlash download and daemon start are paid on every job. A NativeLink CAS with mTLS,
+split reader/writer and action-cache stores has been running in-cluster for two days with
+nothing pointed at it. When that is wired, this decision is worth revisiting on the same
+measurements.
+
+**The PostgreSQL jobs deliberately stay on buck2.** Their `//tools/buck` wrappers enforce
+the credential loader — *"raw backend test targets bypass the credential loader"* — which
+is a security control, not a build preference, and it is not traded for build speed.
+
+Consolidation is the larger lever and was applied for a reason outside this repository:
+the self-hosted runner pool is three runners on 12.9 allocatable vCPU and is registered to
+a different repository, so concurrency is neither free nor ours. Where runners are scarce,
+a queued job costs more wall-clock than a serial step inside a job already holding one.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.

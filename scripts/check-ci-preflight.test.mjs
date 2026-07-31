@@ -552,10 +552,10 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("locks post-preflight Buck2 reachability targets and disallows added run surfaces", () => {
     expectFailure(
       workflow.replace(
-        "tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
+        "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain",
         "cargo test -p console-support-domain",
       ),
-      "support-domain-unit must run tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
+      "domain-unit must run SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain",
     );
     expectFailure(
       workflow.replace(
@@ -589,10 +589,10 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "      - name: Support domain unit target\n",
-        "      - name: Unexpected Cargo test\n        run: cargo test -p console-support-domain\n\n      - name: Support domain unit target\n",
+        "      - name: Domain crate unit tests\n",
+        "      - name: Unexpected Cargo test\n        run: cargo test -p console-support-domain\n\n      - name: Domain crate unit tests\n",
       ),
-      "support-domain-unit must contain only the locked ordered Buck2 run steps",
+      "domain-unit must contain only the locked ordered run steps",
     );
     expectFailure(
       workflow.replace(

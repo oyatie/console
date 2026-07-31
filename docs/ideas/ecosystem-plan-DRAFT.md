@@ -2551,7 +2551,7 @@ is what makes a large diff safe. Ours, and it must exist before fanout:
 
 | Target | Rule |
 |---|---|
-| **Every job in `.github/workflows/ci.yml`** | pass unchanged. No gate weakened, no allowlist widened without its own justified commit. **No count is restated** — there are ten as of `8e76dffb4` (`ci.yml` `  preflight:`, `ci.yml` `  support-domain-unit:`, `ci.yml` `  postgres-domain-reachability:`, `ci.yml` `  company-conformance:`, `ci.yml` `  generated-face-authority:`, `ci.yml` `  backend:`, `ci.yml` `  dev-up-smoke:`, `ci.yml` `  repo-gates:`, `ci.yml` `  api-contract:`, `ci.yml` `  kubernetes-manifests:`), the plan previously said 14, and a number in prose rots while "every job" does not |
+| **Every job in `.github/workflows/ci.yml`** | pass unchanged. No gate weakened, no allowlist widened without its own justified commit. **No count is restated** — there are ten as of `8e76dffb4` (`ci.yml` `  preflight:`, `support-domain-unit:` (renamed, see note), `ci.yml` `  postgres-domain-reachability:`, `ci.yml` `  company-conformance:`, `ci.yml` `  generated-face-authority:`, `ci.yml` `  backend:`, `ci.yml` `  dev-up-smoke:`, `ci.yml` `  repo-gates:`, `ci.yml` `  api-contract:`, `ci.yml` `  kubernetes-manifests:`), the plan previously said 14, and a number in prose rots while "every job" does not |
 | `tools/lanes/fanout.py run` | **0 out-of-slice writes.** Already tooling; do not build another |
 | `docs/specs/known-bad-controls.tsv` | **the real immutable artifact.** One row per probe: probe name, known-bad input, and the commit where it was **observed RED**. **No probe may enter the suite without a RED record.** |
 
@@ -2578,7 +2578,7 @@ its GREEN is the only kind that counts.
 | X5 | **Cedar decides alone.** Encode the four grant sources over one person in two companies as a **constructed query with an expected-fail baseline**, in X4's shipped form: the four sources written out, the specific decision Cedar must reach named, and the **concrete input** on which a Rust-fallback implementation is RED | Cedar alone decides, on that named input | **a specific input, not a scenario:** the encoded four-source case run against an implementation that consults a companion Rust evaluator, which must be RED. (Its previous control — *"a case needing a companion evaluator"* — is a refutation *scenario*, not an observable input, which principle 5 forbids) | **no — and it CANNOT be prepwork.** Needs `effective_grants_for`; **slice-0 work**, ladder rung 4 | two evaluators will diverge; the fold moves entirely into Cedar or entirely out |
 | X6 | **Fold cost per request.** Measure `effective(party, scope)` at realistic grant counts, materialized vs on-demand | on-demand is acceptable at slice-0 scale; materialization keyed on `policy_versions` if not | a fold whose cost grows with total org grants rather than the person's | **no — and it CANNOT be prepwork.** Needs `effective_grants_for` **and** realistic grant counts; **slice-0 work**, ladder rung 4 | §5.6's invalidation design becomes load-bearing earlier |
 | X7 | **Draft-PR CI coverage.** Push a backend-touching commit and a docs-only commit to a draft PR; compare required contexts | backend runs every job in `.github/workflows/ci.yml`; docs-only runs none | trusting the UI's absence of red as green | **no — unrun for a different reason.** It requires **pushing a branch**, so it is outward-facing and needs **explicit authorization**. It is not a pending prediction; it is a blocked action | the one-PR model needs an explicit verification checkpoint per rung |
-| X8 | **How do the CI buck2 jobs currently pass?** | they pass by an identifiable mechanism that must be named before any test is wired to them | this is an **investigation, not a probe** — there is no GREEN to distrust, so the proven-RED discipline does not apply to it in this form | **YES — ANSWERED.** `docs/ideas/experiment-results.md`. `.buckconfig` `prelude = bundled` under `[external_cells]` supplies the prelude from inside the binary; `tools/buck2` `#!/usr/bin/env dotslash` is a blake3-pinned launcher; the required job `ci.yml` `name: Support domain — Buck2 unit reachability` runs a real `ci.yml` `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit`. **buck2 is fully functional**; the earlier "the graph is broken" claim was WRONG | (already answered — no forced migration; the governance question stands) |
+| X8 | **How do the CI buck2 jobs currently pass?** | they pass by an identifiable mechanism that must be named before any test is wired to them | this is an **investigation, not a probe** — there is no GREEN to distrust, so the proven-RED discipline does not apply to it in this form | **YES — ANSWERED.** `docs/ideas/experiment-results.md`. `.buckconfig` `prelude = bundled` under `[external_cells]` supplies the prelude from inside the binary; `tools/buck2` `#!/usr/bin/env dotslash` is a blake3-pinned launcher; the required job then named "Support domain — Buck2 unit reachability" ran a real `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit` (both since changed, see note). **buck2 is fully functional**; the earlier "the graph is broken" claim was WRONG | (already answered — no forced migration; the governance question stands) |
 | X9 | **Trace one new test end to end:** test file → `rust_test` target → Postgres `sh_test` wrapper → workflow step | each link nameable **by target name** | a test that passes locally and never executes in CI | **YES — ANSWERED.** `experiment-results.md`, traced through a real test (§8 Phase 4) | the work queue (Phase 4) needs a **per-test** CI wiring step |
 
 **The gate, stated so it is not circular.** **X1, X2, X4, X4b, X8 and X9 must have recorded outcomes before
@@ -2703,8 +2703,8 @@ by some accident. Both halves are false, and X8 measured the chain:
   vendor.
 - `tools/buck2` `#!/usr/bin/env dotslash` is a launcher with **per-platform blake3-pinned digests** — the
   runtime is hash-pinned, not floating.
-- The required job **"Support domain — Buck2 unit reachability"** (`.github/workflows/ci.yml` `name: Support domain — Buck2 unit reachability`) passes
-  because `ci.yml` `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit` runs a real
+- The required job **"Support domain — Buck2 unit reachability"** (then named "Support domain — Buck2 unit reachability") passed
+  because that job ran a real
   `tools/buck2 test //backend/crates/support/domain:console-support-domain-unit`. Not a no-op, not a path
   filter, not a cached graph.
 
@@ -2956,3 +2956,25 @@ slice 0 — and never putting attributes on `party` becomes a permanent invarian
 - `docs/ideas/authority-and-approval-model.md` should be marked SUPERSEDED by this document, or have
   §0.1's contradiction corrected in place — its Recommended Direction currently contradicts its own
   body.
+
+
+## Correction, 2026-07-31 — the CI jobs X8 investigated have been renamed
+
+X8's finding stands as written: buck2 was fully functional, and the earlier "the graph is
+broken" claim was wrong. What has changed is the jobs it cited.
+
+Measured 2026-07-31 on `console-payroll-domain`: buck2 cold 118.4s (176 commands,
+`cached: 0`) against cargo cold 6.5s. The decisive datum is that with `buck-out` **intact**
+and only the daemon killed, all 176 actions re-ran — buck2 keeps no persistent local action
+cache, so every CI job was a cold build and no `actions/cache` could have changed that. The
+repo configures no `[buck2_re_client]`, so every build reports `remote: 0`.
+
+`support-domain-unit` and `payroll-domain-unit` were therefore consolidated into one
+`domain-unit` job running both crates through cargo in a single invocation, since they share
+`console-kernel-core` and were recompiling it twice across two runner startups. The
+PostgreSQL jobs stay on buck2: their `//tools/buck` wrappers enforce the credential loader,
+which is a security control rather than a build preference.
+
+The citations above were converted from the checked `file` `fragment` form to prose, because
+they describe a state at `8e76dffb4` that no longer exists. Left as historical record rather
+than rewritten to today's names — the experiment reported what it saw.
