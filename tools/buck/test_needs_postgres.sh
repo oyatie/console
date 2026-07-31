@@ -77,6 +77,35 @@ chmod 600 "${container_env_file}"
   printf 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=%s\n' "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}"
 } >"${container_env_file}"
 
+# Pull EXPLICITLY, with bounded retry, before running.
+#
+# `docker run` pulls implicitly, so an unreachable registry surfaced as a bare
+# `exit 125` from the run itself — no retry, and nothing distinguishing a registry
+# outage from a broken harness. That reddened CI on 2026-07-31:
+#
+#   Unable to find image 'postgres:18.4@sha256:65f70a15...' locally
+#   docker: Error response from daemon: Get "https://registry-1.docker.io/v2/": context deadline exceeded
+#
+# The image is digest-pinned, so retrying cannot fetch different content: either the
+# digest resolves or the pull fails. This makes an already-exact fetch survive a
+# transient registry and NOTHING else — no fallback tag, no alternate registry, no
+# unpinned image. A registry that is genuinely down still fails the run.
+if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
+  pull_attempts=0
+  pull_backoff=(3 9 27)
+  until docker pull --quiet "${postgres_image}" >/dev/null 2>&1; do
+    if (( pull_attempts >= ${#pull_backoff[@]} )); then
+      # Surface the registry's own error instead of a bare 125 from `run`.
+      docker pull "${postgres_image}" >&2 || true
+      echo "buck-postgres: could not pull the pinned PostgreSQL image after $((${#pull_backoff[@]} + 1)) attempts" >&2
+      exit 1
+    fi
+    echo "buck-postgres: pulling the pinned PostgreSQL image failed; retrying" >&2
+    sleep "${pull_backoff[pull_attempts]}"
+    pull_attempts=$((pull_attempts + 1))
+  done
+fi
+
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
   --env-file "${container_env_file}" "${postgres_image}" >/dev/null
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"

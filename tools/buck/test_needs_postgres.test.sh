@@ -47,6 +47,8 @@ case "$1" in
       exit "${FAKE_DOCKER_EXEC_STATUS:-0}"
     fi
     exit 0 ;;
+  image) exit "${FAKE_DOCKER_IMAGE_INSPECT_STATUS:-1}" ;;
+  pull) exit "$(sequence_value "${FAKE_DOCKER_PULL_STATUS_SEQUENCE:-}" "${HARNESS_LOG}.pull-attempt" "${FAKE_DOCKER_PULL_STATUS:-0}")" ;;
   port) echo 127.0.0.1:49123 ;;
   rm) exit 0 ;;
   *) exit 1 ;;
@@ -178,4 +180,44 @@ set -e
 while IFS= read -r envfile; do [[ ! -e "${envfile}" ]]; done <"${signal_log}.envfiles"
 ! grep -Fq -- 'secret-' "${signal_log}"
 ! grep -Fq -- 'postgres://' "${signal_log}"
+# The pinned image is pulled explicitly with bounded retry, because `docker run`'s
+# implicit pull turned a registry timeout into a bare `exit 125` with no retry —
+# observed reddening CI on 2026-07-31 with "context deadline exceeded".
+
+# A transient registry recovers: two failures then success, and the run proceeds.
+pull_recovery_log="${scratch}/pull-recovery.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${pull_recovery_log}" \
+  CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" \
+  FAKE_DOCKER_PULL_STATUS_SEQUENCE=1,1,0 FAKE_SLEEP_INSTANT=1 \
+  "${harness}" //tools/buck:pr473-ontology-key-revision-postgres
+[[ "$(grep -c '^docker pull' "${pull_recovery_log}")" == 3 ]]
+[[ "$(grep -c '^docker run' "${pull_recovery_log}")" == 1 ]]
+
+# A registry that stays down FAILS the run and never starts a container. This is the
+# inversion of the old behaviour, where `docker run` pulled implicitly and died 125.
+pull_exhausted_log="${scratch}/pull-exhausted.log"
+set +e
+pull_exhausted_output="$(PATH="${fake_bin}:${PATH}" HARNESS_LOG="${pull_exhausted_log}" \
+  CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" \
+  FAKE_DOCKER_PULL_STATUS=1 FAKE_SLEEP_INSTANT=1 \
+  "${harness}" //tools/buck:pr473-ontology-key-revision-postgres 2>&1)"
+pull_exhausted_status=$?
+set -e
+[[ "${pull_exhausted_status}" != 0 ]]
+grep -Fq 'could not pull the pinned PostgreSQL image after 4 attempts' <<<"${pull_exhausted_output}"
+# The load-bearing assertion: no container is ever started.
+[[ "$(grep -c '^docker run' "${pull_exhausted_log}")" == 0 ]]
+# Retry must not leak a generated password into logs or output.
+! grep -Fq -- 'secret-' "${pull_exhausted_log}"
+! grep -Fq -- 'postgres://' <<<"${pull_exhausted_output}"
+
+# An image already present locally is NOT re-pulled.
+pull_cached_log="${scratch}/pull-cached.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${pull_cached_log}" \
+  CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" \
+  FAKE_DOCKER_IMAGE_INSPECT_STATUS=0 FAKE_SLEEP_INSTANT=1 \
+  "${harness}" //tools/buck:pr473-ontology-key-revision-postgres
+[[ "$(grep -c '^docker pull' "${pull_cached_log}")" == 0 ]]
+[[ "$(grep -c '^docker run' "${pull_cached_log}")" == 1 ]]
+
 echo 'test_needs_postgres: PASS'

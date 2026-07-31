@@ -1255,3 +1255,28 @@ the next push fails and costs a rebind either way.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the registry retry
+
+The registers rebind to the PostgreSQL image-pull candidate. The candidate adds an
+explicit digest-pinned pull with bounded retry to `tools/buck/test_needs_postgres.sh`,
+and three tests for it.
+
+Nothing in the candidate changes what any capability may do, and it weakens no pin: the
+image is fetched by digest, so a retry either resolves that exact content or fails.
+
+One property is worth recording at the authority layer. The defect was found because a
+**documentation-only** pull request went red, and the failure named the docs PR rather
+than the registry. `docker run` pulled implicitly, so an unreachable registry surfaced as
+`exit 125` from the run — indistinguishable, at a glance, from a broken harness. The
+readiness retry that already existed runs after the container exists and never covered
+the pull.
+
+That is a small instance of a pattern this program has recorded before: a red signal that
+names the wrong thing is worse than a slow one, because it spends attention on the
+innocent change. The candidate makes the registry's own error visible on exhaustion
+rather than swallowing it.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
