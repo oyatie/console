@@ -1724,3 +1724,39 @@ disposition, and exposure state remains `HOLD`.
 ## 2026-07-31 — rebind after #537 under the executed-tests candidate
 
 Mechanical rebind. The 287/314 measurement is unchanged.
+
+## 2026-07-31 — 98 audit-critical tests stop being unable to fail
+
+The registers rebind to the test-wiring candidate. Seven crates join the consolidated unit
+job: the audit chain, the policy and governance domains, the ADR-0021 Cedar strangler's
+readiness and legacy-only-observation cases, the 위치정보법 location-consent state machine,
+and attendance policy. 79 lib tests and 19 integration tests that previously executed
+nowhere.
+
+Two properties are worth recording at the authority layer.
+
+**These were chosen by audit relevance, not by convenience.** `check:executed-tests`
+measured 287 of 314 Rust test files reaching no workflow step; these are the subset that
+is audit-relevant AND needs no database. That the gates enforcing tenancy had unit tests
+which never executed is the sharpest available form of this program's meta-finding — a
+gate that cannot fail occupying a slot that reads as coverage.
+
+**A measurement bug nearly prevented the work it was measuring.** The loop that checked
+whether these tests run without a database reported every one as failing. They all pass;
+zsh does not word-split unquoted parameters, so the package name argument was malformed.
+Had that reading been trusted, the conclusion would have been that these tests need
+PostgreSQL and cannot be wired cheaply — the opposite of the truth, reached by a broken
+instrument rather than by evidence. Recorded because this program's failures are
+overwhelmingly of that shape: not wrong reasoning over good data, but confident reasoning
+over an instrument nobody checked.
+
+This lowers no control and asserts no Korean legal conclusion. It makes 98 tests capable
+of failing.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+||||||| 52a3e234f
+
+## 2026-07-31 — rebind after an upstream merge
+
+Mechanical rebind. No claim in the candidate changes.

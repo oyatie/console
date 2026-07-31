@@ -203,11 +203,19 @@ jobs:
         # So every buck2 job here was a cold build, every run, with no cache to
         # restore. cargo's target/ does survive, via rust-cache below.
         #
-        # --lib is load-bearing: the adapter crate also carries tests/ integration
-        # suites that need PostgreSQL (payroll_lifecycle_rls_as_runtime_role), and
-        # this job has no database. Those belong to postgres-domain-reachability.
-        # All three crates keep their unit tests inside src/lib.rs, so --lib loses
-        # nothing here.
+        # --lib is load-bearing on the first command: several of these crates also
+        # carry tests/ suites needing PostgreSQL — payroll_lifecycle_rls_as_runtime_role,
+        # audit_chain_rls, and authz's policy.rs, each verified to panic in sqlx's test
+        # harness without a database. Those belong to postgres-domain-reachability.
+        #
+        # The later commands name the integration files that need NO database, verified
+        # by execution one at a time. Seven crates were added on 2026-07-31 because
+        # check:executed-tests measured that 287 of 314 Rust test files reach no workflow
+        # step at all, and these were the audit-relevant ones needing no database:
+        # the audit chain, the policy and governance domains, the ADR-0021 Cedar
+        # strangler's readiness and legacy-only-observation cases, and the 위치정보법
+        # location-consent FSM — the only consent mechanism in the repository.
+        # 98 tests that previously executed nowhere.
         #
         # The adapter crate is here because its 12 pure #[test] cases — the
         # parse_release_gate half that decides what a stored gate record may parse
@@ -216,7 +224,18 @@ jobs:
         # They need no database (zero #[sqlx::test]), so they belong in this job.
         # Runs the SAME 15 tests as the retired Buck2 target, verified by count.
         # --locked so a drifted Cargo.lock fails rather than silently resolving.
-        run: SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib
+        run: |
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
+            -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
+            -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
+            -p console-platform-audit-chain -p console-platform-authz \
+            -p console-policy-application -p console-policy-domain
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-attendance-application --test attendance_policy
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-compliance-domain --test location_consent_fsm --test location_ping_policy
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-authz --test cedar_pbac_readiness_cases --test cedar_pbac_legacy_only_observe_and_record
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted

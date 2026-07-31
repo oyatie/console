@@ -551,11 +551,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
 
   it("locks post-preflight Buck2 reachability targets and disallows added run surfaces", () => {
     expectFailure(
-      workflow.replace(
-        "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib",
-        "cargo test -p console-support-domain",
-      ),
-      "domain-unit must run SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib",
+      workflow.replace(" -p console-payroll-adapter-postgres", ""),
+      "domain-unit must run -p console-payroll-adapter-postgres",
     );
     expectFailure(
       workflow.replace(
@@ -795,11 +792,18 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     // --lib is load-bearing: without it the adapter's PostgreSQL integration suites
     // are pulled into a job that has no database.
     expectFailure(
-      workflow.replace(
-        "-p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres --lib",
-        "-p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres",
-      ),
-      "domain-unit must run",
+      workflow.replace(" --lib \\", " \\"),
+      "domain-unit must pass --lib on its first cargo invocation",
+    );
+    // Added 2026-07-31: the audit-relevant packages must stay named. Dropping one
+    // silently returns its tests to executing nowhere.
+    expectFailure(
+      workflow.replace(" -p console-platform-audit-chain", ""),
+      "domain-unit must run -p console-platform-audit-chain",
+    );
+    expectFailure(
+      workflow.replace(" --test location_consent_fsm", ""),
+      "domain-unit must run --test location_consent_fsm",
     );
   });
   it("preserves fail-fast backend and dev-up ordering", () => {
