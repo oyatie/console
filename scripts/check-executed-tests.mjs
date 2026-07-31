@@ -189,7 +189,10 @@ if (existsSync(baselinePath)) {
     process.exit(1);
   }
   if (dark.length < baseline) {
-    console.log(`\nexecuted-nowhere fell ${baseline} -> ${dark.length}. Lower docs/program/executed-tests-baseline.json to lock the gain in.`);
+    // stderr, not stdout: under --json this line follows the JSON document, and a consumer
+    // doing JSON.parse on stdout gets "Unexpected non-whitespace character after JSON".
+    // The tool that measures whether tests run must itself be parseable.
+    console.error(`\nexecuted-nowhere fell ${baseline} -> ${dark.length}. Lower docs/program/executed-tests-baseline.json to lock the gain in.`);
   }
 }
 

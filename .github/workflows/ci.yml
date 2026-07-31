@@ -229,13 +229,49 @@ jobs:
             -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
             -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
             -p console-platform-audit-chain -p console-platform-authz \
-            -p console-policy-application -p console-policy-domain
+            -p console-policy-application -p console-policy-domain \
+            -p console-action-inbox-application -p console-attendance-domain -p console-benefit-application \
+            -p console-benefit-domain -p console-comms-application -p console-comms-domain \
+            -p console-dispatch-application -p console-dispatch-domain -p console-docs-application \
+            -p console-docs-domain -p console-equipment-domain -p console-erp-domain \
+            -p console-evaluation-application -p console-evaluation-domain -p console-finance-gl-domain \
+            -p console-identity-domain -p console-inbox-application -p console-inbox-domain \
+            -p console-inventory-domain -p console-leave-domain -p console-logistics-domain \
+            -p console-messenger-application -p console-notices-domain -p console-notifications-domain \
+            -p console-ontology-application -p console-ontology-domain -p console-orgchange-domain \
+            -p console-recruiting-application -p console-recruiting-domain -p console-reporting-application \
+            -p console-reporting-domain -p console-sales-domain -p console-support-application \
+            -p console-todos-domain -p console-workflow-domain -p console-workorder-application \
+            -p console-analytics-quant-service -p console-attendance-adapter-postgres -p console-attendance-rest \
+            -p console-benefit-rest -p console-comms-adapter-imap -p console-comms-adapter-mox \
+            -p console-comms-adapter-smtp -p console-comms-credential-cipher -p console-comms-mailbox \
+            -p console-comms-rest -p console-compliance-rest -p console-consulting-rest \
+            -p console-dispatch-rest -p console-docs-adapter-postgres -p console-docs-rest \
+            -p console-evaluation-adapter-postgres -p console-facilities-rest -p console-financial-rest \
+            -p console-gate-dev-auth-absence -p console-gate-iac-tier -p console-gate-layer-boundary \
+            -p console-gate-tenant-isolation -p console-gate-vendor-lockin -p console-identity-rest \
+            -p console-inventory-adapter-postgres -p console-inventory-rest -p console-leave-adapter-postgres \
+            -p console-leave-rest -p console-ontology-adapter-postgres -p console-ontology-rest \
+            -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
+            -p console-platform-push -p console-platform-realtime -p console-platform-request-context \
+            -p console-production-rest -p console-reporting-adapter-postgres -p console-support-adapter-postgres \
+            -p console-workflow-runtime-adapter-postgres -p console-workorder-rest
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-application --test attendance_policy
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-compliance-domain --test location_consent_fsm --test location_ping_policy
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-authz --test cedar_pbac_readiness_cases --test cedar_pbac_legacy_only_observe_and_record
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-attendance-domain --test range_and_history
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-financial-domain --test quote_and_residual \
+            -p console-registry-domain --test equipment
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-messenger-domain --test mentions --test object_code_refs --test parity --test thread_kind
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-workorder-domain --test approval_and_assignment --test serde_roundtrips \
+            --test settlement_fsm --test workorder_fsm
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
