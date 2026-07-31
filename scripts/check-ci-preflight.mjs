@@ -183,9 +183,27 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:ontology-action-execute-postgres \\",
   "//tools/buck:ontology-gaps-postgres \\",
   "//tools/buck:ontology-projected-dispatch-postgres \\",
-  "//tools/buck:platform-erasure-ledger-postgres",
+  "//tools/buck:platform-erasure-ledger-postgres \\",
+  "//tools/buck:platform-db-rls-isolation \\",
+  "//tools/buck:platform-db-rls-rollout-isolation \\",
+  "//tools/buck:platform-audit-chain-rls \\",
+  "//tools/buck:platform-provisioning-rls-auth-chain \\",
+  "//tools/buck:platform-rest-remove-tenant \\",
+  "//tools/buck:compliance-location-consent-status-rls \\",
+  "//tools/buck:compliance-location-store \\",
+  "//tools/buck:payroll-rls-surfaces",
 ];
 const postgresWrapperContracts = [
+  // Tenant-isolation and PII tranche, 2026-07-31.
+  ["platform-db-rls-isolation", "//backend/crates/platform/db:console-platform-db-itest-rls_isolation"],
+  ["platform-db-rls-rollout-isolation", "//backend/crates/platform/db:console-platform-db-itest-rls_rollout_isolation"],
+  ["platform-audit-chain-rls", "//backend/crates/platform/audit-chain:console-platform-audit-chain-itest-audit_chain_rls"],
+  ["platform-provisioning-rls-auth-chain", "//backend/crates/platform/provisioning:console-platform-provisioning-itest-rls_auth_chain_as_runtime_role"],
+  ["platform-rest-remove-tenant", "//backend/crates/platform/platform-rest:console-platform-rest-itest-remove_tenant"],
+  ["compliance-location-consent-status-rls", "//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_consent_status_rls_as_runtime_role"],
+  ["compliance-location-store", "//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_store"],
+  ["payroll-rls-surfaces", "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_rls_surfaces_as_runtime_role"],
+
   ["dispatch-p1-postgres", "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres-itest-p1_dispatch"],
   ["attendance-cancel-substitution-postgres", "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-cancel_substitution"],
   ["attendance-concurrency-postgres", "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency"],

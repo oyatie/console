@@ -327,3 +327,73 @@ sh_test(
     deps = ["//backend/crates/platform/erasure-ledger:console-platform-erasure-ledger-itest-erasure_ledger_as_runtime_role"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+# Tenant-isolation and PII tranche, 2026-07-31. Every rust_test below already existed and
+# executed in no workflow step: 52 of the 175 remaining dark files are RLS surface proofs,
+# which is the evidence an audit asks for first. A wrapper is what makes one reachable —
+# the sh_test indirection is also the credential control, because
+# test_needs_postgres.sh refuses a raw //backend/... target by design.
+
+sh_test(
+    name = "platform-db-rls-isolation",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-rls_isolation)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-rls_isolation"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-rls-rollout-isolation",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-rls_rollout_isolation)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-rls_rollout_isolation"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-audit-chain-rls",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/audit-chain:console-platform-audit-chain-itest-audit_chain_rls)"],
+    deps = ["//backend/crates/platform/audit-chain:console-platform-audit-chain-itest-audit_chain_rls"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-rls-auth-chain",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-rls_auth_chain_as_runtime_role)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-rls_auth_chain_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-rest-remove-tenant",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/platform-rest:console-platform-rest-itest-remove_tenant)"],
+    deps = ["//backend/crates/platform/platform-rest:console-platform-rest-itest-remove_tenant"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "compliance-location-consent-status-rls",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_consent_status_rls_as_runtime_role)"],
+    deps = ["//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_consent_status_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "compliance-location-store",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_store)"],
+    deps = ["//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres-itest-location_store"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "payroll-rls-surfaces",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

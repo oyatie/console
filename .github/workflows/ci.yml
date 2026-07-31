@@ -337,7 +337,15 @@ jobs:
             //tools/buck:ontology-action-execute-postgres \
             //tools/buck:ontology-gaps-postgres \
             //tools/buck:ontology-projected-dispatch-postgres \
-            //tools/buck:platform-erasure-ledger-postgres
+            //tools/buck:platform-erasure-ledger-postgres \
+            //tools/buck:platform-db-rls-isolation \
+            //tools/buck:platform-db-rls-rollout-isolation \
+            //tools/buck:platform-audit-chain-rls \
+            //tools/buck:platform-provisioning-rls-auth-chain \
+            //tools/buck:platform-rest-remove-tenant \
+            //tools/buck:compliance-location-consent-status-rls \
+            //tools/buck:compliance-location-store \
+            //tools/buck:payroll-rls-surfaces
 
   company-conformance:
     # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and

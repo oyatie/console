@@ -54,9 +54,22 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
 }
 
 async fn seed_org(owner_pool: &PgPool, org: Uuid, tag: &str) {
+    // `organizations.slug` is CHECKed against `^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$`
+    // (0026_create_organizations.sql). Lowercasing alone is not enough: a tag such as
+    // "Evidence A" became the slug "org-evidence a", and the space fails the constraint
+    // during fixture setup, before a single assertion in this file runs.
+    //
+    // This test had never executed in CI, so the constraint could be added without anything
+    // reporting that the fixture no longer satisfied it. Slugifying here rather than at the
+    // two call sites that happen to contain a space, so a future tag cannot reintroduce it.
+    let slug: String = tag
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+        .collect();
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING")
         .bind(org)
-        .bind(format!("org-{}", tag.to_lowercase()))
+        .bind(format!("org-{slug}"))
         .bind(format!("Org {tag}"))
         .execute(owner_pool)
         .await
@@ -190,7 +203,11 @@ async fn seed_compliance_control(owner_pool: &PgPool, org: Uuid, actor: UserId, 
         "INSERT INTO compliance_frameworks (org_id, code, name, version_label, framework_kind, created_by, updated_by) VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id",
     )
     .bind(org)
-    .bind(format!("RLS-EVIDENCE-{tag}"))
+    // `compliance_frameworks.code` is CHECKed against `^FW-[0-9]{4,}$`
+    // (0148_create_compliance_domain.sql:122). The literal this used —
+    // `RLS-EVIDENCE-A` — has never been a legal code for this column. Derived from the
+    // tag so two frameworks in one test stay distinct, though only (id, org_id) is UNIQUE.
+    .bind(format!("FW-{:04}", tag.bytes().map(u32::from).sum::<u32>() % 10_000))
     .bind(format!("RLS evidence framework {tag}"))
     .bind("2026.07")
     .bind("INTERNAL_CONTROL")
@@ -203,7 +220,16 @@ async fn seed_compliance_control(owner_pool: &PgPool, org: Uuid, actor: UserId, 
     )
     .bind(org)
     .bind(framework_id)
-    .bind(format!("RLS.EVIDENCE.{tag}"))
+    // `control_key` is CHECKed against `^[A-Z0-9][A-Z0-9._-]{0,63}$` — uppercase only, no
+    // spaces. The single current caller passes "A" and happens to satisfy it; a tag like
+    // "Evidence A" would not, which is the same trap the org slug above already sprang.
+    .bind(format!(
+        "RLS.EVIDENCE.{}",
+        tag.to_uppercase()
+            .chars()
+            .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+            .collect::<String>()
+    ))
     .bind(format!("RLS evidence control {tag}"))
     .bind("RLS evidence acceptance isolation")
     .bind("DETECTIVE")
