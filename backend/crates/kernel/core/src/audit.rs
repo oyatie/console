@@ -1,7 +1,9 @@
 //! Audit event type. Written append-only, in the SAME database transaction as
-//! the state change it records (§2.2 of the plan); the only carve-out is
-//! `LocationPing` ingestion, whose coordinates must remain destructible under
-//! 위치정보법 and therefore never enter the audit store.
+//! the state change it records (§2.2 of the plan). There are exactly TWO
+//! carve-outs, both location-derived: `LocationPing` ingestion, whose coordinates
+//! must remain destructible under 위치정보법 and therefore never enter the audit
+//! store, and the retention purge that erases them. `allowed_audit_exclusions()`
+//! in the audit-coverage gate is the authority for the set.
 
 use crate::Timestamp;
 use crate::error::KernelError;
