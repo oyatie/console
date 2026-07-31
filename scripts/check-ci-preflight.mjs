@@ -152,6 +152,24 @@ const domainUnitTestFiles = [
   "serde_roundtrips",
   "settlement_fsm",
   "workorder_fsm",
+  // Third tranche, 2026-07-31. Integration tests under tests/ that needed no database —
+  // confirmed by running them, not by reading their imports.
+  "jwt_es256",
+  "jwt_verifier",
+  "template_fidelity",
+  "template_fill_engine",
+  "hub",
+  "notify_payload",
+  "seaweedfs_worm",
+  "config",
+  "dev_seed_notification_links",
+  "openslo_files",
+  "workbench_api",
+  // `well_known` exists in BOTH console-platform-auth and console-app. This list is bare test
+  // names, so one entry covers both and cannot distinguish them — which is exactly why ci.yml
+  // gives each package its own cargo invocation. Deleting either invocation still leaves this
+  // entry satisfied by the other, so the guard here is weaker than it looks for this one name.
+  "well_known",
 ];
 const postgresDomainReachabilityCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
