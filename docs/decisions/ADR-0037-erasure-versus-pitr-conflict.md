@@ -218,6 +218,10 @@ configuration tweak.
 > question.
 
 **Costs.**
+- **For personal location data this option is not merely weak, it is unavailable.**
+  위치정보법 제23조제1항 requires 즉시 파기, and 시행령 제26조의2제2항 admits only the data
+  subject's separate consent as an exception — so no value of N satisfies it. See
+  *위치정보법 imposes 즉시* below. This is the one cost here that no number can buy off.
 - It buys a bounded window, not erasure: data still reconstructs for N days after
   deletion. Whether a bounded window means anything is exactly the question this record
   refuses to answer.
@@ -475,6 +479,65 @@ That is a floor on a real table, and it is the first Korean retention obligation
 this work that binds regardless of scale. It is out of scope for this record, which is
 about the archive, and is written down here so it is not lost.
 
+### 위치정보법 imposes 즉시, and this record's reasoning was PIPA-shaped
+
+**This is the sharpest finding in this record, and it narrows a claim made above.**
+
+Everything preceding this section reasons from PIPA. PIPA 제21조제1항 and 제36조제2항 both say
+**지체 없이**, and this repository has already recorded — correctly — that 지체 없이 is not 즉시,
+that it tolerates a reasonable operational window, and that waiting for a backup cycle to turn
+over is therefore arguable. That reasoning is sound for the data PIPA governs. **It does not
+extend to personal location data, because a different statute governs that with a different
+word.**
+
+`위치정보의 보호 및 이용 등에 관한 법률` 제23조제1항 (법률 제21066호, 시행 2025-10-01):
+
+> 위치정보사업자등은 개인위치정보의 수집, 이용 또는 제공목적을 달성한 때에는 […] 개인위치정보는
+> **즉시** 파기하여야 한다. 다만, 다른 법률에 따라 보유하여야 하거나 대통령령으로 정하는 정당한
+> 사유가 있는 경우 개인위치정보를 보유할 수 있다.
+
+The surrounding provisions close the routes a bounded window would need:
+
+- **제23조제2항** — destruction must include `복구 또는 재생을 방지하기 위한 조치`.
+- **시행령 제26조의2제1항** (대통령령 제36084호, 시행 2026-02-10) 준용s 제8조의2, which requires
+  deletion by a `재생할 수 없는 기술적 방법` or physical destruction.
+- **시행령 제26조의2제2항** — the 단서's `대통령령으로 정하는 정당한 사유` means
+  `개인위치정보주체가 자신의 개인위치정보의 보유에 관하여 별도로 동의한 경우` — **the data
+  subject's separate consent, and nothing else.** Operational necessity is not named. Disaster
+  recovery is not named.
+- **시행령 제26조의2제3항** — even with that consent, retention is capped at **최대 1년**.
+- **제40조의2** — `제23조제1항을 위반하여 개인위치정보를 파기하지 아니한 자는 2년 이하의 징역 또는
+  2천만원 이하의 벌금에 처한다`. Criminal, not administrative.
+- **제23조제3항** — the regulator may have officials inspect the **파기실태**, the destruction
+  practice itself, rather than only the policy describing it.
+
+**This system holds the data the article is about.**
+`0005_create_compliance_location_store.sql:47-70` creates `location_pings` with `latitude`,
+`longitude`, `accuracy_m` and `user_id` — coordinates bound to an identified person. ADR-0014
+exists precisely to make that store destructible, and its Decision reads
+`ADR-0014` `Destruction-on-withdrawal is physically realizable (drop partitions)`.
+
+**The live-database side is sound; the archive side is not.**
+`purge_expired_location_data` drops whole day partitions, and `destroy_location_data` deletes a
+subject's pings inside one transaction. Both are real. But a dropped partition remains
+reconstructable from the WAL archive for the length of the retention window, and a
+reconstructable copy is neither 즉시 파기 nor 재생 불가.
+
+**Consequence for the four options, and it is a hard one.** Option B — shorten the PITR window —
+**cannot satisfy 제23조 at any value of N**, because the article's standard is not "short" but
+"immediate", and 시행령 제26조의2제2항 does not admit a backup as a 정당한 사유. That is now a
+structural limitation of option B rather than a preference against it. For personal location data
+only **option A** (the archive holds ciphertext; destroying the key makes it 재생 불가) and
+**option C** (segregate the store so it is not in the archived cluster at all) remain reachable.
+
+**Two things this record still does not assert.** Whether 위치정보법 binds this deployment at all
+turns on whether the operator is a 위치정보사업자 or 위치기반서비스사업자 under 제5조/제9조 — a
+registration-status question, and a legal determination this record has no authority to make. And
+whether any option is *sufficient* remains, as everywhere else here, a finding for counsel. What
+is established is narrower and enough to change the engineering: **the instrument exists, its
+standard is 즉시 rather than 지체 없이, its only exception is subject consent, and the data it
+governs is already in this database.**
+
 ## What this record does not know
 
 Stated rather than papered over, because two of the four options cannot be fully costed
@@ -523,6 +586,12 @@ without it.
 2. **Engage privacy counsel as an engagement distinct from the 노무사/세무사 payroll
    sign-off.** Name the four options and ask which are available, not which is best — the
    architecture question is answered here, the availability question is not.
+   **Put 위치정보법 first on that agenda, ahead of the retention number.** Two questions, in
+   order: is this operator a 위치정보사업자 or 위치기반서비스사업자 under 제5조/제9조; and if so,
+   does 제23조제1항's 즉시 admit any architecture in which a dropped `location_pings` partition
+   remains restorable from a WAL archive. A negative answer to the second forecloses option B
+   for that data regardless of what the window is set to, and 제40조의2 makes the exposure
+   criminal rather than administrative.
 3. **Do not write a personal-data migration before this record has a successor.** The
    timing argument is the whole reason this was worth writing now; the first such migration
    spends the option it names.

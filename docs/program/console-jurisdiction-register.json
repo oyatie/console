@@ -195,7 +195,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -355,7 +355,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -515,7 +515,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -675,7 +675,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -835,7 +835,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -995,7 +995,7 @@
         }
       ],
       "candidate_evidence": {
-        "candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+        "candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
         "status": "HOLD",
         "reason": "No qualified source, applicability finding, or candidate-bound evidence is admitted."
       }
@@ -1026,11 +1026,11 @@
   "provenance": {
     "authority_base_sha": "d138ed28b65fa6dbec01bd8022be5a4e1db57687",
     "historical_implementation_freeze_sha": "78cb5197927a031ead30c6dc0426c23455d3cb16",
-    "exact_current_candidate_sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+    "exact_current_candidate_sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
     "candidate_evidence_status": "HOLD"
   },
   "candidate": {
-    "sha": "6940c6eceb0a3d9e63907522eb218647ce80a134",
+    "sha": "a1121a2eeae0880a121d3fe29a033aadfac3d4c9",
     "evidence_status": "HOLD"
   },
   "authority_train_note": "Refreshed with the wave-4 Phase-0 authority tip. No jurisdiction, control, or coverage claim changed in this commit — the statutory work landed this wave (근로기준법 §61 촉진 tracks) is recorded in its lane evidence, not asserted here."

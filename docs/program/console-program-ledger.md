@@ -1962,3 +1962,29 @@ an absent `jurisdiction.candidate.sha` — are now caught. Rebind cost 390 -> 38
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and
 exposure state remains `HOLD`.
+
+## 2026-07-31 — 위치정보법 says 즉시, and the erasure record reasoned from 지체 없이
+
+Rebind onto the 위치정보법 candidate. First rebind since the denormalisation: **38 references,
+not 390.**
+
+ADR-0037 argued throughout from PIPA, where 제21조제1항 and 제36조제2항 say **지체 없이** — a
+standard this repository had already recorded as tolerating a reasonable operational window, and
+the standard under which a 35-day backup retention window was set earlier today.
+
+`위치정보의 보호 및 이용 등에 관한 법률` 제23조제1항 (제21066호, 시행 2025-10-01) requires
+개인위치정보 to be destroyed **즉시**. 시행령 제26조의2제2항 admits exactly one exception — the
+data subject's separate consent — capped at 1년 by 제3항, and 제40조의2 makes non-destruction
+criminal (2년 이하의 징역). `0005_create_compliance_location_store.sql:47-70` holds `latitude`,
+`longitude` and `accuracy_m` against `user_id`, so the data the article governs is already here.
+
+The consequence is structural, not preferential: ADR-0037's option B — shorten the PITR window —
+**cannot satisfy 제23조 at any N**. Only crypto-shredding or a segregated store can.
+
+**No Korean legal conclusion is asserted, and no control moves.** Whether the instrument binds
+this deployment turns on 위치정보사업자 / 위치기반서비스사업자 registration status under 제5조/제9조,
+which is a legal determination outside this repository's authority. The counsel follow-up now
+names 위치정보법 first, ahead of the retention number.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
