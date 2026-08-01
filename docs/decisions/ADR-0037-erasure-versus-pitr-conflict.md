@@ -49,8 +49,19 @@ transaction, gated on `backend/crates/compliance/adapter-postgres/src/lib.rs:des
 — among them
 `backend/crates/compliance/adapter-postgres/src/lib.rs` `DELETE FROM location_pings WHERE user_id = $1`
 — and a separate retention routine,
-`0005_create_compliance_location_store.sql` `purge_expired_location_data`, drops whole
+`0005_create_compliance_location_store.sql` `purge_expired_location_data`, which drops whole
 day partitions and deletes collection logs on a cutoff.
+
+> **Retracted 2026-07-31: `purge_expired_location_data` is not a running retention mechanism.**
+> This record presented it as one, alongside the consent-withdrawal path, and that is wrong in a way
+> that understates the exposure rather than overstating it. Repo-wide, the only references are the
+> migration that defines it, the adapter wrapper at
+> `backend/crates/compliance/adapter-postgres/src/lib.rs:392,416`, one integration test, and the
+> ADR-0029 audit-coverage exclusion list. **There is no worker, no cron, no scheduled job and no
+> route that calls it.** Nothing bounds the accumulation of `location_pings` in the live database,
+> which is a separate and more immediate exposure than the archive question this record is about.
+> Recorded here rather than fixed here: scheduling a routine that deletes personal data is a change
+> with its own review.
 
 **So the conflict is not prospective.** It is not waiting on personal-data infrastructure
 that does not exist yet. Every `DELETE` and every `DROP TABLE` those two paths execute
@@ -72,6 +83,16 @@ sets a retention policy, and no overlay patches one in.
 The reconstruction window is therefore not long. It is **open-ended by design**, reaching
 back to the first base backup and never closing. Any framing of this conflict as "data
 survives for N days" is wrong about this deployment.
+
+> **Superseded 2026-07-31 by the change this record argued for.** The manifest now carries
+> `deploy/apps/console/base/database.yaml` `retentionPolicy: "35d"`. The window is finite, and the
+> paragraph above — written when it was not — is left in place because the reasoning that follows
+> it depends on the distinction, but it no longer describes the deployment.
+>
+> This does not resolve the conflict, and the change that set it said so: 35 days of
+> reconstruction is still 35 days. What it does change is that designs which *wait for the archive
+> to age out* now terminate, where under indefinite retention they never would. Any analysis
+> calibrated on "unbounded tail" is calibrated on a state that ended.
 
 ### What does not exist, verified rather than assumed
 
@@ -569,8 +590,9 @@ without it.
   later design would be built from — the same failure mode ADR-0035 records for
   conservation and the row CHECK.
 - **Negative: the location paths that ship today keep this property for as long as the
-  record stays proposed.** `destroy_location_data` and `purge_expired_location_data` run
-  against an unbounded archive now, and nothing in this record changes that.
+  record stays proposed.** `destroy_location_data` runs against the archive now, and nothing in
+  this record changes that. `purge_expired_location_data` does not run at all — see the retraction
+  in Context — so the live store is unbounded as well as the archive.
 - **Negative: constraint 3 has no automated enforcement.** No gate distinguishes "deleted"
   from "unreconstructable" in prose. Only review does, which is weaker than the property it
   protects, and is recorded as such rather than overstated.

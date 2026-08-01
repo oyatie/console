@@ -2343,3 +2343,41 @@ a cancelled job as zero failures.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the location purge has never run, and ADR-0038 decides the mechanism
+
+Rebind onto the erasure-architecture candidate.
+
+**`purge_expired_location_data` has no production caller.** The only repo-wide references are the
+migration that defines it, the adapter wrapper at `compliance/adapter-postgres/src/lib.rs:392`, one
+integration test, and an audit-coverage exclusion list — no worker, no cron, no route. ADR-0037
+presented it as a shipped retention mechanism and is corrected. Nothing bounds the growth of
+`location_pings` in the live database, which is a more immediate exposure than the archive question
+that record was about.
+
+ADR-0037 also still described the archive window as unbounded, which #544 ended by setting
+`retentionPolicy: "35d"`. A supersession note records that, and what it changes: mitigations that
+wait for the archive to age out now terminate.
+
+ADR-0038 decides the mechanism for 개인위치정보: declare `location_pings` `UNLOGGED` so coordinates
+never enter the WAL, base backups or standbys; run the purge; then envelope-encrypt per subject in a
+gated second phase. The segregation boundary sits at `relpersistence` rather than at a second
+cluster, which is what keeps the outbound RESTRICT foreign keys, the FORCE-RLS enrolment, the five
+org-removal deletes and single-transaction consent withdrawal intact.
+
+**Two claims of this author's are retracted there.** "Nothing references `location_pings`" was true
+only inbound, and the outbound conclusion drawn from it — that segregation was structurally safe —
+was wrong. And the record's first draft collapsed the table to one row per subject; its own
+falsification test then found that dispatch eligibility reads a time window
+(`dispatch/adapter-postgres/src/lib.rs:1501,1570`), so the collapse would have silently changed who
+receives work. Minimisation survives as retention, not as shape.
+
+No code changed and no personal data was touched. Every capability, evidence contract, jurisdiction
+binding, Korea control, review disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #550 under the erasure-architecture candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
