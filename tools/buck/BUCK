@@ -397,3 +397,1357 @@ sh_test(
     deps = ["//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_rls_surfaces_as_runtime_role"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+# THE REMAINING 167. Every rust_test below already existed with a `needs-postgres` label and
+# executed in no workflow step. A rust_test target alone is not wiring; this sh_test is, and the
+# indirection is also the credential control — test_needs_postgres.sh refuses a raw //backend/...
+# target because that bypasses the loader.
+#
+# Wired in one tranche because the marginal cost was MEASURED, not estimated: 11 wrappers 996s,
+# 19 wrappers 1032s, i.e. ~4.5s each. The dependency build (2773 commands, 0% cache) dominates and
+# is paid once. An earlier claim in this repository that the cost is "roughly linear" and that this
+# many "is not viable" was wrong, and is retracted in the program ledger.
+
+sh_test(
+    name = "app-action-inbox-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-action_inbox_api)"],
+    deps = ["//backend/app:console-app-itest-action_inbox_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-audit-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-audit_api)"],
+    deps = ["//backend/app:console-app-itest-audit_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-auth-rest-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-auth_rest)"],
+    deps = ["//backend/app:console-app-itest-auth_rest"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-benefit-catalog-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-benefit_catalog_api)"],
+    deps = ["//backend/app:console-app-itest-benefit_catalog_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-board-ack-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-board_ack_api)"],
+    deps = ["//backend/app:console-app-itest-board_ack_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-cedar-freshness-mint-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-cedar_freshness_mint)"],
+    deps = ["//backend/app:console-app-itest-cedar_freshness_mint"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-cedar-parity-shadow-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-cedar_parity_shadow)"],
+    deps = ["//backend/app:console-app-itest-cedar_parity_shadow"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-cedar-shadow-role-manage-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-cedar_shadow_role_manage)"],
+    deps = ["//backend/app:console-app-itest-cedar_shadow_role_manage"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-compliance-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-compliance_api)"],
+    deps = ["//backend/app:console-app-itest-compliance_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-compliance-catalog-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-compliance_catalog_api)"],
+    deps = ["//backend/app:console-app-itest-compliance_catalog_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-console-kill-switch-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-console_kill_switch)"],
+    deps = ["//backend/app:console-app-itest-console_kill_switch"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-console-route-telemetry-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-console_route_telemetry)"],
+    deps = ["//backend/app:console-app-itest-console_route_telemetry"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-consulting-engagement-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-consulting_engagement_api)"],
+    deps = ["//backend/app:console-app-itest-consulting_engagement_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-dev-auth-persona-guard-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-dev_auth_persona_guard)"],
+    deps = ["//backend/app:console-app-itest-dev_auth_persona_guard"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-dispatch-pipeline-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-dispatch_pipeline_api)"],
+    deps = ["//backend/app:console-app-itest-dispatch_pipeline_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-equipment-3r-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-equipment_3r_api)"],
+    deps = ["//backend/app:console-app-itest-equipment_3r_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-evaluation-cycle-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-evaluation_cycle_api)"],
+    deps = ["//backend/app:console-app-itest-evaluation_cycle_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-facilities-pilot-story-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-facilities_pilot_story)"],
+    deps = ["//backend/app:console-app-itest-facilities_pilot_story"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-field-visit-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-field_visit_api)"],
+    deps = ["//backend/app:console-app-itest-field_visit_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-finance-gl-voucher-sod-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-finance_gl_voucher_sod)"],
+    deps = ["//backend/app:console-app-itest-finance_gl_voucher_sod"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-health-readiness-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-health_readiness)"],
+    deps = ["//backend/app:console-app-itest-health_readiness"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-hr-attendance-manager-scope-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-hr_attendance_manager_scope)"],
+    deps = ["//backend/app:console-app-itest-hr_attendance_manager_scope"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-hr-attendance-self-read-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-hr_attendance_self_read)"],
+    deps = ["//backend/app:console-app-itest-hr_attendance_self_read"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-hr-ingest-checklist-gate-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-hr_ingest_checklist_gate)"],
+    deps = ["//backend/app:console-app-itest-hr_ingest_checklist_gate"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-hr-people-create-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-hr_people_create_api)"],
+    deps = ["//backend/app:console-app-itest-hr_people_create_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-logistics-pilot-story-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-logistics_pilot_story)"],
+    deps = ["//backend/app:console-app-itest-logistics_pilot_story"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-m2-real-engine-drive-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-m2_real_engine_drive)"],
+    deps = ["//backend/app:console-app-itest-m2_real_engine_drive"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-maintenance-chain-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-maintenance_chain_api)"],
+    deps = ["//backend/app:console-app-itest-maintenance_chain_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-mobile-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-mobile_api)"],
+    deps = ["//backend/app:console-app-itest-mobile_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-notif-routing-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-notif_routing_api)"],
+    deps = ["//backend/app:console-app-itest-notif_routing_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-notifications-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-notifications_api)"],
+    deps = ["//backend/app:console-app-itest-notifications_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-object-graph-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-object_graph_api)"],
+    deps = ["//backend/app:console-app-itest-object_graph_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-object-links-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-object_links_api)"],
+    deps = ["//backend/app:console-app-itest-object_links_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-object-ontology-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-object_ontology_api)"],
+    deps = ["//backend/app:console-app-itest-object_ontology_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-object-resolve-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-object_resolve_api)"],
+    deps = ["//backend/app:console-app-itest-object_resolve_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-office-versions-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-office_versions)"],
+    deps = ["//backend/app:console-app-itest-office_versions"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-org-change-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-org_change_api)"],
+    deps = ["//backend/app:console-app-itest-org_change_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-platform-onboarding-e2e-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-platform_onboarding_e2e)"],
+    deps = ["//backend/app:console-app-itest-platform_onboarding_e2e"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-purchase-request-collection-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-purchase_request_collection_api)"],
+    deps = ["//backend/app:console-app-itest-purchase_request_collection_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-realtime-ws-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-realtime_ws)"],
+    deps = ["//backend/app:console-app-itest-realtime_ws"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-recruiting-pipeline-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-recruiting_pipeline_api)"],
+    deps = ["//backend/app:console-app-itest-recruiting_pipeline_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-registry-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-registry_api)"],
+    deps = ["//backend/app:console-app-itest-registry_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-router-layers-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-router_layers)"],
+    deps = ["//backend/app:console-app-itest-router_layers"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-search-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-search_api)"],
+    deps = ["//backend/app:console-app-itest-search_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-submittable-definitions-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-submittable_definitions_api)"],
+    deps = ["//backend/app:console-app-itest-submittable_definitions_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-tenant-context-e2e-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-tenant_context_e2e)"],
+    deps = ["//backend/app:console-app-itest-tenant_context_e2e"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workbench-native-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workbench_native_api)"],
+    deps = ["//backend/app:console-app-itest-workbench_native_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-automation-triggers-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_automation_triggers)"],
+    deps = ["//backend/app:console-app-itest-workflow_automation_triggers"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-dynamics-branch-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_dynamics_branch)"],
+    deps = ["//backend/app:console-app-itest-workflow_dynamics_branch"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-four-eyes-publish-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_four_eyes_publish)"],
+    deps = ["//backend/app:console-app-itest-workflow_four_eyes_publish"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-object-context-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_object_context_api)"],
+    deps = ["//backend/app:console-app-itest-workflow_object_context_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-object-kind-dynamics-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_object_kind_dynamics)"],
+    deps = ["//backend/app:console-app-itest-workflow_object_kind_dynamics"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-run-read-surface-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_run_read_surface)"],
+    deps = ["//backend/app:console-app-itest-workflow_run_read_surface"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-runtime-finalize-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_runtime_finalize_api)"],
+    deps = ["//backend/app:console-app-itest-workflow_runtime_finalize_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workflow-runtime-instance-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workflow_runtime_instance_api)"],
+    deps = ["//backend/app:console-app-itest-workflow_runtime_instance_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-workorder-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-workorder_api)"],
+    deps = ["//backend/app:console-app-itest-workorder_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "rls-arming-lib-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/ci/gates/rls-arming:console-gate-rls-arming-unit)"],
+    deps = ["//backend/ci/gates/rls-arming:console-gate-rls-arming-unit"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "attendance-adapter-postgres-self-service-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-self_service)"],
+    deps = ["//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-self_service"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "benefit-adapter-postgres-catalog-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/benefit/adapter-postgres:console-benefit-adapter-postgres-itest-catalog_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/benefit/adapter-postgres:console-benefit-adapter-postgres-itest-catalog_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "comms-adapter-postgres-mail-account-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-mail_account_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-mail_account_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "comms-adapter-postgres-mail-sync-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-mail_sync_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-mail_sync_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "comms-adapter-postgres-send-rate-limit-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-send_rate_limit_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/comms/adapter-postgres:console-comms-adapter-postgres-itest-send_rate_limit_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "comms-rest-mox-webhook-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/comms/rest:console-comms-rest-itest-mox_webhook)"],
+    deps = ["//backend/crates/comms/rest:console-comms-rest-itest-mox_webhook"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "comms-rest-readiness-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/comms/rest:console-comms-rest-itest-readiness)"],
+    deps = ["//backend/crates/comms/rest:console-comms-rest-itest-readiness"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "consulting-rest-audit-atomicity-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/consulting/rest:console-consulting-rest-itest-audit_atomicity)"],
+    deps = ["//backend/crates/consulting/rest:console-consulting-rest-itest-audit_atomicity"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "dispatch-worker-timer-delivery-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/dispatch/worker:console-dispatch-worker-itest-timer_delivery)"],
+    deps = ["//backend/crates/dispatch/worker:console-dispatch-worker-itest-timer_delivery"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/docs/rest:console-docs-rest-itest-evidence_rest_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/docs/rest:console-docs-rest-itest-evidence_rest_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/finance-gl/adapter-postgres:console-finance-gl-adapter-postgres-itest-voucher_rls_and_fsm_as_runtime_role)"],
+    deps = ["//backend/crates/finance-gl/adapter-postgres:console-finance-gl-adapter-postgres-itest-voucher_rls_and_fsm_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-lifecycle_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-lifecycle_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "financial-adapter-postgres-period-lock-blocks-ledger-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-period_lock_blocks_ledger_as_runtime_role)"],
+    deps = ["//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-period_lock_blocks_ledger_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "financial-adapter-postgres-use-cases-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-use_cases)"],
+    deps = ["//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-use_cases"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "financial-rest-purchase-request-list-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/financial/rest:console-financial-rest-itest-purchase_request_list)"],
+    deps = ["//backend/crates/financial/rest:console-financial-rest-itest-purchase_request_list"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "governance-adapter-postgres-approvals-create-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-approvals_create_as_runtime_role)"],
+    deps = ["//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-approvals_create_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "governance-adapter-postgres-four-eyes-bind-consume-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-four_eyes_bind_consume)"],
+    deps = ["//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-four_eyes_bind_consume"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "governance-adapter-postgres-governance-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-governance_rls_as_runtime_role)"],
+    deps = ["//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres-itest-governance_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "identity-adapter-postgres-deactivate-revokes-credentials-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-deactivate_revokes_credentials)"],
+    deps = ["//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-deactivate_revokes_credentials"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "identity-adapter-postgres-me-workspace-layouts-rls-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-me_workspace_layouts_rls)"],
+    deps = ["//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-me_workspace_layouts_rls"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "identity-adapter-postgres-region-branch-crud-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-region_branch_crud_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-region_branch_crud_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "identity-adapter-postgres-subject-authz-versions-freshness-rls-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-subject_authz_versions_freshness_rls)"],
+    deps = ["//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-subject_authz_versions_freshness_rls"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "identity-rest-org-setup-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/rest:console-identity-rest-itest-org_setup)"],
+    deps = ["//backend/crates/identity/rest:console-identity-rest-itest-org_setup"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "inbox-adapter-postgres-inbox-docs-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres-itest-inbox_docs_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres-itest-inbox_docs_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "inbox-rest-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/inbox/rest:console-inbox-rest-itest-api)"],
+    deps = ["//backend/crates/inbox/rest:console-inbox-rest-itest-api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "inspection-adapter-postgres-lifecycle-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/inspection/adapter-postgres:console-inspection-adapter-postgres-itest-lifecycle)"],
+    deps = ["//backend/crates/inspection/adapter-postgres:console-inspection-adapter-postgres-itest-lifecycle"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "inspection-adapter-postgres-schedule-window-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/inspection/adapter-postgres:console-inspection-adapter-postgres-itest-schedule_window_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/inspection/adapter-postgres:console-inspection-adapter-postgres-itest-schedule_window_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "inventory-adapter-postgres-consume-idempotency-concurrency-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/inventory/adapter-postgres:console-inventory-adapter-postgres-itest-consume_idempotency_concurrency)"],
+    deps = ["//backend/crates/inventory/adapter-postgres:console-inventory-adapter-postgres-itest-consume_idempotency_concurrency"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "leave-adapter-postgres-leave-migration-expand-contract-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/leave/adapter-postgres:console-leave-adapter-postgres-itest-leave_migration_expand_contract)"],
+    deps = ["//backend/crates/leave/adapter-postgres:console-leave-adapter-postgres-itest-leave_migration_expand_contract"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/leave/adapter-postgres:console-leave-adapter-postgres-itest-leave_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/leave/adapter-postgres:console-leave-adapter-postgres-itest-leave_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "leave-rest-leave-http-personas-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/leave/rest:console-leave-rest-itest-leave_http_personas)"],
+    deps = ["//backend/crates/leave/rest:console-leave-rest-itest-leave_http_personas"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "messenger-adapter-postgres-parity-tables-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres-itest-parity_tables_rls_as_runtime_role)"],
+    deps = ["//backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres-itest-parity_tables_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "messenger-adapter-postgres-use-cases-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres-itest-use_cases)"],
+    deps = ["//backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres-itest-use_cases"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "messenger-rest-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/messenger/rest:console-messenger-rest-itest-api)"],
+    deps = ["//backend/crates/messenger/rest:console-messenger-rest-itest-api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "notices-adapter-postgres-notices-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/notices/adapter-postgres:console-notices-adapter-postgres-itest-notices_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/notices/adapter-postgres:console-notices-adapter-postgres-itest-notices_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "notices-rest-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/notices/rest:console-notices-rest-itest-api)"],
+    deps = ["//backend/crates/notices/rest:console-notices-rest-itest-api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "notifications-adapter-postgres-notifications-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres-itest-notifications_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres-itest-notifications_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "notifications-rest-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/notifications/rest:console-notifications-rest-itest-api)"],
+    deps = ["//backend/crates/notifications/rest:console-notifications-rest-itest-api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-builtin-catalog-additive-upgrade-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-builtin_catalog_additive_upgrade_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-c-chain-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-c_chain_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-c_chain_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-config-object-types-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-config_object_types_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-config_object_types_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-instances-residual-filter-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-instances_residual_filter_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-instances_residual_filter_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-instances-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-instances_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-instances_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-key-revision-migration-upgrade-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-key_revision_migration_upgrade)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-key_revision_migration_upgrade"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-key-write-cas-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-key_write_cas_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-key_write_cas_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-niche-config-object-types-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-niche_config_object_types_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-niche_config_object_types_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-projected-instances-read-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-projected_instances_read_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-projected_instances_read_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-property-derivation-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-property_derivation_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-property_derivation_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-property-link-sync-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-property_link_sync_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-property_link_sync_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-adapter-postgres-registry-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-registry_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres-itest-registry_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_lifecycle_rls_as_runtime_role)"],
+    deps = ["//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_lifecycle_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "payroll-rest-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/rest:console-payroll-rest-itest-api)"],
+    deps = ["//backend/crates/payroll/rest:console-payroll-rest-itest-api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "payroll-rest-run-lifecycle-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/rest:console-payroll-rest-itest-run_lifecycle_api)"],
+    deps = ["//backend/crates/payroll/rest:console-payroll-rest-itest-run_lifecycle_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-rest-dev-auth-absence-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth-rest:console-platform-auth-rest-itest-dev_auth_absence)"],
+    deps = ["//backend/crates/platform/auth-rest:console-platform-auth-rest-itest-dev_auth_absence"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-refresh-tokens-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-refresh_tokens)"],
+    deps = ["//backend/crates/platform/auth:console-platform-auth-itest-refresh_tokens"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-webauthn-ceremony-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-webauthn_ceremony)"],
+    deps = ["//backend/crates/platform/auth:console-platform-auth-itest-webauthn_ceremony"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-webauthn-ceremony-replay-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-webauthn_ceremony_replay)"],
+    deps = ["//backend/crates/platform/auth:console-platform-auth-itest-webauthn_ceremony_replay"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-authz-rest-cedar-authoring-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/authz-rest:console-platform-authz-rest-itest-cedar_authoring_rls_as_runtime_role)"],
+    deps = ["//backend/crates/platform/authz-rest:console-platform-authz-rest-itest-cedar_authoring_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-authz-rest-decision-feed-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/authz-rest:console-platform-authz-rest-itest-decision_feed_as_runtime_role)"],
+    deps = ["//backend/crates/platform/authz-rest:console-platform-authz-rest-itest-decision_feed_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-authz-policy-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/authz:console-platform-authz-itest-policy)"],
+    deps = ["//backend/crates/platform/authz:console-platform-authz-itest-policy"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-attendance-console-migration-contract-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-attendance_console_migration_contract)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-attendance_console_migration_contract"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-code-issuance-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-code_issuance)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-code_issuance"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-group-resolvers-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-group_resolvers)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-group_resolvers"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-lifecycle-maker-checker-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-lifecycle_maker_checker)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-lifecycle_maker_checker"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-m2-flag-on-runtime-drain-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-m2_flag_on_runtime_drain)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-m2_flag_on_runtime_drain"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-period-locks-and-lifecycle-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-period_locks_and_lifecycle)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-period_locks_and_lifecycle"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-group-lib-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/group:console-platform-group-unit)"],
+    deps = ["//backend/crates/platform/group:console-platform-group-unit"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-jobs-apalis-adapter-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/jobs:console-platform-jobs-itest-apalis_adapter)"],
+    deps = ["//backend/crates/platform/jobs:console-platform-jobs-itest-apalis_adapter"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-jobs-apalis-schema-contract-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/jobs:console-platform-jobs-itest-apalis_schema_contract)"],
+    deps = ["//backend/crates/platform/jobs:console-platform-jobs-itest-apalis_schema_contract"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-platform-rest-onboard-seeds-config-objects-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/platform-rest:console-platform-rest-itest-onboard_seeds_config_objects)"],
+    deps = ["//backend/crates/platform/platform-rest:console-platform-rest-itest-onboard_seeds_config_objects"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-platform-rest-ops-dashboard-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/platform-rest:console-platform-rest-itest-ops_dashboard)"],
+    deps = ["//backend/crates/platform/platform-rest:console-platform-rest-itest-ops_dashboard"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-platform-rest-platform-groups-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/platform-rest:console-platform-rest-itest-platform_groups)"],
+    deps = ["//backend/crates/platform/platform-rest:console-platform-rest-itest-platform_groups"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-platform-rest-view-as-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/platform-rest:console-platform-rest-itest-view_as)"],
+    deps = ["//backend/crates/platform/platform-rest:console-platform-rest-itest-view_as"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-bootstrap-passkey-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-bootstrap-passkey-replay-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey_replay)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey_replay"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-roster-import-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-roster_import)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-roster_import"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-self-enroll-handoff-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-self_enroll_handoff_as_runtime_role)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-self_enroll_handoff_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-realtime-postgres-bridge-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/realtime:console-platform-realtime-itest-postgres_bridge)"],
+    deps = ["//backend/crates/platform/realtime:console-platform-realtime-itest-postgres_bridge"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-storage-lib-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/storage:console-platform-storage-unit)"],
+    deps = ["//backend/crates/platform/storage:console-platform-storage-unit"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-storage-evidence-processing-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/storage:console-platform-storage-itest-evidence_processing_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/platform/storage:console-platform-storage-itest-evidence_processing_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "policy-adapter-postgres-draft-storage-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/policy/adapter-postgres:console-policy-adapter-postgres-itest-draft_storage)"],
+    deps = ["//backend/crates/policy/adapter-postgres:console-policy-adapter-postgres-itest-draft_storage"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "production-rest-production-lifecycle-http-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/production/rest:console-production-rest-itest-production_lifecycle_http)"],
+    deps = ["//backend/crates/production/rest:console-production-rest-itest-production_lifecycle_http"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-create-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-create_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-create_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-equipment-list-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_list_rls_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_list_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-equipment-lookup-normalization-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_lookup_normalization_rls_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_lookup_normalization_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-equipment-versioning-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_versioning_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-equipment_versioning_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-master-list-import-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-master_list_import)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-master_list_import"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-master-list-import-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-master_list_import_rls_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-master_list_import_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-adapter-postgres-site-address-postal-roundtrip-rls-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-site_address_postal_roundtrip_rls_as_runtime_role)"],
+    deps = ["//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-site_address_postal_roundtrip_rls_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "registry-rest-equipment-admin-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/registry/rest:console-registry-rest-itest-equipment_admin)"],
+    deps = ["//backend/crates/registry/rest:console-registry-rest-itest-equipment_admin"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "reporting-adapter-postgres-excel-exports-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-excel_exports)"],
+    deps = ["//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-excel_exports"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "reporting-adapter-postgres-kpi-golden-dataset-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-kpi_golden_dataset)"],
+    deps = ["//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-kpi_golden_dataset"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "reporting-adapter-postgres-ops-summary-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-ops_summary)"],
+    deps = ["//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-ops_summary"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "reporting-adapter-postgres-work-diary-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-work_diary_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres-itest-work_diary_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "sales-adapter-postgres-inquiry-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/sales/adapter-postgres:console-sales-adapter-postgres-itest-inquiry_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/sales/adapter-postgres:console-sales-adapter-postgres-itest-inquiry_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "sales-adapter-postgres-sales-store-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/sales/adapter-postgres:console-sales-adapter-postgres-itest-sales_store)"],
+    deps = ["//backend/crates/sales/adapter-postgres:console-sales-adapter-postgres-itest-sales_store"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-adapter-postgres-assignee-name-join-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-assignee_name_join_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-assignee_name_join_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-adapter-postgres-create-internal-ticket-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-create_internal_ticket_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-create_internal_ticket_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-adapter-postgres-support-tickets-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-support_tickets)"],
+    deps = ["//backend/crates/support/adapter-postgres:console-support-adapter-postgres-itest-support_tickets"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-rest-lib-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/rest:console-support-rest-unit)"],
+    deps = ["//backend/crates/support/rest:console-support-rest-unit"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-rest-authz-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/rest:console-support-rest-itest-authz)"],
+    deps = ["//backend/crates/support/rest:console-support-rest-itest-authz"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "support-rest-intake-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/support/rest:console-support-rest-itest-intake)"],
+    deps = ["//backend/crates/support/rest:console-support-rest-itest-intake"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "todos-adapter-postgres-todos-rls-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/todos/adapter-postgres:console-todos-adapter-postgres-itest-todos_rls_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/todos/adapter-postgres:console-todos-adapter-postgres-itest-todos_rls_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workflow-adapter-postgres-notification-bridge-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workflow/adapter-postgres:console-workflow-runtime-adapter-postgres-itest-notification_bridge)"],
+    deps = ["//backend/crates/workflow/adapter-postgres:console-workflow-runtime-adapter-postgres-itest-notification_bridge"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workflow-adapter-postgres-payroll-drain-period-lock-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workflow/adapter-postgres:console-workflow-runtime-adapter-postgres-itest-payroll_drain_period_lock)"],
+    deps = ["//backend/crates/workflow/adapter-postgres:console-workflow-runtime-adapter-postgres-itest-payroll_drain_period_lock"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-adapter-postgres-m2-flag-off-parity-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-m2_flag_off_parity)"],
+    deps = ["//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-m2_flag_off_parity"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-rls_read_surfaces_as_runtime_role)"],
+    deps = ["//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-rls_read_surfaces_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-adapter-postgres-use-cases-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-use_cases)"],
+    deps = ["//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-use_cases"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-rest-mobile-evidence-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/rest:console-workorder-rest-itest-mobile_evidence)"],
+    deps = ["//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_evidence"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-rest-mobile-sync-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/rest:console-workorder-rest-itest-mobile_sync)"],
+    deps = ["//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_sync"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-db-feature-catalog-coverage",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-feature_catalog_covers_every_feature)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-feature_catalog_covers_every_feature"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

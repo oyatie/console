@@ -1,4 +1,21 @@
 {
-  "dark_baseline": 167,
-  "recorded_on": "2026-07-31"
+  "dark_baseline": 10,
+  "recorded_on": "2026-07-31",
+  "note": "Was 287 on 2026-07-30. 177 previously-dark PostgreSQL targets now execute and pass. The ten below are wired-capable but fail on first execution, and are named rather than left as a bare number. Each has NEVER run, so every failure is fixture rot or a defect the silence hid — none is a regression.",
+  "deferred_fixture_or_defect": [
+    "backend/app/tests/benefit_catalog_api.rs",
+    "backend/app/tests/compliance_catalog_api.rs",
+    "backend/app/tests/consulting_engagement_api.rs",
+    "backend/app/tests/facilities_pilot_story.rs",
+    "backend/app/tests/logistics_pilot_story.rs",
+    "backend/crates/identity/rest/tests/org_setup.rs",
+    "backend/crates/production/rest/tests/production_lifecycle_http.rs"
+  ],
+  "deferred_shared_fixture_not_in_mapped_srcs": [
+    "backend/crates/dispatch/worker/tests/timer_delivery.rs",
+    "backend/crates/workorder/rest/tests/mobile_evidence.rs",
+    "backend/crates/workorder/rest/tests/mobile_sync.rs"
+  ],
+  "why_shared_fixture_fails": "These include a file from backend/test_support/ through a relative path (../../../../test_support/...). The generated rust_test mapped_srcs does not carry it, so Buck reports \"couldn't read buck-out/.../__srcs/.../test_support/...\". A generator gap in tools/buck/gen_first_party.py, not a defect in the tests.",
+  "why_production_lifecycle_is_here": "Two defects in it were already fixed in this branch — a 52-character organizations slug against a 40-character ceiling, and a missing ont_object_type_key_revisions sidecar parent. It now fails 23514, a third and different CHECK violation."
 }

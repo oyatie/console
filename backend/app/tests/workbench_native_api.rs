@@ -488,7 +488,12 @@ async fn seed_equipment(pool: &PgPool, branch: BranchId, tag: &str) -> Uuid {
     .bind(*branch.as_uuid())
     .bind(customer_id)
     .bind(site_id)
-    .bind(format!("WB{sequence:06}"))
+    // `registry_equipment.equipment_no` CHECKs `^[A-Z]{3}[A-Z0-9]{2}-[0-9]{4}$`
+    // (0007_create_registry.sql:35): three letters, two alphanumerics, a hyphen, four digits.
+    // `WB{sequence:06}` produced "WB000001" — two leading letters and no hyphen — which has
+    // never satisfied that column. The `assert!(sequence <= 9_999)` above already guarantees
+    // the four-digit tail, and per-org UNIQUE (0029_enforce_org_id.sql:117) still holds.
+    .bind(format!("WBA01-{sequence:04}"))
     .bind(format!("WB-MG-{sequence:04}"))
     .bind(*OrgId::knl().as_uuid())
     .fetch_one(pool)

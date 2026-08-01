@@ -694,6 +694,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'integration': {
             'tests/attendance_console_migration_contract.rs': 'postgres',
             'tests/code_issuance.rs': 'postgres',
+            'tests/feature_catalog_covers_every_feature.rs': 'postgres',
             'tests/group_resolvers.rs': 'postgres',
             'tests/lifecycle_maker_checker.rs': 'postgres',
             'tests/m2_flag_on_runtime_drain.rs': 'postgres',

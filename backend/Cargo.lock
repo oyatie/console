@@ -2690,6 +2690,7 @@ name = "console-platform-db"
 version = "0.1.0"
 dependencies = [
  "console-kernel-core",
+ "console-platform-authz",
  "serde",
  "serde_json",
  "sqlx 0.9.0",

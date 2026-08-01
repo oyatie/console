@@ -65,12 +65,14 @@ rust_test(
 
 rust_test(
     name = "console-platform-jobs-itest-apalis_adapter",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_adapter.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_adapter.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
     crate = "apalis_adapter",
     edition = "2024",
     crate_root = "backend/crates/platform/jobs/tests/apalis_adapter.rs",
     visibility = ["PUBLIC"],
-    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.jobs", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
@@ -94,12 +96,14 @@ rust_test(
 
 rust_test(
     name = "console-platform-jobs-itest-apalis_schema_contract",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_schema_contract.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/jobs", ["tests/apalis_schema_contract.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
     crate = "apalis_schema_contract",
     edition = "2024",
     crate_root = "backend/crates/platform/jobs/tests/apalis_schema_contract.rs",
     visibility = ["PUBLIC"],
-    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs"},
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/jobs", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.jobs", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",

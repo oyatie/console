@@ -2133,3 +2133,213 @@ either, and each such failure is a proof that was believed and never held.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — executed-nowhere reaches zero
+
+Rebind onto the final PostgreSQL tranche.
+
+Every remaining dark test file is wired. **`executed nowhere` 167 -> 0**, and the ratchet baseline
+goes with it: a test file added without a path from a workflow step now fails CI outright, because
+there is no slack left in the number. On 2026-07-30 that number was 287.
+
+A 32-agent audit read all 167 against the live migrations first. Three fixtures were confirmed
+broken and repaired — a helper called twice with constant identifiers colliding on three UNIQUE
+constraints, a 52-character slug against a 40-character ceiling, and an `equipment_no` that never
+matched its CHECK. Two further claims were **refuted**: they asserted no `console_rt` GRANT existed,
+on the strength of a grep, but `0035_enable_rls_rollout.sql:78-80` emits those grants dynamically
+through `EXECUTE format(...)`. A text search cannot see dynamic SQL, and without the refutation
+pass this candidate would have "fixed" a non-problem.
+
+Wired as one tranche because the marginal cost was measured — 11 wrappers 996s, 19 wrappers 1032s,
+~4.5s each — retracting this repository's earlier claim that the cost is roughly linear.
+
+**What is not claimed: that all 167 pass.** They have never executed. The audit checked fixtures
+against constraints without running anything, and reported findings without per-file CLEAN
+attestations, so 109 files carrying no finding are UNVERIFIED rather than proven clean. CI is the
+first execution, and it is a required check, so failures block the pull request rather than
+reaching main.
+
+60 FRAGILE findings are recorded and deliberately unfixed: they pass today and would break on a
+different caller. The largest is 43 verbatim copies of `format!("org-{}", tag.to_lowercase())`,
+rooted in one line of `platform/test-support/src/lib.rs`.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — wiring 167 dark tests found a production defect
+
+Rebind after the first execution of the newly wired PostgreSQL targets.
+
+CI reached 86 of 186 targets before the 35-minute ceiling: 82 passed, 4 failed. Three failures were
+fixture rot that had accumulated precisely because nothing executed those files. **One was a defect
+in a production path.**
+
+`platform_force_remove_organization` calls its catalog-driven closure (0196:192) before the
+hand-ordered deletes at 0196:228-231. The closure sweeps `equipment_cost_ledger` — single-column
+`org_id` FK, ON DELETE RESTRICT (0034:85) — while that table's children are invisible to the same
+closure by two independent filters: a COMPOSITE FK against `cardinality(conkey) = 1`, and ON DELETE
+CASCADE against `confdeltype IN ('a','r')`. So force-removing an organization that holds equipment
+maintenance costs raises 23001. Migration 0208 adds the ledger to the exclusion list 0196 already
+maintains for exactly this class of root.
+
+The two apalis failures were **cross-test poisoning of a cluster-global credential**: four sibling
+files rewrite `console_app`'s password to a hardcoded literal and none restores it, so every later
+target authenticating from the harness URL fails 28P01 for a reason having nothing to do with
+itself. Each apalis test now re-asserts the passwords it needs before connecting, which is correct
+regardless of sibling order or panic.
+
+**The ceiling was raised 35 -> 80 minutes rather than sharded.** Measured: 240s of build and setup,
+then 21.8s per target serialized, so 186 targets need ~71 minutes. Sharding is the better answer and
+was rejected deliberately — this job's display name is the literal string branch protection matches
+on, a matrix reports as "name (shard)", and that would silently un-require the check and restore the
+false green the job's own comment describes. It also retracts the 4.5s marginal figure recorded
+earlier today, which was measured across 11->19 wrappers while the fixed build cost still dominated.
+
+`executed nowhere` is 0 in the candidate. That is wiring, not proof, and this is what the first
+proof produced.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after regenerating the first-party BUCK face
+
+Mechanical rebind. No claim in the candidate changes.
+
+Adding the credential re-assertion to the apalis tests introduced `sqlx::` usage, and
+`tools/buck/gen_first_party.py` correctly detected it: the generated `rust_test` now carries the
+migrations tree and `SQLX_OFFLINE`. The cheap generated-face gate caught the drift on the first CI
+run, which is the gate working rather than failing.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — eleven shipped features could not be granted to anyone
+
+Rebind onto the feature-catalog candidate.
+
+`policy_role_permissions.feature_key` FKs to `feature_catalog` (0065), so a `Feature` with no
+catalog row is unreachable through the tenant grant path whatever the compile-time matrix permits.
+Eleven of the 96 keys in `Feature::as_str` had no row, and the failure is silent in both
+directions — nothing panics, the capability simply cannot be held.
+
+Among them: `payroll_run_read` and `payroll_run_manage`, which together are payroll's
+separation-of-duties split, so no reviewer-who-cannot-pay role could exist; `approval_finalize`,
+which the matrix permits ADMIN and above and nobody could hold; and the entire 퇴직 flow.
+
+Migration 0209 seeds the rows. It grants nothing — `feature_catalog` is the set of keys a grant may
+NAME, so a row makes a feature expressible rather than held.
+`feature_catalog_covers_every_feature` asserts the coverage against a migrated database and is
+wired into the required PostgreSQL job, with a second case ensuring the first cannot pass on a
+truncated catalog.
+
+**An earlier count of 19 was wrong**, derived by naive snake_case conversion of the variant names,
+which produces `equipment3r_approve` where the real key is `equipment_3r_approve` and invents eight
+phantom gaps. The serialization function is the authority, not the variant name. Recomputed against
+the arms of `as_str`: exactly 11.
+
+Thirteen catalog rows with no `Feature` are deliberately left alone. Deleting one would break the FK
+of any grant already naming it, and a row no code reads is inert; a MISSING row removes capability.
+Only that direction is asserted.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — 176 of 186 execute and pass; nine are deferred by name
+
+Rebind after the full PostgreSQL reachability run completed inside the raised ceiling.
+
+**Pass 176, Fail 8, Build failure 3.** The 35 -> 80 minute raise worked: the job finished rather
+than being cancelled at 86 of 186.
+
+**The production defect was a class, not an instance.** 0208 excluded `equipment_cost_ledger` from
+the force-removal closure; the next run failed on
+`equipment_maintenance_history_evidence_media_same_org_fk` — same shape, one table over. Migration
+0193 declares four composite RESTRICT foreign keys, and every parent they name can be swept by the
+closure while its 0193 children are invisible to it under `cardinality(fk.conkey) = 1`. 0208 now
+excludes the whole family, verified against the hand-ordered block in 0196 which already deletes all
+five child-first. Fixing one member would have moved the failure to the next on the following
+80-minute cycle, which had already happened once.
+
+**Nine tests are deferred and named in the baseline rather than counted.** Seven fail on fixture rot
+or a defect the silence hid; two fail to BUILD because they include a shared file from
+`backend/test_support/` by relative path that the generated `mapped_srcs` does not carry — a gap in
+`tools/buck/gen_first_party.py`, not a defect in those tests. `dark_baseline` goes 0 -> 9 rather
+than pretending, and the file records why for each.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the class fix regressed a passing test, and is narrowed
+
+Rebind after narrowing 0208.
+
+The previous candidate excluded the whole 0193 composite-FK family from the force-removal closure.
+Fail went 8 -> 2, but one of the two is a **regression**: `platform-rest remove_tenant` had been
+passing and now fails 23001 on `registry_equipment_site_id_fkey`.
+
+The reasoning was right about which tables CAN be reached too early and wrong about which need
+excluding. The closure deletes `registry_equipment` before `registry_sites` under its
+OID-descending order; removing it from the sweep left `registry_sites` blocked by a child that no
+longer got deleted first. Presence in 0196's hand-ordered block was verified and taken as proof
+that exclusion was safe — but presence is not order, and that block runs AFTER the closure, so
+excluding a table moves it later, which is wrong for anything the sweep was already handling
+correctly.
+
+Narrowed to the two roots actually observed failing: `equipment_cost_ledger` and `evidence_media`.
+The other three were never observed failing; the generalization from two instances to a class of
+five was untested, and the test that would have caught it was already green.
+
+Recorded because this is the first change in this branch to break something that worked. An
+over-narrow fix costs a cycle; an over-broad one costs a passing test, and only execution
+distinguishes them.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — delete the invisible subtree before the sweep, not tables from it
+
+Rebind onto the subtree pre-delete.
+
+Pass 176, Fail 1. The `remove_tenant` regression is gone and `workorder use_cases` failed on the
+THIRD constraint of the same family. Chasing members one per run cost four cycles at ~71 minutes
+each.
+
+The maintenance-history subtree is invisible to `platform_force_remove_direct_org_children` by two
+independent filters — its parent is ON DELETE CASCADE where the sweep admits only 'a'/'r', and its
+children reach their parents by COMPOSITE FK where the sweep requires `cardinality(conkey) = 1`.
+Migration 0193 declares four such RESTRICT foreign keys and CI surfaced them one at a time.
+
+The fix is the one the original diagnosis recommended and this work first declined: three DELETEs,
+child-first, at the top of the function, before the sweep can reach anything they reference.
+Nothing is excluded and the sweep's ordering is untouched.
+
+Both earlier attempts are recorded in the migration header. Excluding `equipment_cost_ledger` moved
+the failure to the next constraint; excluding the whole family regressed a passing test. **Presence
+in 0196's hand-ordered block is not correct order** — that block runs after the sweep, so excluding
+a table moves it later, which is wrong for anything the sweep already handled correctly.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — Pass 177, Fail 0
+
+Rebind after the PostgreSQL suite reached zero failures.
+
+Deleting the maintenance-history subtree before the catalog sweep closed all three constraints at
+once. Excluding tables from the sweep had fixed one per 71-minute cycle and then regressed a
+passing test; the subtree pre-delete is the fix the original diagnosis recommended.
+
+**177 previously-dark PostgreSQL targets now execute and pass**, from a starting point of 287 test
+files that executed nowhere. One production defect was found and fixed by that execution.
+
+Ten tests remain deferred and named in `executed-tests-baseline.json`: seven on fixture rot or a
+defect the silence hid, three that fail to BUILD because they include a shared file from
+`backend/test_support/` by relative path that the generated `mapped_srcs` does not carry.
+
+The tenth was a bug in the unwiring itself: the removal script matched entries by their trailing
+line-continuation, and the last target in a list has none, so it reported "removed 9" against 10
+requested and the arithmetic was not checked. Same under-reporting shape as a CI waiter that reads
+a cancelled job as zero failures.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
