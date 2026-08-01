@@ -15,6 +15,11 @@ const consoleTruthLedgerCommand = "npm run check:console-truth-ledger";
 const consoleAuthorityTrainTestCommand = "node --test scripts/console/verify-console-authority-train.test.mjs";
 const consoleTruthLedgerTestCommand = "node --test scripts/console/validate-console-truth-ledger.test.mjs";
 const consoleFanoutPlannerTestCommand = "node --test scripts/console/plan-fanout.test.mjs";
+// This one gates the highest-privilege script in the repository — the `pull_request_target`
+// bootstrap verifier — and executed NOWHERE until it was wired: `package.json` declared
+// `test:console-authority-bootstrap` and no workflow ever invoked it. Breaking the verifier
+// turned all its tests red locally while CI stayed green.
+const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs";
 const consoleFanoutPlannerAdmissionCommand = 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"';
 const consolePrCondition = "${{ github.event_name == 'pull_request' }}";
 const consoleTrainDerivation = [
@@ -850,7 +855,7 @@ function requireConsoleExactMergeProof(workflow, steps, failures) {
     const matching = steps.filter((step) => runScalar(step) === command);
     if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], consolePrCondition)) failures.push(`preflight must run ${command} only after exact C/T/M derivation on pull requests`);
   }
-  for (const command of [consoleAuthorityTrainTestCommand, consoleTruthLedgerTestCommand, consoleFanoutPlannerTestCommand]) {
+  for (const command of [consoleAuthorityTrainTestCommand, consoleBootstrapTestCommand, consoleTruthLedgerTestCommand, consoleFanoutPlannerTestCommand]) {
     const matching = steps.filter((step) => runScalar(step) === command);
     if (matching.length !== 1 || !isUnconditional(matching[0])) failures.push(`preflight must run ${command} unconditionally on pull requests and main`);
   }

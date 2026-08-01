@@ -139,6 +139,9 @@ jobs:
       - name: Console authority-train regression
         run: node --test scripts/console/verify-console-authority-train.test.mjs
 
+      - name: Console PR authority bootstrap regression
+        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs
+
       - name: Console truth-ledger validator exact-M regression
         run: node --test scripts/console/validate-console-truth-ledger.test.mjs
 

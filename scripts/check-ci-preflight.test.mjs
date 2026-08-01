@@ -423,6 +423,23 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow.replace('      - name: Console authority-train regression\n        run: node --test scripts/console/verify-console-authority-train.test.mjs\n\n', ''),
       "verify-console-authority-train.test.mjs",
     );
+    // This suite gates the `pull_request_target` bootstrap verifier — the highest-privilege
+    // script in the repository — and executed NOWHERE: `package.json` declared
+    // `test:console-authority-bootstrap` and no workflow invoked it, so breaking the verifier
+    // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
+    // not the same as protecting it, hence both halves below.
+    assert.ok(
+      workflow.includes('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n'),
+      "preflight does not run the console PR authority bootstrap regression",
+    );
+    expectFailure(
+      workflow.replace('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n\n', ''),
+      "verify-console-pr-authority-bootstrap.test.mjs",
+    );
+    expectFailure(
+      workflow.replace('        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs'),
+      "verify-console-pr-authority-bootstrap.test.mjs",
+    );
     expectFailure(
       workflow.replace('        if: ${{ github.event_name == \'pull_request\' }}\n        run: node scripts/console/plan-fanout.mjs', '        run: node scripts/console/plan-fanout.mjs'),
       "plan-fanout.mjs",

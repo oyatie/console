@@ -42,9 +42,13 @@ this historical ledger cannot promote Support exposure.
 Authority model (2026-07-09 directive):
 
 Truth-ledger candidate model (C/T/M): the **product candidate C** is the signed,
-full Git SHA declared in `console-capability-registry.json`. The signed
-**authority tip T** must be the direct single-parent child of C and may change
-exactly the three console authority documents—no product paths. The structural
+full Git SHA CI derives from Git parentage—T's single parent—and cross-checks
+against `console-capability-registry.json` while that document still declares
+one. The signed **authority tip T** must be the direct single-parent child of C
+and may change at least one console authority document and nothing else: the
+three named documents, plus added `.md` entries directly under
+`docs/program/ledger/`—no product paths. (Superseded 2026-08-01; T was required
+to change exactly the three.) The structural
 **synthetic merge M** must resolve to exactly two parents with T as its second
 parent and must have the same tree as T with an empty `T..M` diff. CI supplies
 these immutable objects as `CONSOLE_CANDIDATE_SHA`,
@@ -2400,6 +2404,98 @@ rebuilt.
 This does not make the tests parallel. The three role-mutating files still force serialization, and
 the answer there is namespaced role names — the pattern PostgreSQL's own regression suite uses,
 where every object in a parallel group carries a reserved prefix.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-08-01 — The authority gate accepts two shapes (expand)
+
+The three authority documents conflicted on nearly every merge because
+`verify-console-authority-train.mjs` REQUIRED each PR's `C..T` to modify all three. That
+requirement was satisfiable only because the two registers store the candidate SHA
+denormalised: every commit to main changes 30 lines in the capability register and 8 in the
+jurisdiction register, all carrying the same SHA, none of them semantic. `ci.yml` derives that
+SHA from git parentage before it opens either file, so the stored copies tell no reader
+anything git had not already said.
+
+The gate enforcing this validates itself. `console-authority-bootstrap.yml` is
+`pull_request_target` and checks out `ref: main`, so a pull request is judged by MAIN's copy of
+`verify-console-pr-authority-bootstrap.mjs` — which located C by parsing
+`T:console-capability-registry.json` → `candidate.sha`. Executed against a branch that had
+deleted the field, main's gate answered:
+
+    MAIN BOOTSTRAP GATE: REFUSED — console authority bootstrap: T registry candidate.sha must
+    be a lowercase 40-character SHA
+
+A self-validating gate cannot be replaced in one step. This is the expand half: main learns to
+accept both shapes and NOTHING is deleted. This train still modifies all three documents and
+the registers still carry `candidate.sha`, rebound as usual — it has to, because the rule it
+relaxes is the rule it must still satisfy.
+
+What changed:
+
+- C is Git's own answer, T's single parent, not a field read out of the pull request. The
+  stored value became a cross-check: present it must agree, absent it must not fail. The
+  agreement check is new — before, the value was compared against the parent it was used to
+  find, so it could not lose.
+- "all three" became "at least one", in the three places that enforced it. The ALLOW-LIST is
+  byte-for-byte unchanged: nothing outside it may change, which is the property that keeps
+  product code out of the authority tip. What is gone is a count, not a control.
+- `docs/program/ledger/` joins the allow-list as a path PREFIX, and status `A` is admissible
+  there and nowhere else. The registers, the legacy ledger, and every other path stay
+  modify-only; a proof of each refusal is in the test files. The 1208-line
+  `console-program-ledger.md` is not migrated — it stays the historical archive.
+- The prefix admits a FLAT directory of lowercase `.md` files, not a subtree. A bare
+  `startsWith` is a string test, not a path test: it accepted
+  `docs/program/ledger/../../evil`, which names a location outside the prefix entirely.
+  Refusing any `/` in the remainder removes traversal and nesting together. `.md` is a
+  deliberate constraint rather than decoration — this is the only prefix at which the tip may
+  add a file, and without it the same allowance admits a new `.mjs` under `docs/`, i.e.
+  executable content added by the one commit forbidden to touch a product path.
+- The prefix rule and the diff FLAGS now live in one module, `authority-ledger-path.mjs`,
+  imported by all three gates. They previously held three copies and two flag sets:
+  `validate-console-truth-ledger.mjs` passed `--find-renames --find-copies-harder`, the other
+  two `--no-renames`. A new ledger entry ≥50% similar to a file already in the tree is then
+  status `C` with two paths to one reader and `A` with one path to the others — measured at
+  `C084` versus `A` — so the same commit was refused by one gate and accepted by the two that
+  decide the merge. All three now pass `--no-renames`, the strict reading: detection can only
+  relabel an added file as `R`/`C`, which every reader here refuses outright.
+- `verify-console-pr-authority-bootstrap.test.mjs` executed nowhere. It is now wired into
+  `ci.yml`, locked in `check-ci-preflight.mjs`, and added to `candidateCheckPlan` — the
+  `pull_request_target` list that runs on the path actually gating the merge, where the
+  highest-privilege script in the repository was the one console script left uncovered.
+  Wiring it immediately failed it, which is the point. One of its sixteen tests pinned the
+  literal commit `28642975`, an ancestor of no remote ref: it survives only in the local
+  branch it was authored on, so the test could pass in exactly one clone. It now resolves
+  `HEAD`, the commit the gate actually checks out. The failure it produced said only
+  `128 !== 0`, because `git rev-parse` prints nothing for an absent object and
+  `checkout --detach ''` never names what was missing; an added assertion on the resolved
+  SHA turns that into a sentence. Verified by cloning this branch with `--single-branch`,
+  which reproduces CI's ref set: 15/16 before, 16/16 after.
+- Two `?.candidate_sha` comparisons were doubling as payload checks stronger than existence:
+  `control.candidate_evidence?.candidate_sha !== candidate.sha` refuses `{}`, because
+  `undefined !== sha`. Replacing them with `object(...)` alone would have been weaker, not
+  equal, so the jurisdiction control payload now carries the same explicit `status` and
+  `reason` checks the capability rows have always carried.
+
+**An accepted loss, named before it is taken.** It is not taken here: this train still stores
+`candidate.sha` in both registers, and the validator still refuses a stored value that
+disagrees, so a wholesale revert of either register is still caught today. The contract half
+deletes the field, and at that point a wholesale REVERT of either register validates clean.
+Measured on the earlier full-removal branch, not on this one: the old validator refused 9 of 9
+revert combinations, the new one accepted 15 of 15. The window is exactly "all-HOLD
+registers". What still holds inside it: every jurisdiction control is forced HOLD; Buck targets
+and route facts are read from C and fail closed; a promoted capability binds
+`registry_canonical_sha256` and `jurisdiction_canonical_sha256` in a separately signed receipt;
+and the C..T train itself is signed, single-parent and allow-listed. What the old check never
+caught: falsifying `freshness.status` in place passed BOTH validators. Keeping the field
+permanently would reintroduce the shared-file mutex this change exists to remove, so the
+contract half removes it and this loss is accepted rather than traded back.
+
+The conflict is not yet gone — it consolidates. With the registers static, "modify at least
+one" means in practice that every PR writes the ledger, and two lanes appending to
+`console-program-ledger.md` still conflict. The ledger directory is the seat for that fix; this
+train only makes the gate able to accept it.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.

@@ -91,9 +91,13 @@ Every candidate pull request uses three distinct Git objects:
 
 - **C — product candidate:** a signed full Git SHA containing the exact product,
   tests, build graph, and release inputs under evaluation.
-- **T — authority tip:** a signed direct single-parent child of C. It changes
-  exactly the three current Console authority documents required by the
-  repository verifier and no product path.
+- **T — authority tip:** a signed direct single-parent child of C. It changes at
+  least one Console authority document and no product path. The allow-list is
+  the three current authority documents, plus added `.md` entries directly under
+  `docs/program/ledger/` — the one prefix where status `A` is admissible. It used
+  to be required to change all three; that count was satisfiable only because the
+  registers stored a per-candidate SHA to rewrite, and it forced every lane
+  through the same bytes.
 - **M — hosted synthetic merge:** the two-parent merge object synthesized by
   the hosting platform for pull-request checks. T is its second parent. Its tree
   and content diff equal T exactly.

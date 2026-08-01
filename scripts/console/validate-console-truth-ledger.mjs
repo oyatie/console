@@ -9,6 +9,7 @@ import { parseImmutableJson } from './immutable-json.mjs';
 import { ABSENT_CONSOLE_ROUTE_FACTS, CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
 import { CONSOLE_CANDIDATE_SIGNING_AUTHORITY, sshSignatureMatchesAuthority, verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mjs';
+import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
 const BUCK_TARGET = /^\/\/([A-Za-z0-9_./-]+):([A-Za-z0-9_.-]+)$/;
@@ -38,13 +39,18 @@ function canonicalReceiptPath(capabilityId, candidateSha) { return `docs/evidenc
 function git(root, args, encoding = 'utf8') { return execFileSync('git', ['-C', root, ...args], { encoding, stdio: ['ignore', 'pipe', 'pipe'] }); }
 function gitSucceeds(root, args) { try { git(root, args); return true; } catch { return false; } }
 function repositoryPath(value) { return typeof value === 'string' && value !== '' && !value.includes('..') && !value.startsWith('/') && !value.includes('\\'); }
-function isAuthorityControlPath(value) { return AUTHORITY_CONTROL_PATHS.has(value); }
+// One file per new ledger entry, so two lanes never write the same bytes. Status `A` is
+// accepted for this prefix and NOWHERE else: the two registers and the legacy ledger .md stay
+// modify-only, and an added file anywhere outside this directory is still refused. The
+// predicate and the diff flags below are shared with the other two gates on purpose — see
+// authority-ledger-path.mjs.
+function isAuthorityControlPath(value) { return AUTHORITY_CONTROL_PATHS.has(value) || isLedgerEntryPath(value); }
 function verifySignedCommit(repoRoot, candidateSha, sha, label, authority = CONSOLE_CANDIDATE_SIGNING_AUTHORITY) {
   if (!gitSucceeds(repoRoot, ['cat-file', '-e', `${sha}^{commit}`])) fail(`${label} SHA is unresolvable`);
   try { verifyCommitWithCandidateSshPolicy(repoRoot, candidateSha, sha, authority); } catch (error) { fail(`${label} commit signature is not valid: ${error instanceof Error ? error.message : String(error)}`); }
 }
 function assertAuthorityOnlyDiff(repoRoot, candidateSha, integrationTipSha) {
-  const fields = git(repoRoot, ['diff', '--raw', '-z', '--abbrev=40', '--find-renames', '--find-copies-harder', `${candidateSha}..${integrationTipSha}`]).split('\0');
+  const fields = git(repoRoot, [...AUTHORITY_DIFF_ARGS, candidateSha, integrationTipSha]).split('\0');
   const changed = new Set();
   for (let index = 0; index < fields.length - 1;) {
     const header = fields[index++];
@@ -53,13 +59,20 @@ function assertAuthorityOnlyDiff(repoRoot, candidateSha, integrationTipSha) {
     const [, oldMode, newMode, status] = match;
     const paths = status === 'R' || status === 'C' ? [fields[index++], fields[index++]] : [fields[index++]];
     if (paths.some((entry) => !isAuthorityControlPath(entry))) fail(`integration tip changes product path after candidate: ${paths.find((entry) => !isAuthorityControlPath(entry))}`);
-    if (oldMode !== '100644' || newMode !== '100644') fail('integration tip may only modify regular mode-100644 authority documents');
+    // Unreachable while the shared flags say `--no-renames`, and kept for that reason: an `R`/`C`
+    // entry carries TWO paths, so a reader that lost this branch would silently shift the whole
+    // field stream by one and read the wrong path for every later entry.
     if (status === 'R' || status === 'C') fail(`integration tip contains forbidden ${status === 'R' ? 'rename' : 'copy'}`);
-    if (status !== 'M') fail(`integration tip contains unsupported diff status: ${status}`);
+    // Status `A` is accepted only under the ledger directory, which is why the check reads the
+    // path and not just the status. A new register, a new legacy .md, or a new file anywhere
+    // else is still an unsupported status here.
+    if (status !== 'M' && !(status === 'A' && isLedgerEntryPath(paths[0]))) fail(`integration tip contains unsupported diff status: ${status}`);
+    if (newMode !== '100644' || oldMode !== (status === 'A' ? '000000' : '100644')) fail('integration tip may only modify regular mode-100644 authority documents or add regular mode-100644 ledger entries');
     if (paths.length !== 1 || changed.has(paths[0])) fail('integration tip authority document diff is malformed');
     changed.add(paths[0]);
   }
-  if (changed.size !== AUTHORITY_CONTROL_PATHS.size || [...AUTHORITY_CONTROL_PATHS].some((entry) => !changed.has(entry))) fail('integration tip must modify exactly the three authority documents');
+  // Allow-list, not a checklist — see verify-console-authority-train.mjs for why "all three" is gone.
+  if (changed.size === 0) fail('integration tip must modify at least one authority document');
   assertNoUnresolvedMerge(repoRoot, integrationTipSha);
 }
 
@@ -73,8 +86,13 @@ function assertAuthorityOnlyDiff(repoRoot, candidateSha, integrationTipSha) {
 // matching it would fail the ledger on ordinary prose. The three asymmetric markers are
 // unambiguous and each of them alone proves the resolution was left unfinished.
 const MERGE_MARKERS = ['<<<<<<<', '|||||||', '>>>>>>>'];
+// Every ledger entry file at the tip, not only the ones this train touched: a marker that
+// arrived on an earlier train must stay refused, exactly as it does for the three fixed paths.
+function ledgerEntryPaths(repoRoot, integrationTipSha) {
+  return git(repoRoot, ['ls-tree', '-r', '--name-only', '-z', integrationTipSha, '--', LEDGER_DIRECTORY]).split('\0').filter(Boolean);
+}
 function assertNoUnresolvedMerge(repoRoot, integrationTipSha) {
-  for (const entry of AUTHORITY_CONTROL_PATHS) {
+  for (const entry of [...AUTHORITY_CONTROL_PATHS, ...ledgerEntryPaths(repoRoot, integrationTipSha)]) {
     const lines = git(repoRoot, ['show', `${integrationTipSha}:${entry}`]).split('\n');
     for (const [index, line] of lines.entries()) {
       const marker = MERGE_MARKERS.find((candidate) => line.startsWith(candidate));
@@ -219,9 +237,15 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   object(registry, 'registry'); object(jurisdiction, 'jurisdiction register');
   if (registry.schema_version !== 'console-capability-registry-v2') fail('unsupported console capability registry schema');
   if (jurisdiction.schema_version !== 'console-jurisdiction-register-v2') fail('unsupported console jurisdiction register schema');
-  const candidate = object(registry.candidate, 'candidate');
-  sha(candidate.sha, 'candidate sha');
-  if (expectedCandidateSha !== undefined && candidate.sha !== expectedCandidateSha) fail('ledger candidate does not match externally supplied expected candidate SHA');
+  // The candidate SHA arrives from OUTSIDE these documents: CI derives it from git parentage
+  // (`ci.yml` "Derive exact console C/T/M train") and the planner takes `--candidate`. The
+  // stored copy is now a cross-check — present it must agree, absent is fine. Absence has to be
+  // accepted here or no PR could ever be the one that removes the field.
+  const candidate = { sha: sha(expectedCandidateSha, 'candidate sha') };
+  if (registry.candidate !== undefined) {
+    const declared = object(registry.candidate, 'candidate');
+    if (declared.sha !== undefined && declared.sha !== candidate.sha) fail('ledger candidate does not match externally supplied expected candidate SHA');
+  }
   if (!resolveSha(candidate.sha)) fail('candidate SHA is unresolvable');
   for (const key of ['authority_base_sha', 'historical_implementation_freeze_sha']) {
     sha(registry.provenance?.[key], key);
@@ -246,8 +270,12 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
       if (!STATES.has(truth[key])) fail(`${cap.id} invalid truth state ${key}`);
     }
     if (truth.exposure === 'EXPOSED' && truth.verification !== 'VERIFIED') fail(`${cap.id} exposed claim requires verified evidence`);
+    // `object(...)` carries the existence guarantee the equality below used to imply, and the
+    // three lines after it carry the rest of it: `evidence.candidate_sha !== candidate.sha`
+    // refused an EMPTY payload too, because `undefined !== sha`. Existence alone is weaker than
+    // what it replaces; existence plus the fields that make the payload evidence is equal.
     const evidence = object(cap.candidate_evidence, `${cap.id} candidate evidence`);
-    if (evidence.candidate_sha !== candidate.sha) fail(`${cap.id} candidate-bound evidence does not bind exact candidate`);
+    if (evidence.candidate_sha !== undefined && evidence.candidate_sha !== candidate.sha) fail(`${cap.id} candidate-bound evidence does not bind exact candidate`);
     if (!STATES.has(evidence.status)) fail(`${cap.id} candidate evidence status is invalid`);
     nonempty(evidence.reason, `${cap.id} candidate evidence reason`);
     object(evidence.contract, `${cap.id} candidate evidence contract`);
@@ -333,8 +361,18 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   // jurisdiction register unbound to any candidate: the validator reads only `.schema_version`,
   // `.target_jurisdiction_set`, `.jurisdictions` and `.controls` off it, none of which mention a
   // SHA. A stale register would then have validated clean.
-  sha(jurisdiction.candidate?.sha, 'jurisdiction candidate sha');
-  if (jurisdiction.candidate.sha !== candidate.sha) fail('jurisdiction register is not bound to the candidate');
+  // Cross-check while the declaration exists. Absent, ONE thing binds this document: the C..T
+  // train. T is signed, is C's direct single-parent child, and may change nothing outside the
+  // authority allow-list, so the register validated here is the tree exactly one commit after C.
+  //
+  // The bijection below is NOT a second binding, and an earlier revision of this comment claimed
+  // it was. It compares the register against the capability registry, and both are read out of
+  // the same T — so two documents that are stale together satisfy it exactly as well as two that
+  // are current. What it catches is disagreement between them, which is a different property.
+  if (jurisdiction.candidate !== undefined) {
+    const declared = object(jurisdiction.candidate, 'jurisdiction candidate');
+    if (declared.sha !== undefined && declared.sha !== candidate.sha) fail('jurisdiction register is not bound to the candidate');
+  }
   const targets = array(jurisdiction.target_jurisdiction_set); const jurisdictionRows = array(jurisdiction.jurisdictions);
   if (targets.length !== 1 || targets[0] !== 'KR' || jurisdictionRows.length !== 1 || jurisdictionRows[0]?.id !== 'JUR-KR-001' || jurisdictionRows[0]?.country_code !== 'KR') fail('jurisdiction target must be exactly KR / JUR-KR-001');
   const controls = new Map(); for (const control of array(jurisdiction.controls)) { if (controls.has(control.id)) fail(`duplicate control id: ${control.id}`); controls.set(control.id, control); }
@@ -343,7 +381,7 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (control.release_disposition !== 'HOLD') fail(`jurisdiction control ${control.id} must remain HOLD without qualified authority`);
     nonempty(control.freshness?.status, `${control.id} freshness status`);
     nonempty(control.unhold_authority, `${control.id} explicit unhold authority`);
-    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); } if (control.candidate_evidence?.candidate_sha !== candidate.sha) fail(`${control.id} control evidence is not candidate-bound`);
+    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); } const controlEvidence = object(control.candidate_evidence, `${control.id} control candidate evidence`); if (!STATES.has(controlEvidence.status)) fail(`${control.id} control evidence status is invalid`); nonempty(controlEvidence.reason, `${control.id} control evidence reason`); if (controlEvidence.candidate_sha !== undefined && controlEvidence.candidate_sha !== candidate.sha) fail(`${control.id} control evidence is not candidate-bound`);
   }
   const bindingTuples = new Set(); for (const cap of registry.capabilities) for (const binding of cap.jurisdiction_bindings) { const tuple=`${binding.control_id}|${cap.id}`; if (bindingTuples.has(tuple)) fail(`${cap.id} duplicate jurisdiction binding`); bindingTuples.add(tuple);
     if (binding.jurisdiction_id !== 'JUR-KR-001' || !controls.has(binding.control_id)) fail(`${cap.id} has missing jurisdiction control ${binding.control_id}`);
@@ -370,11 +408,10 @@ function main() {
   verifyConsoleAuthorityTrain(root, candidateSha, authorityTipSha, syntheticMergeSha);
   const registry = parseImmutableJson(git(root, ['show', `${authorityTipSha}:docs/program/console-capability-registry.json`]), 'console capability registry').value;
   const jurisdiction = parseImmutableJson(git(root, ['show', `${authorityTipSha}:docs/program/console-jurisdiction-register.json`]), 'console jurisdiction register').value;
-  if (registry.candidate?.sha !== candidateSha) fail('CONSOLE_CANDIDATE_SHA must equal the authority-tip candidate SHA');
   const candidateSource = createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha);
   const resolveBuckTarget = createConsoleBuckTargetResolver(candidateSource);
   const resolveSha = (value) => { try { execFileSync('git', ['cat-file', '-e', `${value}^{commit}`], { cwd: root, stdio: 'ignore' }); return true; } catch { return false; } };
   const routeFacts = extractConsoleRouteFactsFromCandidate(candidateSource);
-  console.log(JSON.stringify(validateConsoleTruthLedger(registry, jurisdiction, { resolveSha, resolveSource: candidateSource.resolveSource, resolveBuckTarget, routeFacts, repoRoot: root }), null, 2));
+  console.log(JSON.stringify(validateConsoleTruthLedger(registry, jurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveSource: candidateSource.resolveSource, resolveBuckTarget, routeFacts, repoRoot: root }), null, 2));
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

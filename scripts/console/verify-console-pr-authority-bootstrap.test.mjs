@@ -7,6 +7,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const C = 'c'.repeat(40), T = 't'.repeat(40).replace(/t/g, 'a'), M = 'b'.repeat(40), S = 'e'.repeat(40), BASE = 'd'.repeat(40);
+// Pinned as a literal on purpose: this is the one prefix where an ADDED file is admissible, so
+// the test must state it rather than echo whatever the module happens to define.
+const LEDGER_DIRECTORY = 'docs/program/ledger/';
 const policy = `${TRUSTED_ALLOWED_SIGNER}\n`;
 const changes = AUTHORITY_PATHS.map((path) => ({ path, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }));
 function fixture(overrides = {}) {
@@ -25,6 +28,10 @@ function fixture(overrides = {}) {
   return { data, calls };
 }
 function rejects(overrides, pattern) { const { data } = fixture(overrides); assert.throws(() => verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), pattern); }
+function accepts(overrides) { const { data } = fixture(overrides); assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M }); }
+const modified = (file) => ({ path: file, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' });
+const addedFile = (file) => ({ path: file, status: 'A', oldMode: '000000', newMode: '100644', oldType: null, newType: 'blob' });
+const registryText = (body) => (sha, file) => file === POLICY_PATH ? policy : JSON.stringify(body);
 
 test('accepts signed C/T plus an unsigned synthetic merge M without executing marker', () => {
   const { data, calls } = fixture({ readFile: (sha, file) => {
@@ -53,6 +60,51 @@ test('rejects policy type/mode, policy change, and product change after C', () =
   rejects({ diff: () => [...changes.slice(0, 2), { path: 'scripts/console/validate-console-truth-ledger.mjs', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
   rejects({ diff: () => [...changes.slice(0, 2), { path: 'backend/app/src/marker.rs', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /authority documents/);
 });
+test('C..T may touch one authority document, and may ADD files only under the ledger directory', () => {
+  // A single document is enough. "All three" was the shared-file mutex, not the allow-list.
+  for (const file of AUTHORITY_PATHS) accepts({ diff: () => [modified(file)] });
+  // A NEW file is status `A`, accepted under the ledger prefix …
+  accepts({ diff: () => [addedFile(`${LEDGER_DIRECTORY}2026-08-01-pr-1.md`)] });
+  accepts({ diff: () => [modified(`${LEDGER_DIRECTORY}0001-existing.md`)] });
+  // The prefix is a FLAT directory of `.md` entries, and this is the only reader that can be
+  // handed a path Git itself would never produce — the fixture supplies the diff. A bare
+  // `startsWith` accepted `docs/program/ledger/../../evil`, which names a path OUTSIDE the
+  // prefix, and it accepted an added `.mjs`: executable content, added by the one commit that
+  // is otherwise forbidden to touch a product path.
+  for (const entry of ['../../evil', '../console-capability-registry.json', 'nested/2026-08-01-pr-1.md', 'entry.mjs', 'entry.md.mjs', '.hidden.md', 'entry.txt', '', 'sub/']) {
+    rejects({ diff: () => [addedFile(`${LEDGER_DIRECTORY}${entry}`)] }, /docs\/program\/ledger\//);
+    rejects({ diff: () => [modified(`${LEDGER_DIRECTORY}${entry}`)] }, /docs\/program\/ledger\//);
+  }
+  // … and nowhere else. A near-miss sibling of the prefix is not the prefix, and the registers
+  // and the legacy ledger stay modify-only: `A` on any of them is still an unsupported change.
+  for (const file of ['docs/program/ledgerbook.md', 'docs/program/console-program-ledger-2.md', 'README.md', 'scripts/console/attack.mjs', ...AUTHORITY_PATHS]) {
+    rejects({ diff: () => [addedFile(file)] }, /docs\/program\/ledger\//);
+  }
+  // The mode/type checks survive the new status.
+  rejects({ diff: () => [{ ...addedFile(`${LEDGER_DIRECTORY}x.md`), newMode: '100755' }] }, /mode-100644/);
+  rejects({ diff: () => [{ ...addedFile(`${LEDGER_DIRECTORY}x.md`), newMode: '120000' }] }, /mode-100644/);
+  rejects({ diff: () => [{ ...modified(`${LEDGER_DIRECTORY}x.md`), status: 'D', newMode: '000000', newType: null }] }, /mode-100644/);
+  // An empty C..T asserts nothing about authority at all.
+  rejects({ diff: () => [] }, /at least one authority document/);
+});
+
+test('the registry candidate.sha is an optional cross-check, never the locator for C', () => {
+  // Backward compatible: the shipped shape stores it, and the default fixture is that shape.
+  accepts({});
+  // Forward compatible: with the field gone C is still Git's own answer — T's only parent. This
+  // acceptance is the whole point of the expand step; without it, main's gate could never accept
+  // the pull request that removes the field, because main's gate is the thing reading it.
+  accepts({ readFile: registryText({ schema_version: 'console-capability-registry-v2' }) });
+  accepts({ readFile: registryText({ candidate: { branch: 'some/branch' } }) });
+  // Present it must agree with Git. It never could disagree before — it was compared against the
+  // parent it was used to find — so this is a check that did not previously exist.
+  rejects({ readFile: registryText({ candidate: { sha: 'f'.repeat(40) } }) }, /disagrees with T parent/);
+  rejects({ readFile: registryText({ candidate: { sha: 'not-a-sha' } }) }, /lowercase 40-character SHA/);
+  rejects({ readFile: (sha, file) => file === POLICY_PATH ? policy : '{' }, /not valid JSON/);
+  // And C itself must still resolve to a real object.
+  rejects({ hasCommit: (sha) => sha !== C }, /C object is unavailable/);
+});
+
 test('rejects indirect T and malformed M', () => {
   rejects({ parents: (sha) => sha === T ? [C, BASE] : [BASE, T] }, /direct single-parent/);
   rejects({ parents: (sha) => sha === T ? [C] : [BASE] }, /two-parent merge/);
@@ -101,7 +153,10 @@ test('candidate compatibility fixture receives only C/T/M environment facts and 
     CONSOLE_SYNTHETIC_MERGE_SHA: M,
   });
   assert.deepEqual(plan.commands[1], ['node', ['scripts/console/plan-fanout.mjs', '--candidate', C, '--authority-tip', T, '--synthetic-merge', M]]);
-  assert.deepEqual(plan.commands[2][1], ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs']);
+  // This file gates the highest-privilege script in the repository and was absent from the list,
+  // so the `pull_request_target` path — the one that actually decides the merge — ran every
+  // console check EXCEPT the one covering the verifier making the decision.
+  assert.deepEqual(plan.commands[2][1], ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs']);
 });
 test('workflow separates open PR authentication from closed merged squash binding', () => {
   const workflow = readFileSync(new URL('../../.github/workflows/console-authority-bootstrap.yml', import.meta.url), 'utf8');
@@ -148,7 +203,16 @@ test('fetches a deleted, non-reachable PR authority tip exactly and rejects mism
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 test('candidate compatibility fixture executes the actual planner CLI flag contract', () => {
-  const candidate = spawnSync('git', ['rev-parse', '28642975^{commit}'], { encoding: 'utf8' }).stdout.trim();
+  // This resolves HEAD because the candidate is whatever commit the gate will actually
+  // check out. It used to pin `28642975`, which is an ancestor of no remote ref — it
+  // survives only in the local branch it was authored on. So the assertion below could
+  // only ever hold in one clone, and nothing caught that because this file was wired
+  // into no workflow: `git rev-parse` on an absent object prints nothing, `candidate`
+  // became the empty string, and `checkout --detach ''` exits 128 with no mention of
+  // the SHA that was missing. The `assert.match` is what turns that into a readable
+  // failure if HEAD ever fails to resolve.
+  const candidate = spawnSync('git', ['rev-parse', 'HEAD^{commit}'], { encoding: 'utf8' }).stdout.trim();
+  assert.match(candidate, /^[0-9a-f]{40}$/, 'candidate commit must resolve before it can be checked out');
   const directory = mkdtempSync(path.join(tmpdir(), 'console-candidate-planner-'));
   try {
     assert.equal(spawnSync('git', ['worktree', 'add', '--detach', '--no-checkout', directory], { encoding: 'utf8' }).status, 0);
@@ -164,15 +228,34 @@ test('candidate compatibility fixture executes the actual planner CLI flag contr
   }
 });
 test('hostile global Git config cannot replace the pinned verifier or execute its marker', () => {
+  // Proving the REAL verifier ran needs a genuinely signed commit, and this file has to be
+  // runnable from a clean CI checkout, where none is reachable: main's history is unsigned
+  // squash commits and a `pull_request` HEAD is GitHub's unsigned synthetic merge. It used to
+  // verify `HEAD` against the pinned production policy, which is why it passed only on a
+  // candidate branch and is one reason it never ran anywhere. The fixture signs its own commit
+  // and pins its own key; what is under test is the Git-config sanitisation, and the pinning of
+  // the production signer is asserted separately by `validatePinnedPolicy`.
   const directory = mkdtempSync(path.join(tmpdir(), 'console-hostile-git-config-'));
+  const repo = path.join(directory, 'repo');
   const marker = path.join(directory, 'marker');
   const attacker = path.join(directory, 'attacker-ssh-program');
   const globalConfig = path.join(directory, 'gitconfig');
-  const sha = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim();
+  const run = (args) => spawnSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
+  const principal = 'bootstrap@example.invalid';
   try {
+    assert.equal(spawnSync('git', ['init', repo], { encoding: 'utf8' }).status, 0);
+    const key = path.join(directory, 'signing_key');
+    assert.equal(spawnSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-f', key], { encoding: 'utf8' }).status, 0);
+    for (const entry of [['user.name', 'Bootstrap Test'], ['user.email', principal], ['gpg.format', 'ssh'], ['user.signingkey', key]]) assert.equal(run(['config', ...entry]).status, 0);
+    writeFileSync(path.join(repo, 'base.txt'), 'base\n');
+    assert.equal(run(['add', '--', 'base.txt']).status, 0);
+    assert.equal(run(['commit', '-S', '-m', 'signed base']).status, 0);
+    const sha = run(['rev-parse', 'HEAD']).stdout.trim();
+    const publicKey = readFileSync(`${key}.pub`, 'utf8').trim().split(/\s+/).slice(0, 2).join(' ');
+    const fingerprint = spawnSync('ssh-keygen', ['-lf', `${key}.pub`, '-E', 'sha256'], { encoding: 'utf8' }).stdout.trim().split(/\s+/)[1];
     writeFileSync(attacker, `#!/bin/sh\nprintf attacked > '${marker}'\nexit 1\n`, { mode: 0o700 });
     writeFileSync(globalConfig, `[gpg "ssh"]\n\tprogram = ${attacker}\n`);
-    const result = verifyPinnedSshCommit(process.cwd(), sha, policy, {
+    const result = verifyPinnedSshCommit(repo, sha, `${principal} ${publicKey}\n`, {
       GIT_CONFIG_GLOBAL: globalConfig,
       GIT_CONFIG_COUNT: '1',
       GIT_CONFIG_KEY_0: 'gpg.ssh.program',
@@ -181,9 +264,12 @@ test('hostile global Git config cannot replace the pinned verifier or execute it
       XDG_CONFIG_HOME: directory,
     });
     assert.equal(result.ok, true);
-    assert.equal(result.principal, TRUSTED_PRINCIPAL);
-    assert.equal(result.fingerprint, TRUSTED_FINGERPRINT);
+    assert.equal(result.principal, principal);
+    assert.equal(result.fingerprint, fingerprint);
     assert.equal(existsSync(marker), false);
+    // The production identities stay pinned constants, not values read from anywhere.
+    assert.equal(TRUSTED_ALLOWED_SIGNER, `${TRUSTED_PRINCIPAL} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAgMAp8vHS9V/9UQQVTa5FtmS9Q9fdB8I520DsZMMDTR`);
+    assert.match(TRUSTED_FINGERPRINT, /^SHA256:[A-Za-z0-9+/]+={0,2}$/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

@@ -254,6 +254,11 @@ test('a passing verdict cannot be self-asserted by declaring no independent revi
 test('Korea trace bijection rejects missing trace', () => {
   const bad=structuredClone(jurisdiction); bad.controls[0].capability_traceability.pop();
   assert.throws(() => validateConsoleTruthLedger(registry,bad,{expectedCandidateSha:registry.candidate.sha}),/bidirectional|bijection/);
+  // A binding naming a control the register does not carry. Untested until now: deleting the
+  // `controls.has(...)` guard turned this into an unhandled TypeError rather than a red test,
+  // which is how a check that nothing exercises looks from the outside.
+  const dangling=structuredClone(registry); dangling.capabilities[0].jurisdiction_bindings[0].control_id='CTRL-KR-DOES-NOT-EXIST';
+  assert.throws(() => validateConsoleTruthLedger(dangling,jurisdiction,{expectedCandidateSha:registry.candidate.sha}),/has missing jurisdiction control CTRL-KR-DOES-NOT-EXIST/);
 });
 
 
@@ -382,6 +387,117 @@ test('candidate resolver requires the signed authority tip to be the direct thre
     assert.throws(() => createConsoleCandidateSourceResolver(root, candidate, run(['rev-parse', 'HEAD']), { candidateSigningAuthority: authority }), /integration tip commit signature|direct single-parent child/);
     run(['checkout', '-B', 'indirect', tip]); writeFileSync(path.join(root, 'docs/program/console-program-ledger.md'), 'extra\n'); run(['add', '.']); run(['commit', '-S', '-m', 'indirect']);
     assert.throws(() => createConsoleCandidateSourceResolver(root, candidate, run(['rev-parse', 'HEAD']), { candidateSigningAuthority: authority }), /direct single-parent child/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('the stored candidate SHA is an optional cross-check in both registers, and existence is not', () => {
+  // BACKWARD compatible: the shipped documents still carry every stored copy and still validate.
+  // This is what lets the pull request that relaxes the rule satisfy the rule it is relaxing.
+  assert.doesNotThrow(() => validateConsoleTruthLedger(registry, jurisdiction, { expectedCandidateSha: registry.candidate.sha }));
+
+  // FORWARD compatible: with every stored copy gone the documents still validate. The candidate
+  // arrives from git parentage via the caller, so a stored copy could only ever agree with it.
+  const strippedRegistry = structuredClone(registry);
+  delete strippedRegistry.candidate;
+  for (const capability of strippedRegistry.capabilities) delete capability.candidate_evidence.candidate_sha;
+  const strippedJurisdiction = structuredClone(jurisdiction);
+  delete strippedJurisdiction.candidate;
+  for (const control of strippedJurisdiction.controls) delete control.candidate_evidence.candidate_sha;
+  assert.doesNotThrow(() => validateConsoleTruthLedger(strippedRegistry, strippedJurisdiction, { expectedCandidateSha: registry.candidate.sha }));
+
+  // The caller's SHA is now the only source, so it is required rather than optional.
+  assert.throws(() => validateConsoleTruthLedger(strippedRegistry, strippedJurisdiction, {}), /candidate sha must be a full lowercase Git SHA/);
+
+  // EXISTENCE is what the deleted equalities were still carrying beyond the comparison, and it
+  // is kept explicitly: a row or control with no evidence payload at all is still refused.
+  const noEvidence = structuredClone(strippedRegistry); delete noEvidence.capabilities[0].candidate_evidence;
+  assert.throws(() => validateConsoleTruthLedger(noEvidence, strippedJurisdiction, { expectedCandidateSha: registry.candidate.sha }), /candidate evidence must be an object/);
+  const noControlEvidence = structuredClone(strippedJurisdiction); delete noControlEvidence.controls[0].candidate_evidence;
+  assert.throws(() => validateConsoleTruthLedger(strippedRegistry, noControlEvidence, { expectedCandidateSha: registry.candidate.sha }), /control candidate evidence must be an object/);
+
+  // EXISTENCE alone is weaker than what was deleted. `control.candidate_evidence?.candidate_sha
+  // !== candidate.sha` refused `{}` — `undefined !== sha` — so an empty payload was never an
+  // accepted answer. `object(...)` accepts it. The payload must still carry the fields that make
+  // it evidence, and the same two the capability rows have always been required to carry.
+  const emptyControlEvidence = structuredClone(strippedJurisdiction); emptyControlEvidence.controls[0].candidate_evidence = {};
+  assert.throws(() => validateConsoleTruthLedger(strippedRegistry, emptyControlEvidence, { expectedCandidateSha: registry.candidate.sha }), /control evidence status is invalid/);
+  const noControlReason = structuredClone(strippedJurisdiction); delete noControlReason.controls[0].candidate_evidence.reason;
+  assert.throws(() => validateConsoleTruthLedger(strippedRegistry, noControlReason, { expectedCandidateSha: registry.candidate.sha }), /control evidence reason must be a non-empty string/);
+  const badControlStatus = structuredClone(strippedJurisdiction); badControlStatus.controls[0].candidate_evidence.status = 'SHIPPED';
+  assert.throws(() => validateConsoleTruthLedger(strippedRegistry, badControlStatus, { expectedCandidateSha: registry.candidate.sha }), /control evidence status is invalid/);
+  const emptyCapabilityEvidence = structuredClone(strippedRegistry); emptyCapabilityEvidence.capabilities[0].candidate_evidence = {};
+  assert.throws(() => validateConsoleTruthLedger(emptyCapabilityEvidence, strippedJurisdiction, { expectedCandidateSha: registry.candidate.sha }), /candidate evidence status is invalid/);
+
+  // A stored copy that is PRESENT and disagrees is still refused, in every one of the four places.
+  const staleJurisdiction = structuredClone(jurisdiction); staleJurisdiction.candidate.sha = 'a'.repeat(40);
+  assert.throws(() => validateConsoleTruthLedger(registry, staleJurisdiction, { expectedCandidateSha: registry.candidate.sha }), /jurisdiction register is not bound to the candidate/);
+  const staleControl = structuredClone(jurisdiction); staleControl.controls[0].candidate_evidence.candidate_sha = 'a'.repeat(40);
+  assert.throws(() => validateConsoleTruthLedger(registry, staleControl, { expectedCandidateSha: registry.candidate.sha }), /control evidence is not candidate-bound/);
+});
+
+test('the authority-only diff accepts one document and added ledger entries, and refuses added files elsewhere', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'console-authority-diff-'));
+  const run = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim();
+  const AUTHORITY_FILES = ['console-capability-registry.json', 'console-jurisdiction-register.json', 'console-program-ledger.md'];
+  try {
+    run(['init']); run(['config', 'user.name', 'Jason Lee']); run(['config', 'user.email', 'jason19931225@gmail.com']);
+    const signingKey = path.join(root, 'key'); execFileSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-f', signingKey]);
+    run(['config', 'gpg.format', 'ssh']); run(['config', 'user.signingkey', signingKey]);
+    const publicKey = readFileSync(`${signingKey}.pub`, 'utf8').trim().split(/\s+/).slice(0, 2).join(' ');
+    const fingerprint = execFileSync('ssh-keygen', ['-lf', `${signingKey}.pub`, '-E', 'sha256'], { encoding: 'utf8' }).trim().split(/\s+/)[1];
+    const candidateSigningAuthority = { format: 'ssh', principal: 'jason19931225@gmail.com', fingerprint };
+    mkdirSync(path.join(root, '.github/trust'), { recursive: true });
+    mkdirSync(path.join(root, 'docs/program/ledger'), { recursive: true });
+    writeFileSync(path.join(root, '.github/trust/console.allowed_signers'), `jason19931225@gmail.com ${publicKey}\n`);
+    for (const file of AUTHORITY_FILES) writeFileSync(path.join(root, 'docs/program', file), 'C\n');
+    writeFileSync(path.join(root, 'docs/program/ledger/0001-existing.md'), 'existing entry\n');
+    writeFileSync(path.join(root, 'product.txt'), 'C\n');
+    run(['add', '--', '.github', 'docs', 'product.txt']); run(['commit', '-S', '-m', 'C']);
+    const candidateSha = run(['rev-parse', 'HEAD']);
+    const tip = (relativePath, body) => {
+      run(['checkout', '-q', '--detach', candidateSha]);
+      if (relativePath) {
+        const absolute = path.join(root, relativePath);
+        mkdirSync(path.dirname(absolute), { recursive: true });
+        writeFileSync(absolute, body);
+        run(['add', '--', relativePath]);
+      }
+      run(['commit', '-S', '--allow-empty', '-m', 'T']);
+      return run(['rev-parse', 'HEAD']);
+    };
+    const resolver = (relativePath, body) => createConsoleCandidateSourceResolver(root, candidateSha, tip(relativePath, body), { candidateSigningAuthority });
+    // One document is enough; the allow-list, not the count, is the control.
+    for (const file of AUTHORITY_FILES) assert.doesNotThrow(() => resolver(`docs/program/${file}`, 'T\n'), file);
+    // Added ledger entries are accepted under the prefix, and modified ones stay accepted.
+    assert.doesNotThrow(() => resolver('docs/program/ledger/2026-08-01-pr-1.md', 'entry\n'));
+    assert.doesNotThrow(() => resolver('docs/program/ledger/0001-existing.md', 'edited\n'));
+    // A new entry whose content matches a file already in the tree. This reader used to pass
+    // `--find-renames --find-copies-harder`, which reports any source ≥50% similar as status
+    // `C` with two paths, while the two gates that decide the merge pass `--no-renames` and see
+    // `A` with one. Identical bytes are used here only to make the similarity score
+    // deterministic; the divergence starts at 50%. Identical flags in all three readers now.
+    assert.doesNotThrow(() => resolver('docs/program/ledger/0002-near-copy.md', 'existing entry\n'));
+    // The prefix is a FLAT directory of `.md` entries: no subdirectory, no other extension.
+    for (const file of ['docs/program/ledger/nested/2026-08-01-pr-1.md', 'docs/program/ledger/entry.mjs', 'docs/program/ledger/entry.txt']) {
+      assert.throws(() => resolver(file, 'entry\n'), /product path after candidate|unsupported diff status/, file);
+    }
+    // Adding anywhere else is refused — including a near-miss sibling of the directory name.
+    for (const file of ['docs/program/ledgerbook.md', 'docs/program/console-program-ledger-2.md', 'README.md']) {
+      assert.throws(() => resolver(file, 'new\n'), /product path after candidate|unsupported diff status/, file);
+    }
+    // A non-authority MODIFICATION is unchanged, and an empty tip asserts nothing.
+    assert.throws(() => resolver('product.txt', 'T\n'), /product path after candidate/);
+    assert.throws(() => resolver(null), /at least one authority document/);
+    // The unresolved-merge scan follows the ledger into its directory. Nine such lines reached
+    // main through the one file everybody edited; moving to one file per entry must not move
+    // the entries out from under the check.
+    assert.throws(() => resolver('docs/program/ledger/2026-08-01-merged.md', 'both entries kept\n||||||| 18a21d7cd\nand the marker left behind\n'), /unresolved merge marker/);
+    // …including an entry that arrived on an EARLIER train and is untouched by this one.
+    const withMarker = tip('docs/program/ledger/2026-08-01-merged.md', '<<<<<<< ours\nkept\n');
+    run(['checkout', '-q', '-B', 'later-train', withMarker]);
+    writeFileSync(path.join(root, 'docs/program/console-program-ledger.md'), 'T\n');
+    run(['add', '--', 'docs/program/console-program-ledger.md']); run(['commit', '-S', '-m', 'later T']);
+    assert.throws(() => createConsoleCandidateSourceResolver(root, withMarker, run(['rev-parse', 'HEAD']), { candidateSigningAuthority }), /unresolved merge marker/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
