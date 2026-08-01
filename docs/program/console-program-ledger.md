@@ -2381,3 +2381,25 @@ Mechanical rebind. No claim in the candidate changes.
 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the build was compiling single-threaded to serialize the tests
+
+Rebind onto the build-parallelism candidate.
+
+`--num-threads=1` is passed to `buck2 test` to serialize the test phase. Buck2's own help states
+what the flag does: *"Number of threads to use during execution (default is # cores)"* — the whole
+invocation, compile actions included. Every PostgreSQL CI run has therefore been compiling
+single-threaded on a multi-core runner, as a side effect of a flag whose purpose is test isolation.
+
+The two phases need different things and were sharing one setting. Tests must be serialized because
+three files issue cluster-global `ALTER ROLE ... PASSWORD` that outlives the per-test database
+`#[sqlx::test]` drops. Compiling has no such constraint. The build is now a separate pass at default
+parallelism, before the serialized test pass; the daemon carries the result forward so nothing is
+rebuilt.
+
+This does not make the tests parallel. The three role-mutating files still force serialization, and
+the answer there is namespaced role names — the pattern PostgreSQL's own regression suite uses,
+where every object in a parallel group carries a reserved prefix.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.

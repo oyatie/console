@@ -148,6 +148,36 @@ test_executor_args=(--env "CONSOLE_BUCK_POSTGRES_ENV_FILE=${test_env_file}" --en
 if [[ -n "${exact_test}" ]]; then
   test_executor_args+=(--env "CONSOLE_BUCK_RUST_TEST_EXACT=${exact_test}")
 fi
+# BUILD IN PARALLEL, THEN TEST SERIALLY.
+#
+# Buck2's `-j/--num-threads` is "Number of threads to use during execution (default is # cores)"
+# — it governs the WHOLE invocation, compile actions included. CI passes `--num-threads=1` to keep
+# the test phase serialized, and that flag was therefore also compiling every action
+# single-threaded on a multi-core runner.
+#
+# Serialization is only needed for the TEST phase, and it is needed for a specific reason: three
+# test files issue cluster-global `ALTER ROLE ... PASSWORD`, which outlives the per-test database
+# `#[sqlx::test]` drops and poisons siblings sharing this one container. Compiling has no such
+# constraint.
+#
+# So the build is hoisted into its own pass at default parallelism. Targets are recognised by
+# their `//` prefix, which is how the caller passes them; every other argv entry is a buck flag
+# and is deliberately not forwarded here — `--num-threads=1` least of all. The daemon carries the
+# result into the test pass below, so nothing is rebuilt.
+build_targets=()
+for arg in "$@"; do
+  case "${arg}" in
+    //*|root//*) build_targets+=("${arg}") ;;
+  esac
+done
+if ((${#build_targets[@]} > 0)); then
+  if [[ -n "${isolation_name}" ]]; then
+    BUCK_ISOLATION_DIR="${isolation_name}" "${buck_bin}" build --local-only "${build_targets[@]}"
+  else
+    "${buck_bin}" build --local-only "${build_targets[@]}"
+  fi
+fi
+
 # Reuse the caller's/default Buck daemon so PostgreSQL integration tests share
 # the same-worktree analysis and compile cache. Callers that need an isolated
 # daemon can still opt in explicitly without forcing every run cold.
