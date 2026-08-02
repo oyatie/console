@@ -3841,6 +3841,7 @@ async fn update_branch(
         .store
         .update_branch(UpdateBranchCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             branch_id: BranchId::from_uuid(id),
             region_id: body.region_id,
             name: body.name,
@@ -3866,6 +3867,7 @@ async fn deactivate_branch(
         .store
         .deactivate_branch(DeactivateBranchCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             branch_id: BranchId::from_uuid(id),
             trace: TraceContext::generate(),
             occurred_at: OffsetDateTime::now_utc(),

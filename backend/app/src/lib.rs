@@ -2536,6 +2536,10 @@ fn update_equipment_projected_handler(store: PgRegistryStore) -> ProjectedHandle
             store
                 .update_equipment(UpdateEquipmentCommand {
                     actor: input.principal.user_id,
+                    // The projected dispatch is a second door onto the SAME
+                    // use-case, so it carries the same branch scope; without it
+                    // the ontology action would be a way around the check.
+                    branch_scope: input.principal.branch_scope.clone(),
                     equipment_id: EquipmentId::from_uuid(equipment_uuid),
                     fields: UpdateEquipmentFields {
                         status: Some(status),

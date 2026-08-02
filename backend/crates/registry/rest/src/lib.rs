@@ -975,6 +975,7 @@ async fn assign_equipment_substitute(
 
     let command = SubstituteAssignmentCommand {
         actor: principal.user_id,
+        branch_scope: principal.branch_scope.clone(),
         source_equipment_id: body.source_equipment_id,
         substitute_equipment_id: body.substitute_equipment_id,
         assigned_to: body.assigned_to,
@@ -1001,6 +1002,7 @@ async fn return_equipment_substitute(
 
     let command = SubstituteReturnCommand {
         actor: principal.user_id,
+        branch_scope: principal.branch_scope.clone(),
         substitution_id,
         trace: TraceContext::generate(),
         returned_at: OffsetDateTime::now_utc(),
@@ -1086,7 +1088,7 @@ async fn list_equipment_ownership_transfers(
 
     let items = state
         .store
-        .list_equipment_ownership_transfers(equipment_id)
+        .list_equipment_ownership_transfers(equipment_id, &principal.branch_scope)
         .await
         .map_err(RestError::from_store)?
         .into_iter()
@@ -1106,6 +1108,7 @@ async fn create_equipment_ownership_transfer(
 
     let command = CreateEquipmentOwnershipTransferCommand {
         actor: principal.user_id,
+        branch_scope: principal.branch_scope.clone(),
         equipment_id,
         to_owner: require_nonempty(body.to_owner, "to_owner")?,
         reason: require_nonempty(body.reason, "reason")?,
@@ -1135,6 +1138,7 @@ async fn decide_equipment_ownership_transfer(
 
     let command = DecideEquipmentOwnershipTransferCommand {
         actor: principal.user_id,
+        branch_scope: principal.branch_scope.clone(),
         request_id,
         decision: body.decision,
         comment: require_nonempty(body.comment, "comment")?,
@@ -1372,6 +1376,7 @@ async fn execute_object_action_inner(
         .store
         .update_equipment(UpdateEquipmentCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             equipment_id: body.object_id,
             fields,
             trace,
@@ -1739,6 +1744,7 @@ async fn update_equipment(
         .store
         .update_equipment(UpdateEquipmentCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             equipment_id,
             fields,
             trace: TraceContext::generate(),
@@ -1780,7 +1786,7 @@ async fn list_equipment_versions(
 
     let versions = state
         .store
-        .list_equipment_versions(equipment_id)
+        .list_equipment_versions(equipment_id, &principal.branch_scope)
         .await
         .map_err(RestError::from_store)?;
     Ok(Json(EquipmentVersionListResponse {
@@ -1819,6 +1825,7 @@ async fn rollback_equipment(
         .store
         .rollback_equipment(RollbackEquipmentCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             equipment_id,
             version,
             trace: TraceContext::generate(),
@@ -1891,6 +1898,7 @@ async fn delete_equipment(
         .store
         .soft_delete_equipment(DeleteEquipmentCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             equipment_id,
             trace: TraceContext::generate(),
             occurred_at: OffsetDateTime::now_utc(),
@@ -1921,9 +1929,13 @@ fn require_nonempty(value: String, field: &str) -> Result<String, RestError> {
 /// This is correct only for create-style org surfaces that do not yet have a
 /// concrete row branch. Direct create handlers pass `principal_create_branch()`
 /// into the store so branch-scoped admins write into their own branch; org-wide
-/// principals fall back to the tenant HQ branch. Row-specific reads stay
-/// branch-filtered, and row-specific mutations must keep checking the stored
-/// row branch if equipment becomes fully branch-partitioned for writes.
+/// principals fall back to the tenant HQ branch.
+///
+/// It is NOT sufficient on its own for a by-primary-key row. Every handler that
+/// names an existing row therefore also hands `principal.branch_scope` to the
+/// store, and the adapter refuses an out-of-scope row as `not_found`. That
+/// second check is the one that actually decides — this helper only proves the
+/// role holds the feature.
 fn authorize_equipment_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
     let branch = match &principal.branch_scope {
         BranchScope::All => BranchId::new(),
@@ -1980,6 +1992,10 @@ fn rest_error_from_request_context(
     }
 }
 
+/// Feature-tier gate for a read that carries no branch of its own yet. Same
+/// caveat as [`authorize_equipment_feature`]: for a by-primary-key read the
+/// caller MUST also pass `principal.branch_scope` down to the store, which
+/// resolves the row's real branch and 404s outside it.
 fn authorize_read_access(principal: &Principal) -> Result<(), RestError> {
     let resource_branch = match &principal.branch_scope {
         BranchScope::All => BranchId::new(),

@@ -8,7 +8,8 @@
 
 use console_identity_domain::Team;
 use console_kernel_core::{
-    AuditAction, AuditEvent, BranchId, KernelError, RegionId, Timestamp, TraceContext, UserId,
+    AuditAction, AuditEvent, BranchId, BranchScope, KernelError, RegionId, Timestamp, TraceContext,
+    UserId,
 };
 use serde::{Deserialize, Serialize};
 
@@ -211,6 +212,10 @@ pub struct DeactivateRegionCommand {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdateBranchCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied. The mutated
+    /// object here IS a branch, so the caller may only touch a branch its own
+    /// scope allows; anything else is refused as `not_found`.
+    pub branch_scope: BranchScope,
     pub branch_id: BranchId,
     pub region_id: Option<RegionId>,
     pub name: Option<String>,
@@ -224,6 +229,8 @@ pub struct UpdateBranchCommand {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DeactivateBranchCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub branch_id: BranchId,
     pub trace: TraceContext,
     pub occurred_at: Timestamp,

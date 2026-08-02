@@ -279,6 +279,7 @@ fn update_equipment_handler(store: PgRegistryStore) -> ProjectedHandler {
             let audit_event_id = store
                 .update_equipment(UpdateEquipmentCommand {
                     actor: input.principal.user_id,
+                    branch_scope: input.principal.branch_scope.clone(),
                     equipment_id: EquipmentId::from_uuid(equipment_uuid),
                     fields: UpdateEquipmentFields {
                         status: Some(status),

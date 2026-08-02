@@ -364,6 +364,7 @@ async fn substitute_assignment_lifecycle_is_audited_and_controls_availability(po
         let assigned = store
             .assign_substitute(SubstituteAssignmentCommand {
                 actor,
+                branch_scope: BranchScope::single(branch),
                 source_equipment_id: down,
                 substitute_equipment_id: substitute,
                 assigned_to: Some(mechanic),
@@ -393,6 +394,7 @@ async fn substitute_assignment_lifecycle_is_audited_and_controls_availability(po
         let returned = store
             .return_substitute(SubstituteReturnCommand {
                 actor,
+                branch_scope: BranchScope::single(branch),
                 substitution_id: assigned.id,
                 trace: TraceContext::generate(),
                 returned_at: OffsetDateTime::now_utc(),
