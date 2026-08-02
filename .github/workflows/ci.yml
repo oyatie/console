@@ -261,7 +261,14 @@ jobs:
             -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
             -p console-platform-push -p console-platform-realtime -p console-platform-request-context \
             -p console-production-rest -p console-reporting-adapter-postgres -p console-support-adapter-postgres \
+            -p console-kernel-core \
             -p console-workflow-runtime-adapter-postgres -p console-workorder-rest
+          # Doc tests, same step so no new step name has to be declared anywhere.
+          # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
+          # type-boundary claim ("this must not compile"), and they execute nowhere
+          # unless --doc is invoked explicitly.
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            --doc -p console-kernel-core
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-application --test attendance_policy
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
