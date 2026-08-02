@@ -34,7 +34,7 @@ const JOBS = new Map([
   ["backend", true],
   ["repo-gates", true],
   ["kubernetes-manifests", true],
-  ["support-domain-unit", "single Buck2 unit target behind a pinned toolchain + runner disk-free step"],
+  ["domain-unit", "cargo unit tests for the domain crates behind a pinned toolchain; the `fast` tier already runs the workspace suite"],
   ["postgres-domain-reachability", "serialized Buck2 PostgreSQL targets; the `db` tier already exercises that harness"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
@@ -75,6 +75,14 @@ const PLAN = new Map([
   ["CI preflight contract tests", { tier: "fast" }],
   ["Console route inventory regression", { tier: "fast" }],
   ["Console authority-train regression", { tier: "fast" }],
+  // Wired into `ci.yml` by #556, which is the first thing this mirror had to
+  // learn after it started running: the step existed on main and was declared
+  // nowhere, so the job-completeness check would have failed closed on it.
+  ["Console PR authority bootstrap regression", { tier: "fast" }],
+  // The guard that keeps THIS file honest. It ran in no workflow until 2026-08-01,
+  // which is why `support-domain-unit` outlived its rename to `domain-unit` on main
+  // and `npm run verify` was red for everyone.
+  ["Local CI mirror contract", { tier: "fast" }],
   ["Console truth-ledger validator exact-M regression", { tier: "fast" }],
   ["Console fanout planner exact-M regression", { tier: "fast" }],
   ["Buck PostgreSQL environment wrapper regression", { tier: "fast" }],
@@ -149,6 +157,13 @@ const PLAN = new Map([
   ["G008 import HR payroll readiness gate", { tier: "fast" }],
   ["People HR lifecycle maturity gate", { tier: "fast" }],
   ["Payroll release-gate contract", { tier: "fast" }],
+  ["Executed-tests ratchet — a test file must have a path from a workflow step", { tier: "fast" }],
+  ["Undeclared imports — every bare specifier must be declared", { tier: "fast" }],
+  ["Request-body contract — spec fields must exist on the handler", { tier: "fast" }],
+  // The step name promises the whole repository; the gate resolves a declared
+  // subset. Mirrored as-is so local matches CI exactly; renaming the step is
+  // what would make the promise true.
+  ["Doc citations — every code citation must resolve", { tier: "fast" }],
 
   // ---- kubernetes-manifests ---------------------------------------------
   // Mirrored because `check:production-hardening` pins the exact text of the

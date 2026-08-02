@@ -142,6 +142,9 @@ jobs:
       - name: Console PR authority bootstrap regression
         run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs
 
+      - name: Local CI mirror contract
+        run: node --test scripts/verify.test.mjs
+
       - name: Console truth-ledger validator exact-M regression
         run: node --test scripts/console/validate-console-truth-ledger.test.mjs
 
