@@ -646,6 +646,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/api.rs': 'postgres',
+            'tests/payslip_draft_api.rs': 'postgres',
             'tests/run_lifecycle_api.rs': 'postgres',
         },
     },

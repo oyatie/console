@@ -1155,7 +1155,7 @@ fn gate_str(gate: &Value, key: &str) -> Result<String, LifecycleError> {
 }
 
 /// The i64 twin of [`gate_str`]. `Value::as_i64` is `None` for a JSON float and
-/// for a numeric string, so this refuses `373302.0` and `"373302"` — not merely
+/// for a numeric string, so this refuses `373300.0` and `"373300"` — not merely
 /// an absent key. A key-presence check would leave that hole open.
 fn gate_i64(gate: &Value, key: &str) -> Result<i64, LifecycleError> {
     gate.get(key)
@@ -1513,7 +1513,7 @@ mod tests {
                         "monthly_income_tax_won": 74_350,
                         "local_income_tax_won": 7_430,
                     },
-                    "expected_total_employee_deductions_won": 373_302,
+                    "expected_total_employee_deductions_won": 373_300,
                 }],
                 "professional_validation": {
                     "reviewer_kind": "labor_attorney",
@@ -1590,7 +1590,7 @@ mod tests {
             gate_refusal(&off_by_one),
             "payslip release gate is not satisfied: golden case GC-2026-06-A \
              expects total employee deductions 373303 \
-             but the payroll kernel computed 373302"
+             but the payroll kernel computed 373300"
         );
     }
 
@@ -1601,13 +1601,13 @@ mod tests {
         // through the same `ok_or_else`, so the omission test above keeps these
         // lines green either way. Only this test stands between the signed
         // money figures and a "helpful" `as_f64()` fallback that would truncate
-        // 373302.9 into a passing gate, or a truthy-string fallback that would
+        // 373300.9 into a passing gate, or a truthy-string fallback that would
         // turn `"professionally_validated": "no"` into a sign-off.
         for (key, wrong_type) in [
             ("monthly_gross_pay_won", json!(3_000_000.0)),
             ("monthly_gross_pay_won", json!("3000000")),
-            ("expected_total_employee_deductions_won", json!(373_302.0)),
-            ("expected_total_employee_deductions_won", json!("373302")),
+            ("expected_total_employee_deductions_won", json!(373_300.0)),
+            ("expected_total_employee_deductions_won", json!("373300")),
             ("professionally_validated", json!("true")),
             ("professionally_validated", json!(1)),
         ] {
@@ -1677,7 +1677,7 @@ mod tests {
         let mut declared =
             with_golden_case_key("pension_standard_monthly_income_won", json!(2_000_000));
         declared["release_gate"]["golden_cases"][0]["expected_total_employee_deductions_won"] =
-            json!(325_802);
+            json!(325_800);
         validate_run_release_gate(&declared).unwrap();
 
         // An explicit JSON null is the ABSENT case — the kernel falls back to

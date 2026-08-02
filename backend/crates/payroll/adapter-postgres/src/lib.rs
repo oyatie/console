@@ -10,6 +10,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod lifecycle;
+pub mod payslip_draft;
 
 use console_kernel_core::{ErrorKind, KernelError, UserId};
 use console_platform_db::{DbError, with_org_conn};

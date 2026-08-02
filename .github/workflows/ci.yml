@@ -465,6 +465,7 @@ jobs:
             //tools/buck:ontology-adapter-postgres-registry-rls-surfaces-as-runtime-role-pg \
             //tools/buck:payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg \
             //tools/buck:payroll-rest-api-pg \
+            //tools/buck:payroll-rest-payslip-draft-api-pg \
             //tools/buck:payroll-rest-run-lifecycle-api-pg \
             //tools/buck:platform-auth-rest-dev-auth-absence-pg \
             //tools/buck:platform-auth-refresh-tokens-pg \

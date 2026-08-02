@@ -2561,6 +2561,7 @@ dependencies = [
  "console-inbox-domain",
  "console-kernel-core",
  "console-payroll-adapter-postgres",
+ "console-payroll-domain",
  "console-platform-auth",
  "console-platform-authz",
  "console-platform-db",

@@ -1281,6 +1281,14 @@ sh_test(
 )
 
 sh_test(
+    name = "payroll-rest-payslip-draft-api-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/rest:console-payroll-rest-itest-payslip_draft_api)"],
+    deps = ["//backend/crates/payroll/rest:console-payroll-rest-itest-payslip_draft_api"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "payroll-rest-run-lifecycle-api-pg",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/payroll/rest:console-payroll-rest-itest-run_lifecycle_api)"],
