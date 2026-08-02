@@ -13,10 +13,12 @@ const LEDGER_DIRECTORY = 'docs/program/ledger/';
 const policy = `${TRUSTED_ALLOWED_SIGNER}\n`;
 const changes = AUTHORITY_PATHS.map((path) => ({ path, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }));
 function fixture(overrides = {}) {
-  const calls = []; const registry = JSON.stringify({ candidate: { sha: C } });
+  const calls = [];
   const data = {
     hasCommit: () => true,
-    readFile: (sha, file) => file === POLICY_PATH ? policy : registry,
+    // The signing policy at C is the ONLY file this gate reads. Anything else is a document the
+    // pull request controls, and the gate no longer consults one to locate C.
+    readFile: (sha, file) => { if (file !== POLICY_PATH) throw new Error(`unexpected read of ${file}`); return policy; },
     treeEntry: () => ({ mode: '100644', type: 'blob' }),
     parents: (sha) => sha === T ? [C] : sha === M ? [BASE, T] : [],
     diff: () => changes,
@@ -31,12 +33,12 @@ function rejects(overrides, pattern) { const { data } = fixture(overrides); asse
 function accepts(overrides) { const { data } = fixture(overrides); assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M }); }
 const modified = (file) => ({ path: file, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' });
 const addedFile = (file) => ({ path: file, status: 'A', oldMode: '000000', newMode: '100644', oldType: null, newType: 'blob' });
-const registryText = (body) => (sha, file) => file === POLICY_PATH ? policy : JSON.stringify(body);
 
 test('accepts signed C/T plus an unsigned synthetic merge M without executing marker', () => {
   const { data, calls } = fixture({ readFile: (sha, file) => {
     if (sha === M) throw new Error('synthetic merge executable/data was read');
-    return file === POLICY_PATH ? policy : JSON.stringify({ candidate: { sha: C } });
+    if (file !== POLICY_PATH) throw new Error(`unexpected read of ${file}`);
+    return policy;
   } });
   assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M });
   assert.deepEqual(calls.map(({ sha }) => sha), [C, T]);
@@ -51,7 +53,7 @@ test('rejects wrong signing key or principal', () => {
   rejects({ verifyCommit: () => ({ ok: true, principal: 'attacker@example.invalid', fingerprint: TRUSTED_FINGERPRINT }) }, /C is not signed/);
 });
 test('rejects attacker self-authorized C policy and malformed policy', () => {
-  rejects({ readFile: (sha, file) => file === POLICY_PATH ? 'attacker@example.invalid ssh-ed25519 AAAA\n' : JSON.stringify({ candidate: { sha: C } }) }, /pinned signer/);
+  rejects({ readFile: () => 'attacker@example.invalid ssh-ed25519 AAAA\n' }, /pinned signer/);
   assert.throws(() => validatePinnedPolicy(policy.trim()), /pinned signer/);
 });
 test('rejects policy type/mode, policy change, and product change after C', () => {
@@ -88,19 +90,17 @@ test('C..T may touch one authority document, and may ADD files only under the le
   rejects({ diff: () => [] }, /at least one authority document/);
 });
 
-test('the registry candidate.sha is an optional cross-check, never the locator for C', () => {
-  // Backward compatible: the shipped shape stores it, and the default fixture is that shape.
-  accepts({});
-  // Forward compatible: with the field gone C is still Git's own answer — T's only parent. This
-  // acceptance is the whole point of the expand step; without it, main's gate could never accept
-  // the pull request that removes the field, because main's gate is the thing reading it.
-  accepts({ readFile: registryText({ schema_version: 'console-capability-registry-v2' }) });
-  accepts({ readFile: registryText({ candidate: { branch: 'some/branch' } }) });
-  // Present it must agree with Git. It never could disagree before — it was compared against the
-  // parent it was used to find — so this is a check that did not previously exist.
-  rejects({ readFile: registryText({ candidate: { sha: 'f'.repeat(40) } }) }, /disagrees with T parent/);
-  rejects({ readFile: registryText({ candidate: { sha: 'not-a-sha' } }) }, /lowercase 40-character SHA/);
-  rejects({ readFile: (sha, file) => file === POLICY_PATH ? policy : '{' }, /not valid JSON/);
+test('C is located from Git parentage alone; no pull-request-controlled document is read', () => {
+  // The default fixture THROWS on any read other than the signing policy at C, so a plain accept
+  // is the assertion: this gate cannot be steered by anything the pull request writes into a
+  // file. The registry's `candidate.sha` used to be that steering wheel.
+  const { data, calls } = fixture();
+  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M });
+  assert.deepEqual(calls.map(({ sha }) => sha), [C, T]);
+  // Parentage is the whole locator, so a tip with no parent or more than one has no C at all.
+  rejects({ parents: (sha) => sha === T ? [] : [BASE, T] }, /direct single-parent/);
+  rejects({ parents: (sha) => sha === T ? [C, BASE] : [BASE, T] }, /direct single-parent/);
+  rejects({ parents: (sha) => sha === T ? ['not-a-sha'] : [BASE, T] }, /lowercase 40-character SHA/);
   // And C itself must still resolve to a real object.
   rejects({ hasCommit: (sha) => sha !== C }, /C object is unavailable/);
 });
@@ -114,8 +114,8 @@ test('rejects indirect T and malformed M', () => {
 test('binds a one-parent squash S to signed C/T without reading T or S executable content', () => {
   const { data, calls } = fixture({
     readFile: (sha, file) => {
-      if (sha === S || (sha === T && file !== 'docs/program/console-capability-registry.json')) throw new Error('untrusted executable/data was read');
-      return file === POLICY_PATH ? policy : JSON.stringify({ candidate: { sha: C } });
+      if (sha !== C || file !== POLICY_PATH) throw new Error('untrusted executable/data was read');
+      return policy;
     },
     parents: (sha) => sha === T ? [C] : sha === S ? [BASE] : [],
     tree: (sha) => sha === S || sha === T ? 'tree-t' : 'tree-c',
@@ -269,7 +269,10 @@ test('hostile global Git config cannot replace the pinned verifier or execute it
     assert.equal(existsSync(marker), false);
     // The production identities stay pinned constants, not values read from anywhere.
     assert.equal(TRUSTED_ALLOWED_SIGNER, `${TRUSTED_PRINCIPAL} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAgMAp8vHS9V/9UQQVTa5FtmS9Q9fdB8I520DsZMMDTR`);
-    assert.match(TRUSTED_FINGERPRINT, /^SHA256:[A-Za-z0-9+/]+={0,2}$/);
+    // Pinned by VALUE, not by shape. A format-only assertion let the fingerprint be swapped for
+    // any well-formed string with every suite still green — the constant is what decides which
+    // key may sign the highest-privilege commits in this repository.
+    assert.equal(TRUSTED_FINGERPRINT, 'SHA256:5grGNUtX9Zgmy1SWne6wF9DR8W1ElUQaF/Z8SYRz8E8');
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

@@ -17,7 +17,6 @@ import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './auth
 export const TRUSTED_PRINCIPAL = 'jason19931225@gmail.com';
 export const TRUSTED_FINGERPRINT = 'SHA256:5grGNUtX9Zgmy1SWne6wF9DR8W1ElUQaF/Z8SYRz8E8';
 export const TRUSTED_ALLOWED_SIGNER = `${TRUSTED_PRINCIPAL} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAgMAp8vHS9V/9UQQVTa5FtmS9Q9fdB8I520DsZMMDTR`;
-export const REGISTRY_PATH = 'docs/program/console-capability-registry.json';
 export const POLICY_PATH = '.github/trust/console.allowed_signers';
 export const AUTHORITY_PATHS = Object.freeze([
   'docs/program/console-capability-registry.json',
@@ -57,20 +56,6 @@ export function validatePinnedPolicy(raw) {
   if (raw !== `${TRUSTED_ALLOWED_SIGNER}\n`) fail('C signing policy must contain exactly the pinned signer');
   return raw;
 }
-/**
- * The registry's `candidate.sha`, or null when the document no longer carries one.
- *
- * It used to be how C was LOCATED, which made the register store a copy of a commit SHA that
- * had to be rewritten on every rebase. Git already knows C — it is T's only parent — so the
- * field is now a cross-check: if it is there it must agree, and if it is gone that is fine.
- * Absence must not fail, or this gate could never accept the PR that removes the field.
- */
-export function storedCandidateLocator(raw) {
-  let parsed;
-  try { parsed = JSON.parse(raw); } catch { fail('T registry is not valid JSON'); }
-  const stored = parsed?.candidate?.sha;
-  return stored === undefined || stored === null ? null : exactSha(stored, 'T registry candidate.sha');
-}
 function assertSigned(status, label) {
   if (status?.ok !== true || status.principal !== TRUSTED_PRINCIPAL || status.fingerprint !== TRUSTED_FINGERPRINT) fail(`${label} is not signed by the pinned SSH authority`);
 }
@@ -79,8 +64,10 @@ function assertSigned(status, label) {
 function verifyAuthorityTrain(ops, authorityTipSha) {
   const T = exactSha(authorityTipSha, 'PR head');
   if (!ops.hasCommit(T)) fail('PR head object is unavailable');
-  // C is Git's own answer, not the PR's: T's single parent. Reading it out of T's registry and
-  // then requiring it to equal T's parent was a comparison a signed commit could not lose.
+  // C is Git's own answer, not the PR's: T's single parent. This gate reads NOTHING out of a
+  // document the pull request controls in order to locate C — it used to read the registry's
+  // `candidate.sha` and then require it to equal T's parent, a comparison that could not lose
+  // and whose only lasting effect was to make the register store a copy of a commit SHA.
   const tipParents = ops.parents(T);
   if (!Array.isArray(tipParents) || tipParents.length !== 1) fail('T must be the direct single-parent child of C');
   const C = exactSha(tipParents[0], 'candidate C');
@@ -91,8 +78,6 @@ function verifyAuthorityTrain(ops, authorityTipSha) {
   const authority = { policy, principal: TRUSTED_PRINCIPAL, fingerprint: TRUSTED_FINGERPRINT };
   assertSigned(ops.verifyCommit(C, authority), 'C');
   assertSigned(ops.verifyCommit(T, authority), 'T');
-  const stored = storedCandidateLocator(ops.readFile(T, REGISTRY_PATH)); // cross-check only, never authority
-  if (stored !== null && stored !== C) fail('T registry candidate.sha disagrees with T parent');
   const changes = ops.diff(C, T);
   if (!Array.isArray(changes)) fail('C..T diff is unavailable');
   const changed = new Set();

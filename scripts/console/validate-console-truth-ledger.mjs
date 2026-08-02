@@ -237,15 +237,11 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   object(registry, 'registry'); object(jurisdiction, 'jurisdiction register');
   if (registry.schema_version !== 'console-capability-registry-v2') fail('unsupported console capability registry schema');
   if (jurisdiction.schema_version !== 'console-jurisdiction-register-v2') fail('unsupported console jurisdiction register schema');
-  // The candidate SHA arrives from OUTSIDE these documents: CI derives it from git parentage
-  // (`ci.yml` "Derive exact console C/T/M train") and the planner takes `--candidate`. The
-  // stored copy is now a cross-check — present it must agree, absent is fine. Absence has to be
-  // accepted here or no PR could ever be the one that removes the field.
+  // The candidate SHA arrives from OUTSIDE these documents and is the only source: CI derives it
+  // from git parentage (`ci.yml` "Derive exact console C/T/M train") and the planner takes
+  // `--candidate`. The registers used to store a copy and this function compared the two, which
+  // is a value checked against a copy of itself — the file was written from the same git fact.
   const candidate = { sha: sha(expectedCandidateSha, 'candidate sha') };
-  if (registry.candidate !== undefined) {
-    const declared = object(registry.candidate, 'candidate');
-    if (declared.sha !== undefined && declared.sha !== candidate.sha) fail('ledger candidate does not match externally supplied expected candidate SHA');
-  }
   if (!resolveSha(candidate.sha)) fail('candidate SHA is unresolvable');
   for (const key of ['authority_base_sha', 'historical_implementation_freeze_sha']) {
     sha(registry.provenance?.[key], key);
@@ -270,19 +266,18 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
       if (!STATES.has(truth[key])) fail(`${cap.id} invalid truth state ${key}`);
     }
     if (truth.exposure === 'EXPOSED' && truth.verification !== 'VERIFIED') fail(`${cap.id} exposed claim requires verified evidence`);
-    // `object(...)` carries the existence guarantee the equality below used to imply, and the
-    // three lines after it carry the rest of it: `evidence.candidate_sha !== candidate.sha`
-    // refused an EMPTY payload too, because `undefined !== sha`. Existence alone is weaker than
-    // what it replaces; existence plus the fields that make the payload evidence is equal.
+    // `object(...)` carries the existence guarantee the deleted `evidence.candidate_sha !==
+    // candidate.sha` equality was contributing, and the two lines after it carry the rest: that
+    // equality refused an EMPTY payload too, because `undefined !== sha`. Existence alone would
+    // be weaker than what was removed; existence plus the fields that make it evidence is equal.
     const evidence = object(cap.candidate_evidence, `${cap.id} candidate evidence`);
-    if (evidence.candidate_sha !== undefined && evidence.candidate_sha !== candidate.sha) fail(`${cap.id} candidate-bound evidence does not bind exact candidate`);
     if (!STATES.has(evidence.status)) fail(`${cap.id} candidate evidence status is invalid`);
     nonempty(evidence.reason, `${cap.id} candidate evidence reason`);
     object(evidence.contract, `${cap.id} candidate evidence contract`);
-    // `source_sha` was in this list and is gone. It was the weakest leaf in either document:
-    // required non-empty, never compared to anything, and holding a copy of the candidate SHA
-    // that no reader ever checked. A required-but-unchecked field is not a control, it is a
-    // rebind cost. `evidence.candidate_sha` above is the binding that was doing the real work.
+    // `source_sha` was in this list and is gone, and `candidate_sha` followed it out of the
+    // document. Both were required non-empty, both held a copy of the candidate SHA, and neither
+    // could disagree with the value it was copied from. A field that cannot fail is not a
+    // control, it is a rebind cost. What the payload still owes is below: a real contract.
     for (const key of ['backend_binary_digest_or_build_sha', 'database', 'api', 'browser', 'trace_logs']) nonempty(evidence.contract[key], `${cap.id} candidate evidence contract ${key}`);
     const benchmark = object(cap.benchmark, `${cap.id} per-module benchmark`);
     for (const key of ['category', 'non_goals', 'evidence_binding']) nonempty(benchmark[key], `${cap.id} benchmark ${key}`);
@@ -353,26 +348,18 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     const [aId, a] = privateRoots[i], [bId, b] = privateRoots[j];
     if (aId !== bId && (a === b || a.startsWith(`${b.replace(/\/\*\*$/, '')}/`) || b.startsWith(`${a.replace(/\/\*\*$/, '')}/`))) fail(`overlapping private roots: ${aId}:${a} and ${bId}:${b}`);
   }
-  // THE tie between this document and the candidate, and there is exactly one.
+  // NOTHING stored in this document ties it to the candidate any more, and nothing could: every
+  // value it might hold would be written from the same git fact the caller already supplies.
+  // ONE thing binds it, and it is worth naming exactly: the C..T train. T is signed, is C's
+  // direct single-parent child, and may modify nothing outside the authority allow-list, so the
+  // register validated here is the tree exactly one commit after C.
   //
-  // It used to be enforced 162 times over, once per `capability_traceability[].candidate_sha`
-  // leaf, while `jurisdiction.candidate.sha` — the declaration the document already carried —
-  // was read by nothing. Removing those leaves without this line would have left the whole
-  // jurisdiction register unbound to any candidate: the validator reads only `.schema_version`,
-  // `.target_jurisdiction_set`, `.jurisdictions` and `.controls` off it, none of which mention a
-  // SHA. A stale register would then have validated clean.
-  // Cross-check while the declaration exists. Absent, ONE thing binds this document: the C..T
-  // train. T is signed, is C's direct single-parent child, and may change nothing outside the
-  // authority allow-list, so the register validated here is the tree exactly one commit after C.
-  //
-  // The bijection below is NOT a second binding, and an earlier revision of this comment claimed
-  // it was. It compares the register against the capability registry, and both are read out of
-  // the same T — so two documents that are stale together satisfy it exactly as well as two that
-  // are current. What it catches is disagreement between them, which is a different property.
-  if (jurisdiction.candidate !== undefined) {
-    const declared = object(jurisdiction.candidate, 'jurisdiction candidate');
-    if (declared.sha !== undefined && declared.sha !== candidate.sha) fail('jurisdiction register is not bound to the candidate');
-  }
+  // The bijection below is NOT a second binding, and an earlier draft of this comment claimed it
+  // was. It compares this register against the capability registry, and both are read out of the
+  // same T — two documents that are stale together satisfy it exactly as well as two that are
+  // current. What it catches is disagreement between them, which is a different property.
+  // The accepted residue is a WHOLESALE revert of the register while every row is HOLD; it is
+  // stated in docs/program/ledger/2026-08-01-candidate-sha-leaves-the-registers.md.
   const targets = array(jurisdiction.target_jurisdiction_set); const jurisdictionRows = array(jurisdiction.jurisdictions);
   if (targets.length !== 1 || targets[0] !== 'KR' || jurisdictionRows.length !== 1 || jurisdictionRows[0]?.id !== 'JUR-KR-001' || jurisdictionRows[0]?.country_code !== 'KR') fail('jurisdiction target must be exactly KR / JUR-KR-001');
   const controls = new Map(); for (const control of array(jurisdiction.controls)) { if (controls.has(control.id)) fail(`duplicate control id: ${control.id}`); controls.set(control.id, control); }
@@ -381,7 +368,7 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (control.release_disposition !== 'HOLD') fail(`jurisdiction control ${control.id} must remain HOLD without qualified authority`);
     nonempty(control.freshness?.status, `${control.id} freshness status`);
     nonempty(control.unhold_authority, `${control.id} explicit unhold authority`);
-    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); } const controlEvidence = object(control.candidate_evidence, `${control.id} control candidate evidence`); if (!STATES.has(controlEvidence.status)) fail(`${control.id} control evidence status is invalid`); nonempty(controlEvidence.reason, `${control.id} control evidence reason`); if (controlEvidence.candidate_sha !== undefined && controlEvidence.candidate_sha !== candidate.sha) fail(`${control.id} control evidence is not candidate-bound`);
+    if (!array(control.capability_traceability).length) fail(`${control.id} missing capability traceability`); const traceTuples = new Set(); for (const trace of control.capability_traceability) { const tuple=`${trace.capability_id}`; if (traceTuples.has(tuple)) fail(`${control.id} duplicate trace tuple`); traceTuples.add(tuple); } const controlEvidence = object(control.candidate_evidence, `${control.id} control candidate evidence`); if (!STATES.has(controlEvidence.status)) fail(`${control.id} control evidence status is invalid`); nonempty(controlEvidence.reason, `${control.id} control evidence reason`);
   }
   const bindingTuples = new Set(); for (const cap of registry.capabilities) for (const binding of cap.jurisdiction_bindings) { const tuple=`${binding.control_id}|${cap.id}`; if (bindingTuples.has(tuple)) fail(`${cap.id} duplicate jurisdiction binding`); bindingTuples.add(tuple);
     if (binding.jurisdiction_id !== 'JUR-KR-001' || !controls.has(binding.control_id)) fail(`${cap.id} has missing jurisdiction control ${binding.control_id}`);

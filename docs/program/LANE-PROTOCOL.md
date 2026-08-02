@@ -109,8 +109,10 @@ change is **20 minutes**. Lane worktrees have their own `backend/target` and do 
 
 Corollary, and the reason this matters: **implementation must never wait on CI.** CI is asynchronous
 verification — 20 minutes of wall clock nobody should be blocking on. What actually serialises
-parallel work is `strict: true` (every merge forces every other open PR to rebase → new C → 390-ref
-rebind → full CI re-run). So: **parallelise the work in lanes, serialise the landing in batches.**
+parallel work is `strict: true` (every merge forces every other open PR to rebase → new C → full CI
+re-run). The rebase used to cost a register rebind on top of that; since the candidate SHA left the
+registers it costs nothing in them. So: **parallelise the work in lanes; the landing is serialised
+by CI, not by a shared file.**
 
 ### One writer per lane — the rule tonight cost us (2026-07-29)
 
@@ -171,8 +173,10 @@ is kept because the *mechanisms* are still accurate; only the "caught pre-merge?
 since `strict: true` now forces a rebase before merge and re-runs CI on the moved base.
 
 Note the cost this introduced: `strict: true` is now what serialises parallel PRs — each merge
-forces every other open PR to rebase, producing a new C and a 390-reference rebind. That is the
-argument for batching the landing, not for reverting protection.
+forces every other open PR to rebase, producing a new C. That rebase used to also invalidate every
+stored register binding; since the candidate SHA left the registers it invalidates nothing in them.
+The remaining cost is a CI re-run, which is an argument for batching the landing, not for reverting
+protection.
 
 Consequences as originally measured, pre-protection:
 
@@ -191,22 +195,28 @@ duplicate migrations are *"not detected by cargo, sqlx, or any CI gate in this r
 filesystem and never reads the `members` list, so the Buck2 and cargo graphs can diverge indefinitely
 with no gate comparing them.
 
-### Landing model: batch, do not fan out into the train
+### Landing model: the train no longer holds a global lock
 
-The authority train (§7 of the console governance) requires a two-commit `C → T` branch with the
-registers binding C's exact SHA — **390 references**. Every merge moves `main`, so every other lane
-must rebase, which changes its C, which invalidates all 390 bindings. That is O(N²) in lanes and
-serialises landing regardless of how parallel the work is; the ledger names it *"the authority-train
-global lock"* and attributes four consecutive hand-rebuilt releases to it.
+The authority train (§7 of the console governance) still requires a two-commit `C → T` branch, and T
+may still modify nothing outside the authority allow-list. What it no longer requires is a **rebind**:
+the registers used to store C's exact SHA in every candidate-evidence leaf, so every merge moved
+`main`, every other lane had to rebase, its C changed, and all of those bindings went stale at once.
+That was O(N²) in lanes and serialised landing regardless of how parallel the work was; the ledger
+names it *"the authority-train global lock"* and attributes four consecutive hand-rebuilt releases
+to it.
 
-**Therefore: parallelise the work, serialise the landing.** Lanes collect onto one integration branch,
-which becomes a **single C with one T** — one trip through the train per batch, not per lane. This
-costs nothing in expressiveness because the train already collapses history to C+T; batching only
-stops paying the rebind N times to reach the same end state.
+The candidate SHA now reaches the validator from CI's own derivation (`ci.yml` reads the C/T/M train
+off Git parentage) instead of from a copy stored in the file being validated. Rebasing a lane changes
+C and changes nothing in either register, so `rebind-candidate.mjs` and `rebind-authority-train.mjs`
+are deleted rather than automated.
 
-`scripts/console/rebind-authority-train.mjs` automates the rebind (measured: 390 references in
-seconds, with shape verified afterwards) so the hand-rebuild step that lost work across four releases
-is no longer manual.
+T must modify **at least one** authority document, not all three, and it may **add** a lowercase
+`.md` file directly under `docs/program/ledger/` — a flat directory, so no subdirectory and no other
+extension. For most lanes that is one new ledger entry file of its own, so two lanes writing the
+ledger no longer collide on the same bytes.
+
+Batching lanes onto one integration branch is still reasonable when the work is genuinely
+interdependent, but it is now a choice, not a cost-avoidance measure.
 
 ### Pre-fan-out checklist
 

@@ -2,7 +2,7 @@
   "schema_version": "console-capability-registry-v2",
   "last_refreshed": "2026-07-28",
   "authority": "docs/program/console-enterprise-roadmap.md",
-  "source_revision": "fix/backend-dead-helper@9324bb69abdc961f21495beac9ea9fc7ddd96e10",
+  "source_revision": "origin/main@508520bcb9e09f27472b863fcec8d394b4af5a9c",
   "dispatch_rule": "A row may enter in_progress only with one writer, an exact isolated worktree, disjoint ownership roots, a signature story, evidence paths, and executable leaf gates.",
   "hold_rule": "Unassigned worktrees, overlapping ownership, missing backend contracts, empty Buck2 target sets, stale reference digests, or missing jurisdiction and independent-review receipts fail closed.",
   "review_authority": {
@@ -164,7 +164,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -417,7 +416,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -684,7 +682,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -985,7 +982,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -1231,7 +1227,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -1466,7 +1461,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -1704,7 +1698,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -1939,7 +1932,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -2202,7 +2194,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -2442,7 +2433,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -2676,7 +2666,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -2935,7 +2924,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -3203,7 +3191,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -3462,7 +3449,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -3719,7 +3705,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -3985,7 +3970,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -4250,7 +4234,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -4503,7 +4486,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -4760,7 +4742,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -5017,7 +4998,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -5270,7 +5250,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -5527,7 +5506,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -5784,7 +5762,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -6018,7 +5995,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -6254,7 +6230,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
@@ -6509,7 +6484,6 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "Row seeded 2026-07-25 by L-P0-EPOCH so the capability has registry provenance before any exposure request. No candidate-bound completion receipt is admitted; the built surface is a catalog panel, not the CRM the authority specifies.",
         "paths": [
@@ -6785,7 +6759,6 @@
         "source": "no console route key: this capability is an engine surface consumed through CAP-SHARED-ONTOLOGY-WORKFLOW's screens"
       },
       "candidate_evidence": {
-        "candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
         "status": "HOLD",
         "reason": "Row seeded 2026-07-25 by L-P0-EPOCH. The engine exists and the 27-type catalog is installed, but the two capabilities this row names — additive catalog upgrade and a reachable projected-type Action — are absent at the candidate, and no candidate-bound receipt is admitted.",
         "paths": [
@@ -6929,12 +6902,7 @@
   "provenance": {
     "authority_base_sha": "8e42b9a2ea42c4d79ed498044a9f50f623299f7f",
     "historical_implementation_freeze_sha": "78cb5197927a031ead30c6dc0426c23455d3cb16",
-    "exact_current_candidate_sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
     "candidate_evidence_status": "HOLD: P0 structure is current; no module completion claim is admitted."
-  },
-  "candidate": {
-    "sha": "9324bb69abdc961f21495beac9ea9fc7ddd96e10",
-    "evidence_status": "HOLD"
   },
   "design_reference": {
     "source_project": "claude.ai/design/p/9c7c313a-2187-4cf1-bb35-7c07ad0a4d9d",
@@ -6971,7 +6939,7 @@
       }
     ]
   },
-  "source_revision_note": "Refreshed 2026-07-25 (L-P0-EPOCH). The previous pin origin/main@8e42b9a2 was 935 commits behind while last_refreshed claimed 2026-07-25. This SHA is the wave-4 spine tip and the base HEAD of every wave-4 lane worktree. provenance.authority_base_sha and candidate.sha are deliberately NOT moved here: rebinding the candidate is the integrator's act, and the validator requires authority_base_sha to stay distinct from the candidate.",
+  "source_revision_note": "Repointed 2026-08-01 onto origin/main. This field is READ: plan-fanout.mjs requires the SHA to exist, to be an ancestor of the epoch anchor, and to be an ancestor of whatever the named ref resolves to. The previous pin fix/backend-dead-helper@... named a branch that resolves nowhere, so the ref half was passing vacuously; the named ref now resolves, so that half runs. 508520bcb is origin/main tip and the base of this train, NOT a local main branch that happened to be 25 commits behind it. provenance.authority_base_sha is deliberately NOT moved here: the validator requires it to stay distinct from the exact candidate. No candidate SHA is stored in this document any more - it reaches the validator as a parameter derived from the C/T/M train.",
   "hold_rule_amendment": {
     "as_of": "2026-07-25",
     "lane": "L-P0-EPOCH",

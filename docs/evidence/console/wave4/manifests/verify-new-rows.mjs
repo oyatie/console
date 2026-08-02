@@ -29,7 +29,10 @@ const registry = JSON.parse(read('docs/program/console-capability-registry.json'
 const jurisdiction = JSON.parse(read('docs/program/console-jurisdiction-register.json'));
 const manifest = JSON.parse(read('docs/evidence/console/wave4/manifests/jurisdiction-register-traces.json'));
 
-const candidate = registry.candidate.sha;
+// The registry no longer stores the candidate SHA — it is supplied from outside, exactly as CI
+// supplies it. Default to HEAD so this manifest stays runnable by hand.
+const candidate = process.env.CONSOLE_CANDIDATE_SHA
+  ?? execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const show = (file) => execFileSync('git', ['-C', ROOT, 'show', `${candidate}:${file}`], { encoding: 'utf8' });
 const routeFacts = extractConsoleRouteFactsFromTexts(
   show('web/src/console/shell/nav.ts'),
@@ -55,6 +58,7 @@ for (const control of jurisdiction.controls) {
 }
 
 const result = validateConsoleTruthLedger(registry, jurisdiction, {
+  expectedCandidateSha: candidate,
   resolveSha: () => true,
   resolveBuckTarget: () => true,
   resolveSource: () => true,
