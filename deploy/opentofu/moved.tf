@@ -42,11 +42,6 @@ moved {
 }
 
 moved {
-  from = oci_core_instance.flasher
-  to   = module.compute.oci_core_instance.flasher
-}
-
-moved {
   from = oci_core_instance.node[0]
   to   = module.compute.oci_core_instance.node[0]
 }

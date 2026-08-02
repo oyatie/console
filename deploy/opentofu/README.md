@@ -23,7 +23,7 @@ deploy/opentofu/
   contexts/oci-guest/primitives/
     network/                               # VCN, IGW, route table, security list, subnet
     storage/                               # Object Storage namespace + buckets
-    compute/                               # Oracle Linux flasher + optional Talos node
+    compute/                               # the single Talos node (prevent_destroy)
     bastion/                               # managed OCI Bastion service
 ```
 
@@ -44,16 +44,22 @@ deploy/opentofu/
 
 ```sh
 cd deploy/opentofu
-cp terraform.tfvars.example terraform.tfvars   # fill in compartment, admin_cidr, ssh key
+cp terraform.tfvars.example terraform.tfvars   # fill in compartment, admin_cidr, talos image
 tofu init
 tofu plan
 tofu apply
 ```
 
-`talos_image_ocid` is empty by default, so the first apply provisions
-network + storage + bastion + the flasher helper. Import the Talos image and
-flash the node per [`../talos/README.md`](../talos/README.md), then set
-`talos_image_ocid` and re-apply to manage the node too.
+`talos_image_ocid` is **required** — it has no default. Import the Talos image
+and flash the node per [`../talos/README.md`](../talos/README.md) before the
+first apply. An earlier version defaulted it to `""`, which made the node's
+`count` evaluate to 0 whenever the tfvars file was missing, so a plan would
+quietly omit the cluster's only instance instead of failing.
+
+The node also carries `prevent_destroy = true`. The A1 is grandfathered at
+4 OCPU / 24 GB and OCI has since cut the Always Free allotment, so recreating it
+yields 2 vCPU / 12 GB. Talos and Kubernetes upgrade **in place** (`talosctl
+upgrade`, `talosctl upgrade-k8s`); this module never replaces the node.
 
 ## Address-preserving state migration
 
@@ -74,14 +80,13 @@ resources below, not delete/recreate actions:
 | `oci_objectstorage_bucket.db_backups` | `module.storage.oci_objectstorage_bucket.db_backups` |
 | `oci_objectstorage_bucket.evidence` | `module.storage.oci_objectstorage_bucket.evidence` |
 | `oci_objectstorage_bucket.evidence_replica` | `module.storage.oci_objectstorage_bucket.evidence_replica` |
-| `oci_core_instance.flasher` | `module.compute.oci_core_instance.flasher` |
 | `oci_core_instance.node[0]` | `module.compute.oci_core_instance.node[0]` |
 | `oci_bastion_bastion.mnt` | `module.bastion.oci_bastion_bastion.mnt` |
 
 If an older OpenTofu/Terraform binary cannot consume `moved` blocks, stop before
 applying and use equivalent `tofu state mv` commands for the same old/new address
 pairs. Do not apply a plan that proposes deleting/replacing the live OCI VCN,
-subnet, buckets, bastion, flasher, or Talos node as part of this refactor.
+subnet, buckets, bastion, or Talos node as part of this refactor.
 
 ## Adopting the already-live infra
 
@@ -100,14 +105,22 @@ tofu import module.storage.oci_objectstorage_bucket.evidence        <namespace>/
 tofu import module.storage.oci_objectstorage_bucket.evidence_replica <namespace>/mnt-evidence-replica
 
 tofu import module.bastion.oci_bastion_bastion.mnt <bastion-ocid>
-tofu import module.compute.oci_core_instance.flasher <bastion-instance-ocid>
 ```
 
-If `talos_image_ocid` is set and the Talos node already exists, also import it:
+**The Talos node is deliberately not imported, and importing it is its own
+change — not a step of this one.** IaC ownership of an irreplaceable resource is
+mostly downside: the payoff is recreate-from-code, which is the one forbidden
+operation, and `oci_core_instance` replaces on `shape`, `availability_domain`,
+`subnet_id`, and `source_details.source_id`. The live node diverges from this
+config on at least two of those (its `display_name` is `control`, and its boot
+volume was `dd`-flashed rather than launched from `talos_image_ocid`), so a
+first plan would propose a replacement that must never be applied and could not
+succeed anyway against a spent allotment.
 
-```sh
-tofu import 'module.compute.oci_core_instance.node[0]' <talos-node-instance-ocid>
-```
+If ownership is wanted later, the order is: remote state with locking → the
+`prevent_destroy` guard already in `primitives/compute` → reconcile the config
+to the live resource → `import {}` with `-generate-config-out` → **the plan must
+show zero changes** before anything is applied.
 
 Then `tofu plan` — it should converge to the hardened security-list rules above
 (the live list was opened more broadly during bootstrap; apply tightens it) and

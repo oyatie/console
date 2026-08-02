@@ -14,8 +14,9 @@ can migrate without replacing live OCI resources.
   list, and public subnet.
 - `primitives/storage`: Object Storage namespace lookup and private buckets for
   DB backups, evidence, and evidence replica.
-- `primitives/compute`: Oracle Linux flasher/management instance and the
-  optional Talos node governed by `talos_image_ocid`.
+- `primitives/compute`: the single Talos control-plane node, governed by
+  `talos_image_ocid` and guarded by `prevent_destroy`. It is the only instance
+  this context may create — it consumes the entire free-tier A1 allotment.
 - `primitives/bastion`: managed OCI Bastion service for private-IP access.
 
 Do not remove OCI support when adding on-prem or other contexts; add sibling
