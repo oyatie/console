@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.3.1](https://github.com/jason931225/console/compare/v0.3.0...v0.3.1) (2026-08-02)
+
+
+### Features
+
+* **authority:** the gate learns the new shape before anything is written in it ([#556](https://github.com/jason931225/console/issues/556)) ([327bd72](https://github.com/jason931225/console/commit/327bd723c2f2ad0cce04897a06f1b63463318582))
+* **backup:** a 35-day erasure horizon, and a route by which live GitOps may change ([#544](https://github.com/jason931225/console/issues/544)) ([8ef9627](https://github.com/jason931225/console/commit/8ef9627b24be34d2c44e7764ee46abe7761d56de))
+* **backup:** a finite retention window, before there is anything to prune ([#535](https://github.com/jason931225/console/issues/535)) ([da8cc40](https://github.com/jason931225/console/commit/da8cc401100470003e07169da6407cd917c7a483))
+* **conformance:** add the company-conformance suite — the immutable fan-out target ([#510](https://github.com/jason931225/console/issues/510)) ([fcb1a4c](https://github.com/jason931225/console/commit/fcb1a4c5179c4825357667bb38dc2fcfc2be70eb))
+* **conformance:** build the company and job_position types — 4/12 ([#514](https://github.com/jason931225/console/issues/514)) ([8a671bc](https://github.com/jason931225/console/commit/8a671bc0c1cbb40a03ea3265cd6bbefe90529d84))
+* **conformance:** build the employment type — 11/12 ([#515](https://github.com/jason931225/console/issues/515)) ([c066e23](https://github.com/jason931225/console/commit/c066e23fa43d57883deb54ca66e0b0e88224e418))
+* **conformance:** open the declaration seam the suite shipped without ([#512](https://github.com/jason931225/console/issues/512)) ([7527a03](https://github.com/jason931225/console/commit/7527a03730cdfc5d76404ade7923fee2ef117bf5))
+* **erasure-ledger:** an append-only record of what was erased, and what it cannot survive ([#541](https://github.com/jason931225/console/issues/541)) ([b0d836e](https://github.com/jason931225/console/commit/b0d836eae8649616bb9a36dd4a34a6a0857caeab))
+* **gate-integrity:** adjudicate H-1..H-4 by execution, and fix the 422 a gate found ([#533](https://github.com/jason931225/console/issues/533)) ([f41cc84](https://github.com/jason931225/console/commit/f41cc847b14ae8a7e265d54ed23dd80970548a2e))
+* **ontology:** an audited writer for object policy, and the six reads it gates ([#525](https://github.com/jason931225/console/issues/525)) ([5330914](https://github.com/jason931225/console/commit/5330914c2aa9300eb1d8c1c9673ee74a6860ea74))
+* **ontology:** derive declared attributes at writeback — the suite reaches 12/12 ([#516](https://github.com/jason931225/console/issues/516)) ([1d74dc8](https://github.com/jason931225/console/commit/1d74dc8b21bdd204c71137f7513abfdbb0b0d221))
+* **ontology:** give the object-type schema FSM an HTTP surface ([#521](https://github.com/jason931225/console/issues/521)) ([a80605e](https://github.com/jason931225/console/commit/a80605ea581bc4b42e10815629c647126ce8fc30))
+* **ontology:** move the attach capability to the audited command credential ([#526](https://github.com/jason931225/console/issues/526)) ([a9e51e7](https://github.com/jason931225/console/commit/a9e51e7b7c98600d112e71d9645fec0b0e2446cf))
+* **ontology:** project declared property references into live graph edges ([#513](https://github.com/jason931225/console/issues/513)) ([f5910b8](https://github.com/jason931225/console/commit/f5910b8fb123f72ae1a5caae89aac00e691a8c35))
+* **payroll:** a 급여명세서 draft that refuses to look finished ([#558](https://github.com/jason931225/console/issues/558)) ([ac57410](https://github.com/jason931225/console/commit/ac574101e3328e6a0218a0057f46744f5e5c9d28))
+* **payroll:** make a golden case executable, so a signed figure can fail ([#536](https://github.com/jason931225/console/issues/536)) ([bec30ab](https://github.com/jason931225/console/commit/bec30abaa7126ea3bc8a31651fba9e7ab9e97695))
+
+
+### Bug Fixes
+
+* **app:** drop the openapi_drift helper orphaned by the client-test removal ([#504](https://github.com/jason931225/console/issues/504)) ([42e9e1c](https://github.com/jason931225/console/commit/42e9e1c2eabcf90b3e99d4d2ff6a2f66addc3fca))
+* **authority:** a passing verdict was self-assertable by declaring no reviewer ([#548](https://github.com/jason931225/console/issues/548)) ([03cbcee](https://github.com/jason931225/console/commit/03cbcee404d07483dff443f156980c84753f5e4b))
+* **authority:** ten unresolved merge markers sat in the program ledger, and the count grew per merge ([#542](https://github.com/jason931225/console/issues/542)) ([2f640fd](https://github.com/jason931225/console/commit/2f640fd4727dc2b1704a0b29632f947431bcebcc))
+* **authz:** six cross-branch read and write defects in registry and identity ([#554](https://github.com/jason931225/console/issues/554)) ([4d9c3d5](https://github.com/jason931225/console/commit/4d9c3d5c3c9250effe53654d5c61685ad08a1497))
+* **buck:** pull the pinned PostgreSQL image explicitly, with bounded retry ([#532](https://github.com/jason931225/console/issues/532)) ([dbae035](https://github.com/jason931225/console/commit/dbae0352f67461526ca67d4f0db57a557aa9aebf))
+* **ci:** assert the route-source contract against HEAD, not the orphaned candidate ([#507](https://github.com/jason931225/console/issues/507)) ([8b7899d](https://github.com/jason931225/console/commit/8b7899d92c228dc3ef983e17f5c4d907ea141b67))
+* **ci:** make six false-green gates fail closed ([#506](https://github.com/jason931225/console/issues/506)) ([d9848ad](https://github.com/jason931225/console/commit/d9848ad2108bfc1de95933a9f929e6d3e0e1c477))
+* **ci:** resolve Buck targets by reading BUCK blobs, never by running Buck2 ([#508](https://github.com/jason931225/console/issues/508)) ([294f023](https://github.com/jason931225/console/commit/294f0234cac7b2c96d49613f91da1714401c40df))
+* **ci:** the local CI mirror was red on main, and its guard ran nowhere ([#555](https://github.com/jason931225/console/issues/555)) ([e1509f5](https://github.com/jason931225/console/commit/e1509f5e25aa0bb63626112b559c31b485f27a1a))
+* **lanes:** one writer per lane, commit as you go, and a probe that checks itself ([#517](https://github.com/jason931225/console/issues/517)) ([451591e](https://github.com/jason931225/console/commit/451591ee8beda53e1c3f3c3c7b40037aa183b0d9))
+* **lanes:** route agents to lane worktrees, wire the build cache, unbreak the workflow scripts ([#511](https://github.com/jason931225/console/issues/511)) ([93bac45](https://github.com/jason931225/console/commit/93bac453ddef4643369416cf108299178512520b))
+* **openapi:** document the authentication ten operations already require ([#528](https://github.com/jason931225/console/issues/528)) ([18a21d7](https://github.com/jason931225/console/commit/18a21d7cd2035f7fcc0e1ba11f27b33d224c93bb))
+* **opentofu:** a missing tfvars planned away the one node that cannot be rebuilt ([#561](https://github.com/jason931225/console/issues/561)) ([9200e87](https://github.com/jason931225/console/commit/9200e875b5362ef88b9a1af20dfc43ed3f07a970))
+
+
+### Performance Improvements
+
+* **lanes:** sccache never saw a single compilation ([#560](https://github.com/jason931225/console/issues/560)) ([f264689](https://github.com/jason931225/console/commit/f2646890b8c34067d725a857950ac3789b8ab278))
+
 ## [0.3.0](https://github.com/jason931225/console/compare/v0.2.2...v0.3.0) (2026-07-28)
 
 
