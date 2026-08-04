@@ -6,7 +6,7 @@ import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { evaluateUndeclaredImports } from "./check-undeclared-imports.mjs";
+import { SCANNED_FLOOR, evaluateUndeclaredImports } from "./check-undeclared-imports.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = fileURLToPath(new URL("./check-undeclared-imports.mjs", import.meta.url));
@@ -107,6 +107,26 @@ describe("undeclared import gate", () => {
       findings.map((finding) => finding.specifier).sort(),
       ["phantom-dynamic", "phantom-required"],
     );
+  });
+
+  // The bare side-effect form is the only thing the fourth specifier pattern exists for, and it
+  // had no test. The pattern starts at the statement delimiter before `import`, so with a newline
+  // delimiter match.index landed on the PREVIOUS line: a bare import under a `//` comment was
+  // discarded as commented, and one after any `;`-terminated line was reported against the wrong
+  // line. Both fixture files below were invisible or misreported before the anchor fix.
+  it("reports a side-effect-only bare import under a comment and after a statement", () => {
+    const root = fixture({
+      "package.json": emptyManifest,
+      "scripts/commented.mjs": '// side-effect polyfill, loaded for its registration hook\nimport "phantom-bare";\n',
+      "scripts/after-statement.mjs": 'export const marker = 1;\nimport "phantom-after";\n',
+    });
+
+    const { findings } = evaluateUndeclaredImports(root);
+
+    assert.deepEqual(findings, [
+      { file: "scripts/after-statement.mjs", line: 2, specifier: "phantom-after" },
+      { file: "scripts/commented.mjs", line: 2, specifier: "phantom-bare" },
+    ]);
   });
 
   it("reduces a subpath import to the package name before consulting the manifest", () => {
@@ -235,18 +255,41 @@ describe("undeclared import gate", () => {
     assert.match(`${result.stdout}${result.stderr}`, /openapi-typescript/);
   });
 
-  // A bare exit 0 is not evidence: a gate that scanned nothing exits 0 too. The green path must
-  // state what it looked at, so an empty scan cannot be read as coverage.
-  it("exits 0 reporting the scanned file count when every specifier is declared", () => {
+  // A bare exit 0 is not evidence: a gate that scanned nothing exits 0 too. Stating the count was
+  // the first half; refusing to pass on it is the second. This fixture declares every specifier it
+  // imports, so findings are empty and the floor is the only thing standing between it and green.
+  it("exits 1 on the floor alone, with every specifier declared and no findings", () => {
     const root = fixture({
       "package.json": JSON.stringify({ name: "fixture", devDependencies: { "js-yaml": "4.3.0" } }),
       "scripts/thing.mjs": 'import yaml from "js-yaml";\n\nexport default yaml;\n',
     });
 
+    assert.deepEqual(evaluateUndeclaredImports(root).findings, [], "the fixture must be clean");
+
     const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
 
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.match(`${result.stdout}${result.stderr}`, /scanned 1 files, below the floor of 90/);
+  });
+
+  // The degenerate case the floor was added for, reproduced exactly as it was found: point the
+  // gate at a subtree git tracks no scripts under and it used to print
+  // `undeclared imports gate passed (0 files scanned)` and exit 0.
+  it("exits 1 rather than passing on a scan that covered nothing", () => {
+    const root = fixture({ "package.json": emptyManifest, "docs/notes.md": "not a script\n" });
+
+    const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
+
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, /gate passed/);
+    assert.match(`${result.stdout}${result.stderr}`, /scanned 0 files, below the floor of 90/);
+  });
+
+  it("exits 0 stating what it scanned, against this repository", () => {
+    const result = spawnSync(process.execPath, [cli, repoRoot], { encoding: "utf8" });
+
     assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
-    assert.match(`${result.stdout}${result.stderr}`, /passed \(1 file scanned\)/);
+    assert.match(`${result.stdout}${result.stderr}`, /gate passed \(\d+ files scanned\)/);
   });
 
   // The archived-evidence classification, tested from both sides. It is an exception, not an
@@ -296,7 +339,12 @@ describe("undeclared import gate", () => {
   it("finds no undeclared import anywhere in this repository", () => {
     const { scanned, findings } = evaluateUndeclaredImports(repoRoot);
 
-    assert.ok(scanned > 50, `expected the repo scan to cover the tracked script surface, scanned ${scanned}`);
+    // One floor, shared with the gate binary. Two independently chosen numbers drift, and the
+    // lower of them is the one that actually holds.
+    assert.ok(
+      scanned >= SCANNED_FLOOR,
+      `expected the repo scan to cover the tracked script surface, scanned ${scanned}`,
+    );
     assert.deepEqual(findings, []);
   });
 });

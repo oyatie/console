@@ -1,11 +1,13 @@
 # Architecture decision records
 
-This directory is the local decision authority for Maintenance. The index is reviewed against `origin/main` and must be updated atomically with every ADR status, identity, amendment, or supersession change.
+This directory is the local decision authority for Console within the product boundary fixed by
+[`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md). The index is reviewed against `origin/main` and
+must be updated atomically with every ADR status, identity, amendment, or supersession change.
 
 ## Authority rules
 
-1. An **accepted** local ADR is authoritative within its stated scope.
-2. Only another **accepted** local ADR may amend or supersede it.
+1. An **accepted** local ADR is authoritative within its stated scope. It applies only when consistent with the canonical pivot.
+2. Within the ADR set, only another **accepted** local ADR may amend or supersede it.
 3. A later number does not win automatically. Amendment or supersession must be explicit in both records.
 4. `proposed`, `draft`, `design-note`, plan, prototype, and DARK material cannot supersede an accepted ADR.
 5. Sibling-project records must be namespaced (for example, `oyatie ADR-0240`). They are references until a local accepted ADR adopts a specific rule.
@@ -37,10 +39,10 @@ related: []
 | [ADR-0006](ADR-0006-p1-broadcastaccept-dispatch-with-livegps-scoring.md) | accepted | P1 broadcast-accept dispatch and live-GPS scoring |
 | [ADR-0007](ADR-0007-postgrespersisted-messenger-with-listennotify-multiinstance-fanout.md) | accepted | Postgres messenger and LISTEN/NOTIFY fan-out |
 | [ADR-0008](ADR-0008-excel-export-engine.md) | accepted | Excel export engine |
-| [ADR-0009](ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md) | accepted, amended | Dual-native Swift/Kotlin employee apps from one OpenAPI contract; `coss-rn` is outside this scope; the contract mechanism is amended by ADR-0031 to a wire-DTO contracts crate emitting a diff-gated `openapi.yaml`, and the ts/swift/kotlin client-generation, dual-build, and sequencing clauses remain unreconciled with HEAD |
+| [ADR-0009](ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md) | accepted, amended; historical mobile scope outside pivot | Historical dual-native client decision; ADR-0031 amends its contract mechanism, while the canonical pivot removes all client/mobile surfaces from current scope and forbids their resurrection without later authority |
 | [ADR-0010](ADR-0010-integration-seams-as-ports-only-oyatie.md) | accepted, amended | Oyatie AI port; speculative identity-provider portion amended by ADR-0022 |
 | [ADR-0011](ADR-0011-apalis-10rc-isolated-behind-a-jobqueue.md) | accepted | Apalis isolated behind `JobQueue` |
-| [ADR-0012](ADR-0012-monorepo-layout-for-four-deliverables-contract.md) | accepted | Monorepo for atomic contract/client delivery |
+| [ADR-0012](ADR-0012-monorepo-layout-for-four-deliverables-contract.md) | accepted; historical deliverable set outside pivot | Historical four-deliverable monorepo decision; the current pivot retains one repository but removes React/native clients and required-context path filters |
 | ADR-0013 | never issued | Plan-only APNs placeholder; reserved historical gap |
 | [ADR-0014](ADR-0014-locationping-destructible-store-carved-out-of.md) | accepted, amended | Destructible location store outside the append-only audit store; audit-coverage exclusion cardinality amended by ADR-0029 |
 | [ADR-0015](ADR-0015-dr-posture-wal-archiving-continuous-pitr.md) | accepted, amended | Continuous PITR/degraded-mode invariants plus context-specific multi-node/multi-site target; amended by ADR-0024 |
@@ -65,8 +67,9 @@ related: []
 | [ADR-0034](ADR-0034-delegation-of-authority-routing.md) | accepted | 전결규정 routing as a delta on ADR-0023's approval-line model: routing is a lookup that may resolve above, laterally or below the raising unit; competence is a third relation beside control and structure; a signature records the capacity it was made under |
 | [ADR-0035](ADR-0035-conserved-quantity-lineage.md) | accepted | Quantity-bearing split/merge lineage deferred; conservation requires row-level `FOR UPDATE` locking and a pure domain predicate, and the row CHECK is a per-row backstop only |
 | [ADR-0036](ADR-0036-object-dimensioned-economics.md) | accepted | Cost is a query over the double-entry voucher dimensioned by object reference; the finance subsystem is a peer plan, and the missing line dimension, `accounting_date` + period-lock caller, account master, and currency shape must stay additive |
-| [ADR-0037](ADR-0037-erasure-versus-pitr-conflict.md) | proposed, question only | Names the conflict between ADR-0014's shipped destruction paths and ADR-0015's restore to an arbitrary timestamp over an archive with no retention policy, prices crypto-shredding, a shortened window, a segregated store and an accepted conflict against that proof, and routes the choice to privacy counsel — distinct from the 노무사/세무사 payroll sign-off; decides nothing and asserts no Korean legal conclusion |
+| [ADR-0037](ADR-0037-erasure-versus-pitr-conflict.md) | proposed, question only | Names the conflict between ADR-0014's shipped destruction paths and ADR-0015's restore capability over the live 35-day restorable window, prices crypto-shredding, a shorter window, a segregated store and an accepted conflict against that proof, and routes the choice to privacy counsel — distinct from the 노무사/세무사 payroll sign-off; decides nothing and asserts no Korean legal conclusion |
 | [ADR-0038](ADR-0038-location-erasure-unlogged-then-crypto-shred.md) | proposed, mechanism for one data class | Decides HOW 개인위치정보 is erased, where ADR-0037 only names the conflict: declare `location_pings` UNLOGGED so coordinates never enter the WAL, base backups or standbys; run the never-called `purge_expired_location_data`; then envelope-encrypt per subject in a gated phase 2. Places the segregation boundary at `relpersistence` rather than a second cluster, which keeps the outbound RESTRICT foreign keys, FORCE-RLS enrolment, five org-removal deletes and single-transaction consent withdrawal intact. Retracts its own draft's collapse-to-one-row-per-subject after its falsification test found dispatch eligibility reads a time window. Asserts no Korean legal conclusion |
+| [ADR-0039](ADR-0039-one-graph-tests-run-by-existing.md) | proposed | Proposes replacing hand-maintained test-registration lists with Cargo/nextest workspace discovery, while retaining credential refusal and serializing only cluster-global tests; grants no authority unless accepted |
 
 ## Effective relationship graph
 
@@ -80,7 +83,7 @@ related: []
 - ADR-0028 amends one clause of ADR-0003: the `BranchScope::All` derivation, formerly keyed to SUPER_ADMIN/EXECUTIVE role literals and now derived only from a built-in `Feature` capability or a live database membership proof. ADR-0003 remains accepted for its `Branch`/`Region` day-1 schema, default-deny repository filtering, and branch-scoped broadcast/rollup rules. ADR-0018 and ADR-0021 are `related` only and are not amended.
 - ADR-0029 narrowly amends the audit-coverage exclusion sentence in ADR-0002 and in ADR-0014, whose stated cardinality of one disagreed with the gate's two, and records a pre-existing governance gap under authority rule 6. It amends neither ADR-0002's same-transaction or append-only decisions nor ADR-0014's destructible-store decision. At acceptance the owner widened it from ADR-0002 alone to both targets so the twin false sentence in ADR-0014 was corrected in the same change rather than left standing.
 - ADR-0030 amends ADR-0025's stack-bound structural prescriptions only — the carbon-copy visual authority, the `web/src/console/**` path and two-shell composition, and the spine boundary as enumerated. ADR-0025 remains accepted for its §4 nine-item slice bar, `/overview` and Work Hub semantics, workflow/policy authority, and rollout discipline. ADR-0023 is `related` only, and ADR-0001, ADR-0009, and ADR-0012 gain nothing from it.
-- ADR-0031 amends the contract-mechanism half of ADR-0009's Decision only. ADR-0009's ts/swift/kotlin client-generation, dual-build, and web+Android-then-iOS sequencing clauses are equally divergent from HEAD, were deliberately left unrewritten, and still need their own decision.
+- ADR-0031 amends the contract-mechanism half of ADR-0009's Decision only. The canonical pivot independently places ADR-0009's ts/swift/kotlin client-generation, dual-build, and web+Android-then-iOS sequencing outside current scope; they cannot dispatch work or resurrect deleted surfaces.
 
 ### Accepted without amendment — `related` only
 
@@ -92,9 +95,9 @@ Nothing in this subsection is an amendment. Each of these records reached accept
 - ADR-0035 defers quantity-bearing split/merge lineage and fixes the mechanism story for the conservation already shipped. ADR-0001, ADR-0002, ADR-0018, and ADR-0029 gained it in `related`.
 - ADR-0036 draws a boundary around the existing money store and names what a future finance subsystem must not foreclose. ADR-0002, ADR-0003, and ADR-0023 gained it in `related`.
 
-**These ten were drafted together and were all accepted on 2026-07-30.** ADR-0027 through ADR-0036 were drafted as one pass and accepted the same day. Rule 7 reserves ADR-0013 alone; no other number in this range is skipped. They were not a package deal: each stood or fell on its own evidence, and each was read against the code before its clauses were made binding. Accepting each one required, in the same atomic commit as its status flip, the reciprocal edits its own final section names — the target's frontmatter key, this index's row and graph lines, and, where the target's Decision text had become false, the sentence edited in place. A reciprocal key alone would leave a false sentence standing in an authoritative record, which is the failure those sections exist to prevent.
+**These ten were drafted together and were all accepted on 2026-07-30.** ADR-0027 through ADR-0036 were drafted as one pass and accepted the same day. Rule 7 reserves ADR-0013 alone; no other number in this range is skipped. They were not a package deal: each stood or fell on its own evidence, and each was read against the code before its clauses were made binding. Their historical acceptance process included reciprocal target edits. The later canonical pivot now requires ADR bodies to remain historical and current divergence to be recorded through additive status or supersession notes; do not repeat in-place Decision rewrites.
 
-**Four false sentences were corrected in place by that acceptance**, each against executable evidence rather than against a neighbouring sentence: the one-entry audit-coverage exclusion count in ADR-0002 and in ADR-0014, contradicted by `allowed_audit_exclusions()` returning two and by the test asserting `len() == 2`; `ADR-0003`'s `BranchScope::All`-from-role-literals derivation, already diverged where an `{ADMIN}`-only claim receives all-branch scope from a live ACTIVE membership proof; and `ADR-0009`'s "utoipa-emitted" contract clause, whose emitter appears nowhere in the tree. **Two known-false clauses were deliberately left standing** because no accepted record covers them: the rest of `ADR-0009:20` — ts/swift/kotlin client generation with a drift gate, the dual-build gate, and web+Android-then-iOS sequencing — whose `clients/`, `ios/`, `android/` and `package.json` artifacts are all absent from HEAD. ADR-0031 forbids rewriting them under its own authority; they need their own decision.
+At acceptance, four target sentences were edited in place against executable evidence: the audit-coverage exclusion counts in ADR-0002 and ADR-0014, ADR-0003's `BranchScope::All` derivation, and ADR-0009's contract mechanism. That history is retained, not a precedent. Current readers use explicit amendment relationships and additive observations, and the canonical pivot—not the deleted-client clauses—controls product scope.
 
 ## Subordinate design notes
 
@@ -103,6 +106,7 @@ Nothing in this subsection is an amendment. Each of these records reached accept
 | [DN-0001](notes/DN-0001-adr-0024-ha-workload-scheduling.md) | accepted ADR-0024 | DARK | First self-host HA workload scheduling expectations; not activation evidence |
 | [DN-0002](notes/DN-0002-adr-0024-on-prem-vip-ingress.md) | accepted ADR-0024 | DARK | First self-host on-prem VIP/ingress approach; not activation evidence |
 | [DN-0003](notes/DN-0003-adr-0025-operational-object-runtime.md) | accepted ADR-0025 | IN PROGRESS | Palantir-derived operational object runtime, deterministic Actions, object-focused tooling, and governed scenario direction; not release evidence |
+| [DN-0004](notes/DN-0004-adr-0028-branchless-capability-authorization.md) | accepted ADR-0028 | SHIPPED | `authorize_capability` for resources with no branch, and the single custom-grant verdict the migration moves (partial grant on a multi-branch principal, previously decided by branch-id sort order); no exposure change |
 
 ## Planning entry
 

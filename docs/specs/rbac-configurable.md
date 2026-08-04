@@ -1,20 +1,30 @@
 # RBAC — Configurable Roles & Policy (design sub-spec)
 
+> **Post-pivot status (2026-08-03):** Retained only as backend policy/authz
+> design and shipped-mechanism reference within the current Policy boundary. Its
+> former `knl-business-os.md` parent is superseded; this document cannot authorize
+> a frontend, production cutover, org-wide widening, or work outside the canonical
+> pivot. P3 UI and every stated live/prod transition remain **HOLD** until current
+> program authority explicitly promotes them with exact-candidate evidence.
+
 > **Status:** DESIGN / TARGET STATE — adversarial security-review DONE (verdict **NOT-YET — HIGH**:
 > 3 CRITICAL + 4 HIGH + 3 MEDIUM); revisions §0.1 below fold every must-fix into the design.
-> **Current shipped increment is §9 plus early P1 guardrails:** tenant role definitions/catalog,
+> **Current repository-source increment is the backend subset of §9 plus early P1 guardrails:** tenant role definitions/catalog,
 > ABAC/PBAC condition metadata, assignment impact preview, passkey-gated role lifecycle changes,
-> delegated branch-scope guardrails, a visible tenant `policy_version` lineage badge, and runtime-effective
+> delegated branch-scope guardrails, a tenant `policy_version` lineage field, and runtime-effective
 > additive custom-role grants for supported ordinary tenant features. Unsupported/elevated/scope-widening
-> policy remains inert until re-reviewed before P1/P2 cutover. The G002 pattern: kill the HIGHs pre-code.
-> **Parent:** `SPEC.md`, `docs/specs/knl-business-os.md`, `docs/specs/org-hierarchy.md`.
+> policy remains inert until re-reviewed before P1/P2 cutover. This is source evidence, not production,
+> exposure, or UI readiness. The G002 pattern: kill the HIGHs pre-code.
+> **Historical parents:** `SPEC.md`, superseded `docs/specs/knl-business-os.md`, and
+> `docs/specs/org-hierarchy.md`. Current scope comes from the canonical pivot and program roadmap.
 > **Cedar/PBAC target baseline:** `docs/decisions/ADR-0021-cedar-pbac-authorization-strangler.md`
 > and `docs/specs/cedar-pbac-cutover.md` govern the next authorization substrate. This spec remains the
 > shipped custom-role bridge until Cedar-enrolled actions are explicitly promoted; UI policy projections remain
 > non-authoritative and live routes remain server-authorized.
 > **Trigger:** user directive 2026-06-24 — *"should allow new / custom roles with
 > configurable permissions / policy"*, generalizing the *"add an org-admin grant"*
-> decision into a data-driven RBAC. **Quality bar:** Palantir-grade, enterprise-production.
+> decision into a data-driven RBAC. **Target quality bar:** Palantir-grade, enterprise-production;
+> no current production claim is implied.
 > Benchmark/gate: [`docs/benchmarks/palantir-foundry-ops-benchmark.md`](../benchmarks/palantir-foundry-ops-benchmark.md) — object/action model, policy preview, lineage, audit, telemetry, and runbook evidence.
 
 ## 0.1 Security-review revisions (must-fix, folded into the design)
@@ -286,18 +296,18 @@ Two new `Feature` variants (matrix cells default to **least-privilege**, then be
   EXEC/SUPER_ADMIN. Once configurable RBAC ships, **"org-admin" is simply a custom role with
   `OrgWideQueueTriage = Allow`** — the user's chosen "org-admin grant", now data-driven.
 
-> **Live migration note (HIGH-1):** before shipping the un-widen, confirm KNL's current triage user.
-> If they are a plain branch `ADMIN`, elevate them (EXECUTIVE) or grant the forthcoming org-admin role
-> in the same change — do **not** silently shrink their live queue. Surface, don't drop.
+> **Historical live-migration concern (HIGH-1):** do not act on the former KNL
+> role assumptions. Before any later cutover, an authorized operator must first
+> re-establish the live tenant, affected principals, and change authority, then
+> prove that scope is not silently reduced.
 
-## 6. Target console UX (Blueprint, AA, visual-verdict ≥90)
+## 6. Historical/target console UX — HOLD until the Leptos gate
 
-- **G016 Policy Studio (current safe increment)**: list system + custom role definitions, inspect the
-  feature catalog, create draft custom role definitions with ABAC/PBAC conditions, preview custom-role
-  assignments, and show the tenant `policy_version` that keys effective-policy invalidation. Passkey
-  step-up is required for lifecycle and assignment changes. ACTIVE assigned custom roles are resolved
-  into live authorization through the central request principal; DRAFT/RETIRED roles and unsupported
-  ABAC/PBAC conditions fail closed.
+- **Former React Policy Studio (deleted by the pivot):** its list/editor/preview UI
+  is historical evidence only. The backend feature catalog, role definitions,
+  assignment preview, `policy_version`, passkey gate, and fail-closed resolver
+  remain source-implemented mechanisms; they do not establish a current UI or
+  production exposure.
 - **Future Roles page** (gated on `RoleManage`): list system + custom roles; create/edit a custom role via a
   capability matrix editor (feature × level, grouped by domain) with a **diff-from-baseline** view and
   a **"grant ≤ self" preview** that greys out capabilities the actor lacks. Retire (not hard-delete)
@@ -310,7 +320,9 @@ Two new `Feature` variants (matrix cells default to **least-privilege**, then be
 - **Employment-transition UI**: onboarding, transfer, leave/suspension, termination/retirement, and
   rehire flows must update credential status, policy assignments, responsibilities, queue scope,
   and retention state together, with audit and handoff tasks.
-- Copy in `ko.ts`; no raw UUIDs (`safeLabel`/`ObjectLink`); KST timestamps; loading/empty/error states.
+- Any future Leptos surface must establish its own localization and safe-label
+  conventions; the deleted `ko.ts`/`safeLabel`/`ObjectLink` machinery is not a
+  current implementation path.
 
 ## 7. Migration & compatibility
 
@@ -338,27 +350,29 @@ Two new `Feature` variants (matrix cells default to **least-privilege**, then be
 - Catalog injection: can a crafted `feature` string enable an unintended capability or bypass the
   `Feature` CHECK? (Parse-or-deny.)
 
-## 9. G016 production slice status (current implementation)
+## 9. G016 backend source status (former UI/client slice deleted)
 
 This slice exists because tenants need to create many named roles (for example department managers, group operators, payroll clerks, site-only supervisors) without adding more hard-coded enum roles. It deliberately starts with a safe, auditable role catalog and policy preview instead of weakening the authorization boundary.
 
-**In scope now**
+**Present in repository source now**
 
 - Add the tenant feature `RoleManage` to the canonical feature catalog. Only `SUPER_ADMIN` holds it initially (`[D,D,D,D,D,A]`).
 - Add tenant-scoped custom role tables with RLS, immutable `org_id`, console_rt grants, feature FK validation, and per-org `policy_version` bumps.
 - Add `/api/v1/policy/features` and `/api/v1/policy/roles` so a RoleManage holder can see the capability catalog and create custom role definitions with explicit permission cells.
-- Surface the per-tenant `policy_version` in the role catalog response and Policy Studio UI. Version 0
+- Surface the per-tenant `policy_version` in the role catalog response. Version 0
   means no policy write has happened; every role/custom-assignment write bumps the monotonic version
   under RLS for the future `(org_id, policy_version)` resolver cache.
 - Custom role definitions may grant ordinary operational features only. Admin escalation features (`RoleManage`, `ElevatedRoleGrant`) and the scope-widening `OrgWideQueueTriage` stay system-role-only until no-lockout/self-bounded grant proofs and richer scope publication land together.
-- Add a console Policy Studio page under account/authority management that creates role definitions from data and shows the scope/status honestly.
+- The former React Policy Studio page was deleted by the pivot. No current UI is
+  implemented or authorized by this spec.
 - Identity-console S2 account/person mutations use the same impact-preview receipt contract as Policy Studio:
   `POST /api/v1/policy/users/{id}/assignment-preview` accepts `role_ids` plus optional `system_roles` and
   `branch_ids`, returns current/requested system-role and branch-scope sets with a short-lived
   `preview_receipt_id`, and `PATCH /api/v1/users/{id}` must include `preview_acknowledged: true` plus that
   receipt whenever replacing `roles` or `branch_ids`. Account lifecycle uses `POST /api/v1/users/{id}/deactivate`
   to archive/offboard and revoke credentials/sessions, and `POST /api/v1/users/{id}/activate` to reactivate an
-  archived user without recreating credentials; generated clients expose `AccountStatus = ACTIVE | PENDING_SETUP | ARCHIVED`.
+  archived user without recreating credentials; the backend OpenAPI document exposes
+  `AccountStatus = ACTIVE | PENDING_SETUP | ARCHIVED`. Generated clients are deleted.
 
 **Out of scope for this slice**
 
@@ -366,16 +380,19 @@ This slice exists because tenants need to create many named roles (for example d
 - Custom role definitions do **not** widen `BranchScope::All`, group scope, or platform scope. Those scopes remain resolved by the existing membership/token systems.
 - Runtime authorization overlays are intentionally additive and fail closed: ACTIVE custom roles grant ordinary features inside the caller's live branch scope, while DRAFT/RETIRED roles, unsupported conditions, and elevated/scope-widening features stay inert.
 
-**Stop condition**
+**Backend verification condition**
 
-- A super admin can open Policy Studio, inspect the feature catalog, create a custom role such as `maintenance_manager`, and reload it from the tenant-scoped API.
+- Focused REST tests prove an authorized principal can inspect the feature catalog,
+  create a custom role such as `maintenance_manager`, and reload it through the
+  tenant-scoped API; this is not a current UI or live-user-story claim.
 - Attempts to define elevated policy features are rejected by the REST boundary.
 - ACTIVE assigned custom roles are resolved into ordinary feature grants on the next request principal, without widening branch/group/platform scope. Runtime-effective conditions are intentionally limited to data-backed branch narrowing and team matching (`equals`/`in`); other metadata-only ABAC/PBAC condition rows remain visible for preview/audit and fail closed until their source-of-truth attributes exist.
-- Generated clients, web tests, lint/typecheck/build, and Rust fmt/metadata stay green.
+- Backend OpenAPI drift, focused Rust tests, fmt, clippy, and the applicable
+  authorization/RLS gates stay green on the exact candidate.
 
 **Why this is not a stub**
 
-The persisted role catalog, feature FK, audit row, RLS policy, policy-version bump, OpenAPI contract, and central effective-policy resolver are production substrate. The remaining withheld behavior is the dangerous part: elevated self-granting, org-wide scope widening, group/platform policy fan-out, and richer ABAC/PBAC evaluation (department, position, employment status, assignment, location, purpose/action/resource) before the required source-of-truth attributes, preview/no-lockout/self-bounded checks, and review evidence exist.
+The persisted role catalog, feature FK, audit row, RLS policy, policy-version bump, OpenAPI text, and central effective-policy resolver are non-stub repository mechanisms. Their presence is not production or exposure evidence. The remaining withheld behavior is the dangerous part: elevated self-granting, org-wide scope widening, group/platform policy fan-out, and richer ABAC/PBAC evaluation (department, position, employment status, assignment, location, purpose/action/resource) before the required source-of-truth attributes, preview/no-lockout/self-bounded checks, and review evidence exist.
 
 ## 10. Phased delivery (new ultragoal goal — slots after G002 org-hierarchy)
 
@@ -405,7 +422,7 @@ The persisted role catalog, feature FK, audit row, RLS policy, policy-version bu
 
 **Test strategy (per slice):** real `console_rt` RLS round-trip + cross-tenant invisibility for each new
 table; golden parity test that seeded system policy == `matrix_row()`; adversarial escalation/lockout
-tests; gates + fmt + clippy + `check:openapi-app` green; security-review as a separate pass.
+tests; gates + fmt + clippy + `check:platform-contract-drift` green; security-review as a separate pass.
 
 ## 11. Open decisions (recommended defaults in **bold** — confirm or override)
 

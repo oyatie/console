@@ -24,27 +24,6 @@ export_file(
     visibility = ["PUBLIC"],
 )
 
-export_file(
-    name = "generated-face-openapi-ts",
-    src = "generated-face-openapi-ts.sh",
-    mode = "reference",
-    visibility = ["PUBLIC"],
-)
-
-export_file(
-    name = "generated-face-openapi-kotlin",
-    src = "generated-face-openapi-kotlin.sh",
-    mode = "reference",
-    visibility = ["PUBLIC"],
-)
-
-export_file(
-    name = "generated-face-openapi-swift",
-    src = "generated-face-openapi-swift.sh",
-    mode = "reference",
-    visibility = ["PUBLIC"],
-)
-
 # Non-generated wrappers keep disposable PostgreSQL credential values out of
 # Buck's test-executor argv.  The harness passes only a mode-0600 file path;
 # this wrapper loads it inside the test process before executing the exact
@@ -1401,6 +1380,14 @@ sh_test(
 )
 
 sh_test(
+    name = "platform-db-personal-data-classification-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-personal_data_classification)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-personal_data_classification"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "platform-group-lib-pg",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/platform/group:console-platform-group-unit)"],
@@ -1733,6 +1720,14 @@ sh_test(
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-use_cases)"],
     deps = ["//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-use_cases"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "workorder-rest-mobile-device-registration-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/workorder/rest:console-workorder-rest-itest-mobile_device_registration)"],
+    deps = ["//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_device_registration"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 

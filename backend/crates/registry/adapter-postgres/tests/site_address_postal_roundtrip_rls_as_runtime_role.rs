@@ -138,6 +138,7 @@ async fn site_address_postal_code_and_coordinates_round_trip_as_runtime_role(own
         let site = store
             .create_site(CreateSiteCommand {
                 actor: admin,
+                branch_scope: BranchScope::single(branch_id),
                 customer_id: customer,
                 name: "안산1공장".to_owned(),
                 address: Some("경기도 안산시 단원구 1로 1".to_owned()),

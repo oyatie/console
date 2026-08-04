@@ -1,5 +1,11 @@
 # Talos deployment contexts
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This is retained bootstrap and substrate
+> reference, not evidence of current nodes or authority to bootstrap, apply, or
+> reset Talos. The repository currently authorizes zero production mutations.
+> Start with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 This directory keeps Talos substrate inputs split by deployment context:
 
 | Context | Purpose | Activation state |

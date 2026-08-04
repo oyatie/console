@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Local mirror of the CI `preflight` and `backend` jobs.
+// Local mirror of the CI jobs whose commands have safe local equivalents.
 //
-// Why this exists: those two jobs run ~35 commands in a specific order, several
+// Why this exists: the mirrored jobs run many commands in a specific order, several
 // of which need a PostgreSQL identity that migration 0196 restricts to
 // `console_buck_admin`. Nobody can hold that in their head, so defects were reaching
 // CI and costing a 45-minute round trip *each*, and because failures mask one
@@ -13,13 +13,18 @@
 // the workspace-test run went missing for many commits (H-8 in
 // docs/program/false-green-gate-holes.md).
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import yaml from "js-yaml";
 
 const WORKFLOW = ".github/workflows/ci.yml";
+export const REASONING_LENS_LOCAL_RUN = [
+  "set -euo pipefail",
+  'reasoning_base="$(git merge-base HEAD "${CONSOLE_VERIFY_BASE:-origin/main}")"',
+  'node scripts/check-reasoning-lens-contract.mjs --changed-since "$reasoning_base"',
+].join("\n");
 
 /**
  * Every job in `ci.yml`, declared exactly once. `true` means its run-steps are
@@ -34,11 +39,11 @@ const JOBS = new Map([
   ["backend", true],
   ["repo-gates", true],
   ["kubernetes-manifests", true],
-  ["domain-unit", "cargo unit tests for the domain crates behind a pinned toolchain; the `fast` tier already runs the workspace suite"],
+  ["domain-unit", true],
   ["postgres-domain-reachability", "serialized Buck2 PostgreSQL targets; the `db` tier already exercises that harness"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
-  ["api-contract", "boots a Buck2-built app against a live listener with the CI keypair fixture"],
+  ["api-contract", true],
   ["company-conformance", true],
 ]);
 const MIRRORED_JOBS = [...JOBS].filter(([, v]) => v === true).map(([name]) => name);
@@ -66,6 +71,11 @@ const PLAN = new Map([
   }],
   ["Cheap Buck2 generated-face admission", { tier: "fast" }],
   ["Foundation gate contract", { tier: "fast" }],
+  ["Reasoning lens contract regression", { tier: "fast" }],
+  ["Reasoning lens changed-record admission", {
+    tier: "fast",
+    run: REASONING_LENS_LOCAL_RUN,
+  }],
   ["Console truth-ledger exact-M admission", { tier: "fast" }],
   ["Console fanout planner exact-M admission", {
     tier: "fast",
@@ -79,6 +89,7 @@ const PLAN = new Map([
   // learn after it started running: the step existed on main and was declared
   // nowhere, so the job-completeness check would have failed closed on it.
   ["Console PR authority bootstrap regression", { tier: "fast" }],
+  ["Executed-tests baseline set regression", { tier: "fast" }],
   // The guard that keeps THIS file honest. It ran in no workflow until 2026-08-01,
   // which is why `support-domain-unit` outlived its rename to `domain-unit` on main
   // and `npm run verify` was red for everyone.
@@ -90,6 +101,20 @@ const PLAN = new Map([
   ["CI preflight contract", { tier: "fast" }],
   ["Canonical npm lockfile", { tier: "fast" }],
   ["Cargo.lock consistency", { tier: "fast" }],
+  // The Buck2-exit safety net. It lives in preflight and not in repo-gates
+  // because it now resolves `cargo metadata` as well as the BUCK graph, and
+  // preflight is the job that already has both a pinned Rust toolchain and npm —
+  // the step above it is `cargo metadata` on the same manifest. Pure analysis,
+  // no Docker, so `fast`.
+  ["Executed-tests ratchet — a test binary must have a path from a workflow step", { tier: "fast" }],
+  // Execs tools/lanes/no-credential-in-argv.sh directly. No container, no
+  // bypass env var, so `fast`.
+  ["Workflow test-runner credential literals", { tier: "fast" }],
+
+  // ---- domain-unit -------------------------------------------------------
+  // This is the exact no-database Cargo selection from CI. A former exemption
+  // incorrectly claimed fast verification ran a workspace suite; it did not.
+  ["Domain crate unit tests", { tier: "fast" }],
 
   // ---- backend -----------------------------------------------------------
   ["rustfmt check", { tier: "fast" }],
@@ -102,9 +127,11 @@ const PLAN = new Map([
   ["RLS-arming gate", { tier: "fast" }],
   ["Dev-auth-absence gate", { tier: "fast" }],
   ["IaC tier-discipline gate", { tier: "fast" }],
-  // The eight `cargo run -p console-gate-*` steps above prove only that each
+  ["Fabricated-branch gate", { tier: "fast" }],
+  ["Personal-data-classification gate", { tier: "fast" }],
+  // The ten `cargo run -p console-gate-*` steps above prove only that each
   // gate exits 0 against THIS tree — which a gate scanning an empty directory
-  // also does. These five suites plant a violation in a throwaway tree and
+  // also does. These six suites plant a violation in a throwaway tree and
   // assert the gate rejects it, so they are what distinguishes "scanned and
   // found nothing" from "scanned nothing". Unsets DATABASE_URL: none of the
   // five touch a database.
@@ -144,6 +171,8 @@ const PLAN = new Map([
   // the entries above cover both jobs.
   ["ADR governance tests", { tier: "fast" }],
   ["ADR governance gate", { tier: "fast" }],
+  ["Documentation link tests", { tier: "fast" }],
+  ["Documentation local-link gate", { tier: "fast" }],
   ["Shared text gate unit tests", { tier: "fast" }],
   ["G004 identity group org people policy foundation gate", { tier: "fast" }],
   ["G005 workflow approval Work Hub lifecycle gate", { tier: "fast" }],
@@ -157,13 +186,24 @@ const PLAN = new Map([
   ["G008 import HR payroll readiness gate", { tier: "fast" }],
   ["People HR lifecycle maturity gate", { tier: "fast" }],
   ["Payroll release-gate contract", { tier: "fast" }],
-  ["Executed-tests ratchet — a test file must have a path from a workflow step", { tier: "fast" }],
   ["Undeclared imports — every bare specifier must be declared", { tier: "fast" }],
   ["Request-body contract — spec fields must exist on the handler", { tier: "fast" }],
   // The step name promises the whole repository; the gate resolves a declared
   // subset. Mirrored as-is so local matches CI exactly; renaming the step is
   // what would make the promise true.
   ["Doc citations — every code citation must resolve", { tier: "fast" }],
+
+  // ---- api-contract ------------------------------------------------------
+  // This job became text-only when the tautological app-served OpenAPI comparison
+  // and its Buck2 binary handoff were deleted, so every remaining command is safe
+  // to mirror locally.
+  ["Install Node tooling", {
+    tier: "ci-only",
+    why: "`npm ci` deletes node_modules; `Canonical npm lockfile` covers lockfile drift",
+  }],
+  ["Platform contract drift gate", { tier: "fast" }],
+  ["Employee import replay contract", { tier: "fast" }],
+  ["Ontology write precondition contract", { tier: "fast" }],
 
   // ---- kubernetes-manifests ---------------------------------------------
   // Mirrored because `check:production-hardening` pins the exact text of the
@@ -250,6 +290,10 @@ export function assertPlanCoversCi(steps = ciSteps()) {
   return steps;
 }
 
+export function reasoningLensLocalRunFromPlan() {
+  return PLAN.get("Reasoning lens changed-record admission")?.run ?? null;
+}
+
 function run(command, env, cwd = ".") {
   const result = spawnSync("bash", ["-o", "pipefail", "-c", command], {
     stdio: "inherit",
@@ -263,6 +307,48 @@ function capture(command) {
   const result = spawnSync("bash", ["-o", "pipefail", "-c", command], { encoding: "utf8" });
   if (result.status !== 0) throw new Error(`failed: ${command}\n${result.stderr}`);
   return result.stdout.trim();
+}
+
+function captureFile(command, args) {
+  const result = spawnSync(command, args, { encoding: "utf8" });
+  if (result.status !== 0) {
+    throw new Error(`failed: ${command} ${args.join(" ")}\n${result.stderr}`);
+  }
+  return result.stdout.trim();
+}
+
+export function writePrivateFile(path, contents) {
+  writeFileSync(path, contents, { flag: "wx", mode: 0o600 });
+}
+
+export function topologyEnvContents(credentials) {
+  const entries = [
+    ["POSTGRES_ADMIN_PASSWORD", credentials.admin],
+    ["CONSOLE_APP_POSTGRES_PASSWORD", credentials.app],
+    ["CONSOLE_RT_POSTGRES_PASSWORD", credentials.runtime],
+    ["CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD", credentials.leaveCommand],
+    ["CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD", credentials.ontologyCommand],
+    ["CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD", credentials.platformForce],
+  ];
+  if (new Set(entries.map(([, password]) => password)).size !== entries.length) {
+    throw new Error("PostgreSQL topology credentials must be pairwise distinct");
+  }
+  return [
+    "POSTGRES_HOST=127.0.0.1",
+    "POSTGRES_DB=console_ci",
+    "POSTGRES_ADMIN_USER=postgres",
+    ...entries.map(([name, password]) => `${name}=${password}`),
+    "",
+  ].join("\n");
+}
+
+function generateDistinctPasswords(count) {
+  const passwords = [];
+  while (passwords.length < count) {
+    const candidate = captureFile("openssl", ["rand", "-hex", "16"]);
+    if (!passwords.includes(candidate)) passwords.push(candidate);
+  }
+  return passwords;
 }
 
 /** Reproduce CI's C/T/M derivation against a synthetic merge, so the console
@@ -290,40 +376,73 @@ function consoleTrainEnv() {
 function withPostgres(body) {
   const name = `console-verify-pg-${process.pid}`;
   const scratch = mkdtempSync(join(tmpdir(), "console-verify-"));
-  const adminPassword = capture("openssl rand -hex 16");
-  const bootstrapPassword = capture("openssl rand -hex 16");
+  const [
+    adminPassword,
+    appPassword,
+    runtimePassword,
+    leaveCommandPassword,
+    ontologyCommandPassword,
+    platformForceCommandPassword,
+    buckAdminPassword,
+  ] = generateDistinctPasswords(7);
   try {
-    capture(
-      `docker run -d --rm --name ${name} -p 127.0.0.1:0:5432 ` +
-        `-e POSTGRES_DB=console_ci -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=${adminPassword} ` +
-        `${POSTGRES_IMAGE}`,
-    );
-    capture(
-      `for i in $(seq 1 60); do docker exec ${name} pg_isready -U postgres -d console_ci >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1`,
-    );
-    const port = capture(`docker port ${name} 5432/tcp | head -1 | sed 's/.*://'`);
+    const postgresEnv = join(scratch, "postgres.env");
+    writePrivateFile(postgresEnv, [
+      "POSTGRES_DB=console_ci",
+      "POSTGRES_USER=postgres",
+      `POSTGRES_PASSWORD=${adminPassword}`,
+      "",
+    ].join("\n"));
+    captureFile("docker", [
+      "run", "-d", "--rm", "--name", name,
+      "-p", "127.0.0.1:0:5432",
+      "--env-file", postgresEnv,
+      POSTGRES_IMAGE,
+    ]);
 
-    capture(`docker cp ops/postgres-reconcile-topology.sh ${name}:/topology.sh`);
-    capture(
-      `docker exec -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci ` +
-        `-e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=${adminPassword} ` +
-        `-e CONSOLE_APP_POSTGRES_PASSWORD=${bootstrapPassword} -e CONSOLE_RT_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `-e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${bootstrapPassword} ` +
-        `${name} bash /topology.sh`,
-    );
+    let ready = false;
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      const result = spawnSync(
+        "docker",
+        ["exec", name, "pg_isready", "-U", "postgres", "-d", "console_ci"],
+        { stdio: "ignore" },
+      );
+      if (result.status === 0) {
+        ready = true;
+        break;
+      }
+      spawnSync("sleep", ["1"], { stdio: "ignore" });
+    }
+    if (!ready) throw new Error(`PostgreSQL container ${name} did not become ready`);
+
+    const portOutput = captureFile("docker", ["port", name, "5432/tcp"]);
+    const port = portOutput.split(/\r?\n/).map((line) => line.match(/:(\d+)$/)?.[1]).find(Boolean);
+    if (!port) throw new Error(`could not parse PostgreSQL port from: ${portOutput}`);
+
+    captureFile("docker", ["cp", "ops/postgres-reconcile-topology.sh", `${name}:/topology.sh`]);
+    const topologyEnv = join(scratch, "topology.env");
+    writePrivateFile(topologyEnv, topologyEnvContents({
+      admin: adminPassword,
+      app: appPassword,
+      runtime: runtimePassword,
+      leaveCommand: leaveCommandPassword,
+      ontologyCommand: ontologyCommandPassword,
+      platformForce: platformForceCommandPassword,
+    }));
+    captureFile("docker", ["exec", "--env-file", topologyEnv, name, "bash", "/topology.sh"]);
 
     // The password reaches psql through a mode-0600 file, never argv.
     const sql = join(scratch, "buck-admin.sql");
-    writeFileSync(sql, `CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '${bootstrapPassword}';\n`);
-    chmodSync(sql, 0o600);
-    capture(`docker cp ${sql} ${name}:/buck-admin.sql`);
-    capture(
-      `docker exec -e PGPASSWORD=${adminPassword} ${name} psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /buck-admin.sql`,
-    );
+    writePrivateFile(sql, `CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '${buckAdminPassword}';\n`);
+    captureFile("docker", ["cp", sql, `${name}:/buck-admin.sql`]);
+    const adminEnv = join(scratch, "admin.env");
+    writePrivateFile(adminEnv, `PGPASSWORD=${adminPassword}\n`);
+    captureFile("docker", [
+      "exec", "--env-file", adminEnv, name,
+      "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-f", "/buck-admin.sql",
+    ]);
 
-    const buckAdminUrl = `postgres://console_buck_admin:${bootstrapPassword}@127.0.0.1:${port}/console_ci?${BOOTSTRAP_GUC}`;
+    const buckAdminUrl = `postgres://console_buck_admin:${buckAdminPassword}@127.0.0.1:${port}/console_ci?${BOOTSTRAP_GUC}`;
     return body({
       DATABASE_URL: buckAdminUrl,
       CONSOLE_BUCK_ADMIN_DATABASE_URL: buckAdminUrl,

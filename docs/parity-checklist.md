@@ -1,3 +1,8 @@
+> **SUPERSEDED PRE-PIVOT RECORD:** The native clients, generated clients, mobile CI,
+> and release tooling named below were deleted by the 2026-07-28 pivot. This file
+> is retained only as historical context and is not a current checklist or release
+> authority. See [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+
 # Console Native Parity Checklist
 
 References: `android/app/src`, `ios/`, generated clients under `clients/{kotlin,swift}`, `backend/openapi/openapi.yaml`, ADR-0009, and ADR-0012.

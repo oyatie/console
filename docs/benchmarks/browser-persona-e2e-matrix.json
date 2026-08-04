@@ -4,7 +4,7 @@
   "updatedAt": "2026-07-09",
   "fixtureModule": "e2e/fixtures/personas.ts",
   "sourceEvidence": [
-    ".omx/context/platform-maturity-g001/live-baseline-20260630T0017Z.txt",
+    "docs/handoffs/2026-08-03-disk-wipe-consolidation.md#retired-ignored-omx-evidence",
     "docs/benchmarks/enterprise-ui-route-audit.json",
     "docs/specs/backlog-clearance-ledger.md",
     "docs/specs/foundation-gates.md"

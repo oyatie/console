@@ -1,23 +1,15 @@
-# DESIGN.md
+# DESIGN — Post-pivot Console
 
-## Current design decision: Work Hub first
+## Object-first interaction model
 
-For issue #55, the enterprise collaboration suite starts from a role-aware Work Hub, not from a disconnected messenger/mail/task demo. The first screen after login should answer: what needs attention today, what is blocked on approval, where is the related conversation/evidence, and which source object owns the work.
+The product exposes governed company objects and their authorized actions, not a generic work hub:
 
-## Interaction model
+`Company → OrgUnit → JobPosition → Person/Employment → HR action → PayRun`
 
-`Work Hub -> Source object -> Conversation / Mail / Evidence -> Approval or task action -> Audit trail`
+Every surface reads real backend contracts, omits unauthorized data server-side, displays stable human labels instead of raw identifiers, and includes loading, empty, partial-failure, full-failure, recovery, responsive, and accessible states.
 
-This keeps each module native and production-grade while making the cross-module workflow feel integrated.
+## Frontend hold
 
-## UX rules
+There is currently no frontend. Leptos SSR work is HOLD until all ADR-0030 gates are freshly green, an ADR-0001 amendment defines `Layer::Ui`, contracts and the SSR shell are stable, and real E2E evidence exists. UI crates may depend only on Contracts and UI crates; client-side business rules, fixtures, placeholder routes, comms rails, and unrelated navigation are forbidden.
 
-- Korean-first copy from `ko.ts`; no hardcoded user-facing strings in components.
-- No raw UUIDs as labels. Use request numbers, customer/site names, display names, and safe fallbacks.
-- No dead links for known role-gated routes. Disabled cards must explain that the capability is outside the current role scope.
-- Loading, empty, partial-failure, and full-failure states are required for every aggregate surface.
-- Sensitive decisions belong in the approval/workflow system, with passkey step-up and audit trail as the target architecture.
-
-## Benchmark source
-
-See `docs/benchmarks/issue-55-collaboration-work-hub.md` for the Slack, Microsoft, SAP, Atlassian, ServiceNow, and Palantir benchmark matrix and user stories.
+The current design authority and backend reference status are recorded in [`docs/PIVOT-2026-07-28.md`](docs/PIVOT-2026-07-28.md).

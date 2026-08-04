@@ -1,5 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! `company-conformance` — the IMMUTABLE TARGET the company/HR fan-out aims at.
+//! `company-conformance` — an isolated generic instance-engine regression.
+//!
+//! **Current product boundary (2026-08-03):** this suite's five fixtures are
+//! instance-backed and omit Person. It is not the Company/HR projection target,
+//! does not prove domain owning-port or single-writer boundaries, and dispatches
+//! no fan-out work. Historical lane language below explains how the regression
+//! was built; it is test archaeology, not current program authority.
 //!
 //! ONE scenario, TWO drivers. Both bind only to surfaces that exist TODAY, so the
 //! target is never rewritten as lanes land:
@@ -179,8 +185,8 @@ use uuid::Uuid;
 
 use harness::{Harness, T0, T1};
 
-/// The five types the fan-out must ship. Nothing else in this file changes as
-/// they land.
+/// The five historical fixture types exercised by this generic engine regression.
+/// They deliberately do not define the current projected product model.
 const LANE_TYPES: [&str; 5] = [
     "company",
     "org_unit",

@@ -28,6 +28,16 @@ import { fileURLToPath } from "node:url";
 
 export const ARCHIVED_EVIDENCE = ["docs/evidence/"];
 
+// Measured 98 against the tracked script surface, leaving headroom for ordinary deletion; a
+// collapse, not a trim, is what this catches. It lives in the GATE and not only in the sibling
+// test because the test is reachable through exactly one unlocked string: the `node --test ... &&`
+// prefix of `check:undeclared-imports` in package.json. Deleting that prefix was verified to leave
+// check:foundation-gates and check:ci-preflight both exiting 0 — neither compares script bodies —
+// and the gate binary then printed `undeclared imports gate passed (0 files scanned)` and exited 0
+// when pointed at a subtree with no tracked scripts. A gate whose green says it looked at nothing
+// is the false green this slice exists to close.
+export const SCANNED_FLOOR = 90;
+
 // `import x from "p"`, `export * from "p"`, `import("p")`, `require("p")`, bare `import "p";` —
 // all reduce to a quoted specifier in a position ordinary prose does not occupy.
 const SPECIFIER_PATTERNS = [
@@ -57,8 +67,10 @@ function declaredIn(manifestPath) {
   ]);
 }
 
-// Nearest manifest wins: tools/npm/minimatch-callable-compat declares `minimatch-modern`
-// locally, and resolving that file against the root manifest would report a false finding.
+// Nearest manifest wins: a nested package.json may declare a dependency the root does not, and
+// resolving files under it against the root manifest would report a false finding. Only the root
+// manifest exists at HEAD, so this walk currently always lands there; it stays so that adding a
+// nested manifest does not silently start producing false findings.
 function nearestDeclarations(root, file, cache) {
   let directory = dirname(resolve(root, file));
   const stop = resolve(root);
@@ -74,9 +86,7 @@ function nearestDeclarations(root, file, cache) {
 }
 
 function lineOf(source, index) {
-  let line = 1;
-  for (let cursor = 0; cursor < index; cursor += 1) if (source[cursor] === "\n") line += 1;
-  return line;
+  return source.slice(0, index).split("\n").length;
 }
 
 // ponytail: quote parity, not a JS tokenizer. A match whose line begins a comment, or which is
@@ -120,14 +130,20 @@ export function evaluateUndeclaredImports(root, archived = ARCHIVED_EVIDENCE) {
     for (const pattern of SPECIFIER_PATTERNS) {
       for (const match of source.matchAll(pattern)) {
         const specifier = match[1];
+        // Anchor on the keyword, not on match.index. The bare-import pattern begins at the
+        // statement delimiter BEFORE `import`, and when that delimiter is a newline match.index
+        // sits on the previous line: `isQuotedOrCommented` then judged that line, so
+        // `// polyfill\nimport "phantom";` was discarded as commented — a false GREEN on the
+        // only form pattern 4 exists to catch — and `lineOf` named the line above the import.
+        const at = match.index + match[0].search(/[^\s;{}]/);
         if (specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:")) continue;
-        if (isQuotedOrCommented(source, match.index)) continue;
+        if (isQuotedOrCommented(source, at)) continue;
         const name = packageName(specifier);
         // A specifier that is not a legal package name is prose caught by a loose regex, not a
         // dependency. False findings get allowlisted, and an allowlist is how a gate dies.
         if (!PACKAGE_NAME.test(name) || declared.has(name) || seen.has(name)) continue;
         seen.add(name);
-        findings.push({ file, line: lineOf(source, match.index), specifier: name });
+        findings.push({ file, line: lineOf(source, at), specifier: name });
       }
     }
   }
@@ -146,7 +162,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   // Printed on every run, pass or fail. Silent truncation reads as "we covered everything".
   console.log(`excluded ${excluded.length} archived evidence file${excluded.length === 1 ? "" : "s"}`
     + `${excluded.length > 0 ? `: ${excluded.join(", ")}` : ""}`);
-  if (findings.length > 0) {
+  const belowFloor = scanned < SCANNED_FLOOR;
+  if (belowFloor) {
+    console.error(`scanned ${scanned} files, below the floor of ${SCANNED_FLOOR} — the scan covered `
+      + "less of the script surface than it was built to cover; re-measure before lowering this");
+  }
+  if (findings.length > 0 || belowFloor) {
     console.error(`undeclared imports gate FAILED: ${findings.length} undeclared specifier(s) across ${scanned} files`);
     process.exit(1);
   }

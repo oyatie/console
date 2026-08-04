@@ -22,8 +22,10 @@
 //!   (c) FAIL-CLOSED: with NO GUC armed the create fails closed (MissingOrg),
 //!       never an unscoped write.
 
-use console_kernel_core::{BranchId, CustomerId, OrgId, TraceContext, UserId};
-use console_registry_adapter_postgres::PgRegistryStore;
+use console_kernel_core::{
+    BranchId, BranchScope, CustomerId, ErrorKind, OrgId, TraceContext, UserId,
+};
+use console_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
 use console_registry_application::{CreateCustomerCommand, CreateSiteCommand};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -160,6 +162,7 @@ async fn create_customer_and_site_succeed_as_runtime_role(owner_pool: PgPool) {
         let site = store
             .create_site(CreateSiteCommand {
                 actor: admin,
+                branch_scope: BranchScope::single(customer.branch_id),
                 customer_id: customer.id,
                 name: "안산1공장".to_owned(),
                 address: Some("경기도 안산시 1로 1".to_owned()),
@@ -305,6 +308,7 @@ async fn cannot_create_site_under_another_orgs_customer(owner_pool: PgPool) {
         store
             .create_site(CreateSiteCommand {
                 actor: admin_a,
+                branch_scope: BranchScope::All,
                 customer_id: foreign_customer,
                 name: "탈취시도현장".to_owned(),
                 address: None,
@@ -336,6 +340,66 @@ async fn cannot_create_site_under_another_orgs_customer(owner_pool: PgPool) {
         .await
         .unwrap();
     assert_eq!(leaked, 0, "no cross-tenant site row may be created");
+}
+
+// ===========================================================================
+// (b2) SAME-ORG BRANCH ISOLATION: a branch-scoped actor cannot attach a site to
+//      another branch's customer, and the 404-shaped error reveals no row.
+// ===========================================================================
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn cannot_create_site_under_another_branchs_customer(owner_pool: PgPool) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let org_uuid = *org.as_uuid();
+
+    seed_org(&owner_pool, org_uuid, "A").await;
+    let branch_a = seed_branch(&owner_pool, org_uuid).await;
+    let branch_b = seed_branch(&owner_pool, org_uuid).await;
+    let admin_a = seed_user(&owner_pool, org_uuid, "ADMIN", branch_a).await;
+    let customer_b = seed_customer(&owner_pool, org_uuid, branch_b, "B지점고객").await;
+
+    let result = console_platform_request_context::scope_org(org, async {
+        PgRegistryStore::new(rt_pool.clone())
+            .create_site(CreateSiteCommand {
+                actor: admin_a,
+                branch_scope: BranchScope::single(branch_a),
+                customer_id: customer_b,
+                name: "타지점침범현장".to_owned(),
+                address: None,
+                province: None,
+                city: None,
+                postal_code: None,
+                latitude: None,
+                longitude: None,
+                geofence_radius_m: None,
+                contact_name: None,
+                contact_phone: None,
+                contact_email: None,
+                trace: TraceContext::generate(),
+                occurred_at: occurred_at(),
+            })
+            .await
+    })
+    .await;
+
+    assert!(
+        matches!(result, Err(PgRegistryError::Domain(ref error)) if error.kind == ErrorKind::NotFound),
+        "a foreign-branch customer must be indistinguishable from a missing one: {result:?}"
+    );
+    let sites: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM registry_sites WHERE name = $1")
+        .bind("타지점침범현장")
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+    let audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events WHERE action = 'site.create' AND after_snap->>'name' = $1",
+    )
+    .bind("타지점침범현장")
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(sites, 0);
+    assert_eq!(audits, 0);
 }
 
 // ===========================================================================

@@ -1,5 +1,11 @@
 # Deploy — Talos + Argo CD deployment contexts
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This document is retained as operator and
+> historical reference. It does not prove a live environment, current topology,
+> readiness, or authority to mutate production. The repository currently
+> authorizes zero production mutations. Start with the
+> [disk-wipe consolidation handoff](../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 GitOps deployment of the forklift FSM. The live deployment context today is a
 single-node [Talos Linux](https://talos.dev) Kubernetes cluster running on an
 Oracle Cloud **Ampere A1** instance, sized to stay inside the **Always Free** tier

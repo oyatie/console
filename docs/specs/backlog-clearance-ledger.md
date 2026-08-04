@@ -2,18 +2,23 @@
 
 Generated: 2026-06-29T09:10Z; refreshed for Ultragoal G001 on 2026-06-30T00:20Z.
 
-Source evidence:
-- GitHub issue/comment pull: `.omx/context/backlog-ledger/issues-6-19-55-56-20260629T0906Z.json` (16 issues, 72 comments)
-- GitHub PR reconciliation pull: `.omx/context/backlog-ledger/prs-61-86-gh-20260629T090935Z.json` (26 PRs in #61-#86)
-- G001 refreshed issue/comment pull: `.omx/context/platform-maturity-g001/issues-detail-20260630T0012Z.json` (18 issues, 91 comments, including closed #20/#54 residual review)
-- G001 refreshed issue summary: `.omx/context/platform-maturity-g001/issues-summary-20260630T0012Z.json`
-- G001 live production baseline: `.omx/context/platform-maturity-g001/live-baseline-20260630T0017Z.txt`
-- G001 route-audit hard gate RED/GREEN: `.omx/context/platform-maturity-g001/red-route-audit-gate-20260630T0014Z.txt`, `.omx/context/platform-maturity-g001/green-route-audit-gate-20260630T0016Z.txt`
-- Planning source: `.omx/plans/platform-maturity-e2e-completion-prd-20260629T215449Z.md`
-- Test source: `.omx/plans/platform-maturity-e2e-completion-test-spec-20260629T215449Z.md`
+> **Historical pre-pivot record.** The ten ignored OMX snapshots and plans that
+> originally supported this ledger were explicitly retired during the 2026-08-03
+> disk-wipe consolidation. They are not dependencies of a fresh clone. Their
+> exact identities and disposition are recorded in the
+> [disk-wipe handoff](../handoffs/2026-08-03-disk-wipe-consolidation.md#retired-ignored-omx-evidence).
+
+Source evidence at collection time:
+- GitHub issue/comment pull (16 issues, 72 comments; retired local snapshot)
+- GitHub PR reconciliation pull (26 PRs in #61-#86; retired local snapshot)
+- G001 refreshed issue/comment pull (18 issues, 91 comments, including closed #20/#54 residual review; retired local snapshot)
+- G001 refreshed issue summary (retired local snapshot)
+- G001 live production baseline (retired local snapshot)
+- G001 route-audit hard gate RED/GREEN output (retired local snapshots)
+- Platform-maturity E2E completion PRD and test plan (retired pre-pivot plans)
 - Session backlog source: `docs/specs/session-backlog-2026-06-29.md`
 
-This is the canonical Wave 0 gate ledger for the platform-maturity ultragoal. It is intentionally redacted: phone numbers, emails, raw spreadsheet rows, payroll/personnel values, attachments containing PII, and GitHub issue bodies with contact details must not be copied into committed docs or routine logs. Raw issue payloads stay in `.omx/context/` as local execution evidence, not product documentation.
+This was the canonical Wave 0 gate ledger for the platform-maturity ultragoal. It is intentionally redacted: phone numbers, emails, raw spreadsheet rows, payroll/personnel values, attachments containing PII, and GitHub issue bodies with contact details must not be copied into committed docs or routine logs. The historical raw issue payloads were never product documentation and were explicitly retired rather than copied into Git.
 
 G001 is an ownership and evidence gate, not a claim that the platform is mature. It assigns every accepted backlog item to one primary lane, records no-touch boundaries, and requires later lanes to prove DB/API/browser/mobile behavior before claiming completion.
 
@@ -145,9 +150,9 @@ G001 is an ownership and evidence gate, not a claim that the platform is mature.
 
 ## Comment coverage ledger
 
-Every fetched comment is accounted for below. Comment snippets are redacted and truncated; use the source JSON for local forensic work only. The detailed comment rows preserve the original 2026-06-29 coverage labels for traceability; the issue decision ledger and session backlog mapping above are the current G001-G010 owner lanes.
+Every comment fetched at collection time is accounted for below. Comment snippets are redacted and truncated. The raw local JSON snapshots were explicitly retired; use the linked GitHub issue comments for any later reconstruction. The detailed comment rows preserve the original 2026-06-29 coverage labels for traceability; the issue decision ledger and session backlog mapping above record the historical G001-G010 owner lanes.
 
-Initial detailed comment coverage accounted: **72 / 72** for #6-#19/#55/#56. G001 refreshed snapshot additionally captured closed #20/#54 residual review, bringing the local evidence payload to **91 comments** in `.omx/context/platform-maturity-g001/issues-detail-20260630T0012Z.json`; #20/#54 are summarized in the issue ledger rather than exhaustively expanded below.
+Initial detailed comment coverage accounted: **72 / 72** for #6-#19/#55/#56. The G001 refreshed snapshot additionally captured closed #20/#54 residual review, bringing the retired local evidence payload to **91 comments**; #20/#54 are summarized in the issue ledger rather than exhaustively expanded below. The snapshot's exact hash and retirement decision are retained in the disk-wipe handoff.
 
 | Comment | Decision status | Lane / goal | Coverage decision | Link | Redacted snippet |
 | --- | --- | --- | --- | --- | --- |

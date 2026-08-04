@@ -1,7 +1,10 @@
 #!/usr/bin/env node
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import yaml from "js-yaml";
 
 const dotSlashBootstrap = "tools/buck/install_dotslash.sh";
 const reindeerToolchainLock = "third-party/rust/reindeer/upstream.lock";
@@ -10,6 +13,49 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
+const reasoningLensTestCommand = "node --test scripts/check-reasoning-lens-contract.test.mjs";
+const reasoningLensRegressionName = "Reasoning lens contract regression";
+const reasoningLensAdmissionName = "Reasoning lens changed-record admission";
+const reasoningLensAdmissionEnvironment = [
+  "REASONING_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}",
+  "REASONING_PUSH_BEFORE_SHA: ${{ github.event.before }}",
+];
+const reasoningLensAdmissionScript = [
+  "set -euo pipefail",
+  'case "$GITHUB_EVENT_NAME" in',
+  "  pull_request)",
+  '    test -n "$REASONING_PR_BASE_SHA"',
+  '    node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PR_BASE_SHA"',
+  "    ;;",
+  "  push)",
+  '    case "$GITHUB_REF_TYPE" in',
+  "      branch)",
+  '        test -n "$REASONING_PUSH_BEFORE_SHA"',
+  '        if [[ "$REASONING_PUSH_BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then',
+  "          printf '%s\\n' 'push.before is all-zero; running structural reasoning-lens validation'",
+  "          node scripts/check-reasoning-lens-contract.mjs",
+  "        else",
+  '          node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PUSH_BEFORE_SHA"',
+  "        fi",
+  "        ;;",
+  "      tag)",
+  "        node scripts/check-reasoning-lens-contract.mjs",
+  "        ;;",
+  "      *)",
+  "        printf 'unsupported push ref type: %s\\n' \"$GITHUB_REF_TYPE\" >&2",
+  "        exit 2",
+  "        ;;",
+  "    esac",
+  "    ;;",
+  "  workflow_dispatch)",
+  "    node scripts/check-reasoning-lens-contract.mjs",
+  "    ;;",
+  "  *)",
+  "    printf 'unsupported reasoning-lens event: %s\\n' \"$GITHUB_EVENT_NAME\" >&2",
+  "    exit 2",
+  "    ;;",
+  "esac",
+].join("\n");
 const consoleRouteInventoryTestCommand = "node --test scripts/console/route-inventory.test.mjs";
 const consoleTruthLedgerCommand = "npm run check:console-truth-ledger";
 const consoleAuthorityTrainTestCommand = "node --test scripts/console/verify-console-authority-train.test.mjs";
@@ -135,46 +181,53 @@ const domainUnitPackages = [
   "console-production-rest",
   "console-reporting-adapter-postgres",
   "console-support-adapter-postgres",
+  "console-kernel-core",
+  // Added 2026-08-03: the consolidation changed authorization decisions in these
+  // REST libraries. Their pure unit tests must remain part of the protected job,
+  // rather than becoming implementation-specific tests that exist but never run.
+  "console-registry-rest",
+  "console-reporting-rest",
   "console-workflow-runtime-adapter-postgres",
   "console-workorder-rest",
+  "console-financial-domain",
+  "console-identity-application",
+  "console-integrity",
+  "console-platform-auth",
+  "console-platform-authz-rest",
+  "console-workflow-runtime",
 ];
-const domainUnitTestFiles = [
-  "attendance_policy",
-  "location_consent_fsm",
-  "location_ping_policy",
-  "cedar_pbac_readiness_cases",
-  "cedar_pbac_legacy_only_observe_and_record",
-  // `--lib` does not reach an integration test under tests/, so each of these has to be
-  // named. A crate appearing in domainUnitPackages above does NOT imply its tests/ files run.
-  "range_and_history",
-  "quote_and_residual",
-  "equipment",
-  "mentions",
-  "object_code_refs",
-  "parity",
-  "thread_kind",
-  "approval_and_assignment",
-  "serde_roundtrips",
-  "settlement_fsm",
-  "workorder_fsm",
-  // Third tranche, 2026-07-31. Integration tests under tests/ that needed no database —
-  // confirmed by running them, not by reading their imports.
-  "jwt_es256",
-  "jwt_verifier",
-  "template_fidelity",
-  "template_fill_engine",
-  "hub",
-  "notify_payload",
-  "seaweedfs_worm",
-  "config",
-  "dev_seed_notification_links",
-  "openslo_files",
-  "workbench_api",
-  // `well_known` exists in BOTH console-platform-auth and console-app. This list is bare test
-  // names, so one entry covers both and cannot distinguish them — which is exactly why ci.yml
-  // gives each package its own cargo invocation. Deleting either invocation still leaves this
-  // entry satisfied by the other, so the guard here is weaker than it looks for this one name.
-  "well_known",
+const domainUnitIntegrationInvocations = [
+  ["console-attendance-application", ["attendance_policy"]],
+  ["console-compliance-domain", ["location_consent_fsm", "location_ping_policy"]],
+  ["console-platform-authz", ["cedar_pbac_readiness_cases", "cedar_pbac_legacy_only_observe_and_record"]],
+  ["console-attendance-domain", ["range_and_history"]],
+  ["console-financial-domain", ["quote_and_residual"]],
+  ["console-registry-domain", ["equipment"]],
+  ["console-messenger-domain", ["mentions", "object_code_refs", "parity", "thread_kind"]],
+  ["console-workorder-domain", ["approval_and_assignment", "serde_roundtrips", "settlement_fsm", "workorder_fsm"]],
+  ["console-platform-auth", ["jwt_es256", "jwt_verifier", "well_known"]],
+  ["console-platform-excel", ["template_fidelity", "template_fill_engine"]],
+  ["console-platform-realtime", ["hub", "notify_payload"]],
+  ["console-app", ["config", "dev_seed_notification_links", "openslo_files", "well_known", "workbench_api"]],
+];
+const domainUnitTestFiles = domainUnitIntegrationInvocations.flatMap(([, tests]) => tests);
+const domainCargoPrefix = [
+  "SQLX_OFFLINE=true",
+  "cargo",
+  "test",
+  "--locked",
+  "--manifest-path",
+  "backend/Cargo.toml",
+];
+const domainUnitExpectedCommands = [
+  [...domainCargoPrefix, "--lib", ...domainUnitPackages.flatMap((pkg) => ["-p", pkg])],
+  [...domainCargoPrefix, "--doc", "-p", "console-kernel-core"],
+  ...domainUnitIntegrationInvocations.map(([pkg, tests]) => [
+    ...domainCargoPrefix,
+    "-p",
+    pkg,
+    ...tests.flatMap((test) => ["--test", test]),
+  ]),
 ];
 const postgresDomainReachabilityCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
@@ -258,6 +311,7 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:comms-rest-mox-webhook-pg \\",
   "//tools/buck:comms-rest-readiness-pg \\",
   "//tools/buck:consulting-rest-audit-atomicity-pg \\",
+  "//tools/buck:dispatch-worker-timer-delivery-pg \\",
   "//tools/buck:docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg \\",
   "//tools/buck:finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg \\",
   "//tools/buck:financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg \\",
@@ -315,6 +369,7 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:platform-db-lifecycle-maker-checker-pg \\",
   "//tools/buck:platform-db-m2-flag-on-runtime-drain-pg \\",
   "//tools/buck:platform-db-period-locks-and-lifecycle-pg \\",
+  "//tools/buck:platform-db-personal-data-classification-pg \\",
   "//tools/buck:platform-group-lib-pg \\",
   "//tools/buck:platform-jobs-apalis-adapter-pg \\",
   "//tools/buck:platform-jobs-apalis-schema-contract-pg \\",
@@ -355,7 +410,14 @@ const postgresDomainReachabilityCommands = [
   "//tools/buck:workflow-adapter-postgres-payroll-drain-period-lock-pg \\",
   "//tools/buck:workorder-adapter-postgres-m2-flag-off-parity-pg \\",
   "//tools/buck:workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:workorder-adapter-postgres-use-cases-pg",
+  "//tools/buck:workorder-adapter-postgres-use-cases-pg \\",
+  "//tools/buck:workorder-rest-mobile-device-registration-pg \\",
+  "//tools/buck:workorder-rest-mobile-evidence-pg \\",
+  "//tools/buck:workorder-rest-mobile-sync-pg",
+];
+const companyConformanceCommands = [
+  "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
+  "//tools/buck:company-conformance-postgres",
 ];
 const postgresWrapperContracts = [
   ["platform-db-feature-catalog-coverage", "//backend/crates/platform/db:console-platform-db-itest-feature_catalog_covers_every_feature"],
@@ -421,6 +483,7 @@ const postgresWrapperContracts = [
   ["comms-rest-mox-webhook-pg", "//backend/crates/comms/rest:console-comms-rest-itest-mox_webhook"],
   ["comms-rest-readiness-pg", "//backend/crates/comms/rest:console-comms-rest-itest-readiness"],
   ["consulting-rest-audit-atomicity-pg", "//backend/crates/consulting/rest:console-consulting-rest-itest-audit_atomicity"],
+  ["dispatch-worker-timer-delivery-pg", "//backend/crates/dispatch/worker:console-dispatch-worker-itest-timer_delivery"],
   ["docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg", "//backend/crates/docs/rest:console-docs-rest-itest-evidence_rest_rls_surfaces_as_runtime_role"],
   ["finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg", "//backend/crates/finance-gl/adapter-postgres:console-finance-gl-adapter-postgres-itest-voucher_rls_and_fsm_as_runtime_role"],
   ["financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg", "//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres-itest-lifecycle_rls_surfaces_as_runtime_role"],
@@ -478,6 +541,7 @@ const postgresWrapperContracts = [
   ["platform-db-lifecycle-maker-checker-pg", "//backend/crates/platform/db:console-platform-db-itest-lifecycle_maker_checker"],
   ["platform-db-m2-flag-on-runtime-drain-pg", "//backend/crates/platform/db:console-platform-db-itest-m2_flag_on_runtime_drain"],
   ["platform-db-period-locks-and-lifecycle-pg", "//backend/crates/platform/db:console-platform-db-itest-period_locks_and_lifecycle"],
+  ["platform-db-personal-data-classification-pg", "//backend/crates/platform/db:console-platform-db-itest-personal_data_classification"],
   ["platform-group-lib-pg", "//backend/crates/platform/group:console-platform-group-unit"],
   ["platform-jobs-apalis-adapter-pg", "//backend/crates/platform/jobs:console-platform-jobs-itest-apalis_adapter"],
   ["platform-jobs-apalis-schema-contract-pg", "//backend/crates/platform/jobs:console-platform-jobs-itest-apalis_schema_contract"],
@@ -519,6 +583,9 @@ const postgresWrapperContracts = [
   ["workorder-adapter-postgres-m2-flag-off-parity-pg", "//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-m2_flag_off_parity"],
   ["workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg", "//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-rls_read_surfaces_as_runtime_role"],
   ["workorder-adapter-postgres-use-cases-pg", "//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres-itest-use_cases"],
+  ["workorder-rest-mobile-device-registration-pg", "//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_device_registration"],
+  ["workorder-rest-mobile-evidence-pg", "//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_evidence"],
+  ["workorder-rest-mobile-sync-pg", "//backend/crates/workorder/rest:console-workorder-rest-itest-mobile_sync"],
 
   // Tenant-isolation and PII tranche, 2026-07-31.
   ["platform-db-rls-isolation", "//backend/crates/platform/db:console-platform-db-itest-rls_isolation"],
@@ -558,6 +625,10 @@ const postgresWrapperContracts = [
 const postgresWrapperLoader = "run_test_with_postgres_env.sh";
 const postgresWrapperLabels = '["test.integration", "resource.postgres", "needs-postgres"]';
 const postgresWrapperBuildFile = readFileSync(new URL("../tools/buck/BUCK", import.meta.url), "utf8");
+const freeRunnerDiskActionFile = readFileSync(
+  new URL("../.github/actions/free-runner-disk/action.yml", import.meta.url),
+  "utf8",
+);
 // GENERATED by tools/buck/gen_first_party.py from the crate's tests/ directory,
 // which is what makes the check below a TOTALITY check rather than a second
 // hand-kept list: adding a test file adds a target here without anyone deciding to.
@@ -568,6 +639,7 @@ const ontologyRestCrateBuildFile = readFileSync(
 const requiredPreflightCommands = [
   "tools/buck/preflight.sh",
   "npm run check:foundation-gates",
+  reasoningLensTestCommand,
   ciPreflightTestCommand,
   consoleRouteInventoryTestCommand,
   buckPostgresEnvironmentTestCommand,
@@ -575,6 +647,13 @@ const requiredPreflightCommands = [
   "npm run check:ci-preflight",
   "npm run check:package-lock",
   "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
+  // Locked on arrival. repo-gates taught this repository that a step wired into
+  // ci.yml is not thereby protected — deleting `run: npm run check:adrs` from it
+  // returned zero preflight failures. These two are the only thing standing
+  // between the Buck2 exit and a silently smaller test population, so they are
+  // locked in the same commit that moves them here rather than a commit later.
+  "npm run check:executed-tests",
+  "npm run check:test-credentials",
 ];
 const protectedJobs = [
   "backend",
@@ -585,13 +664,308 @@ const protectedJobs = [
   "generated-face-authority",
   "domain-unit",
   "postgres-domain-reachability",
+  "company-conformance",
 ];
 
-function triggerPathEntries(workflow, trigger) {
-  const match = workflow.match(new RegExp(`^  ${trigger}:\\n([\\s\\S]*?)(?=^  [A-Za-z0-9_-]+:|^permissions:)`, "m"));
-  const paths = match?.[1].match(/^    paths:\n((?:      - "[^"]+"\n)+)/m);
-  return paths ? [...paths[1].matchAll(/^      - "([^"]+)"$/gm)].map((entry) => entry[1]) : [];
+function runContract(kind, name, run, options = {}) {
+  return {
+    kind,
+    name,
+    run,
+    if: options.if ?? null,
+    workingDirectory: options.workingDirectory ?? null,
+    shell: options.shell ?? null,
+  };
 }
+
+function runDigestContract(kind, name, runSha256, options = {}) {
+  return {
+    kind,
+    name,
+    runSha256,
+    if: options.if ?? null,
+    workingDirectory: options.workingDirectory ?? null,
+    shell: options.shell ?? null,
+  };
+}
+
+const setupRun = (name, run, options) => runContract("setup", name, run, options);
+const proofRun = (name, run, options) => runContract("proof", name, run, options);
+const cleanupRun = (name, run, options) => runContract("cleanup", name, run, options);
+const setupDigest = (name, digest, options) => runDigestContract("setup", name, digest, options);
+const proofDigest = (name, digest, options) => runDigestContract("proof", name, digest, options);
+
+// This is the complete ordered run-step surface for every current and planned
+// required job. Setup prepares a proof but is not itself acceptance evidence;
+// proof supplies that evidence, and cleanup is the fail-safe teardown. Multiline
+// programs are locked by a digest of js-yaml's exact parsed `run` string so shell
+// text cannot be retained behind an early successful exit or changed under a
+// familiar name.
+const requiredJobRunContracts = Object.freeze({
+  preflight: [
+    setupDigest("Derive exact console C/T/M train", "b8e69e979347fa526773bb2a740bdb198be414077281026c23be96501ffd4da1", { if: consolePrCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
+    setupRun("Install workspace dependencies", "npm ci"),
+    proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh"),
+    proofRun("Foundation gate contract", "npm run check:foundation-gates"),
+    proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs"),
+    proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { shell: "bash" }),
+    proofRun("Console truth-ledger exact-M admission", "npm run check:console-truth-ledger", { if: consolePrCondition }),
+    proofRun("Console fanout planner exact-M admission", 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"', { if: consolePrCondition }),
+    proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs"),
+    proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs"),
+    proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs"),
+    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs"),
+    proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline"),
+    proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs"),
+    proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs"),
+    proofRun("Console fanout planner exact-M regression", "node --test scripts/console/plan-fanout.test.mjs"),
+    proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh"),
+    proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh"),
+    proofRun("CI preflight contract", "npm run check:ci-preflight"),
+    proofRun("Canonical npm lockfile", "npm run check:package-lock"),
+    proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null"),
+    proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests"),
+    proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
+  ],
+  "domain-unit": [
+    proofDigest("Domain crate unit tests", "5a1888f6a67b92f3448b4a5e532170a3eb53bf1f12679a755670235d764d1edc"),
+  ],
+  backend: [
+    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),
+    proofRun("rustfmt check", "cargo fmt --all -- --check"),
+    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings"),
+    proofRun("Layer-boundary gate", "cargo run -p console-gate-layer-boundary"),
+    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage"),
+    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety"),
+    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation"),
+    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs"),
+    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming"),
+    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence"),
+    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"),
+    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch"),
+    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification"),
+    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { workingDirectory: "." }),
+    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { workingDirectory: "." }),
+    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded"),
+    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { workingDirectory: "." }),
+    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79"),
+    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { workingDirectory: "." }),
+    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { workingDirectory: "." }),
+    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { workingDirectory: "." }),
+    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { workingDirectory: "." }),
+  ],
+  "dev-up-smoke": [
+    proofRun("dev-up compose contract unit test", "node --test scripts/dev-up-compose.test.mjs"),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
+    proofRun("PostgreSQL topology integration regression", "ops/postgres-topology.integration.test.sh"),
+    proofRun("dev-up bootstrap (compose deps + migrate + backend readyz)", "node scripts/dev-up.mjs bootstrap"),
+    proofRun("Confirm /readyz reachable", 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"'),
+    cleanupRun("dev-up down", "node scripts/dev-up.mjs down", { if: "always()" }),
+  ],
+  "kubernetes-manifests": [
+    setupDigest("Install kubectl (for kustomize renderer)", "ed237728d562e10247b2ae17f435525b3b71d94efe5c0c63afa3c73cd16e096b"),
+    setupDigest("Install kustomize (NetworkPolicy static render proof)", "4cc1bf875027906f3b8a9878c0f13ce9b1438490390d858088c5ca279e4b9b3c"),
+    proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs"),
+    proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: "${{ !cancelled() }}" }),
+    proofRun("Production hardening contract", "npm run check:production-hardening", { if: "${{ !cancelled() }}" }),
+    proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: "${{ !cancelled() }}" }),
+  ],
+  "repo-gates": [
+    setupRun("Install workspace dependencies", "npm ci"),
+    proofRun("ADR governance tests", "npm run test:adrs", { if: "${{ !cancelled() }}" }),
+    proofRun("ADR governance gate", "npm run check:adrs", { if: "${{ !cancelled() }}" }),
+    proofRun("Documentation link tests", "node --test scripts/check-doc-links.test.mjs", { if: "${{ !cancelled() }}" }),
+    proofRun("Documentation local-link gate", "npm run check:doc-links", { if: "${{ !cancelled() }}" }),
+    proofRun("Doc citations — every code citation must resolve", "npm run check:doc-citations", { if: "${{ !cancelled() }}" }),
+    proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: "${{ !cancelled() }}" }),
+    proofRun("Canonical npm lockfile", "npm run check:package-lock", { if: "${{ !cancelled() }}" }),
+    proofRun("Shared text gate unit tests", "npm run test:text-gate", { if: "${{ !cancelled() }}" }),
+    proofRun("G004 identity group org people policy foundation gate", "npm run check:g004-identity-foundation", { if: "${{ !cancelled() }}" }),
+    proofRun("G005 workflow approval Work Hub lifecycle gate", "npm run check:g005-workflow-lifecycle", { if: "${{ !cancelled() }}" }),
+    proofRun("Workflow runtime spine gate", "npm run check:workflow-runtime-spine", { if: "${{ !cancelled() }}" }),
+    proofRun("Workflow runtime M2 strangler dark-landing gate", "npm run check:workflow-runtime-m2-strangler", { if: "${{ !cancelled() }}" }),
+    proofRun("Workflow runtime M2 Cedar-guard observe-and-record gate", "npm run check:workflow-runtime-m2-cedar-guards", { if: "${{ !cancelled() }}" }),
+    proofRun("Workflow runtime M2 flag-ON runtime gate", "npm run check:workflow-runtime-m2-runtime", { if: "${{ !cancelled() }}" }),
+    proofRun("Workflow runtime M2 outbox-drainer transactional-idempotency gate", "npm run check:workflow-runtime-m2-drainer", { if: "${{ !cancelled() }}" }),
+    proofRun("G006 asset equipment dispatch lifecycle gate", "npm run check:g006-asset-dispatch-lifecycle", { if: "${{ !cancelled() }}" }),
+    proofRun("G007 collaboration mail calendar poll mobile lifecycle gate", "npm run check:g007-collaboration-mobile-lifecycle", { if: "${{ !cancelled() }}" }),
+    proofRun("G008 import HR payroll readiness gate", "npm run check:g008-payroll-readiness", { if: "${{ !cancelled() }}" }),
+    proofRun("People HR lifecycle maturity gate", "npm run check:people-hr-maturity", { if: "${{ !cancelled() }}" }),
+    proofRun("Payroll release-gate contract", "npm run check:payroll-release-gate", { if: "${{ !cancelled() }}" }),
+    proofRun("Undeclared imports — every bare specifier must be declared", "npm run check:undeclared-imports", { if: "${{ !cancelled() }}" }),
+    proofRun("Request-body contract — spec fields must exist on the handler", "npm run check:request-body-contract", { if: "${{ !cancelled() }}" }),
+  ],
+  "api-contract": [
+    setupRun("Install Node tooling", "npm ci"),
+    proofRun("Platform contract drift gate", "npm run check:platform-contract-drift", { if: "${{ !cancelled() }}" }),
+    proofRun("Employee import replay contract", "npm run test:employee-import-contract", { if: "${{ !cancelled() }}" }),
+    proofRun("Ontology write precondition contract", "npm run test:ontology-write-precondition", { if: "${{ !cancelled() }}" }),
+  ],
+  "generated-face-authority": [
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
+    setupDigest("Install lock-pinned Reindeer Rust toolchain", "e138ce62e419d3461df6e45108f0cb5a032e966486527b918d504c6ae604ed4e", { shell: "bash" }),
+    setupRun("Install workspace dependencies", "npm ci"),
+    proofRun("Full generated-face closure", "tools/buck/preflight.sh --full-generated-faces"),
+  ],
+  "company-conformance": [
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
+    proofDigest("Company conformance against disposable PostgreSQL", "f2e478d7571d3dd31977783d4a13deeffd8bb09e045cdb8e3d205528ea6fe3c7"),
+  ],
+  "postgres-domain-reachability": [
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
+    proofDigest("Serialized disposable PostgreSQL integration targets", "37d20ed4ab222157469f5b3dddc8993aec6ef49f2ad582166499f8ad3eea56b0"),
+  ],
+});
+
+function actionStep(index, name, uses, withInputs) {
+  return {
+    index,
+    step: withInputs === undefined
+      ? { name, uses }
+      : { name, uses, with: withInputs },
+  };
+}
+
+// Action setup is executable too. Pin the full parsed step object, including
+// action identity and inputs, and its position among run steps. This prevents a
+// skipped checkout/toolchain/cache action from inheriting whatever happens to
+// be installed on a hosted runner and presenting that accident as proof.
+const requiredJobActionContracts = Object.freeze({
+  preflight: [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false, "fetch-depth": 0 }),
+    actionStep(3, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(4, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
+  ],
+  "domain-unit": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(1, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(2, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+  ],
+  backend: [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(2, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk"),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1", components: "rustfmt, clippy" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": "${{ github.ref == 'refs/heads/main' }}" }),
+  ],
+  "dev-up-smoke": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(3, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk"),
+    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(5, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24", cache: "npm" }),
+  ],
+  "kubernetes-manifests": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "fetch-depth": 0 }),
+  ],
+  "repo-gates": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"),
+    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
+  ],
+  "api-contract": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"),
+    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24", cache: "npm" }),
+  ],
+  "generated-face-authority": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
+    actionStep(3, "Set up Java", "actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520", { distribution: "temurin", "java-version": "21" }),
+    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+  ],
+  "company-conformance": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(2, "Free runner disk for PostgreSQL Buck2 tests", "./.github/actions/free-runner-disk"),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+  ],
+  "postgres-domain-reachability": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(2, "Free runner disk for PostgreSQL Buck2 tests", "./.github/actions/free-runner-disk"),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+  ],
+});
+
+// Digest the complete parsed job envelope except `steps`: runner selection,
+// needs, timeout, services, environment, defaults, container, strategy and
+// permissions are all executable inputs and must change deliberately together.
+const requiredJobMetadataSha256 = Object.freeze({
+  preflight: "de92ba05f83032730db75242c9422c62ee5957433ab408ff5469215a85626f63",
+  "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
+  backend: "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
+  "dev-up-smoke": "39ca186b8c6093adb4f30f8b2ed82c3eabb34fc5b9721652757d34a86c7922d8",
+  "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
+  "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
+  "api-contract": "101b70d29b1776058160ea23296e707a4f682f5987a9873371cb57180a737d41",
+  "generated-face-authority": "a9440d3b0b2e351b00a75ded87623c0c776a6dd776b2d8529f23403a1df0c5f6",
+  "company-conformance": "bae484f4aea8b0b1ce591642e1b06bd61c0d61d1d50a029d39b4edf864877484",
+  "postgres-domain-reachability": "09f80c662ebd37fe076e67d087c4f20c206a2f638ada7918049aa94bce58365c",
+});
+
+const workflowExecutionEnvelopeSha256 = "e91330f0f5ccd53cb457ef43231e1c8e59d9f986ec7a2fa68f98e93665b439bd";
+const freeRunnerDiskActionSha256 = "1c1a2307321f732c3dcd67e3af2f33a771ce5b81ea814445390b65946b52fc8f";
+const exactCiJobIds = Object.freeze([
+  "api-contract",
+  "backend",
+  "company-conformance",
+  "dev-up-smoke",
+  "domain-unit",
+  "generated-face-authority",
+  "kubernetes-manifests",
+  "postgres-domain-reachability",
+  "preflight",
+  "repo-gates",
+]);
+
+// Environment and job defaults are executable inputs: BASH_ENV, NODE_OPTIONS,
+// PATH and RUSTC_WRAPPER can replace the program a visually exact `run:` line
+// actually reaches. Keep the small amount of intentional metadata explicit and
+// reject every other job/step injection on the jobs this preflight protects.
+const protectedJobExecutionMetadata = {
+  preflight: {
+    stepEnv: [{
+      name: reasoningLensAdmissionName,
+      env: Object.fromEntries(
+        reasoningLensAdmissionEnvironment.map((entry) => entry.split(": ", 2)),
+      ),
+    }],
+  },
+  "domain-unit": {},
+  "postgres-domain-reachability": {},
+  "company-conformance": {},
+  "generated-face-authority": {},
+  backend: {
+    env: {
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/console_ci",
+      SQLX_OFFLINE: "true",
+      CARGO_INCREMENTAL: "0",
+      CARGO_PROFILE_DEV_DEBUG: "0",
+      CARGO_PROFILE_TEST_DEBUG: "0",
+    },
+    defaults: { run: { "working-directory": "backend" } },
+  },
+  "dev-up-smoke": {
+    env: {
+      CARGO_INCREMENTAL: "0",
+      CARGO_PROFILE_DEV_DEBUG: "0",
+    },
+  },
+  "repo-gates": {},
+  "api-contract": {},
+  "kubernetes-manifests": {
+    stepEnv: [{
+      name: "Install kubectl (for kustomize renderer)",
+      env: { KUBECTL_VERSION: "v1.36.2" },
+    }, {
+      name: "Install kustomize (NetworkPolicy static render proof)",
+      env: {
+        KUSTOMIZE_VERSION: "v5.8.1",
+        KUSTOMIZE_SHA256: "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d",
+      },
+    }, {
+      name: "Render manifests and NetworkPolicy enforcement preflight",
+      env: { CONSOLE_NETWORKPOLICY_PREFLIGHT: "warn" },
+    }],
+  },
+};
 
 function jobBlock(workflow, job) {
   const jobs = workflow.slice(workflow.indexOf("jobs:\n") + "jobs:\n".length);
@@ -619,6 +993,50 @@ function runScalar(step) {
 
 function isUnconditional(step) {
   return !/^        (?:if|continue-on-error):/m.test(step);
+}
+
+function hasJobDefaultShell(block) {
+  const defaults = block.match(/^    defaults:\n((?:      [^\n]*(?:\n|$))*)/m)?.[1] ?? "";
+  return /^        shell:/m.test(defaults);
+}
+
+function hasUnsafeStepShell(block) {
+  return [...block.matchAll(/^        shell: ([^\n]+)$/gm)]
+    .some(([, shell]) => shell.trim() !== "bash");
+}
+
+function requireProtectedExecutionMetadata(workflowModel, failures) {
+  if (Object.hasOwn(workflowModel, "env") || Object.hasOwn(workflowModel, "defaults")) {
+    failures.push("CI workflow must not define workflow-level env or defaults");
+  }
+
+  for (const [jobName, expected] of Object.entries(protectedJobExecutionMetadata)) {
+    const job = workflowModel.jobs?.[jobName];
+    if (!job || typeof job !== "object") continue;
+
+    const expectedEnv = Object.hasOwn(expected, "env") ? expected.env : undefined;
+    const expectedDefaults = Object.hasOwn(expected, "defaults") ? expected.defaults : undefined;
+    if (!isDeepStrictEqual(job.env, expectedEnv)
+      || !isDeepStrictEqual(job.defaults, expectedDefaults)) {
+      failures.push(`${jobName} must preserve its exact job env/defaults execution metadata`);
+    }
+
+    const actualStepEnv = (Array.isArray(job.steps) ? job.steps : [])
+      .filter((step) => step && typeof step === "object" && Object.hasOwn(step, "env"))
+      .map((step) => ({ name: step.name, env: step.env }));
+    if (!isDeepStrictEqual(actualStepEnv, expected.stepEnv ?? [])) {
+      failures.push(`${jobName} must preserve its exact step environment allowlist`);
+    }
+
+    const unsafeShell = (Array.isArray(job.steps) ? job.steps : [])
+      .some((step) => step
+        && typeof step === "object"
+        && Object.hasOwn(step, "shell")
+        && step.shell !== "bash");
+    if (unsafeShell) {
+      failures.push(`${jobName} may use only the default shell or canonical shell: bash`);
+    }
+  }
 }
 
 function multilineRunCommands(step) {
@@ -848,6 +1266,38 @@ function requireUnconditionalRun(steps, command, job, failures) {
   }
 }
 
+function requireReasoningLensContracts(steps, failures) {
+  const regressionByName = steps.filter((step) => stepName(step) === reasoningLensRegressionName);
+  const regressionByCommand = steps.filter((step) => runScalar(step) === reasoningLensTestCommand);
+  if (
+    regressionByName.length !== 1
+    || regressionByCommand.length !== 1
+    || regressionByName[0] !== regressionByCommand[0]
+    || !hasOnlyExpectedCondition(regressionByName[0] ?? "", null)
+  ) {
+    failures.push("preflight must run the exact reasoning-lens regression once and unconditionally");
+  }
+
+  const admissions = steps.filter((step) => stepName(step) === reasoningLensAdmissionName);
+  const admission = admissions[0] ?? "";
+  const shells = [...admission.matchAll(/^        shell: ([^\n]+)$/gm)].map((match) => match[1]);
+  const environmentBlock = admission.match(/^        env:\n((?:          [^\n]+\n)+)/m)?.[1] ?? "";
+  const environment = environmentBlock
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.trim());
+  const script = runScript(admission).replace(/\n$/, "");
+  if (
+    admissions.length !== 1
+    || JSON.stringify(shells) !== JSON.stringify(["bash"])
+    || JSON.stringify(environment) !== JSON.stringify(reasoningLensAdmissionEnvironment)
+    || script !== reasoningLensAdmissionScript
+    || !hasOnlyExpectedCondition(admission, null)
+  ) {
+    failures.push("preflight must preserve the exact reasoning-lens event admission contract");
+  }
+}
+
 function requireConsoleExactMergeProof(workflow, steps, failures) {
   const derive = steps.filter((step) => stepName(step) === "Derive exact console C/T/M train");
   if (derive.length !== 1 || !hasOnlyExpectedCondition(derive[0], consolePrCondition) || multilineRunCommands(derive[0]).join("\n") !== consoleTrainDerivation.join("\n")) {
@@ -997,49 +1447,120 @@ function requireOrderedStepContracts(steps, contracts, job, failures) {
   return indexes;
 }
 
-const apiContractCaptureName = "Capture Buck2-built app for contract test";
-const apiContractCaptureCommands = [
-  "set -euo pipefail",
-  'console_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"',
-  'test -x "${console_app_bin}"',
-  "printf 'CONSOLE_APP_BIN=%s\\n' \"${console_app_bin}\" >> \"${GITHUB_ENV}\"",
-];
-// The Swatinem/rust-cache step was REMOVED from this list on 2026-07-31. api-contract
-// builds //backend/app:console-app with Buck2 — see scripts/check-openapi-app.mjs, which
-// spawns a Buck2-built binary from .tmp/buck2/api-contract/console-app — and Buck2 never
-// writes backend/target. The job therefore restored and saved a cache it could not use,
-// paying transfer cost on every run and occupying an LRU slot against a 10GB repository
-// budget shared with the two jobs that DO run cargo.
+function sha256(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function stableSerialize(value) {
+  if (Array.isArray(value)) return `[${value.map(stableSerialize).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => (
+      `${JSON.stringify(key)}:${stableSerialize(value[key])}`
+    )).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function hasExactOptionalProperty(value, property, expected) {
+  return expected === null
+    ? !Object.hasOwn(value, property)
+    : Object.hasOwn(value, property) && value[property] === expected;
+}
+
+function requireExactRequiredJobContracts(workflowModel, failures) {
+  const workflowEnvelope = Object.fromEntries(
+    Object.entries(workflowModel).filter(([property]) => property !== "jobs"),
+  );
+  if (sha256(stableSerialize(workflowEnvelope)) !== workflowExecutionEnvelopeSha256) {
+    failures.push("CI workflow must preserve its exact trigger, permission, and concurrency execution envelope");
+  }
+  const actualJobIds = Object.keys(workflowModel.jobs ?? {}).sort();
+  if (!isDeepStrictEqual(actualJobIds, exactCiJobIds)) {
+    failures.push("CI workflow must preserve its exact job-id set");
+  }
+
+  for (const [jobName, contracts] of Object.entries(requiredJobRunContracts)) {
+    const job = workflowModel.jobs?.[jobName];
+    if (!job || !Array.isArray(job.steps)) {
+      failures.push(`${jobName} must define its complete ordered setup/proof/cleanup run contract`);
+      continue;
+    }
+
+    const actionContracts = requiredJobActionContracts[jobName] ?? [];
+    const jobMetadata = Object.fromEntries(
+      Object.entries(job).filter(([property]) => property !== "steps"),
+    );
+    if (sha256(stableSerialize(jobMetadata)) !== requiredJobMetadataSha256[jobName]) {
+      failures.push(`${jobName} must preserve its exact job execution envelope`);
+    }
+    if (job.steps.length !== contracts.length + actionContracts.length) {
+      failures.push(
+        `${jobName} must contain only its locked ordered action, setup, proof, and cleanup steps`,
+      );
+    }
+
+    const actionSteps = job.steps.filter((step) => step && typeof step.uses === "string");
+    if (actionSteps.length !== actionContracts.length) {
+      failures.push(
+        `${jobName} must preserve all ${actionContracts.length} ordered setup action steps; found ${actionSteps.length}`,
+      );
+    }
+    for (const { index, step: expectedStep } of actionContracts) {
+      if (!isDeepStrictEqual(job.steps[index], expectedStep)) {
+        failures.push(
+          `${jobName} setup action step ${index + 1} must preserve its exact name, identity, inputs, position, and execution semantics`,
+        );
+      }
+    }
+
+    const runSteps = job.steps.filter((step) => step && typeof step.run === "string");
+    if (runSteps.length !== contracts.length) {
+      failures.push(
+        `${jobName} must preserve all ${contracts.length} ordered setup/proof run steps; found ${runSteps.length}`,
+      );
+    }
+
+    for (let index = 0; index < Math.max(runSteps.length, contracts.length); index += 1) {
+      const step = runSteps[index];
+      const contract = contracts[index];
+      if (!step || !contract) continue;
+
+      const exactRun = Object.hasOwn(contract, "run")
+        ? step.run === contract.run
+        : sha256(step.run) === contract.runSha256;
+      const exactExecutionMetadata = hasExactOptionalProperty(step, "if", contract.if)
+        && hasExactOptionalProperty(step, "working-directory", contract.workingDirectory)
+        && hasExactOptionalProperty(step, "shell", contract.shell)
+        && !Object.hasOwn(step, "continue-on-error")
+        && !Object.hasOwn(step, "timeout-minutes")
+        && !Object.hasOwn(step, "uses")
+        && !Object.hasOwn(step, "with");
+      if (step.name !== contract.name || !exactRun || !exactExecutionMetadata) {
+        failures.push(
+          `${jobName} ${contract.kind} run step ${index + 1} must preserve its exact name, command, condition, and execution semantics`,
+        );
+      }
+    }
+  }
+}
+
+// The Swatinem/rust-cache step was REMOVED from this list on 2026-07-31 because Buck2
+// never writes backend/target, so the job restored and saved a cache it could not use.
+// The Buck2 app build itself was removed later: the only thing it fed was an app-boot
+// comparison of the served /openapi/openapi.yaml against the file on disk, which is
+// tautological because backend/app/src/lib.rs:214 include_str!s that exact file. What
+// remains in this job is text-only, so it needs neither Rust nor a built binary.
 const apiContractAllowedSteps = [
   "name: Checkout\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
-  "name: Install pinned DotSlash runtime\n        run: tools/buck/install_dotslash.sh",
-  "name: Free runner disk for API contract\n        uses: ./.github/actions/free-runner-disk",
-  "name: Install Rust toolchain (pinned via rust-toolchain.toml)\n        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable\n        with:\n          toolchain: \"1.97.1\"",
   "name: Set up Node.js\n        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0\n        with:\n          node-version: \"24\"\n          cache: npm",
-  "name: Install client tooling\n        run: npm ci",
-  "name: OpenAPI app-served drift gate\n        if: ${{ !cancelled() }}\n        run: npm run check:openapi-app",
-  `name: ${apiContractCaptureName}
-        if: \${{ !cancelled() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          # check:openapi-app is the sole Buck2 producer for this handoff.
-          console_app_bin="\${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"
-          test -x "\${console_app_bin}"
-          printf 'CONSOLE_APP_BIN=%s\\n' "\${console_app_bin}" >> "\${GITHUB_ENV}"`,
+  "name: Install Node tooling\n        run: npm ci",
+  "name: Platform contract drift gate\n        if: ${{ !cancelled() }}\n        run: npm run check:platform-contract-drift",
   "name: Employee import replay contract\n        if: ${{ !cancelled() }}\n        run: npm run test:employee-import-contract",
   "name: Ontology write precondition contract\n        if: ${{ !cancelled() }}\n        run: npm run test:ontology-write-precondition",
 ];
-
 function hasOnlyAllowedApiContractSteps(steps) {
   return steps.length === apiContractAllowedSteps.length
     && steps.every((step, index) => step.trimEnd() === apiContractAllowedSteps[index]);
-}
-
-function isDesignatedApiContractCapture(step) {
-  if (!step.startsWith(`name: ${apiContractCaptureName}\n`)) return false;
-  return multilineRunCommands(step).filter((line) => !line.startsWith("#")).join("\n")
-    === apiContractCaptureCommands.join("\n");
 }
 
 function requireReindeerToolchainBefore(steps, command, failures) {
@@ -1130,14 +1651,37 @@ function requireEffectiveDotSlashBootstrap(block, job, failures) {
   }
 }
 
-export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBuildFile) {
+export function evaluateCiPreflight(
+  workflow,
+  buckBuildFile = postgresWrapperBuildFile,
+  freeRunnerDiskAction = freeRunnerDiskActionFile,
+) {
   const failures = [];
-  for (const trigger of ["push", "pull_request"]) {
-    if (!triggerPathEntries(workflow, trigger).includes("toolchains/**")) {
-      failures.push(`${trigger} must include toolchains/** in CI path filters`);
+  let workflowModel;
+  try {
+    workflowModel = yaml.load(workflow);
+  } catch (error) {
+    return { failures: [`CI workflow must parse as YAML: ${error.message}`] };
+  }
+  if (!workflowModel || typeof workflowModel !== "object") {
+    return { failures: ["CI workflow must parse as a YAML mapping"] };
+  }
+  try {
+    const actionModel = yaml.load(freeRunnerDiskAction);
+    if (sha256(stableSerialize(actionModel)) !== freeRunnerDiskActionSha256) {
+      failures.push("free-runner-disk must preserve its exact composite action execution contract");
     }
-    if (!triggerPathEntries(workflow, trigger).includes("docs/program/**")) {
-      failures.push(`${trigger} must include docs/program/** in CI path filters`);
+  } catch (error) {
+    failures.push(`free-runner-disk action must parse as YAML: ${error.message}`);
+  }
+  requireProtectedExecutionMetadata(workflowModel, failures);
+  requireExactRequiredJobContracts(workflowModel, failures);
+
+  for (const trigger of ["push", "pull_request"]) {
+    const triggerContract = workflowModel.on?.[trigger];
+    if (triggerContract && typeof triggerContract === "object"
+      && ["paths", "paths-ignore"].some((filter) => Object.hasOwn(triggerContract, filter))) {
+      failures.push(`${trigger} must create required CI contexts for every change without path filters`);
     }
   }
 
@@ -1154,6 +1698,12 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
   if (/^    continue-on-error:/m.test(preflight)) {
     failures.push("preflight must not define job-level continue-on-error");
   }
+  if (hasJobDefaultShell(preflight)) {
+    failures.push("preflight must not override defaults.run.shell");
+  }
+  if (hasUnsafeStepShell(preflight)) {
+    failures.push("preflight may use only the default shell or canonical shell: bash");
+  }
   const checkout = preflightSteps.find((step) => step.startsWith("name: Checkout\n"));
   if (!checkout || !/^        with:\n(?:          [^\n]+\n)*          fetch-depth: 0$/m.test(checkout)) {
     failures.push("preflight checkout must fetch full history with fetch-depth: 0");
@@ -1163,31 +1713,45 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
   for (const command of requiredPreflightCommands) {
     requireUnconditionalRun(preflightSteps, command, "preflight", failures);
   }
+  requireReasoningLensContracts(preflightSteps, failures);
   requireConsoleExactMergeProof(workflow, preflightSteps, failures);
   // One job, both crates. They share console-kernel-core, so two jobs recompiled
   // the same dependencies and paid two runner startups and two cache restores.
   const domainUnit = jobBlock(workflow, "domain-unit");
   if (domainUnit) {
     const steps = stepBlocks(domainUnit);
-    const block = domainUnit;
+    const domainSteps = steps.filter((step) => stepName(step) === "Domain crate unit tests");
+    const domainStep = domainSteps[0] ?? "";
+    const parsedDomainCommands = shellCommandTokens(runScript(domainStep));
+    const domainCommandsMatch = domainSteps.length === 1
+      && parsedDomainCommands.length === domainUnitExpectedCommands.length
+      && parsedDomainCommands.every((command, index) => (
+        !command.malformed
+        && JSON.stringify(command.tokens) === JSON.stringify(domainUnitExpectedCommands[index])
+      ));
+    if (!domainCommandsMatch || !isUnconditional(domainStep)) {
+      failures.push("domain-unit must execute the locked Cargo test commands directly and unconditionally");
+    }
+    if (/^    (?:env|defaults):/m.test(domainUnit)
+      || /^        (?:env|shell):/m.test(domainUnit)) {
+      failures.push("domain-unit must use the default shell with no job or step env/defaults overrides");
+    }
+    const directTokens = parsedDomainCommands.flatMap((command) => command.tokens);
     for (const pkg of domainUnitPackages) {
-      if (!block.includes(`-p ${pkg}`)) failures.push(`domain-unit must run -p ${pkg}`);
+      const present = directTokens.some((token, index) => token === "-p" && directTokens[index + 1] === pkg);
+      if (!present) failures.push(`domain-unit must run -p ${pkg}`);
     }
     for (const t of domainUnitTestFiles) {
-      if (!block.includes(`--test ${t}`)) failures.push(`domain-unit must run --test ${t}`);
+      const present = directTokens.some((token, index) => token === "--test" && directTokens[index + 1] === t);
+      if (!present) failures.push(`domain-unit must run --test ${t}`);
     }
-    // Match the INVOCATION, not the block. `/--lib/` alone is satisfied by the comment
-    // above the step explaining why --lib is load-bearing — the third time in this
-    // repository that prose has silently satisfied a code assertion.
-    if (!/cargo test[^\n]*--lib/.test(block)) {
+    if (parsedDomainCommands[0]?.tokens?.includes("--lib") !== true) {
       failures.push("domain-unit must pass --lib on its first cargo invocation");
     }
-    // The step list stays locked. Rewriting the command assertion to check packages
-    // rather than an exact string dropped requireOnlyLockedRuns, which would have let
-    // anyone ADD an arbitrary run step to this job unnoticed. One `run:` and no more.
-    const runCount = (block.match(/^        run: /gm) || []).length;
-    if (runCount !== 1) {
-      failures.push(`domain-unit must contain only the locked ordered run steps; found ${runCount} run steps`);
+
+    const runStepNames = steps.filter((step) => runCommand(step) !== null).map(stepName);
+    if (JSON.stringify(runStepNames) !== JSON.stringify(["Domain crate unit tests"])) {
+      failures.push(`domain-unit must contain only the locked ordered run steps; found ${runStepNames.length} run steps`);
     }
   }
 
@@ -1211,6 +1775,31 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     );
   }
 
+  const companyConformance = jobBlock(workflow, "company-conformance");
+  if (companyConformance) {
+    const steps = stepBlocks(companyConformance);
+    requireOrderedStepContracts(
+      steps,
+      [{
+        name: "Install pinned DotSlash runtime",
+        run: dotSlashBootstrap,
+        if: null,
+      }, {
+        name: "Company conformance against disposable PostgreSQL",
+        run: companyConformanceCommands.join("\n"),
+        if: null,
+      }],
+      "company-conformance",
+      failures,
+    );
+    requireOnlyLockedRuns(
+      steps,
+      [dotSlashBootstrap, companyConformanceCommands.join("\n")],
+      "company-conformance",
+      failures,
+    );
+  }
+
   const backend = jobBlock(workflow, "backend");
   if (backend) {
     const steps = stepBlocks(backend);
@@ -1228,6 +1817,7 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
       ["RLS-arming gate", "cargo run -p console-gate-rls-arming"],
       ["Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence"],
       ["IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"],
+      ["Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch"],
     ];
     const gateIndexes = requireOrderedStepContracts(
       steps,
@@ -1276,6 +1866,18 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
           if: failFastIf,
         },
         {
+          // The suite H-1 is *about*. `openapi_drift` is the only thing that inventories every
+          // mounted route against openapi.yaml, and it was unprotected: deleting this `run:` line
+          // left check:ci-preflight, check:foundation-gates and check:doc-citations all exiting 0.
+          // check:request-body-contract closed H-1's request-body half but reads no route
+          // inventory, so nothing else in CI covers what this step covers — a gate one line from
+          // silent removal is the meta-finding this file exists to refuse.
+          name: "Buck2 console-app OpenAPI drift suite",
+          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
+          workingDirectory: ".",
+          if: failFastIf,
+        },
+        {
           name: "Buck2 console-app inline PostgreSQL suites",
           run: [
             "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
@@ -1305,17 +1907,34 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
 
   const devUpSmoke = jobBlock(workflow, "dev-up-smoke");
   if (devUpSmoke) {
+    const devUpSteps = stepBlocks(devUpSmoke);
+    const devUpRunContracts = [
+      { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: null },
+      { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: null },
+      { name: "PostgreSQL topology integration regression", run: "ops/postgres-topology.integration.test.sh", if: null },
+      { name: "dev-up bootstrap (compose deps + migrate + backend readyz)", run: "node scripts/dev-up.mjs bootstrap", if: null },
+      { name: "Confirm /readyz reachable", run: 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', if: null },
+      { name: "dev-up down", run: "node scripts/dev-up.mjs down", if: "always()" },
+    ];
     requireOrderedStepContracts(
-      stepBlocks(devUpSmoke),
+      devUpSteps,
       [
+        { name: "Checkout", run: null, if: null },
         { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: null },
         { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: null },
         { name: "Free runner disk for Rust backend", run: null, if: null },
         { name: "Install Rust toolchain (pinned via rust-toolchain.toml)", run: null, if: null },
+        { name: "Set up Node.js", run: null, if: null },
+        ...devUpRunContracts.slice(2),
       ],
       "dev-up-smoke",
       failures,
     );
+    const actualRunNames = devUpSteps.filter((step) => runCommand(step) !== null).map(stepName);
+    const expectedRunNames = devUpRunContracts.map(({ name }) => name);
+    if (JSON.stringify(actualRunNames) !== JSON.stringify(expectedRunNames)) {
+      failures.push("dev-up-smoke must contain only the locked ordered proof and cleanup run steps");
+    }
   }
 
   const fullGeneratedFaces = jobBlock(workflow, "generated-face-authority");
@@ -1361,51 +1980,42 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     );
   }
 
+  const kubernetesManifests = jobBlock(workflow, "kubernetes-manifests");
+  if (kubernetesManifests) {
+    requireOrderedStepContracts(
+      stepBlocks(kubernetesManifests),
+      [{
+        name: "Production hardening contract",
+        run: "npm run check:production-hardening",
+        if: "${{ !cancelled() }}",
+      }],
+      "kubernetes-manifests",
+      failures,
+    );
+  }
+
   const apiContract = jobBlock(workflow, "api-contract");
   if (apiContract) {
     const apiContractSteps = stepBlocks(apiContract);
     if (!hasOnlyAllowedApiContractSteps(apiContractSteps)) {
       failures.push("api-contract must contain only the approved ordered steps");
     }
-    requireDotSlashBefore(
-      apiContractSteps,
-      "npm run check:openapi-app",
-      "api-contract",
-      failures,
-    );
-    const openApiGateIndexes = apiContractSteps
-      .map((step, index) => (runScalar(step) === "npm run check:openapi-app" ? index : -1))
-      .filter((index) => index >= 0);
-    if (openApiGateIndexes.length !== 1) {
-      failures.push("api-contract must run exactly one npm run check:openapi-app producer");
+    if (/^    (?:services|env):/m.test(apiContract)) {
+      failures.push("api-contract is text-only and must not provision services or job-level environment");
     }
-    const jobOrStepAppBinaryOverride = /^ {6,}CONSOLE_APP_BIN\s*:/m.test(apiContract);
-    const captureStepIndexes = apiContractSteps
-      .map((step, index) => (step.startsWith(`name: ${apiContractCaptureName}\n`) ? index : -1))
-      .filter((index) => index >= 0);
-    const captureStepIndex = captureStepIndexes[0] ?? -1;
-    const captureIsDesignated = captureStepIndexes.length === 1 && isDesignatedApiContractCapture(apiContractSteps[captureStepIndex]);
-    const nonCaptureSteps = apiContractSteps.filter((_, index) => index !== captureStepIndex);
-    const shellAppBinaryOverride = nonCaptureSteps.some((step) => step.includes("CONSOLE_APP_BIN"));
-    const cargoTargetAppBinaryOverride = apiContract.split(/\r?\n/).some((line) =>
-      !line.trimStart().startsWith("#") && line.includes("CONSOLE_APP_BIN:") && (line.includes("backend/target") || line.includes("CARGO_TARGET_DIR")),
-    );
-    if (jobOrStepAppBinaryOverride || shellAppBinaryOverride) {
-      failures.push("api-contract must not override the captured CONSOLE_APP_BIN");
+    const driftGateCount = apiContractSteps
+      .filter((step) => runScalar(step) === "npm run check:platform-contract-drift").length;
+    if (driftGateCount !== 1) {
+      failures.push("api-contract must run exactly one npm run check:platform-contract-drift");
     }
-    if (cargoTargetAppBinaryOverride) {
-      failures.push("api-contract must not use a Cargo target path for CONSOLE_APP_BIN");
+    // api-contract is now text-only: every step reads backend/openapi/openapi.yaml and
+    // asserts against it. Nothing builds or boots the app, so nothing may hand a binary
+    // path (or anything else) to a later step through the environment file.
+    if (apiContract.includes("GITHUB_ENV")) {
+      failures.push("api-contract must not hand state to later steps through GITHUB_ENV");
     }
-    if (!captureIsDesignated) {
-      failures.push("api-contract capture must use the designated verified command grammar");
-    }
-    if (nonCaptureSteps.some((step) => step.includes("GITHUB_ENV"))) {
-      failures.push("api-contract may reference GITHUB_ENV only in the designated capture step");
-    }
-
-    const openApiGateIndex = openApiGateIndexes[0] ?? -1;
-    if (openApiGateIndex < 0 || captureStepIndex < openApiGateIndex) {
-      failures.push("api-contract must capture the Buck2-built console-app path after its sole producer");
+    if (apiContract.includes("CONSOLE_APP_BIN")) {
+      failures.push("api-contract must not reference CONSOLE_APP_BIN; the job builds no app");
     }
   }
 
@@ -1464,11 +2074,13 @@ export function evaluateCiPreflight(workflow, buckBuildFile = postgresWrapperBui
     const block = jobBlock(workflow, job);
     if (!block) {
       failures.push(`CI must define protected job ${job}`);
-    } else if (!needsPreflight(block)) {
-      failures.push(`${job} must need preflight`);
-    } else if (/^    if:/m.test(block)) {
-      failures.push(`${job} must not define job-level if`);
+      continue;
     }
+    if (!needsPreflight(block)) failures.push(`${job} must need preflight`);
+    if (/^    if:/m.test(block)) failures.push(`${job} must not define job-level if`);
+    if (/^    continue-on-error:/m.test(block)) failures.push(`${job} must not define job-level continue-on-error`);
+    if (hasJobDefaultShell(block)) failures.push(`${job} must not override defaults.run.shell`);
+    if (hasUnsafeStepShell(block)) failures.push(`${job} may use only the default shell or canonical shell: bash`);
   }
 
   return { failures };

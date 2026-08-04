@@ -390,12 +390,15 @@ pub struct CreatedCustomer {
 
 /// Create one site (현장) under an existing customer, directly. The site lands on
 /// the existing customer's branch under `customer_id`; the adapter validates that
-/// the customer belongs to the caller's org (RLS + an explicit check) before writing.
+/// the customer belongs to the caller's org and branch scope before writing.
 /// Optional location/contact fields mirror the PATCH /sites surface so a site can
 /// be onboarded with its address and representative contact in one step.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CreateSiteCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied. A customer in
+    /// another branch of the same org is refused as `not_found`.
+    pub branch_scope: BranchScope,
     pub customer_id: CustomerId,
     pub name: String,
     pub address: Option<String>,

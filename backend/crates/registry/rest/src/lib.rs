@@ -19,7 +19,9 @@ use console_kernel_core::{
     validate_bounded_text, validate_coordinate_pair,
 };
 use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
-use console_platform_authz::{Action, Feature, Principal, Role, authorize};
+use console_platform_authz::{
+    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
+};
 use console_registry_adapter_postgres::{PgRegistryError, PgRegistryStore};
 use console_registry_application::{
     CreateCustomerCommand, CreateEquipmentCommand, CreateEquipmentOwnershipTransferCommand,
@@ -626,7 +628,8 @@ impl From<CreatedSite> for CreatedSiteResponse {
 /// POST /api/v1/sites — create a site (현장) under an existing customer in the
 /// caller's org. Admin-gated (EquipmentManage). The customer must belong to the
 /// caller's org: an unknown or foreign-org `customer_id` is a 404 (RLS hides
-/// another tenant's customer, so it is never revealed). Name is required and
+/// another tenant's customer, so it is never revealed). A customer in another
+/// branch of the same org is likewise returned as 404. Name is required and
 /// bounded; optional address/coordinate/contact fields are validated to the same
 /// WGS84 ranges and length bounds as the site PATCH (a one-sided coordinate or an
 /// over-long value is a 422 before the write). A duplicate site name under the
@@ -681,6 +684,7 @@ async fn create_site(
         .store
         .create_site(CreateSiteCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             customer_id: body.customer_id,
             name,
             address: normalize_optional(body.address),
@@ -710,6 +714,7 @@ async fn create_site(
 fn principal_create_branch(principal: &Principal) -> Option<BranchId> {
     match &principal.branch_scope {
         BranchScope::All => None,
+        // fabricated-branch: ok selects the target for row CREATION; never authorizes
         BranchScope::Branches(branches) => branches.iter().next().copied(),
     }
 }
@@ -1154,7 +1159,7 @@ async fn decide_equipment_ownership_transfer(
 }
 
 // ---------------------------------------------------------------------------
-// Equipment master import (admin-gated multipart upload)
+// Equipment master import (org-wide authority; SUPER_ADMIN for built-in roles)
 // ---------------------------------------------------------------------------
 
 async fn import_master_list(
@@ -1163,7 +1168,10 @@ async fn import_master_list(
     multipart: Multipart,
 ) -> Result<Json<RegistryImportReport>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    authorize_equipment_feature(&principal, Feature::MasterListImport)?;
+    // The importer always targets the tenant's default HQ branch and may update
+    // every matching equipment number there. It carries no branch scope, so a
+    // branch-scoped ADMIN must not authorize it through a representative branch.
+    authorize_master_list_import(&principal)?;
 
     let upload = read_xlsx_upload(multipart).await?;
     let report = state
@@ -1919,33 +1927,17 @@ fn require_nonempty(value: String, field: &str) -> Result<String, RestError> {
     }
 }
 
-/// Authorize a deliberately **org-global** equipment-master feature against a
-/// representative branch: cross-branch principals authorize against a fresh id
-/// (allowed by `BranchScope::All`); branch-scoped principals authorize against
-/// one of their own branches. Because `authorize()` checks `branch_scope.allows`
-/// first, the branch arg is a tautology for a branch-scoped caller — the feature
-/// matrix cell is what actually decides.
-///
-/// This is correct only for create-style org surfaces that do not yet have a
-/// concrete row branch. Direct create handlers pass `principal_create_branch()`
-/// into the store so branch-scoped admins write into their own branch; org-wide
-/// principals fall back to the tenant HQ branch.
-///
-/// It is NOT sufficient on its own for a by-primary-key row. Every handler that
-/// names an existing row therefore also hands `principal.branch_scope` to the
-/// store, and the adapter refuses an out-of-scope row as `not_found`. That
-/// second check is the one that actually decides — this helper only proves the
-/// role holds the feature.
+/// Feature preflight for registry operations whose store command either carries
+/// the principal's complete branch scope or creates a row in a branch selected
+/// from that scope. It deliberately does not invent a resource branch. The one
+/// tenant-wide operation, master-list import, uses `authorize_org_wide` directly.
 fn authorize_equipment_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    let branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for equipment management",
-            ))
-        })?,
-    };
-    authorize(principal, Action::new(feature), branch).map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
+}
+
+fn authorize_master_list_import(principal: &Principal) -> Result<(), RestError> {
+    authorize_org_wide(principal, Action::new(Feature::MasterListImport))
+        .map_err(RestError::from_kernel)
 }
 
 async fn principal_from_headers(
@@ -1992,23 +1984,12 @@ fn rest_error_from_request_context(
     }
 }
 
-/// Feature-tier gate for a read that carries no branch of its own yet. Same
-/// caveat as [`authorize_equipment_feature`]: for a by-primary-key read the
-/// caller MUST also pass `principal.branch_scope` down to the store, which
-/// resolves the row's real branch and 404s outside it.
+/// Feature-tier gate for registry reads. Every caller also passes the principal's
+/// complete branch scope to the store, which filters lists and resolves a
+/// by-primary-key row as 404 outside that scope.
 fn authorize_read_access(principal: &Principal) -> Result<(), RestError> {
-    let resource_branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden("principal has no branch scope"))
-        })?,
-    };
-    authorize(
-        principal,
-        Action::new(Feature::WorkOrderReadAll),
-        resource_branch,
-    )
-    .map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(Feature::WorkOrderReadAll))
+        .map_err(RestError::from_kernel)
 }
 
 fn is_super_admin(principal: &Principal) -> bool {
@@ -2142,5 +2123,76 @@ fn error_code(kind: ErrorKind) -> &'static str {
         ErrorKind::Conflict => "conflict",
         ErrorKind::InvalidTransition => "invalid_transition",
         ErrorKind::Internal => "internal",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        authorize_equipment_feature, authorize_master_list_import, authorize_read_access,
+        principal_create_branch,
+    };
+    use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+    use console_platform_authz::{
+        EffectiveFeatureGrant, Feature, PermissionLevel, Principal, Role,
+    };
+    use std::collections::BTreeSet;
+
+    fn principal(roles: BTreeSet<Role>, scope: BranchScope) -> Principal {
+        Principal::new(UserId::new(), OrgId::new(), roles, scope)
+    }
+
+    #[test]
+    fn registry_capability_preflights_preserve_scope_for_the_store() {
+        let branch = BranchId::new();
+        let admin = principal(BTreeSet::from([Role::Admin]), BranchScope::single(branch));
+        assert!(authorize_equipment_feature(&admin, Feature::EquipmentManage).is_ok());
+        assert_eq!(principal_create_branch(&admin), Some(branch));
+
+        let mechanic = principal(
+            BTreeSet::from([Role::Mechanic]),
+            BranchScope::single(branch),
+        );
+        assert!(authorize_read_access(&mechanic).is_ok());
+        assert!(authorize_equipment_feature(&mechanic, Feature::EquipmentManage).is_err());
+
+        let empty = principal(BTreeSet::from([Role::Admin]), BranchScope::none());
+        assert!(authorize_read_access(&empty).is_err());
+        assert!(authorize_equipment_feature(&empty, Feature::EquipmentManage).is_err());
+
+        let all_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::All);
+        assert!(authorize_equipment_feature(&all_admin, Feature::EquipmentManage).is_ok());
+        assert_eq!(principal_create_branch(&all_admin), None);
+    }
+
+    #[test]
+    fn tenant_wide_master_import_requires_org_wide_authority() {
+        let branch = BranchId::new();
+        let branch_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::single(branch));
+        assert!(authorize_master_list_import(&branch_admin).is_err());
+
+        let all_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::All);
+        assert!(authorize_master_list_import(&all_admin).is_err());
+
+        let super_admin = principal(BTreeSet::from([Role::SuperAdmin]), BranchScope::All);
+        assert!(authorize_master_list_import(&super_admin).is_ok());
+
+        let custom_all = principal(BTreeSet::new(), BranchScope::All)
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::MasterListImport,
+                PermissionLevel::Allow,
+                BranchScope::All,
+            )]);
+        assert!(authorize_master_list_import(&custom_all).is_ok());
+
+        let partial =
+            principal(BTreeSet::new(), BranchScope::All).with_effective_feature_grants(vec![
+                EffectiveFeatureGrant::new(
+                    Feature::MasterListImport,
+                    PermissionLevel::Allow,
+                    BranchScope::single(branch),
+                ),
+            ]);
+        assert!(authorize_master_list_import(&partial).is_err());
     }
 }

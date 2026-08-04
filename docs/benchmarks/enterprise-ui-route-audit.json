@@ -16,7 +16,7 @@
         "employee",
         "platform-admin"
       ],
-      "roleStoryEvidence": "public storefront visitor/customer entry; G009 public-cx E2E evidence .omx/context/public-cx/g009-completion-evidence-20260629.md",
+      "roleStoryEvidence": "public storefront visitor/customer entry; historical G009 public-CX evidence was explicitly retired at the 2026-07-28 pivot, with its receipt in docs/handoffs/2026-08-03-disk-wipe-consolidation.md",
       "accessibilityEvidence": "e2e/fixtures/ux.ts assertNoAxeViolations + web lint UI-string gate + route/component tests listed in this row",
       "ownerLane": "G008 public/CX/legal trust lane with G003 browser-persona evidence and G009 rollout proof",
       "dataClass": "public company, customer inquiry, cookie/privacy preference, and public marketplace metadata",

@@ -292,15 +292,6 @@ function workflowHasRun(text, predicates) {
   );
 }
 
-function findWorkflowRunBlock(text, predicates) {
-  const blocks = extractGithubWorkflowRunBlocks(text);
-  return (
-    blocks.find((block) =>
-      predicates.every((predicate) => predicate.test(block)),
-    ) ?? ""
-  );
-}
-
 function extractNamedWorkflowStep(text, name) {
   const lines = stripHashComments(text).split(/\r?\n/);
   const matcher = new RegExp(`^(\\s*)-\\s+name:\\s*${escapeRegExp(name)}\\s*$`);
@@ -325,16 +316,6 @@ function extractNamedWorkflowStep(text, name) {
     return block.join("\n");
   }
   return "";
-}
-
-function patternsAppearInOrder(text, patterns) {
-  let cursor = 0;
-  for (const pattern of patterns) {
-    const match = pattern.exec(text.slice(cursor));
-    if (!match) return false;
-    cursor += match.index + match[0].length;
-  }
-  return true;
 }
 
 function workflowHasActiveUse(text, regex) {

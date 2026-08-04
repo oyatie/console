@@ -6,59 +6,10 @@ on:
       - main
     tags:
       - "v*"
-    # GitHub Actions does not evaluate `paths` for tag pushes; release tags
-    # therefore run the full ADR-0009/0012 CI gate regardless of changed files.
-    paths:
-      - "backend/**"
-      - "backend/openapi/**"
-      - "deploy/**"
-      - "docs/decisions/**"
-      - "docs/program/**"
-      - "docs/CI-GATES.md"
-      - "docs/benchmarks/**"
-      - "docs/specs/**"
-      - "docs/ENTERPRISE-READINESS.md"
-      - "docs/GO-LIVE-CHECKLIST.md"
-      - "docs/i18n.md"
-      - "docs/parity-checklist.md"
-      - "docs/release/**"
-      - "ops/**"
-      - "scripts/**"
-      - "tools/buck/**"
-      - "tools/buck2"
-      - "toolchains/**"
-      - "third-party/rust/**"
-      - "BUCK"
-      - ".buckconfig"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/*.yml"
+  # Required checks must be created for every relevant push and pull request. A
+  # `paths` filter leaves required contexts Pending forever when candidate-controlled
+  # action, trust, security, or tool configuration changes outside an allowlist.
   pull_request:
-    paths:
-      - "backend/**"
-      - "backend/openapi/**"
-      - "deploy/**"
-      - "docs/decisions/**"
-      - "docs/program/**"
-      - "docs/CI-GATES.md"
-      - "docs/benchmarks/**"
-      - "docs/specs/**"
-      - "docs/ENTERPRISE-READINESS.md"
-      - "docs/GO-LIVE-CHECKLIST.md"
-      - "docs/i18n.md"
-      - "docs/parity-checklist.md"
-      - "docs/release/**"
-      - "ops/**"
-      - "scripts/**"
-      - "tools/buck/**"
-      - "tools/buck2"
-      - "toolchains/**"
-      - "third-party/rust/**"
-      - "BUCK"
-      - ".buckconfig"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/*.yml"
   workflow_dispatch:
 
 permissions:
@@ -122,6 +73,50 @@ jobs:
       - name: Foundation gate contract
         run: npm run check:foundation-gates
 
+      - name: Reasoning lens contract regression
+        run: node --test scripts/check-reasoning-lens-contract.test.mjs
+
+      - name: Reasoning lens changed-record admission
+        shell: bash
+        env:
+          REASONING_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REASONING_PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              test -n "$REASONING_PR_BASE_SHA"
+              node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PR_BASE_SHA"
+              ;;
+            push)
+              case "$GITHUB_REF_TYPE" in
+                branch)
+                  test -n "$REASONING_PUSH_BEFORE_SHA"
+                  if [[ "$REASONING_PUSH_BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+                    printf '%s\n' 'push.before is all-zero; running structural reasoning-lens validation'
+                    node scripts/check-reasoning-lens-contract.mjs
+                  else
+                    node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PUSH_BEFORE_SHA"
+                  fi
+                  ;;
+                tag)
+                  node scripts/check-reasoning-lens-contract.mjs
+                  ;;
+                *)
+                  printf 'unsupported push ref type: %s\n' "$GITHUB_REF_TYPE" >&2
+                  exit 2
+                  ;;
+              esac
+              ;;
+            workflow_dispatch)
+              node scripts/check-reasoning-lens-contract.mjs
+              ;;
+            *)
+              printf 'unsupported reasoning-lens event: %s\n' "$GITHUB_EVENT_NAME" >&2
+              exit 2
+              ;;
+          esac
+
       - name: Console truth-ledger exact-M admission
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run check:console-truth-ledger
@@ -141,6 +136,9 @@ jobs:
 
       - name: Console PR authority bootstrap regression
         run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs
+
+      - name: Executed-tests baseline set regression
+        run: npm run test:executed-tests-baseline
 
       - name: Local CI mirror contract
         run: node --test scripts/verify.test.mjs
@@ -165,6 +163,16 @@ jobs:
 
       - name: Cargo.lock consistency
         run: cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null
+
+      # Moved here from repo-gates, which has npm and no Rust: the ratchet now
+      # resolves `cargo metadata` as well as the BUCK graph, so it has to run
+      # where cargo does. The step above it is `cargo metadata` on the same
+      # manifest, and preflight is the only job carrying both toolchains.
+      - name: Executed-tests ratchet — a test binary must have a path from a workflow step
+        run: npm run check:executed-tests
+
+      - name: Workflow test-runner credential literals
+        run: npm run check:test-credentials
 
   domain-unit:
     name: Domain crates — unit tests
@@ -230,6 +238,17 @@ jobs:
         # They need no database (zero #[sqlx::test]), so they belong in this job.
         # Runs the SAME 15 tests as the retired Buck2 target, verified by count.
         # --locked so a drifted Cargo.lock fails rather than silently resolving.
+        #
+        # The last six were added on 2026-08-02, and they are here because
+        # check:executed-tests could not see them until that same change. It asked
+        # whether src/lib.rs itself carried #[cfg(test)], and these crates keep
+        # every one of theirs in src/<module>.rs, so their lib binaries were not
+        # even in the population that can be reported dark. 61 tests that executed
+        # nowhere, all pure, zero #[sqlx::test] — among them workflow/runtime's
+        # `unknown_policy_fails_closed` and `delegated_finalize_denies_when_legacy_guard_denies`,
+        # and platform/auth's two WebAuthn step-up replay-binding cases. The seventh
+        # crate the same measurement exposed, platform/db, is 9 #[sqlx::test] and
+        # needs a database, so it is named in executed-tests-baseline.json instead.
         run: |
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
             -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
@@ -261,8 +280,10 @@ jobs:
             -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
             -p console-platform-push -p console-platform-realtime -p console-platform-request-context \
             -p console-production-rest -p console-reporting-adapter-postgres -p console-support-adapter-postgres \
-            -p console-kernel-core \
-            -p console-workflow-runtime-adapter-postgres -p console-workorder-rest
+            -p console-kernel-core -p console-registry-rest -p console-reporting-rest \
+            -p console-workflow-runtime-adapter-postgres -p console-workorder-rest \
+            -p console-financial-domain -p console-identity-application -p console-integrity \
+            -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime
           # Doc tests, same step so no new step name has to be declared anywhere.
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
           # type-boundary claim ("this must not compile"), and they execute nowhere
@@ -300,8 +321,6 @@ jobs:
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-realtime --test hub --test notify_payload
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
-            -p console-platform-storage --test seaweedfs_worm
-          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-app --test config --test dev_seed_notification_links --test openslo_files \
             --test well_known --test workbench_api
 
@@ -318,7 +337,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     # 35 -> 80. MEASURED from the run that hit the old ceiling: 240s of build and container
-    # setup, then 21.8s per target serialized, so 186 targets need ~71 minutes. The previous
+    # setup, then 21.8s per target serialized, so 189 targets need ~72 minutes. The previous
     # 19-target job finished in 17.
     #
     # Sharding is the better answer and is NOT taken here on purpose. This job's display name
@@ -430,6 +449,7 @@ jobs:
             //tools/buck:comms-rest-mox-webhook-pg \
             //tools/buck:comms-rest-readiness-pg \
             //tools/buck:consulting-rest-audit-atomicity-pg \
+            //tools/buck:dispatch-worker-timer-delivery-pg \
             //tools/buck:docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg \
             //tools/buck:finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg \
             //tools/buck:financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg \
@@ -487,6 +507,7 @@ jobs:
             //tools/buck:platform-db-lifecycle-maker-checker-pg \
             //tools/buck:platform-db-m2-flag-on-runtime-drain-pg \
             //tools/buck:platform-db-period-locks-and-lifecycle-pg \
+            //tools/buck:platform-db-personal-data-classification-pg \
             //tools/buck:platform-group-lib-pg \
             //tools/buck:platform-jobs-apalis-adapter-pg \
             //tools/buck:platform-jobs-apalis-schema-contract-pg \
@@ -527,24 +548,22 @@ jobs:
             //tools/buck:workflow-adapter-postgres-payroll-drain-period-lock-pg \
             //tools/buck:workorder-adapter-postgres-m2-flag-off-parity-pg \
             //tools/buck:workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg \
-            //tools/buck:workorder-adapter-postgres-use-cases-pg
+            //tools/buck:workorder-adapter-postgres-use-cases-pg \
+            //tools/buck:workorder-rest-mobile-device-registration-pg \
+            //tools/buck:workorder-rest-mobile-evidence-pg \
+            //tools/buck:workorder-rest-mobile-sync-pg
 
   company-conformance:
-    # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and
-    # a REQUIRED check as of the fan-out's last commit. It was deliberately not
-    # required while it was expected red, because a required red blocks every
-    # merge — and an unwired target that never executes is the false-green class
-    # this repo has already shipped six times. Required at the moment it became
-    # both satisfiable and meaningful, which is the only point where the two
-    # failure modes are simultaneously closed.
+    # Required generic ontology instance-engine regression. Its twelve scenario
+    # ids and five controls exercise useful engine behavior through both REST and
+    # in-process drivers, so the suite remains blocking.
     #
-    # NOTE: it proves the twelve ids the suite can express, and no more. Twice
-    # during the fan-out this target could not distinguish a correct
-    # implementation from a wrong one — link-history churn and an as-of vs
-    # current-head read both left it fully green. The committed mechanism tests
-    # in adapter-postgres cover what it structurally cannot see; do not treat a
-    # green here as sufficient evidence for a mechanism this suite cannot observe.
-    name: Company conformance — 12/12 required target
+    # This is not the current Company/HR product target: all five fixtures are
+    # instance-backed, Person is absent, and the suite proves no projected owning
+    # port or single-writer boundary. Twice it also could not distinguish a
+    # correct mechanism from a wrong one; adapter-postgres mechanism tests cover
+    # those blind spots. A green result must not dispatch the projected fan-out.
+    name: Company conformance — generic-engine regression
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 35
@@ -739,7 +758,26 @@ jobs:
       - name: IaC tier-discipline gate
         run: cargo run -p console-gate-iac-tier
 
-      # The eight `cargo run -p console-gate-*` steps above only prove the gates
+      # An authorization branch must come from the RESOURCE. Deriving it from
+      # `principal.branch_scope` (`All => BranchId::new()`,
+      # `Branches(b) => b.iter().next()/.any()`) makes `authorize`'s
+      # `branch_scope.allows(resource_branch)` check a tautology on BOTH arms, so
+      # the branch dimension disappears silently. That pattern reached 18
+      # production helpers, one of which documented it as correct; a doc comment
+      # is what already failed. This gate also fails if it walked zero .rs files.
+      #
+      # DEFENCE IN DEPTH, NOT A CONTROL. It greps: a fabrication one function
+      # away, a non-literal pick (`.first()`, `.nth(0)`, a `for` loop) and any
+      # `BranchScope::` import alias all scan clean. The three blind spots are
+      # named in the module doc and in docs/CI-GATES.md; the control that closes
+      # them is a `ResourceBranch` newtype, queued separately.
+      - name: Fabricated-branch gate
+        run: cargo run -p console-gate-fabricated-branch
+
+      - name: Personal-data-classification gate
+        run: cargo run -p console-gate-personal-data-classification
+
+      # The ten `cargo run -p console-gate-*` steps above only prove the gates
       # exit 0 against THIS tree. A gate whose scan root no longer resolves --
       # e.g. after the 2026-07-28 deletion moved or emptied a directory it walks
       # -- also exits 0, so "green" cannot be distinguished from "scanned
@@ -748,7 +786,7 @@ jobs:
       # were compiled by clippy --all-targets and never executed.
       #
       # `env -u DATABASE_URL` matches the other hermetic Buck2 steps: none of
-      # these five touch a database (audit-coverage carries a stale
+      # these six touch a database (audit-coverage carries a stale
       # `needs-postgres` label only because gen_first_party.py keys on the
       # literal "sqlx" appearing in its fixture strings -- the crate has zero
       # dependencies). Placed before the DB-heavy steps so a de-fanged gate
@@ -758,8 +796,11 @@ jobs:
         run: |
           env -u DATABASE_URL tools/buck2 test \
             //backend/ci/gates/audit-coverage:console-gate-audit-coverage-itest-gate_detects_violation \
+            //backend/ci/gates/fabricated-branch:console-gate-fabricated-branch-itest-gate_detects_violation \
+            //backend/ci/gates/fabricated-branch:console-gate-fabricated-branch-unit \
             //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation \
             //backend/ci/gates/migration-safety:console-gate-migration-safety-itest-gate_detects_violation \
+            //backend/ci/gates/personal-data-classification:console-gate-personal-data-classification-itest-gate_detects_violation \
             //backend/ci/gates/pii-no-logs:console-gate-pii-no-logs-itest-gate_detects_violation \
             //backend/ci/gates/vendor-lockin:console-gate-vendor-lockin-itest-gate_detects_violation
 
@@ -961,9 +1002,9 @@ jobs:
       # include_str!-ed into the binary. This suite is the only thing that
       # inventories every mounted route against it. It existed but was never
       # invoked by CI, so drift between the router and the spec could land
-      # unnoticed; `check:openapi-app` does not cover this (it only regexes
-      # /api/platform/ paths, then byte-compares the served bytes to the file —
-      # tautological, since the handler returns the const verbatim).
+      # unnoticed; `check:platform-contract-drift` does not cover this (it only
+      # regexes /api/platform/ paths). The byte-compare of the served document
+      # against the file was deleted: include_str! made it tautological.
       - name: Buck2 console-app OpenAPI drift suite
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
@@ -1051,13 +1092,15 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run test:adrs
 
-      - name: Executed-tests ratchet — a test file must have a path from a workflow step
-        if: ${{ !cancelled() }}
-        run: npm run check:executed-tests
-
       - name: ADR governance gate
         if: ${{ !cancelled() }}
         run: npm run check:adrs
+      - name: Documentation link tests
+        if: ${{ !cancelled() }}
+        run: node --test scripts/check-doc-links.test.mjs
+      - name: Documentation local-link gate
+        if: ${{ !cancelled() }}
+        run: npm run check:doc-links
       - name: Doc citations — every code citation must resolve
         if: ${{ !cancelled() }}
         run: npm run check:doc-citations
@@ -1130,48 +1173,14 @@ jobs:
         run: npm run check:request-body-contract
 
   api-contract:
-    name: API contract — app-served OpenAPI
+    name: API contract — text-only contract checks
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:18.4
-        env:
-          POSTGRES_DB: console_contract
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres -d console_contract"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract
-      # This job builds console-app before comparing the app-served OpenAPI and
-      # running the generated-client round-trip. Match the backend job's lean
-      # Cargo artifacts so the standard runner does not exhaust disk on cache
-      # misses.
-      CARGO_INCREMENTAL: "0"
-      CARGO_PROFILE_DEV_DEBUG: "0"
 
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Install pinned DotSlash runtime
-        run: tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for API contract
-        uses: ./.github/actions/free-runner-disk
-
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -1179,22 +1188,12 @@ jobs:
           node-version: "24"
           cache: npm
 
-      - name: Install client tooling
+      - name: Install Node tooling
         run: npm ci
 
-      - name: OpenAPI app-served drift gate
+      - name: Platform contract drift gate
         if: ${{ !cancelled() }}
-        run: npm run check:openapi-app
-
-      - name: Capture Buck2-built app for contract test
-        if: ${{ !cancelled() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          # check:openapi-app is the sole Buck2 producer for this handoff.
-          console_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"
-          test -x "${console_app_bin}"
-          printf 'CONSOLE_APP_BIN=%s\n' "${console_app_bin}" >> "${GITHUB_ENV}"
+        run: npm run check:platform-contract-drift
 
       - name: Employee import replay contract
         if: ${{ !cancelled() }}

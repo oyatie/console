@@ -1,5 +1,12 @@
 # CNPG Restore Drill (production Barman → OCI path)
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This drill is retained historical/operator
+> reference. It does not prove that the named cluster, backups, credentials, or
+> recovery path exist, and it does not authorize access to or mutation of any
+> cluster. The repository currently authorizes zero production mutations. Start
+> with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 ## Scope
 
 This drill exercises the **production** disaster-recovery path: a CloudNativePG

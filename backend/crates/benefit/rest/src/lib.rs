@@ -22,7 +22,9 @@ use console_kernel_core::{
     BenefitCatalogItemId, BranchId, BranchScope, ErrorKind, KernelError, SiteId, TraceContext,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_authz::{
+    Action, Feature, Principal, authorize_capability, authorize_org_wide,
+};
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -395,14 +397,18 @@ async fn replace_conditions(
     Ok(Json(item))
 }
 
+/// Benefit tiers and conditions carry no `branch_id`, so the `Branches` arm is a
+/// capability decision. The `All` arm deliberately stays `authorize_org_wide` for
+/// the same reason as `leave/rest` — collapsing it would widen for the
+/// `{Admin} + BranchScope::All` group-admin principal.
+///
+/// TODO(branch-scope): `benefit_catalog_items.branch_id` IS present but NULLABLE
+/// (migration 0157) and unread here; threading it is a separate lane.
 fn require_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
     let action = Action::new(feature);
     let result = match &principal.branch_scope {
         BranchScope::All => authorize_org_wide(principal, action),
-        BranchScope::Branches(branches) => branches.iter().next().map_or_else(
-            || Err(KernelError::forbidden("principal has no branch scope")),
-            |branch| authorize(principal, action, *branch),
-        ),
+        BranchScope::Branches(_) => authorize_capability(principal, action),
     };
     result.map_err(RestError::from_kernel)
 }

@@ -1010,7 +1010,7 @@ the whole set both fail. Three plan premises and one architect finding also fail
 | `0065` attribute CHECK "18 literals" / "22 literals" | **Exactly 17** (verified verbatim, `0065:110-128`); operator CHECK has 3 (`:129`). `competence`, `org_unit`, 직무, 직급 are NOT among them |
 | `RealtimeEvent` at `:317-336`; `_ => Ok(())` at `:604` | `:318`-`:338`; `:603`. Plan repeats `:318-337` at `:130` and `:1122` |
 | `listener.listen(...)` at `:585-587` (lens 2) | `:576-578`; `:585-587` is the `shutdown_rx.changed()` arm |
-| `ci.yml:899-901` for `check:openapi-app` | `ci.yml:886`; `:899-901` is the employee-import replay contract |
+| `ci.yml:899-901` for `check:openapi-app` | `ci.yml:886`; `:899-901` is the employee-import replay contract. Both the script and its `ci.yml` step have since been deleted; the surviving route-inventory half is `check:platform-contract-drift` |
 | `ci.yml:955-956` for the command-database gate | `:950` step name, `:951` `run:`. `:952-956` is the NetworkPolicy preflight **and its comment** — a comment offered as evidence for wiring behaviour, the exact forbidden form |
 | `0198` second-table lines | Off by one from the second table onward: `step_order` `:56`, `role_key` `:57`, UNIQUE `:63`, `item_key` `:73-74`, `done` `:75`. First table correct (`:19`, `:23`, `:26`) |
 | `0034:122` for the composite same-org FK story | `:122` is `users_id_org_key UNIQUE (id, org_id)`. The FK story is `:136-138` and `:141-142` |

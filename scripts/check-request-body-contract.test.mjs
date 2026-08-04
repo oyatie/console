@@ -156,6 +156,44 @@ describe("request body contract gate", () => {
     assert.match(findings[0].message, /required/);
   });
 
+  // The same defect as the test above, differing only in that nothing renames the field. It was
+  // NOT reported: the required loop skipped any field whose rust name appeared in the spec's
+  // properties, on the premise that the property loop had already reported it — true only when the
+  // wire name differs. For a struct with no rename_all, and for every single-word field under any
+  // rule, the two names are equal and the property loop reported nothing, so this whole direction
+  // was off. Omitting `idempotency_key` is a serde "missing field" failure, not a default.
+  it("reports a handler-required field the spec makes optional when nothing renames it", () => {
+    const root = widgetFixture({
+      derive: "#[serde(deny_unknown_fields)]",
+      fields: "    quantity_consumed_milli: i64,\n    idempotency_key: String,",
+      required: ["quantity_consumed_milli"],
+      properties: "quantity_consumed_milli: { type: integer }, idempotency_key: { type: string }",
+    });
+
+    const { resolved, findings } = evaluateRequestBodyContract({ repoRoot: root });
+
+    assert.equal(resolved, 1);
+    assert.equal(findings.length, 1, JSON.stringify(findings, null, 2));
+    assert.match(findings[0].message, /idempotency_key is required by the handler/);
+  });
+
+  // The double-report the suppression exists to prevent must still be suppressed: with
+  // rename_all = camelCase the property loop already names `idempotency_key` as unreachable, and
+  // the required loop must not say the same thing twice.
+  it("does not report the renamed-field mismatch twice, once from each side", () => {
+    const root = widgetFixture({
+      derive: camelDeny,
+      fields: "    quantity_consumed_milli: i64,\n    idempotency_key: String,",
+      required: ["quantityConsumedMilli"],
+      properties: "quantityConsumedMilli: { type: integer }, idempotency_key: { type: string }",
+    });
+
+    const { findings } = evaluateRequestBodyContract({ repoRoot: root });
+
+    assert.equal(findings.length, 1, JSON.stringify(findings, null, 2));
+    assert.match(findings[0].message, /spec property "idempotency_key" is not a field/);
+  });
+
   it("treats an Option field as optional rather than a missing required entry", () => {
     const root = widgetFixture({
       derive: camelDeny,
@@ -273,6 +311,36 @@ describe("request body contract gate", () => {
     assert.match(`${result.stdout}${result.stderr}`, /resolved 0 /);
   });
 
+  // The floor's contribution to the EXIT CODE had never been observed. The test above exits 1
+  // through `unresolvedAnchors` — its fixture carries no rust at all, so all three anchors are
+  // unresolved — and deleting `|| belowFloor` from the exit condition leaves that test green.
+  // Found by mutation during the simplification pass, which is late: the floor was the one branch
+  // of this gate whose red nobody had seen, and an unproven branch is what this gate exists to
+  // find in other people's code.
+  //
+  // A resolver that keeps every named anchor alive while comparing a third of the surface is the
+  // precise degradation the floor exists for, so it is isolated here: all three anchors resolve,
+  // findings are zero, and the floor is the only thing left that can fail the run.
+  it("exits 1 on the floor alone, with every anchor resolved and no findings", () => {
+    const root = fixture(Object.fromEntries([
+      "backend/openapi/openapi.yaml",
+      "backend/crates/equipment/rest/src/lib.rs",
+      "backend/crates/inventory/rest/src/lib.rs",
+    ].map((file) => [file, readFileSync(join(repoRoot, file), "utf8")])));
+
+    const { findings, unresolvedAnchors } = evaluateRequestBodyContract({ repoRoot: root });
+
+    assert.deepEqual(findings, [], "the isolating fixture must produce no findings of its own");
+    assert.deepEqual(unresolvedAnchors, [], "every anchor must resolve, or this is the anchor test again");
+
+    const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
+
+    // If these two crates ever cover the floor on their own the status assertion fails loudly
+    // rather than passing for the wrong reason.
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.match(result.stderr, /below the floor of \d+/);
+  });
+
   // The exit-0 branch had never executed. While the spec still published snake_case this gate
   // could not pass, and an unpassable gate is the meta-finding's sharper case: it occupies its
   // slot and reads as coverage. The floor of 45 resolved operations means only the real
@@ -381,6 +449,61 @@ struct ConsumeWidgetBody {
 
     assert.deepEqual(findings, []);
     assert.equal(resolved, 1);
+  });
+
+  // The test above proves the SAFE adjacent case: when the handler's own file declares the struct,
+  // the keyed lookup wins. The hazard its own comment names — the fallback firing on an AMBIGUOUS
+  // name — was never exercised, and the fallback was wrong there. Measured on this repository:
+  // `AssignBody` (attendance vs facilities) and `ListQuery` (attendance vs orgchange) each have two
+  // definitions with DIVERGENT `rename_all`, so the first-match pick is decided by directory
+  // traversal order. Below, the decoy sorts first, carries no `rename_all`, and therefore publishes
+  // the snake_case name the spec publishes; the struct the handler really binds is camelCase, so
+  // the spec is a guaranteed 422. Before the uniqueness guard this returned `resolved: 1,
+  // findings: []` — the gate counted the operation as compared, fed the count toward the floor and
+  // the anchors, and reported green on the exact defect it exists to catch.
+  it("refuses to guess between same-named structs instead of comparing an arbitrary one", () => {
+    const decoy = `#[serde(deny_unknown_fields)]
+struct ConsumeWidgetBody {
+    quantity_consumed_milli: i64,
+}
+`;
+    const bound = `${camelDeny}
+struct ConsumeWidgetBody {
+    quantity_consumed_milli: i64,
+}
+`;
+    // The handler's file declares neither struct, so only the bare name can resolve it.
+    const handlerFile = widgetCrate({ derive: camelDeny, fields: "    quantity_consumed_milli: i64," })
+      .replace(`#[derive(Debug, Deserialize)]\n${camelDeny}\nstruct ConsumeWidgetBody {\n    quantity_consumed_milli: i64,\n}\n`, "");
+    assert.ok(!handlerFile.includes("struct ConsumeWidgetBody"), "the handler's file must not declare the struct");
+
+    const files = {
+      "backend/crates/aaa-other/rest/src/lib.rs": decoy,
+      "backend/crates/widget/rest/src/body.rs": bound,
+      "backend/crates/widget/rest/src/lib.rs": handlerFile,
+      "backend/openapi/openapi.yaml": widgetSpec({
+        required: ["quantity_consumed_milli"],
+        properties: "quantity_consumed_milli: { type: integer }",
+      }),
+    };
+
+    const { resolved, skipped, findings } = evaluateRequestBodyContract({ repoRoot: fixture(files) });
+
+    assert.deepEqual(findings, [], "an undecidable binding must not be reported as a mismatch either");
+    assert.equal(resolved, 0, "an ambiguous bare name must not count as an operation this gate compared");
+    assert.equal(skipped, 1, "it belongs in skipped, where the floor and the anchors can see it");
+
+    // And the guard must not cost the unambiguous case: delete the decoy and the same fixture
+    // resolves, and goes red on the mismatch the false green was hiding.
+    delete files["backend/crates/aaa-other/rest/src/lib.rs"];
+    const unique = evaluateRequestBodyContract({ repoRoot: fixture(files) });
+
+    assert.equal(unique.resolved, 1, "a unique bare name must still resolve through the fallback");
+    // One finding, not two: the renamed-field double-report suppression covers the required[]
+    // side, exactly as the "does not report the renamed-field mismatch twice" test asserts.
+    assert.deepEqual(unique.findings.map((finding) => finding.message), [
+      'spec property "quantity_consumed_milli" is not a field of ConsumeWidgetBody (deny_unknown_fields => 422)',
+    ]);
   });
 });
 

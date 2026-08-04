@@ -253,7 +253,7 @@ async fn list_workflow_runs_for_object(
             // only the initiator or an org-wide workflow administrator can see
             // its associated runs (fail closed for role-routed visibility).
             let held_role_keys = subject_branch.map_or_else(Vec::new, |branch| {
-                crate::workflow_studio::held_authority_role_keys(&principal, org, branch)
+                crate::workflow_studio::held_authority_role_keys(&principal, org, Some(branch))
             });
 
             let cursor = match query.before {
@@ -636,11 +636,13 @@ mod tests {
         );
 
         assert!(
-            !crate::workflow_studio::held_authority_role_keys(&principal, org, branch_a).is_empty(),
+            !crate::workflow_studio::held_authority_role_keys(&principal, org, Some(branch_a))
+                .is_empty(),
             "ADMIN can hold a routed review authority in its actual branch"
         );
         assert!(
-            crate::workflow_studio::held_authority_role_keys(&principal, org, branch_b).is_empty(),
+            crate::workflow_studio::held_authority_role_keys(&principal, org, Some(branch_b))
+                .is_empty(),
             "no arbitrary representative branch may turn A authority into B authority"
         );
     }

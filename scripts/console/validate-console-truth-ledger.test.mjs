@@ -61,6 +61,156 @@ test('current candidate truth ledger is structurally complete but remains candid
   assert.ok(jurisdiction.controls.every((control) => control.release_disposition === 'HOLD'));
 });
 
+test('an unavailable governing lifecycle cannot become an absolute workstation dependency', () => {
+  const absolute = structuredClone(jurisdiction);
+  absolute.governing_lifecycle.path = '/Users/example/private-lifecycle.md';
+  assert.throws(
+    () => validateConsoleTruthLedger(registry, absolute, { expectedCandidateSha: CANDIDATE_SHA }),
+    /pathless HOLD_UNAVAILABLE provenance record/,
+  );
+
+  const unheld = structuredClone(jurisdiction);
+  unheld.governing_lifecycle.status = 'CURRENT';
+  assert.throws(
+    () => validateConsoleTruthLedger(registry, unheld, { expectedCandidateSha: CANDIDATE_SHA }),
+    /pathless HOLD_UNAVAILABLE provenance record/,
+  );
+
+  const unexplained = structuredClone(jurisdiction);
+  unexplained.governing_lifecycle.reason = '';
+  assert.throws(
+    () => validateConsoleTruthLedger(registry, unexplained, { expectedCandidateSha: CANDIDATE_SHA }),
+    /unavailable reason must be a non-empty string/,
+  );
+});
+
+test('pre-wipe paths, branches, lanes, and progress labels cannot become current continuation authority', () => {
+  const unheldReset = structuredClone(registry);
+  unheldReset.continuation_reset.lane_dispatch = 'enabled';
+  assert.throws(
+    () => validateConsoleTruthLedger(unheldReset, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /continuation reset must keep every pre-wipe worktree, branch, and lane on HOLD/,
+  );
+
+  const worktree = structuredClone(registry);
+  worktree.capabilities[0].worktree = '/Users/example/old-worktree';
+  assert.throws(
+    () => validateConsoleTruthLedger(worktree, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /current continuation assignment must be null while reset is HOLD/,
+  );
+
+  const branch = structuredClone(registry);
+  branch.capabilities[0].branch = 'deleted/old-branch';
+  assert.throws(
+    () => validateConsoleTruthLedger(branch, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /current continuation assignment must be null while reset is HOLD/,
+  );
+
+  const lanes = structuredClone(registry);
+  lanes.capabilities[0].lane_assignments = { writer: { owner: 'stale' } };
+  assert.throws(
+    () => validateConsoleTruthLedger(lanes, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /current continuation assignment must be null while reset is HOLD/,
+  );
+
+  const progress = structuredClone(registry);
+  progress.capabilities[0].state.runtime = 'live';
+  assert.throws(
+    () => validateConsoleTruthLedger(progress, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /current continuation state must contain only HOLD values/,
+  );
+
+  const deletedHistory = structuredClone(registry);
+  delete deletedHistory.capabilities[0].historical_reset_state;
+  assert.throws(
+    () => validateConsoleTruthLedger(deletedHistory, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /missing historical continuation field historical_reset_state/,
+  );
+
+  const rewrittenHistory = structuredClone(registry);
+  rewrittenHistory.capabilities[0].historical_reset_state.runtime = 'rewritten';
+  assert.throws(
+    () => validateConsoleTruthLedger(rewrittenHistory, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }),
+    /historical continuation fields differ from the pinned reset snapshot/,
+  );
+
+  assert.equal(
+    registry.capabilities.find((capability) => capability.id === 'CAP-CONSOLE-SHELL').historical_reset_state.frontend,
+    'frontend_surface_deleted_by_2026_07_28_clean_slate_pivot',
+  );
+  assert.equal(
+    registry.capabilities.find((capability) => capability.id === 'CAP-ONTOLOGY-ENGINE').historical_reset_state.backend,
+    '27_types_seeded_and_frozen_no_additive_upgrade_function_exists',
+  );
+});
+
+test('provenance is reproducible from advertised tags in a candidate-only clone', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'console-provenance-'));
+  const source = path.join(root, 'source');
+  const origin = path.join(root, 'origin.git');
+  const checkout = path.join(root, 'checkout');
+  const run = (cwd, args) => execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    execFileSync('git', ['init', '-b', 'archive-build', source], { stdio: 'ignore' });
+    run(source, ['config', 'user.name', 'Provenance Test']);
+    run(source, ['config', 'user.email', 'provenance@example.invalid']);
+    writeFileSync(path.join(source, 'freeze.txt'), 'historical implementation freeze\n');
+    run(source, ['add', 'freeze.txt']);
+    run(source, ['commit', '-m', 'historical freeze']);
+    const freezeSha = run(source, ['rev-parse', 'HEAD']);
+    const freezeRef = 'refs/tags/archive/pre-pivot-implementation-freeze-test';
+    run(source, ['tag', freezeRef.slice('refs/tags/'.length), freezeSha]);
+
+    run(source, ['checkout', '--orphan', 'main']);
+    rmSync(path.join(source, 'freeze.txt'));
+    writeFileSync(path.join(source, 'base.txt'), 'authority base\n');
+    run(source, ['add', '-A']);
+    run(source, ['commit', '-m', 'authority base']);
+    const baseSha = run(source, ['rev-parse', 'HEAD']);
+    const baseRef = 'refs/tags/archive/authority-base-test';
+    run(source, ['tag', baseRef.slice('refs/tags/'.length), baseSha]);
+    writeFileSync(path.join(source, 'candidate.txt'), 'candidate\n');
+    run(source, ['add', 'candidate.txt']);
+    run(source, ['commit', '-m', 'candidate']);
+    const candidateSha = run(source, ['rev-parse', 'HEAD']);
+
+    execFileSync('git', ['clone', '--bare', '--no-local', source, origin], { stdio: 'ignore' });
+    execFileSync('git', ['clone', '--no-local', '--no-tags', '--single-branch', '--branch', 'main', origin, checkout], { stdio: 'ignore' });
+    const isolatedRegistry = structuredClone(registry);
+    const isolatedJurisdiction = structuredClone(jurisdiction);
+    for (const document of [isolatedRegistry, isolatedJurisdiction]) {
+      Object.assign(document.provenance, {
+        authority_base_sha: baseSha,
+        authority_base_ref: baseRef,
+        historical_implementation_freeze_sha: freezeSha,
+        historical_implementation_freeze_ref: freezeRef,
+      });
+    }
+    const resolveSha = (value) => {
+      try { run(checkout, ['cat-file', '-e', `${value}^{commit}`]); return true; } catch { return false; }
+    };
+    const resolveRef = (ref, expectedSha) => {
+      try { return run(checkout, ['rev-parse', '--verify', `${ref}^{commit}`]) === expectedSha; } catch { return false; }
+    };
+
+    assert.throws(
+      () => validateConsoleTruthLedger(isolatedRegistry, isolatedJurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveRef }),
+      /authority_base_ref does not resolve/,
+      'a locally present authority commit is insufficient without its advertised custody ref',
+    );
+    run(checkout, ['fetch', '--no-tags', 'origin', `${baseRef}:${baseRef}`]);
+    assert.throws(
+      () => validateConsoleTruthLedger(isolatedRegistry, isolatedJurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveRef }),
+      /historical_implementation_freeze_sha SHA is unresolvable/,
+      'candidate history must not make an unrelated historical object appear reachable',
+    );
+    run(checkout, ['fetch', '--no-tags', 'origin', `${freezeRef}:${freezeRef}`]);
+    assert.doesNotThrow(() => validateConsoleTruthLedger(isolatedRegistry, isolatedJurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveRef }));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('validator fails closed for duplicate IDs, missing evidence, missing module benchmark, and unsafe exposure', () => {
   const duplicate = structuredClone(registry);
   duplicate.capabilities.push(structuredClone(duplicate.capabilities[0]));
@@ -369,6 +519,7 @@ test('a real SSH-signed canonical Git receipt is the only non-HOLD admission pat
     // Nothing here rebinds a SHA into the documents any more: the candidate is a parameter, and
     // the fixture only has to move the two provenance anchors off it so they stay distinct.
     promoted.provenance.authority_base_sha = 'a'.repeat(40); promoted.provenance.historical_implementation_freeze_sha = 'b'.repeat(40);
+    fixtureJurisdiction.provenance.historical_implementation_freeze_sha = promoted.provenance.historical_implementation_freeze_sha;
     cap.candidate_evidence.status = 'VERIFIED'; cap.benchmark.verdict = 'MEET';
     const receiptPath = `docs/evidence/console/reviews/${cap.id}/${candidateSha}.json`; mkdirSync(path.dirname(path.join(root, receiptPath)), { recursive: true });
     Object.assign(promoted.review_authority.reviewers[0], { author_name: 'Jason Lee', author_email: 'jason19931225@gmail.com', committer_name: 'Jason Lee', committer_email: 'jason19931225@gmail.com', signing: { format: 'ssh', principal: 'jason19931225@gmail.com', fingerprint } });

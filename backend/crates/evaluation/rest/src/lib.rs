@@ -20,9 +20,9 @@ use console_evaluation_application::{
     PreflightReport, ReviewDraftInput, ReviewView, SubjectDetail, TaskPage,
 };
 use console_evaluation_domain::{CycleStage, CycleTransition, Grade, ReviewKind};
-use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, UserId};
+use console_kernel_core::{ErrorKind, KernelError, UserId};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -584,21 +584,12 @@ async fn employee_reviews(
 // Authorization helpers
 // ---------------------------------------------------------------------------
 
-/// Authorize an org-level evaluation feature against a representative branch:
-/// cross-branch principals authorize against a fresh id (allowed by
-/// `BranchScope::All`); branch-scoped principals authorize against one of
-/// their own branches, so the matrix cell is what actually decides. Mirrors
-/// the sales-catalog representative-branch pattern.
+/// Authorize an org-level evaluation feature. `evaluation_cycles`,
+/// `evaluation_subjects`, `evaluation_goals`, `evaluation_reviews` and
+/// `evaluation_evidence_links` (migration 0190) all lack a `branch_id` column, so
+/// there is no resource branch to check — a capability decision.
 fn require_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    let branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for evaluation",
-            ))
-        })?,
-    };
-    authorize(principal, Action::new(feature), branch).map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
 }
 
 fn holds_feature(principal: &Principal, feature: Feature) -> bool {

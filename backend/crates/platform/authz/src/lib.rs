@@ -161,8 +161,11 @@ pub enum Feature {
     AuditLogRead,
     ExcelDownload,
     /// Read the per-tenant operational dashboard (work-order funnel, SLA risk,
-    /// utilization, equipment/substitution rollups). SUPER_ADMIN / ADMIN only —
-    /// it surfaces an org-wide operational picture.
+    /// utilization, equipment/substitution rollups). The current route is an
+    /// org-wide picture with no branch filter and therefore also passes through
+    /// `authorize_org_wide`; that makes SUPER_ADMIN the only built-in role that
+    /// satisfies both gates. The ADMIN matrix cell is retained for a future
+    /// branch-filtered projection, not authority over today's tenant-wide route.
     OpsDashboardRead,
     /// Manage the public sales catalog (#6 지게차 매매): create/update/withdraw
     /// used-forklift listings and triage inbound customer inquiries. ADMIN tier.
@@ -1172,11 +1175,106 @@ pub fn authorize_org_wide(principal: &Principal, action: Action) -> Result<(), K
     Ok(())
 }
 
+/// Authorize a principal for a feature whose resource carries NO BRANCH AT ALL —
+/// a workflow run, a workflow definition, a sales listing, an evaluation cycle:
+/// rows whose table has no `branch_id` column, and list gates whose confinement
+/// is the caller's whole `branch_scope` rather than one branch.
+///
+/// Complete the set:
+/// * [`authorize`] — the resource HAS a branch; pass THAT branch. Never pass a
+///   branch derived from `principal.branch_scope`. `authorize` checks
+///   `principal.branch_scope.allows(resource_branch)` first, so a
+///   principal-derived branch makes that check a TAUTOLOGY on both arms: `All`
+///   allows any fabricated id, and `Branches(set).iter().next()` is by
+///   definition a member of `set`. The branch dimension then vanishes silently
+///   instead of visibly. If you were about to write
+///   `match principal.branch_scope { All => BranchId::new(), Branches(b) =>
+///   b.iter().next() }` — or the `.iter().any(|b| authorize(.., *b).is_ok())`
+///   variant, which is the same tautology, only wordier — you want THIS
+///   function. `console-gate-fabricated-branch` fails CI if you write it anyway.
+/// * [`authorize_org_wide`] — the ACTION spans every branch. Requires the caller
+///   to already hold `BranchScope::All` and limits built-in authority to
+///   `SUPER_ADMIN`/`EXECUTIVE`. Do NOT reach for it merely because a branch is
+///   unavailable: it denies every branch-scoped principal and every ADMIN.
+///
+/// The built-in-role arm is byte-identical to [`authorize`]'s, which never
+/// consults the branch — so for every principal whose access comes from a
+/// built-in role the verdict is unchanged by construction.
+///
+/// # The one behavioural delta in this migration
+///
+/// The custom-grant arm requires the grant to COVER the principal's whole scope
+/// (`grant ⊇ principal`) rather than merely to allow one branch of it. This is
+/// the only place any verdict moves, and it moves in one direction: `grant ⊇ p`
+/// implies `grant.allows(b)` for every `b ∈ p`, so nothing this admits was denied
+/// before. For an `All`-scoped principal it collapses to exactly
+/// [`authorize_org_wide`]'s `grant.branch_scope == BranchScope::All`; for a
+/// single-branch principal `grant ⊇ {b}` IS `grant.allows(b)`. Both are unchanged.
+///
+/// **Who loses access.** Exactly one class: a principal holding TWO OR MORE
+/// branches, with no built-in role permission for the feature, whose custom
+/// (PBAC) grant covers some but not all of those branches. A `{seoul, busan}`
+/// principal with a Seoul-only grant is denied here and may have been allowed
+/// before.
+///
+/// **Why that is correct.** "May have been" is the point: what this replaced was
+/// not a policy, it was a sort order. The fabricated check authorized against
+/// `branches.iter().next()` — the LOWEST-SORTING branch UUID of a `BTreeSet` — so
+/// the identical partial grant admitted or denied depending on which random id
+/// happened to sort first. Nothing in the product means that, and no operator
+/// could predict it. Deterministic deny replaces a coin flip, and it is the
+/// conservative side of the flip.
+///
+/// Deny is also the right answer on the merits: these are the sites where nothing
+/// downstream narrows to a branch. A branch-less row has no branch to confine by,
+/// and a list gate's confinement IS the caller's whole `branch_scope` — so a grant
+/// covering part of that scope cannot authorize an action that reaches all of it.
+/// The remedy for an affected tenant is to widen the grant to the principal's
+/// scope, which is what the grant already meant to say.
+///
+/// Pinned by `capability_replaces_an_order_dependent_grant_verdict_with_a_deny`;
+/// recorded in `docs/decisions/notes/DN-0004-adr-0028-branchless-capability-authorization.md`.
+pub fn authorize_capability(principal: &Principal, action: Action) -> Result<(), KernelError> {
+    // Not decoration: without this, `intersect({}, {}) == {}` makes the coverage
+    // test below vacuously true, so a membership-less principal would be
+    // authorized by any grant it holds. Every fabricating helper this replaced
+    // denied that principal, and `BranchScope::none` is documented as "allows
+    // nothing".
+    if principal.branch_scope.is_empty() {
+        return Err(KernelError::forbidden("principal has no branch scope"));
+    }
+
+    let has_feature_permission = principal.roles.iter().any(|role| {
+        permission_for(*role, action.feature()).satisfies(action.required_permission())
+    }) || principal.effective_feature_grants.iter().any(|grant| {
+        grant.feature == action.feature()
+            && grant.permission.satisfies(action.required_permission())
+            && grant.branch_scope.intersect(&principal.branch_scope) == principal.branch_scope
+    });
+
+    if !has_feature_permission {
+        return Err(KernelError::forbidden("role is not allowed to use feature"));
+    }
+
+    Ok(())
+}
+
 /// Authorize a principal for a feature against a concrete resource branch.
 ///
 /// This intentionally checks both role permission and branch membership for
 /// every call. Listing APIs should also use [`repository_filter`] so the data
 /// access path is constrained before rows are materialized.
+///
+/// # The branch must come from the RESOURCE
+///
+/// `resource_branch` must be read off the row being authorized. A branch derived
+/// from `principal.branch_scope` makes the first check a tautology on BOTH arms
+/// — `All` allows a fresh `BranchId::new()`, and `branches.iter().next()` is a
+/// member of `branches` by definition — which silently deletes the branch
+/// dimension instead of enforcing it. When the resource genuinely has no branch,
+/// call [`authorize_capability`]; when the action genuinely spans every branch,
+/// call [`authorize_org_wide`]. `console-gate-fabricated-branch` fails CI on the
+/// fabricating shapes.
 pub fn authorize(
     principal: &Principal,
     action: Action,
@@ -1791,5 +1889,459 @@ mod tests {
             assert_eq!(effective, BranchScope::none());
         }
         Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // authorize_capability — the branch-less primitive
+    // -----------------------------------------------------------------------
+
+    fn principal_with(roles: [Role; 1], scope: BranchScope) -> Principal {
+        Principal::new(
+            UserId::new(),
+            OrgId::knl(),
+            std::collections::BTreeSet::from(roles),
+            scope,
+        )
+    }
+
+    /// The approval inbox must not empty out. `CompletionReview` is
+    /// `[D,D,D,A,D,A]`; routing these sites through `authorize_org_wide` instead
+    /// would have collapsed them to SUPER_ADMIN only.
+    #[test]
+    fn capability_preserves_builtin_admin_on_completion_review() {
+        let branch = BranchId::new();
+        let admin = principal_with([Role::Admin], BranchScope::single(branch));
+        let action = Action::new(Feature::CompletionReview);
+
+        assert!(authorize_capability(&admin, action).is_ok());
+        // Same verdict the fabricated-branch call produced.
+        assert!(authorize(&admin, action, branch).is_ok());
+        // ...and what org-wide routing would have done instead.
+        assert!(authorize_org_wide(&admin, action).is_err());
+    }
+
+    /// `Feature::TargetManage` is `[D,D,R,A,D,A]` — MECHANIC holds `RequestOnly`.
+    /// A hardcoded `== PermissionLevel::Allow` capability check would deny every
+    /// mechanic on the request-only target surface.
+    #[test]
+    fn capability_honors_request_only_permission_level() {
+        let mechanic = principal_with([Role::Mechanic], BranchScope::single(BranchId::new()));
+
+        assert!(authorize_capability(&mechanic, Action::request(Feature::TargetManage)).is_ok());
+        assert!(authorize_capability(&mechanic, Action::new(Feature::TargetManage)).is_err());
+    }
+
+    /// The grant must COVER the principal's scope. A Seoul-only grant does not
+    /// authorize a Seoul+Busan principal for an action that reaches both.
+    #[test]
+    fn capability_denies_grant_narrower_than_principal_scope() {
+        let seoul = BranchId::new();
+        let busan = BranchId::new();
+        let member = principal_with(
+            [Role::Member],
+            BranchScope::Branches(std::collections::BTreeSet::from([seoul, busan])),
+        )
+        .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+            Feature::CompletionReview,
+            PermissionLevel::Allow,
+            BranchScope::single(seoul),
+        )]);
+
+        assert!(authorize_capability(&member, Action::new(Feature::CompletionReview)).is_err());
+    }
+
+    /// THE ONE BEHAVIOURAL DELTA, as a differential against what shipped.
+    ///
+    /// The losing class: ≥2 branches, no built-in role permission, a custom grant
+    /// covering only part of the scope. The first two assertions are the
+    /// pre-migration verdict for that class — the SAME partial grant admits or
+    /// denies depending only on which branch UUID sorts first in the `BTreeSet`,
+    /// because the fabricated branch was `branches.iter().next()`. The last two
+    /// are this function: denied either way.
+    #[test]
+    fn capability_replaces_an_order_dependent_grant_verdict_with_a_deny() {
+        let mut ids = [BranchId::new(), BranchId::new()];
+        ids.sort();
+        let [lowest, other] = ids;
+        let scope = BranchScope::Branches(std::collections::BTreeSet::from(ids));
+        let action = Action::new(Feature::CompletionReview);
+        let granted_on = |branch| {
+            principal_with([Role::Member], scope.clone()).with_effective_feature_grants(vec![
+                EffectiveFeatureGrant::new(
+                    Feature::CompletionReview,
+                    PermissionLevel::Allow,
+                    BranchScope::single(branch),
+                ),
+            ])
+        };
+
+        assert!(
+            authorize(&granted_on(lowest), action, lowest).is_ok(),
+            "pre-migration: a partial grant on the lowest-sorting branch was ALLOWED"
+        );
+        assert!(
+            authorize(&granted_on(other), action, lowest).is_err(),
+            "pre-migration: the same partial grant on the other branch was DENIED"
+        );
+
+        assert!(authorize_capability(&granted_on(lowest), action).is_err());
+        assert!(authorize_capability(&granted_on(other), action).is_err());
+    }
+
+    /// ...and the other direction: a grant that covers more than the principal's
+    /// scope still authorizes.
+    #[test]
+    fn capability_allows_grant_covering_principal_scope() {
+        let seoul = BranchId::new();
+        let busan = BranchId::new();
+        let member = principal_with([Role::Member], BranchScope::single(seoul))
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::CompletionReview,
+                PermissionLevel::Allow,
+                BranchScope::Branches(std::collections::BTreeSet::from([seoul, busan])),
+            )]);
+
+        assert!(authorize_capability(&member, Action::new(Feature::CompletionReview)).is_ok());
+    }
+
+    /// For an `All`-scoped principal the coverage rule collapses to exactly
+    /// `authorize_org_wide`'s grant rule: only an `All` grant passes.
+    #[test]
+    fn capability_denies_partial_grant_for_all_scoped_principal() {
+        let partial = principal_with([Role::Member], BranchScope::All)
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::CompletionReview,
+                PermissionLevel::Allow,
+                BranchScope::single(BranchId::new()),
+            )]);
+        let org_wide = principal_with([Role::Member], BranchScope::All)
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::CompletionReview,
+                PermissionLevel::Allow,
+                BranchScope::All,
+            )]);
+
+        assert!(authorize_capability(&partial, Action::new(Feature::CompletionReview)).is_err());
+        assert!(authorize_capability(&org_wide, Action::new(Feature::CompletionReview)).is_ok());
+    }
+
+    /// A principal with zero memberships is denied whatever it holds — matching
+    /// every helper this primitive replaced.
+    #[test]
+    fn capability_denies_empty_branch_scope_regardless_of_role() {
+        for role in Role::ALL {
+            let principal = principal_with([role], BranchScope::none())
+                .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                    Feature::Login,
+                    PermissionLevel::Allow,
+                    BranchScope::All,
+                )]);
+            assert!(
+                authorize_capability(&principal, Action::new(Feature::Login)).is_err(),
+                "{role:?} with empty scope must be denied"
+            );
+        }
+    }
+
+    /// The no-outage property, stated as a differential: with no custom grants,
+    /// `authorize_capability` agrees with `authorize` for EVERY branch in the
+    /// principal's scope — including the one the fabrication happened to pick.
+    #[test]
+    fn capability_agrees_with_authorize_on_every_in_scope_branch() {
+        let branches = [BranchId::new(), BranchId::new(), BranchId::new()];
+        let scope = BranchScope::Branches(branches.into_iter().collect());
+
+        for role in Role::ALL {
+            let principal = principal_with([role], scope.clone());
+            for feature in Feature::ALL {
+                for action in [
+                    Action::new(feature),
+                    Action::limited(feature),
+                    Action::request(feature),
+                ] {
+                    let capability = authorize_capability(&principal, action).is_ok();
+                    for branch in branches {
+                        assert_eq!(
+                            capability,
+                            authorize(&principal, action, branch).is_ok(),
+                            "{role:?}/{feature:?} disagreed on an in-scope branch"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// The branch dimension is still real where a branch exists: an out-of-scope
+    /// resource branch denies through `authorize`. `authorize_capability` is for
+    /// resources that have no branch, not a way to skip this check.
+    #[test]
+    fn authorize_still_denies_a_resource_branch_outside_scope() {
+        let mine = BranchId::new();
+        let theirs = BranchId::new();
+        let admin = principal_with([Role::Admin], BranchScope::single(mine));
+        let action = Action::new(Feature::CompletionReview);
+
+        assert!(authorize(&admin, action, mine).is_ok());
+        assert!(authorize(&admin, action, theirs).is_err());
+    }
+
+    /// STRICTER OR EQUAL, for every principal shape a migrated site can meet.
+    ///
+    /// `before` reproduces the fabricated-branch call verbatim — `BranchId::new()`
+    /// for `All`, `branches.iter().next()` otherwise — and `after` is the
+    /// primitive that replaced it, over all 96 features × all three permission
+    /// levels. The assertion runs one way only: nothing `after` admits may have
+    /// been denied `before`. Widening is what F1 proved can happen by accident, so
+    /// it is asserted rather than argued.
+    ///
+    /// Run with `--nocapture` to print the per-shape before/after counts.
+    #[test]
+    fn capability_is_stricter_or_equal_for_every_principal_shape() {
+        let branch = BranchId::new();
+        let second = BranchId::new();
+        let grant = |feature, scope| {
+            vec![EffectiveFeatureGrant::new(
+                feature,
+                PermissionLevel::Allow,
+                scope,
+            )]
+        };
+
+        let shapes: Vec<(&str, Principal)> = vec![
+            (
+                "group-admin ADMIN ({Admin}+All)",
+                principal_with([Role::Admin], BranchScope::All),
+            ),
+            (
+                "branch-scoped ADMIN",
+                principal_with([Role::Admin], BranchScope::single(branch)),
+            ),
+            (
+                "MECHANIC",
+                principal_with([Role::Mechanic], BranchScope::single(branch)),
+            ),
+            (
+                "RECEPTIONIST",
+                principal_with([Role::Receptionist], BranchScope::single(branch)),
+            ),
+            (
+                "Executive",
+                principal_with([Role::Executive], BranchScope::All),
+            ),
+            (
+                "SuperAdmin",
+                principal_with([Role::SuperAdmin], BranchScope::All),
+            ),
+            (
+                "empty-scope principal",
+                principal_with([Role::Admin], BranchScope::none()),
+            ),
+            (
+                "grant-only (covering)",
+                principal_with([Role::Member], BranchScope::single(branch))
+                    .with_effective_feature_grants(grant(
+                        Feature::CompletionReview,
+                        BranchScope::single(branch),
+                    )),
+            ),
+            (
+                "grant-only (partial, 2 branches)",
+                principal_with(
+                    [Role::Member],
+                    BranchScope::Branches(std::collections::BTreeSet::from([branch, second])),
+                )
+                .with_effective_feature_grants(grant(
+                    Feature::CompletionReview,
+                    BranchScope::single(*[branch, second].iter().min().unwrap()),
+                )),
+            ),
+        ];
+
+        for (label, principal) in &shapes {
+            let (mut before_allowed, mut after_allowed) = (0usize, 0usize);
+            for feature in Feature::ALL {
+                for action in [
+                    Action::new(feature),
+                    Action::limited(feature),
+                    Action::request(feature),
+                ] {
+                    let fabricated = match &principal.branch_scope {
+                        // fabricated-branch: ok this IS the fabrication, reproduced as a test fixture
+                        BranchScope::All => Some(BranchId::new()),
+                        // fabricated-branch: ok same, the `Branches` half of the same fixture
+                        BranchScope::Branches(branches) => branches.iter().next().copied(),
+                    };
+                    let before =
+                        fabricated.is_some_and(|b| authorize(principal, action, b).is_ok());
+                    let after = authorize_capability(principal, action).is_ok();
+                    before_allowed += usize::from(before);
+                    after_allowed += usize::from(after);
+                    assert!(
+                        !(after && !before),
+                        "{label}: {feature:?}/{:?} is WIDER after the migration",
+                        action.required_permission()
+                    );
+                }
+            }
+            println!("{label}: before={before_allowed} after={after_allowed} allows");
+        }
+    }
+
+    /// NOTHING BROKE, site by site. Every feature that a migrated
+    /// fabricated-branch helper gates, with the verdict a branch-scoped built-in
+    /// ADMIN gets today. `false` entries are ADMIN-DENY in the matrix and must
+    /// stay denied; every `true` entry is a surface an ADMIN uses today and must
+    /// keep — the `CompletionReview` row is the approval inbox.
+    ///
+    /// Each row also asserts the fabricated-branch call this replaced agrees, so
+    /// the table cannot drift from the behavior it is protecting.
+    #[test]
+    fn migrated_sites_keep_todays_admin_verdict() {
+        let branch = BranchId::new();
+        let admin = principal_with([Role::Admin], BranchScope::single(branch));
+
+        let sites: &[(&str, Action, bool)] = &[
+            // workorder/rest authorize_feature_in_scope — the approval inbox.
+            (
+                "workorder: CompletionReview",
+                Action::new(Feature::CompletionReview),
+                true,
+            ),
+            (
+                "workorder: WorkOrderReadAll",
+                Action::new(Feature::WorkOrderReadAll),
+                true,
+            ),
+            (
+                "workorder: DailyPlanRequest",
+                Action::new(Feature::DailyPlanRequest),
+                true,
+            ),
+            (
+                "workorder: DailyPlanReview",
+                Action::new(Feature::DailyPlanReview),
+                true,
+            ),
+            (
+                "workorder: OrgWideQueueTriage (ADMIN deny today)",
+                Action::new(Feature::OrgWideQueueTriage),
+                false,
+            ),
+            (
+                "workorder: TargetManage",
+                Action::new(Feature::TargetManage),
+                true,
+            ),
+            // identity/rest authorize_org_manage.
+            (
+                "identity: UserManage",
+                Action::new(Feature::UserManage),
+                true,
+            ),
+            ("identity: Login", Action::new(Feature::Login), true),
+            (
+                "identity: RoleManage (ADMIN deny today)",
+                Action::new(Feature::RoleManage),
+                false,
+            ),
+            (
+                "identity: RegionManage",
+                Action::new(Feature::RegionManage),
+                true,
+            ),
+            (
+                "identity: BranchManage",
+                Action::new(Feature::BranchManage),
+                true,
+            ),
+            (
+                "identity: ElevatedRoleGrant (ADMIN deny today)",
+                Action::new(Feature::ElevatedRoleGrant),
+                false,
+            ),
+            // sales/rest, analytics-quant/rest, comms/rest.
+            (
+                "sales: SalesManage",
+                Action::new(Feature::SalesManage),
+                true,
+            ),
+            ("analytics: KpiRead", Action::new(Feature::KpiRead), true),
+            (
+                "comms: MailAccountManage",
+                Action::new(Feature::MailAccountManage),
+                true,
+            ),
+            ("comms: MailUse", Action::new(Feature::MailUse), true),
+            // compliance/integrity — ADMIN is DENY today and stays DENY.
+            (
+                "integrity: IntegrityFindingsRead (ADMIN deny today)",
+                Action::new(Feature::IntegrityFindingsRead),
+                false,
+            ),
+            (
+                "integrity: IntegrityFindingTriage (ADMIN deny today)",
+                Action::new(Feature::IntegrityFindingTriage),
+                false,
+            ),
+            // inspection/rest list gates.
+            (
+                "inspection: InspectionScheduleManage",
+                Action::new(Feature::InspectionScheduleManage),
+                true,
+            ),
+            (
+                "inspection: InspectionRoundComplete",
+                Action::new(Feature::InspectionRoundComplete),
+                true,
+            ),
+            // evaluation/rest, leave/rest + benefit/rest Branches arm.
+            (
+                "evaluation: EvaluationRead",
+                Action::new(Feature::EvaluationRead),
+                true,
+            ),
+            (
+                "evaluation: EvaluationManage",
+                Action::new(Feature::EvaluationManage),
+                true,
+            ),
+            (
+                "evaluation: EvaluationSubmit",
+                Action::new(Feature::EvaluationSubmit),
+                true,
+            ),
+            (
+                "leave: EmployeeDirectoryRead",
+                Action::new(Feature::EmployeeDirectoryRead),
+                true,
+            ),
+            (
+                "leave: EmployeeDirectoryManage",
+                Action::new(Feature::EmployeeDirectoryManage),
+                true,
+            ),
+            // app/src/lib.rs authorize_audit_read.
+            (
+                "app: AuditLogRead",
+                Action::new(Feature::AuditLogRead),
+                true,
+            ),
+            // support/rest list gates share Login + WorkOrderReadAll, above.
+        ];
+
+        for (site, action, admin_allowed) in sites {
+            assert_eq!(
+                authorize_capability(&admin, *action).is_ok(),
+                *admin_allowed,
+                "{site}: migrated verdict changed for a branch-scoped ADMIN"
+            );
+            assert_eq!(
+                authorize(&admin, *action, branch).is_ok(),
+                *admin_allowed,
+                "{site}: the pre-migration fabricated-branch call disagrees, so \
+                 this table no longer describes what shipped"
+            );
+        }
     }
 }

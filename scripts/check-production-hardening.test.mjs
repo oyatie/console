@@ -13,6 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   evaluateCnpgContextChecks,
@@ -42,6 +43,42 @@ describe("production authority blocked observation static integration", () => {
         new URL("./check-production-authority-blocked.mjs", import.meta.url),
       ),
     );
+  });
+});
+
+describe("post-pivot production operation HOLD", () => {
+  const guardedOperations = [
+    ["../ops/backup/backup.sh", "compose-production-backup", "compose_args=(-p"],
+    ["../ops/backup/restore-drill.sh", "compose-restore-drill", "compose_args=(-p"],
+    ["../ops/dr/pitr-drill.sh", "compose-pitr-drill", "source_compose_args=(-p"],
+    ["../ops/dr/cnpg-restore-drill.sh", "cnpg-restore-drill", "recovery_cluster="],
+  ];
+
+  it("hard-fails every retained backup/restore entrypoint before substantive setup", () => {
+    for (const [relativePath, operation, firstSubstantiveSetup] of guardedOperations) {
+      const source = readFileSync(new URL(relativePath, import.meta.url), "utf8");
+      const guard = source.indexOf("require-production-operation-authority.sh");
+      assert.notEqual(guard, -1, `${relativePath}: missing shared authority guard`);
+      assert.match(source.slice(guard, guard + 180), new RegExp(operation));
+      assert.ok(
+        guard < source.indexOf(firstSubstantiveSetup),
+        `${relativePath}: authority guard must precede substantive setup`,
+      );
+    }
+  });
+
+  it("the shared guard has no success path on this candidate", () => {
+    const guardUrl = new URL("./require-production-operation-authority.sh", import.meta.url);
+    const source = readFileSync(guardUrl, "utf8");
+    assert.match(source, /production_operation_authority=blocked/);
+    assert.match(source, /exit 78\s*$/);
+
+    const result = spawnSync("bash", [fileURLToPath(guardUrl), "test-operation"], {
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 78);
+    assert.match(result.stderr, /operation=test-operation/);
+    assert.match(result.stderr, /2026-08-03-disk-wipe-consolidation\.md/);
   });
 });
 
@@ -1696,7 +1733,10 @@ exit 0
     join(dir, "deploy/apps/console/overlays/prod/kustomization.yaml"),
     "images: []\n",
   );
-  writeExecutable(
+  // Fresh executable files can be held at macOS provenance policy startup.
+  // Keep command doubles non-executable and outside PATH; BASH_ENV functions
+  // invoke them through /bin/bash and are therefore load-bearing on every host.
+  writeFileSync(
     join(stubDir, "git"),
     `#!/usr/bin/env bash
 set -euo pipefail
@@ -1705,8 +1745,9 @@ if [[ "$1 $2" == "rev-parse --abbrev-ref" ]]; then echo main; exit 0; fi
 if [[ "$1 $2" == "rev-parse HEAD" ]]; then echo ${"a".repeat(40)}; exit 0; fi
 exit 0
 `,
+    "utf8",
   );
-  writeExecutable(
+  writeFileSync(
     join(stubDir, "gh"),
     `#!/usr/bin/env bash
 set -euo pipefail
@@ -1728,30 +1769,38 @@ if [[ "$1 $2" == "run download" ]]; then
 fi
 exit 0
 `,
+    "utf8",
   );
-  writeExecutable(
+  writeFileSync(
     join(stubDir, "curl"),
     `#!/usr/bin/env bash
 set -euo pipefail
 printf '200'
 `,
+    "utf8",
   );
   if (kubectl) {
-    writeExecutable(join(stubDir, "kubectl"), kubectl);
+    writeFileSync(join(stubDir, "kubectl"), kubectl, "utf8");
   }
-  if (hideKubectl) {
-    writeFileSync(
-      bashEnv,
-      `command() {
+  writeFileSync(
+    bashEnv,
+    `git() { /bin/bash "\${CONSOLE_DEPLOY_TEST_STUB_DIR}/git" "$@"; }
+gh() { /bin/bash "\${CONSOLE_DEPLOY_TEST_STUB_DIR}/gh" "$@"; }
+curl() { /bin/bash "\${CONSOLE_DEPLOY_TEST_STUB_DIR}/curl" "$@"; }
+${kubectl ? 'kubectl() { /bin/bash "${CONSOLE_DEPLOY_TEST_STUB_DIR}/kubectl" "$@"; }' : ""}
+${
+  hideKubectl
+    ? `command() {
   if [[ "\${1:-}" == "-v" && "\${2:-}" == "kubectl" ]]; then
     return 1
   fi
   builtin command "$@"
+}`
+    : ""
 }
 `,
-      "utf8",
-    );
-  }
+    "utf8",
+  );
 
   const result = spawnSync(
     "bash",
@@ -1760,9 +1809,10 @@ printf '200'
       cwd: dir,
       env: {
         ...process.env,
-        PATH: `${stubDir}:/usr/bin:/bin`,
+        PATH: "/usr/bin:/bin",
         HOME: dir,
-        ...(hideKubectl ? { BASH_ENV: bashEnv } : {}),
+        BASH_ENV: bashEnv,
+        CONSOLE_DEPLOY_TEST_STUB_DIR: stubDir,
       },
       encoding: "utf8",
       timeout: 10_000,
@@ -1771,10 +1821,19 @@ printf '200'
   return { ...result, combined: `${result.stdout}\n${result.stderr}` };
 }
 
+function assertDeployHarnessCompleted(result) {
+  assert.equal(
+    result.error,
+    undefined,
+    `deploy test harness did not complete: ${result.error?.message ?? "unknown spawn error"}\n${result.combined}`,
+  );
+}
+
 describe("deploy.sh rollout verification fail-closed behavior", () => {
   it("fails instead of claiming deployment success when kubectl is missing", () => {
     const result = runDeployWithStubs({ hideKubectl: true });
 
+    assertDeployHarnessCompleted(result);
     assert.notEqual(result.status, 0, result.combined);
     assert.match(result.combined, /kubectl/i);
     assert.doesNotMatch(result.combined, /deployed and verified/);
@@ -1789,6 +1848,7 @@ exit 0
 `,
     });
 
+    assertDeployHarnessCompleted(result);
     assert.notEqual(result.status, 0, result.combined);
     assert.match(result.combined, /cluster|kubectl/i);
     assert.doesNotMatch(result.combined, /deployed and verified/);
@@ -1798,6 +1858,7 @@ exit 0
     for (const flag of ["--digest-bump-only", "--bump-only"]) {
       const result = runDeployWithStubs({ deployArgs: [flag, "b".repeat(40)] });
 
+      assertDeployHarnessCompleted(result);
       assert.equal(result.status, 0, `${flag}: ${result.combined}`);
       assert.match(result.combined, /desired prod digests updated only/);
       assert.match(
@@ -1834,6 +1895,7 @@ exit 0
     const result = runDeployWithStubs({ authority, kubectl });
     const calls = existsSync(logPath) ? readFileSync(logPath, "utf8") : "";
     rmSync(logPath, { force: true });
+    assertDeployHarnessCompleted(result);
     assert.notEqual(result.status, 0, result.combined);
     assert.match(result.combined, /advanced before Argo refresh/);
     assert.doesNotMatch(calls, /argocd\.argoproj\.io\/refresh=hard/);

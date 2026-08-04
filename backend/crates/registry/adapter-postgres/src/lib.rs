@@ -254,6 +254,7 @@ impl PgRegistryStore {
     ) -> Result<CreatedSite, PgRegistryError> {
         let customer_id = command.customer_id;
         let customer_uuid = *customer_id.as_uuid();
+        let branch_scope = command.branch_scope;
         let name = command.name;
         let actor = command.actor;
         let trace = command.trace;
@@ -285,6 +286,10 @@ impl PgRegistryStore {
                 .fetch_optional(tx.as_mut())
                 .await?
                 .ok_or_else(|| KernelError::not_found("customer was not found"))?;
+                let branch_id = BranchId::from_uuid(branch_uuid);
+                if !branch_scope.allows(branch_id) {
+                    return Err(KernelError::not_found("customer was not found").into());
+                }
 
                 let existing: Option<uuid::Uuid> = sqlx::query_scalar(
                     "SELECT id FROM registry_sites WHERE branch_id = $1 AND customer_id = $2 AND name = $3",
@@ -330,7 +335,6 @@ impl PgRegistryStore {
                 .fetch_one(tx.as_mut())
                 .await?;
 
-                let branch_id = BranchId::from_uuid(branch_uuid);
                 let site = CreatedSite {
                     id: SiteId::from_uuid(id),
                     customer_id,

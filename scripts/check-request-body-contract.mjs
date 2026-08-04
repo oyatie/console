@@ -156,7 +156,7 @@ function jsonRequestSchema(document, path, method) {
 }
 
 /**
- * @param {{ repoRoot: string, openApiPath?: string }} options
+ * @param {{ repoRoot: string }} options
  * @returns {{
  *   resolved: number,
  *   skipped: number,
@@ -164,8 +164,8 @@ function jsonRequestSchema(document, path, method) {
  *   unresolvedAnchors: string[],
  * }}
  */
-export function evaluateRequestBodyContract({ repoRoot, openApiPath = "backend/openapi/openapi.yaml" }) {
-  const document = yaml.load(readFileSync(join(repoRoot, openApiPath), "utf8"));
+export function evaluateRequestBodyContract({ repoRoot }) {
+  const document = yaml.load(readFileSync(join(repoRoot, "backend/openapi/openapi.yaml"), "utf8"));
   const { consts, structs, handlers, routes } = collectSources(repoRoot);
   const findings = [];
   const resolvedOperations = new Set();
@@ -183,8 +183,16 @@ export function evaluateRequestBodyContract({ repoRoot, openApiPath = "backend/o
       continue;
     }
     // `AssignBody` exists in two crates; the handler's own file decides which one it binds.
+    // When the handler's file does NOT declare it, the bare name must be UNIQUE repo-wide or the
+    // operation is undecidable. Taking the first same-named struct was a false green of exactly
+    // the class this gate exists to catch: `AssignBody` and `ListQuery` each have two definitions
+    // with divergent `rename_all`, so the arbitrary pick compares a real request body against an
+    // unrelated struct, counts the operation toward `resolved` and the anchors, and prints no
+    // finding for a body that 422s every conformant caller. Undecidable now lands in `skipped`,
+    // where the floor and the named anchors are watching.
+    const candidates = [...structs.values()].filter((candidate) => candidate.name === bodyType);
     const struct = structs.get(`${route.file}::${bodyType}`)
-      ?? [...structs.values()].find((candidate) => candidate.name === bodyType);
+      ?? (candidates.length === 1 ? candidates[0] : undefined);
     if (!struct || !struct.denyUnknown) {
       skipped += 1;
       continue;
@@ -206,10 +214,15 @@ export function evaluateRequestBodyContract({ repoRoot, openApiPath = "backend/o
     for (const field of struct.fields) {
       if (field.type.startsWith("Option<") || field.hasDefault) continue;
       if (specRequired.has(wireName(field))) continue;
-      // When the struct's own rust name is itself a spec property, the loop above already
-      // reported that the spec publishes this field under a name the struct rejects. The absent
-      // `required[]` entry is the same defect seen from the other side, not a second one.
-      if (schema.properties[field.name] !== undefined) continue;
+      // Suppresses one genuine double-report and nothing else. When the wire name DIFFERS from
+      // the rust name and the spec publishes the rust name, the loop above already reported that
+      // the spec names a field the struct rejects; the absent `required[]` entry is that same
+      // defect from the other side. The `wireName !== name` condition is load-bearing: when the
+      // two are equal — every field of a struct with no `rename_all`, and every single-word field
+      // under any rule — the loop above reported NOTHING, so an unconditional skip here disarmed
+      // this entire direction for those fields. A handler-required field the spec published as
+      // optional went unreported, and omitting it is a deserialization failure, not a default.
+      if (wireName(field) !== field.name && schema.properties[field.name] !== undefined) continue;
       findings.push({
         operation,
         message: `${struct.name}.${field.name} is required by the handler but not in spec required[]`,
@@ -232,11 +245,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const anchor of unresolvedAnchors) {
     console.error(`anchor operation ${anchor} no longer resolves — the resolver has silently degraded`);
   }
-  if (resolved < RESOLVED_FLOOR) {
+  const belowFloor = resolved < RESOLVED_FLOOR;
+  if (belowFloor) {
     console.error(`resolved ${resolved} operations, below the floor of ${RESOLVED_FLOOR} — `
       + "the resolver compared less of the surface than it was built to compare");
   }
-  if (findings.length > 0 || unresolvedAnchors.length > 0 || resolved < RESOLVED_FLOOR) {
+  if (findings.length > 0 || unresolvedAnchors.length > 0 || belowFloor) {
     console.error(`request body contract gate FAILED: ${findings.length} finding(s), `
       + `resolved ${resolved}, skipped ${skipped}`);
     process.exit(1);

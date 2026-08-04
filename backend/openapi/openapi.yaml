@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Maintenance FSM Backend API
+  title: Console API
   version: 0.1.0
 paths:
   /healthz:
@@ -706,7 +706,8 @@ paths:
       summary: Per-tenant operational dashboard rollup
       description: 'Point-in-time operational rollup for the authenticated tenant: work-order funnel counts by stage, aging
         work orders, P1 SLA risk, mechanic utilization, equipment-status distribution, active substitutions, pending approvals,
-        and open support tickets. Authorized for SUPER_ADMIN / ADMIN; every read is org-scoped under RLS.'
+        and open support tickets. The current unfiltered tenant-wide view requires org-wide authority (SUPER_ADMIN for built-in
+        roles); every read is org-scoped under RLS. Branch-scoped ADMIN principals are denied until the query itself is branch-filtered.'
       security:
       - bearerAuth: []
       responses:
@@ -1640,8 +1641,9 @@ paths:
         - equipment
       operationId: importEquipmentMasterList
       summary: Import the 지게차 master-list workbook into a fresh registry
-      description: Admin-gated (MasterListImport) multipart upload of the K&L master-list .xlsx. Upserts equipment by equipment
-        number and returns a created/updated/error summary.
+      description: Org-wide-authority-gated (SUPER_ADMIN for built-in roles; MasterListImport) multipart upload of the K&L
+        master-list .xlsx. The importer writes the tenant HQ master and therefore denies branch-scoped ADMIN principals. Upserts
+        equipment by equipment number and returns a created/updated/error summary.
       security:
       - bearerAuth: []
       requestBody:
@@ -2123,8 +2125,17 @@ paths:
                   $ref: '#/components/schemas/Uuid'
                 branch_id:
                   $ref: '#/components/schemas/Uuid'
+                  description: >-
+                    Optional consistency assertion only. It must match the
+                    durable branch derived from the named absence alert, the
+                    employee home branch, or the latest attendance fact. It
+                    never assigns or overrides authorization; a mismatch is 404.
                 absence_alert_id:
                   $ref: '#/components/schemas/Uuid'
+                  description: >-
+                    Optional durable absence signal. When supplied, it must
+                    exist for this exact employee or the request is 404; its
+                    stored branch takes precedence in branch authorization.
                 effective_exit_date:
                   type: string
                 site_manager_note:
@@ -4856,8 +4867,9 @@ paths:
         - sites
       operationId: createSite
       summary: Create a site (현장) under an existing customer
-      description: Admin-gated (EquipmentManage). Creates a site under a customer in the caller's org; the customer must belong
-        to the caller's org or the request is a 404 (RLS hides another tenant's customer). The name is required and bounded;
+      description: Admin-gated (EquipmentManage). Creates a site under a customer in the caller's authorized branch scope;
+        organization-wide callers may use any customer in their organization. A customer outside that scope is a 404, including
+        another tenant's customer hidden by RLS. The name is required and bounded;
         optional address / WGS84 coordinates / contact fields follow the same ranges and length bounds as PATCH /api/v1/sites/{id}
         (a one-sided coordinate or an over-long value is a 422). A duplicate site name under the same customer is a 409. The
         created site is returned so it appears in the 고객·현장 list immediately.

@@ -1,5 +1,11 @@
 # Live GitOps changes
 
+> **POST-PIVOT UNVERIFIED / HOLD:** The topology and sync claims below are a
+> historical change ledger, not proof that Argo CD currently reconciles this
+> repository or that merging mutates a live environment. The repository
+> currently authorizes zero production mutations. Start with the
+> [disk-wipe consolidation handoff](../../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 ArgoCD syncs `deploy/apps/console/overlays/prod` from `main` with `targetRevision: main`.
 A change to any live input therefore takes effect **the instant it merges** — there is no
 separate deploy step to catch it, and no environment between the merge and production.

@@ -12,6 +12,8 @@ import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mj
 import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
+const SHA256 = /^[0-9a-f]{64}$/;
+const TAG_REF = /^refs\/tags\/[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const BUCK_TARGET = /^\/\/([A-Za-z0-9_./-]+):([A-Za-z0-9_.-]+)$/;
 const STATES = new Set(['DECLARED', 'PLANNED', 'IMPLEMENTED', 'VERIFIED', 'EXPOSED', 'HOLD']);
 const VERDICTS = new Set(['MEET', 'EXCEED', 'HOLD']);
@@ -22,6 +24,9 @@ function stable(value) { if (Array.isArray(value)) return value.map(stable); if 
 function ledgerDigest(value) { return createHash('sha256').update(JSON.stringify(stable(value))).digest('hex'); }
 const RESOURCE_KEYS = ['writer', 'postgres', 'browser', 'ios', 'graph', 'cas'];
 const ROUTE_CLAIM_FIELDS = ['source_mounted', 'production_exposed', 'registry_body_present', 'nav_declared'];
+const CONTINUATION_STATE_FIELDS = ['design_contract', 'backend', 'frontend', 'e2e', 'runtime', 'independent_review', 'production_exposure'];
+const HISTORICAL_CONTINUATION_FIELDS = ['historical_worktree', 'historical_branch', 'historical_lane_assignments', 'historical_state', 'historical_reset_state'];
+const CONTINUATION_SNAPSHOT_SHA256 = '65edb195ff699e4afc6d67b7f953deddaf6ea0ec83f251c27e05273c7214fbe4';
 const AUTHORITY_CONTROL_PATHS = new Set([
   'docs/program/console-capability-registry.json',
   'docs/program/console-jurisdiction-register.json',
@@ -33,6 +38,11 @@ function array(value) { return Array.isArray(value) ? value : []; }
 function object(value, label) { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(`${label} must be an object`); return value; }
 function nonempty(value, label) { if (typeof value !== 'string' || value.trim() === '') fail(`${label} must be a non-empty string`); return value; }
 function sha(value, label) { if (!SHA.test(value ?? '')) fail(`${label} must be a full lowercase Git SHA`); return value; }
+function tagRef(value, label) {
+  nonempty(value, label);
+  if (!TAG_REF.test(value) || value.includes('..') || value.includes('//') || value.includes('@{') || value.endsWith('/') || value.endsWith('.lock')) fail(`${label} must be a canonical refs/tags/ name`);
+  return value;
+}
 function uniqueStrings(values, label) { const seen = new Set(); for (const value of values) { nonempty(value, label); if (seen.has(value)) fail(`duplicate ${label}: ${value}`); seen.add(value); } return seen; }
 
 function canonicalReceiptPath(capabilityId, candidateSha) { return `docs/evidence/console/reviews/${capabilityId}/${candidateSha}.json`; }
@@ -233,22 +243,59 @@ function verifyImmutableReviewReceipt(repoRoot, reviewer, cap, candidate, outcom
   const attestation = Object.freeze({}); immutableReceiptAttestations.add(attestation); return attestation;
 }
 
-export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = {}) {
+export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha = () => true, resolveRef = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = {}) {
   object(registry, 'registry'); object(jurisdiction, 'jurisdiction register');
   if (registry.schema_version !== 'console-capability-registry-v2') fail('unsupported console capability registry schema');
   if (jurisdiction.schema_version !== 'console-jurisdiction-register-v2') fail('unsupported console jurisdiction register schema');
+  const governingLifecycle = object(jurisdiction.governing_lifecycle, 'governing lifecycle');
+  if (governingLifecycle.status !== 'HOLD_UNAVAILABLE'
+    || governingLifecycle.path !== null
+    || governingLifecycle.mutation_policy !== 'not_an_active_dependency'
+    || !SHA256.test(governingLifecycle.last_known_sha256 ?? '')) {
+    fail('governing lifecycle must remain a pathless HOLD_UNAVAILABLE provenance record');
+  }
+  nonempty(governingLifecycle.reason, 'governing lifecycle unavailable reason');
+  const continuationReset = object(registry.continuation_reset, 'continuation reset');
+  if (continuationReset.as_of !== '2026-08-03'
+    || continuationReset.status !== 'HOLD'
+    || continuationReset.worktree_dependency !== 'none'
+    || continuationReset.branch_dependency !== 'none'
+    || continuationReset.lane_dispatch !== 'disabled') {
+    fail('continuation reset must keep every pre-wipe worktree, branch, and lane on HOLD');
+  }
+  const historicalFields = array(continuationReset.historical_fields);
+  if (historicalFields.length !== HISTORICAL_CONTINUATION_FIELDS.length
+    || HISTORICAL_CONTINUATION_FIELDS.some((field, index) => historicalFields[index] !== field)) {
+    fail('continuation reset historical field declaration is invalid');
+  }
+  if (continuationReset.historical_snapshot_sha256 !== CONTINUATION_SNAPSHOT_SHA256) {
+    fail('continuation reset historical snapshot digest is not the pinned reset snapshot');
+  }
+  nonempty(continuationReset.reason, 'continuation reset reason');
+  nonempty(continuationReset.historical_snapshot_scope, 'continuation reset historical snapshot scope');
   // The candidate SHA arrives from OUTSIDE these documents and is the only source: CI derives it
   // from git parentage (`ci.yml` "Derive exact console C/T/M train") and the planner takes
   // `--candidate`. The registers used to store a copy and this function compared the two, which
   // is a value checked against a copy of itself — the file was written from the same git fact.
   const candidate = { sha: sha(expectedCandidateSha, 'candidate sha') };
   if (!resolveSha(candidate.sha)) fail('candidate SHA is unresolvable');
-  for (const key of ['authority_base_sha', 'historical_implementation_freeze_sha']) {
-    sha(registry.provenance?.[key], key);
-    if (!resolveSha(registry.provenance[key])) fail(`${key} SHA is unresolvable`);
+  const provenanceDocuments = [
+    ['registry', object(registry.provenance, 'registry provenance')],
+    ['jurisdiction', object(jurisdiction.provenance, 'jurisdiction provenance')],
+  ];
+  for (const [document, provenance] of provenanceDocuments) {
+    for (const key of ['authority_base_sha', 'historical_implementation_freeze_sha']) {
+      const value = sha(provenance[key], `${document} ${key}`);
+      if (!resolveSha(value)) fail(`${document} ${key} SHA is unresolvable`);
+      const refKey = key.replace(/_sha$/, '_ref');
+      const ref = tagRef(provenance[refKey], `${document} ${refKey}`);
+      if (!resolveRef(ref, value)) fail(`${document} ${refKey} does not resolve to ${key}`);
+    }
+    if (provenance.authority_base_sha === candidate.sha) fail(`${document} authority base SHA must remain distinct from exact candidate`);
+    if (provenance.historical_implementation_freeze_sha === candidate.sha) fail(`${document} historical implementation freeze must remain distinct from exact candidate`);
   }
-  if (registry.provenance.authority_base_sha === candidate.sha) fail('authority base SHA must remain distinct from exact candidate');
-  if (registry.provenance.historical_implementation_freeze_sha === candidate.sha) fail('historical implementation freeze must remain distinct from exact candidate');
+  if (registry.provenance.historical_implementation_freeze_sha !== jurisdiction.provenance.historical_implementation_freeze_sha
+    || registry.provenance.historical_implementation_freeze_ref !== jurisdiction.provenance.historical_implementation_freeze_ref) fail('registry and jurisdiction historical implementation freeze provenance must match');
   if (registry.design_reference?.sha256?.length !== 64) fail('missing Claude Design digest');
   if (typeof registry.build_reference?.buck2_release_pin !== 'string' || typeof registry.build_reference?.buck2_embedded_binary_version !== 'string') fail('missing separate Buck2 release pin and embedded binary version');
   const omni = object(registry.shared_omni_platform_gate, 'shared omni-platform gate');
@@ -261,6 +308,24 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   for (const cap of registry.capabilities) {
     object(cap, 'capability'); nonempty(cap.id, 'capability id');
     if (ids.has(cap.id)) fail(`duplicate capability id: ${cap.id}`); ids.add(cap.id);
+    for (const field of HISTORICAL_CONTINUATION_FIELDS) {
+      if (!Object.hasOwn(cap, field)) fail(`${cap.id} is missing historical continuation field ${field}`);
+    }
+    if (cap.historical_worktree !== null) nonempty(cap.historical_worktree, `${cap.id} historical worktree`);
+    if (cap.historical_branch !== null) nonempty(cap.historical_branch, `${cap.id} historical branch`);
+    if (cap.historical_lane_assignments !== null) object(cap.historical_lane_assignments, `${cap.id} historical lane assignments`);
+    for (const field of ['historical_state', 'historical_reset_state']) {
+      const historicalState = object(cap[field], `${cap.id} ${field}`);
+      for (const stateField of CONTINUATION_STATE_FIELDS) nonempty(historicalState[stateField], `${cap.id} ${field} ${stateField}`);
+    }
+    if (cap.worktree !== null || cap.branch !== null || cap.lane_assignments !== null) {
+      fail(`${cap.id} current continuation assignment must be null while reset is HOLD`);
+    }
+    const currentState = object(cap.state, `${cap.id} current continuation state`);
+    if (Object.keys(currentState).length !== CONTINUATION_STATE_FIELDS.length
+      || CONTINUATION_STATE_FIELDS.some((field) => currentState[field] !== 'HOLD')) {
+      fail(`${cap.id} current continuation state must contain only HOLD values`);
+    }
     const truth = object(cap.truth, `${cap.id} truth`);
     for (const key of ['declared', 'implementation', 'verification', 'exposure']) {
       if (!STATES.has(truth[key])) fail(`${cap.id} invalid truth state ${key}`);
@@ -343,6 +408,17 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     for (const key of RESOURCE_KEYS) if (!Number.isInteger(cap.resource_requirements[key]) || cap.resource_requirements[key] < 0) fail(`${cap.id} invalid resource ${key}`);
     if (!array(cap.jurisdiction_bindings).length) fail(`${cap.id} missing jurisdiction bindings`);
   }
+  const continuationSnapshot = registry.capabilities.map((cap) => ({
+    id: cap.id,
+    historical_worktree: cap.historical_worktree,
+    historical_branch: cap.historical_branch,
+    historical_lane_assignments: cap.historical_lane_assignments,
+    historical_state: cap.historical_state,
+    historical_reset_state: cap.historical_reset_state,
+  }));
+  if (ledgerDigest(continuationSnapshot) !== CONTINUATION_SNAPSHOT_SHA256) {
+    fail('historical continuation fields differ from the pinned reset snapshot');
+  }
   for (const cap of registry.capabilities) for (const edge of array(cap.dependency_edges)) if (!ids.has(edge.target)) fail(`${cap.id} has dangling dependency target ${edge.target}`);
   for (let i = 0; i < privateRoots.length; i++) for (let j = i + 1; j < privateRoots.length; j++) {
     const [aId, a] = privateRoots[i], [bId, b] = privateRoots[j];
@@ -398,7 +474,8 @@ function main() {
   const candidateSource = createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha);
   const resolveBuckTarget = createConsoleBuckTargetResolver(candidateSource);
   const resolveSha = (value) => { try { execFileSync('git', ['cat-file', '-e', `${value}^{commit}`], { cwd: root, stdio: 'ignore' }); return true; } catch { return false; } };
+  const resolveRef = (ref, expectedSha) => { try { return execFileSync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() === expectedSha; } catch { return false; } };
   const routeFacts = extractConsoleRouteFactsFromCandidate(candidateSource);
-  console.log(JSON.stringify(validateConsoleTruthLedger(registry, jurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveSource: candidateSource.resolveSource, resolveBuckTarget, routeFacts, repoRoot: root }), null, 2));
+  console.log(JSON.stringify(validateConsoleTruthLedger(registry, jurisdiction, { expectedCandidateSha: candidateSha, resolveSha, resolveRef, resolveSource: candidateSource.resolveSource, resolveBuckTarget, routeFacts, repoRoot: root }), null, 2));
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

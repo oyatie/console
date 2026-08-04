@@ -26,13 +26,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+      - name: Install checksum-pinned Trivy before candidate checkout
+        run: |
+          archive="${RUNNER_TEMP}/trivy_0.71.1_Linux-64bit.tar.gz"
+          install_dir="${RUNNER_TEMP}/trivy-install"
+          curl --disable --fail --silent --show-error --location \
+            "https://github.com/aquasecurity/trivy/releases/download/v0.71.1/trivy_0.71.1_Linux-64bit.tar.gz" \
+            --output "$archive"
+          printf '%s  %s\n' '3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d' "$archive" | sha256sum --check
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir" trivy
+          sudo install -m 0755 "$install_dir/trivy" /usr/local/bin/trivy
+          /usr/local/bin/trivy --version
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: ./.github/actions/setup-trivy
+      - name: Trivy exception policy regression
+        run: node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs
       - name: Verify canonical Trivy exception projection
         run: node scripts/generate-trivy-dev-codegen-exceptions.mjs --check
       - name: Trivy filesystem scan (vuln + secret, dev/codegen exceptions only)
         run: |
-          trivy fs --scanners vuln,secret --ignore-unfixed \
+          /usr/local/bin/trivy fs --scanners vuln,secret --ignore-unfixed \
             --ignorefile security/trivy-dev-codegen-exceptions.yaml \
             --severity HIGH,CRITICAL --exit-code 1 .
 
@@ -41,8 +57,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Install checksum-pinned Trivy before candidate checkout
+        run: |
+          archive="${RUNNER_TEMP}/trivy_0.71.1_Linux-64bit.tar.gz"
+          install_dir="${RUNNER_TEMP}/trivy-install"
+          curl --disable --fail --silent --show-error --location \
+            "https://github.com/aquasecurity/trivy/releases/download/v0.71.1/trivy_0.71.1_Linux-64bit.tar.gz" \
+            --output "$archive"
+          printf '%s  %s\n' '3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d' "$archive" | sha256sum --check
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir" trivy
+          sudo install -m 0755 "$install_dir/trivy" /usr/local/bin/trivy
+          /usr/local/bin/trivy --version
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: ./.github/actions/setup-trivy
       - name: Install kubectl (for kustomize renderer)
         env:
           KUBECTL_VERSION: "v1.36.2"
@@ -53,40 +80,44 @@ jobs:
           sudo install -m 0755 kubectl /usr/local/bin/kubectl
           kubectl version --client=true
       - name: Trivy config scan (Dockerfiles + k8s manifests)
-        run: trivy config --severity HIGH,CRITICAL --exit-code 1 .
+        run: /usr/local/bin/trivy config --severity HIGH,CRITICAL --exit-code 1 .
       - name: Render and scan production manifests
         run: |
           scripts/render-k8s-manifests.sh "${RUNNER_TEMP}/rendered-k8s"
           npm run check:production-hardening
-          trivy config --severity HIGH,CRITICAL --exit-code 1 "${RUNNER_TEMP}/rendered-k8s"
+          /usr/local/bin/trivy config --severity HIGH,CRITICAL --exit-code 1 "${RUNNER_TEMP}/rendered-k8s"
 
   rust-advisories:
     name: cargo audit (RUSTSEC)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Install cargo-audit before candidate checkout
+        run: cargo install cargo-audit --locked --version 0.22.2 --root "${RUNNER_TEMP}/cargo-security-tools"
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - name: Install cargo-audit
-        run: cargo install cargo-audit --locked --version 0.22.2
       - name: Run cargo audit
         working-directory: backend
         # RUSTSEC-2023-0071 (rsa Marvin) is accepted with the exploitability
         # rationale in backend/deny.toml; keep cargo-audit aligned with the
         # cargo-deny advisory policy so newly introduced RUSTSEC findings still
         # fail this job.
-        run: cargo audit --ignore RUSTSEC-2023-0071
+        run: |
+          printf '%s\n' 'running cargo audit through the directly installed cargo-audit binary'
+          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071
 
   rust-supply-chain:
     name: cargo deny (licenses + sources + advisories)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       # Pinned version for reproducibility (mirrors the cargo-audit gate; the
       # policy + accepted-advisory rationale live in backend/deny.toml).
-      - name: Install cargo-deny
-        run: cargo install cargo-deny --locked --version 0.19.9
-      - run: cargo deny --manifest-path backend/Cargo.toml check
+      - name: Install cargo-deny before candidate checkout
+        run: cargo install cargo-deny --locked --version 0.19.9 --root "${RUNNER_TEMP}/cargo-security-tools"
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - run: |
+          printf '%s\n' 'running cargo deny through the directly installed cargo-deny binary'
+          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-deny" --manifest-path backend/Cargo.toml check
 
   node-advisories:
     name: npm audit
@@ -98,7 +129,11 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
+      - name: Security workflow hardening regression
+        run: node --test scripts/check-workflow-hardening.test.mjs
+      - name: Node audit exception policy regression
+        run: node --test scripts/check-node-audit-exceptions.test.mjs
       - name: Production dependency audit (no exceptions)
         run: |
           report="$(mktemp)"

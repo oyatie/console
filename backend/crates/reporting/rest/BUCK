@@ -33,3 +33,30 @@ rust_library(
         "//third-party/rust:uuid",
     ],
 )
+
+rust_test(
+    name = "console-reporting-rest-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/reporting/rest", glob(["src/**/*.rs"])),
+    crate = "console_reporting_rest",
+    edition = "2024",
+    crate_root = "backend/crates/reporting/rest/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/reporting/rest"},
+    labels = ["owner.backend.crates.reporting.rest", "domain.reporting", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres",
+        "//backend/crates/reporting/application:console-reporting-application",
+        "//backend/crates/reporting/domain:console-reporting-domain",
+        "//third-party/rust:axum",
+        "//third-party/rust:http",
+        "//third-party/rust:serde",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:time",
+        "//third-party/rust:uuid",
+    ],
+)

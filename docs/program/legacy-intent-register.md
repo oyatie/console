@@ -1,3 +1,5 @@
+> **HISTORICAL after the 2026-07-28 pivot.** This document preserves evidence and prior reasoning only. It cannot authorize Buck2, broad product scope, fan-out, or implementation work. Current authority is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md) and the post-pivot program index.
+
 # Legacy Intent Register — distilled intentions for Phase D reimagination
 
 > **Purpose.** Phase D of the console program does **not** port the legacy frontend. It distills the

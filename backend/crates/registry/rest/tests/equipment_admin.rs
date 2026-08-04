@@ -35,7 +35,7 @@ fn master_list_path() -> PathBuf {
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-        let harness = Harness::new(&pool, "ADMIN").await;
+        let harness = Harness::new(&pool, "SUPER_ADMIN").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
         let body = multipart_xlsx(&bytes);
 
@@ -67,6 +67,38 @@ async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
         .await
         .unwrap();
         assert_eq!(audited, 1);
+    })
+    .await;
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn branch_scoped_admin_cannot_run_tenant_wide_master_import(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let harness = Harness::new(&pool, "ADMIN").await;
+        let bytes = std::fs::read(master_list_path()).unwrap();
+        let body = multipart_xlsx(&bytes);
+
+        let (status, _) = harness
+            .send(
+                "POST",
+                "/api/v1/equipment/import",
+                Some((format!("multipart/form-data; boundary={BOUNDARY}"), body)),
+            )
+            .await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+
+        let equipment: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM registry_equipment")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let audits: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM audit_events WHERE action = 'registry.import'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(equipment, 0);
+        assert_eq!(audits, 0);
     })
     .await;
 }
@@ -644,6 +676,43 @@ async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
             )
             .await;
         assert_eq!(status, StatusCode::NOT_FOUND);
+    })
+    .await;
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn create_site_under_another_branchs_customer_is_not_found(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let branch_b_admin = Harness::new(&pool, "ADMIN").await;
+        let (status, customer) = branch_b_admin
+            .send(
+                "POST",
+                "/api/v1/customers",
+                Some(json_body(&json!({ "name": "타지점고객" }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED, "{customer:?}");
+
+        let branch_a_admin = Harness::new(&pool, "ADMIN").await;
+        assert_ne!(branch_a_admin.branch, branch_b_admin.branch);
+        let (status, _) = branch_a_admin
+            .send(
+                "POST",
+                "/api/v1/sites",
+                Some(json_body(&json!({
+                    "customer_id": customer["id"],
+                    "name": "타지점침범현장"
+                }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+
+        let sites: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM registry_sites WHERE name = $1")
+            .bind("타지점침범현장")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(sites, 0);
     })
     .await;
 }

@@ -1,5 +1,11 @@
 # OpenTofu — OCI guest infrastructure for the FSM cluster
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This is retained infrastructure reference,
+> not evidence of a live OCI topology or authority to plan/apply against an
+> account. The repository currently authorizes zero production mutations. Start
+> with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 Declarative OCI infra (ap-chuncheon-1): VCN + hardened security list + public
 subnet, object-storage buckets (DB backups, evidence, and evidence replica), a
 managed OCI Bastion, the Talos node, and an Oracle Linux helper used to flash

@@ -1,3 +1,9 @@
+> **SUPERSEDED PRE-PIVOT SPEC:** This is a frozen record for the deleted React,
+> generated-client, field-approval, and E2E surfaces. It is not current product
+> scope, a runnable command guide, or implementation authority. Do not modernize
+> individual commands and mistake the result for an active spec. Current authority
+> is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md).
+
 # Spec: Issue #55 federated Approval Command Center slice
 
 ## Objective

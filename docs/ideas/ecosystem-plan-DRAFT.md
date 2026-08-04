@@ -2494,12 +2494,10 @@ all of which must exist and be reviewed before fanout opens**:
 | `docs/specs/ecosystem-PORTING.md` | the **mechanical rule set**, no prose: which tier a new entity takes and why; relationships MUST ride a property `config.link` (§0.12); a published type MUST have a policy attached (§0.13); every consequential mutation is an Action carrying `authorizing_grant_id`; `milli` fixed-point for quantities; `object_types` vs `ont_object_types` (§0.7); migrations start at 0207 | `PORTING.md` |
 | `docs/specs/ecosystem-LANES.tsv` | **one row per lane**: crates, owned paths, **migration slot block from 0207**, and the widenings it may take — with W11-W13 in it, since those three are independent (below) | the reservation half of `PORTING.md` |
 
-**The lane table instantiates an existing mechanism; it is not a new one.** `docs/program/LANE-PROTOCOL.md` `single global sequence, highest`
-already says migrations are *"single global sequence, highest `0204`. Blocks assigned per lane in the Phase-0
-commit; take the number immediately before push"*. **That quoted high-water is stale — 0205 landed and 0206
-is in flight in lane-1, so blocks are assigned from 0207** (Phase 7 carries the correction rung). This table
-is that Phase-0 commit's artifact. Two facts
-make it the binding constraint rather than a convenience:
+**The lane table is historical planning input, not a migration reservation mechanism.** The current
+`docs/program/LANE-PROTOCOL.md` says `Migration numbers are assigned immediately before landing, never reserved on stale branches.`
+Any surviving lane must therefore take the next free number during integration; the old 0207+ blocks in this
+draft carry no authority. Two facts made the table useful as planning input rather than a binding constraint:
 
 - **Nine 0207+ slots are already claimed** against an unallocated serial resource — D2/T5 ≤2, T2 1, D3 2,
   N3 1, N5 1, N1 1, T10 1 — before any lane opens.
@@ -2659,11 +2657,12 @@ Single long-lived consolidation branch, **one PR, no incremental merges**. A per
 gives CI on every push, because `.github/workflows/ci.yml` `  pull_request:` has **no `branches:`
 filter** while `ci.yml` `  push:` covers only `main` and tags.
 
-**Two caveats I verified, and both bite this plan specifically:**
+**Two caveats verified when this plan was frozen; the first is now closed:**
 
-- `pull_request:` carries a **`paths:` filter** (`ci.yml` `      - "backend/**"`) that does **not** include `docs/ideas/**`. So a
-  docs-only commit gets **no checks at all** — and *no checks* looks identical to *passing checks* in the
-  UI. Silence is not success.
+- `pull_request:` formerly carried a **`paths:` filter** that excluded `docs/ideas/**`. That false-green
+  surface is now closed: `ci.yml` `  pull_request:` is unfiltered, and
+  `check-ci-preflight.test.mjs` `forbids push and pull-request path filters so every required context is created`.
+  A docs-only commit now creates the required contexts; silence is still not success.
 - `concurrency` sets `ci.yml` `cancel-in-progress: ${{ github.event_name == 'pull_request' }}` for PRs. On a branch taking many commits, most
   intermediate runs are **cancelled, not verified**. Verify at rung boundaries deliberately rather than
   assuming per-commit CI.
@@ -2682,9 +2681,9 @@ LANE-PROTOCOL §4:72-78 ranks ownership mechanisms: **① NOT SHARED → ② PRE
 | — | *(moved to Phase 0)* The **D3 write-path enumeration** is a Phase-0 artifact, not Phase-7 prepwork — `capacity_recorded_on_every_authority_mutation` reads it, and a probe cannot precede its own input. **The exclusion set has TWO entries**, each bound to a (file, function) pair; see D3 in §5.11 |
 | — | **CI wiring per TEST** (not per crate — see Phase 4), targeting the CI that **exists** (buck2 live, X8 ANSWERED) not the one `docs/PIVOT-2026-07-28.md` §6 describes |
 | **①** | Everything else — the new tables, the definer, the capacity columns, each in files no other lane owns |
-| **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` — *"the one true bottleneck"* (`docs/program/LANE-PROTOCOL.md` `③ SERIALISED — the real lock`), **inherited, not introduced**. 0204 made installs additive and version-keyed, so lanes can ship disjoint catalog versions; until that fully lands, serialise it |
-| — | **Correction rung: `docs/program/CATALOG.md` `identity only; employment is a separate object, not a field` lists a type set that never shipped.** It names OrgUnit / Position / Person / Employment / PayRun; the shipped set is company / org_unit / job_position / employment / pay_run — **`Person` never landed**. Correct it to the shipped names, or the next plan budgets against a catalog that does not exist |
-| — | **Correction rung: `docs/program/LANE-PROTOCOL.md` is stale in three places, and one of them would be "fixed" wrongly.** (a) Its status header reads *"Status: **prep artifact, not yet exercised.** Fan-out is not authorized until §4 passes."* — stale against `docs/program/console-program-ledger.md` `the fan-out is green, and the rules that let it nearly not be` and `console-program-ledger.md` `The company-conformance suite is green.`. §8 must cite the **corrected** header where it opens fanout, not the stale one. (b) Its migration high-water `docs/program/LANE-PROTOCOL.md` `single global sequence, highest` still reads **`0204`**: **0205 landed, 0206 is in flight in lane-1, so reserve from 0207.** (c) `docs/program/LANE-PROTOCOL.md` `still unconfigured and worth fixing` says *"this repo has **no `.cargo/config.toml` and no `[profile]` section**"*. Correct **only** the second half — `[profile]` landed (`backend/Cargo.toml` `[profile.dev]` and `backend/Cargo.toml` `[profile.test]`) and sccache is wired via the subprocess environment with a measured **0% → 35.4%** (`docs/program/console-program-ledger.md` `had never executed once`). **Keep "no `.cargo/config.toml`", and record WHY it must stay absent:** the ledger states the file *"would apply in CI where no runner has sccache and **every Rust job would fail**"*. Without that reason recorded, a later lane reads the line as a TODO and breaks every Rust job |
+| **③** | `backend/crates/ontology/adapter-postgres/src/seed.rs` `BUILTIN_CATALOG_VERSION` remains an inherited serialized face. The current lane contract states `Migrations, lockfiles, OpenAPI, CI, authority records, generated files, and integration manifests have one serialized owner`; catalog seed changes use that same single-owner rule. |
+| — | **Reconciled catalog:** `docs/program/CATALOG.md` `projects existing employee truth` now describes Person as a projection of existing employee truth, alongside Company, OrgUnit, JobPosition, Employment, and PayRun. Future plans must use those canonical names and writer boundaries. |
+| — | **Reconciled lane protocol:** `docs/program/LANE-PROTOCOL.md` now has `Status: active preparation and integration contract.` It forbids fan-out until its preparation gate passes, assigns migration numbers only at landing, and serializes shared faces. The former high-water and local sccache observations remain historical evidence rather than current lane authority. |
 
 **Build-system governance is unresolved and this plan must not assume either side — but the status quo is
 healthy, so there is no forced migration.** `docs/PIVOT-2026-07-28.md` §6 decides *"Build system: cargo, not

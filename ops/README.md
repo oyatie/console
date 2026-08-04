@@ -1,5 +1,12 @@
 # Operations
 
+> **POST-PIVOT UNVERIFIED / HOLD:** Production topology and operating claims in
+> this directory are retained as historical/operator reference and are not
+> evidence of a live environment or authority to mutate one. Local development
+> instructions remain local-only. The repository currently authorizes zero
+> production mutations. Start with the
+> [disk-wipe consolidation handoff](../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 This directory contains the Docker Compose production stack for the MNT FSM backend.
 
 ## Local Verification

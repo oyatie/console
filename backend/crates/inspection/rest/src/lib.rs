@@ -13,11 +13,10 @@ use console_inspection_application::{
 };
 use console_inspection_domain::{InspectionCycle, InspectionRoundOutcome};
 use console_kernel_core::{
-    BranchId, BranchScope, EquipmentId, ErrorKind, InspectionScheduleId, KernelError, TraceContext,
-    UserId,
+    BranchId, EquipmentId, ErrorKind, InspectionScheduleId, KernelError, TraceContext, UserId,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_capability};
 use console_platform_db::DbError;
 use serde::{Deserialize, Serialize};
 use time::macros::format_description;
@@ -155,12 +154,12 @@ async fn list_schedules(
     Query(query): Query<ListSchedulesRequest>,
 ) -> Result<impl IntoResponse, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    authorize(
-        &principal,
-        Action::new(Feature::InspectionScheduleManage),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    // LIST gate: the page spans the caller's whole `branch_scope`, which
+    // `list_due_schedules` filters on below, so there is no single resource
+    // branch. The row-level sites (`create_schedule` / `complete_round`) pass the
+    // real `regular_inspection_schedules.branch_id` and are unchanged.
+    authorize_capability(&principal, Action::new(Feature::InspectionScheduleManage))
+        .map_err(RestError::from_kernel)?;
     let offset = query.offset.unwrap_or(0);
     if offset < 0 {
         return Err(RestError::from_kernel(KernelError::validation(
@@ -187,12 +186,8 @@ async fn list_my_schedules(
     Query(query): Query<ListSchedulesRequest>,
 ) -> Result<impl IntoResponse, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    authorize(
-        &principal,
-        Action::new(Feature::InspectionRoundComplete),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_capability(&principal, Action::new(Feature::InspectionRoundComplete))
+        .map_err(RestError::from_kernel)?;
     let offset = query.offset.unwrap_or(0);
     if offset < 0 {
         return Err(RestError::from_kernel(KernelError::validation(
@@ -254,17 +249,6 @@ async fn complete_round(
 fn parse_date(raw: &str) -> Result<Date, RestError> {
     let format = format_description!("[year]-[month]-[day]");
     Date::parse(raw, &format).map_err(|_| RestError::bad_request("date must use YYYY-MM-DD"))
-}
-
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for inspection access",
-            ))
-        }),
-    }
 }
 
 async fn principal_from_headers(

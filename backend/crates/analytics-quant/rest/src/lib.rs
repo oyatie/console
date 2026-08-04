@@ -13,9 +13,9 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Json, Router};
 use console_analytics_quant_service::{ProjectionRequest, ProjectionResult, SeriesKind, project};
-use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
+use console_kernel_core::{ErrorKind, KernelError};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -68,30 +68,12 @@ async fn post_projection(
     Extension(principal): Extension<Principal>,
     Json(body): Json<ProjectionBody>,
 ) -> Result<Json<ProjectionResult>, RestError> {
-    authorize(
-        &principal,
-        Action::new(Feature::KpiRead),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_capability(&principal, Action::new(Feature::KpiRead))
+        .map_err(RestError::from_kernel)?;
 
     let result =
         project(&body.into_domain()).map_err(|err| RestError::bad_request(err.to_string()))?;
     Ok(Json(result))
-}
-
-/// Pick a branch to authorize against. The projection reads no branch-scoped
-/// data, so any branch in the caller's scope suffices; org-wide callers get a
-/// fresh id (RLS is not in play for this stateless compute).
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for analytics access",
-            ))
-        }),
-    }
 }
 
 #[derive(Debug)]

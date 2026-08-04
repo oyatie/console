@@ -1,3 +1,10 @@
+> **SUPERSEDED PRE-PIVOT SPEC:** This frozen record describes the former
+> conglomerate/FSM/ERP/comms/frontend program and its deleted toolchain. It must
+> not dispatch work, define current scope, or be used as a runnable command guide.
+> Current scope is only Ontology/Foundry/Policy → Company/OrgUnit/Employee → HR →
+> Payroll under
+> [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md).
+
 # Spec: Conglomerate Operations Platform — the entire business as software, in one place
 (anchor entity: KNL; first delivered vertical: forklift FSM)
 

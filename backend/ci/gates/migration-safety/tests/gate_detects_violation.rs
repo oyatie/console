@@ -96,6 +96,106 @@ ALTER TABLE work_orders DROP COLUMN status;
 }
 
 #[test]
+fn gate_rejects_drop_column_on_only_audited_table() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("drop-column-only")?;
+    write_file(
+        &ws.join("crates/platform/db/migrations/0001_bad.sql"),
+        "ALTER TABLE ONLY audit_events DROP COLUMN payload;\n",
+    )?;
+
+    let result = check_migrations_root(&ws);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::DropAuditedColumn),
+        "expected DropAuditedColumn, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_rejects_drop_column_on_schema_qualified_audited_table()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("drop-column-qualified")?;
+    write_file(
+        &ws.join("crates/platform/db/migrations/0001_bad.sql"),
+        "ALTER TABLE IF EXISTS public.audit_events DROP COLUMN payload;\n",
+    )?;
+
+    let result = check_migrations_root(&ws);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::DropAuditedColumn),
+        "expected DropAuditedColumn, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_rejects_drop_column_with_only_and_quoted_keyword_schema()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("drop-column-qualified-quoted")?;
+    write_file(
+        &ws.join("crates/platform/db/migrations/0001_bad.sql"),
+        "ALTER TABLE IF EXISTS ONLY \"owner\".\"audit_events\" DROP COLUMN payload;\n",
+    )?;
+
+    let result = check_migrations_root(&ws);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::DropAuditedColumn),
+        "expected DropAuditedColumn, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_rejects_drop_column_after_another_alter_action() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("drop-column-after-add")?;
+    write_file(
+        &ws.join("crates/platform/db/migrations/0001_bad.sql"),
+        "ALTER TABLE public.audit_events ADD COLUMN note text, DROP COLUMN payload;\n",
+    )?;
+
+    let result = check_migrations_root(&ws);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::DropAuditedColumn),
+        "expected DropAuditedColumn, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_drop_column_on_schema_qualified_non_audited_table()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("drop-column-qualified-safe")?;
+    write_file(
+        &ws.join("crates/platform/db/migrations/0001_safe.sql"),
+        "ALTER TABLE ONLY scratch.transient_rows DROP COLUMN payload;\n",
+    )?;
+
+    let result = check_migrations_root(&ws);
+    assert!(
+        result.passed(),
+        "unexpected violations: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
 fn gate_rejects_update_or_delete_grants_on_audit_events() -> Result<(), Box<dyn std::error::Error>>
 {
     let ws = temp_workspace("grant")?;

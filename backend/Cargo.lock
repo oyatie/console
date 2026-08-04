@@ -1704,6 +1704,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-gate-fabricated-branch"
+version = "0.1.0"
+
+[[package]]
 name = "console-gate-iac-tier"
 version = "0.1.0"
 
@@ -1717,6 +1721,10 @@ dependencies = [
 
 [[package]]
 name = "console-gate-migration-safety"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-personal-data-classification"
 version = "0.1.0"
 
 [[package]]

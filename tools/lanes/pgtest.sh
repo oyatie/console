@@ -6,6 +6,13 @@
 # Postgres down with it. The trap removes the container on every exit path.
 set -euo pipefail
 repo_root="${1:?repo root}"; shift
+
+# Refuse a command line that already carries a database credential. The guard is
+# its own file so scripts/check-test-credentials.mjs can exec it directly and
+# prove it in both directions -- this harness therefore has no bypass at all.
+# shellcheck source=no-credential-in-argv.sh
+source "$(dirname "${BASH_SOURCE[0]}")/no-credential-in-argv.sh" "$@"
+
 image="postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
 name="console-conformance-$$"
 db="console_conformance_$$"
