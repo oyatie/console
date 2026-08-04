@@ -1,19 +1,36 @@
 # Console
 
-Console is a Rust platform for a governed company object engine: **Ontology / Foundry / Policy → Company / OrgUnit / Employee → HR → Payroll**. This is the current product boundary; ERP, finance, communications, compliance products, ingest/evidence, office editing, AI judgment, and unrelated verticals are out of scope.
+Console is a Rust platform for a governed company object engine: **Ontology / Foundry / Policy → Company / OrgUnit / Employee → HR → Payroll**. This is the repository's sole onboarding entry point.
+
+## Current authority
+
+1. [`docs/current/PRODUCT.md`](docs/current/PRODUCT.md) — current product scope, architecture, invariants, and holds.
+2. [`docs/current/ROADMAP.md`](docs/current/ROADMAP.md) — ordered current work and explicit HOLDs.
+3. [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md) — review, CI, merge, verification, and issue-lifecycle policy.
+
+## Records and history
+
+Accepted records in [`docs/decisions/`](docs/decisions/) preserve decision history. Machine-readable registers and path-stable ledgers remain under [`docs/program/`](docs/program/). Evidence and historical documents may support a claim, but they do not override the three active authorities recorded separately from this sole entry point in [`docs/documentation-index.json`](docs/documentation-index.json).
 
 ## Repository map
-- `backend/` — Rust workspace, ontology, authorization, HR/payroll substrate, REST application, migrations.
-- `docs/PIVOT-2026-07-28.md` — canonical product and repository truth.
-- `docs/decisions/` — accepted decisions plus explicit amendment, supersession, and current-reconciliation history.
-- `docs/program/` — current delivery method and machine-readable registers; historical records are labelled.
-- `scripts/` — executable CI/preflight and verification gates.
 
-## Supported local checks
-From `backend/`: `cargo fmt --all --check`, `cargo check --workspace`, and targeted `cargo test` for changed crates. Run repository gate scripts named by the applicable CI workflow. Record the exact command, revision, toolchain, and test counts in the lane receipt.
+- `backend/` — Rust workspace, application, domain/platform crates, migrations, and backend gates.
+- `docs/current/` — the three current product/delivery authorities.
+- `docs/decisions/` — governed ADR and design-note history.
+- `docs/program/` — machine-readable registers, authority ledgers, and historical program material.
+- `docs/evidence/` — immutable evidence excluded from normal onboarding.
+- `scripts/` — executable CI, preflight, and verification gates.
 
-## Authority
-Precedence is Pivot, accepted ADRs consistent with it, current roadmap/pipeline, machine-readable registers, exact candidate evidence, then historical plans and runtime state. See `AGENTS.md` and `docs/program/agentic-engineering-playbook.md`.
+## Supported verification entrypoint
+
+From the repository root, run:
+
+```sh
+npm ci
+npm run verify
+```
+
+`npm ci` installs the pinned repository tooling; `npm run verify` is the one supported local repository verification entrypoint. Run narrower tests while developing and any additional checks required by the touched surface, then record the exact candidate SHA, commands, environment, discovered/executed counts, failures, and remaining HOLDs as described in [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md).
 
 <!-- SHARED:REASONING-LENSES:START -->
 ## Reasoning lens manifest

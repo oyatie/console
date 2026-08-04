@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import yaml from "js-yaml";
 
 import {
   REQUIRED_SECURITY_CONTEXTS,
@@ -33,6 +34,14 @@ function rejected(source, label) {
   );
 }
 
+function removeJob(source, job) {
+  const start = source.indexOf(`  ${job}:\n`);
+  assert.notEqual(start, -1, `fixture is missing job ${job}`);
+  const next = source.slice(start + 1).search(/^  [A-Za-z0-9_-]+:/m);
+  const end = next < 0 ? source.length : start + 1 + next;
+  return source.slice(0, start) + source.slice(end);
+}
+
 test("accepts the live five-context security proof plan", () => {
   const result = evaluateSecurityWorkflowHardening(workflow);
   assert.deepEqual(result.failures, []);
@@ -47,6 +56,91 @@ test("accepts the live five-context security proof plan", () => {
       "node-advisories",
     ],
   );
+});
+
+test("locks Required / Security to the exact five existing security proofs", () => {
+  const requiredDependencies = [
+    "filesystem",
+    "iac",
+    "rust-advisories",
+    "rust-supply-chain",
+    "node-advisories",
+  ];
+  const model = yaml.load(workflow);
+  assert.equal(Object.keys(model.jobs).length, 6);
+  assert.equal(model.jobs["required-security"].name, "Required / Security");
+  assert.deepEqual(model.jobs["required-security"].needs, requiredDependencies);
+  assert.equal(model.jobs["required-security"]["timeout-minutes"], 5);
+
+  const mutations = [
+    [
+      "aggregator deletion",
+      removeJob(workflow, "required-security"),
+    ],
+    ["leaf job deletion", removeJob(workflow, "node-advisories")],
+    ["leaf job rename", replaceOnce(workflow, "  filesystem:\n", "  filesystem-renamed:\n")],
+    [
+      "extra job",
+      replaceOnce(
+        workflow,
+        "  required-security:\n",
+        "  candidate-shim:\n    runs-on: ubuntu-latest\n    steps: []\n\n  required-security:\n",
+      ),
+    ],
+    ["context rename", replaceOnce(workflow, "name: Required / Security", "name: Required Security")],
+    ["always weakening", replaceOnce(workflow, "    if: ${{ always() }}", "    if: ${{ success() }}")],
+    ["dependency deletion", replaceOnce(workflow, "      - node-advisories\n", "")],
+    [
+      "dependency injection",
+      replaceOnce(workflow, "      - node-advisories\n", "      - node-advisories\n      - candidate-shim\n"),
+    ],
+    [
+      "result deletion",
+      replaceOnce(workflow, '          test "${{ needs.filesystem.result }}" = success &&\n', ""),
+    ],
+    [
+      "skipped accepted",
+      replaceOnce(
+        workflow,
+        '          test "${{ needs.filesystem.result }}" = success',
+        '          test "${{ needs.filesystem.result }}" != failure',
+      ),
+    ],
+    [
+      "cancelled accepted",
+      replaceOnce(
+        workflow,
+        '          test "${{ needs.iac.result }}" = success',
+        '          test "${{ needs.iac.result }}" != cancelled',
+      ),
+    ],
+    [
+      "failure accepted",
+      replaceOnce(
+        workflow,
+        '          test "${{ needs.node-advisories.result }}" = success',
+        '          test "${{ needs.node-advisories.result }}" != skipped',
+      ),
+    ],
+    [
+      "checkout injection",
+      replaceOnce(
+        workflow,
+        "    steps:\n      - name: Require every security proof to succeed\n",
+        "    steps:\n      - uses: actions/checkout@v7\n      - name: Require every security proof to succeed\n",
+      ),
+    ],
+    [
+      "soft failure",
+      replaceOnce(
+        workflow,
+        "      - name: Require every security proof to succeed\n",
+        "      - name: Require every security proof to succeed\n        continue-on-error: true\n",
+      ),
+    ],
+  ];
+
+  for (const [label, mutated] of mutations) rejected(mutated, label);
 });
 
 test("locks pull-request admission and the read-only workflow envelope", () => {

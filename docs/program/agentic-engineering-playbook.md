@@ -1,6 +1,8 @@
 # Agentic engineering playbook
 
-This playbook is subordinate to the pivot, accepted ADRs, roadmap, and development pipeline. It describes repeatable delivery, not product authority.
+> **HISTORICAL METHOD / NON-AUTHORITY:** Current delivery authority lives in [`../current/DELIVERY.md`](../current/DELIVERY.md). The detailed practices below remain reusable reference where consistent with current authority, but they cannot dispatch work, clear a HOLD, or close an issue.
+
+This historical playbook describes reusable delivery practices only where they remain consistent with the current documents.
 
 ## Prepare before parallelism
 

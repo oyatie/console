@@ -193,6 +193,96 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
+  it("locks Required / CI to the exact ten existing CI proofs", () => {
+    const requiredDependencies = [
+      "preflight",
+      "domain-unit",
+      "postgres-domain-reachability",
+      "company-conformance",
+      "generated-face-authority",
+      "backend",
+      "dev-up-smoke",
+      "repo-gates",
+      "api-contract",
+      "kubernetes-manifests",
+    ];
+    const model = yaml.load(workflow);
+    assert.equal(Object.keys(model.jobs).length, 11);
+    assert.equal(model.jobs["required-ci"].name, "Required / CI");
+    assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
+    assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
+
+    const mutations = [
+      ["aggregator deletion", replaceJob(workflow, "required-ci", () => "")],
+      ["leaf job deletion", replaceJob(workflow, "kubernetes-manifests", () => "")],
+      ["leaf job rename", workflow.replace("  preflight:\n", "  preflight-renamed:\n")],
+      [
+        "extra job",
+        workflow.replace(
+          "  required-ci:\n",
+          "  candidate-shim:\n    runs-on: ubuntu-latest\n    steps: []\n\n  required-ci:\n",
+        ),
+      ],
+      ["context rename", workflow.replace("    name: Required / CI", "    name: Required CI")],
+      ["always weakening", workflow.replace("    if: ${{ always() }}", "    if: ${{ success() }}")],
+      [
+        "dependency deletion",
+        workflow.replace("      - kubernetes-manifests\n", ""),
+      ],
+      [
+        "dependency injection",
+        workflow.replace("      - kubernetes-manifests\n", "      - kubernetes-manifests\n      - candidate-shim\n"),
+      ],
+      [
+        "result deletion",
+        workflow.replace('          test "${{ needs.preflight.result }}" = success &&\n', ""),
+      ],
+      [
+        "skipped accepted",
+        workflow.replace(
+          '          test "${{ needs.preflight.result }}" = success',
+          '          test "${{ needs.preflight.result }}" != failure',
+        ),
+      ],
+      [
+        "cancelled accepted",
+        workflow.replace(
+          '          test "${{ needs.domain-unit.result }}" = success',
+          '          test "${{ needs.domain-unit.result }}" != cancelled',
+        ),
+      ],
+      [
+        "failure accepted",
+        workflow.replace(
+          '          test "${{ needs.backend.result }}" = success',
+          '          test "${{ needs.backend.result }}" != skipped',
+        ),
+      ],
+      [
+        "checkout injection",
+        workflow.replace(
+          "    steps:\n      - name: Require every CI proof to succeed\n",
+          "    steps:\n      - uses: actions/checkout@v7\n      - name: Require every CI proof to succeed\n",
+        ),
+      ],
+      [
+        "soft failure",
+        workflow.replace(
+          "      - name: Require every CI proof to succeed\n",
+          "      - name: Require every CI proof to succeed\n        continue-on-error: true\n",
+        ),
+      ],
+    ];
+
+    for (const [label, mutated] of mutations) {
+      assert.notEqual(mutated, workflow, `${label} fixture drifted`);
+      assert.ok(
+        evaluateCiPreflight(mutated).failures.length > 0,
+        `${label} unexpectedly passed the CI preflight contract`,
+      );
+    }
+  });
+
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
       preflight: 24,
@@ -205,6 +295,7 @@ describe("CI preflight contract", () => {
       "generated-face-authority": 4,
       "company-conformance": 2,
       "postgres-domain-reachability": 2,
+      "required-ci": 1,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -225,7 +316,9 @@ describe("CI preflight contract", () => {
           const mutated = mutateNamedStep(workflow, job, step.name, mutate);
           const { failures } = evaluateCiPreflight(mutated);
           assert.ok(
-            failures.some((failure) => failure.startsWith(`${job} `) && failure.includes("run step")),
+            failures.some((failure) => job === "required-ci"
+              ? failure.includes("Required / CI")
+              : failure.startsWith(`${job} `) && failure.includes("run step")),
             `${job} :: ${step.name} accepted ${bypass}:\n${failures.join("\n")}`,
           );
           mutationCount += 1;
@@ -233,8 +326,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 95, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 285, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 96, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 288, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

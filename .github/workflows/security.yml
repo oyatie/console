@@ -144,3 +144,23 @@ jobs:
           report="$(mktemp)"
           if npm audit --audit-level=high --json > "$report"; then true; else true; fi
           node scripts/check-node-audit-exceptions.mjs --mode dev-codegen --audit-report "$report"
+
+  required-security:
+    name: Required / Security
+    needs:
+      - filesystem
+      - iac
+      - rust-advisories
+      - rust-supply-chain
+      - node-advisories
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every security proof to succeed
+        run: |
+          test "${{ needs.filesystem.result }}" = success &&
+            test "${{ needs.iac.result }}" = success &&
+            test "${{ needs.rust-advisories.result }}" = success &&
+            test "${{ needs.rust-supply-chain.result }}" = success &&
+            test "${{ needs.node-advisories.result }}" = success

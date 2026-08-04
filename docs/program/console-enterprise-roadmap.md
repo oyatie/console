@@ -1,6 +1,8 @@
 # Post-pivot Console roadmap
 
-Status: current program authority. Subordinate to the pivot and accepted consistent ADRs.
+> **HISTORICAL / NON-AUTHORITY:** Current ordered work and HOLDs live in [`../current/ROADMAP.md`](../current/ROADMAP.md). The roadmap below is retained in place as history and cannot dispatch work or close an issue.
+
+Status: historical roadmap retained for path stability; non-authority.
 
 ## Wave 0 — truth and delivery substrate
 

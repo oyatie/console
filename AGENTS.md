@@ -1,13 +1,13 @@
 # Repository invariants
 
-- `docs/PIVOT-2026-07-28.md` is product authority; accepted ADRs must be consistent with it. Proposed or conflicting plans are HOLD, not permission to expand scope.
+- `README.md` is the sole entry point. Current product, roadmap, and delivery authority lives only in `docs/current/PRODUCT.md`, `docs/current/ROADMAP.md`, and `docs/current/DELIVERY.md`; proposed or conflicting plans are HOLD, not permission to expand scope.
 - Keep one writer per root. Declare ownership, exact base SHA, immutable target, and mechanical guide before fan-out; serialize migrations, lockfiles, generated files, OpenAPI, CI, and authority records.
 - Never use destructive shared-workspace Git operations or overwrite another lane's work. Preserve historical evidence.
 - Do not skip, delete, quarantine, or weaken tests without an approved receipt and independent review. Record exact invocations and discovered/executed counts.
 - Keep facts, inferences, hypotheses, and legal conclusions distinct. Production exposure and legal/compliance claims require separate authority and evidence.
 - Every lane records pre-mortem, blast radius, detection, rollback, stop conditions, review identities, head SHA, and remaining HOLDs.
 
-Detailed method: `docs/program/agentic-engineering-playbook.md`.
+Detailed current method: `docs/current/DELIVERY.md`. The program playbook is retained as historical method and reusable reference only.
 
 <!-- SHARED:REASONING-LENSES:START -->
 ## Task-selected reasoning lenses

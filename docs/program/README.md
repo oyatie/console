@@ -1,17 +1,15 @@
-# Console program
+# Console program records
 
-The program is limited to **Ontology/Foundry/Policy → Company/OrgUnit/Employee → HR → Payroll** and is subordinate to [`../PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md).
+This path-stable directory contains machine-readable registers, authority ledgers, and historical program material. It is subordinate to the active authorities reached from [`../../README.md`](../../README.md): [`PRODUCT`](../current/PRODUCT.md), [`ROADMAP`](../current/ROADMAP.md), and [`DELIVERY`](../current/DELIVERY.md).
 
-## Current authority
+## Path-stable registers and ledgers
 
-- `console-enterprise-roadmap.md` — ordered implementation waves and hard holds.
-- `console-development-pipeline.md` — exact-SHA integration, verification, and rollout contract.
-- `agentic-engineering-playbook.md` — detailed preparation, lane, review, and retrospective method.
-- `LANE-PROTOCOL.md` — bounded writer and serialized integration rules.
 - `console-capability-registry.json` and `console-jurisdiction-register.json` — machine-readable declarations; they cannot independently establish implementation, exposure, or compliance.
+- `console-program-ledger.md` and `ledger/` — preserved program and authority-history records.
+- `LANE-PROTOCOL.md` — path-stable bounded-writer and integration rules where current DELIVERY delegates to them.
 
-## Preparation material (not authority)
+## Historical program material
 
-- `CATALOG.md` — provisional object-expansion notes. Its Company/HR projection contracts remain HOLD and it cannot dispatch implementation work.
+Roadmaps, pipelines, playbooks, catalogs, benchmark matrices, module plans, Buck2 scale guidance, and pre-pivot design material in this directory are historical or reusable reference unless a current authority explicitly delegates to a machine-readable contract. They cannot dispatch work, clear a HOLD, close an issue, or override the current documents.
 
-`console-program-ledger.md`, benchmark matrices, broad module plans, Buck2 scale guidance, and pre-pivot design material are historical evidence where they conflict with current authority. Runtime state and handoffs never replace repository authority.
+Runtime state, local worktrees, branches, chats, and handoffs never replace repository authority or exact-candidate evidence.

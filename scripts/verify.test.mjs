@@ -5,6 +5,9 @@ import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import yaml from "js-yaml";
+
+import * as verifyModule from "./verify.mjs";
 
 import {
   assertJobsDeclared,
@@ -38,6 +41,25 @@ test("a new CI step that nobody classified fails the guard", () => {
 test("every CI job is declared mirrored or explicitly not mirrored", () => {
   const jobs = assertJobsDeclared();
   assert.ok(jobs.length > 0, "expected CI jobs");
+});
+
+test("Required / CI is orchestration-only while every leaf proof remains classified", () => {
+  assert.equal(typeof verifyModule.jobMirrorDisposition, "function");
+  assert.equal(
+    verifyModule.jobMirrorDisposition("required-ci"),
+    "terminal status aggregate; its exact needs/result contract is enforced by check-ci-preflight",
+  );
+
+  const workflow = yaml.load(
+    readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"),
+  );
+  for (const dependency of workflow.jobs["required-ci"].needs) {
+    const disposition = verifyModule.jobMirrorDisposition(dependency);
+    assert.ok(
+      disposition === true || (typeof disposition === "string" && disposition.length > 0),
+      `${dependency} must remain mirrored or carry an explicit non-mirror rationale`,
+    );
+  }
 });
 
 test("a whole new CI job that nobody declared fails the guard", () => {

@@ -1,27 +1,9 @@
-# HANDOFF — Post-pivot Console
+# HANDOFF — volatile restart pointer
 
-## Start here
+Start at [`README.md`](README.md), then read [`PRODUCT`](docs/current/PRODUCT.md), [`ROADMAP`](docs/current/ROADMAP.md), and [`DELIVERY`](docs/current/DELIVERY.md). This file is a short restart pointer, not product, roadmap, or delivery authority.
 
-The canonical restart record is
-[`docs/handoffs/2026-08-03-disk-wipe-consolidation.md`](docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
-It records the useful local work preserved before the disk wipe, rejected lanes,
-ignored/Ultragoal artifacts, secret-recovery boundary, and exact fresh-clone
-entrypoint. No old worktree or local branch is a continuation dependency.
+The latest preserved recovery context is [`docs/handoffs/2026-08-03-disk-wipe-consolidation.md`](docs/handoffs/2026-08-03-disk-wipe-consolidation.md). Product code does not depend on an old worktree or local branch. Custody, recovery, restricted-input, and secret-handling obligations remain recorded in that historical handoff and must not be discarded.
 
-## Authority and program
+In a fresh clone of the latest `origin/main`, follow the root README and then read the tracked [execution handoff](.omx/plans/reasoning-lens-contract-execution-handoff.json). The four tracked OMX continuity artifacts are Git-custodied even though new `.omx/` runtime output is ignored; retired ignored runtime bytes must not be restored as authority.
 
-- Canonical product authority: [`docs/PIVOT-2026-07-28.md`](docs/PIVOT-2026-07-28.md).
-- Current program: [`docs/program/README.md`](docs/program/README.md).
-- Delivery method: [`docs/program/agentic-engineering-playbook.md`](docs/program/agentic-engineering-playbook.md).
-- `main` is the sole integration branch; start from the latest `origin/main`.
-- Machine-readable program state remains under `docs/program/`; the preserved
-  planning execution status record is
-  [`.omx/plans/reasoning-lens-contract-execution-handoff.json`](.omx/plans/reasoning-lens-contract-execution-handoff.json).
-
-## Holds
-
-No live production, DNS, TLS, secret, exposure, payment, credential-reset, or
-compliance-claim action is authorized. The OCI Ampere A1 must never be destroyed,
-terminated, resized, or reprovisioned. Korea compliance remains `HOLD` pending
-qualified authority. Historical handoffs, branches, chats, and transient OMX/OMC
-state are context only.
+`main` remains the integration branch. Product and delivery HOLDs are recorded in the three current authorities. The linked handoff supplies custody evidence and itemized disposition state only; it cannot clear or weaken a current HOLD.

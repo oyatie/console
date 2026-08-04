@@ -1,4 +1,4 @@
-> **POST-PIVOT STATUS:** This inventory/checklist documents currently present and historical machinery; it does not authorize broad product scope, release, or production readiness. Current scope and authority come from [`docs/PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+> **EXECUTABLE-CONTRACT INVENTORY / NON-AUTHORITY:** This path-stable inventory documents currently present and historical machinery; its exact headings and lists remain machine checked. It does not authorize product scope, roadmap order, issue closure, release, or production readiness. Current authority begins at [`README.md`](../README.md) and the three documents under [`docs/current/`](current/).
 
 # CI Gates
 
@@ -15,15 +15,30 @@ production. Do not treat a lightweight local loop as full CI confidence: a
 change is not "done" until the relevant local gates, review evidence, and CI
 jobs for the touched surfaces are green.
 
-### Branch-protection context migration prerequisite
+### Stable required-context migration
 
-The workflow now publishes the truthful contexts `API contract — text-only
-contract checks`, `Domain crates — unit tests`, and `dev-up.mjs smoke — compose
-deps + migrate + /readyz`. Before a pull request using these names can merge,
-the repository owner must atomically replace the stale required context `API
-contract — app-served OpenAPI`, add the exact Domain and dev-up contexts, and
-read the protection rule back. Until that external migration is verified, these
-jobs are CI evidence but this document does not claim they are merge-gating.
+At release `0.3.2`, branch protection requires the ten CI leaf contexts, five
+Security leaf contexts, and `authenticate-console-authority` as sixteen exact,
+GitHub-Actions-app-bound checks. The leaf proofs remain required while the
+workflows introduce the shadow contexts `Required / CI` and
+`Required / Security`.
+
+`Required / CI` is a same-workflow strict-success aggregate over the exact ten CI
+jobs. `Required / Security` applies the same rule to the exact five Security
+jobs. Both run under `always()` and fail when any dependency fails, is cancelled,
+or is skipped. Their dependency and result sets are mutation-tested and locked by
+the repository preflight gates. Neither aggregate checks out repository content
+or executes repository scripts; each runs only its locked status comparison.
+
+The protected-target authority job remains a separate required boundary. Do not
+combine it with candidate-controlled CI/Security workflows or duplicate an
+aggregate display name across workflows. Only after both aggregates pass on the
+exact pull-request train and its post-merge `main` commit may branch protection
+be atomically migrated to the three stable contexts: `Required / CI`,
+`Required / Security`, and `authenticate-console-authority`. Retain all existing
+leaf requirements until that shadow evidence exists, bind the replacements to
+the GitHub Actions app, preserve strict up-to-date checks, and immediately read
+the live rule back after mutation.
 
 ## Review evidence gate
 

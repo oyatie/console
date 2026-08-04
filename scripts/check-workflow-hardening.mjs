@@ -187,6 +187,30 @@ const REQUIRED_SECURITY_JOBS = Object.freeze({
   },
 });
 
+const REQUIRED_SECURITY_AGGREGATOR = Object.freeze({
+  name: "Required / Security",
+  needs: [
+    "filesystem",
+    "iac",
+    "rust-advisories",
+    "rust-supply-chain",
+    "node-advisories",
+  ],
+  if: "${{ always() }}",
+  "runs-on": "ubuntu-latest",
+  "timeout-minutes": 5,
+  steps: [{
+    name: "Require every security proof to succeed",
+    run: [
+      'test "${{ needs.filesystem.result }}" = success &&',
+      '  test "${{ needs.iac.result }}" = success &&',
+      '  test "${{ needs.rust-advisories.result }}" = success &&',
+      '  test "${{ needs.rust-supply-chain.result }}" = success &&',
+      '  test "${{ needs.node-advisories.result }}" = success',
+    ].join("\n"),
+  }],
+});
+
 export const REQUIRED_SECURITY_CONTEXTS = Object.freeze(
   Object.entries(REQUIRED_SECURITY_JOBS).map(([job, definition]) =>
     Object.freeze({ job, name: definition.name }),
@@ -304,12 +328,22 @@ export function evaluateSecurityWorkflowHardening(workflowText) {
   }
 
   const actualJobIds = Object.keys(jobs).sort();
-  const requiredJobIds = Object.keys(REQUIRED_SECURITY_JOBS).sort();
+  const requiredJobIds = [
+    ...Object.keys(REQUIRED_SECURITY_JOBS),
+    "required-security",
+  ].sort();
   if (JSON.stringify(actualJobIds) !== JSON.stringify(requiredJobIds)) {
     failures.push(
       `security workflow job ids must be exactly ${requiredJobIds.join(", ")} (found ${actualJobIds.join(", ") || "none"})`,
     );
   }
+
+  compareExact(
+    jobs["required-security"],
+    REQUIRED_SECURITY_AGGREGATOR,
+    "security.jobs.required-security",
+    failures,
+  );
 
   const contextNames = new Set();
   for (const { job, name } of REQUIRED_SECURITY_CONTEXTS) {

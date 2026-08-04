@@ -51,12 +51,17 @@ continues.
 
 Then read, in order:
 
-1. `AGENTS.md`
-2. `HANDOFF.md`
-3. this file
-4. `docs/PIVOT-2026-07-28.md`
-5. `docs/program/README.md`
-6. `.omx/plans/reasoning-lens-contract-execution-handoff.json`
+1. `README.md`
+2. `docs/current/PRODUCT.md`
+3. `docs/current/ROADMAP.md`
+4. `docs/current/DELIVERY.md`
+5. `AGENTS.md`
+6. `HANDOFF.md`
+7. this file
+8. `.omx/plans/reasoning-lens-contract-execution-handoff.json`
+
+`docs/PIVOT-2026-07-28.md` and `docs/program/` remain useful history and
+path-stable evidence, not current restart authority.
 
 At candidate-writing time, PR #552 was merged and release `v0.3.1` pointed to
 `435e251edfab12750850d5b1d411528b10a3ed8a`; PR #562 was still the sole open PR.
@@ -292,9 +297,9 @@ Two ignored profiles are derived from the real eight-sheet HR/payroll workbook
 named below. Pattern scanning found masked sensitive previews and no
 high-confidence private key, token, RRN, phone, or email value, but that is not a
 proof that non-sensitive cells are publishable or fully de-identified. Do not
-commit these profiles. Preserve all three inputs together in approved encrypted
-off-device custody and verify a read-back hash, or explicitly approve discarding
-the source and both profiles.
+commit these profiles. Preserve all three inputs together in two approved
+encrypted off-device copies and verify a read-back hash from each, or explicitly
+approve discarding the source and both profiles.
 
 | Restricted local input | Bytes | SHA-256 / observation |
 | --- | ---: | --- |
@@ -320,6 +325,20 @@ and `~/.oci/mnt_api_key.pem`), GitHub CLI/keyring authentication, and any needed
 `~/.kube/config` or `~/.talos/config`. Store them only in an approved encrypted
 secret manager or off-device backup.
 
+The macOS login Keychain and account-recovery boundary is separate from those
+files. Audit-time existence checks found `~/Library/Keychains` (14 files,
+approximately 36 MB), an authenticated GitHub CLI keyring entry,
+`~/.config/gcloud` (approximately 92 MB), `~/.docker` (approximately 179 MB,
+including `config.json`), authenticated Codex/tool stores, `.clawhip`/`.gjc`
+configuration, and Chrome and Safari profiles. File presence is not
+proof that passwords, passkeys, 2FA recovery, browser data, or cloud sessions can
+be restored. Use an Apple-supported encrypted migration/backup path or verify
+iCloud Passwords/Keychain and browser synchronization from another device.
+Otherwise record deliberate loss and re-enrolment, then reauthenticate or revoke
+and reissue GitHub, Google Cloud, Docker, Codex/tool, browser, passkey, and 2FA credentials.
+Do not casually copy raw Keychain database files as a substitute for a supported
+restore.
+
 The entire `~/.config/talos-mnt/**` tree is in the custody boundary: it was
 approximately 189 MB across 76 files and included cluster configs, generated
 machine configuration, SSH/API material, a JWT private key, an OTP, database and
@@ -334,10 +353,10 @@ runbook were present at audit time:
 | `~/.config/talos-mnt/reserve-relaunch.sh` | `a080c689c6b263359b4af03f3c0e1718f15abf1078c18f90d93dd34bc5ea2938` |
 | `~/.config/talos-mnt/deploy.sh` | `9c21c735d4d7d850fee48d2019dcfdf9be8dec5926e32c5096d35d7e8715e112` |
 
-Preserve that directory as one encrypted external bundle if OCI recovery remains
-desired, then read the archive back and record its archive hash outside this
-repository. A matching per-file hash proves custody of only those bytes, not that
-the procedure is current or safe to run. The kubeconfig observed during this consolidation
+Preserve that directory as two encrypted external bundles if OCI recovery
+remains desired, then read both archives back and record their archive hashes
+outside this repository. A matching per-file hash proves custody of only those
+bytes, not that the procedure is current or safe to run. The kubeconfig observed during this consolidation
 points at the shared laptop cluster, not proven OCI production; preserving it
 does not change that authority boundary. After restore, verify `gh auth status`
 and a throwaway signed commit's displayed signer before relying on either.
@@ -376,8 +395,11 @@ whole-disk erase unsafe:
   worktrees. A Git bundle alone would omit the dirty and untracked bytes.
 - `/Users/jasonlee/Developer/TencentDB-Agent-Memory` is at
   `f3df79326dfd763f45199c441e2129d780467949` on `feat/server_team` with its
-  upstream at 0/0, but 28 material subscription-gateway files under `deploy/`
-  and `reports/` are untracked and not remote.
+  upstream at 0/0, but three commits are not reachable from fetched
+  remote-tracking refs, 28 material subscription-gateway files under `deploy/`
+  and `reports/` are untracked, and the ignored 5,044-byte
+  `deploy/global-images/.env` is local-only. Preserve the ignored secret only in
+  encrypted custody or explicitly discard/reissue it; never commit it.
 - `/Users/jasonlee/Developer/asterinas` has 17 commits not reachable from
   remote-tracking refs. Worktree `agent-a0954f296eb65a23d` has six unpublished
   commits at `ac0324984484b377dc0621213058e4ae2558c56d`, five modified source files,
@@ -391,10 +413,10 @@ whole-disk erase unsafe:
   and `aarch64-maturity-parity-matrix.md`
   (`6be28a697631dc9ee5409d81f330c5713a4379bf70fe918a146e0ced667c2903`).
 
-Preserve each repository's refs plus dirty/untracked bytes to encrypted writable
-off-device storage and independently read them back, or make an explicit
-repository-specific discard decision. Do not infer that an upstream at 0/0
-contains the working tree.
+Preserve each repository's refs plus dirty/untracked and classified ignored
+bytes in two encrypted writable off-device copies and independently read them
+back, or make an explicit repository-specific discard decision. Do not infer
+that an upstream at 0/0 contains the working tree.
 
 The ignored `ops/.dev-secrets/jwt-private.pem` and `jwt-public.pem` are local
 development keys generated by the dev bootstrap and should be regenerated, not
@@ -409,12 +431,120 @@ already tracked planning/status files remain tracked. Also discard
 interim Coss approvals superseded by the final `BLOCKED` record and are a
 specific resurrection hazard.
 
+The shared Console Git config also contains a dangling legacy
+`core.hooksPath=/Users/jasonlee/Developer/maintenance/.git/hooks`; that directory
+does not exist and carries no bytes to preserve. Do not recreate the hook path
+after wipe without a reviewed source. The shared `.git/info/exclude` has 14
+local-only tool/runtime rules, including `.omx/`, `AGENTS.md`, `.clawhip/`,
+`.gjc/`, and Claude state. It is non-authoritative and may be discarded only
+after the hidden bytes governed by those rules receive the dispositions above.
+Reconstruct signing from the tracked allowed-signers policy and the externally
+preserved signing identity, not by copying the stale local Git config wholesale.
+
 The repository is self-contained after the merge for active-pivot product
 source, reviewed history, and active planning authority. It is intentionally not
 sufficient for workstation identity, secret recovery, the restricted workbook
 evidence, or an OCI/Talos rebuild: those require the external custody items
 above. The ten retired historical artifacts cannot regain authority merely
 because a later machine happens to recover their bytes.
+
+### 2026-08-04 final pre-wipe readback (newer evidence)
+
+This readback supersedes the earlier point-in-time counts in this handoff where
+they differ. The workstation remains **NO-GO for erase**: no Time Machine target,
+writable external volume, verified iCloud read-back, or visible OCI Vault/Object
+Storage recovery source was demonstrated.
+
+- Console product and planning continuity through release `v0.3.2` is present on
+  `main` at `9497bd6169c2efdfef64d228294264ed1b16bf1a`. The current consolidation
+  candidate, including this newer readback, is not restart-safe until it is
+  reviewed, merged, and read back from `origin/main`. The old dirty Console
+  lanes, stash, and completed ignored Ultragoal/runtime trees were individually
+  reconciled and are not continuation dependencies. Other Console-local custody
+  decisions remain for the ignored root `.env` and the two restricted workbook
+  profiles together with their source workbook.
+- A whole-home read-only inventory found Desktop, Documents, Downloads, Photos,
+  Mail, Messages, Contacts, and Notes surfaces. Several are protected by macOS
+  TCC and could not be enumerated; existence is not a backup or sync proof. No
+  supported whole-home restore, verified device sync, or itemized owner-approved
+  loss was demonstrated.
+- Global agent/session stores are outside Git: `~/.codex` was approximately 175
+  GB logical (about 146 GB under sessions) and `~/.claude` about 3.66 GB. Other
+  repositories also contain ignored OMX/OMC, harness, trace, monitor, and design
+  evidence. Do not preserve those trees wholesale as authority. Curate any
+  unique continuation evidence into the owning repository or an encrypted
+  archive, verify it, and explicitly discard the remainder.
+- `~/.talos` occupies approximately 99 GB because the active Talos cluster is a
+  local QEMU cluster backed by sparse disk images under `~/.talos/clusters/`.
+  Erasing this Mac therefore erases the cluster, not merely its client config.
+- Every bound persistent volume uses the `local-path` storage class with reclaim
+  policy `Delete`: three 5 GiB PostgreSQL volumes, 2 GiB OpenBao data, 20 GiB
+  registry data, 50 GiB NativeLink CAS, and 64 MiB monitor state. No CloudNativePG
+  `Backup` or `ScheduledBackup` object exists.
+- Read-only sizing found the PostgreSQL data directories at roughly 143-207 MiB
+  per replica and the `app` database at about 8 MB; registry data was about
+  4.4 GiB; OpenBao file-backend data was about 316 KiB. CAS and monitor used-size
+  measurement was unavailable. These are sizing observations, not restore proof.
+- OpenBao 2.6.1 is initialized and unsealed but uses single-instance file storage
+  with no HA. Exact recovery requires a supported consistent backup plus the
+  recovery/unseal material; copying Git or Kubernetes manifests is insufficient.
+- The configured OCI principal successfully identified an Object Storage
+  namespace but exposed no Vaults, KMS keys, secrets, or buckets in the queried
+  tenancy compartment. That is an IAM/compartment visibility gap, not proof that
+  no resources exist, and it provides no verified recovery source for Talos,
+  OpenBao, PostgreSQL, or kubeconfig material.
+- A later aggregate repository audit saw Console at 58 registered worktrees, 11
+  dirty worktrees, 169 tracked-file changes, 13 untracked files, and one stash.
+  Those totals include this 28-path candidate plus rejected or superseded lanes
+  already named in the deliberate-discard table; a large count is not evidence
+  that the bytes are useful. The current candidate remains the only Console
+  continuation dependency, but erase must wait for its remote read-back.
+- The same live audit saw Oyatie at 181 worktrees, 48 dirty worktrees, 3,529
+  tracked-file changes, 404 untracked files, two stashes, and 303 commits not
+  reachable from fetched remote-tracking refs. The counts changed while the
+  audit ran, so freeze-and-rerun is mandatory before preservation. TencentDB-
+  Agent-Memory retained three remote-unreachable commits, 28 untracked files,
+  and its ignored `.env`. Asterinas had 26 dirty worktrees, five tracked-file
+  changes, 2,667 untracked files, and 17 remote-unreachable commits. These are
+  point-in-time classification inputs, not proof that a bundle or remote already
+  contains the bytes.
+
+Because the owner states that the cluster is greenfield with no data-retention
+obligation, PostgreSQL contents, registry/CAS/monitor state, OpenBao contents,
+Talos VM disks, and generated client credentials may be deliberately discarded
+and rebuilt **only as an explicit disposition**. That choice requires rotating or
+reissuing every affected secret and identity and accepts loss of exact cluster
+history. It does not make the unpublished repository work, commit-signing key,
+restricted workbook set, personal/business inputs, or account-recovery custody
+implicitly disposable.
+
+### Itemized P0 erase gate
+
+The rows below define “each P0 item.” Do not record secret values here. A
+preservation record must name two independent encrypted off-device destinations,
+an archive or per-file hash manifest read back from each, and a dated recovery
+test. A discard record must name the owner, the exact loss accepted, every
+identity/secret to revoke or reissue, and dated completion evidence.
+
+| P0 item | Owner | Preservation or explicit-discard requirement | Current status |
+| --- | --- | --- | --- |
+| Current Console consolidation candidate and continuity packet | Console release owner | Merge the reviewed exact candidate; read back `origin/main`, required checks, signature/authority evidence, the tracked OMX plan/receipt, and this ledger from a fresh clone. | **PENDING** — the newer candidate is local until merged and read back. |
+| SSH commit-signing identity and pinned trust | Repository/security owner | Preserve the exact private key in two encrypted copies and test a throwaway signature, or first rotate the repository trust policy and verify a replacement signer end to end. Merely generating a new key is not a disposition. | **PENDING** — existence, mode, public fingerprint, and current verification are proven; no external copies or trust rotation are proven. |
+| macOS login Keychain, account recovery, passwords/passkeys, 2FA, and browser recovery | Account owner | Use an Apple-supported encrypted migration/backup or verify sync and recovery from another device; otherwise explicitly accept loss, retain recovery codes through an approved channel, and complete re-enrolment. | **PENDING** — local stores exist; sync, recovery, and re-enrolment were not proven. |
+| OCI access and `~/.config/talos-mnt/**` | Infrastructure owner | Preserve all required OCI/Talos/SSH/API/recovery material as two encrypted bundles with read-back and a recovery test, or itemize revocation/reissue. This never authorizes destruction, termination, resize, or reprovisioning of the grandfathered A1 instance. | **PENDING** — local material exists; no external copies, tested recovery, or completed reissue record is proven. |
+| Local secret files | Security owner | Move the Console root `.env` and TencentDB-Agent-Memory `deploy/global-images/.env` into an approved secret manager with read-back and rotation, or explicitly discard and reissue every affected value. Never commit either file. | **PENDING** — both ignored local files exist and were tightened from mode `0644` to `0600`; no external custody or completed rotation is proven. |
+| Restricted workbook set and other personal/business inputs | Business-data owner | Preserve the workbook, both derived profiles, and any retained Desktop/iCloud business inputs in two encrypted copies with hashes/read-back, or explicitly approve item-by-item loss. | **PENDING** — local existence and some hashes are proven; two-copy custody and owner dispositions are not. |
+| Personal home data protected by macOS/TCC | Device/data owner | Use a supported encrypted whole-device migration/backup and verify restore or sync from another device for retained Desktop, Documents, Downloads, Photos, Mail, Messages, Contacts, and Notes; otherwise explicitly accept itemized loss. | **PENDING** — several surfaces exist but are TCC-inaccessible, and no supported backup/read-back or loss record is proven. |
+| Oyatie, TencentDB-Agent-Memory, Asterinas, and other unpublished repository state | Each repository owner | Preserve all refs, remotely absent commits/tags, stashes, indexes, every registered worktree's dirty/untracked bytes, and classified ignored files in two encrypted copies with restoration tests, or record a repository-specific discard. Clean tracked checkouts are reconstructible; their ignored evidence is not automatically so. | **PENDING** — material local-only state exists and no complete archive/read-back or repository-specific discard is proven. |
+| Global agent/session and repository-local ignored evidence | Agent/repository owners | Curate only unique plans, decisions, receipts, and evidence into tracked custody or two encrypted verified archives; explicitly discard caches, duplicate sessions, superseded goals, logs, and runtime churn. | **PENDING** — Console's four active OMX artifacts are durable, but global Codex/Claude sessions and ignored evidence in other repositories have no complete disposition. |
+| Greenfield Talos/QEMU disks, PostgreSQL/PVs, registry/CAS/monitor, OpenBao/KMS state, and generated cluster identities | Infrastructure owner | The owner has declared no data-retention obligation, so the data may be discarded; still record the exact rebuild boundary and complete revocation/reissue of every affected credential, key, token, recovery share, and identity. | **DATA DISCARD ACCEPTED; ROTATION PENDING** — greenfield status is explicit, but no completed rotation/reissue manifest exists. |
+
+The erase gate becomes GO only when the current Console row is proven from
+remote custody and every other row is either read-back-verified in two encrypted
+off-device copies or has a completed explicit discard/reissue record. A local
+staging archive, an iCloud pathname without read-back, a raw copy of Keychain
+databases, or a Git commit that omits refs, stashes, dirty, untracked, or
+classified ignored bytes is not sufficient.
 
 ## Safety holds that survive the wipe
 
@@ -431,11 +561,14 @@ because a later machine happens to recover their bytes.
 
 ## Next product work
 
-Continue from the sequence in `docs/program/README.md`: prove remaining Cargo/CI
-equivalence and advance the bounded ontology/company/HR/payroll program. Recheck
-the pivot before accepting any resurrected branch. For every proposed recovery,
-ask whether main already contains the outcome, whether it is inside the current
-scope, whether its source of truth is singular, and whether its exact tests are
-reachable from CI. Do not use the existing `company_conformance` fixture to
-dispatch projected Company/HR work; its current HOLD is recorded in
-`docs/program/CATALOG.md`. Default to leaving rejected branches dead.
+Restart at the sole entry point, `README.md`, then use
+`docs/current/ROADMAP.md` for the ordered work and explicit HOLDs and
+`docs/current/DELIVERY.md` for evidence, review, merge, and issue-lifecycle
+policy. Historical pivots, program files, catalogs, plans, fixtures, evidence,
+and handoffs may explain an earlier decision but must not dispatch current
+product work or clear a current HOLD.
+
+For every proposed recovery, ask whether `main` already contains the outcome,
+whether it is inside the current scope, whether its source of truth is singular,
+and whether its exact tests are reachable from CI. Default to leaving rejected
+branches dead.

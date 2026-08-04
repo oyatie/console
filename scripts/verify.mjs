@@ -45,6 +45,7 @@ const JOBS = new Map([
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
   ["api-contract", true],
   ["company-conformance", true],
+  ["required-ci", "terminal status aggregate; its exact needs/result contract is enforced by check-ci-preflight"],
 ]);
 const MIRRORED_JOBS = [...JOBS].filter(([, v]) => v === true).map(([name]) => name);
 const POSTGRES_IMAGE =
@@ -232,6 +233,10 @@ const PLAN = new Map([
 ]);
 
 /** Fail closed when ci.yml grows or loses a job, in either direction. */
+export function jobMirrorDisposition(job) {
+  return JOBS.get(job);
+}
+
 export function assertJobsDeclared(jobNames = Object.keys(yaml.load(readFileSync(WORKFLOW, "utf8")).jobs ?? {})) {
   const undeclared = jobNames.filter((name) => !JOBS.has(name));
   const vanished = [...JOBS.keys()].filter((name) => !jobNames.includes(name));

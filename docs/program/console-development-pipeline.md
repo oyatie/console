@@ -1,6 +1,8 @@
 # Console development pipeline
 
-Status: current delivery authority. Subordinate to the pivot, accepted consistent ADRs, and the roadmap.
+> **HISTORICAL / NON-AUTHORITY:** Current delivery, verification, merge, and issue-lifecycle policy lives in [`../current/DELIVERY.md`](../current/DELIVERY.md). The material below is retained in place as historical method and cannot override current delivery authority.
+
+Status: historical delivery method retained for path stability; non-authority.
 
 ## Authority precedence
 

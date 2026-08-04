@@ -913,7 +913,42 @@ const exactCiJobIds = Object.freeze([
   "postgres-domain-reachability",
   "preflight",
   "repo-gates",
+  "required-ci",
 ]);
+
+const requiredCiAggregator = Object.freeze({
+  name: "Required / CI",
+  needs: [
+    "preflight",
+    "domain-unit",
+    "postgres-domain-reachability",
+    "company-conformance",
+    "generated-face-authority",
+    "backend",
+    "dev-up-smoke",
+    "repo-gates",
+    "api-contract",
+    "kubernetes-manifests",
+  ],
+  if: "${{ always() }}",
+  "runs-on": "ubuntu-latest",
+  "timeout-minutes": 5,
+  steps: [{
+    name: "Require every CI proof to succeed",
+    run: [
+      'test "${{ needs.preflight.result }}" = success &&',
+      '  test "${{ needs.domain-unit.result }}" = success &&',
+      '  test "${{ needs.postgres-domain-reachability.result }}" = success &&',
+      '  test "${{ needs.company-conformance.result }}" = success &&',
+      '  test "${{ needs.generated-face-authority.result }}" = success &&',
+      '  test "${{ needs.backend.result }}" = success &&',
+      '  test "${{ needs.dev-up-smoke.result }}" = success &&',
+      '  test "${{ needs.repo-gates.result }}" = success &&',
+      '  test "${{ needs.api-contract.result }}" = success &&',
+      '  test "${{ needs.kubernetes-manifests.result }}" = success\n',
+    ].join("\n"),
+  }],
+});
 
 // Environment and job defaults are executable inputs: BASH_ENV, NODE_OPTIONS,
 // PATH and RUSTC_WRAPPER can replace the program a visually exact `run:` line
@@ -1477,6 +1512,9 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
   const actualJobIds = Object.keys(workflowModel.jobs ?? {}).sort();
   if (!isDeepStrictEqual(actualJobIds, exactCiJobIds)) {
     failures.push("CI workflow must preserve its exact job-id set");
+  }
+  if (!isDeepStrictEqual(workflowModel.jobs?.["required-ci"], requiredCiAggregator)) {
+    failures.push("Required / CI must preserve its exact ten-job success aggregation contract");
   }
 
   for (const [jobName, contracts] of Object.entries(requiredJobRunContracts)) {
