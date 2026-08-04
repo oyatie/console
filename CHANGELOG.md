@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/jason931225/console/compare/v0.3.1...v0.3.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **consolidation:** stabilize the post-pivot restart boundary ([#562](https://github.com/jason931225/console/issues/562)) ([4f58ecf](https://github.com/jason931225/console/commit/4f58ecf138fdc1e829fbe520a45d2ede2de7d837))
+
 ## [0.3.1](https://github.com/jason931225/console/compare/v0.3.0...v0.3.1) (2026-08-02)
 
 

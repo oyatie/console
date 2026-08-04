@@ -95,22 +95,25 @@ newer CI run does not retroactively make this consolidation incomplete.
 - Release `v0.3.1` and its exact `main` commit passed the complete CI workflow,
   including the serialized PostgreSQL reachability lane, before the
   consolidation candidate was finalized.
-- PR #562 must publish the truthful `API contract — text-only contract checks`
-  context. Before merge, branch protection must replace the obsolete
+- PR #562 published the truthful `API contract — text-only contract checks`
+  context. Before merge, branch protection replaced the obsolete
   `API contract — app-served OpenAPI` requirement with that exact context and
-  replace `Company conformance — 12/12 required target` with
-  `Company conformance — generic-engine regression`, then add the already-running
+  replaced `Company conformance — 12/12 required target` with
+  `Company conformance — generic-engine regression`, then added the already-running
   `Domain crates — unit tests` and
-  `dev-up.mjs smoke — compose deps + migrate + /readyz` contexts. Preserve strict
+  `dev-up.mjs smoke — compose deps + migrate + /readyz` contexts. Strict
   up-to-date checks, the existing GitHub Actions app binding, every other
-  required context, and read the rule back after the update. Also require one
-  approving review, dismiss stale approvals, require approval of the most recent
-  push, and require every review conversation to be resolved; read all four
-  controls back before merge.
+  required context, stale-review dismissal, and review-conversation resolution
+  remain enabled and were read back after the update.
 - Every final candidate is reviewed at its exact SHA by two independent
-  adversarial reviewers. PR #562 additionally requires a formal approving
-  GitHub review from someone other than its author, with no unresolved review
-  findings and all required checks green, before squash merge.
+  adversarial reviewers, with no unresolved findings and all required checks
+  green before squash merge. The owner subsequently corrected the GitHub review
+  rule for this solo-development repository: historical instructions requiring
+  one non-author approval and approval by someone other than the last pusher are
+  superseded. Current `main` protection requires zero GitHub approvals and sets
+  `require_last_push_approval` to false. This correction does not waive the two
+  independent exact-object reviews, required hosted checks, conversation
+  resolution, or immediate pre-merge protection readback.
 - Interim signed tip `900c1749a94f945deaa85cc5097a51287620dd95` was
   pushed to PR #562 as a remote disaster-recovery checkpoint and then made draft
   after hosted verification exposed defects. It is superseded by the later exact
