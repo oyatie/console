@@ -1,0 +1,22 @@
+job_id	workflow	required_context_role	docs_only	scripts_tools	backend	deploy	mixed	unknown	notes
+preflight	ci.yml	Required / CI leaf	THIN	THIN	RUN	RUN	FULL	FULL	Always starts; docs-only drops rust/cargo/buck/postgres harness; always runs path classifier + foundation + ci-preflight contracts
+domain-unit	ci.yml	Required / CI leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	Cargo domain unit matrix; skip-proof exits 0 with log line when not applicable
+postgres-domain-reachability	ci.yml	Required / CI leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	Serialized disposable PG inventory (~183 tests); remains full whenever backend paths touch; interacts with PG partition / cargo-PG work
+company-conformance	ci.yml	Required / CI leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	PG company-conformance suite
+generated-face-authority	ci.yml	Required / CI leaf	SKIP_PROOF	CONDITIONAL	RUN	SKIP_PROOF	FULL	FULL	CONDITIONAL=RUN when scripts/tools or face graph inputs change else SKIP_PROOF; macOS runner cost on skip-proof is a budget risk
+backend	ci.yml	Required / CI leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	fmt/clippy/gates/PG-backed backend proofs; cargo-PG membership proofs stay in full backend class
+dev-up-smoke	ci.yml	Required / CI leaf	SKIP_PROOF	CONDITIONAL	RUN	RUN	FULL	FULL	CONDITIONAL=RUN when scripts/dev-up.mjs or compose topology touched; deploy class runs topology/smoke
+repo-gates	ci.yml	Required / CI leaf	THIN	THIN	RUN	RUN	FULL	FULL	docs-only keeps ADR + doc-manifest + doc-links + doc-citations; skips G004-G008/workflow-runtime/payroll maturity/import contracts
+api-contract	ci.yml	Required / CI leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	Platform/OpenAPI-adjacent contracts
+kubernetes-manifests	ci.yml	Required / CI leaf	SKIP_PROOF	CONDITIONAL	SKIP_PROOF	RUN	FULL	FULL	CONDITIONAL=RUN when render scripts/tools change; deploy always RUN
+required-ci	ci.yml	Required / CI aggregate	RUN	RUN	RUN	RUN	RUN	RUN	always(); needs all ten leaves success only; never accepts skipped/cancelled/failed
+filesystem	security.yml	Required / Security leaf	RUN	RUN	RUN	RUN	FULL	FULL	Trivy vuln+secret; keep on docs-only (secrets in Markdown)
+iac	security.yml	Required / Security leaf	SKIP_PROOF	SKIP_PROOF	SKIP_PROOF	RUN	FULL	FULL	IaC scan when deploy/IaC paths change
+rust-advisories	security.yml	Required / Security leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	When Cargo/rust supply paths change
+rust-supply-chain	security.yml	Required / Security leaf	SKIP_PROOF	SKIP_PROOF	RUN	SKIP_PROOF	FULL	FULL	When Cargo/rust supply paths change
+node-advisories	security.yml	Required / Security leaf	SKIP_PROOF	CONDITIONAL	SKIP_PROOF	SKIP_PROOF	FULL	FULL	CONDITIONAL=RUN when package.json/package-lock change
+required-security	security.yml	Required / Security aggregate	RUN	RUN	RUN	RUN	RUN	RUN	always(); needs five leaves success only via skip-proof pattern not job skip
+authenticate-console-authority	console-authority-bootstrap.yml	standalone required	RUN	RUN	RUN	RUN	RUN	RUN	Protected-target; never path-class skipped
+# policy_values: RUN=full proof body; THIN=always-start with reduced step set; SKIP_PROOF=always-start no-op success proof; CONDITIONAL=RUN or SKIP_PROOF per path sub-rules; FULL=force full matrix
+# constraint: no on.push/on.pull_request paths or paths-ignore; no job-level if that yields skipped for Required aggregate leaves
+# pack_status: design only; no workflow implementation in S-CI2 design pack
