@@ -3204,6 +3204,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-05-ci-latency-baseline.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f609ac41948811ffed54abed6d8f6b604e5e0363",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-05-documentation-manifest-ratchet.md",
       "class": "evidence",
       "owner": "repository maintainers",
