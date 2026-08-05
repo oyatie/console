@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "notes": "Deferred .test.mjs suites not exact-wired from a gating CI run step. Basename-only hits do not count. Growth of unexplained dark suites fails the ratchet. Stale deferred entries that become exact-wired must be removed.",
+  "deferred_no_npm_script": [
+    "scripts/check-compliance-catalog-openapi-contract.test.mjs",
+    "scripts/check-consulting-conflict-contract.test.mjs",
+    "scripts/check-evaluation-openapi-contract.test.mjs",
+    "scripts/check-foundation-gates.test.mjs",
+    "scripts/check-non-oci-mail-imessage-relay.test.mjs",
+    "scripts/console/run-verification-queue.test.mjs"
+  ]
+}

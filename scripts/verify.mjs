@@ -108,6 +108,8 @@ const PLAN = new Map([
   // the step above it is `cargo metadata` on the same manifest. Pure analysis,
   // no Docker, so `fast`.
   ["Executed-tests ratchet — a test binary must have a path from a workflow step", { tier: "fast" }],
+  ["JavaScript test reachability ratchet", { tier: "fast" }],
+  ["JavaScript test reachability unit tests", { tier: "fast" }],
   // Execs tools/lanes/no-credential-in-argv.sh directly. No container, no
   // bypass env var, so `fast`.
   ["Workflow test-runner credential literals", { tier: "fast" }],

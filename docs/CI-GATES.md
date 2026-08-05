@@ -219,6 +219,8 @@ names only, not incidental workflow prose or runner setup text.
 - `test:gate-input-provenance`
 - `check:doc-links`
 - `check:executed-tests`
+- `check:js-test-reachability`
+- `test:js-test-reachability`
 - `check:foundation-gates`
 - `check:g004-identity-foundation`
 - `check:g005-workflow-lifecycle`

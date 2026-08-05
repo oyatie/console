@@ -486,7 +486,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "f2d309a65d3c2a660e3a2310e564860dca5d6eb0",
+    "blob_sha": "07def4d1716dc151a93eef1e982c85adb6f8402d",
     "archive_tag": null
   },
   {
@@ -3147,6 +3147,16 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "e84146e3e3da09555b81f9d3abe9ff27d84e6eb5",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/program/ledger/2026-08-05-js-test-reachability-ratchet.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "bd58796dd0825f50b611ab296a50283daa004ce2",
     "archive_tag": null
   },
   {

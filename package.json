@@ -74,7 +74,9 @@
     "check:executed-tests": "node scripts/check-executed-tests.mjs",
     "check:test-credentials": "node --test scripts/check-test-credentials.test.mjs && node scripts/check-test-credentials.mjs",
     "check:gate-input-provenance": "node scripts/check-gate-input-provenance.mjs",
-    "test:gate-input-provenance": "node --test scripts/check-gate-input-provenance.test.mjs"
+    "test:gate-input-provenance": "node --test scripts/check-gate-input-provenance.test.mjs",
+    "check:js-test-reachability": "node scripts/check-js-test-reachability.mjs",
+    "test:js-test-reachability": "node --test scripts/check-js-test-reachability.test.mjs"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"

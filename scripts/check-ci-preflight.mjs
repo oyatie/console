@@ -726,6 +726,8 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Canonical npm lockfile", "npm run check:package-lock"),
     proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null"),
     proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests"),
+    proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability"),
+    proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability"),
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [

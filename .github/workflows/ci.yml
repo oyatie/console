@@ -170,6 +170,10 @@ jobs:
       # manifest, and preflight is the only job carrying both toolchains.
       - name: Executed-tests ratchet — a test binary must have a path from a workflow step
         run: npm run check:executed-tests
+      - name: JavaScript test reachability ratchet
+        run: npm run check:js-test-reachability
+      - name: JavaScript test reachability unit tests
+        run: npm run test:js-test-reachability
 
       - name: Workflow test-runner credential literals
         run: npm run check:test-credentials
