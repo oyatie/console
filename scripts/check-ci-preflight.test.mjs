@@ -290,7 +290,7 @@ describe("CI preflight contract", () => {
       backend: 23,
       "dev-up-smoke": 6,
       "kubernetes-manifests": 6,
-      "repo-gates": 23,
+      "repo-gates": 24,
       "api-contract": 4,
       "generated-face-authority": 4,
       "company-conformance": 2,
@@ -326,8 +326,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 96, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 288, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 97, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 291, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -1602,6 +1602,76 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     expectFailure(pr473ContractAfterTopology, "backend must preserve the locked fail-fast step order");
   });
 
+  it("locks the documentation manifest gate and its doc-test to doc-link position", () => {
+    const step = "      - name: Documentation manifest gate\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:doc-manifest\n";
+    const linkTests = "      - name: Documentation link tests\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: node --test scripts/check-doc-links.test.mjs\n";
+    const localLink = "      - name: Documentation local-link gate\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:doc-links\n";
+    assert.equal(
+      workflow.split(step).length - 1,
+      1,
+      "repo-gates must run exactly one documentation manifest gate",
+    );
+    assert.ok(
+      workflow.includes(`${linkTests}${step}${localLink}`),
+      "documentation gates must preserve doc-test -> manifest -> doc-link order",
+    );
+
+    expectFailure(
+      workflow.replace(step, ""),
+      "repo-gates must preserve all",
+    );
+    expectFailure(
+      workflow.replace(
+        "        run: npm run check:doc-manifest\n",
+        "        # run: npm run check:doc-manifest\n",
+      ),
+      "repo-gates must preserve all",
+    );
+    for (const condition of [
+      "        if: false\n",
+      "        if: ${{ success() }}\n",
+      "",
+    ]) {
+      expectFailure(
+        workflow.replace("        if: ${{ !cancelled() }}\n        run: npm run check:doc-manifest\n", `${condition}        run: npm run check:doc-manifest\n`),
+        "repo-gates proof run step",
+      );
+    }
+    expectFailure(
+      workflow.replace(
+        "        if: ${{ !cancelled() }}\n        run: npm run check:doc-manifest\n",
+        "        if: ${{ !cancelled() }}\n        continue-on-error: true\n        run: npm run check:doc-manifest\n",
+      ),
+      "repo-gates proof run step",
+    );
+    expectFailure(
+      workflow.replace(
+        "      - name: Documentation manifest gate\n",
+        "      - name: Documentation manifest check\n",
+      ),
+      "repo-gates proof run step",
+    );
+    expectFailure(
+      workflow.replace(step, `${step}${step}`),
+      "repo-gates must contain only its locked ordered action, setup, proof, and cleanup steps",
+    );
+
+    for (const reordered of [
+      workflow.replace(`${linkTests}${step}`, `${step}${linkTests}`),
+      workflow.replace(`${step}${localLink}`, `${localLink}${step}`),
+    ]) {
+      expectFailure(
+        reordered,
+        "repo-gates proof run step",
+      );
+    }
+  });
   // repo-gates steps are otherwise unlocked: deleting `run: npm run check:adrs` from it today
   // yields zero preflight failures. Wiring a gate into ci.yml is not the same as protecting it,
   // and an unprotected step is a slot in the job list that reads as coverage.

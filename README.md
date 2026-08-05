@@ -12,6 +12,8 @@ Console is a Rust platform for a governed company object engine: **Ontology / Fo
 
 Accepted records in [`docs/decisions/`](docs/decisions/) preserve decision history. Machine-readable registers and path-stable ledgers remain under [`docs/program/`](docs/program/). Evidence and historical documents may support a claim, but they do not override the three active authorities recorded separately from this sole entry point in [`docs/documentation-index.json`](docs/documentation-index.json).
 
+The full first-party Markdown manifest is the generated [`docs/documentation-index.json`](docs/documentation-index.json); its reviewed semantic source is [`docs/documentation-manifest.seed.json`](docs/documentation-manifest.seed.json).
+
 ## Repository map
 
 - `backend/` — Rust workspace, application, domain/platform crates, migrations, and backend gates.

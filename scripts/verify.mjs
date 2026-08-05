@@ -173,6 +173,7 @@ const PLAN = new Map([
   ["ADR governance tests", { tier: "fast" }],
   ["ADR governance gate", { tier: "fast" }],
   ["Documentation link tests", { tier: "fast" }],
+  ["Documentation manifest gate", { tier: "fast" }],
   ["Documentation local-link gate", { tier: "fast" }],
   ["Shared text gate unit tests", { tier: "fast" }],
   ["G004 identity group org people policy foundation gate", { tier: "fast" }],
