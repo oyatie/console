@@ -165,10 +165,15 @@ jobs:
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           provenance: mode=max # SLSA provenance attestation, per arch
           sbom: true # in-toto SPDX SBOM attestation, per arch
-          # Per-(image,arch) cache scope so the two arches never clobber each
-          # other's gha cache under a shared default key.
-          cache-from: type=gha,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
+          # Build cache lives in GHCR, NOT the shared Actions 10GB pool.
+          # GHA type=gha mode=max previously filled the budget with buildkit-blob
+          # keys (~10GB) and LRU-evicted rust-cache. Registry cache is per
+          # image×arch ref so amd64/arm64 do not clobber each other; mode=max is
+          # fine here because it does not compete with backend-cargo/npm.
+          # Hygiene: .github/workflows/cache-hygiene.yml prunes any residual
+          # buildkit/index GHA keys on a schedule.
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache-${{ matrix.platform.arch }}
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache-${{ matrix.platform.arch }},mode=max
           build-args: |
             SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }}
 
