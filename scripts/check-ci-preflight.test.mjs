@@ -207,8 +207,8 @@ describe("CI preflight contract", () => {
       "kubernetes-manifests",
     ];
     const model = yaml.load(workflow);
-    // 11 protected proofs + 4 PostgreSQL facets
-    assert.equal(Object.keys(model.jobs).length, 15);
+    // 11 protected proofs + 5 PostgreSQL facets (S2 splits domain)
+    assert.equal(Object.keys(model.jobs).length, 16);
     assert.equal(model.jobs["required-ci"].name, "Required / CI");
     assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
     assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
@@ -298,7 +298,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-app": 1,
       "postgres-reachability-platform": 1,
       "postgres-reachability-ontology": 1,
-      "postgres-reachability-domain": 1,
+      "postgres-reachability-domain-a": 1,
+      "postgres-reachability-domain-b": 1,
       "postgres-domain-reachability": 1,
       "required-ci": 1,
     };
@@ -331,8 +332,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 104, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 312, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 105, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 315, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -349,7 +350,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-app": 4,
       "postgres-reachability-platform": 4,
       "postgres-reachability-ontology": 4,
-      "postgres-reachability-domain": 4,
+      "postgres-reachability-domain-a": 4,
+      "postgres-reachability-domain-b": 4,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -377,8 +379,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(actionStepCount, 42, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 84, "setup-action bypass matrix must not shrink");
+    assert.equal(actionStepCount, 46, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 92, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -395,7 +397,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-app",
       "postgres-reachability-platform",
       "postgres-reachability-ontology",
-      "postgres-reachability-domain",
+      "postgres-reachability-domain-a",
+      "postgres-reachability-domain-b",
     ];
     const workflowModel = yaml.load(workflow);
     let mutationCount = 0;
@@ -453,7 +456,7 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 273, "setup-action identity/input/interleaving matrix must not shrink");
+    assert.equal(mutationCount, 300, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {

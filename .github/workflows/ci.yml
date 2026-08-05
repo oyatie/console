@@ -328,7 +328,7 @@ jobs:
             -p console-app --test config --test dev_seed_notification_links --test openslo_files \
             --test well_known --test workbench_api
 
-  # PostgreSQL reachability facets (S1). Package partition via --shard-id.
+  # PostgreSQL reachability facets (S1 + S2 domain split). Package partition via --shard-id.
   # Do NOT put the load-bearing branch-protection display name on these jobs
   # (matrix/facet renames un-require the check). Aggregator below keeps it.
   postgres-reachability-app:
@@ -412,8 +412,8 @@ jobs:
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1
 
-  postgres-reachability-domain:
-    name: Test PostgreSQL — domain adapters
+  postgres-reachability-domain-a:
+    name: Test PostgreSQL — domain adapters A
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 45
@@ -437,7 +437,34 @@ jobs:
           save-if: false
       - name: Run disposable PostgreSQL integration targets
         run: |
-          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain --num-threads=1
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1
+
+  postgres-reachability-domain-b:
+    name: Test PostgreSQL — domain adapters B
+    runs-on: ubuntu-latest
+    needs: preflight
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      - name: Free runner disk for PostgreSQL cargo tests
+        uses: ./.github/actions/free-runner-disk
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+      - name: Cache Rust dependencies + build artifacts
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: backend
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          save-if: false
+      - name: Run disposable PostgreSQL integration targets
+        run: |
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
@@ -449,14 +476,15 @@ jobs:
     # updating the protection contexts in the same change silently un-requires
     # it and restores the false-green this comment used to describe.
     #
-    # S1: aggregator only. Facet jobs run the suite; this job fails closed if
+    # S1/S2: aggregator only. Facet jobs run the suite; this job fails closed if
     # any facet is not success. Do not matrix this display name.
     name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
     needs:
       - postgres-reachability-app
       - postgres-reachability-platform
       - postgres-reachability-ontology
-      - postgres-reachability-domain
+      - postgres-reachability-domain-a
+      - postgres-reachability-domain-b
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -466,7 +494,8 @@ jobs:
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&
           test "${{ needs.postgres-reachability-ontology.result }}" = success &&
-          test "${{ needs.postgres-reachability-domain.result }}" = success
+          test "${{ needs.postgres-reachability-domain-a.result }}" = success &&
+          test "${{ needs.postgres-reachability-domain-b.result }}" = success
 
   company-conformance:
     # Required generic ontology instance-engine regression. Its twelve scenario

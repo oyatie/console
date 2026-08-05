@@ -237,14 +237,17 @@ const postgresReachabilityFacetCommands = Object.freeze({
     "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1",
   "postgres-reachability-ontology":
     "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1",
-  "postgres-reachability-domain":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain --num-threads=1",
+  "postgres-reachability-domain-a":
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1",
+  "postgres-reachability-domain-b":
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1",
 });
 const postgresDomainReachabilityAggregatorCommands = [
   'test "${{ needs.postgres-reachability-app.result }}" = success &&',
   'test "${{ needs.postgres-reachability-platform.result }}" = success &&',
   'test "${{ needs.postgres-reachability-ontology.result }}" = success &&',
-  'test "${{ needs.postgres-reachability-domain.result }}" = success',
+  'test "${{ needs.postgres-reachability-domain-a.result }}" = success &&',
+  'test "${{ needs.postgres-reachability-domain-b.result }}" = success',
 ];
 const companyConformanceCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
@@ -499,7 +502,8 @@ const protectedJobs = [
   "postgres-reachability-app",
   "postgres-reachability-platform",
   "postgres-reachability-ontology",
-  "postgres-reachability-domain",
+  "postgres-reachability-domain-a",
+  "postgres-reachability-domain-b",
   "company-conformance",
 ];
 
@@ -663,11 +667,14 @@ const requiredJobRunContracts = Object.freeze({
   "postgres-reachability-ontology": [
     proofDigest("Run disposable PostgreSQL integration targets", "b1a2666e7aa08ebc7fdbcca5d216f8f7a75878e94a73ec60a73e18bdeb2d1339"),
   ],
-  "postgres-reachability-domain": [
-    proofDigest("Run disposable PostgreSQL integration targets", "90a136e51de1a8e67b5ee0ac53b5817fd17157804e076a330de67699dd06c3a0"),
+  "postgres-reachability-domain-a": [
+    proofDigest("Run disposable PostgreSQL integration targets", "52d06f35b2f6f7b65b7b873af1d1c896eb496d96758b163e9f2cf3a727501096"),
+  ],
+  "postgres-reachability-domain-b": [
+    proofDigest("Run disposable PostgreSQL integration targets", "f51451ca90071e2b657f759b6fb08a8aa10dfa6e18e26eb2984d8a004a7b53c9"),
   ],
   "postgres-domain-reachability": [
-    proofDigest("Require all PostgreSQL reachability facets", "ba50d7789ae13b0e5cd19e9e2cf92763bce108a586e05122289f88faad21f736"),
+    proofDigest("Require all PostgreSQL reachability facets", "7f9e079d4f3b5f15d81f9fffdb00ab11b8ca881e1d5842fbe448c5490af1152a"),
   ],
 });
 
@@ -747,7 +754,13 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
     actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
   ],
-  "postgres-reachability-domain": [
+  "postgres-reachability-domain-a": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
+    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
+    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+  ],
+  "postgres-reachability-domain-b": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
     actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
@@ -772,8 +785,9 @@ const requiredJobMetadataSha256 = Object.freeze({
   "postgres-reachability-app": "5d90d97db633f33dad8fd70358dc984d8ff4acf2ce3c1ab527bf37ec69708830",
   "postgres-reachability-platform": "73aeb2dddc41469edf9ec05411a37cf444b44b40c55285f3b2b86bfee3217cfe",
   "postgres-reachability-ontology": "4a4e5c51ca540f183445ff18df800b6c0534d76e12fdf143a4e6aea0cf611e1b",
-  "postgres-reachability-domain": "8a4f3a38866ae520f1b1154e2d1af4856591e3c1022515fe6f99ba9eb5fe18bf",
-  "postgres-domain-reachability": "6c15dd23363895eac2458f5e97faf38a027aef42917d9290dfdb2f16a6281650",
+  "postgres-reachability-domain-a": "917142d29d3469ab88a68fee4946045576764bdc4f0304d2621904c2093920dd",
+  "postgres-reachability-domain-b": "80669c99278f0574a6795d4eaa3cb3314958e1695e274cccd5ef5a22a1315c5d",
+  "postgres-domain-reachability": "ac2f47d4fe60725610c175e03651324d77a7480668052d8c34a152d72253b9af",
 });
 
 const workflowExecutionEnvelopeSha256 = "e91330f0f5ccd53cb457ef43231e1c8e59d9f986ec7a2fa68f98e93665b439bd";
@@ -788,7 +802,8 @@ const exactCiJobIds = Object.freeze([
   "kubernetes-manifests",
   "postgres-domain-reachability",
   "postgres-reachability-app",
-  "postgres-reachability-domain",
+  "postgres-reachability-domain-a",
+  "postgres-reachability-domain-b",
   "postgres-reachability-ontology",
   "postgres-reachability-platform",
   "preflight",
@@ -847,7 +862,8 @@ const protectedJobExecutionMetadata = {
   "postgres-reachability-app": {},
   "postgres-reachability-platform": {},
   "postgres-reachability-ontology": {},
-  "postgres-reachability-domain": {},
+  "postgres-reachability-domain-a": {},
+  "postgres-reachability-domain-b": {},
   "postgres-domain-reachability": {},
   "company-conformance": {},
   "generated-face-authority": {},
@@ -2034,7 +2050,8 @@ export function evaluateCiPreflight(
     "postgres-reachability-app",
     "postgres-reachability-platform",
     "postgres-reachability-ontology",
-    "postgres-reachability-domain",
+    "postgres-reachability-domain-a",
+    "postgres-reachability-domain-b",
   ];
   for (const job of cargoRustCacheJobs) {
     const block = jobBlock(workflow, job);

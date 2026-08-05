@@ -45,7 +45,8 @@ const JOBS = new Map([
   ["postgres-reachability-app", "hosted PostgreSQL facet (app packages); the `db` tier already exercises that harness"],
   ["postgres-reachability-platform", "hosted PostgreSQL facet (platform packages); the `db` tier already exercises that harness"],
   ["postgres-reachability-ontology", "hosted PostgreSQL facet (ontology packages); the `db` tier already exercises that harness"],
-  ["postgres-reachability-domain", "hosted PostgreSQL facet (domain adapters); the `db` tier already exercises that harness"],
+  ["postgres-reachability-domain-a", "hosted PostgreSQL facet (domain adapters A); the `db` tier already exercises that harness"],
+  ["postgres-reachability-domain-b", "hosted PostgreSQL facet (domain adapters B); the `db` tier already exercises that harness"],
   // Load-bearing aggregator: keeps the protected display name; no run steps to mirror.
   ["postgres-domain-reachability", "load-bearing aggregator over PG facets; terminal needs/result contract is enforced by check-ci-preflight"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
