@@ -1,12 +1,37 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { copyFile, mkdtemp, mkdir, symlink, unlink, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, mkdir, readFile, symlink, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 const run = promisify(execFile);
 const script = join(process.cwd(), "scripts/check-doc-links.mjs");
+const generator = join(process.cwd(), "scripts/console/generate-documentation-manifest.mjs");
+const classVocabulary = [
+  "current",
+  "decision",
+  "executable-contract",
+  "evidence",
+  "historical",
+  "quarry",
+];
+const manifestFields = [
+  "path",
+  "class",
+  "owner",
+  "status",
+  "replacement",
+  "retention",
+  "blob_sha",
+  "archive_tag",
+];
+const excludedDocumentationPrefixes = [
+  "buck-out/",
+  "node_modules/",
+  "target/",
+  "third-party/",
+];
 
 const authorityPaths = {
   product: "docs/current/PRODUCT.md",
@@ -48,31 +73,58 @@ function validReadme(extraAuthority = "") {
 ${extraAuthority}`;
 }
 
-function validIndex(overrides = {}) {
+function transition(path, status, replacement, retention) {
   return {
-    schema_version: 1,
-    coverage: "authority-slice",
-    class_vocabulary: [
-      "current",
-      "decision",
-      "executable-contract",
-      "evidence",
-      "historical",
-      "quarry",
-    ],
-    future_full_manifest_fields: [
-      "path",
-      "class",
-      "owner",
-      "status",
-      "replacement",
-      "retention",
-      "blob_sha",
-      "archive_tag",
-    ],
-    entry: entry(),
-    authorities: Object.entries(authorityPaths).map(([concern, path]) => authority(concern, path)),
-    transitions: [],
+    path,
+    class: "historical",
+    owner: "repository maintainers",
+    status,
+    replacement,
+    retention,
+  };
+}
+
+function manifestRecord(record) {
+  return {
+    path: record.path,
+    class: record.class,
+    owner: record.owner,
+    status: record.status,
+    replacement: record.replacement,
+    retention: record.retention,
+    blob_sha: null,
+    archive_tag: null,
+  };
+}
+
+function validIndex(overrides = {}) {
+  const entryRecord = entry();
+  const authorities = Object.entries(authorityPaths).map(
+    ([concern, path]) => authority(concern, path),
+  );
+  const transitions = [
+    transition("SPEC.md", "redirect", "docs/current/PRODUCT.md", "one-release redirect"),
+    transition("DESIGN.md", "redirect", "docs/current/PRODUCT.md", "one-release redirect"),
+    transition(
+      "docs/PIVOT-2026-07-28.md",
+      "frozen",
+      "docs/current/PRODUCT.md",
+      "retain as historical reconciliation",
+    ),
+  ];
+  return {
+    schema_version: 2,
+    coverage: "first-party-manifest",
+    class_vocabulary: [...classVocabulary],
+    future_full_manifest_fields: [...manifestFields],
+    entry: entryRecord,
+    authorities,
+    transitions,
+    documents: [
+      manifestRecord(entryRecord),
+      ...authorities.map(manifestRecord),
+      ...transitions.map(manifestRecord),
+    ].sort((left, right) => (left.path > right.path) - (left.path < right.path)),
     ...overrides,
   };
 }
@@ -82,17 +134,31 @@ async function makeIndexedRepo(index, extraFiles = {}) {
   await run("git", ["init", "-q"], { cwd: root });
   const files = {
     "README.md": validReadme(),
+    "SPEC.md": "# Product redirect\n",
+    "DESIGN.md": "# Product redirect\n",
+    "docs/PIVOT-2026-07-28.md": "# Historical reconciliation\n",
     "docs/current/PRODUCT.md": "# Product\n",
     "docs/current/ROADMAP.md": "# Roadmap\n",
     "docs/current/DELIVERY.md": "# Delivery\n",
-    "docs/documentation-index.json": `${JSON.stringify(index, null, 2)}\n`,
     ...extraFiles,
   };
   for (const [path, contents] of Object.entries(files)) {
     await mkdir(join(root, path, ".."), { recursive: true });
     await writeFile(join(root, path), contents);
   }
-  await run("git", ["add", "README.md", "docs"], { cwd: root });
+  await run("git", ["add", "."], { cwd: root });
+  for (const record of Array.isArray(index.documents) ? index.documents : []) {
+    if (record?.blob_sha !== null) continue;
+    const { stdout } = await run("git", ["ls-files", "--stage", "--", record.path], { cwd: root });
+    const oid = stdout.trim().split(/\s+/)[1];
+    if (oid) record.blob_sha = oid;
+  }
+  await mkdir(join(root, "docs"), { recursive: true });
+  await writeFile(
+    join(root, "docs/documentation-index.json"),
+    `${JSON.stringify(index, null, 2)}\n`,
+  );
+  await run("git", ["add", "docs/documentation-index.json"], { cwd: root });
   return root;
 }
 
@@ -151,7 +217,7 @@ test("accepts one tracked entry record plus three current authorities", async ()
 });
 
 test("rejects unknown root completeness and document-manifest fields", async () => {
-  for (const [field, value] of [["complete", true], ["documents", []]]) {
+  for (const [field, value] of [["complete", true], ["manifest", []]]) {
     const root = await makeIndexedRepo(validIndex({ [field]: value }));
     await assert.rejects(
       run(process.execPath, [script, root]),
@@ -424,11 +490,196 @@ test("rejects untracked and ignored path admission", async () => {
 });
 
 test("rejects every premature complete-coverage claim", async () => {
-  const root = await makeIndexedRepo(validIndex({ coverage: "complete", documents: [] }), {
+  const root = await makeIndexedRepo(validIndex({ coverage: "complete" }), {
     "docs/reference.md": "# Reference\n",
   });
   await assert.rejects(
     run(process.execPath, [script, root]),
-    /coverage must remain authority-slice until the full-manifest contract is implemented/,
+    /coverage complete is not accepted without a signed-archive validation contract/,
+  );
+});
+
+async function makeGeneratorRepo() {
+  const index = validIndex();
+  index.documents.push({
+    path: "docs/CI-GATES.md",
+    class: "executable-contract",
+    owner: "repository maintainers",
+    status: "active",
+    replacement: null,
+    retention: "retain",
+    blob_sha: null,
+    archive_tag: null,
+  });
+  index.documents.sort((left, right) => (left.path > right.path) - (left.path < right.path));
+  const root = await makeIndexedRepo(index, { "docs/CI-GATES.md": "# CI gates\n" });
+  await mkdir(join(root, "scripts/console"), { recursive: true });
+  await copyFile(generator, join(root, "scripts/console/generate-documentation-manifest.mjs"));
+  await writeFile(
+    join(root, "docs/documentation-manifest.seed.json"),
+    `${JSON.stringify(index.documents, null, 2)}\n`,
+  );
+  await run(
+    "git",
+    ["add", "scripts/console/generate-documentation-manifest.mjs", "docs/documentation-manifest.seed.json"],
+    { cwd: root },
+  );
+  return root;
+}
+
+function literalStringArray(source, name) {
+  const match = source.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n\\];`));
+  assert.ok(match, `${name} literal must remain inspectable`);
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
+}
+
+test("accepts a green schema-v2 exact first-party manifest fixture", async () => {
+  const root = await makeIndexedRepo(validIndex());
+  await run(process.execPath, [script, root]);
+});
+
+test("duplicated first-party universe and class constants cannot drift", async () => {
+  const [checkerSource, generatorSource] = await Promise.all([
+    readFile(script, "utf8"),
+    readFile(generator, "utf8"),
+  ]);
+  assert.deepEqual(
+    literalStringArray(checkerSource, "excludedDocumentationPrefixes"),
+    excludedDocumentationPrefixes,
+  );
+  assert.deepEqual(
+    literalStringArray(generatorSource, "excludedDocumentationPrefixes"),
+    excludedDocumentationPrefixes,
+  );
+  assert.deepEqual(literalStringArray(checkerSource, "classVocabulary"), classVocabulary);
+  assert.deepEqual(literalStringArray(generatorSource, "classVocabulary"), classVocabulary);
+});
+
+test("all seven authority-slice records require exact document projections", async () => {
+  for (let recordIndex = 0; recordIndex < 7; recordIndex += 1) {
+    const index = validIndex();
+    const records = [index.entry, ...index.authorities, ...index.transitions];
+    records[recordIndex].class = recordIndex < 4 ? "historical" : "current";
+    const root = await makeIndexedRepo(index);
+    await assert.rejects(
+      run(process.execPath, [script, root]),
+      /document projection differs at class/,
+    );
+  }
+});
+
+test("P1 rejects a newly staged unclassified Markdown blob by path", async () => {
+  const root = await makeGeneratorRepo();
+  await writeFile(join(root, "docs/tmp-unclassified.md"), "# Unclassified\n");
+  await run("git", ["add", "docs/tmp-unclassified.md"], { cwd: root });
+  await assert.rejects(
+    run(process.execPath, ["scripts/console/generate-documentation-manifest.mjs", "--check"], { cwd: root }),
+    /docs\/tmp-unclassified\.md must have exactly one record/,
+  );
+});
+
+test("P2 rejects staged Markdown blob drift until regeneration", async () => {
+  const root = await makeGeneratorRepo();
+  await writeFile(join(root, "docs/CI-GATES.md"), "# Changed CI gates\n");
+  await run("git", ["add", "docs/CI-GATES.md"], { cwd: root });
+  await assert.rejects(
+    run(process.execPath, ["scripts/console/generate-documentation-manifest.mjs", "--check"], { cwd: root }),
+    /docs\/CI-GATES\.md blob_sha does not match/,
+  );
+});
+
+test("P3 rejects a missing full-manifest document record by path", async () => {
+  const index = validIndex();
+  index.documents = index.documents.filter((record) => record.path !== "DESIGN.md");
+  const root = await makeIndexedRepo(index);
+  await assert.rejects(
+    run(process.execPath, [script, root]),
+    /DESIGN\.md must have exactly one document record/,
+  );
+});
+
+test("P4 keeps complete coverage fail-closed", async () => {
+  const root = await makeIndexedRepo(validIndex({ coverage: "complete" }));
+  await assert.rejects(
+    run(process.execPath, [script, root]),
+    /coverage complete is not accepted without a signed-archive validation contract/,
+  );
+});
+
+test("P5 rejects non-null archive tags without signed-archive validation", async () => {
+  const index = validIndex();
+  index.documents[0].archive_tag = "archive-v1";
+  const root = await makeIndexedRepo(index);
+  await assert.rejects(
+    run(process.execPath, [script, root]),
+    /archive_tag must be null until signed-archive validation exists/,
+  );
+});
+
+test("P6 root field allowlist drift still rejects documents", async () => {
+  const root = await makeIndexedRepo(validIndex());
+  await mkdir(join(root, "scripts"), { recursive: true });
+  const source = await readFile(script, "utf8");
+  const mutated = source.replace(
+    '  "transitions",\n  "documents",\n];',
+    '  "transitions",\n];',
+  );
+  assert.notEqual(mutated, source);
+  const mutatedScript = join(root, "scripts/check-doc-links.mjs");
+  await writeFile(mutatedScript, mutated);
+  await assert.rejects(
+    run(process.execPath, [mutatedScript, root]),
+    /root record has unexpected field: documents/,
+  );
+});
+
+test("P7 write preserves a missing semantic class and check remains red", async () => {
+  const root = await makeGeneratorRepo();
+  const seedPath = join(root, "docs/documentation-manifest.seed.json");
+  const seed = JSON.parse(await readFile(seedPath, "utf8"));
+  delete seed[0].class;
+  await writeFile(seedPath, `${JSON.stringify(seed, null, 2)}\n`);
+  await run("git", ["add", "docs/documentation-manifest.seed.json"], { cwd: root });
+
+  await run(
+    process.execPath,
+    ["scripts/console/generate-documentation-manifest.mjs", "--write"],
+    { cwd: root },
+  );
+  const afterWrite = JSON.parse(await readFile(seedPath, "utf8"));
+  assert.equal(Object.hasOwn(afterWrite[0], "class"), false);
+  await assert.rejects(
+    run(
+      process.execPath,
+      ["scripts/console/generate-documentation-manifest.mjs", "--check"],
+      { cwd: root },
+    ),
+    /is missing class/,
+  );
+});
+
+test("custom manifest diagnostics preserve the exact custom scope command", async () => {
+  const root = await makeGeneratorRepo();
+  const seed = JSON.parse(
+    await readFile(join(root, "docs/documentation-manifest.seed.json"), "utf8"),
+  );
+  delete seed[0].class;
+  await mkdir(join(root, "fixtures"), { recursive: true });
+  await writeFile(
+    join(root, "fixtures/custom scope.json"),
+    `${JSON.stringify(seed, null, 2)}\n`,
+  );
+  await assert.rejects(
+    run(
+      process.execPath,
+      [
+        "scripts/console/generate-documentation-manifest.mjs",
+        "--check",
+        "--file",
+        "fixtures/custom scope.json",
+      ],
+      { cwd: root },
+    ),
+    /Regenerate with: node scripts\/console\/generate-documentation-manifest\.mjs --write --file 'fixtures\/custom scope\.json'/,
   );
 });

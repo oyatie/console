@@ -777,6 +777,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("ADR governance tests", "npm run test:adrs", { if: "${{ !cancelled() }}" }),
     proofRun("ADR governance gate", "npm run check:adrs", { if: "${{ !cancelled() }}" }),
     proofRun("Documentation link tests", "node --test scripts/check-doc-links.test.mjs", { if: "${{ !cancelled() }}" }),
+    proofRun("Documentation manifest gate", "npm run check:doc-manifest", { if: "${{ !cancelled() }}" }),
     proofRun("Documentation local-link gate", "npm run check:doc-links", { if: "${{ !cancelled() }}" }),
     proofRun("Doc citations — every code citation must resolve", "npm run check:doc-citations", { if: "${{ !cancelled() }}" }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: "${{ !cancelled() }}" }),

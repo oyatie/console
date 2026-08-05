@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "coverage": "authority-slice",
+  "schema_version": 2,
+  "coverage": "first-party-manifest",
   "class_vocabulary": [
     "current",
     "decision",
@@ -80,6 +80,3828 @@
       "status": "frozen",
       "replacement": "docs/current/PRODUCT.md",
       "retention": "retain as historical reconciliation"
+    }
+  ],
+  "documents": [
+    {
+      "path": ".beads/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "63e8f4c232ee83a6a239ae43b85f9c7903601dbb",
+      "archive_tag": null
+    },
+    {
+      "path": ".omx/context/reasoning-lens-contract-20260803T101035Z.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1db260293fbd0228b72abb72afa6a5bc0b383871",
+      "archive_tag": null
+    },
+    {
+      "path": ".omx/plans/reasoning-lens-contract.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "b7e6247c098c0f6abcfb41c9b52bf1368aa5083e",
+      "archive_tag": null
+    },
+    {
+      "path": "AGENTS.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7ac8ed6fe4950c2a5ce03490edb9cf3eec8088a7",
+      "archive_tag": null
+    },
+    {
+      "path": "CHANGELOG.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "289ef6cc96fc5bfb8dec98c1bed93fc51a0968f6",
+      "archive_tag": null
+    },
+    {
+      "path": "CLAUDE.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0b84552d2eb9c811a2411daf5922d41e1c4a5b5d",
+      "archive_tag": null
+    },
+    {
+      "path": "DESIGN.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "redirect",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "one-release redirect",
+      "blob_sha": "81d2f28a2864fcce932eac17139cba4397a2e7b1",
+      "archive_tag": null
+    },
+    {
+      "path": "HANDOFF.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5d807899f9fe1f56145ae140732b7b2eeb628389",
+      "archive_tag": null
+    },
+    {
+      "path": "README.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7fdc5272f156f2faf9026746b28bbfe5c3edd731",
+      "archive_tag": null
+    },
+    {
+      "path": "SPEC.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "redirect",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "one-release redirect",
+      "blob_sha": "efa8c9e788285c19e8c2b7c5fea1e8255ae55da6",
+      "archive_tag": null
+    },
+    {
+      "path": "backend/crates/platform/auth/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "28890b30c366d1cf647c37150d0867db74fde344",
+      "archive_tag": null
+    },
+    {
+      "path": "backend/crates/platform/db/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7e22f436698f858fa4f8fe0c2561a05a2f2ae33b",
+      "archive_tag": null
+    },
+    {
+      "path": "backend/crates/platform/provisioning/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5517ea82f924ee5ecb2e40e379ed2e69353be6ee",
+      "archive_tag": null
+    },
+    {
+      "path": "backend/crates/registry/adapter-postgres/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c8b570f980cdb6924f17a1ba5c7a277d27e9e4c0",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/OPS-RUNBOOK-baremetal.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e4f41850ce26ea5b9759cc9a4b92674df8943cf7",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/OPS-RUNBOOK.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9792259c8430cd0a8a6818fa4a5cbaaaff69f721",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "71eb9dfa533f90ed48db62b8871f173bf0577c89",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/SECRETS.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "251316eebe529b6b94d618d8d49a257a05abc650",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/appset-federation/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b9643e40e6ff610166a69b75d7907cd6ed081bd3",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/appset-federation/app-groups/warm-standby/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "37e73ce1c5ef44ec2557f3275d6b05f2afb3c693",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/appset-federation/examples/appset-params/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "87f056dde495b020a85bdd56a0c8546312d2413d",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/appset-federation/examples/cluster-secrets/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c964bc84c2ca8778628697567c05d663a50b2a9e",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/cilium/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "229dbcd3a95f527771c3b7fdffa8ecf2bcc31262",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/LIVE-GITOPS-CHANGES.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fac85b3b4d4589a83f526adb6bd80ba4e82c7e66",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/components/admission-audit/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3fabc6f17130fa29ea0cb209375517a56b8bc67d",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/components/governed-command-database/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9c0d12d0413c977095b1bdae5f8110f07d5c6c31",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/components/imessage-relay/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "00d8ea47f913ae3ef72abf4b87f532debb3719ba",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/components/monitoring/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "653771e8adfe957b7ed221334e96422d2a51a226",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/overlays/oci-guest/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "58c8d90bfc95311a4932e24c25dfb364350ff628",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/overlays/on-prem-observability/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fdd445605debe2e34bf0119bb5aa5cd9aaac8fb6",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/overlays/on-prem/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "afe388990999cf51db80912e58a9c9fe9a29134b",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/overlays/pr-473-expand-oci-guest/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "05f63ac2d24005bcb426eba44d165be2c283444a",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/console/overlays/pr-473-expand-on-prem/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2a003c7b0406d8b33c93fda98dfffa91d97f1c13",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/object-store/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3842e0613a165eff27ba94d065dc12f7950415a7",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/observability/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "be27c5008c0946d0583fa4ab20152ff916a90c5f",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/secrets-management/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d22d9920737b17e3c4aff68ad56b19da9279b944",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/secrets-management/components/governed-command-database/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9d08969ec48cf631afe61b10fe1515a865e55330",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/storage/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7312b50f447ae081a63a9cead33887eab103ccc7",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/traefik-oci-guest/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c118c36d79552152901b58ee1358f0f140d939ac",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/traefik-onprem/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0e0fe3fa130c626b2012ecd2de643948c2d6de7d",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/apps/vip-ingress/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e5323d3896b5a00f2bf8f7ce72e1eb2bbff8514e",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/opentofu/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8cda63f0822a323e307a34b8fbcf0a942d3c4215",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/opentofu/contexts/oci-guest/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f90bc5ff9fc52a55ee9ad736bc1ace05796443c8",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/opentofu/contexts/on-prem/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "90f755d6258106c561aae4d7d9d385801dbc41a4",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/opentofu/contexts/on-prem/primitives/metal3-inventory/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ea8889fc58b1662c9a6ce038f6aae7f67cd4febb",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/talos/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e3bcb46c3a08f64df83ef80281c12aa50666ebaa",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/talos/on-prem-ha-runbook.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5ba914d973645e7b3e72dd2c2b0bcd6e831c8915",
+      "archive_tag": null
+    },
+    {
+      "path": "deploy/talos/on-prem/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "01a9149015d1fb60140b8ee2af759b15adac5ca2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/CI-GATES.md",
+      "class": "executable-contract",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "075ca15b7fadcb6e974bf2e1babfb5207a0eb743",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/DESIGN-DOCTRINE.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1bb2d6a9013cb6e2223f7580a2c4dc0aa9aae7d3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ENTERPRISE-READINESS.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "627a33f8f72167fe8a60f231ee995973d3fa6600",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/GO-LIVE-CHECKLIST.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3934ffeee5e22dd605382f463af7a2be5e68d80e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/MISTAKES-LEDGER.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0f0d27d97a86f9de2bf12a43205407a5ceb46536",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/PIVOT-2026-07-28.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "retain as historical reconciliation",
+      "blob_sha": "aea5f0fe3e5c5cf93e90fb82f9e70937d234360c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/PLATFORM-ROADMAP.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3bd9eec36b13bb3bc1eed1af87b27489386b5ef2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3634def414734530c594d4011ba57e9fc7c4876c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/benchmarks/enterprise-parity-matrix.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3c7b1408a9e69fd385f7880217233f21d538bc4a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/benchmarks/issue-55-collaboration-work-hub.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7a50005f2a2f1fe5437328449befe3349dc5ad94",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/benchmarks/messenger-mail-maturity-matrix.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7930268e5bd4083f527c939832cc80c34b6e1e9f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/benchmarks/palantir-foundry-ops-benchmark.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "306e3a8f487a6be1bd27e02721b73668eac5d7e6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "92db05baeb1be431d8a5f2ce314e5ed9b032d304",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/current/PRODUCT.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4be4dabecd6aa56799f47545caf8a9de3f79a70d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e5e7725ef34cd84297bb2fb0d3324957345ff2ac",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2b1611445f14146b370f75d87d7daaac6448c234",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e2b92abb7b07669a55c101458fbcdfdd0487285e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7c62d10d045e1c209eb6945066c4afb1ef72d27c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0004-passkeysfirst-auth-with-rotating-refreshtoken-families.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "808bb23c50661c74250687d6ae02d9f491b5950f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0005-seaweedfs-primary-oci-object-storage-worm.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d254a98e81da054d324872193a4c87ba2d86d2c8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0006-p1-broadcastaccept-dispatch-with-livegps-scoring.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1c69741f2ef2f171c8998de0d6b75190d291f6e0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0007-postgrespersisted-messenger-with-listennotify-multiinstance-fanout.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5e051fa426f4ef1e4c67616e93d4f8e332211432",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0008-excel-export-engine.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "233dd265b40c082865de14a32385eb92f20ac1cd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1ab122176478031c4364aa0be8573fb44e37175b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0010-integration-seams-as-ports-only-oyatie.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "80207841f2180ddd0c6c9aa76af649ce8d873132",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0011-apalis-10rc-isolated-behind-a-jobqueue.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "398072162b236d5790fdeefa93932e6af9698784",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0012-monorepo-layout-for-four-deliverables-contract.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e4f3ccdb85466eb44bb410a982b28f5bb2330bc1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0014-locationping-destructible-store-carved-out-of.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "bb1ca832b4573f60e0406d25883f966774d2b7ea",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0015-dr-posture-wal-archiving-continuous-pitr.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3ad3af336e37c43f0e26397305269fa2f8fe5bd6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0016-oyatie-ai-assistant-port-contract.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7b9fc4d1c0021212a7cbcd887c77fe1a5e2fe5eb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0017-superseded-identity-provider-port-contract.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0ec1e29e39458806e9030802faeebdca8e96b75d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0018-clean-room-rust-corporate-workflow-engine.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4811f04d1348711ada182de8df64ff99c5fa0dc9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0019-standalone-mailbox-server-build-vs-adopt.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2b917fc034f4f048e42447a2f73da8d2d844dea2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0020-korean-institutional-connectivity-coverage-factory.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "67f4caf2cf1c579f496eeef16972af5e36308655",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0021-cedar-pbac-authorization-strangler.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fdf14b10adc06d27a63b542ab8b7f4edec5143cc",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0022-local-identity-no-external-idp.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fe30edde78dbf81df9a2a3aaa3ad13b120898923",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0023-oyatie-console-authority.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "96e6ba63044ef5469faebcf90b11111a7b3aaabe",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0024-bare-metal-portability-and-ha.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d3f19879adaa33f1953af7c5302f9f7b2e94f2c3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0025-carbon-copy-console-shared-platform-spine.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "532238c4c2f588f4d5a9255663eca28168fee361",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0026-retire-coss-rn-public-site-surface.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "07bbc3d77b26789beb857130cab760c10b2509f7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0027-identity-linkage-human-asserted.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c22d88f35e6ab4b96f04e7cdd30b581aa42b32ee",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0028-org-id-branchscope-composition.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "eaa78bcc10cba8c4dfb23085871062462907dec8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0029-audit-coverage-exclusions-are-two.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ee6f24e1ee67d1cbc405e77306456498c10b08cf",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0030-console-rebuild-charter-leptos.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c4c7aa53a02ad62a1d2e9e0edb5e1409170f465a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0031-contracts-crate-single-internal-contract.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7d0489ac2067804326a5c06383a848c264fa27f3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0032-effective-dated-grants-and-authority-freshness.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e6fb2d63836c2035e14c65e5be087204163b9a1e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0033-object-policy-revocation.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0f9a54b528effce412d99c10945a823a3823c0f0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0034-delegation-of-authority-routing.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3cd41e4ef368b049c435aac6c7c0d8982f6e8486",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0035-conserved-quantity-lineage.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1f3b8ae15aad79df8a65a510ee8681974d9a2829",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0036-object-dimensioned-economics.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d224b4ec14db4f9c11df460ade50e889de2febc0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0037-erasure-versus-pitr-conflict.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b05e6349ebbadcd06e2a342ae84176f9cf029cf7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0038-location-erasure-unlogged-then-crypto-shred.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2df8387f0ebe0a938fa5516d873ebc27c1f1aa7d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/ADR-0039-one-graph-tests-run-by-existing.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c87813aca565d801bb83fb45e1e949146a6159f0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/README.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f279240cb06b027e5ac0ddde84bc78ac19a493cd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/notes/DN-0001-adr-0024-ha-workload-scheduling.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "40013b60350e42a5e667e528f6f9d4119b8d2549",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/notes/DN-0002-adr-0024-on-prem-vip-ingress.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "275c5ce3f753667fe14e17f27a7be4526d4aa8d1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/notes/DN-0003-adr-0025-operational-object-runtime.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "80bc33e520288159cd74d3a4d5885a1832acc2ad",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/notes/DN-0004-adr-0028-branchless-capability-authorization.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9d631261d39134503bc09fc06cf65c3205250ce2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/AGENTS.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b756c092dafa5c62d668a326e3cbef5be0cb592a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/AUTOMATION-POLICY-FIDELITY-SPEC.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d71bd7f7367dcbe703e4584e5bcac783b0d2fe10",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/BENCHMARK.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2bb0ed8a56a44b4ffd308cb8fe292a87363c003a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/CLAUDE.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "529bd7a98e042e98c4716b20d88f937383522d78",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/DEMO.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6bda7ef3f2cf80e9bb1f36fc7d2e9881b7cc5d21",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/DESIGN.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ce3f3a11d7f983d3be58005f53b459866b24bda1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/HANDOFF.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a70dc364926842ac34a77585bab3bdc451197571",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/LEGACY-PARITY-BACKLOG.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "916fc09ff8cad415b66ffb7056253763a8845159",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "10055af5db9d927fdedf5d5d02354696fd114bba",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/ROADMAP.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e63ab45999477f395c7ee4f276b43fbee0a42a73",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/SYNC-MANIFEST.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "dec2c59517e39f911684399885231e79b9cbdd8d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/TODO.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a61952313c5456aa804955041e01604d9cea35e3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/evidence/inventory-real-wiring.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "efc724db03763b71459d0595a7c851b2454dbe11",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/design/oyatie-console/github.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2dd37cb69f567be84280d23cd6ce041243d09d20",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/apalis-soak-1781278893.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "daf1876d9330511ceeced2eeec179fac3a65f243",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/apalis-soak-t110-20260612.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6c5fdcc01fb8c9e7c0cf1ad17690b20acd49cde3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ATTENDANCE-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0c6bb6d7a42608c5ad2553dd602ca33045dd2d24",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ATTENDANCE-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "05c80117df612ca9988583a64f8dbb9963f339dc",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ATTENDANCE-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ecc23a22760321bf91cda508e02d4b9abb3b647d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-BOARD-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d110d1b09e3612be74cddc2cde5b254db766e866",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-BOARD-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "138e03c24043aea8c3a65996eac04f0790b55baf",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-BOARD-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c190688bd06e1d95cd26b8c0c641a4b415e8de71",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-BOARD-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1827dd9e91e43c4d4d5c350d2d521415fa28a99a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-BOARD-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "72b138dfc5c65b59237c1d0e0526a80a6936d6ec",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DIRECTORY-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "aec6c2fa068a43006309fe253b6535eb77459d9c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DIRECTORY-CONSOLE/frontend-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "87544bc93300773d6eb86a3e3c8d05a28e419bf6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DIRECTORY-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ae35d527ffd8824b7d83e3826bc77be9b9a2b53a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DIRECTORY-CONSOLE/manifests/backend-gap.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1d46130655ced84a4134ba664f4744d9d982020f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DISPATCH-CONSOLE/README.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fb7340b781e95493528e42ee85d5f32604ec2990",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-DISPATCH-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b2d253f24e9e414adf8134e70340198fb6d007ad",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EQUIPMENT-3R-PILOT/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e2e3f04d113c653ba43dc81b3fdca891e3d22dc0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EQUIPMENT-3R-PILOT/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ab4379da00c82c9706827c5481f397a98b531d37",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EQUIPMENT-3R-PILOT/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e1286be3f4adcc38042f13db6cf9175dca5aac96",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EQUIPMENT-3R-PILOT/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "859585d1ba8afdff6ed6e6c03d297471e2f3ebdd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-001/acceptance-matrix.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ff2a6414437010827f6e1b5775455d00ea497d50",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-001/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "40407adcb5708606e68052ba05a2ec59588f17b5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9424b973e90c2df6898f0eae4e0713a928474e70",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "59699a6205facf64ec759d0ef36fd168cf0cdd67",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d8ba6320576ace460f3c248c0d184655f3a0e930",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b178a42a84c1edede0a53439a4f722a9b12ecdf5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-EVALUATION-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "46aecd3abcbf01f4c9ba861ea38c3092a555d2f0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-FIELD-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "91bd209b8de44ad102f78ca35af8ee3a97fdfebb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-FIELD-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5ef6450a4b23dbf8f45351a784866ec53f931b00",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-FIELD-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "49d709ae795ddc5d6331da53a2f4813ff9806e86",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-FIELD-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "beb9b99f7f9e7b8c98a130d63ff63aca7c4ddc44",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-FIELD-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4966df9a8cf095cc4fe25a8c4662dc58532981cb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-LOGISTICS-PILOT/frontend-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0f60bcf500bea25873515e2076440ac286ac9ba8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-LOGISTICS-PILOT/frontend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "38f3e3a619fd15c69f3cf4be6af0c2092b5ed456",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-LOGISTICS-PILOT/manifests/openapi-applied-notes.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b3c14d933c76d9bcdf1db1117f32291733bed37e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "53bf046b9c22823bd986fe73c2117ca323885381",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a82147b5c75778ec8180afad790fee3cd594b5f7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "54c3fb4f1ea9202b69100b01687130c965685457",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0a3dd8488f25e817ea449a938a1517167d3d8741",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fda56143f53c611e4130f042689faf6a304bf3ad",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-NOTIF-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "eea7801d8364809128905d3313ad7c8e4e486184",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-NOTIF-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "eaccd122d2af59b2396af8f8ce471d7038c3b349",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-NOTIF-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5723c864e95f5db4fdd2c91d06a3da7443144c99",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-NOTIF-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "df47d30323d646cf81bf70aab978c60dcf5bccfe",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-NOTIF-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2f2b7184a4f7b53171c1869a78d5a4847048e4f7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ORG-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8da8bea39c072bd7f9c7d7a67ca00fa8823e862e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ORG-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "49ed2a42c4e28501a52710a3effd18f29f70dd0d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ORG-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "371daeca56abe9482b86a74cf7bd36865827a2c6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ORG-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0e0aa677e645de6b5ea5bfa0a1d706dd806a753e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-ORG-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0faa3eb56d9eded7731407a7474a2ffccb8a6333",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a928a166a9c8016690ccfd8044d64a6402be8ffe",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9a878b34abb2681b811343f22852e2cd26067245",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6a5a6401ece403c6db229ca6a89874d41607e31a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "03ffcbeb6adf66442079ef239979eddec4e4448d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1e72568e0c931249512542971583c99da2c682d5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-PAYROLL-CONSOLE/implementation-notes.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0a8a95a2d03302ddc3a5b34f51f1c0d97e2460b3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-RECRUITING/backend-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "162e3c7f66d2fd71372a5ba5dc62210b3546f40e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-RECRUITING/design-contract.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "13c9f66f6453bbafc5e1434adc0346ba809ea612",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-RECRUITING/design-spec.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a9ad8fc2fb885dc75c44f5596dd3460a2ca44489",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-RECRUITING/frontend/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1a67cf656680742b1ff78b176a765b77ee2ab949",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/CAP-RECRUITING/gap-analysis.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a4971e3708ca28c5eaaa911f83c9a0e19dd02c45",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/equipment-custody/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "bd0128c5c057a9ba7dc3513a8f3f9a66acc7ce82",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/equipment-custody/stage2-verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f4e6c055709f31b33447b5907b2225d07af64631",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/leave-promotion/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "28caca80b1c90c65fb56a0d5b9d482ee72ed8d73",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/leave-promotion/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c89eb69ca717d337cdcb5f31241a8a3936ce3013",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/lifecycle-foureyes/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "af3e517d9392cffcc010ee39a83c37502d38a8e4",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/hotfix/org-freeze/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1e41df8fd5a758fc1c7b0b762565a9b89ab01bfb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/openapi-integration-plan.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1539b022a1408512f064a1b9d1067f7946578313",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave23-consolidation-inventory.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ca0e9079e363d18303f901e4c95bd0924fc315ee",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/L-A1/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8c6aacf497ac682df9de4fba80bf0feb80453719",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/L-F1/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b70a9c92e14bd14fe3affb29a9402c6b2e286e1f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/L-F1/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4187f6476f0d68cf3cfe7df3e144bbf042a074b4",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/L-F2/report.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d4cb9bc16f5b25c316666a709cf3ce0ac1bc79fd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/L-F3/verification.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6a79ea922fa948de9a17661a1aa4a93c668f7edc",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/README.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "115ee8e3c6fe92a3230d06f00477b00b6aea3e11",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/DECISIONS.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3258e1c7bebc9449503254a44d543426c277e1bf",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/WAVE4-CHARTER-DEPTH.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2f2f7d505e1c5d2607253f39458372ceb94ed3b9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/WAVE4-CHARTER.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c40bb04455b81f74595fd2f69dbd783411159249",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/charter-lens-A.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f5a51e13cc3811b1f2f741d59702a82c0dbd5131",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/charter-lens-B.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "22d1906351505d9d1582cd9a2c883edd6989f012",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/charter-lens-C.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5a76117ecab39e3719a45f3bd352c4394727f1bf",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/charter-lens-D.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4f8478b637577262e0289329c1ea8c51b54614ee",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/design-intent-register.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4d268b30266184126c5768ca5bbf03f2dc39e849",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/north-star-amendment-beyond-prototype.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6ef4ada78deed2e020d2854b30dc0c6174dad151",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/research-depth-patterns-backend.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ffa581d8b076d7c5d971de9cd39e883f3df20b30",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/research-depth-patterns-frontend.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "cdddd242905a6720f8a6ab33156e389c9da1b894",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/research-statutory-params.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "32020bf9c05db6073b362edc11113368f4ca2481",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/scout-ontology-engine.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8c7f2e67bc7357322cf7dd0ddac5e6ea0d4061d2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/scout-shared-grammar-b.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "93ad6476613543161f6ca415d6201df106a93ae2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/scout-shared-grammar.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "788c7ed83736226432e4418b2d7f857fe70f0ff4",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/wave4/inputs/scout-spine-delta.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7cd021393fefc70a7678f4787c0af2a2dc23217c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/excel-browser-parity.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b9173b6bc4acba7584f0a623b9db001832396212",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/t1.4-seaweedfs-worm.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7aa18cbb0af83ea745adca7a97d7ac8e7ec392f5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/handoffs/2026-08-02-console-session-handoff.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "66b81f8a90cdf398c5e62a56ec441faf88c02363",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/handoffs/2026-08-03-disk-wipe-consolidation.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5151f80d9d11869a73eae06cd57a421856e660b0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/i18n.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4ab7d7ab6d8adb555175221a7184cd19032c3725",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/adr-adjudication.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0c30ce3183fdaa37a4f159c07bde5d0b487d7a7f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/adr-collisions-raw.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "978a7858b61a7d5e12c7e4a8a4c12fd40d81e55f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/authority-and-approval-model.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "b945e67d38c3aea745e0239fb7091005505550fa",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/build-strategy.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "0d07a0e424a6ed0475627e749034f7da60002380",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/console-information-architecture.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "0acdf63f8f1d2c200c39f95e5396e08bc729c3e6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/d4-frontend-charter.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "2c0da8b0562baa46e7a42a2e383c3e0afdecb254",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/delegation-economics.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "ede0933cbdef492ef0051218464133ae292c61a4",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/ecosystem-plan-DRAFT.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "7a3b10088a0ccca80b06322bb212cd7258d70db3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/ecosystem-plan-architect-findings.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "de91c6c2816a2d4e9e3ab99b0af97040848ac751",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/ecosystem-plan-review.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1885884b1f5bbd0365c599ab80260f5ee91bbb78",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/enterprise-role-workflows.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "364acc74a459aaf33d7310b5a4e71efc0c4a526b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/entity-vocabulary.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "5f8516b801ccdfe2feaa00e2303f7370446f6895",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/execution-plan-DRAFT.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "b1cb6afc4dbcf9a873ee3b7d5c39ed21f20bd491",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/experiment-results.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ad8c858ca42ac99332996164d7f9bd65c2c5b40c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/experiment-x1-x2.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7d6142d0b91c0bb3bd407cd4f917fe455ede3c3e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/experiment-x4.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1233ae836f7194a2d48659636422c9d7684cb260",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/experiment-x4b.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3b08692593cd34335e8dedea66da048f35e817c5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/fanout-plan-DRAFT.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "abb0fa64904f381aa71f9069a7ea75a6c03807bf",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/foundry-reference.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "bc983c96a5af305f010debcf613ab1fa6f9df2a0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/governed-object-engine-PLAN.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "2ce677426a11449c678565b298f12f0d8ea11867",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/governed-object-engine.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "2003192cc3457e9a15f97a523b962f42c0970ba3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/internal-scope-inventory.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "b6a558f3a518a891abee8fba2a8c87649dfd2ac8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/korean-legal-sources.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "dd0d1283ae789fb66865c9ac1f38f2500ab547fb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/lane-assembly-line.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "e4fc7bab4829a221774ad45e03af7ee2c06f109f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/no-code-ontology.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "1b2f39202b688257b4a2650d282cfa47a4f8384c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/observability-oci-freetier.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "aacff075fcca2bf1417896560eb5f63506153847",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/openapi-staleness-audit.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6f59dd3aaae91c1f0fdeb87154eeb1046477cf40",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/payroll-goldencase-gaps.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3490517c2250ae436d65015e9cb1c9486f1d396b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/payroll-statutory-sources.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fd438a8cabd69b71af757ed28e13615444c8d85e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/process-minimum-viable-provenance.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "1706de9009c9f4ba521a05b2717a6cf1bbc06bec",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/provenance-on-links.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "20f94865651673dc740e7278381b9575f491f6a8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/research-agentic-practice.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b8101e23fa9193723919844267874d197fd9fc61",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/research-omni-platforms.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b8dfc7c08403b7a6db4055bb6aee86fcaa55bcff",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/research-saas-bar.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a58800328f0fdc263ff78510b39b0ae8ca11bba0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/research-sap.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "95d5a800fb502f1be5a5fcfa6ad893546973df5e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/revision-brief.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "c812980a8d0fc5ce40ca9c05ad3cf546527bab55",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ideas/revision-log.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d6308e79cee41d4d86b65e2eff0f88d0aceb29a7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/intent/console-north-star.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "518002cc87af776013d75da4899216bc51ea14bb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/ios-swift-client-drift-handoff.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ab08930f4dd086ee575b515fcfefe2466a6899c7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/parity-checklist.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5a8adbe65bd6aaf826c1befe9d61efa4a4779e9d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/CATALOG.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "7d304cc20141b1d2985ade6d9a7b22df6bb5e4f0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/LANE-PROTOCOL.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9f63aee855ddb71205fc1a55f955b9c9a941598b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a61644b2e999a4b7ec1a1f79e38b8f564540353d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/agentic-engineering-playbook.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6b6295b53e6b56e8a45779ef485dc682d706118f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/audit-4-22-23.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "54df72df97bb0b93b84811ba6925d44bd0fbd4ad",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/backend-survey.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ef5f3f78d05c6e46194416002020fbd00b8fa0ce",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/be-ontology-engine-arch.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b0b068a1ad8d2e5290372f7d6a2983559990e27d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-brief.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8e93ea2e27e1e9c86ceb9a689f06b1825583930e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/INDEX.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2bc0a25eb383a2124d416be7b3b3c79edb42b94f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/appr.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2fc27923b472395b5f9357df84f29b23509e47e8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/automate.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9940a0fee0e96ad503fd163bd5ba371f6812d080",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/comms.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0e4bb5a5fe9b90341a3fcb4ea7f8cbc2fab9eb3f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/compliance.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2214a3ff9f0f936ead5abfce7f830edee73e0e77",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/dashboard.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9dc4e34a5e2190f0433a673080b13f6e76c1913a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/evidence.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a2060fa11e45efce1182e7ae9c810c06b914d586",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/field.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "31c1c67b581a8a3554cf7fb4f29efe4a98a88851",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/finance.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "91ddd7fe23d4fe1d958e8cbbe9c167129954ba52",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/leave.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1e6a4e439b1e65ee46eb6b2b893735cd6081cff5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/lenses/automation-ext.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3e2f5f5b743aeb13d4637617993cdf11b97ad429",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/lenses/data-model.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "bded35fab2b7d69f7defd715047c8affdcb139ab",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/lenses/governance.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "19a5ebaf7abb1523e341f8970584711d2a412742",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/lenses/ia-layout.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5201f3f1dc3742ec4f6739aef6074a2db8b6fcea",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/lenses/task-flow.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "adc3b58bb7169a36dca4cf40465cefcd37d3ec4d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/object-platform.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a124a9ba202431528347b38bed3f36cf4227727e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/overview.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ba8a03713206ed5df15044ea82d8c9b4f6fad695",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/people.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9606ac3923ea2e1e85c7f281c7d2ae4ddc6b23b9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/policy.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f8e94e07a0dcff29f5e70f0f5f977fc8d5b1b47a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/benchmark-matrix/support.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "10bf5971382538bcf1c471fd1b5dee6d813786c5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/bestinclass-register.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6307877935777f3192f0e8eb9fbe68cc10daaff9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-buck2-scale-playbook.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e1fc9868dfd7f908fbb4067e0982833c96aa2831",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-development-pipeline.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2c6ffed1e5d0ec089e3e87e3554122d5266f5191",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-enterprise-roadmap.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c44f0fc338f428c2e845bc57ef567cb8cd6aa1c1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-fanout-epoch-contract.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7f61e8caceed7aee42c41297e720cad6751ca55f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-mywork-implementation-plan.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "dee3ff8904445aaa2e26928eb5e7c6dfc334dbf6",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/console-program-ledger.md",
+      "class": "executable-contract",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f2bb612cb72b0ebbca02a5ba52815fc14919be91",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/false-green-gate-holes.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "80ded0962b477bf70db7d282e2ca0d70611e2553",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-01-candidate-sha-leaves-the-registers.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0fccfcf7b6e6a695ae6e5fd6a570d49539cc5874",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-01-ci-mirror-was-red-and-its-guard-ran-nowhere.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ba56a0baa6ce4cf6442f075360b6c19da76402f8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-01-payslip-draft-that-refuses-to-look-finished.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "aac83db933c64d057daf22610184556b574d66e2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-01-six-cross-branch-defects.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "82c2d7b72b5f2f03ad612cb7e764abc3882171ab",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-02-absent-input-read-as-a-decision.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a1923777c55e403ec3ed687f447c8dff6a7e632a",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-02-kernel-core-ran-its-tests-nowhere.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "cc298d618cba43009e8a30ace496e268f2c4e6aa",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-02-sccache-never-saw-a-compilation.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9cf7e37744beb07d40b51357d8d534dbf2e93d0e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-02-the-handoff-that-recorded-its-own-corrections.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "614f434e88d343078239083f517607f8fd33cd54",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-cosskorea-domain-swap-blocked.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "32780a257cae24843a6e47e3e6d76bc48ee46c2e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5dde1b444e4932ffc3cbf630f442e9357ad4891d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-custody-corrected-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b18499aec225dd24c5a2854921edc5cab42693ae",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-custody-truth-corrected-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "71613326f29d32a015d2ca06f5809da2dca1fc36",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-final-candidate-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "43913c2918f75210550a6ff22b9693481f31f05b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-hermetic-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6c73e170c031571eeae833a09cbc365906eb2e25",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-replacement-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b2018d2ce2248e069e98f5130dc984c5aebf6ac9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-sealed-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "50c953b03e1a70f2b9b141fdcaad045d4488f46e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-disk-wipe-consolidation-verified-candidate-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "dd1e93adfa242c16af9918716e0a8e4782edaba1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-release-0-3-1-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9cf899a5158e4242da0d0257c8439f34f3d7baff",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-03-release-0-3-2-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "79c14aae96cca7dccfb3e96c50313945b284a93e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-04-ci-docs-wipe-stabilization-authority.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "76b106918b99b5998a3529e6a8679b660ee5ffd2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-05-documentation-manifest-ratchet.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "804d718545e3b0298967e73441ac12f0147f1770",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/legacy-intent-register.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "bd138269390f54bab985d4f7504b50ea256c958e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/modules/consulting-engagements.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9e951d41bbcbb6dd4a925f4ef0568ff4881c7bcd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/modules/people-workforce.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "22c3ee69e853ae1542934b36a3e95e36616551a5",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/modules/production-operations.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "383cda084abc4110f5be0cf27704b65644bab735",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/my-work-ux-capability-benchmark.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2f494ad9351c7d891c84866dfa773ee8db5f6251",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ontology-coverage-matrix.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "45cb733e414b6e2d5527ea14899abe87ec89a85f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ontology-deployment-gap.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c5a345f9ae74a5c21fe11f3a526e7f8d0c610e23",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/parity-matrix.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "da5bda669530ae9286c5d0429589e01b3e6a5bae",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/polish-register-r2.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "eaf70e7941c79329815217e6d46ff4cfd055ab99",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ultra-review-w1-w2.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "477ec5affc5dce728494952dce9ffd06a857ae00",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/wave4-migration-slot-ledger.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2e029843b738638eff05a7d60bcbbc1b35287c11",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/release/PR-473-EMPLOYEE-IMPORT-EXPAND-CONTRACT.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "12c8edb0f4f0465f89353bf5faf2ca154c9c16b1",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/release/PR-473-ONTOLOGY-EXPAND-CONTRACT.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e8dce22bcc68a3bf47a5f7a1c791742ea2f9f7ba",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/release/PR-473-PRODUCTION-PROMOTION.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2522a5c1840674de3fd3e226e098ec5b52f3c0d9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/release/SECRETS.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "460ef81fd45219b49a982bf40b7fe8e4ca4ef3ec",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/retros/2026-07-03-m1-pr152-intent.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b75949a841104877b46f766cdf66f532fd0d6f44",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/retros/templates/post-mortem.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "09fe0c3f9986f58854d3e75e8240954102b75d3c",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/retros/templates/pre-mortem.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "07ebaa7bd0a17b34d48404ed23c7bf3e6ed775af",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/retros/templates/runnable-rollback.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "211467a2f17504430a188184cdb9795eda3b7129",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/retros/templates/workflow-experiment.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "de6cbc381529e330baa7a9b19569b28f21aeed61",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/runbooks/non-oci-talos-mail-imessage-relay.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "687d417777f5bdf76990d5bd8153813398592a52",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/accounting.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9b53279e655cc312c809f947605727f630e798a7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/autonomous-pr-lifecycle-operating-spec.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f34463dac58c3d2379d606b4d8c8cfe425a6b8b0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/backlog-clearance-ledger.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d4ada31977a45c1d0908c826a06e7d895f366b90",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/benefit-catalog-domain-contract.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2549ba7057e3d71777a7668bff776a18887db1bc",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cedar-pbac-authorization.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7b5c0d95539b99e0d01dcfd7de427be499fc5b0d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cedar-pbac-cutover.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "26643178ae6b6a5264d4335dcc128d71e328f3a7",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cedar-pbac-verification-observability.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "437b14fd4206d7c84de08bbc377c5f3f17210888",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cedar-policy-catalog-staging-contract.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c9ddc75aafe44f35c9cb605ee72e92392e761009",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cross-org-work-assignments.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "60307fd3613f8e3262d4d6433283e39f89964a75",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/cx-reporting-bi.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fe8c5c89cfe900191362486452d811c600f59518",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/data-exchange-import-export.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "970e5663431f99a9c24ec79e605e6fcd3d18fd1d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/erp.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0a0160aeea60bbefc514ab1eba0314036e9d6dc3",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/foundation-gates.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b722161d3751a82bea8e9c9b8c397f7069d3af44",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/hr-core.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "830877d940d5a4aa1184f27226a5da7db1816b76",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/hr-payroll-readiness.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8ef0688acccb1074928864a592616cf9a2650217",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/issue-55-approval-command-center.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8235d9765451a215ae9e7f81bd6e2462a60fc347",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/knl-business-os.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "02e4ed20c4f7af7d7a4fde0ad3975ea9ddc4ef70",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/korean-institutional-connectivity-local-certificate-agent.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "931cf9867ce28d3f350b7cb8128481de368e5b8e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/korean-institutional-connectivity-nhis-edi-loss-report.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c1ef5205e8bae630366e0fb00525d5f790c291cb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/korean-institutional-connectivity.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "35021f8f12bbb266273990beb85d0d23d44c0af2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/korean-legal-boundaries.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4ef09c3fec63500e1564c6454a115265db077bc8",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/log-persistence.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6cb4ab539cdf24ca759eb2cb5602631c293dd245",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/master-parallel-build-plan.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "d65746c65a733c1252e47d63fc49ec54be2e745d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/mes.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "656c6041162bb5858dba9b9b49430bed9646ec58",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/mobile-passkey-step-up-contract.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3e13ebb270c4f112ccca9b4388acc4c42f725f12",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/no-code-operational-logic.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e08a7591c4740b10c8871630a2c1e826d8fa5e36",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/no-code-org-ops-editor-approved-plan.md",
+      "class": "quarry",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain as context",
+      "blob_sha": "7b26a3e0011f673f7209596c50ded77447faf132",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/operations-intelligence.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a8856d5d608841f15f696754002d8738498ae036",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/org-editor-primitives-ux.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2ed144417c37d7db13665b06de93af6476165b22",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/org-hierarchy.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1caac107983c8c2ae7a8bfcc0962fa3f998169ff",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/payroll.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ed2a0aae16c883efb2e2c949d932216ab380fc95",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/production-hardening-deployment-context-contract.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "83c1303ddfc06695afc08efbf4b6cde9fc477927",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/rbac-configurable.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1e97d77ea10c656002fd3563043d96537c187019",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/review-cycle-persistence-rls.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7574b6f2b3c0ada2cf77db24b9e53d9bebb26206",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/review-fix-merge-governance.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "37f7b9c09bcc3bc6d8b3bdcfced8add774089724",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/roadmap-to-production.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fcd125cb31c92fbae53808b768cc08515e8ff2b9",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/session-backlog-2026-06-29.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "cc5f3438b1ab0f72fcdc9605ad1eef8f7bb805be",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/specs/standalone-corporate-mailbox-server.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "cbc0bf08ce27c0457949b276336b8b48ca8d7030",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/web-console-overhaul-spec.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3845cacc4f58bd1fbb797d2ab01a392298fdf698",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/README.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e925d2a9a5b871f6f5099b567b56e70f08f06916",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/backup/RUNBOOK.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a9c72febe41fa0fbc90cd6e6a62cb68bf5001b6b",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/DR-POLICY.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2b232e14fdfd843085eba3328e3546eb0d81775d",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/VM-DOWN-RUNBOOK.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "38d1befa672a94d8873c6ea261e33ac34b804d61",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/cnpg-restore-drill.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "32368ed4f8bf284fe56dbca328a68f49843d88eb",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/multicluster-failover-runbook.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "75eca8d9b7ae8dc9e2cb11885cdf9bad2f1c51bd",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/prerequisite-checklists/t_3455f923-20260709T151657Z.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "4b30945012d2723f45383a6a65b476d5a422e277",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/dr/prerequisite-checklists/t_81d5480c-20260709T212739Z.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9757ab30dac4af43816d4d96cbcba9b1ae9572fe",
+      "archive_tag": null
+    },
+    {
+      "path": "ops/launch/multi-tenant-cutover-runbook.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "091f608ce2f417ce4efdea5b5a2d077e5a8ea651",
+      "archive_tag": null
     }
   ]
 }

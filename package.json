@@ -23,6 +23,7 @@
     "check:ci-preflight": "node scripts/check-ci-preflight.mjs",
     "check:reasoning-lens-contract": "node scripts/check-reasoning-lens-contract.mjs",
     "check:doc-links": "node scripts/check-doc-links.mjs",
+    "check:doc-manifest": "node scripts/console/generate-documentation-manifest.mjs --check",
     "verify": "node scripts/verify.mjs fast",
     "verify:db": "node scripts/verify.mjs db",
     "verify:all": "node scripts/verify.mjs all",

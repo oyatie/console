@@ -13,6 +13,32 @@ const allowedAuthorities = new Map([
   ["roadmap", "docs/current/ROADMAP.md"],
   ["delivery", "docs/current/DELIVERY.md"],
 ]);
+const expectedTransitions = [
+  {
+    path: "SPEC.md",
+    class: "historical",
+    owner: "repository maintainers",
+    status: "redirect",
+    replacement: "docs/current/PRODUCT.md",
+    retention: "one-release redirect",
+  },
+  {
+    path: "DESIGN.md",
+    class: "historical",
+    owner: "repository maintainers",
+    status: "redirect",
+    replacement: "docs/current/PRODUCT.md",
+    retention: "one-release redirect",
+  },
+  {
+    path: "docs/PIVOT-2026-07-28.md",
+    class: "historical",
+    owner: "repository maintainers",
+    status: "frozen",
+    replacement: "docs/current/PRODUCT.md",
+    retention: "retain as historical reconciliation",
+  },
+];
 const classVocabulary = [
   "current",
   "decision",
@@ -20,6 +46,13 @@ const classVocabulary = [
   "evidence",
   "historical",
   "quarry",
+];
+const statusVocabulary = ["active", "frozen", "redirect"];
+const retentionVocabulary = [
+  "retain",
+  "retain as context",
+  "one-release redirect",
+  "retain as historical reconciliation",
 ];
 const fullManifestFields = [
   "path",
@@ -39,6 +72,7 @@ const rootIndexFields = [
   "entry",
   "authorities",
   "transitions",
+  "documents",
 ];
 const entryRecordFields = ["path", "class", "owner", "status", "replacement", "retention"];
 const authorityRecordFields = ["concern", ...entryRecordFields];
@@ -219,8 +253,8 @@ function validateDocumentationIndex(worktree, snapshot) {
 
   if (!requireExactRecordFields(index, "root record", rootIndexFields)) return;
 
-  if (index.schema_version !== 1) {
-    failures.push("docs/documentation-index.json: schema_version must be 1");
+  if (index.schema_version !== 2) {
+    failures.push("docs/documentation-index.json: schema_version must be 2");
   }
   if (!sameMembers(index.class_vocabulary, classVocabulary)) {
     failures.push(`docs/documentation-index.json: class_vocabulary must be exactly ${classVocabulary.join(", ")}`);
@@ -228,15 +262,19 @@ function validateDocumentationIndex(worktree, snapshot) {
   if (!sameMembers(index.future_full_manifest_fields, fullManifestFields)) {
     failures.push(`docs/documentation-index.json: future_full_manifest_fields must be exactly ${fullManifestFields.join(", ")}`);
   }
-  if (index.coverage !== "authority-slice") {
-    failures.push("docs/documentation-index.json: coverage must remain authority-slice until the full-manifest contract is implemented");
+  if (index.coverage === "complete") {
+    failures.push("docs/documentation-index.json: coverage complete is not accepted without a signed-archive validation contract");
+  } else if (index.coverage !== "authority-slice" && index.coverage !== "first-party-manifest") {
+    failures.push("docs/documentation-index.json: coverage must be authority-slice or first-party-manifest");
   }
 
   const entry = index.entry;
   const authorities = Array.isArray(index.authorities) ? index.authorities : [];
   const transitions = Array.isArray(index.transitions) ? index.transitions : [];
+  const documentRecords = Array.isArray(index.documents) ? index.documents : [];
   if (!Array.isArray(index.authorities)) failures.push("docs/documentation-index.json: authorities must be an array");
   if (!Array.isArray(index.transitions)) failures.push("docs/documentation-index.json: transitions must be an array");
+  if (!Array.isArray(index.documents)) failures.push("docs/documentation-index.json: documents must be an array");
 
   const concerns = new Set();
   const admittedPaths = new Set();
@@ -320,6 +358,101 @@ function validateDocumentationIndex(worktree, snapshot) {
     }
     if (typeof record.owner !== "string" || !record.owner.trim() || typeof record.retention !== "string" || !record.retention.trim()) {
       failures.push(`docs/documentation-index.json: transition ${record.path} requires owner and retention`);
+    }
+  }
+  if (transitions.length !== expectedTransitions.length) {
+    failures.push(`docs/documentation-index.json: exactly ${expectedTransitions.length} transitions are required`);
+  }
+  for (const expected of expectedTransitions) {
+    const record = transitions.find((candidate) => candidate?.path === expected.path);
+    if (!record || !entryRecordFields.every((field) => Object.is(record[field], expected[field]))) {
+      failures.push(`docs/documentation-index.json: transition must remain byte-for-value: ${expected.path}`);
+    }
+  }
+
+  const recordsByPath = new Map();
+  let previousPath = null;
+  for (const [recordIndex, record] of documentRecords.entries()) {
+    const label = `document record ${recordIndex + 1}`;
+    if (!requireExactRecordFields(record, label, fullManifestFields)) continue;
+    if (typeof record.path !== "string" || !record.path) {
+      failures.push(`docs/documentation-index.json: ${label} requires a path`);
+      continue;
+    }
+    if (previousPath !== null && record.path <= previousPath) {
+      failures.push("docs/documentation-index.json: documents must be strictly path-sorted");
+    }
+    previousPath = record.path;
+    const entries = recordsByPath.get(record.path) ?? [];
+    entries.push(record);
+    recordsByPath.set(record.path, entries);
+
+    const trackedEntry = tracked.get(record.path);
+    if (!isFirstPartyDocumentation(record.path) || !isRegularBlob(trackedEntry)) {
+      failures.push(`docs/documentation-index.json: document path must be a tracked regular first-party markdown blob: ${record.path}`);
+      continue;
+    }
+    if (record.blob_sha !== trackedEntry.oid) {
+      failures.push(`docs/documentation-index.json: ${record.path} blob_sha does not match the exact Git index-tree blob OID`);
+    }
+    if (!classVocabulary.includes(record.class)) {
+      failures.push(`docs/documentation-index.json: ${record.path} class must be one of ${classVocabulary.join(", ")}`);
+    }
+    if (record.owner !== "repository maintainers") {
+      failures.push(`docs/documentation-index.json: ${record.path} owner must be repository maintainers`);
+    }
+    if (!statusVocabulary.includes(record.status)) {
+      failures.push(`docs/documentation-index.json: ${record.path} status must be one of ${statusVocabulary.join(", ")}`);
+    }
+    if (!retentionVocabulary.includes(record.retention)) {
+      failures.push(`docs/documentation-index.json: ${record.path} retention must be one of ${retentionVocabulary.join(", ")}`);
+    }
+    if (record.replacement !== null && (typeof record.replacement !== "string" || !record.replacement.trim())) {
+      failures.push(`docs/documentation-index.json: ${record.path} replacement must be null or a non-empty string`);
+    }
+    if (record.status === "active" && record.replacement !== null) {
+      failures.push(`docs/documentation-index.json: ${record.path} active record must not have a replacement`);
+    }
+    if (record.status === "redirect" && (typeof record.replacement !== "string" || !record.replacement.trim())) {
+      failures.push(`docs/documentation-index.json: ${record.path} redirect record requires a replacement`);
+    }
+    if (record.archive_tag !== null) {
+      failures.push(`docs/documentation-index.json: ${record.path} archive_tag must be null until signed-archive validation exists`);
+    }
+  }
+
+  const projections = [
+    { label: "entry", record: entry },
+    ...authorities.map((record) => ({ label: `authority ${record?.concern}`, record })),
+    ...transitions.map((record) => ({ label: `transition ${record?.path}`, record })),
+  ];
+  for (const projection of projections) {
+    const documents = recordsByPath.get(projection.record?.path) ?? [];
+    if (documents.length !== 1) {
+      failures.push(`docs/documentation-index.json: ${projection.label} requires exactly one document projection`);
+      continue;
+    }
+    for (const field of entryRecordFields) {
+      if (!Object.is(documents[0][field], projection.record[field])) {
+        failures.push(`docs/documentation-index.json: ${projection.label} document projection differs at ${field}`);
+      }
+    }
+  }
+
+  if (index.coverage === "first-party-manifest") {
+    const universe = [...tracked.entries()]
+      .filter(([path]) => isFirstPartyDocumentation(path))
+      .map(([path]) => path);
+    for (const path of universe) {
+      const records = recordsByPath.get(path) ?? [];
+      if (records.length !== 1) {
+        failures.push(`docs/documentation-index.json: ${path} must have exactly one document record (found ${records.length})`);
+      }
+    }
+    for (const path of recordsByPath.keys()) {
+      if (!universe.includes(path)) {
+        failures.push(`docs/documentation-index.json: document path is outside first-party manifest coverage: ${path}`);
+      }
     }
   }
 

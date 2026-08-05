@@ -1098,6 +1098,9 @@ jobs:
       - name: Documentation link tests
         if: ${{ !cancelled() }}
         run: node --test scripts/check-doc-links.test.mjs
+      - name: Documentation manifest gate
+        if: ${{ !cancelled() }}
+        run: npm run check:doc-manifest
       - name: Documentation local-link gate
         if: ${{ !cancelled() }}
         run: npm run check:doc-links
