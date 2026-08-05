@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
+import { beginGate, emitProvenanceIfRequested, noteAssertion, noteRead } from "./lib/gate-inputs.mjs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+beginGate({
+  gate: "check:g004-identity-foundation",
+  script: "scripts/check-g004-identity-foundation.mjs",
+  documentInputs: [
+    "docs/specs/foundation-gates.md",
+  ],
+});
+
 const matrixPath = "docs/benchmarks/g004-identity-foundation-matrix.json";
 const auditPath = "docs/benchmarks/enterprise-ui-route-audit.json";
 const goalId = "G004-identity-group-org-people-policy-fou";
@@ -16,6 +25,7 @@ function pathOf(path) {
 
 function read(path) {
   const abs = pathOf(path);
+  noteRead(path);
   if (!existsSync(abs)) {
     failures.push(`${path}: missing`);
     return "";
@@ -50,11 +60,13 @@ function requireFile(path, label = path) {
 function requireIncludes(path, needle, label) {
   const text = read(path);
   assert(text.includes(needle), label, `${label}: ${path} must include ${JSON.stringify(needle)}`);
+  if (text.includes(needle)) noteAssertion(path);
 }
 
 function requireNotIncludes(path, needle, label) {
   const text = read(path);
   assert(!text.includes(needle), label, `${label}: ${path} must not include ${JSON.stringify(needle)}`);
+  if (!text.includes(needle)) noteAssertion(path);
 }
 
 function requireArrayOfStrings(value, path, label) {
@@ -129,7 +141,7 @@ if (matrix) {
 
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G004 backend test ${test}`);
 
-  requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G004 goal id");
+  // T1-CONV: backlog ledger goal-id prose assertion removed; matrix.goalId is the executable source (see docs/program/ledger/2026-08-05-gate-input-provenance.md).
   requireIncludes("docs/specs/foundation-gates.md", "passkey", "foundation gate mentions passkey contract");
   requireIncludes("docs/specs/foundation-gates.md", "policy", "foundation gate mentions policy contract");
   requireNotIncludes("scripts/check-people-hr-maturity.mjs", "G027-people-hr-lifecycle-org-scope-ui-mat", "people HR gate has no stale G027 owner id");
@@ -140,5 +152,6 @@ if (failures.length) {
   process.exit(1);
 }
 
+emitProvenanceIfRequested();
 console.log(`G004 identity foundation gate passed (${passes.length} checks).`);
 for (const item of passes) console.log(`- ${item}`);

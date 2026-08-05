@@ -570,7 +570,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "075ca15b7fadcb6e974bf2e1babfb5207a0eb743",
+      "blob_sha": "f2d309a65d3c2a660e3a2310e564860dca5d6eb0",
       "archive_tag": null
     },
     {
@@ -3211,6 +3211,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "bd139d15cf25d5668c98e131feae8b9238a1639d",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-05-gate-input-provenance.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e84146e3e3da09555b81f9d3abe9ff27d84e6eb5",
       "archive_tag": null
     },
     {

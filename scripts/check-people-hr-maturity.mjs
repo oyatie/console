@@ -1,4 +1,13 @@
 import { createTextGate } from "./lib/text-gate.mjs";
+import { beginGate, emitProvenanceIfRequested } from "./lib/gate-inputs.mjs";
+
+beginGate({
+  gate: "check:people-hr-maturity",
+  script: "scripts/check-people-hr-maturity.mjs",
+  documentInputs: [
+    "docs/specs/data-exchange-import-export.md",
+  ],
+});
 
 const { requireIncludes, requireAbsent, reportGate } = createTextGate({
   includeFailure: ({ path, needle, label }) => `${path} is missing ${label}: ${needle}`,
@@ -27,4 +36,5 @@ requireIncludes(
   "G004 ownership in enterprise UI audit",
 );
 
+emitProvenanceIfRequested();
 reportGate("people HR maturity gate passed");

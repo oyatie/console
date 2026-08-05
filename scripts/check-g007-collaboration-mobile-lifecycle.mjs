@@ -1,9 +1,19 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
+import { beginGate, emitProvenanceIfRequested, noteAssertion, noteRead } from "./lib/gate-inputs.mjs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+beginGate({
+  gate: "check:g007-collaboration-mobile-lifecycle",
+  script: "scripts/check-g007-collaboration-mobile-lifecycle.mjs",
+  documentInputs: [
+    "docs/specs/backlog-clearance-ledger.md",
+    "docs/specs/foundation-gates.md",
+  ],
+});
+
 const matrixPath = "docs/benchmarks/g007-collaboration-mobile-lifecycle-matrix.json";
 const auditPath = "docs/benchmarks/enterprise-ui-route-audit.json";
 const goalId = "G007-collaboration-mail-calendar-poll-mob";
@@ -16,6 +26,7 @@ function pathOf(path) {
 
 function read(path) {
   const abs = pathOf(path);
+  noteRead(path);
   if (!existsSync(abs)) {
     failures.push(`${path}: missing`);
     return "";
@@ -50,11 +61,13 @@ function requireFile(path, label = path) {
 function requireIncludes(path, needle, label) {
   const text = read(path);
   assert(text.includes(needle), label, `${label}: ${path} must include ${JSON.stringify(needle)}`);
+  if (text.includes(needle)) noteAssertion(path);
 }
 
 function requireNotIncludes(path, needle, label) {
   const text = read(path);
   assert(!text.includes(needle), label, `${label}: ${path} must not include ${JSON.stringify(needle)}`);
+  if (!text.includes(needle)) noteAssertion(path);
 }
 
 function requireArrayOfStrings(value, path, label) {
@@ -172,5 +185,6 @@ if (failures.length) {
   process.exit(1);
 }
 
+emitProvenanceIfRequested();
 console.log(`G007 collaboration mobile lifecycle gate passed (${passes.length} checks).`);
 for (const item of passes) console.log(`- ${item}`);

@@ -1,4 +1,13 @@
 import { createTextGate } from "./lib/text-gate.mjs";
+import { beginGate, emitProvenanceIfRequested } from "./lib/gate-inputs.mjs";
+
+beginGate({
+  gate: "check:g008-payroll-readiness",
+  script: "scripts/check-g008-payroll-readiness.mjs",
+  documentInputs: [
+    "docs/specs/hr-payroll-readiness.md",
+  ],
+});
 
 const { requireIncludes, requireMatches, requireNotIncludes, reportGate } = createTextGate();
 
@@ -96,4 +105,5 @@ requireIncludes(
   "CI runs G008 payroll readiness gate",
 );
 
+emitProvenanceIfRequested();
 reportGate("G008 payroll readiness gate passed");

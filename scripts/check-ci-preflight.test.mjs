@@ -290,7 +290,7 @@ describe("CI preflight contract", () => {
       backend: 23,
       "dev-up-smoke": 6,
       "kubernetes-manifests": 6,
-      "repo-gates": 24,
+      "repo-gates": 26,
       "api-contract": 4,
       "generated-face-authority": 4,
       "company-conformance": 2,
@@ -326,8 +326,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 97, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 291, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 99, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 297, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

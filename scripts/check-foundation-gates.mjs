@@ -4,9 +4,24 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createTextGate } from "./lib/text-gate.mjs";
+import { beginGate, emitProvenanceIfRequested, noteAssertion } from "./lib/gate-inputs.mjs";
 import { evaluateSecurityWorkflowHardening } from "./check-workflow-hardening.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+beginGate({
+  gate: "check:foundation-gates",
+  script: "scripts/check-foundation-gates.mjs",
+  documentInputs: [
+    "docs/CI-GATES.md",
+    "docs/GO-LIVE-CHECKLIST.md",
+    "docs/benchmarks/enterprise-parity-matrix.md",
+    "docs/specs/backlog-clearance-ledger.md",
+    "docs/specs/foundation-gates.md",
+    "docs/program/console-fanout-epoch-contract.md",
+    "docs/program/console-buck2-scale-playbook.md",
+    "docs/specs/review-fix-merge-governance.md",
+  ],
+});
 const textGate = createTextGate({
   root,
   includeFailure: ({ path, needle, label }) => `${label}: ${path} must include ${JSON.stringify(needle)}`,
@@ -316,6 +331,7 @@ function requireOnlyReactNativeHermesEngineLines(path) {
     }
   }
   passes.push(`${path} permits only exact React Native Hermes JS engine technical lines`);
+  noteAssertion(path);
 }
 
 for (const path of liveAuthorityContracts) {
@@ -335,6 +351,7 @@ if (failures.length) {
   process.exit(1);
 }
 
+emitProvenanceIfRequested();
 console.log(`Foundation gate check passed (${passes.length} checks).`);
 for (const pass of passes) {
   console.log(`- ${pass}`);

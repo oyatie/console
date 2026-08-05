@@ -1,4 +1,13 @@
 import { createTextGate } from "./lib/text-gate.mjs";
+import { beginGate, emitProvenanceIfRequested } from "./lib/gate-inputs.mjs";
+
+beginGate({
+  gate: "check:payroll-release-gate",
+  script: "scripts/check-payroll-release-gate.mjs",
+  documentInputs: [
+    "docs/specs/payroll.md",
+  ],
+});
 
 const { requireIncludes, requireMatches, requireAbsent, reportGate } = createTextGate({
   includeFailure: ({ path, needle, label }) => `${path} is missing ${label}: ${needle}`,
@@ -38,31 +47,12 @@ requireIncludes(
   "payroll signing-equivalent step-up rule",
 );
 
-requireIncludes(
-  "backend/crates/payroll/domain/src/lib.rs",
-  "This crate intentionally contains pure, source-versioned data and guardrail",
-  "pure payroll kernel boundary",
-);
-requireIncludes(
-  "backend/crates/payroll/domain/src/lib.rs",
-  "NTS withholding tax table row is required; payroll must not estimate income tax",
-  "no estimated income tax path",
-);
-requireIncludes(
-  "backend/crates/payroll/domain/src/lib.rs",
-  "노무사/세무사 professional validation is required",
-  "professional validation fail-closed gate",
-);
-requireIncludes(
-  "backend/crates/payroll/domain/src/lib.rs",
-  "at least one payroll golden case is required",
-  "golden case release gate",
-);
-requireIncludes(
-  "backend/crates/payroll/domain/src/lib.rs",
-  "artifact_sha256 must be a 64-character hex digest",
-  "professional artifact digest validation",
-);
+// T1-HYG (counts zero toward decoupling): Rust doc-comment prose assertions removed.
+// Executable coverage remains in console-payroll-domain unit tests (golden case,
+// professional validation, artifact_sha256, NTS fail-closed). K-4: the NTS prose
+// row was dropped rather than strengthened to .message equality.
+// T1-b: remaining docs/specs/payroll.md assertions describe HOLD/absent controls
+// and stay as registered residuals — no control is implemented here.
 
 requireMatches(
   "package.json",
@@ -80,4 +70,5 @@ requireIncludes(
   "CI payroll release-gate wiring",
 );
 
+emitProvenanceIfRequested();
 reportGate("payroll release gate check passed");

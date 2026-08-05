@@ -1119,6 +1119,12 @@ jobs:
       - name: Shared text gate unit tests
         if: ${{ !cancelled() }}
         run: npm run test:text-gate
+      - name: Gate-input provenance instrument
+        if: ${{ !cancelled() }}
+        run: npm run check:gate-input-provenance
+      - name: Gate-input provenance unit tests
+        if: ${{ !cancelled() }}
+        run: npm run test:gate-input-provenance
       - name: G004 identity group org people policy foundation gate
         if: ${{ !cancelled() }}
         run: npm run check:g004-identity-foundation

@@ -783,6 +783,8 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: "${{ !cancelled() }}" }),
     proofRun("Canonical npm lockfile", "npm run check:package-lock", { if: "${{ !cancelled() }}" }),
     proofRun("Shared text gate unit tests", "npm run test:text-gate", { if: "${{ !cancelled() }}" }),
+    proofRun("Gate-input provenance instrument", "npm run check:gate-input-provenance", { if: "${{ !cancelled() }}" }),
+    proofRun("Gate-input provenance unit tests", "npm run test:gate-input-provenance", { if: "${{ !cancelled() }}" }),
     proofRun("G004 identity group org people policy foundation gate", "npm run check:g004-identity-foundation", { if: "${{ !cancelled() }}" }),
     proofRun("G005 workflow approval Work Hub lifecycle gate", "npm run check:g005-workflow-lifecycle", { if: "${{ !cancelled() }}" }),
     proofRun("Workflow runtime spine gate", "npm run check:workflow-runtime-spine", { if: "${{ !cancelled() }}" }),

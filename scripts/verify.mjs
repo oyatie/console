@@ -176,6 +176,8 @@ const PLAN = new Map([
   ["Documentation manifest gate", { tier: "fast" }],
   ["Documentation local-link gate", { tier: "fast" }],
   ["Shared text gate unit tests", { tier: "fast" }],
+  ["Gate-input provenance instrument", { tier: "fast" }],
+  ["Gate-input provenance unit tests", { tier: "fast" }],
   ["G004 identity group org people policy foundation gate", { tier: "fast" }],
   ["G005 workflow approval Work Hub lifecycle gate", { tier: "fast" }],
   ["Workflow runtime spine gate", { tier: "fast" }],

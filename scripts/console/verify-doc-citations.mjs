@@ -15,6 +15,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { beginGate, emitProvenanceIfRequested, noteAssertion, noteRead } from '../lib/gate-inputs.mjs';
 import { basename, dirname, resolve } from 'node:path';
 import process from 'node:process';
 
@@ -300,10 +301,22 @@ if (!existsSync(docPath)) {
 }
 
 const root = repoRoot(dirname(docPath));
+// Declare only the document under verification. Cited targets are resolution
+// inputs, not gate prose-dependencies in the K-1 sense.
+const docRel = docPath.startsWith(root + '/')
+  ? docPath.slice(root.length + 1)
+  : docArg.replace(/^\.\//, '');
+beginGate({
+  gate: 'check:doc-citations',
+  script: 'scripts/console/verify-doc-citations.mjs',
+  documentInputs: [docRel],
+});
 const index = trackedFiles(root);
 const resolveTarget = makeResolver(root, index);
 const md = readFileSync(docPath, 'utf8');
+noteRead(docRel);
 const cites = extractCitations(md, resolveTarget);
+for (let i = 0; i < Math.max(cites.length, 1); i += 1) noteAssertion(docRel);
 const results = cites.map((c) => ({ cite: c, ...verify(root, c) }));
 
 const by = (v) => results.filter((r) => r.verdict === v);
@@ -371,6 +384,7 @@ console.log(`  BROKEN          : ${broken.length}`);
 console.log(`  FILE-ONLY       : ${fileOnly.length}   (file exists, no checkable claim)`);
 console.log(`  MISSING         : ${missing.length}   (file mention, absent from repo — not fatal)`);
 
+emitProvenanceIfRequested();
 let exit = 0;
 if (broken.length) {
   console.log(`\nFAIL: ${broken.length} broken citation(s).`);
