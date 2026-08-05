@@ -3334,6 +3334,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-05-postgres-shard-s0.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b16eae8eeab2515d66764d45f954111476e5750e",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-05-program-workflows.md",
       "class": "evidence",
       "owner": "repository maintainers",

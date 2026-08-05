@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { partitionFailures, partitionWorkflowEntries, SHARD_IDS } from "./postgres-shard.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const map = JSON.parse(readFileSync(resolve(root, "tools/ci/postgres-cargo-map.json"), "utf8"));
@@ -10,6 +11,11 @@ const start = wf.indexOf("postgres-domain-reachability:");
 const end = wf.indexOf("\n  company-conformance:", start);
 const block = wf.slice(start, end);
 const failures = [];
+
+// Package→facet partition must stay complete/disjoint (S0; used by --shard-id).
+for (const msg of partitionFailures(map.entries ?? [])) {
+  failures.push(`postgres-shard: ${msg}`);
+}
 
 const usesCargo = /tools\/ci\/cargo_needs_postgres\.sh\s+--workflow-only/.test(block);
 const re = /\/\/tools\/buck:([a-zA-Z0-9_-]+)/g;
@@ -56,8 +62,10 @@ if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
+const parts = partitionWorkflowEntries(map.entries ?? []);
+const facetSummary = SHARD_IDS.map((id) => `${id}=${parts[id].length}`).join(" ");
 console.log(
   usesCargo
-    ? `postgres-cargo-map OK (cargo harness; ${mapped.size} workflow entries)`
-    : `postgres-cargo-map OK (workflow ${needed.size} wrappers fully mapped)`,
+    ? `postgres-cargo-map OK (cargo harness; ${mapped.size} workflow entries; facets ${facetSummary})`
+    : `postgres-cargo-map OK (workflow ${needed.size} wrappers fully mapped; facets ${facetSummary})`,
 );

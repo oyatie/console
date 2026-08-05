@@ -20,7 +20,7 @@
     "check:foundation-gates": "node scripts/check-foundation-gates.mjs",
     "check:undeclared-imports": "node --test scripts/check-undeclared-imports.test.mjs && node scripts/check-undeclared-imports.mjs",
     "check:request-body-contract": "node --test scripts/check-request-body-contract.test.mjs && node scripts/check-request-body-contract.mjs",
-    "check:ci-preflight": "node scripts/check-ci-preflight.mjs",
+    "check:ci-preflight": "node scripts/check-ci-preflight.mjs && node --test tools/ci/postgres-shard.test.mjs",
     "check:reasoning-lens-contract": "node scripts/check-reasoning-lens-contract.mjs",
     "check:doc-links": "node scripts/check-doc-links.mjs",
     "check:doc-manifest": "node scripts/console/generate-documentation-manifest.mjs --check",

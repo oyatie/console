@@ -8,9 +8,10 @@ map_path="${repo_root}/tools/ci/postgres-cargo-map.json"
 only_csv=""
 workflow_only=0
 num_threads=1
+shard_id=""
 
 usage() {
-  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--num-threads N]" >&2
+  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--shard-id app|platform|ontology|domain] [--num-threads N]" >&2
   exit 2
 }
 
@@ -21,12 +22,22 @@ while [[ $# -gt 0 ]]; do
     --workflow-only) workflow_only=1; shift ;;
     --only) only_csv="$2"; shift 2 ;;
     --only=*) only_csv="${1#*=}"; shift ;;
+    --shard-id) shard_id="$2"; shift 2 ;;
+    --shard-id=*) shard_id="${1#*=}"; shift ;;
     --num-threads) num_threads="$2"; shift 2 ;;
     --num-threads=*) num_threads="${1#*=}"; shift ;;
     -h|--help) usage ;;
     *) usage ;;
   esac
 done
+
+case "${shard_id}" in
+  ""|app|platform|ontology|domain) ;;
+  *)
+    echo "cargo-postgres: invalid --shard-id ${shard_id} (want app|platform|ontology|domain)" >&2
+    exit 2
+    ;;
+esac
 
 [[ -f "${map_path}" ]] || { echo "cargo-postgres: map missing: ${map_path}" >&2; exit 1; }
 
@@ -123,15 +134,28 @@ export RUST_TEST_THREADS="${num_threads}"
 export CARGO_TERM_COLOR=always
 
 tmp_list="$(mktemp "${TMPDIR:-/tmp}/console-cargo-list.XXXXXX")"
-python3 - "${map_path}" "${workflow_only}" "${only_csv}" >"${tmp_list}" <<'PY'
+python3 - "${map_path}" "${workflow_only}" "${only_csv}" "${shard_id}" >"${tmp_list}" <<'PY'
 import json, sys
-path, workflow_only, only_csv = sys.argv[1], sys.argv[2], sys.argv[3]
+
+def shard_id_for_package(package_name: str) -> str:
+    p = package_name or ""
+    if p == "console-app":
+        return "app"
+    if "ontology" in p:
+        return "ontology"
+    if p.startswith("console-platform") or p == "console-platform-db":
+        return "platform"
+    return "domain"
+
+path, workflow_only, only_csv, shard_id = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 doc = json.load(open(path))
 only_set = set(only_csv.split(",")) if only_csv.strip() else None
 for e in doc["entries"]:
     if workflow_only == "1" and not e.get("in_workflow_postgres_job"):
         continue
     if only_set is not None and e["name"] not in only_set:
+        continue
+    if shard_id and shard_id_for_package(e.get("package") or "") != shard_id:
         continue
     print(json.dumps({"name": e["name"], "package": e["package"], "argv": e["cargo_argv"]}))
 PY
@@ -142,7 +166,11 @@ if [[ ! -s "${tmp_list}" ]]; then
 fi
 
 count="$(wc -l <"${tmp_list}" | tr -d ' ')"
-echo "cargo-postgres: running ${count} cargo test invocations (threads=${num_threads})"
+if [[ -n "${shard_id}" ]]; then
+  echo "cargo-postgres: running ${count} cargo test invocations (shard=${shard_id} threads=${num_threads})"
+else
+  echo "cargo-postgres: running ${count} cargo test invocations (threads=${num_threads})"
+fi
 
 # Unique packages for --no-run build
 tmp_pkgs="$(mktemp "${TMPDIR:-/tmp}/console-cargo-pkgs.XXXXXX")"
