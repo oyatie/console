@@ -3244,6 +3244,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-05-program-workflows.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "27055092b886d38d3e199a833bbea646d7690448",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/legacy-intent-register.md",
       "class": "evidence",
       "owner": "repository maintainers",
