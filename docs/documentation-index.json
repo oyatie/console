@@ -3294,6 +3294,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-05-docs-evidence-request-no-collision.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f1e25608cb046da084b42d4c54d687d425d64055",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-05-documentation-manifest-ratchet.md",
       "class": "evidence",
       "owner": "repository maintainers",

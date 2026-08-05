@@ -320,7 +320,14 @@ async fn seed_verified_storage_attestation(
         "#,
     )
     .bind(work_order_id)
-    .bind(format!("20260724-{:03}", (work_order_id.as_u128() % 1000) as u16))
+    // request_no CHECK: ^[0-9]{8}-[0-9]{3}$ (0008_create_work_orders).
+    // Using uuid%1000 for the suffix collides across tests on one disposable DB
+    // (unique on (org_id, request_no); main CI 31015221797). Derive both halves
+    // from the work_order UUID so format + uniqueness hold together.
+    .bind({
+        let n = work_order_id.as_u128();
+        format!("{:08}-{:03}", (n % 100_000_000) as u32, ((n / 100_000_000) % 1000) as u32)
+    })
     .bind(branch_id)
     .bind(equipment_id)
     .bind(customer_id)
