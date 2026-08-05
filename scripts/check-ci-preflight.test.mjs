@@ -207,7 +207,8 @@ describe("CI preflight contract", () => {
       "kubernetes-manifests",
     ];
     const model = yaml.load(workflow);
-    assert.equal(Object.keys(model.jobs).length, 11);
+    // 11 protected proofs + 4 PostgreSQL facets
+    assert.equal(Object.keys(model.jobs).length, 15);
     assert.equal(model.jobs["required-ci"].name, "Required / CI");
     assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
     assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
@@ -294,6 +295,10 @@ describe("CI preflight contract", () => {
       "api-contract": 4,
       "generated-face-authority": 4,
       "company-conformance": 2,
+      "postgres-reachability-app": 1,
+      "postgres-reachability-platform": 1,
+      "postgres-reachability-ontology": 1,
+      "postgres-reachability-domain": 1,
       "postgres-domain-reachability": 1,
       "required-ci": 1,
     };
@@ -326,8 +331,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 100, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 300, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 104, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 312, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -341,7 +346,10 @@ describe("CI preflight contract", () => {
       "api-contract": 2,
       "generated-face-authority": 4,
       "company-conformance": 3,
-      "postgres-domain-reachability": 4,
+      "postgres-reachability-app": 4,
+      "postgres-reachability-platform": 4,
+      "postgres-reachability-ontology": 4,
+      "postgres-reachability-domain": 4,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -369,8 +377,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(actionStepCount, 30, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 60, "setup-action bypass matrix must not shrink");
+    assert.equal(actionStepCount, 42, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 84, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -384,7 +392,10 @@ describe("CI preflight contract", () => {
       "api-contract",
       "generated-face-authority",
       "company-conformance",
-      "postgres-domain-reachability",
+      "postgres-reachability-app",
+      "postgres-reachability-platform",
+      "postgres-reachability-ontology",
+      "postgres-reachability-domain",
     ];
     const workflowModel = yaml.load(workflow);
     let mutationCount = 0;
@@ -442,7 +453,7 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 192, "setup-action identity/input/interleaving matrix must not shrink");
+    assert.equal(mutationCount, 273, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {
@@ -1095,7 +1106,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     const mutations = [
       ["preflight", "      - name: CI preflight contract tests\n"],
       ["dev-up-smoke", "      - name: dev-up bootstrap (compose deps + migrate + backend readyz)\n"],
-      ["postgres-domain-reachability", "      - name: Serialized disposable PostgreSQL integration targets\n"],
+      ["postgres-reachability-app", "      - name: Run disposable PostgreSQL integration targets\n"],
       ["company-conformance", "      - name: Company conformance against disposable PostgreSQL\n"],
       ["generated-face-authority", "      - name: Full generated-face closure\n"],
       ["backend", "      - name: Layer-boundary gate\n"],
@@ -1126,17 +1137,17 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1",
+        "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1",
         "tools/ci/cargo_needs_postgres.sh --num-threads=1",
       ),
-      "postgres-domain-reachability must run the locked PostgreSQL reachability targets",
+      "postgres-reachability-app must run the locked PostgreSQL reachability targets",
     );
     expectFailure(
       workflow.replace(
-        "tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1",
+        "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1",
         "tools/buck/test_needs_postgres.sh --num-threads=1",
       ),
-      "postgres-domain-reachability must run the locked PostgreSQL reachability targets",
+      "postgres-reachability-app must run the locked PostgreSQL reachability targets",
     );
     expectFailure(
       workflow,

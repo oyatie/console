@@ -40,7 +40,14 @@ const JOBS = new Map([
   ["repo-gates", true],
   ["kubernetes-manifests", true],
   ["domain-unit", true],
-  ["postgres-domain-reachability", "serialized Buck2 PostgreSQL targets; the `db` tier already exercises that harness"],
+  // Facet jobs: hosted disposable PG + cargo shard partitions. Local `db` tier
+  // already exercises the harness; mirror would re-run the full wall.
+  ["postgres-reachability-app", "hosted PostgreSQL facet (app packages); the `db` tier already exercises that harness"],
+  ["postgres-reachability-platform", "hosted PostgreSQL facet (platform packages); the `db` tier already exercises that harness"],
+  ["postgres-reachability-ontology", "hosted PostgreSQL facet (ontology packages); the `db` tier already exercises that harness"],
+  ["postgres-reachability-domain", "hosted PostgreSQL facet (domain adapters); the `db` tier already exercises that harness"],
+  // Load-bearing aggregator: keeps the protected display name; no run steps to mirror.
+  ["postgres-domain-reachability", "load-bearing aggregator over PG facets; terminal needs/result contract is enforced by check-ci-preflight"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
   ["api-contract", true],

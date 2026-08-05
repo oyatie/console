@@ -7,9 +7,12 @@ import { partitionFailures, partitionWorkflowEntries, SHARD_IDS } from "./postgr
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const map = JSON.parse(readFileSync(resolve(root, "tools/ci/postgres-cargo-map.json"), "utf8"));
 const wf = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
-const start = wf.indexOf("postgres-domain-reachability:");
+// S1: harness runs on facet jobs; still accept legacy monolith block for S0-only trees.
+const startFacet = wf.indexOf("postgres-reachability-app:");
+const startLegacy = wf.indexOf("postgres-domain-reachability:");
+const start = startFacet >= 0 ? startFacet : startLegacy;
 const end = wf.indexOf("\n  company-conformance:", start);
-const block = wf.slice(start, end);
+const block = start >= 0 && end > start ? wf.slice(start, end) : wf;
 const failures = [];
 
 // Package→facet partition must stay complete/disjoint (S0; used by --shard-id).
