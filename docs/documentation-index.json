@@ -3004,6 +3004,76 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/lane-prep/README.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "0e26d94c901c0d4d0172361c0b0e1a8ed54013cd",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-apr/admission.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a7d03003a1d5dca0e573c96adcf3997694f44f32",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-apr/trial.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "c69d76f7b37a7f3daad9c080d95585468045078e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-ont/admission.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f7e213c13a58a5cb3670da18d12f7bbedb869072",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-ont/trial.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b7336dcaef229064f630de14cecf8acbce6cf936",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-pol/admission.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7b8339e7f32469d2256848fc4be1a9adf1ffc7cb",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/lane-prep/w0-pol/trial.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7142462a007ee6eb99c38a4c1bd7b2e3bd600005",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-01-candidate-sha-leaves-the-registers.md",
       "class": "evidence",
       "owner": "repository maintainers",
@@ -3201,6 +3271,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "76b106918b99b5998a3529e6a8679b660ee5ffd2",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-05-cargo-needs-postgres.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a4c73f4ce846b28e57b61ac0e0995e8f85c1d649",
       "archive_tag": null
     },
     {

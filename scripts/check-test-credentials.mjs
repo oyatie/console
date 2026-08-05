@@ -92,6 +92,7 @@ const TEST_RUNNERS = [
   // before a shell separator so a flag cannot hide a credential-bearing run.
   /\bbuck2\b(?=[^;&|\n]*\btest\b)/,
   /test_needs_postgres\.sh\b/,
+  /cargo_needs_postgres\.sh\b/,
   /pgtest\.sh\b/,
 ];
 

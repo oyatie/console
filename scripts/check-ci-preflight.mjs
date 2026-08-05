@@ -230,190 +230,7 @@ const domainUnitExpectedCommands = [
   ]),
 ];
 const postgresDomainReachabilityCommands = [
-  "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
-  "//tools/buck:dispatch-p1-postgres \\",
-  "//tools/buck:attendance-cancel-substitution-postgres \\",
-  "//tools/buck:attendance-concurrency-postgres \\",
-  "//tools/buck:ontology-object-type-lifecycle-postgres \\",
-  "//tools/buck:ontology-object-type-cas-postgres \\",
-  "//tools/buck:ontology-publish-auto-create-action-postgres \\",
-  "//tools/buck:ontology-object-policy-attach-postgres \\",
-  "//tools/buck:ontology-action-execute-postgres \\",
-  "//tools/buck:ontology-gaps-postgres \\",
-  "//tools/buck:ontology-projected-dispatch-postgres \\",
-  "//tools/buck:platform-erasure-ledger-postgres \\",
-  "//tools/buck:platform-db-rls-isolation \\",
-  "//tools/buck:platform-db-rls-rollout-isolation \\",
-  "//tools/buck:platform-audit-chain-rls \\",
-  "//tools/buck:platform-provisioning-rls-auth-chain \\",
-  "//tools/buck:platform-rest-remove-tenant \\",
-  "//tools/buck:compliance-location-consent-status-rls \\",
-  "//tools/buck:compliance-location-store \\",
-  "//tools/buck:payroll-rls-surfaces \\",
-  "//tools/buck:platform-db-feature-catalog-coverage \\",
-  "//tools/buck:app-action-inbox-api-pg \\",
-  "//tools/buck:app-audit-api-pg \\",
-  "//tools/buck:app-auth-rest-pg \\",
-  "//tools/buck:app-board-ack-api-pg \\",
-  "//tools/buck:app-cedar-freshness-mint-pg \\",
-  "//tools/buck:app-cedar-parity-shadow-pg \\",
-  "//tools/buck:app-cedar-shadow-role-manage-pg \\",
-  "//tools/buck:app-compliance-api-pg \\",
-  "//tools/buck:app-console-kill-switch-pg \\",
-  "//tools/buck:app-console-route-telemetry-pg \\",
-  "//tools/buck:app-dev-auth-persona-guard-pg \\",
-  "//tools/buck:app-dispatch-pipeline-api-pg \\",
-  "//tools/buck:app-equipment-3r-api-pg \\",
-  "//tools/buck:app-evaluation-cycle-api-pg \\",
-  "//tools/buck:app-field-visit-api-pg \\",
-  "//tools/buck:app-finance-gl-voucher-sod-pg \\",
-  "//tools/buck:app-health-readiness-pg \\",
-  "//tools/buck:app-hr-attendance-manager-scope-pg \\",
-  "//tools/buck:app-hr-attendance-self-read-pg \\",
-  "//tools/buck:app-hr-ingest-checklist-gate-pg \\",
-  "//tools/buck:app-hr-people-create-api-pg \\",
-  "//tools/buck:app-m2-real-engine-drive-pg \\",
-  "//tools/buck:app-maintenance-chain-api-pg \\",
-  "//tools/buck:app-mobile-api-pg \\",
-  "//tools/buck:app-notif-routing-api-pg \\",
-  "//tools/buck:app-notifications-api-pg \\",
-  "//tools/buck:app-object-graph-api-pg \\",
-  "//tools/buck:app-object-links-api-pg \\",
-  "//tools/buck:app-object-ontology-api-pg \\",
-  "//tools/buck:app-object-resolve-api-pg \\",
-  "//tools/buck:app-office-versions-pg \\",
-  "//tools/buck:app-org-change-api-pg \\",
-  "//tools/buck:app-platform-onboarding-e2e-pg \\",
-  "//tools/buck:app-purchase-request-collection-api-pg \\",
-  "//tools/buck:app-realtime-ws-pg \\",
-  "//tools/buck:app-recruiting-pipeline-api-pg \\",
-  "//tools/buck:app-registry-api-pg \\",
-  "//tools/buck:app-router-layers-pg \\",
-  "//tools/buck:app-search-api-pg \\",
-  "//tools/buck:app-submittable-definitions-api-pg \\",
-  "//tools/buck:app-tenant-context-e2e-pg \\",
-  "//tools/buck:app-workbench-native-api-pg \\",
-  "//tools/buck:app-workflow-automation-triggers-pg \\",
-  "//tools/buck:app-workflow-dynamics-branch-pg \\",
-  "//tools/buck:app-workflow-four-eyes-publish-pg \\",
-  "//tools/buck:app-workflow-object-context-api-pg \\",
-  "//tools/buck:app-workflow-object-kind-dynamics-pg \\",
-  "//tools/buck:app-workflow-run-read-surface-pg \\",
-  "//tools/buck:app-workflow-runtime-finalize-api-pg \\",
-  "//tools/buck:app-workflow-runtime-instance-api-pg \\",
-  "//tools/buck:app-workorder-api-pg \\",
-  "//tools/buck:rls-arming-lib-pg \\",
-  "//tools/buck:attendance-adapter-postgres-self-service-pg \\",
-  "//tools/buck:benefit-adapter-postgres-catalog-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:comms-adapter-postgres-mail-account-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:comms-adapter-postgres-mail-sync-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:comms-adapter-postgres-send-rate-limit-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:comms-rest-mox-webhook-pg \\",
-  "//tools/buck:comms-rest-readiness-pg \\",
-  "//tools/buck:consulting-rest-audit-atomicity-pg \\",
-  "//tools/buck:dispatch-worker-timer-delivery-pg \\",
-  "//tools/buck:docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg \\",
-  "//tools/buck:financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:financial-adapter-postgres-period-lock-blocks-ledger-as-runtime-role-pg \\",
-  "//tools/buck:financial-adapter-postgres-use-cases-pg \\",
-  "//tools/buck:financial-rest-purchase-request-list-pg \\",
-  "//tools/buck:governance-adapter-postgres-approvals-create-as-runtime-role-pg \\",
-  "//tools/buck:governance-adapter-postgres-four-eyes-bind-consume-pg \\",
-  "//tools/buck:governance-adapter-postgres-governance-rls-as-runtime-role-pg \\",
-  "//tools/buck:identity-adapter-postgres-deactivate-revokes-credentials-pg \\",
-  "//tools/buck:identity-adapter-postgres-me-workspace-layouts-rls-pg \\",
-  "//tools/buck:identity-adapter-postgres-region-branch-crud-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:identity-adapter-postgres-subject-authz-versions-freshness-rls-pg \\",
-  "//tools/buck:inbox-adapter-postgres-inbox-docs-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:inbox-rest-api-pg \\",
-  "//tools/buck:inspection-adapter-postgres-lifecycle-pg \\",
-  "//tools/buck:inspection-adapter-postgres-schedule-window-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:inventory-adapter-postgres-consume-idempotency-concurrency-pg \\",
-  "//tools/buck:leave-adapter-postgres-leave-migration-expand-contract-pg \\",
-  "//tools/buck:leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:leave-rest-leave-http-personas-pg \\",
-  "//tools/buck:messenger-adapter-postgres-parity-tables-rls-as-runtime-role-pg \\",
-  "//tools/buck:messenger-adapter-postgres-use-cases-pg \\",
-  "//tools/buck:messenger-rest-api-pg \\",
-  "//tools/buck:notices-adapter-postgres-notices-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:notices-rest-api-pg \\",
-  "//tools/buck:notifications-adapter-postgres-notifications-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:notifications-rest-api-pg \\",
-  "//tools/buck:ontology-adapter-postgres-builtin-catalog-additive-upgrade-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-c-chain-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-config-object-types-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-instances-residual-filter-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-instances-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-key-revision-migration-upgrade-pg \\",
-  "//tools/buck:ontology-adapter-postgres-key-write-cas-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-niche-config-object-types-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-projected-instances-read-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-property-derivation-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-property-link-sync-as-runtime-role-pg \\",
-  "//tools/buck:ontology-adapter-postgres-registry-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg \\",
-  "//tools/buck:payroll-rest-api-pg \\",
-  "//tools/buck:payroll-rest-payslip-draft-api-pg \\",
-  "//tools/buck:payroll-rest-run-lifecycle-api-pg \\",
-  "//tools/buck:platform-auth-rest-dev-auth-absence-pg \\",
-  "//tools/buck:platform-auth-refresh-tokens-pg \\",
-  "//tools/buck:platform-auth-webauthn-ceremony-pg \\",
-  "//tools/buck:platform-auth-webauthn-ceremony-replay-pg \\",
-  "//tools/buck:platform-authz-rest-cedar-authoring-rls-as-runtime-role-pg \\",
-  "//tools/buck:platform-authz-rest-decision-feed-as-runtime-role-pg \\",
-  "//tools/buck:platform-authz-policy-pg \\",
-  "//tools/buck:platform-db-attendance-console-migration-contract-pg \\",
-  "//tools/buck:platform-db-code-issuance-pg \\",
-  "//tools/buck:platform-db-group-resolvers-pg \\",
-  "//tools/buck:platform-db-lifecycle-maker-checker-pg \\",
-  "//tools/buck:platform-db-m2-flag-on-runtime-drain-pg \\",
-  "//tools/buck:platform-db-period-locks-and-lifecycle-pg \\",
-  "//tools/buck:platform-db-personal-data-classification-pg \\",
-  "//tools/buck:platform-group-lib-pg \\",
-  "//tools/buck:platform-jobs-apalis-adapter-pg \\",
-  "//tools/buck:platform-jobs-apalis-schema-contract-pg \\",
-  "//tools/buck:platform-platform-rest-onboard-seeds-config-objects-pg \\",
-  "//tools/buck:platform-platform-rest-ops-dashboard-pg \\",
-  "//tools/buck:platform-platform-rest-platform-groups-pg \\",
-  "//tools/buck:platform-platform-rest-view-as-pg \\",
-  "//tools/buck:platform-provisioning-bootstrap-passkey-pg \\",
-  "//tools/buck:platform-provisioning-bootstrap-passkey-replay-pg \\",
-  "//tools/buck:platform-provisioning-roster-import-pg \\",
-  "//tools/buck:platform-provisioning-self-enroll-handoff-as-runtime-role-pg \\",
-  "//tools/buck:platform-realtime-postgres-bridge-pg \\",
-  "//tools/buck:platform-storage-lib-pg \\",
-  "//tools/buck:platform-storage-evidence-processing-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:policy-adapter-postgres-draft-storage-pg \\",
-  "//tools/buck:registry-adapter-postgres-create-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:registry-adapter-postgres-equipment-list-rls-as-runtime-role-pg \\",
-  "//tools/buck:registry-adapter-postgres-equipment-lookup-normalization-rls-as-runtime-role-pg \\",
-  "//tools/buck:registry-adapter-postgres-equipment-versioning-as-runtime-role-pg \\",
-  "//tools/buck:registry-adapter-postgres-master-list-import-pg \\",
-  "//tools/buck:registry-adapter-postgres-master-list-import-rls-as-runtime-role-pg \\",
-  "//tools/buck:registry-adapter-postgres-site-address-postal-roundtrip-rls-as-runtime-role-pg \\",
-  "//tools/buck:registry-rest-equipment-admin-pg \\",
-  "//tools/buck:reporting-adapter-postgres-excel-exports-pg \\",
-  "//tools/buck:reporting-adapter-postgres-kpi-golden-dataset-pg \\",
-  "//tools/buck:reporting-adapter-postgres-ops-summary-pg \\",
-  "//tools/buck:reporting-adapter-postgres-work-diary-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:sales-adapter-postgres-inquiry-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:sales-adapter-postgres-sales-store-pg \\",
-  "//tools/buck:support-adapter-postgres-assignee-name-join-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:support-adapter-postgres-create-internal-ticket-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:support-adapter-postgres-support-tickets-pg \\",
-  "//tools/buck:support-rest-lib-pg \\",
-  "//tools/buck:support-rest-authz-pg \\",
-  "//tools/buck:support-rest-intake-pg \\",
-  "//tools/buck:todos-adapter-postgres-todos-rls-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:workflow-adapter-postgres-notification-bridge-pg \\",
-  "//tools/buck:workflow-adapter-postgres-payroll-drain-period-lock-pg \\",
-  "//tools/buck:workorder-adapter-postgres-m2-flag-off-parity-pg \\",
-  "//tools/buck:workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg \\",
-  "//tools/buck:workorder-adapter-postgres-use-cases-pg \\",
-  "//tools/buck:workorder-rest-mobile-device-registration-pg \\",
-  "//tools/buck:workorder-rest-mobile-evidence-pg \\",
-  "//tools/buck:workorder-rest-mobile-sync-pg",
+  "tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1",
 ];
 const companyConformanceCommands = [
   "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
@@ -819,8 +636,7 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Company conformance against disposable PostgreSQL", "f2e478d7571d3dd31977783d4a13deeffd8bb09e045cdb8e3d205528ea6fe3c7"),
   ],
   "postgres-domain-reachability": [
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
-    proofDigest("Serialized disposable PostgreSQL integration targets", "37d20ed4ab222157469f5b3dddc8993aec6ef49f2ad582166499f8ad3eea56b0"),
+    proofDigest("Serialized disposable PostgreSQL integration targets", "d7aa06ec86e061795c7e1215c5cb3219daf5f90a31fd706d78acd5944a58cd48"),
   ],
 });
 
@@ -884,8 +700,9 @@ const requiredJobActionContracts = Object.freeze({
   ],
   "postgres-domain-reachability": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(2, "Free runner disk for PostgreSQL Buck2 tests", "./.github/actions/free-runner-disk"),
-    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
+    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
   ],
 });
 
@@ -1354,6 +1171,45 @@ function requireConsoleExactMergeProof(workflow, steps, failures) {
   if (workflow.includes("CONSOLE_INTEGRATION_TIP_SHA")) failures.push("preflight must not reference legacy CONSOLE_INTEGRATION_TIP_SHA");
 }
 
+
+function rootDir() {
+  return resolve(dirname(fileURLToPath(import.meta.url)), "..");
+}
+
+function cargoPostgresWorkflowMapNames() {
+  try {
+    const map = JSON.parse(readFileSync(resolve(rootDir(), "tools/ci/postgres-cargo-map.json"), "utf8"));
+    return new Set((map.entries ?? []).filter((e) => e.in_workflow_postgres_job).map((e) => e.name));
+  } catch {
+    return new Set();
+  }
+}
+
+function requireCargoPostgresMapCoversWorkflow(failures) {
+  const mapPath = "tools/ci/postgres-cargo-map.json";
+  let map;
+  try {
+    map = JSON.parse(readFileSync(resolve(rootDir(), mapPath), "utf8"));
+  } catch (error) {
+    failures.push(`${mapPath} must exist and parse as JSON (${error.message})`);
+    return;
+  }
+  const workflowEntries = (map.entries ?? []).filter((e) => e.in_workflow_postgres_job);
+  if (workflowEntries.length < 180) {
+    failures.push(`${mapPath} must list >=180 in_workflow_postgres_job entries (found ${workflowEntries.length})`);
+  }
+  for (const entry of workflowEntries) {
+    if (!Array.isArray(entry.cargo_argv) || entry.cargo_argv[0] !== "cargo" || entry.cargo_argv[1] !== "test") {
+      failures.push(`${mapPath} entry ${entry.name ?? "?"} must have cargo test argv`);
+    }
+    if (!entry.package) failures.push(`${mapPath} entry ${entry.name ?? "?"} missing package`);
+  }
+  const workflow = readFileSync(resolve(rootDir(), ".github/workflows/ci.yml"), "utf8");
+  if (!workflow.includes("tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1")) {
+    failures.push("postgres-domain-reachability must invoke tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1");
+  }
+}
+
 function requirePostgresWrapperContracts(buildFile, failures) {
   for (const [name, binary] of postgresWrapperContracts) {
     const block = buildFile.match(new RegExp(`sh_test\\(\\n    name = "${name}",[\\s\\S]*?\\n\\)`, "m"))?.[0];
@@ -1421,8 +1277,11 @@ function requireOntologyRestItestReachability(buildFile, workflow, failures) {
       failures.push(`tools/buck/BUCK must wrap ${itest} in exactly one PostgreSQL sh_test`);
       continue;
     }
-    if (!new RegExp(`^\\s+//tools/buck:${matching[0].name}( \\\\)?$`, "m").test(workflow)) {
-      failures.push(`ci.yml must execute //tools/buck:${matching[0].name} or ${itest} runs nowhere`);
+    const mapNames = cargoPostgresWorkflowMapNames();
+    const namedInWorkflow = new RegExp(`^\\s+//tools/buck:${matching[0].name}( \\\\)?$`, "m").test(workflow);
+    const namedInCargoMap = mapNames.has(matching[0].name);
+    if (!namedInWorkflow && !namedInCargoMap) {
+      failures.push(`ci.yml or tools/ci/postgres-cargo-map.json must execute ${matching[0].name} or ${itest} runs nowhere`);
     }
   }
 }
@@ -1812,10 +1671,11 @@ export function evaluateCiPreflight(
     );
     requireOnlyLockedRuns(
       steps,
-      [dotSlashBootstrap, postgresDomainReachabilityCommands.join("\n")],
+      [postgresDomainReachabilityCommands.join("\n")],
       "postgres-domain-reachability",
       failures,
     );
+    requireCargoPostgresMapCoversWorkflow(failures);
   }
 
   const companyConformance = jobBlock(workflow, "company-conformance");
@@ -2078,7 +1938,7 @@ export function evaluateCiPreflight(
   // Without this assertion, deleting `shared-key` silently refragments them: CI stays
   // green, nothing reports it, and the caches quietly stop being shared. Verified that a
   // deletion passed every gate before this block existed.
-  for (const job of ["domain-unit", "backend"]) {
+  for (const job of ["domain-unit", "backend", "postgres-domain-reachability"]) {
     const block = jobBlock(workflow, job);
     if (!block) continue;
     if (!/shared-key:\s*backend-cargo/.test(block)) {
@@ -2094,10 +1954,14 @@ export function evaluateCiPreflight(
   // clippy --all-targets, a strict superset, so it is the writer and every other cargo
   // job is restore-only.
   {
-    const writers = ["domain-unit", "backend"].filter((job) => {
+    const writers = ["domain-unit", "backend", "postgres-domain-reachability"].filter((job) => {
       const block = jobBlock(workflow, job);
       return block && !/save-if:\s*false/.test(block);
     });
+    const pgBlock = jobBlock(workflow, "postgres-domain-reachability");
+    if (pgBlock && !/save-if:\s*false/.test(pgBlock)) {
+      failures.push("postgres-domain-reachability must be restore-only (save-if: false) on shared rust-cache");
+    }
     if (writers.length !== 1 || writers[0] !== "backend") {
       failures.push(
         `exactly one cargo job may write the shared rust-cache and it must be backend; found: ${writers.join(", ") || "none"}`,
@@ -2106,7 +1970,7 @@ export function evaluateCiPreflight(
   }
   // Buck2 never writes backend/target, so a rust-cache step on a Buck2-only job is pure
   // transfer cost and an LRU slot taken from the jobs that do use it.
-  for (const job of ["postgres-domain-reachability", "company-conformance", "dev-up-smoke", "api-contract"]) {
+  for (const job of ["company-conformance", "dev-up-smoke", "api-contract"]) {
     const block = jobBlock(workflow, job);
     if (block && /Swatinem\/rust-cache/.test(block)) {
       failures.push(`${job} runs no cargo and must not carry a rust-cache step`);

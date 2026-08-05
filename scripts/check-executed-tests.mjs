@@ -206,6 +206,63 @@ for (const wrapperArg of buckInvocations.flatMap(({ executable }) => executable.
   executed.set(key(test.root, test.features), `//tools/buck:${wrapper}`);
 }
 
+// 1b. tools/ci/cargo_needs_postgres.sh --workflow-only expands tools/ci/postgres-cargo-map.json.
+// The map is the execution source of truth after the Buck cold-cache exit for PR PG CI.
+{
+  const cargoPg = workflowCommands.filter(({ executable }) => {
+    const [program] = executable.tokens;
+    return program === "tools/ci/cargo_needs_postgres.sh"
+      || program?.endsWith("/cargo_needs_postgres.sh");
+  });
+  if (cargoPg.length) {
+    const mapPath = join(ROOT, "tools/ci/postgres-cargo-map.json");
+    if (!existsSync(mapPath)) {
+      unresolved.push("ci.yml invokes cargo_needs_postgres.sh but tools/ci/postgres-cargo-map.json is missing");
+    } else {
+      const map = JSON.parse(readFileSync(mapPath, "utf8"));
+      const workflowOnly = cargoPg.some(({ executable }) => executable.tokens.includes("--workflow-only"));
+      const entries = (map.entries ?? []).filter((e) => (workflowOnly ? e.in_workflow_postgres_job : true));
+      for (const entry of entries) {
+        const argv = entry.cargo_argv ?? [];
+        // Reuse cargo attribution: synthetic tokens as if the workflow ran cargo test directly.
+        const lineTokens = argv;
+        if (lineTokens[0] !== "cargo" || lineTokens[1] !== "test") {
+          unresolved.push(`postgres-cargo-map entry ${entry.name} has non-cargo argv`);
+          continue;
+        }
+        const optionValues = (short, long) => {
+          const values = [];
+          for (let index = 2; index < lineTokens.length; index += 1) {
+            const token = lineTokens[index];
+            if (token === short || token === long) {
+              if (lineTokens[index + 1]) values.push(lineTokens[index + 1]);
+              index += 1;
+            }
+          }
+          return values;
+        };
+        const pkgs = optionValues("-p", "--package");
+        const tests = optionValues("--test", "--test");
+        const lib = lineTokens.includes("--lib");
+        const features = optionValues("--features", "--features").flatMap((v) => v.split(","));
+        for (const pkg of pkgs) {
+          const targets = cargo.byPackage.get(pkg);
+          if (!targets) {
+            unresolved.push(`postgres-cargo-map entry ${entry.name} package ${pkg} unknown to cargo metadata`);
+            continue;
+          }
+          for (const target of targets) {
+            const selected = tests.length === 0 && !lib
+              ? true
+              : (lib && target.kind === "lib") || (target.kind === "test" && tests.includes(target.name));
+            if (selected) executed.set(key(target.src, features), `cargo-map:${entry.name}`);
+          }
+        }
+      }
+    }
+  }
+}
+
 // 2. direct //backend/...:target in a workflow step.
 // FAILS CLOSED. This branch used to be `if (root) executed.set(...)` with no else while its
 // sibling above pushed to `unresolved`, so renaming a target in ci.yml orphaned its test

@@ -1,0 +1,17 @@
+fact	writer_module	crate	notes
+cedar_policy_effect	policy.domain.CedarPolicyEffect	console-policy-domain	permit/forbid only; absence of permit = deny-by-omission
+cedar_policy_status	policy.domain.CedarPolicyStatus	console-policy-domain	draft/review/enforced/shadow lifecycle; no dual enum
+cedar_policy_source	policy.domain.CedarPolicySource	console-policy-domain	provenance of catalog row
+cedar_policy_blocks	policy.domain.CedarPolicyBlocks	console-policy-domain	P→R→A→E no-code block model
+cedar_policy_draft	policy.domain.CedarPolicyDraft	console-policy-domain	staging artifact shape
+cedar_catalog_row	policy.domain.CedarPolicyCatalogRow	console-policy-domain	catalog projection of a policy row
+catalog_query_normalize	policy.application.CedarPolicyCatalogQuery	console-policy-application	limit/offset/filter validation fail-closed
+draft_save_command	policy.application.CedarPolicyDraftSaveCommand	console-policy-application	command + validation; does not promote to enforced
+draft_artifact_build	policy.application.build_draft_artifact	console-policy-application	blocks→normalized staging artifact
+cedar_policy_store_port	policy.application.CedarPolicyStore	console-policy-application	port only; adapter implements
+cedar_catalog_list_pg	policy.adapter_postgres.list_catalog_rows	console-policy-adapter-postgres	single list writer path for staging catalog
+cedar_draft_save_pg	policy.adapter_postgres.save_draft	console-policy-adapter-postgres	with_audit draft save; must not mint enforced/shadow
+cedar_engine_eval	platform.authz.cedar_pbac.engine	console-platform-authz	SHARED — not default w0-pol write root; amend admission before edit
+cedar_authoring_compile	platform.authz.cedar_pbac.authoring	console-platform-authz	SHARED — compile/validate; amend admission before edit
+cedar_residual_sql	platform.authz.cedar_pbac.residual	console-platform-authz	SHARED — untranslatable → collapse-to-deny
+policy_http_simulate	platform.authz_rest.simulate	console-platform-authz-rest	SHARED REST surface; amend admission before edit

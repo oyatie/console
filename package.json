@@ -76,7 +76,8 @@
     "check:gate-input-provenance": "node scripts/check-gate-input-provenance.mjs",
     "test:gate-input-provenance": "node --test scripts/check-gate-input-provenance.test.mjs",
     "check:js-test-reachability": "node scripts/check-js-test-reachability.mjs",
-    "test:js-test-reachability": "node --test scripts/check-js-test-reachability.test.mjs"
+    "test:js-test-reachability": "node --test scripts/check-js-test-reachability.test.mjs",
+    "check:postgres-cargo-map": "node tools/ci/check-postgres-cargo-map.mjs"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"

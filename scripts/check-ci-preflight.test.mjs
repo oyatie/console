@@ -294,7 +294,7 @@ describe("CI preflight contract", () => {
       "api-contract": 4,
       "generated-face-authority": 4,
       "company-conformance": 2,
-      "postgres-domain-reachability": 2,
+      "postgres-domain-reachability": 1,
       "required-ci": 1,
     };
     const workflowModel = yaml.load(workflow);
@@ -326,8 +326,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 101, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 303, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 100, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 300, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -341,7 +341,7 @@ describe("CI preflight contract", () => {
       "api-contract": 2,
       "generated-face-authority": 4,
       "company-conformance": 3,
-      "postgres-domain-reachability": 3,
+      "postgres-domain-reachability": 4,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -369,8 +369,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(actionStepCount, 29, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 58, "setup-action bypass matrix must not shrink");
+    assert.equal(actionStepCount, 30, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 60, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -442,7 +442,7 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 180, "setup-action identity/input/interleaving matrix must not shrink");
+    assert.equal(mutationCount, 192, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {
@@ -1126,15 +1126,15 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "tools/buck/test_needs_postgres.sh --num-threads=1",
-        "tools/buck/test_needs_postgres.sh",
+        "tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1",
+        "tools/ci/cargo_needs_postgres.sh --num-threads=1",
       ),
       "postgres-domain-reachability must run the locked PostgreSQL reachability targets",
     );
     expectFailure(
       workflow.replace(
-        "//tools/buck:attendance-concurrency-postgres",
-        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres-itest-concurrency",
+        "tools/ci/cargo_needs_postgres.sh --workflow-only --num-threads=1",
+        "tools/buck/test_needs_postgres.sh --num-threads=1",
       ),
       "postgres-domain-reachability must run the locked PostgreSQL reachability targets",
     );
