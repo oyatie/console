@@ -1,0 +1,18 @@
+fact	writer_module	crate	notes
+object_type_schema	ontology.domain.registry	console-ontology-domain	schema lifecycle FSM + backing kind; single definition surface
+property_def	ontology.domain.registry	console-ontology-domain	property defs hang off object type version
+link_type	ontology.domain.registry	console-ontology-domain	link cardinality/traversal metadata
+action_type	ontology.domain.registry	console-ontology-domain	action dispatch + control_points schema shape
+analytic_def	ontology.domain.registry	console-ontology-domain	derived property formula metadata
+instance_head	ontology.adapter_postgres.instances	console-ontology-adapter-postgres	ont_instances head pointer; no dual store
+instance_revision	ontology.adapter_postgres.instances	console-ontology-adapter-postgres	append-only fixity-chained revisions; current = valid_to IS NULL
+instance_link	ontology.adapter_postgres.instances	console-ontology-adapter-postgres	effective-dated edges between instances
+action_param_validation	ontology.application.validate_params	console-ontology-application	pure input validation vs params_schema
+action_submission_criteria	ontology.application.evaluate_submission_criteria	console-ontology-application	fail-closed predicate grammar
+action_edits_apply	ontology.application.apply_edits	console-ontology-application	declarative property writes → attribute bag
+control_points_parse	ontology.application.parse_control_points	console-ontology-application	fail-closed gate name → GateChainConfig
+object_type_http	ontology.rest.object_types	console-ontology-rest	HTTP adapter only; same use cases
+instance_http	ontology.rest.instances	console-ontology-rest	HTTP adapter only; no alternate write path
+action_execute_http	ontology.rest.actions	console-ontology-rest	execute path; compose gates, do not reimplement writers
+builtin_catalog_seed	ontology.adapter_postgres.seed	console-ontology-adapter-postgres	additive catalog seed; not a second product writer
+projected_dispatch	ontology.rest.projected_dispatch	console-ontology-rest	dispatch into domain use cases only; domain remains sole projected writer

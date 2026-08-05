@@ -1,0 +1,19 @@
+fact	writer_module	crate	notes
+lifecycle_state_fsm	governance.domain.LifecycleState	console-governance-domain	base FSM edges; config may only subset
+lifecycle_transition_validate	governance.domain.validate_lifecycle_transition	console-governance-domain	pure illegal-edge reject
+transition_requirements	governance.domain.TransitionRequirements	console-governance-domain	requires_reason/four_eyes/checklist flags
+gate_chain_config	governance.domain.GateChainConfig	console-governance-domain	§16 authority/checklist/four_eyes/egress
+gate_chain_evaluate	governance.domain.evaluate_gate_chain	console-governance-domain	pure verdict; used by preflight + execute composers
+impact_preflight	governance.domain.impact_preflight	console-governance-domain	dependency scan types only; no I/O
+create_approval_command	governance.application.CreateApprovalCommand	console-governance-application	open pending four-eyes request
+decide_approval_command	governance.application.DecideApprovalCommand	console-governance-application	distinct approver; requested_by spoof defense
+configure_transition_command	governance.application.ConfigureTransitionCommand	console-governance-application	per-object-type edge requirements
+open_override_command	governance.application.OpenOverrideCommand	console-governance-application	post-draft override open
+approval_request_pg	governance.adapter_postgres.create_approval	console-governance-adapter-postgres	single writer for pending requests
+approval_decision_pg	governance.adapter_postgres.decide_approval	console-governance-adapter-postgres	self-approval ban + append-only decision
+four_eyes_peek	governance.adapter_postgres.four_eyes_approved	console-governance-adapter-postgres	preview/preflight SELECT only — no consume
+four_eyes_consume	governance.adapter_postgres.four_eyes_consume	console-governance-adapter-postgres	single-use bind+consume on commit path
+lifecycle_transition_config_pg	governance.adapter_postgres.configure_transition	console-governance-adapter-postgres	gov_lifecycle_transitions upsert
+lifecycle_preflight_http	governance.rest.lifecycle_preflight	console-governance-rest	POST preflight; status only; never commits
+approvals_http	governance.rest.create_approval	console-governance-rest	HTTP adapter over application commands
+approvals_decide_http	governance.rest.decide_approval	console-governance-rest	HTTP adapter; no alternate decide path
