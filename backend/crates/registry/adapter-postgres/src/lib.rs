@@ -254,6 +254,7 @@ impl PgRegistryStore {
     ) -> Result<CreatedSite, PgRegistryError> {
         let customer_id = command.customer_id;
         let customer_uuid = *customer_id.as_uuid();
+        let branch_scope = command.branch_scope;
         let name = command.name;
         let actor = command.actor;
         let trace = command.trace;
@@ -285,6 +286,10 @@ impl PgRegistryStore {
                 .fetch_optional(tx.as_mut())
                 .await?
                 .ok_or_else(|| KernelError::not_found("customer was not found"))?;
+                let branch_id = BranchId::from_uuid(branch_uuid);
+                if !branch_scope.allows(branch_id) {
+                    return Err(KernelError::not_found("customer was not found").into());
+                }
 
                 let existing: Option<uuid::Uuid> = sqlx::query_scalar(
                     "SELECT id FROM registry_sites WHERE branch_id = $1 AND customer_id = $2 AND name = $3",
@@ -330,7 +335,6 @@ impl PgRegistryStore {
                 .fetch_one(tx.as_mut())
                 .await?;
 
-                let branch_id = BranchId::from_uuid(branch_uuid);
                 let site = CreatedSite {
                     id: SiteId::from_uuid(id),
                     customer_id,
@@ -365,9 +369,10 @@ impl PgRegistryStore {
         if command.fields.is_empty() {
             return Err(KernelError::validation("no equipment fields to update").into());
         }
-        let existing = fetch_equipment_admin_row(self.pool(), command.equipment_id)
-            .await?
-            .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
+        let existing =
+            fetch_equipment_admin_row(self.pool(), command.equipment_id, &command.branch_scope)
+                .await?
+                .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
         let before_snapshot = existing.snapshot.clone();
@@ -450,18 +455,29 @@ impl PgRegistryStore {
 
     /// List the append-only version history for one equipment row, newest
     /// first (RLS-scoped read as the runtime role).
+    ///
+    /// `registry_equipment_versions` carries no `branch_id` of its own — every
+    /// row is a snapshot of the `registry_equipment` row it points at, and that
+    /// row is branch-scoped. So the branch gate goes on the parent existence
+    /// probe: a cross-branch id is `not_found`, exactly as if it did not exist,
+    /// which is what the sibling `get_equipment` detail read already does.
     pub async fn list_equipment_versions(
         &self,
         equipment_id: EquipmentId,
+        branch_scope: &BranchScope,
     ) -> Result<Vec<console_platform_db::ObjectVersionRecord>, PgRegistryError> {
         let org = current_org().map_err(KernelError::from)?;
+        let scope = branch_scope_bind(branch_scope);
         with_org_conn::<_, _, PgRegistryError>(&self.pool, org, move |tx| {
             Box::pin(async move {
-                let exists: i64 =
-                    sqlx::query_scalar("SELECT COUNT(*) FROM registry_equipment WHERE id = $1")
-                        .bind(*equipment_id.as_uuid())
-                        .fetch_one(tx.as_mut())
-                        .await?;
+                let exists: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM registry_equipment \
+                     WHERE id = $1 AND ($2::uuid[] IS NULL OR branch_id = ANY($2))",
+                )
+                .bind(*equipment_id.as_uuid())
+                .bind(scope.as_deref())
+                .fetch_one(tx.as_mut())
+                .await?;
                 if exists == 0 {
                     return Err(KernelError::not_found("equipment was not found").into());
                 }
@@ -480,9 +496,10 @@ impl PgRegistryStore {
         &self,
         command: RollbackEquipmentCommand,
     ) -> Result<i32, PgRegistryError> {
-        let existing = fetch_equipment_admin_row(self.pool(), command.equipment_id)
-            .await?
-            .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
+        let existing =
+            fetch_equipment_admin_row(self.pool(), command.equipment_id, &command.branch_scope)
+                .await?
+                .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
         let equipment_id = command.equipment_id;
@@ -549,9 +566,10 @@ impl PgRegistryStore {
         &self,
         command: DeleteEquipmentCommand,
     ) -> Result<(), PgRegistryError> {
-        let existing = fetch_equipment_admin_row(self.pool(), command.equipment_id)
-            .await?
-            .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
+        let existing =
+            fetch_equipment_admin_row(self.pool(), command.equipment_id, &command.branch_scope)
+                .await?
+                .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
         if existing.status == EquipmentStatus::Disposed {
             return Err(KernelError::conflict("equipment is already disposed").into());
         }
@@ -1117,11 +1135,17 @@ impl PgRegistryStore {
         let assignment_location =
             normalize_required_text(&command.assignment_location, "assignment_location")?;
         let substitution_id = EquipmentSubstitutionId::new();
+        // `validate_substitute_pair` only proves source and candidate share a
+        // branch — it never asks whose. Both sides are checked against the
+        // CALLER's scope here, and an out-of-scope row is `not_found` so a
+        // branch-A admin cannot probe branch B's equipment by pairing it.
         let source = fetch_substitute_profile(self.pool(), command.source_equipment_id)
             .await?
+            .filter(|profile| command.branch_scope.allows(profile.branch_id))
             .ok_or_else(|| KernelError::not_found("source equipment was not found"))?;
         let candidate = fetch_substitute_profile(self.pool(), command.substitute_equipment_id)
             .await?
+            .filter(|profile| command.branch_scope.allows(profile.branch_id))
             .ok_or_else(|| KernelError::not_found("substitute equipment was not found"))?;
         validate_substitute_pair(&source, &candidate)?;
 
@@ -1192,6 +1216,7 @@ impl PgRegistryStore {
     ) -> Result<SubstituteAssignment, PgRegistryError> {
         let before = fetch_substitution(self.pool(), command.substitution_id)
             .await?
+            .filter(|assignment| command.branch_scope.allows(assignment.branch_id))
             .ok_or_else(|| KernelError::not_found("substitution assignment was not found"))?;
         if before.returned_at.is_some() {
             return Err(
@@ -1245,13 +1270,31 @@ impl PgRegistryStore {
         .await
     }
 
+    /// Ownership-transfer history for one equipment row, branch-scoped twice
+    /// over: an out-of-scope equipment id is `not_found` (never an empty list
+    /// that would still confirm the id), and the rows themselves are filtered on
+    /// their own stored `branch_id` so history that predates a branch move can
+    /// never leak either.
     pub async fn list_equipment_ownership_transfers(
         &self,
         equipment_id: EquipmentId,
+        branch_scope: &BranchScope,
     ) -> Result<Vec<EquipmentOwnershipTransferRequest>, PgRegistryError> {
         let org = current_org().map_err(KernelError::from)?;
+        let scope = branch_scope_bind(branch_scope);
         with_org_conn::<_, _, PgRegistryError>(&self.pool, org, move |tx| {
             Box::pin(async move {
+                let exists: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM registry_equipment \
+                     WHERE id = $1 AND ($2::uuid[] IS NULL OR branch_id = ANY($2))",
+                )
+                .bind(*equipment_id.as_uuid())
+                .bind(scope.as_deref())
+                .fetch_one(tx.as_mut())
+                .await?;
+                if exists == 0 {
+                    return Err(KernelError::not_found("equipment was not found").into());
+                }
                 let rows = sqlx::query(
                     r#"
                     SELECT id, equipment_id, branch_id, from_owner, to_owner, reason,
@@ -1259,10 +1302,12 @@ impl PgRegistryStore {
                            requested_at, decided_at, completed_at
                     FROM equipment_ownership_transfer_requests
                     WHERE equipment_id = $1
+                      AND ($2::uuid[] IS NULL OR branch_id = ANY($2))
                     ORDER BY requested_at DESC, id DESC
                     "#,
                 )
                 .bind(*equipment_id.as_uuid())
+                .bind(scope.as_deref())
                 .fetch_all(tx.as_mut())
                 .await?;
                 rows.iter().map(ownership_transfer_from_row).collect()
@@ -1282,6 +1327,7 @@ impl PgRegistryStore {
         }
         let equipment = fetch_equipment_transfer_anchor(self.pool(), command.equipment_id)
             .await?
+            .filter(|anchor| command.branch_scope.allows(anchor.branch_id))
             .ok_or_else(|| KernelError::not_found("equipment was not found"))?;
         if equipment.current_owner == to_owner {
             return Err(KernelError::conflict("target owner already owns this equipment").into());
@@ -1353,6 +1399,7 @@ impl PgRegistryStore {
         }
         let before = fetch_ownership_transfer(self.pool(), command.request_id)
             .await?
+            .filter(|request| command.branch_scope.allows(request.branch_id))
             .ok_or_else(|| KernelError::not_found("ownership transfer request was not found"))?;
         if before.status != EquipmentOwnershipTransferStatus::Pending {
             return Err(
@@ -1675,6 +1722,18 @@ fn push_equipment_list_filters(
         builder.push(" OR lower(e.vin) LIKE ");
         builder.push_bind(like_q);
         builder.push(")");
+    }
+}
+
+/// The caller's branch scope as ONE nullable `uuid[]` bind: `None` for
+/// `BranchScope::All` (unconstrained), an empty vec for an empty explicit scope
+/// (`= ANY('{}')` matches nothing — default deny). Paired with a
+/// `($n::uuid[] IS NULL OR <col> = ANY($n))` predicate it scopes a plain
+/// by-primary-key query without dragging in a `QueryBuilder`.
+fn branch_scope_bind(branch_scope: &BranchScope) -> Option<Vec<uuid::Uuid>> {
+    match branch_scope {
+        BranchScope::All => None,
+        BranchScope::Branches(branches) => Some(branches.iter().map(|id| *id.as_uuid()).collect()),
     }
 }
 
@@ -3033,9 +3092,17 @@ struct EquipmentAdminRow {
     snapshot: serde_json::Value,
 }
 
+/// Fetch one equipment row for an admin mutation, **already narrowed to the
+/// caller's branch scope**. A row in another branch of the same org returns
+/// `None` — indistinguishable from a missing row, so existence is not revealed.
+/// The check lives here, not in each handler, because every by-primary-key
+/// equipment mutation (update, rollback, soft delete, and the object-action
+/// write-back that routes through update) funnels through this one fetch.
+/// Mirrors `update_site`.
 async fn fetch_equipment_admin_row(
     pool: &PgPool,
     equipment_id: EquipmentId,
+    branch_scope: &BranchScope,
 ) -> Result<Option<EquipmentAdminRow>, PgRegistryError> {
     let org = current_org().map_err(KernelError::from)?;
     let row = with_org_conn::<_, _, PgRegistryError>(pool, org, move |tx| {
@@ -3061,6 +3128,9 @@ async fn fetch_equipment_admin_row(
     let Some(row) = row else {
         return Ok(None);
     };
+    if !branch_scope.allows(BranchId::from_uuid(row.try_get("branch_id")?)) {
+        return Ok(None);
+    }
     let equipment_no = EquipmentNo::parse(row.try_get::<String, _>("equipment_no")?)?;
     let status = EquipmentStatus::parse(&row.try_get::<String, _>("status")?)?;
     let snapshot = json!({

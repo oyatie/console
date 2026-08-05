@@ -1,3 +1,5 @@
+> **HISTORICAL after the 2026-07-28 pivot.** This document preserves evidence and prior reasoning only. It cannot authorize Buck2, broad product scope, fan-out, or implementation work. Current authority is [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md) and the post-pivot program index.
+
 # Source-Bounded Benchmark Matrix — Executive Summary
 
 **14 modules × 7 primary vendors (+ secondary references), read through 5 independent lenses, adversarially reviewed (4 verifier passes, 23 web checks + code adjudication).**

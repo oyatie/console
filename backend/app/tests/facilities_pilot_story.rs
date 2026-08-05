@@ -532,11 +532,17 @@ async fn seed_user(pool: &PgPool, id: UserId, role: &str, branch: BranchId) {
         .await
         .unwrap();
 }
+// Called TWICE inside `create_replay_is_idempotent_and_changed_payload_conflicts` against the
+// same branch, and every identifier below is a constant. The three inserts therefore collide on
+// UNIQUE (branch_id,name), UNIQUE (branch_id,customer_id,name) and UNIQUE (org_id,service_key).
+// `DO NOTHING` is wrong for all three — they are `fetch_one`, so a skipped row returns no id.
+// The catalog cannot take a discriminator either: 0178:18 CHECKs service_key against exactly one
+// literal. Upserting is the only shape that satisfies both the CHECK and the second call.
 async fn seed_obligation(pool: &PgPool, branch: BranchId, due: OffsetDateTime) -> Uuid {
     let org = *OrgId::knl().as_uuid();
-    let customer:Uuid=sqlx::query_scalar("INSERT INTO registry_customers(branch_id,name,org_id) VALUES($1,'Facility Customer',$2) RETURNING id").bind(*branch.as_uuid()).bind(org).fetch_one(pool).await.unwrap();
-    let site:Uuid=sqlx::query_scalar("INSERT INTO registry_sites(branch_id,customer_id,name,org_id) VALUES($1,$2,'Facility Site',$3) RETURNING id").bind(*branch.as_uuid()).bind(customer).bind(org).fetch_one(pool).await.unwrap();
-    let catalog:Uuid=sqlx::query_scalar("INSERT INTO facilities_catalog_services(org_id,service_key,name) VALUES($1,'HVAC_PREVENTIVE_MAINTENANCE','HVAC PM') RETURNING id").bind(org).fetch_one(pool).await.unwrap();
+    let customer:Uuid=sqlx::query_scalar("INSERT INTO registry_customers(branch_id,name,org_id) VALUES($1,'Facility Customer',$2) ON CONFLICT (branch_id,name) DO UPDATE SET name=EXCLUDED.name RETURNING id").bind(*branch.as_uuid()).bind(org).fetch_one(pool).await.unwrap();
+    let site:Uuid=sqlx::query_scalar("INSERT INTO registry_sites(branch_id,customer_id,name,org_id) VALUES($1,$2,'Facility Site',$3) ON CONFLICT (branch_id,customer_id,name) DO UPDATE SET name=EXCLUDED.name RETURNING id").bind(*branch.as_uuid()).bind(customer).bind(org).fetch_one(pool).await.unwrap();
+    let catalog:Uuid=sqlx::query_scalar("INSERT INTO facilities_catalog_services(org_id,service_key,name) VALUES($1,'HVAC_PREVENTIVE_MAINTENANCE','HVAC PM') ON CONFLICT (org_id,service_key) DO UPDATE SET name=EXCLUDED.name RETURNING id").bind(org).fetch_one(pool).await.unwrap();
     let asset:Uuid=sqlx::query_scalar("INSERT INTO facilities_assets(org_id,branch_id,site_id,catalog_service_id,asset_tag,name) VALUES($1,$2,$3,$4,$5,'HVAC Unit') RETURNING id").bind(org).bind(*branch.as_uuid()).bind(site).bind(catalog).bind(format!("HVAC-{}",Uuid::new_v4())).fetch_one(pool).await.unwrap();
     sqlx::query_scalar("INSERT INTO facilities_obligations(org_id,branch_id,site_id,asset_id,catalog_service_id,recurrence_days,next_due_at,response_due_seconds,completion_due_seconds,acceptance_due_seconds,target_energy_kwh) VALUES($1,$2,$3,$4,$5,30,$6,60,3600,7200,0) RETURNING id").bind(org).bind(*branch.as_uuid()).bind(site).bind(asset).bind(catalog).bind(due).fetch_one(pool).await.unwrap()
 }

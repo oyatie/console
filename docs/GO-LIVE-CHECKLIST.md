@@ -1,13 +1,17 @@
+> **RETIRED PRE-PIVOT CHECKLIST:** Every checkbox below is a frozen record of the
+> former field/mobile pilot. A checked box means only that the item was recorded
+> complete then; it is not current readiness, release evidence, or product scope.
+> Field ops, dispatch, evidence/WORM, web/mobile clients, and their release tooling
+> are outside the current pivot. Current authority is
+> [`docs/PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+
 # Go-Live Checklist (T6.5)
 
 Final go/no-go gate for the 물류장비 정비/렌탈 업무 시스템 pilot launch (HQ team,
 then branch waves 수도권→충청→영남→호남).
 
-Each item is **Ready** (verified in-repo, reproducible), **Operator action**
-(requires production access or a business/legal filing the build cannot perform),
-or **Blocked** (depends on an Operator action not yet done). The launch is
-**go** only when every Ready item is green *and* every Operator action is
-signed off with evidence filed under `docs/evidence/` or `/ops`.
+The status vocabulary and go/no-go rules below are historical. They must not be
+used to approve a current release or to reopen work excluded by the pivot.
 
 Owners: **Eng** = engineering (this repo) · **운영** = operator/ops (production
 infra + secrets) · **경영/법무** = business/legal (filings, approvals).
@@ -24,15 +28,17 @@ Deployment-context shorthand used below:
 
 ---
 
-## 1. Code & CI readiness — Eng
+## 1. Historical code & CI snapshot — retired
 
-- [x] **All CI gates green on `main`.** fmt, `clippy --all-targets -D warnings`,
-  `cargo test --workspace` (170 suites / 302 tests / 0 failed), the four
-  `console-gate-*` binaries (layer-boundary, audit-coverage, migration-safety,
-  pii-no-logs), tri-client drift (ts/kotlin/swift), openapi-app, contract
-  round-trip, i18n + parity, iOS build + behavior tests. See
-  [CI-GATES.md](CI-GATES.md).
-- [x] **Supply-chain CI shipped** — Eng. `image-release.yml` builds the
+- [x] **Historical CI snapshot; not current go-live evidence.** When this item
+  was recorded, fmt, clippy, workspace tests, the then-current backend gates,
+  API/client checks, parity checks, and mobile checks were green. The client,
+  frontend, mobile, and app-served contract machinery was retired after the
+  pivot and is no longer runnable. Current surviving API evidence is the backend
+  `openapi_drift` suite plus `check:platform-contract-drift`; use the live
+  inventory in [CI-GATES.md](CI-GATES.md), not this snapshot, for present-day
+  verification.
+- [x] **Historical supply-chain CI snapshot; not current release evidence.** `image-release.yml` built the
   `console-app` + `console-web` linux/arm64 images reproducibly for the current
   `oci-guest` A1 target (digest-pinned bases, `SOURCE_DATE_EPOCH`), with SBOM +
   SLSA provenance, a
@@ -59,8 +65,8 @@ Deployment-context shorthand used below:
   IP), the web tier ships CSP + HSTS, and `list_tickets` is paginated. All
   re-verified (workspace tests + 4 gates + client-drift gate).
 - [x] **Adversarial review → harden → fix complete.** The security and
-  correctness/concurrency reviews are filed in
-  [`.omc/review/`](../.omc/review/); all 7 confirmed findings are fixed and
+  correctness/concurrency reviews were filed in the historical runtime path
+  `.omc/review/`; all 7 confirmed findings are fixed and
   independently re-verified (passkey-ceremony atomicity, audit-gate path
   binding, /sync payload-binding, /sync crash recovery, WORM post-completion
   guard + DB trigger, P1 alert exactly-once lease, negative-residual flooring),
@@ -158,10 +164,10 @@ Deployment-context shorthand used below:
   smoke alert fired end-to-end — 운영.
 - [x] **Audit-access is itself audited and role-gated** (`/api/audit`) — Eng.
 
-## 5. Mobile distribution — 운영
+## 5. Historical mobile distribution — retired
 
-- [x] Apple Developer Program + Play Console accounts ready (operator-confirmed).
-- [x] Release pipeline (fastlane/actionlint dry-runs) verified — Eng; uploads are
+- [x] **Historical operator record:** Apple Developer Program + Play Console accounts were reported ready.
+- [x] **Historical release-tooling record:** fastlane/actionlint dry-runs were verified; the tooling is now deleted. Uploads were
   honestly gated on operator signing secrets per
   [`docs/release/SECRETS.md`](release/SECRETS.md).
 - [ ] **iOS signing keys/profiles + Android upload key** installed and a TestFlight
@@ -196,15 +202,7 @@ Deployment-context shorthand used below:
 
 ## Go / No-Go
 
-**GO** requires: §1 fully green (Eng — met at the launch commit); §2 KCC 신고 +
-privacy policy done (경영/법무); §3 selected deployment context provisioned + TLS +
-secrets + context-appropriate restore/failover evidence (운영); §4 dashboards live
-(운영); §5 a signed pilot build on devices (운영); §6 templates submitted
-(경영/법무); §7 pilot roster + branch data seeded (운영).
-
-**Current state:** the **build is launch-ready for the existing pilot path** —
-every Eng item is green and reproducible at the launch commit. The remaining
-items are operator/business actions (selected substrate access, secrets, legal
-filings, and context-specific restore/failover evidence) that the codebase cannot
-perform on its own; each is owned and tracked above. `on-prem` HA go-live remains
-pending ADR-0024 substrate activation evidence, not just docs or DARK manifests.
+The former pilot's **GO** rule required its §1–§7 evidence. That rule and its
+recorded “launch-ready” conclusion are retired historical statements. This file
+makes no current go-live determination; the current pivot has no web/mobile field
+pilot in scope.

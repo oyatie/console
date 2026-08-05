@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createTextGate } from "./lib/text-gate.mjs";
+import { evaluateSecurityWorkflowHardening } from "./check-workflow-hardening.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const textGate = createTextGate({
@@ -24,25 +25,6 @@ function requireFile(path, label = path) {
     return;
   }
   throw new Error(`${label}: missing (${path})`);
-}
-
-function requireIncludesAtLeast(path, needle, minimumCount, label) {
-  const text = read(path);
-  const count = text.split(needle).length - 1;
-  if (count >= minimumCount) {
-    passes.push(`${label}: ${count} occurrences`);
-    return;
-  }
-  throw new Error(`${label}: ${path} must include ${JSON.stringify(needle)} at least ${minimumCount} times (found ${count})`);
-}
-
-function requireAny(path, needles, label) {
-  const text = read(path);
-  if (needles.some((needle) => text.includes(needle))) {
-    passes.push(label);
-    return;
-  }
-  throw new Error(`${label}: ${path} must include one of ${needles.map((needle) => JSON.stringify(needle)).join(", ")}`);
 }
 
 function uniqueSorted(values) {
@@ -135,6 +117,12 @@ function requireCiGateDocsDriftInventory() {
 
   const backendGatePackages = extractCiBackendGatePackages(ci);
   const rootScripts = uniqueSorted(npmInvocations.map(({ script }) => script));
+  const liveDocs = docs.split("\n## Backend gates\n", 1)[0];
+  const liveDocScripts = uniqueSorted(
+    extractCiNpmRunInvocations(liveDocs)
+      .map(({ script }) => script.replace(/[`),.]+$/g, ""))
+      .filter((script) => !script.includes("$")),
+  );
   // The repo has no npm workspaces left, so any `--workspace` invocation in CI
   // is by definition uncovered by the drift policy.
   const unknownWorkspaceInvocations = npmInvocations.filter(({ options }) =>
@@ -153,6 +141,12 @@ function requireCiGateDocsDriftInventory() {
   }
 
   requireNoMissingPackageScripts("root CI package scripts", rootScripts, rootPackage, rootPackagePath);
+  requireNoMissingPackageScripts(
+    "live CI gate documentation package scripts",
+    liveDocScripts,
+    rootPackage,
+    rootPackagePath,
+  );
 
   compareInventory(
     "docs/CI-GATES.md backend console-gate binaries run by CI",
@@ -214,9 +208,15 @@ requireIncludes("package.json", "\"check:foundation-gates\": \"node scripts/chec
 requireIncludes("package.json", "\"test:text-gate\": \"node --test scripts/lib/text-gate.test.mjs\"", "package script test:text-gate");
 requireIncludes(".github/workflows/ci.yml", "npm run check:foundation-gates", "CI runs foundation gate contract");
 requireIncludes(".github/workflows/ci.yml", "npm run test:text-gate", "CI runs shared text-gate tests");
-requireIncludes(".github/workflows/ci.yml", "docs/specs/**", "CI watches docs/specs gate inputs");
-requireIncludesAtLeast(".github/workflows/ci.yml", '"docs/CI-GATES.md"', 2, "CI watches CI gate documentation for push and pull_request");
+if (/^    paths(?:-ignore)?:/m.test(read(".github/workflows/ci.yml"))) {
+  throw new Error("CI required-context triggers: .github/workflows/ci.yml must not define paths or paths-ignore filters");
+}
+passes.push("CI required-context triggers: push and pull_request are unfiltered");
 requireCiGateDocsDriftInventory();
+requireNotIncludes("docs/CI-GATES.md", "test:contract", "live CI gate docs exclude retired generated-client round-trip");
+requireNotIncludes("docs/CI-GATES.md", "check:openapi-app", "live CI gate docs exclude retired app-served OpenAPI gate");
+requireNotIncludes("docs/CI-GATES.md", "CONTRACT_DATABASE_URL", "live CI gate docs exclude retired contract database handoff");
+requireNotIncludes("docs/GO-LIVE-CHECKLIST.md", "check:openapi-app", "go-live status excludes retired app-served OpenAPI command");
 for (const ciNeedle of [
   "cargo fmt --all -- --check",
   "cargo clippy --all-targets -- -D warnings",
@@ -224,17 +224,20 @@ for (const ciNeedle of [
   "cargo run -p console-gate-audit-coverage",
   "cargo run -p console-gate-pii-no-logs",
   "cargo run -p console-gate-rls-arming",
-  "npm run check:openapi-app",
+  "npm run check:platform-contract-drift",
 ]) {
   requireIncludes(".github/workflows/ci.yml", ciNeedle, `CI gate: ${ciNeedle}`);
 }
 for (const securityNeedle of [
   "trivy fs --scanners vuln,secret",
+  "node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs",
   "node scripts/generate-trivy-dev-codegen-exceptions.mjs --check",
   "--ignorefile security/trivy-dev-codegen-exceptions.yaml",
   "trivy config --severity HIGH,CRITICAL --exit-code 1",
-  "cargo audit",
-  "cargo deny --manifest-path backend/Cargo.toml check",
+  "cargo-security-tools/bin/cargo-audit",
+  "cargo-security-tools/bin/cargo-deny",
+  "node --test scripts/check-workflow-hardening.test.mjs",
+  "node --test scripts/check-node-audit-exceptions.test.mjs",
   "npm audit --omit=dev --audit-level=high --json",
   "check-node-audit-exceptions.mjs --mode production",
   "npm audit --audit-level=high --json",
@@ -242,6 +245,11 @@ for (const securityNeedle of [
 ]) {
   requireIncludes(".github/workflows/security.yml", securityNeedle, `security workflow: ${securityNeedle}`);
 }
+const securityWorkflowHardening = evaluateSecurityWorkflowHardening(
+  read(".github/workflows/security.yml"),
+);
+passes.push(...securityWorkflowHardening.passes);
+failures.push(...securityWorkflowHardening.failures);
 requireFile("security/node-audit-exceptions.json", "Node audit exception registry");
 requireFile("security/trivy-dev-codegen-exceptions.yaml", "Trivy dev/codegen exception registry");
 requireFile("scripts/check-node-audit-exceptions.mjs", "Node audit exception gate");

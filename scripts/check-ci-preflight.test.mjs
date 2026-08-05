@@ -4,13 +4,64 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import yaml from "js-yaml";
 
 import { evaluateCiPreflight } from "./check-ci-preflight.mjs";
 
 const workflow = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 const postgresWrapperBuildFile = readFileSync(new URL("../tools/buck/BUCK", import.meta.url), "utf8");
+const freeRunnerDiskAction = readFileSync(
+  new URL("../.github/actions/free-runner-disk/action.yml", import.meta.url),
+  "utf8",
+);
 const cargoLockGate = "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null";
 const ciPreflightTests = "node --test scripts/check-ci-preflight.test.mjs";
+const reasoningLensRegressionStep = `      - name: Reasoning lens contract regression
+        run: node --test scripts/check-reasoning-lens-contract.test.mjs
+
+`;
+const reasoningLensAdmissionStep = `      - name: Reasoning lens changed-record admission
+        shell: bash
+        env:
+          REASONING_PR_BASE_SHA: \${{ github.event.pull_request.base.sha }}
+          REASONING_PUSH_BEFORE_SHA: \${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              test -n "$REASONING_PR_BASE_SHA"
+              node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PR_BASE_SHA"
+              ;;
+            push)
+              case "$GITHUB_REF_TYPE" in
+                branch)
+                  test -n "$REASONING_PUSH_BEFORE_SHA"
+                  if [[ "$REASONING_PUSH_BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+                    printf '%s\\n' 'push.before is all-zero; running structural reasoning-lens validation'
+                    node scripts/check-reasoning-lens-contract.mjs
+                  else
+                    node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PUSH_BEFORE_SHA"
+                  fi
+                  ;;
+                tag)
+                  node scripts/check-reasoning-lens-contract.mjs
+                  ;;
+                *)
+                  printf 'unsupported push ref type: %s\\n' "$GITHUB_REF_TYPE" >&2
+                  exit 2
+                  ;;
+              esac
+              ;;
+            workflow_dispatch)
+              node scripts/check-reasoning-lens-contract.mjs
+              ;;
+            *)
+              printf 'unsupported reasoning-lens event: %s\\n' "$GITHUB_EVENT_NAME" >&2
+              exit 2
+              ;;
+          esac
+
+`;
 const reachabilityPreflightCommands = [
   "node --test scripts/console/route-inventory.test.mjs",
   "tools/buck/run_test_with_postgres_env.test.sh",
@@ -23,9 +74,118 @@ const preflightRustToolchainSetup = `      - name: Install Rust toolchain for Ca
 
 `;
 
-function expectFailure(source, message, buckBuildFile = postgresWrapperBuildFile) {
-  const { failures } = evaluateCiPreflight(source, buckBuildFile);
+function expectFailure(
+  source,
+  message,
+  buckBuildFile = postgresWrapperBuildFile,
+  actionFile = freeRunnerDiskAction,
+) {
+  const { failures } = evaluateCiPreflight(source, buckBuildFile, actionFile);
   assert.ok(failures.some((failure) => failure.includes(message)), failures.join("\n"));
+}
+
+function mutateReasoningLensAdmission(mutate) {
+  assert.ok(workflow.includes(reasoningLensAdmissionStep), "reasoning-lens admission fixture drifted");
+  return workflow.replace(reasoningLensAdmissionStep, mutate(reasoningLensAdmissionStep));
+}
+
+function replaceJob(source, job, mutate) {
+  const start = source.indexOf(`  ${job}:\n`);
+  assert.notEqual(start, -1, `missing workflow job ${job}`);
+  const next = source.slice(start + 1).search(/^  [A-Za-z0-9_-]+:/m);
+  const end = next < 0 ? source.length : start + 1 + next;
+  return source.slice(0, start) + mutate(source.slice(start, end)) + source.slice(end);
+}
+
+function mutateNamedStep(source, job, name, mutate) {
+  return replaceJob(source, job, (block) => {
+    const anchor = `      - name: ${name}\n`;
+    const start = block.indexOf(anchor);
+    assert.notEqual(start, -1, `missing ${job} step ${name}`);
+    const next = block.indexOf("      - ", start + anchor.length);
+    const end = next < 0 ? block.length : next;
+    const step = block.slice(start, end);
+    const mutated = mutate(step);
+    assert.notEqual(mutated, step, `mutation did not change ${job} step ${name}`);
+    return block.slice(0, start) + mutated + block.slice(end);
+  });
+}
+
+function addFalseCondition(step) {
+  if (/^        if: /m.test(step)) {
+    return step.replace(/^        if: .*$/m, "        if: false");
+  }
+  return step.replace(/^      - name: .*$/m, (name) => `${name}\n        if: false`);
+}
+
+function addContinueOnError(step) {
+  assert.ok(!/^        continue-on-error:/m.test(step), "baseline step already continues on error");
+  return step.replace(
+    /^      - name: .*$/m,
+    (name) => `${name}\n        continue-on-error: true`,
+  );
+}
+
+function addRetainedTextEarlyExit(step) {
+  if (/^        run: \|$/m.test(step)) {
+    return step.replace(/^        run: \|$/m, "        run: |\n          exit 0");
+  }
+  return step.replace(
+    /^        run: (.+)$/m,
+    (_, command) => `        run: |\n          exit 0\n          ${command}`,
+  );
+}
+
+function mutateActionReference(step) {
+  return step.replace(
+    /^(        uses: )(\S+)(.*)$/m,
+    (_, prefix, action, suffix) => `${prefix}${action}-mutated${suffix}`,
+  );
+}
+
+function addUnexpectedActionInput(step) {
+  if (/^        with:$/m.test(step)) {
+    return step.replace(/^        with:$/m, "        with:\n          proof-lock-extra: forbidden");
+  }
+  return step.replace(
+    /^(        uses: .*?)$/m,
+    "$1\n        with:\n          proof-lock-extra: forbidden",
+  );
+}
+
+function mutateActionInput(step, input, replacement) {
+  const escaped = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`^          ${escaped}: .*\\n`, "m");
+  assert.match(step, pattern, `missing action input ${input}`);
+  return step.replace(pattern, replacement === null
+    ? ""
+    : `          ${input}: ${replacement}\n`);
+}
+
+function duplicateNamedStep(step, name) {
+  return step + step.replace(
+    `      - name: ${name}\n`,
+    `      - name: ${name} duplicate\n`,
+  );
+}
+
+function swapNamedSteps(source, job, firstName, secondName) {
+  return replaceJob(source, job, (block) => {
+    const starts = [...block.matchAll(/^      - name: /gm)].map((match) => match.index);
+    const ranges = starts.map((start, index) => ({
+      start,
+      end: starts[index + 1] ?? block.length,
+      text: block.slice(start, starts[index + 1] ?? block.length),
+    }));
+    const first = ranges.find((range) => range.text.startsWith(`      - name: ${firstName}\n`));
+    const second = ranges.find((range) => range.text.startsWith(`      - name: ${secondName}\n`));
+    assert.ok(first && second && first.start < second.start, `cannot swap ${job} actions`);
+    return block.slice(0, first.start)
+      + second.text
+      + block.slice(first.end, second.start)
+      + first.text
+      + block.slice(second.end);
+  });
 }
 
 describe("CI preflight contract", () => {
@@ -33,62 +193,422 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
-  it("rejects CI path filters that omit toolchain changes", () => {
-    expectFailure(
-      workflow.replace('      - "toolchains/**"\n', ""),
-      "push must include toolchains/** in CI path filters",
-    );
-    const pullRequest = workflow.indexOf("  pull_request:\n");
-    const pullWithoutToolchains = workflow.slice(0, pullRequest) + workflow.slice(pullRequest).replace(
-      '      - "toolchains/**"\n',
-      "",
-    );
-    expectFailure(pullWithoutToolchains, "pull_request must include toolchains/** in CI path filters");
+  it("locks Required / CI to the exact ten existing CI proofs", () => {
+    const requiredDependencies = [
+      "preflight",
+      "domain-unit",
+      "postgres-domain-reachability",
+      "company-conformance",
+      "generated-face-authority",
+      "backend",
+      "dev-up-smoke",
+      "repo-gates",
+      "api-contract",
+      "kubernetes-manifests",
+    ];
+    const model = yaml.load(workflow);
+    assert.equal(Object.keys(model.jobs).length, 11);
+    assert.equal(model.jobs["required-ci"].name, "Required / CI");
+    assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
+    assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
+
+    const mutations = [
+      ["aggregator deletion", replaceJob(workflow, "required-ci", () => "")],
+      ["leaf job deletion", replaceJob(workflow, "kubernetes-manifests", () => "")],
+      ["leaf job rename", workflow.replace("  preflight:\n", "  preflight-renamed:\n")],
+      [
+        "extra job",
+        workflow.replace(
+          "  required-ci:\n",
+          "  candidate-shim:\n    runs-on: ubuntu-latest\n    steps: []\n\n  required-ci:\n",
+        ),
+      ],
+      ["context rename", workflow.replace("    name: Required / CI", "    name: Required CI")],
+      ["always weakening", workflow.replace("    if: ${{ always() }}", "    if: ${{ success() }}")],
+      [
+        "dependency deletion",
+        workflow.replace("      - kubernetes-manifests\n", ""),
+      ],
+      [
+        "dependency injection",
+        workflow.replace("      - kubernetes-manifests\n", "      - kubernetes-manifests\n      - candidate-shim\n"),
+      ],
+      [
+        "result deletion",
+        workflow.replace('          test "${{ needs.preflight.result }}" = success &&\n', ""),
+      ],
+      [
+        "skipped accepted",
+        workflow.replace(
+          '          test "${{ needs.preflight.result }}" = success',
+          '          test "${{ needs.preflight.result }}" != failure',
+        ),
+      ],
+      [
+        "cancelled accepted",
+        workflow.replace(
+          '          test "${{ needs.domain-unit.result }}" = success',
+          '          test "${{ needs.domain-unit.result }}" != cancelled',
+        ),
+      ],
+      [
+        "failure accepted",
+        workflow.replace(
+          '          test "${{ needs.backend.result }}" = success',
+          '          test "${{ needs.backend.result }}" != skipped',
+        ),
+      ],
+      [
+        "checkout injection",
+        workflow.replace(
+          "    steps:\n      - name: Require every CI proof to succeed\n",
+          "    steps:\n      - uses: actions/checkout@v7\n      - name: Require every CI proof to succeed\n",
+        ),
+      ],
+      [
+        "soft failure",
+        workflow.replace(
+          "      - name: Require every CI proof to succeed\n",
+          "      - name: Require every CI proof to succeed\n        continue-on-error: true\n",
+        ),
+      ],
+    ];
+
+    for (const [label, mutated] of mutations) {
+      assert.notEqual(mutated, workflow, `${label} fixture drifted`);
+      assert.ok(
+        evaluateCiPreflight(mutated).failures.length > 0,
+        `${label} unexpectedly passed the CI preflight contract`,
+      );
+    }
   });
 
-  it("rejects docs/program path removal independently for push and pull_request", () => {
-    expectFailure(workflow.replace('      - "docs/program/**"\n', ""), "push must include docs/program/** in CI path filters");
-    const pullRequest = workflow.indexOf("  pull_request:\n");
-    const withoutPullDocs = workflow.slice(0, pullRequest) + workflow.slice(pullRequest).replace('      - "docs/program/**"\n', "");
-    expectFailure(withoutPullDocs, "pull_request must include docs/program/** in CI path filters");
+  it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
+    const requiredRunStepCounts = {
+      preflight: 24,
+      "domain-unit": 1,
+      backend: 23,
+      "dev-up-smoke": 6,
+      "kubernetes-manifests": 6,
+      "repo-gates": 23,
+      "api-contract": 4,
+      "generated-face-authority": 4,
+      "company-conformance": 2,
+      "postgres-domain-reachability": 2,
+      "required-ci": 1,
+    };
+    const workflowModel = yaml.load(workflow);
+    const bypasses = [
+      ["if: false", addFalseCondition],
+      ["continue-on-error: true", addContinueOnError],
+      ["retained command text after exit 0", addRetainedTextEarlyExit],
+    ];
+    let runStepCount = 0;
+    let mutationCount = 0;
+
+    for (const [job, expectedCount] of Object.entries(requiredRunStepCounts)) {
+      const runSteps = workflowModel.jobs[job].steps.filter((step) => typeof step.run === "string");
+      assert.equal(runSteps.length, expectedCount, `${job} exhaustive mutation inventory drifted`);
+      runStepCount += runSteps.length;
+
+      for (const step of runSteps) {
+        for (const [bypass, mutate] of bypasses) {
+          const mutated = mutateNamedStep(workflow, job, step.name, mutate);
+          const { failures } = evaluateCiPreflight(mutated);
+          assert.ok(
+            failures.some((failure) => job === "required-ci"
+              ? failure.includes("Required / CI")
+              : failure.startsWith(`${job} `) && failure.includes("run step")),
+            `${job} :: ${step.name} accepted ${bypass}:\n${failures.join("\n")}`,
+          );
+          mutationCount += 1;
+        }
+      }
+    }
+
+    assert.equal(runStepCount, 96, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 288, "exhaustive bypass matrix must not shrink");
   });
 
-  it("rejects toolchain entries placed outside each trigger's paths mapping", () => {
-    const pushWithoutToolchains = workflow.replace('      - "toolchains/**"\n', "");
-    expectFailure(
-      pushWithoutToolchains.replace(
-        "  pull_request:\n",
-        "    paths-ignore:\n      - \"toolchains/**\"\n  pull_request:\n",
-      ),
-      "push must include toolchains/** in CI path filters",
-    );
-    expectFailure(
-      pushWithoutToolchains.replace(
-        "    paths:\n",
-        "    branches-ignore:\n      - \"toolchains/**\"\n    paths:\n",
-      ),
-      "push must include toolchains/** in CI path filters",
-    );
+  it("rejects every setup-action condition and soft-failure bypass", () => {
+    const requiredActionStepCounts = {
+      preflight: 3,
+      "domain-unit": 3,
+      backend: 4,
+      "dev-up-smoke": 4,
+      "kubernetes-manifests": 1,
+      "repo-gates": 2,
+      "api-contract": 2,
+      "generated-face-authority": 4,
+      "company-conformance": 3,
+      "postgres-domain-reachability": 3,
+    };
+    const workflowModel = yaml.load(workflow);
+    const bypasses = [
+      ["if: false", addFalseCondition],
+      ["continue-on-error: true", addContinueOnError],
+    ];
+    let actionStepCount = 0;
+    let mutationCount = 0;
 
-    const pullRequest = workflow.indexOf("  pull_request:\n");
-    const pullWithoutToolchains = workflow.slice(0, pullRequest) + workflow.slice(pullRequest).replace(
-      '      - "toolchains/**"\n',
-      "",
+    for (const [job, expectedCount] of Object.entries(requiredActionStepCounts)) {
+      const actionSteps = workflowModel.jobs[job].steps.filter((step) => typeof step.uses === "string");
+      assert.equal(actionSteps.length, expectedCount, `${job} setup-action inventory drifted`);
+      actionStepCount += actionSteps.length;
+
+      for (const step of actionSteps) {
+        for (const [bypass, mutate] of bypasses) {
+          const mutated = mutateNamedStep(workflow, job, step.name, mutate);
+          const { failures } = evaluateCiPreflight(mutated);
+          assert.ok(
+            failures.some((failure) => failure.startsWith(`${job} setup action step`)),
+            `${job} :: ${step.name} accepted ${bypass}:\n${failures.join("\n")}`,
+          );
+          mutationCount += 1;
+        }
+      }
+    }
+
+    assert.equal(actionStepCount, 29, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 58, "setup-action bypass matrix must not shrink");
+  });
+
+  it("locks every setup action's identity, inputs, totality, and interleaving", () => {
+    const jobs = [
+      "preflight",
+      "domain-unit",
+      "backend",
+      "dev-up-smoke",
+      "kubernetes-manifests",
+      "repo-gates",
+      "api-contract",
+      "generated-face-authority",
+      "company-conformance",
+      "postgres-domain-reachability",
+    ];
+    const workflowModel = yaml.load(workflow);
+    let mutationCount = 0;
+    const assertActionFailure = (mutated, job, mutation) => {
+      const { failures } = evaluateCiPreflight(mutated);
+      assert.ok(
+        failures.some((failure) => failure.startsWith(`${job} `)
+          && (failure.includes("setup action step") || failure.includes("locked ordered action"))),
+        `${job} accepted ${mutation}:\n${failures.join("\n")}`,
+      );
+      mutationCount += 1;
+    };
+
+    for (const job of jobs) {
+      const actionSteps = workflowModel.jobs[job].steps.filter((step) => typeof step.uses === "string");
+      for (const step of actionSteps) {
+        assertActionFailure(
+          mutateNamedStep(workflow, job, step.name, mutateActionReference),
+          job,
+          `${step.name} action-reference mutation`,
+        );
+        assertActionFailure(
+          mutateNamedStep(workflow, job, step.name, addUnexpectedActionInput),
+          job,
+          `${step.name} extra input`,
+        );
+        assertActionFailure(
+          mutateNamedStep(workflow, job, step.name, (text) => duplicateNamedStep(text, step.name)),
+          job,
+          `${step.name} duplicate action injection`,
+        );
+
+        for (const input of Object.keys(step.with ?? {})) {
+          assertActionFailure(
+            mutateNamedStep(workflow, job, step.name, (text) => mutateActionInput(text, input, null)),
+            job,
+            `${step.name} deleted ${input} input`,
+          );
+          assertActionFailure(
+            mutateNamedStep(workflow, job, step.name, (text) => (
+              mutateActionInput(text, input, '"proof-lock-mutated"')
+            )),
+            job,
+            `${step.name} changed ${input} input`,
+          );
+        }
+      }
+
+      for (let index = 1; index < actionSteps.length; index += 1) {
+        assertActionFailure(
+          swapNamedSteps(workflow, job, actionSteps[index - 1].name, actionSteps[index].name),
+          job,
+          `${actionSteps[index - 1].name}/${actionSteps[index].name} order swap`,
+        );
+      }
+    }
+
+    assert.equal(mutationCount, 180, "setup-action identity/input/interleaving matrix must not shrink");
+  });
+
+  it("locks the candidate-controlled local free-runner-disk action body", () => {
+    expectFailure(
+      workflow,
+      "free-runner-disk must preserve its exact composite action execution contract",
+      postgresWrapperBuildFile,
+      freeRunnerDiskAction.replace("      run: |\n", "      run: |\n        exit 0\n"),
     );
     expectFailure(
-      pullWithoutToolchains.replace(
-        "  workflow_dispatch:\n",
-        "    paths-ignore:\n      - \"toolchains/**\"\n  workflow_dispatch:\n",
-      ),
-      "pull_request must include toolchains/** in CI path filters",
+      workflow,
+      "free-runner-disk must preserve its exact composite action execution contract",
+      postgresWrapperBuildFile,
+      freeRunnerDiskAction.replace("docker system prune -af || true", "printf '%s\\n' skipped"),
+    );
+  });
+
+  it("locks every required job's complete execution envelope", () => {
+    for (const job of [
+      "preflight",
+      "domain-unit",
+      "backend",
+      "dev-up-smoke",
+      "kubernetes-manifests",
+      "repo-gates",
+      "api-contract",
+      "generated-face-authority",
+      "company-conformance",
+      "postgres-domain-reachability",
+    ]) {
+      expectFailure(
+        replaceJob(workflow, job, (block) => block.replace(
+          /^    runs-on: .*$/m,
+          "    runs-on: ubuntu-24.04",
+        )),
+        `${job} must preserve its exact job execution envelope`,
+      );
+      expectFailure(
+        replaceJob(workflow, job, (block) => block.replace(
+          /^    timeout-minutes: (\d+)$/m,
+          (_, timeout) => `    timeout-minutes: ${Number(timeout) + 1}`,
+        )),
+        `${job} must preserve its exact job execution envelope`,
+      );
+    }
+
+    expectFailure(
+      replaceJob(workflow, "backend", (block) => block.replace(
+        "      image: postgres:18.4",
+        "      image: postgres:latest",
+      )),
+      "backend must preserve its exact job execution envelope",
     );
     expectFailure(
-      pullWithoutToolchains.replace(
-        "  workflow_dispatch:\n",
-        "    branches-ignore:\n      - \"toolchains/**\"\n  workflow_dispatch:\n",
-      ),
-      "pull_request must include toolchains/** in CI path filters",
+      workflow.replace("  preflight:\n", "  preflight:\n    permissions:\n      contents: read\n"),
+      "preflight must preserve its exact job execution envelope",
     );
+  });
+
+  it("locks the top-level trigger, permission, concurrency, and job-id envelope", () => {
+    const envelopeFailure = "CI workflow must preserve its exact trigger, permission, and concurrency execution envelope";
+    expectFailure(
+      workflow.replace("  contents: read", "  contents: write"),
+      envelopeFailure,
+    );
+    expectFailure(
+      workflow.replace("  cancel-in-progress: ${{ github.event_name == 'pull_request' }}", "  cancel-in-progress: true"),
+      envelopeFailure,
+    );
+    expectFailure(workflow.replace("name: CI", "name: Candidate CI"), envelopeFailure);
+    expectFailure(
+      workflow.replace(
+        "  kubernetes-manifests:\n",
+        "  candidate-shim:\n    runs-on: ubuntu-latest\n    steps: []\n\n  kubernetes-manifests:\n",
+      ),
+      "CI workflow must preserve its exact job-id set",
+    );
+  });
+
+  it("forbids push and pull-request path filters so every required context is created", () => {
+    for (const filter of ["paths", "paths-ignore"]) {
+      expectFailure(
+        workflow.replace(
+          '    tags:\n      - "v*"\n',
+          `    tags:\n      - "v*"\n    ${filter}:\n      - "backend/**"\n`,
+        ),
+        "push must create required CI contexts for every change without path filters",
+      );
+      expectFailure(
+        workflow.replace(
+          "  pull_request:\n",
+          `  pull_request:\n    ${filter}:\n      - "backend/**"\n`,
+        ),
+        "pull_request must create required CI contexts for every change without path filters",
+      );
+    }
+  });
+
+  it("locks the reasoning-lens regression to one unconditional raw-Node step", () => {
+    assert.ok(workflow.includes(reasoningLensRegressionStep), "reasoning-lens regression fixture drifted");
+    expectFailure(
+      workflow.replace(reasoningLensRegressionStep, ""),
+      "exact reasoning-lens regression once and unconditionally",
+    );
+    expectFailure(
+      workflow.replace(reasoningLensRegressionStep, reasoningLensRegressionStep.repeat(2)),
+      "exact reasoning-lens regression once and unconditionally",
+    );
+    for (const bypass of ["        if: false\n", "        continue-on-error: true\n"]) {
+      expectFailure(
+        workflow.replace(
+          reasoningLensRegressionStep,
+          reasoningLensRegressionStep.replace(
+            "        run: node --test",
+            `${bypass}        run: node --test`,
+          ),
+        ),
+        "exact reasoning-lens regression once and unconditionally",
+      );
+    }
+    expectFailure(
+      workflow.replace(
+        reasoningLensRegressionStep,
+        reasoningLensRegressionStep.replace(
+          "node --test scripts/check-reasoning-lens-contract.test.mjs",
+          "npm run test:reasoning-lens-contract",
+        ),
+      ),
+      "exact reasoning-lens regression once and unconditionally",
+    );
+  });
+
+  it("locks the exact reasoning-lens event/base admission matrix", () => {
+    expectFailure(
+      workflow.replace(reasoningLensAdmissionStep, ""),
+      "exact reasoning-lens event admission contract",
+    );
+    expectFailure(
+      workflow.replace(reasoningLensAdmissionStep, reasoningLensAdmissionStep.repeat(2)),
+      "exact reasoning-lens event admission contract",
+    );
+    for (const bypass of ["        if: false\n", "        continue-on-error: true\n"]) {
+      expectFailure(
+        mutateReasoningLensAdmission((step) => step.replace("        shell: bash\n", `        shell: bash\n${bypass}`)),
+        "exact reasoning-lens event admission contract",
+      );
+    }
+    for (const [from, to] of [
+      ["github.event.pull_request.base.sha", "github.event.pull_request.head.sha"],
+      ["github.event.before", "github.sha"],
+      ["set -euo pipefail", "set -uo pipefail"],
+      ["0000000000000000000000000000000000000000", "000000000000000000000000000000000000000"],
+      [
+        "                tag)\n                  node scripts/check-reasoning-lens-contract.mjs",
+        "                tag)\n                  node scripts/check-reasoning-lens-contract.mjs --changed-since \"$REASONING_PUSH_BEFORE_SHA\"",
+      ],
+      [
+        "            workflow_dispatch)\n              node scripts/check-reasoning-lens-contract.mjs",
+        "            workflow_dispatch)\n              node scripts/check-reasoning-lens-contract.mjs --changed-since \"$REASONING_PUSH_BEFORE_SHA\"",
+      ],
+    ]) {
+      expectFailure(
+        mutateReasoningLensAdmission((step) => step.replace(from, to)),
+        "exact reasoning-lens event admission contract",
+      );
+    }
   });
 
   it("rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation", () => {
@@ -99,12 +619,6 @@ describe("CI preflight contract", () => {
       ),
       "preflight must install pinned DotSlash before Buck2",
     );
-    const apiContract = workflow.indexOf("  api-contract:\n");
-    const apiWithoutDotSlash = workflow.slice(0, apiContract) + workflow.slice(apiContract).replace(
-      "      - name: Install pinned DotSlash runtime\n        run: tools/buck/install_dotslash.sh\n",
-      "",
-    );
-    expectFailure(apiWithoutDotSlash, "api-contract must install pinned DotSlash before Buck2");
   });
 
   it("resolves the backend DotSlash bootstrap from its effective working directory", () => {
@@ -154,144 +668,93 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("rejects API contract tests that point CONSOLE_APP_BIN at a Cargo target", () => {
+  it("rejects CONSOLE_APP_BIN anywhere in the text-only API contract job", () => {
     for (const path of [
       "${{ github.workspace }}/backend/target/debug/console-app",
       "${CARGO_TARGET_DIR}/debug/console-app",
+      "/tmp/other-console-app",
     ]) {
       expectFailure(
         workflow.replace(
-          "      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract\n",
-          `      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract\n      CONSOLE_APP_BIN: ${path}\n`,
+          "    timeout-minutes: 30\n\n    steps:\n",
+          `    timeout-minutes: 30\n    env:\n      CONSOLE_APP_BIN: ${path}\n\n    steps:\n`,
         ),
-        "api-contract must not use a Cargo target path for CONSOLE_APP_BIN",
+        "api-contract must not reference CONSOLE_APP_BIN; the job builds no app",
       );
     }
-  });
-
-  it("rejects duplicate API contract app producers and later binary overrides", () => {
-    expectFailure(
-      workflow.replace(
-        "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate OpenAPI app-served drift gate\n        run: npm run check:openapi-app\n\n      - name: Capture Buck2-built app for contract test\n",
-      ),
-      "api-contract must run exactly one npm run check:openapi-app producer",
-    );
-    expectFailure(
-      workflow.replace(
-        "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate direct Buck2 app build\n        run: tools/buck2 build //backend/app:console-app\n\n      - name: Capture Buck2-built app for contract test\n",
-      ),
-      "api-contract must contain only the approved ordered steps",
-    );
-    expectFailure(
-      workflow.replace(
-        "      - name: Employee import replay contract\n",
-        "      - name: Override contract app\n        run: echo \"CONSOLE_APP_BIN=${CARGO_TARGET_DIR}/debug/console-app\" >> \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
-      ),
-      "api-contract may reference GITHUB_ENV only in the designated capture step",
-    );
-    expectFailure(
-      workflow.replace(
-        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"\n',
-        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"\n          export CONSOLE_APP_BIN=/tmp/other-console-app\n',
-      ),
-      "api-contract capture must use the designated verified command grammar",
-    );
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
         "      - name: Employee import replay contract\n        env:\n          CONSOLE_APP_BIN: /tmp/other-console-app\n",
       ),
-      "api-contract must not override the captured CONSOLE_APP_BIN",
+      "api-contract must not reference CONSOLE_APP_BIN; the job builds no app",
     );
   });
 
-  it("accepts the designated verified Buck2 app handoff", () => {
-    assert.match(workflow, /# check:openapi-app is the sole Buck2 producer for this handoff\./);
-    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
-  });
-
-  it("rejects shell-spelling bypasses for API contract producers and environment writes", () => {
-    expectFailure(
-      workflow.replace(
-        "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate OpenAPI producer\n        run: |\n          # This still produces the Buck app.\n          CI=1 npm \\\n            run check:openapi-app; :\n\n      - name: Capture Buck2-built app for contract test\n",
-      ),
-      "api-contract must contain only the approved ordered steps",
-    );
-    expectFailure(
-      workflow.replace(
-        "      - name: Capture Buck2-built app for contract test\n",
-        "      - name: Duplicate direct Buck2 app build\n        run: |\n          command ./tools/buck2 --isolation-dir .tmp \\\n            build --out .tmp/duplicate //backend/app:console-app # direct producer\n\n      - name: Capture Buck2-built app for contract test\n",
-      ),
-      "api-contract must contain only the approved ordered steps",
-    );
-    expectFailure(
-      workflow.replace(
-        "      - name: Employee import replay contract\n",
-        "      - name: Late redirected override\n        run: |\n          echo \"CONSOLE_APP_BIN=/tmp/other-console-app\" >> \"$GITHUB_ENV\" # still a write\n          :\n\n      - name: Employee import replay contract\n",
-      ),
-      "api-contract may reference GITHUB_ENV only in the designated capture step",
-    );
-    expectFailure(
-      workflow.replace(
-        "      - name: Employee import replay contract\n",
-        "      - name: Late tee override\n        run: printf 'CONSOLE_APP_BIN=/tmp/other-console-app\\n' | tee -a \"$GITHUB_ENV\"\n\n      - name: Employee import replay contract\n",
-      ),
-      "api-contract may reference GITHUB_ENV only in the designated capture step",
-    );
-  });
-
-  it("fails closed on indirect producers and every non-capture GITHUB_ENV surface", () => {
-    for (const command of [
-      'bash -c "npm run check:openapi-app"',
-      'sh -c "npm run check:openapi-app"',
-      'zsh -c "npm run check:openapi-app"',
-      'eval "npm run check:openapi-app"',
-      '"$OPENAPI_PRODUCER"',
-      'command "$OPENAPI_PRODUCER"',
-      "node scripts/check-openapi-app.mjs",
+  it("rejects every GITHUB_ENV handoff surface in the API contract job", () => {
+    for (const step of [
+      "      - name: Redirected override\n        run: |\n          echo \"CONSOLE_APP_BIN=/tmp/other\" >> \"$GITHUB_ENV\" # still a write\n          :\n",
+      "      - name: Tee override\n        run: printf 'CONSOLE_APP_BIN=/tmp/other\\n' | tee -a \"$GITHUB_ENV\"\n",
+      "      - name: Programmatic override\n        run: node -e 'require(\"node:fs\").appendFileSync(process.env.GITHUB_ENV, \"X=1\\n\")'\n",
     ]) {
       expectFailure(
         workflow.replace(
-          "      - name: Capture Buck2-built app for contract test\n",
-          `      - name: Indirect OpenAPI producer\n        run: ${command}\n\n      - name: Capture Buck2-built app for contract test\n`,
+          "      - name: Employee import replay contract\n",
+          `${step}\n      - name: Employee import replay contract\n`,
+        ),
+        "api-contract must not hand state to later steps through GITHUB_ENV",
+      );
+    }
+  });
+
+  it("rejects any build or executable surface added to the text-only API contract job", () => {
+    for (const command of [
+      "tools/buck2 build //backend/app:console-app",
+      "$(printf ./tools/buck2) build //backend/app:console-app",
+      "command ./tools/buck2 --isolation-dir .tmp build --out .tmp/dup //backend/app:console-app",
+      "cargo build -p console-app",
+      "bash -c \"npm run check:platform-contract-drift\"",
+      "node scripts/check-platform-contract-drift.mjs",
+      "node --enable-source-maps scripts/check-platform-contract-drift.mjs",
+      // Spelled so no literal GITHUB_ENV appears; the ordered-steps allowlist is
+      // what fails it closed, which is why that rule exists alongside the string match.
+      'env_name=GITHUB_$(printf ENV); printf "X=1\\n" >> "${!env_name}"',
+    ]) {
+      expectFailure(
+        workflow.replace(
+          "      - name: Employee import replay contract\n",
+          `      - name: Unexpected executable surface\n        run: ${command}\n\n      - name: Employee import replay contract\n`,
         ),
         "api-contract must contain only the approved ordered steps",
       );
     }
+  });
 
+  it("rejects a duplicated platform contract drift gate", () => {
     expectFailure(
       workflow.replace(
         "      - name: Employee import replay contract\n",
-        "      - name: Programmatic environment override\n        run: node -e 'require(\"node:fs\").appendFileSync(process.env.GITHUB_ENV, \"CONSOLE_APP_BIN=/tmp/other\\n\")'\n\n      - name: Employee import replay contract\n",
+        "      - name: Duplicate drift gate\n        run: npm run check:platform-contract-drift\n\n      - name: Employee import replay contract\n",
       ),
-      "api-contract may reference GITHUB_ENV only in the designated capture step",
-    );
-    expectFailure(
-      workflow.replace(
-        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" >> "${GITHUB_ENV}"',
-        '          printf \'CONSOLE_APP_BIN=%s\\n\' "${console_app_bin}" > "${GITHUB_ENV:?}"',
-      ),
-      "api-contract capture must use the designated verified command grammar",
+      "api-contract must run exactly one npm run check:platform-contract-drift",
     );
   });
 
-  it("allows only the ordered API contract execution surface", () => {
-    for (const command of [
-      "$(printf ./tools/buck2) build //backend/app:console-app",
-      "node ./scripts/check-openapi-app.mjs",
-      "node --enable-source-maps scripts/check-openapi-app.mjs",
-      "cargo build -p console-app",
-      'env_name=GITHUB_$(printf ENV); key=CONSOLE_APP_$(printf BIN); printf "$key=/tmp/other\\n" >> "${!env_name}"',
+  it("accepts the text-only API contract surface", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+  });
+
+  it("rejects services and job-level environment on the text-only API contract", () => {
+    for (const block of [
+      "    services:\n      postgres:\n        image: postgres:18.4\n",
+      "    env:\n      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost/db\n",
     ]) {
       expectFailure(
         workflow.replace(
-          "      - name: Capture Buck2-built app for contract test\n",
-          `      - name: Unexpected executable surface\n        run: ${command}\n\n      - name: Capture Buck2-built app for contract test\n`,
+          "    timeout-minutes: 30\n\n    steps:\n",
+          `    timeout-minutes: 30\n${block}\n    steps:\n`,
         ),
-        "api-contract must contain only the approved ordered steps",
+        "api-contract is text-only and must not provision services or job-level environment",
       );
     }
   });
@@ -423,6 +886,23 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow.replace('      - name: Console authority-train regression\n        run: node --test scripts/console/verify-console-authority-train.test.mjs\n\n', ''),
       "verify-console-authority-train.test.mjs",
     );
+    // This suite gates the `pull_request_target` bootstrap verifier — the highest-privilege
+    // script in the repository — and executed NOWHERE: `package.json` declared
+    // `test:console-authority-bootstrap` and no workflow invoked it, so breaking the verifier
+    // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
+    // not the same as protecting it, hence both halves below.
+    assert.ok(
+      workflow.includes('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n'),
+      "preflight does not run the console PR authority bootstrap regression",
+    );
+    expectFailure(
+      workflow.replace('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n\n', ''),
+      "verify-console-pr-authority-bootstrap.test.mjs",
+    );
+    expectFailure(
+      workflow.replace('        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs'),
+      "verify-console-pr-authority-bootstrap.test.mjs",
+    );
     expectFailure(
       workflow.replace('        if: ${{ github.event_name == \'pull_request\' }}\n        run: node scripts/console/plan-fanout.mjs', '        run: node scripts/console/plan-fanout.mjs'),
       "plan-fanout.mjs",
@@ -527,15 +1007,27 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   });
 
   it("rejects any expensive job without the preflight dependency", () => {
-    expectFailure(workflow.replace("  backend:\n", "  backend:\n    needs: []\n"), "backend must need preflight");
-    expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    needs: []\n"), "repo-gates must need preflight");
-    expectFailure(workflow.replace("  api-contract:\n", "  api-contract:\n    needs: []\n"), "api-contract must need preflight");
-    expectFailure(workflow.replace("  kubernetes-manifests:\n", "  kubernetes-manifests:\n    needs: []\n"), "kubernetes-manifests must need preflight");
+    for (const job of ["backend", "repo-gates", "api-contract", "kubernetes-manifests", "company-conformance"]) {
+      expectFailure(
+        replaceJob(workflow, job, (block) => block.replace("    needs: preflight\n", "    needs: []\n")),
+        `${job} must need preflight`,
+      );
+    }
   });
 
   it("rejects failure-insensitive job-level conditions on protected jobs", () => {
     expectFailure(workflow.replace("  backend:\n", "  backend:\n    if: always()\n"), "backend must not define job-level if");
     expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    if: ${{ !cancelled() }}\n"), "repo-gates must not define job-level if");
+    expectFailure(
+      workflow.replace("  company-conformance:\n", "  company-conformance:\n    if: false\n"),
+      "company-conformance must not define job-level if",
+    );
+    for (const job of ["backend", "dev-up-smoke", "api-contract", "company-conformance"]) {
+      expectFailure(
+        workflow.replace(`  ${job}:\n`, `  ${job}:\n    continue-on-error: true\n`),
+        `${job} must not define job-level continue-on-error`,
+      );
+    }
   });
 
   it("rejects job-level preflight failure bypasses", () => {
@@ -547,15 +1039,90 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       workflow.replace("  preflight:\n", "  preflight:\n    continue-on-error: true\n"),
       "preflight must not define job-level continue-on-error",
     );
+    expectFailure(
+      workflow.replace("  preflight:\n", "  preflight:\n    defaults:\n      run:\n        shell: bash -c 'exit 0' {0}\n"),
+      "preflight must not override defaults.run.shell",
+    );
+    expectFailure(
+      workflow.replace("        shell: bash\n", "        shell: bash -c 'exit 0' {0}\n"),
+      "preflight may use only the default shell or canonical shell: bash",
+    );
+  });
+
+  it("rejects workflow-level environment and shell overrides", () => {
+    expectFailure(
+      workflow.replace("permissions:\n", "env:\n  BASH_ENV: scripts/noop.sh\n\npermissions:\n"),
+      "CI workflow must not define workflow-level env or defaults",
+    );
+    expectFailure(
+      workflow.replace(
+        "permissions:\n",
+        "defaults:\n  run:\n    shell: bash -c 'exit 0' {0}\n\npermissions:\n",
+      ),
+      "CI workflow must not define workflow-level env or defaults",
+    );
+  });
+
+  it("locks exact job-level environment and defaults metadata", () => {
+    expectFailure(
+      workflow.replace(
+        '      CARGO_PROFILE_TEST_DEBUG: "0"\n',
+        '      CARGO_PROFILE_TEST_DEBUG: "0"\n      RUSTC_WRAPPER: scripts/noop.sh\n',
+      ),
+      "backend must preserve its exact job env/defaults execution metadata",
+    );
+    expectFailure(
+      workflow.replace(
+        '      CARGO_PROFILE_DEV_DEBUG: "0"\n\n    steps:\n',
+        '      CARGO_PROFILE_DEV_DEBUG: "0"\n      NODE_OPTIONS: --require scripts/noop.js\n\n    steps:\n',
+      ),
+      "dev-up-smoke must preserve its exact job env/defaults execution metadata",
+    );
+    expectFailure(
+      workflow.replace("  repo-gates:\n", "  repo-gates:\n    env:\n      PATH: /tmp/noop\n"),
+      "repo-gates must preserve its exact job env/defaults execution metadata",
+    );
+    expectFailure(
+      workflow.replace(
+        "        working-directory: backend\n",
+        "        working-directory: backend\n        shell: bash -c 'exit 0' {0}\n",
+      ),
+      "backend must preserve its exact job env/defaults execution metadata",
+    );
+  });
+
+  it("rejects step environment injection across every protected proof class", () => {
+    const mutations = [
+      ["preflight", "      - name: CI preflight contract tests\n"],
+      ["dev-up-smoke", "      - name: dev-up bootstrap (compose deps + migrate + backend readyz)\n"],
+      ["postgres-domain-reachability", "      - name: Serialized disposable PostgreSQL integration targets\n"],
+      ["company-conformance", "      - name: Company conformance against disposable PostgreSQL\n"],
+      ["generated-face-authority", "      - name: Full generated-face closure\n"],
+      ["backend", "      - name: Layer-boundary gate\n"],
+      ["repo-gates", "      - name: Undeclared imports — every bare specifier must be declared\n"],
+      ["api-contract", "      - name: Platform contract drift gate\n"],
+      ["kubernetes-manifests", "      - name: Production hardening contract\n"],
+    ];
+    for (const [job, anchor] of mutations) {
+      expectFailure(
+        workflow.replace(anchor, `${anchor}        env:\n          BASH_ENV: scripts/noop.sh\n`),
+        `${job} must preserve its exact step environment allowlist`,
+      );
+    }
+
+    expectFailure(
+      workflow.replace(
+        '          KUBECTL_VERSION: "v1.36.2"\n',
+        '          KUBECTL_VERSION: "v1.36.2"\n          BASH_ENV: scripts/noop.sh\n',
+      ),
+      "kubernetes-manifests must preserve its exact step environment allowlist",
+    );
   });
 
   it("locks post-preflight Buck2 reachability targets and disallows added run surfaces", () => {
     expectFailure(
-      workflow.replace(
-        "tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
-        "cargo test -p console-support-domain",
-      ),
-      "support-domain-unit must run tools/buck2 test //backend/crates/support/domain:console-support-domain-unit",
+      workflow.replace(" -p console-payroll-adapter-postgres", ""),
+      "domain-unit must run -p console-payroll-adapter-postgres",
     );
     expectFailure(
       workflow.replace(
@@ -589,10 +1156,10 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "      - name: Support domain unit target\n",
-        "      - name: Unexpected Cargo test\n        run: cargo test -p console-support-domain\n\n      - name: Support domain unit target\n",
+        "      - name: Domain crate unit tests\n",
+        "      - name: Unexpected Cargo test\n        run: cargo test -p console-support-domain\n\n      - name: Domain crate unit tests\n",
       ),
-      "support-domain-unit must contain only the locked ordered Buck2 run steps",
+      "domain-unit must contain only the locked ordered run steps",
     );
     expectFailure(
       workflow.replace(
@@ -763,6 +1330,118 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
   });
 
+  // Renamed 2026-07-31: #534 consolidated support-domain-unit and domain-unit
+  // into one `domain-unit` job running both crates through a single cargo invocation,
+  // because they share console-kernel-core and were recompiling it twice across two
+  // runner startups. The assertion is unchanged in substance — the payroll release-gate
+  // targets must stay reachable from a protected job — only the job's name moved.
+  it("keeps both payroll release-gate halves reachable from domain-unit", () => {
+    // Slice A wrote this against buck2 targets; #534 moved the job to cargo, so the
+    // MECHANISM changed and the INTENT did not. The domain half decides whether a
+    // parsed gate input is satisfied; the adapter half decides what a stored record
+    // may parse INTO. Dropping either returns the release gate to half-proven, which
+    // is what this job exists to stop. The adapter half is the one that ran nowhere
+    // before 2026-07-31 — 12 pure #[test] cases, no workflow.
+    expectFailure(
+      workflow.replace(/\n  domain-unit:[\s\S]*?\n  postgres-domain-reachability:/, "\n  postgres-domain-reachability:"),
+      "CI must define protected job domain-unit",
+    );
+    expectFailure(
+      replaceJob(workflow, "domain-unit", (block) => block.replace("    needs: preflight\n", "    needs: []\n")),
+      "domain-unit must need preflight",
+    );
+    // Dropping EITHER package must fail, which is the whole point of the pairing.
+    expectFailure(
+      workflow.replace(" -p console-payroll-adapter-postgres", ""),
+      "domain-unit must run",
+    );
+    expectFailure(
+      workflow.replace(" -p console-payroll-domain -p console-payroll-adapter-postgres", " -p console-payroll-adapter-postgres"),
+      "domain-unit must run",
+    );
+    // --lib is load-bearing: without it the adapter's PostgreSQL integration suites
+    // are pulled into a job that has no database.
+    expectFailure(
+      workflow.replace(" --lib \\", " \\"),
+      "domain-unit must pass --lib on its first cargo invocation",
+    );
+    // Added 2026-07-31: the audit-relevant packages must stay named. Dropping one
+    // silently returns its tests to executing nowhere.
+    expectFailure(
+      workflow.replace(" -p console-platform-audit-chain", ""),
+      "domain-unit must run -p console-platform-audit-chain",
+    );
+    expectFailure(
+      workflow.replace(" --test location_consent_fsm", ""),
+      "domain-unit must run --test location_consent_fsm",
+    );
+  });
+
+  it("rejects non-executing or non-gating domain-unit command surfaces", () => {
+    const domainStart = workflow.indexOf("  domain-unit:\n");
+    const domainEnd = workflow.indexOf("\n  postgres-domain-reachability:", domainStart);
+    const domainBlock = workflow.slice(domainStart, domainEnd);
+    const replaceDomain = (mutate) => (
+      workflow.slice(0, domainStart) + mutate(domainBlock) + workflow.slice(domainEnd)
+    );
+
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        /^(\s*)(SQLX_OFFLINE=true cargo test)/gm,
+        "$1echo $2",
+      )),
+      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+    );
+    expectFailure(
+      replaceDomain((block) => block.replace("        run: |\n", "        run: |\n          exit 0\n")),
+      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+    );
+    for (const condition of ["false", "${{ false }}"]) {
+      expectFailure(
+        replaceDomain((block) => block.replace(
+          "      - name: Domain crate unit tests\n",
+          `      - name: Domain crate unit tests\n        if: ${condition}\n`,
+        )),
+        "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+      );
+    }
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        "      - name: Domain crate unit tests\n",
+        "      - name: Domain crate unit tests\n        continue-on-error: true\n",
+      )),
+      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+    );
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        "      - name: Domain crate unit tests\n",
+        "      - name: Domain crate unit tests\n        shell: bash -c 'exit 0' {0}\n",
+      )),
+      "domain-unit must use the default shell with no job or step env/defaults overrides",
+    );
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        "  domain-unit:\n",
+        "  domain-unit:\n    defaults:\n      run:\n        shell: bash -c 'exit 0' {0}\n",
+      )),
+      "domain-unit must use the default shell with no job or step env/defaults overrides",
+    );
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        "      - name: Domain crate unit tests\n",
+        "      - name: Domain crate unit tests\n        env:\n          RUSTFLAGS: --cfg skip_tests\n",
+      )),
+      "domain-unit must use the default shell with no job or step env/defaults overrides",
+    );
+    expectFailure(
+      replaceDomain((block) => block.replace(
+        "  domain-unit:\n",
+        "  domain-unit:\n    env:\n      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: true\n",
+      )),
+      "domain-unit must use the default shell with no job or step env/defaults overrides",
+    );
+  });
+
   it("preserves fail-fast backend and dev-up ordering", () => {
     const sourceGateDisplaced = workflow
       .replace("      - name: Layer-boundary gate\n", "      - name: Displaced source gate\n")
@@ -778,6 +1457,83 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       .replace("      - name: dev-up compose contract unit test\n", "      - name: Temporary dev-up step\n")
       .replace("      - name: Free runner disk for Rust backend\n", "      - name: dev-up compose contract unit test\n");
     expectFailure(devUpContractAfterDiskPurge, "dev-up-smoke must preserve the locked fail-fast step order");
+  });
+
+  it("locks the complete dev-up proof and cleanup", () => {
+    expectFailure(
+      workflow.replace(
+        "      - name: PostgreSQL topology integration regression\n        run: ops/postgres-topology.integration.test.sh\n",
+        "",
+      ),
+      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace("        run: node scripts/dev-up.mjs bootstrap", "        run: true"),
+      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace('        run: curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', "        run: true"),
+      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace("        run: node scripts/dev-up.mjs down", "        run: true"),
+      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  });
+
+  it("locks the company-conformance proof and its execution semantics", () => {
+    expectFailure(
+      workflow.replace(
+        "            //tools/buck:company-conformance-postgres",
+        "            //tools/buck:unexpected-company-target",
+      ),
+      "company-conformance must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace(
+        "      - name: Company conformance against disposable PostgreSQL\n",
+        "      - name: Company conformance against disposable PostgreSQL\n        continue-on-error: true\n",
+      ),
+      "company-conformance must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace(
+        "      - name: Company conformance against disposable PostgreSQL\n",
+        "      - name: Company conformance against disposable PostgreSQL\n        shell: bash -c 'exit 0' {0}\n",
+      ),
+      "company-conformance may use only the default shell or canonical shell: bash",
+    );
+    expectFailure(
+      workflow.replace(
+        "      - name: Company conformance against disposable PostgreSQL\n",
+        "      - name: Company conformance against disposable PostgreSQL\n        env:\n          BASH_ENV: scripts/noop.sh\n",
+      ),
+      "company-conformance must preserve its exact step environment allowlist",
+    );
+    expectFailure(
+      workflow.replace(
+        "  company-conformance:\n",
+        "  company-conformance:\n    defaults:\n      run:\n        shell: bash -c 'exit 0' {0}\n",
+      ),
+      "company-conformance must preserve its exact job env/defaults execution metadata",
+    );
+  });
+
+  it("locks the Kubernetes production-hardening proof", () => {
+    expectFailure(
+      workflow.replace(
+        "      - name: Production hardening contract\n        if: ${{ !cancelled() }}\n",
+        "      - name: Production hardening contract\n        if: ${{ !cancelled() }}\n        continue-on-error: true\n",
+      ),
+      "kubernetes-manifests must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    expectFailure(
+      workflow.replace(
+        "        run: npm run check:production-hardening\n",
+        "        run: |\n          exit 0\n          npm run check:production-hardening\n",
+      ),
+      "kubernetes-manifests must preserve the locked fail-fast step multiset and failure semantics",
+    );
   });
 
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {
@@ -844,5 +1600,74 @@ ${preflightRustToolchainSetup.trimEnd()}`,
       .replace("      - name: PR 473 migration operational contract tests\n", "      - name: Deferred PR 473 contract tests\n")
       .replace("      - name: Reconcile portable PostgreSQL role topology\n", "      - name: PR 473 migration operational contract tests\n");
     expectFailure(pr473ContractAfterTopology, "backend must preserve the locked fail-fast step order");
+  });
+
+  // repo-gates steps are otherwise unlocked: deleting `run: npm run check:adrs` from it today
+  // yields zero preflight failures. Wiring a gate into ci.yml is not the same as protecting it,
+  // and an unprotected step is a slot in the job list that reads as coverage.
+  it("locks the undeclared-imports gate step in repo-gates", () => {
+    const step = "      - name: Undeclared imports — every bare specifier must be declared\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:undeclared-imports\n";
+    assert.ok(workflow.includes(step), "repo-gates does not run the undeclared-imports gate");
+
+    expectFailure(
+      workflow.replace(step, ""),
+      "repo-gates must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  });
+
+  // Wired by 4e7da6b52 and unprotected until this lock: with the step present, deleting it
+  // returned zero preflight failures. Being wired into ci.yml is not the same as being protected.
+  it("locks the request-body-contract gate step in repo-gates", () => {
+    const step = "      - name: Request-body contract — spec fields must exist on the handler\n"
+      + "        if: ${{ !cancelled() }}\n"
+      + "        run: npm run check:request-body-contract\n";
+    assert.ok(workflow.includes(step), "repo-gates does not run the request-body-contract gate");
+
+    expectFailure(
+      workflow.replace(step, ""),
+      "repo-gates must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    // The order matters as much as the presence: this gate must not be moved above the cheap
+    // undeclared-imports scan that fails in under a second.
+    expectFailure(
+      workflow.replace(step, "").replace(
+        "      - name: Undeclared imports — every bare specifier must be declared\n",
+        `${step}      - name: Undeclared imports — every bare specifier must be declared\n`,
+      ),
+      "repo-gates must preserve the locked fail-fast step order",
+    );
+  });
+
+  // The suite H-1 is about. `openapi_drift` is the only thing inventorying every mounted route
+  // against openapi.yaml, and it was unprotected: deleting this `run:` line left check:ci-preflight,
+  // check:foundation-gates and check:doc-citations all exiting 0. check:request-body-contract closed
+  // H-1's request-body half but reads no route inventory, so nothing else covers what this covers.
+  it("locks the console-app OpenAPI drift suite step in backend", () => {
+    const run = "        run: env -u DATABASE_URL tools/buck2 test"
+      + " //backend/app:console-app-itest-openapi_drift\n";
+    const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
+      + "        working-directory: .\n"
+      + run;
+    assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
+
+    // The exact deletion this lock exists to refuse: the step keeps its slot, runs nothing.
+    expectFailure(
+      workflow.replace(run, ""),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    // Quieter, and the reason `run` is pinned rather than just the name: the step still reads as
+    // the drift suite in the job list while executing a target that inventories no routes.
+    expectFailure(
+      workflow.replace(run, "        run: env -u DATABASE_URL tools/buck2 test"
+        + " //backend/app:console-app-unit\n"),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
+    // `if: ${{ !cancelled() }}` here would let a red drift suite pass the job as a soft warning.
+    expectFailure(
+      workflow.replace(run, `        if: \${{ !cancelled() }}\n${run}`),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
   });
 });

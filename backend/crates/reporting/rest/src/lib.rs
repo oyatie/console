@@ -6,11 +6,11 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use console_kernel_core::{
-    BranchId, BranchScope, ErrorKind, KernelError, RegionId, TraceContext, UserId,
-};
+use console_kernel_core::{BranchId, ErrorKind, KernelError, RegionId, TraceContext, UserId};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{
+    Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
+};
 use console_reporting_adapter_postgres::PgKpiRepository;
 use console_reporting_application::{
     KpiExportQuery, KpiQuery, KpiQueryError, KpiQueryPort, KpiScope, OpsSummaryPort,
@@ -203,12 +203,7 @@ async fn get_kpis(
     let principal = principal_from_headers(&state, &headers).await?;
     let period = parse_period(&params.period)?;
     let scope = parse_scope(params.scope.as_deref())?;
-    authorize(
-        &principal,
-        Action::new(Feature::KpiRead),
-        authorization_branch(&principal, scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_kpi_scope(&principal, scope)?;
 
     let report = state
         .repository
@@ -223,21 +218,18 @@ async fn get_kpis(
     Ok(Json(report))
 }
 
-/// GET /api/v1/ops/summary — per-tenant operational rollup (SUPER_ADMIN/ADMIN).
+/// GET /api/v1/ops/summary — per-tenant operational rollup.
 ///
 /// Org-scoped under RLS: every aggregate is computed inside
 /// `with_org_conn(current_org())`, so a second tenant's rows are never counted.
+/// The query carries no branch scope and therefore requires org-wide authority;
+/// a branch-scoped ADMIN must not receive another branch's aggregate facts.
 async fn get_ops_summary(
     State(state): State<KpiRestState>,
     headers: HeaderMap,
 ) -> Result<Json<console_reporting_application::OpsSummary>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    authorize(
-        &principal,
-        Action::new(Feature::OpsDashboardRead),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_ops_summary(&principal)?;
 
     let summary = state
         .repository
@@ -295,12 +287,7 @@ async fn get_kpi_export(
     // KPI export exposes the same KpiRead-gated data as GET /api/v1/kpi, so it
     // requires the KPI read contract (feature + scope) in addition to the
     // Excel-download capability the sibling exports need.
-    authorize(
-        &principal,
-        Action::new(Feature::KpiRead),
-        authorization_branch(&principal, scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_kpi_scope(&principal, scope)?;
     authorize_reporting_feature(&principal, Feature::ExcelDownload)?;
     let workbook = state
         .repository
@@ -414,12 +401,15 @@ fn workbook_response(
 }
 
 fn authorize_reporting_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    authorize(
-        principal,
-        Action::new(feature),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)
+    // Export/work-diary repositories receive the principal's complete branch
+    // scope and filter their reads/writes with it. This is a capability
+    // preflight, not authorization against one invented representative branch.
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
+}
+
+fn authorize_ops_summary(principal: &Principal) -> Result<(), RestError> {
+    authorize_org_wide(principal, Action::new(Feature::OpsDashboardRead))
+        .map_err(RestError::from_kernel)
 }
 
 fn parse_period(raw: &str) -> Result<Period, RestError> {
@@ -472,24 +462,19 @@ fn parse_scope(raw: Option<&str>) -> Result<KpiScope, RestError> {
     }
 }
 
-fn authorization_branch(principal: &Principal, scope: KpiScope) -> Result<BranchId, RestError> {
+fn authorize_kpi_scope(principal: &Principal, scope: KpiScope) -> Result<(), RestError> {
+    let action = Action::new(Feature::KpiRead);
     match scope {
-        KpiScope::Branch(branch_id) => Ok(branch_id),
+        // A branch named by the request is a concrete resource branch.
+        KpiScope::Branch(branch_id) => authorize(principal, action, branch_id),
+        // These reports are further confined by the principal's complete scope
+        // in the repository. Picking one member of that scope here would make
+        // the branch check vacuous and custom-grant behavior order-dependent.
         KpiScope::Company | KpiScope::Region(_) | KpiScope::Technician(_) => {
-            representative_branch(&principal.branch_scope)
+            authorize_capability(principal, action)
         }
     }
-}
-
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for KPI access",
-            ))
-        }),
-    }
+    .map_err(RestError::from_kernel)
 }
 
 async fn principal_from_headers(
@@ -547,5 +532,103 @@ fn status_for_error_kind(kind: ErrorKind) -> StatusCode {
         ErrorKind::Conflict => StatusCode::CONFLICT,
         ErrorKind::InvalidTransition => StatusCode::CONFLICT,
         ErrorKind::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{authorize_kpi_scope, authorize_ops_summary, authorize_reporting_feature};
+    use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+    use console_platform_authz::{
+        EffectiveFeatureGrant, Feature, PermissionLevel, Principal, Role,
+    };
+    use console_reporting_application::KpiScope;
+    use std::collections::BTreeSet;
+
+    fn principal(roles: BTreeSet<Role>, scope: BranchScope) -> Principal {
+        Principal::new(UserId::new(), OrgId::new(), roles, scope)
+    }
+
+    #[test]
+    fn kpi_scope_uses_the_requested_branch_or_the_complete_principal_scope() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let admin = principal(BTreeSet::from([Role::Admin]), BranchScope::single(branch_a));
+
+        assert!(authorize_kpi_scope(&admin, KpiScope::Branch(branch_a)).is_ok());
+        assert!(authorize_kpi_scope(&admin, KpiScope::Branch(branch_b)).is_err());
+        assert!(authorize_kpi_scope(&admin, KpiScope::Company).is_ok());
+
+        let all_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::All);
+        assert!(authorize_kpi_scope(&all_admin, KpiScope::Company).is_ok());
+
+        let empty = principal(BTreeSet::from([Role::Admin]), BranchScope::none());
+        assert!(authorize_kpi_scope(&empty, KpiScope::Company).is_err());
+
+        let two_branches = BranchScope::Branches(BTreeSet::from([branch_a, branch_b]));
+        let partial = principal(BTreeSet::new(), two_branches.clone())
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::KpiRead,
+                PermissionLevel::Allow,
+                BranchScope::single(branch_a),
+            )]);
+        assert!(
+            authorize_kpi_scope(&partial, KpiScope::Company).is_err(),
+            "a partial grant must not authorize a report over the complete visible scope"
+        );
+
+        let covering =
+            principal(BTreeSet::new(), two_branches.clone()).with_effective_feature_grants(vec![
+                EffectiveFeatureGrant::new(Feature::KpiRead, PermissionLevel::Allow, two_branches),
+            ]);
+        assert!(authorize_kpi_scope(&covering, KpiScope::Company).is_ok());
+    }
+
+    #[test]
+    fn scoped_reporting_features_do_not_become_org_wide_only() {
+        let branch = BranchId::new();
+        let branch_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::single(branch));
+        assert!(authorize_reporting_feature(&branch_admin, Feature::DailyPlanReview).is_ok());
+        assert!(authorize_reporting_feature(&branch_admin, Feature::ExcelDownload).is_ok());
+
+        let all_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::All);
+        assert!(authorize_reporting_feature(&all_admin, Feature::DailyPlanReview).is_ok());
+
+        let empty = principal(BTreeSet::from([Role::Admin]), BranchScope::none());
+        assert!(authorize_reporting_feature(&empty, Feature::ExcelDownload).is_err());
+    }
+
+    #[test]
+    fn tenant_wide_ops_summary_requires_org_wide_authority() {
+        let branch = BranchId::new();
+        let branch_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::single(branch));
+        assert!(authorize_ops_summary(&branch_admin).is_err());
+
+        let all_admin = principal(BTreeSet::from([Role::Admin]), BranchScope::All);
+        assert!(authorize_ops_summary(&all_admin).is_err());
+
+        let super_admin = principal(BTreeSet::from([Role::SuperAdmin]), BranchScope::All);
+        assert!(authorize_ops_summary(&super_admin).is_ok());
+
+        let custom_all = principal(BTreeSet::new(), BranchScope::All)
+            .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                Feature::OpsDashboardRead,
+                PermissionLevel::Allow,
+                BranchScope::All,
+            )]);
+        assert!(authorize_ops_summary(&custom_all).is_ok());
+
+        let partial =
+            principal(BTreeSet::new(), BranchScope::All).with_effective_feature_grants(vec![
+                EffectiveFeatureGrant::new(
+                    Feature::OpsDashboardRead,
+                    PermissionLevel::Allow,
+                    BranchScope::single(branch),
+                ),
+            ]);
+        assert!(authorize_ops_summary(&partial).is_err());
+
+        let empty = principal(BTreeSet::from([Role::SuperAdmin]), BranchScope::none());
+        assert!(authorize_ops_summary(&empty).is_err());
     }
 }

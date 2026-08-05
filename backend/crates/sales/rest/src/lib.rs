@@ -22,11 +22,11 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, post};
 use axum::{Json, Router};
 use console_kernel_core::{
-    BranchId, BranchScope, CustomerInquiryId, EquipmentId, ErrorKind, KernelError, OrgId,
-    SalesListingId, TraceContext, validate_bounded_text,
+    CustomerInquiryId, EquipmentId, ErrorKind, KernelError, OrgId, SalesListingId, TraceContext,
+    validate_bounded_text,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use console_platform_request_context::TrustedClientIp;
 use console_platform_storage::SeaweedS3Storage;
 use console_sales_adapter_postgres::{PgSalesError, PgSalesStore};
@@ -911,26 +911,12 @@ fn client_device_id(headers: &HeaderMap) -> Option<String> {
 // Authz helpers
 // ---------------------------------------------------------------------------
 
-/// Authorize a deliberately **org-level** sales feature against a representative
-/// branch: cross-branch principals authorize against a fresh id (allowed by
-/// `BranchScope::All`); branch-scoped principals authorize against one of their
-/// own branches. Because `authorize()` checks `branch_scope.allows` first, the
-/// branch arg is a tautology for a branch-scoped caller — the feature matrix cell
-/// is what actually decides.
-///
-/// This is correct because the sales catalog is org-level by design (no branch
-/// scoping); a `SalesManage` holder manages the whole catalog. Mirrors the
-/// registry equipment-master representative-branch shortcut.
+/// Authorize an org-level sales feature. `sales_listings`,
+/// `sales_listing_media` and `customer_inquiries` (migration 0043) carry no
+/// `branch_id` column at all, so there is no resource branch to check — this is a
+/// capability decision.
 fn authorize_sales_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    let branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for sales management",
-            ))
-        })?,
-    };
-    authorize(principal, Action::new(feature), branch).map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
 }
 
 async fn principal_from_headers(

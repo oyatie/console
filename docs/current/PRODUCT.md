@@ -1,0 +1,43 @@
+# Console product authority
+
+Status: active product authority.
+
+## Product boundary
+
+Console builds one governed company object system in this order:
+
+1. Ontology / Foundry-style object engine and deterministic policy.
+2. Company, OrgUnit, JobPosition, Person, and Employment.
+3. HR appointment, promotion, and transfer through one canonical assignment writer.
+4. Payroll projected from existing payroll truth as PayRun.
+5. A Leptos SSR frontend only after every ADR-0030 substrate gate is freshly green.
+
+ERP and finance modules, communications, compliance products, ingest/evidence products, office editing, AI judgment, payment execution, and unrelated verticals are out of scope. Existing code and documents in those areas are historical, quarry, evidence, or maintenance-only; their presence does not authorize expansion.
+
+## Product invariants
+
+- Commands are deterministic and revision-aware, with replay-safe receipts and auditable mutations.
+- Tenant isolation, deny-by-omission, and nondisclosure apply at every read and write boundary.
+- Effective-dated truth uses half-open intervals; history is closed and appended, never overwritten.
+- Projected objects have exactly one domain writer. Ontology and adapters do not create alternate write paths.
+- Requester and approver are distinct natural persons even when their capacities differ.
+- Preflight uses the same authorization, policy, state, revision, and input validation as execute and performs no mutation.
+- Legal sources are versioned evidence, not transferable compliance conclusions. Production exposure and compliance claims require separate authority.
+
+## Architecture
+
+The existing Rust backend is reused as verified substrate rather than rewritten wholesale. The product exposes governed company objects and authorized actions:
+
+`Company → OrgUnit → JobPosition → Person/Employment → HR action → PayRun`
+
+REST and any future server functions are sibling adapters over the same application-layer use cases. The frontend, when admitted, reads real contracts, omits unauthorized data server-side, and contains no client-side business authority. Cargo is the target build system; existing Buck paths remain repository reality until a dedicated, evidence-backed convergence change removes them without losing test coverage.
+
+## Holds
+
+- Frontend work is **HOLD** until ADR-0030 gates are freshly green, `Layer::Ui` is accepted, contracts and an SSR shell are stable, and real E2E evidence exists.
+- Company, Person, Employment, and PayRun projection fan-out is **HOLD** until each has an explicit owning port and a proven single-writer boundary.
+- Live production, DNS, TLS, secret, exposure, payment, credential-reset, and compliance-claim actions are **HOLD** without separate authority and evidence.
+- Korea compliance conclusions remain **HOLD** pending qualified authority.
+- The grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) must **never** be destroyed, terminated, resized, or reprovisioned; re-creation permanently loses the reserved capacity.
+- Full-disk erase is **HOLD** until the exact Console candidate is durable on reviewed `main` and every irreplaceable local item has either two encrypted off-device copies with manifest/hash read-back and a tested recovery path, or an explicit discard/reissue decision with rotation consequences. This includes signing identity, account recovery and passkeys/2FA, OCI/Talos access, local secret files, restricted business inputs, and unpublished repository/worktree bytes.
+- Historical documents, branches, chats, handoffs, and transient runtime state are context or evidence only. They cannot clear these holds; the current handoff may inventory custody evidence without becoming product authority.

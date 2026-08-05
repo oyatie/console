@@ -77,6 +77,35 @@ chmod 600 "${container_env_file}"
   printf 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=%s\n' "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}"
 } >"${container_env_file}"
 
+# Pull EXPLICITLY, with bounded retry, before running.
+#
+# `docker run` pulls implicitly, so an unreachable registry surfaced as a bare
+# `exit 125` from the run itself — no retry, and nothing distinguishing a registry
+# outage from a broken harness. That reddened CI on 2026-07-31:
+#
+#   Unable to find image 'postgres:18.4@sha256:65f70a15...' locally
+#   docker: Error response from daemon: Get "https://registry-1.docker.io/v2/": context deadline exceeded
+#
+# The image is digest-pinned, so retrying cannot fetch different content: either the
+# digest resolves or the pull fails. This makes an already-exact fetch survive a
+# transient registry and NOTHING else — no fallback tag, no alternate registry, no
+# unpinned image. A registry that is genuinely down still fails the run.
+if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
+  pull_attempts=0
+  pull_backoff=(3 9 27)
+  until docker pull --quiet "${postgres_image}" >/dev/null 2>&1; do
+    if (( pull_attempts >= ${#pull_backoff[@]} )); then
+      # Surface the registry's own error instead of a bare 125 from `run`.
+      docker pull "${postgres_image}" >&2 || true
+      echo "buck-postgres: could not pull the pinned PostgreSQL image after $((${#pull_backoff[@]} + 1)) attempts" >&2
+      exit 1
+    fi
+    echo "buck-postgres: pulling the pinned PostgreSQL image failed; retrying" >&2
+    sleep "${pull_backoff[pull_attempts]}"
+    pull_attempts=$((pull_attempts + 1))
+  done
+fi
+
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
   --env-file "${container_env_file}" "${postgres_image}" >/dev/null
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"
@@ -119,6 +148,36 @@ test_executor_args=(--env "CONSOLE_BUCK_POSTGRES_ENV_FILE=${test_env_file}" --en
 if [[ -n "${exact_test}" ]]; then
   test_executor_args+=(--env "CONSOLE_BUCK_RUST_TEST_EXACT=${exact_test}")
 fi
+# BUILD IN PARALLEL, THEN TEST SERIALLY.
+#
+# Buck2's `-j/--num-threads` is "Number of threads to use during execution (default is # cores)"
+# — it governs the WHOLE invocation, compile actions included. CI passes `--num-threads=1` to keep
+# the test phase serialized, and that flag was therefore also compiling every action
+# single-threaded on a multi-core runner.
+#
+# Serialization is only needed for the TEST phase, and it is needed for a specific reason: three
+# test files issue cluster-global `ALTER ROLE ... PASSWORD`, which outlives the per-test database
+# `#[sqlx::test]` drops and poisons siblings sharing this one container. Compiling has no such
+# constraint.
+#
+# So the build is hoisted into its own pass at default parallelism. Targets are recognised by
+# their `//` prefix, which is how the caller passes them; every other argv entry is a buck flag
+# and is deliberately not forwarded here — `--num-threads=1` least of all. The daemon carries the
+# result into the test pass below, so nothing is rebuilt.
+build_targets=()
+for arg in "$@"; do
+  case "${arg}" in
+    //*|root//*) build_targets+=("${arg}") ;;
+  esac
+done
+if ((${#build_targets[@]} > 0)); then
+  if [[ -n "${isolation_name}" ]]; then
+    BUCK_ISOLATION_DIR="${isolation_name}" "${buck_bin}" build --local-only "${build_targets[@]}"
+  else
+    "${buck_bin}" build --local-only "${build_targets[@]}"
+  fi
+fi
+
 # Reuse the caller's/default Buck daemon so PostgreSQL integration tests share
 # the same-worktree analysis and compile cache. Callers that need an isolated
 # daemon can still opt in explicitly without forcing every run cold.

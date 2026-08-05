@@ -1,5 +1,7 @@
 # KNL one-stop platform — vision & roadmap
 
+> **HISTORICAL / NON-AUTHORITY:** The current ordered roadmap is [`current/ROADMAP.md`](current/ROADMAP.md), constrained by [`current/PRODUCT.md`](current/PRODUCT.md). The broad pre-pivot plan below is retained in place as history and cannot dispatch implementation or clear a HOLD.
+
 Living plan so nothing is lost. The platform is **one integrated product**: corporate web
 front + FSM operational dashboard + governance/observability + CX SaaS — running the full
 business **lifecycles** (maintenance; asset acquisition→use→sale; employee/HR), with cost

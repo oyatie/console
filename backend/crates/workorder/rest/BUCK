@@ -83,9 +83,53 @@ rust_test(
 )
 
 rust_test(
+    name = "console-workorder-rest-itest-mobile_device_registration",
+    mapped_srcs = repo_mapped_srcs("backend/crates/workorder/rest", ["tests/mobile_device_registration.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//backend/test_support:mobile-evidence-fixtures": "backend/test_support/mobile_evidence_fixtures.rs",
+    }),
+    crate = "mobile_device_registration",
+    edition = "2024",
+    crate_root = "backend/crates/workorder/rest/tests/mobile_device_registration.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/workorder/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
+    labels = ["owner.backend.crates.workorder.rest", "domain.workorder", "test.integration", "resource.postgres", "needs-postgres"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/jobs:console-platform-jobs",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/platform/storage:console-platform-storage",
+        "//backend/crates/platform/test-support:console-platform-test-support",
+        "//backend/crates/workflow/adapter-postgres:console-workflow-runtime-adapter-postgres",
+        "//backend/crates/workflow/domain:console-workflow-domain",
+        "//backend/crates/workflow/runtime:console-workflow-runtime",
+        "//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres",
+        "//backend/crates/workorder/application:console-workorder-application",
+        "//backend/crates/workorder/domain:console-workorder-domain",
+        "//third-party/rust:axum",
+        "//third-party/rust:hex",
+        "//third-party/rust:http",
+        "//third-party/rust:p256",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:time",
+        "//third-party/rust:tower",
+        "//third-party/rust:tracing",
+        "//third-party/rust:uuid",
+        ":console-workorder-rest",
+    ],
+)
+
+rust_test(
     name = "console-workorder-rest-itest-mobile_evidence",
     mapped_srcs = repo_mapped_srcs("backend/crates/workorder/rest", ["tests/mobile_evidence.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//backend/test_support:mobile-evidence-fixtures": "backend/test_support/mobile_evidence_fixtures.rs",
     }),
     crate = "mobile_evidence",
     edition = "2024",
@@ -128,6 +172,7 @@ rust_test(
     name = "console-workorder-rest-itest-mobile_sync",
     mapped_srcs = repo_mapped_srcs("backend/crates/workorder/rest", ["tests/mobile_sync.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//backend/test_support:mobile-evidence-fixtures": "backend/test_support/mobile_evidence_fixtures.rs",
     }),
     crate = "mobile_sync",
     edition = "2024",

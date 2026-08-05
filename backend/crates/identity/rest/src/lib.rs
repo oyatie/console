@@ -48,8 +48,8 @@ use console_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map}
 use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationRequest, AuthorizationResource,
     CoexistenceMapEntry, DecisionEffect, DualEngineMode, Feature, PermissionLevel, Principal,
-    RlsScopeProof, Role, SubjectFreshnessRequirement, authorize, evaluate_cedar_pbac_boundary,
-    observe_cedar_pbac_decision, permission_for,
+    RlsScopeProof, Role, SubjectFreshnessRequirement, authorize, authorize_capability,
+    evaluate_cedar_pbac_boundary, observe_cedar_pbac_decision, permission_for,
 };
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::{RequestContextError, current_org};
@@ -3841,6 +3841,7 @@ async fn update_branch(
         .store
         .update_branch(UpdateBranchCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             branch_id: BranchId::from_uuid(id),
             region_id: body.region_id,
             name: body.name,
@@ -3866,6 +3867,7 @@ async fn deactivate_branch(
         .store
         .deactivate_branch(DeactivateBranchCommand {
             actor: principal.user_id,
+            branch_scope: principal.branch_scope.clone(),
             branch_id: BranchId::from_uuid(id),
             trace: TraceContext::generate(),
             occurred_at: OffsetDateTime::now_utc(),
@@ -4039,13 +4041,35 @@ async fn delete_passkey(
 // Authz helpers
 // ---------------------------------------------------------------------------
 
-/// Authorize an org-management feature against a representative in-scope branch.
-/// Cross-branch principals authorize against a fresh branch id (allowed by
-/// `BranchScope::All`); branch-scoped principals authorize against one of their
-/// own branches, which they always allow — the feature matrix then decides.
+/// Authorize an org-management feature as a CAPABILITY: may this caller manage
+/// org structure at all.
+///
+/// This is not a claim that the managed rows have no branch identity. A branch
+/// obviously has one — it IS one — and `update_branch`/`deactivate_branch` take a
+/// branch id straight off the path. What this function replaced could not check
+/// that id either: it authorized against
+/// `representative_branch(&principal.branch_scope)`, a branch taken from the
+/// CALLER, so `authorize`'s `branch_scope.allows(..)` was true by construction on
+/// both arms and only the feature matrix ever decided. The swap to
+/// [`authorize_capability`] is therefore verdict-identical — it makes the missing
+/// branch dimension visible instead of faking it, and neither opens nor closes a
+/// cross-branch hole.
+///
+/// Confining a branch mutation to the caller's own scope belongs where the TARGET
+/// id is known — `PgOrgStore::update_branch` / `deactivate_branch`, comparing the
+/// caller's scope against `command.branch_id`. As of this commit
+/// `UpdateBranchCommand`/`DeactivateBranchCommand` carry no scope field and that
+/// comparison does not exist yet; closing it is the identity lane's open work, and
+/// it is the only thing that can stop a cross-branch edit. A representative-branch
+/// call here never could, which is why removing it costs nothing. Reads already
+/// carry their own scope resolution (`directory_read_scope`), as do elevated-role
+/// writes (`authorize_user_write`).
+///
+/// NOT `authorize_org_wide`: `UserManage`/`BranchManage`/`RegionManage` are ALLOW
+/// for built-in ADMIN, and `Login` is ALLOW for every role; org-wide routing would
+/// deny every branch-scoped principal here.
 fn authorize_org_manage(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    let branch = representative_branch(&principal.branch_scope)?;
-    authorize(principal, Action::new(feature), branch).map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
 }
 
 /// Resolve the exact effective scope for a people-directory read. Built-in
@@ -4484,8 +4508,7 @@ fn authorize_user_write(
 
     if !elevated_role_changes.is_empty() {
         // Only SUPER_ADMIN holds ElevatedRoleGrant; checked org-globally.
-        let branch = representative_branch(&principal.branch_scope)?;
-        return authorize(principal, Action::new(Feature::ElevatedRoleGrant), branch)
+        return authorize_capability(principal, Action::new(Feature::ElevatedRoleGrant))
             .map_err(|_| RestError::forbidden("not allowed to change elevated roles"));
     }
 
@@ -4526,17 +4549,6 @@ fn elevated_role_membership_changes(
         .symmetric_difference(&elevated_roles_in(requested_roles))
         .copied()
         .collect())
-}
-
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for org management",
-            ))
-        }),
-    }
 }
 
 /// Parse and validate role strings against the authz matrix. Empty role sets are

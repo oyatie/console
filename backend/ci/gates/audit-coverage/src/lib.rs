@@ -7,8 +7,11 @@
 //! ```
 //!
 //! Such handlers must construct an `AuditEvent` and route the mutation through
-//! `with_audit`. The only allowed carve-out is LocationPing ingestion, because
-//! raw coordinates must remain destructible and must never enter audit_events.
+//! `with_audit`. There are exactly TWO allowed carve-outs, both location-derived,
+//! and `allowed_audit_exclusions()` below is the authority: `record_location_ping`
+//! and `purge_expired_location_data`. Raw coordinates must remain destructible and
+//! must never enter audit_events, and the retention purge that ERASES them cannot
+//! itself write a row naming what it erased.
 
 use std::path::{Path, PathBuf};
 use std::{collections::HashMap, fs};

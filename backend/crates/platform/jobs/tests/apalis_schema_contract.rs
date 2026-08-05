@@ -37,6 +37,7 @@ async fn owner_and_runtime_apalis_schema_contract_is_fail_closed() {
     let owner_url = required_url("CONSOLE_APALIS_OWNER_DATABASE_URL");
     let runtime_url = required_url("CONSOLE_APALIS_RUNTIME_DATABASE_URL");
     let admin_url = required_url("CONSOLE_APALIS_ADMIN_DATABASE_URL");
+    reassert_serving_role_passwords(&owner_url, &runtime_url).await;
     let mut owner = sqlx::PgConnection::connect(&owner_url)
         .await
         .expect("connect as console_app");
@@ -963,4 +964,58 @@ async fn restore_ledger_row(owner: &mut sqlx::PgConnection, row: &LedgerRow) {
 
 fn required_url(name: &str) -> String {
     std::env::var(name).unwrap_or_else(|_| panic!("{name} is required for Apalis contract test"))
+}
+
+/// Re-assert the two serving-role passwords the harness minted, before connecting.
+///
+/// `ALTER ROLE ... PASSWORD` is CLUSTER-GLOBAL: it outlives the per-test database that
+/// `#[sqlx::test]` drops. Four sibling test files in this same serialized single-container
+/// run rewrite `console_app`'s password to a hardcoded literal so they can log in as it —
+/// `platform/db/tests/attendance_console_migration_contract.rs:981,1178`,
+/// `ontology/adapter-postgres/tests/key_revision_migration_upgrade.rs:37`,
+/// `leave/adapter-postgres/tests/leave_migration_expand_contract.rs:158` — and none restores
+/// it. Whichever of them runs first, every later target authenticating as `console_app` or
+/// `console_rt` from the harness URL gets `28P01 password authentication failed`.
+///
+/// Restoring in those siblings would be order-dependent and a panic would skip it. Re-asserting
+/// here is neither: this test states the credential it needs, from the admin URL the harness
+/// also supplies, and is correct regardless of what any sibling did or how it exited.
+async fn reassert_serving_role_passwords(owner_url: &str, runtime_url: &str) {
+    fn password_of(url: &str) -> String {
+        let after_scheme = url.split("://").nth(1).expect("database URL has a scheme");
+        let credentials = after_scheme
+            .split('@')
+            .next()
+            .expect("database URL has credentials");
+        credentials
+            .split_once(':')
+            .expect("database URL carries a password")
+            .1
+            .to_owned()
+    }
+    let admin_url = std::env::var("CONSOLE_APALIS_ADMIN_DATABASE_URL")
+        .expect("CONSOLE_APALIS_ADMIN_DATABASE_URL is required to re-assert role passwords");
+    let mut admin = sqlx::PgConnection::connect(&admin_url)
+        .await
+        .expect("connect as harness admin");
+    for (role, password) in [
+        ("console_app", password_of(owner_url)),
+        ("console_rt", password_of(runtime_url)),
+    ] {
+        // format(%I,%L) builds the statement server-side: ALTER ROLE takes no bind
+        // parameters, and the password is a harness-minted literal.
+        let statement: String =
+            sqlx::query_scalar("SELECT format('ALTER ROLE %I PASSWORD %L', $1::text, $2::text)")
+                .bind(role)
+                .bind(&password)
+                .fetch_one(&mut admin)
+                .await
+                .expect("build ALTER ROLE statement");
+        // Sound: `statement` is built by PostgreSQL's own format(%I,%L) from a role name
+        // this function fixes and a harness-minted hex password — never request-derived.
+        sqlx::raw_sql(sqlx::AssertSqlSafe(statement))
+            .execute(&mut admin)
+            .await
+            .expect("re-assert serving role password");
+    }
 }

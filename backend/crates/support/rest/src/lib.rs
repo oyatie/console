@@ -25,7 +25,7 @@ use console_kernel_core::{
     TraceContext, UserId, WorkOrderId,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_capability};
 use console_platform_push::{FcmPushMessage, PushNotifier};
 use console_platform_request_context::TrustedClientIp;
 use console_support_adapter_postgres::{
@@ -326,12 +326,14 @@ async fn list_tickets(
     Query(query): Query<ListTicketsRequest>,
 ) -> Result<impl IntoResponse, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    authorize(
-        &principal,
-        Action::new(Feature::Login),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    // LIST gate: `list_tickets` returns rows across the caller's whole
+    // `branch_scope` (the store filters on it below), so there is no single
+    // resource branch. NOT `authorize_org_wide` — `Feature::Login` is
+    // `[A,A,A,A,A,A]` and org-wide routing would deny every branch-scoped user,
+    // i.e. the entire staff surface. The per-row gate `authorize_on_ticket`
+    // loads the ticket's real branch and is unchanged.
+    authorize_capability(&principal, Action::new(Feature::Login))
+        .map_err(RestError::from_kernel)?;
     // Only cross-branch principals (SUPER_ADMIN/EXECUTIVE) may pull the
     // untriaged customer-intake queue; branch-scoped staff cannot.
     let cross_branch = matches!(principal.branch_scope, BranchScope::All);
@@ -461,12 +463,8 @@ async fn list_field_sites(
     // Field read gate mirrors the shell nav gate (work_order_read_all): the
     // overview carries customer PII (contact, geo), so the open-signup MEMBER
     // tier is denied server-side, not just nav-hidden.
-    authorize(
-        &principal,
-        Action::new(Feature::WorkOrderReadAll),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)?;
+    authorize_capability(&principal, Action::new(Feature::WorkOrderReadAll))
+        .map_err(RestError::from_kernel)?;
     let page = state
         .store
         .list_field_sites(ListFieldSitesQuery {
@@ -790,17 +788,6 @@ async fn authorize_on_ticket(
                 )))
             }
         }
-    }
-}
-
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for support access",
-            ))
-        }),
     }
 }
 

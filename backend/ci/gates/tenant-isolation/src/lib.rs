@@ -68,6 +68,16 @@ pub fn global_table_allowlist() -> &'static [(&'static str, &'static str)] {
             "link_types",
             "canonical edge-type vocabulary, seeded platform-wide, no tenant data",
         ),
+        // The statutory rate citation register (국민연금/건강보험/장기요양/
+        // 고용/산재 요율, 기준소득월액 밴드, 최저임금, 간이세액표 versions). These
+        // are the law: identical for every tenant, carrying no tenant data, and
+        // NOT operator-writable — console_rt holds SELECT only, so a tenant
+        // cannot write a rate row it could then read back. Rates change by
+        // migration, which means by deploy, which means by professional review.
+        (
+            "payroll_statutory_rates",
+            "statutory rate citations, identical for every tenant, SELECT-only to console_rt",
+        ),
         // Pre-auth throttle: keyed on (ip, purpose), exists before any user/org
         // is resolved. Transient, no tenant.
         ("auth_rate_limit", "pre-auth throttle, no resolved tenant"),

@@ -23,6 +23,18 @@ if ! command -v sccache >/dev/null 2>&1; then
 fi
 
 export RUSTC_WRAPPER=sccache
+# Without this the wrapper above buys NOTHING. Cargo defaults `incremental` on for
+# the dev and test profiles, `backend/Cargo.toml` does not override it, and rustc
+# invoked with `-C incremental=...` is not a cacheable compilation — sccache does
+# not miss it, it never sees it.
+#
+# Measured on one crate, `cargo clean -p` then `sccache --zero-stats` before each:
+#   incremental on   -> 0 Rust hits, 0 Rust misses, 0 non-cacheable  (invisible)
+#   CARGO_INCREMENTAL=0 -> 1 Rust miss                               (entered the cache)
+#
+# `ci.yml` already sets this in three places; this line makes the local lane
+# environment agree with the one place the cache is actually shared between lanes.
+export CARGO_INCREMENTAL="${CARGO_INCREMENTAL:-0}"
 # Generous ceiling: this workspace is large and disk is not the constraint
 # (measured 4.0 TiB free, 1% used).
 export SCCACHE_CACHE_SIZE="${SCCACHE_CACHE_SIZE:-50G}"

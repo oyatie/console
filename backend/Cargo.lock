@@ -1704,6 +1704,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-gate-fabricated-branch"
+version = "0.1.0"
+
+[[package]]
 name = "console-gate-iac-tier"
 version = "0.1.0"
 
@@ -1717,6 +1721,10 @@ dependencies = [
 
 [[package]]
 name = "console-gate-migration-safety"
+version = "0.1.0"
+
+[[package]]
+name = "console-gate-personal-data-classification"
 version = "0.1.0"
 
 [[package]]
@@ -2561,6 +2569,7 @@ dependencies = [
  "console-inbox-domain",
  "console-kernel-core",
  "console-payroll-adapter-postgres",
+ "console-payroll-domain",
  "console-platform-auth",
  "console-platform-authz",
  "console-platform-db",
@@ -2690,6 +2699,7 @@ name = "console-platform-db"
 version = "0.1.0"
 dependencies = [
  "console-kernel-core",
+ "console-platform-authz",
  "serde",
  "serde_json",
  "sqlx 0.9.0",
@@ -2707,6 +2717,21 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "console-platform-erasure-ledger"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-platform-db",
+ "console-platform-test-support",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

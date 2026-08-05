@@ -193,17 +193,19 @@ fn check_migration_file(
     result: &mut GateResult,
 ) {
     let sanitized = sanitize_sql(content);
-    let statement_tokens = sanitized
+    let statements = sanitized
         .split(';')
-        .map(tokenize_sql)
-        .filter(|tokens| !tokens.is_empty())
+        .filter_map(|statement| {
+            let tokens = tokenize_sql(statement);
+            (!tokens.is_empty()).then_some((statement, tokens))
+        })
         .collect::<Vec<_>>();
 
-    check_no_transaction_statement_count(file, content, statement_tokens.len(), result);
+    check_no_transaction_statement_count(file, content, statements.len(), result);
 
-    for tokens in &statement_tokens {
+    for (statement, tokens) in &statements {
         check_drop_table(file, tokens, audited_tables, result);
-        check_drop_column(file, tokens, audited_tables, result);
+        check_drop_column(file, statement, audited_tables, result);
         check_concurrent_index_if_not_exists(file, tokens, result);
         check_audit_events_grants(file, tokens, result);
         check_audit_events_trigger(file, tokens, result);
@@ -286,22 +288,22 @@ fn check_drop_table(
 
 fn check_drop_column(
     file: &Path,
-    tokens: &[String],
+    statement: &str,
     audited_tables: &HashSet<String>,
     result: &mut GateResult,
 ) {
+    let tokens = tokenize_table_reference_sql(statement);
     for (index, token) in tokens.iter().enumerate() {
         if token != "alter" || tokens.get(index + 1).is_none_or(|next| next != "table") {
             continue;
         }
-        let Some(table) = table_name_after_alter_table(tokens, index + 2) else {
+        let Some((table, action_start)) = table_name_after_alter_table(&tokens, index + 2) else {
             continue;
         };
-        if audited_tables.contains(table)
-            && tokens
-                .windows(2)
-                .any(|window| window[0].as_str() == "drop" && window[1].as_str() == "column")
-        {
+        let drops_column = tokens[action_start..]
+            .windows(2)
+            .any(|window| window[0] == "drop" && window[1] == "column");
+        if drops_column && audited_tables.contains(table) {
             result.violations.push(Violation {
                 kind: ViolationKind::DropAuditedColumn,
                 file: file.to_path_buf(),
@@ -311,14 +313,32 @@ fn check_drop_column(
     }
 }
 
-fn table_name_after_alter_table(tokens: &[String], start: usize) -> Option<&str> {
+fn table_name_after_alter_table(tokens: &[String], start: usize) -> Option<(&str, usize)> {
     let mut index = start;
     if tokens.get(index).is_some_and(|token| token == "if")
         && tokens.get(index + 1).is_some_and(|token| token == "exists")
     {
         index += 2;
     }
-    tokens.get(index).map(String::as_str)
+    if tokens.get(index).is_some_and(|token| token == "only") {
+        index += 1;
+    }
+
+    let mut table = tokens.get(index)?.as_str();
+    if table == "." {
+        return None;
+    }
+    index += 1;
+
+    while tokens.get(index).is_some_and(|token| token == ".") {
+        table = tokens.get(index + 1)?.as_str();
+        if table == "." {
+            return None;
+        }
+        index += 2;
+    }
+
+    Some((table, index))
 }
 
 fn check_audit_events_grants(file: &Path, tokens: &[String], result: &mut GateResult) {
@@ -450,6 +470,31 @@ fn tokenize_sql(statement: &str) -> Vec<String> {
         } else if !current.is_empty() {
             tokens.push(normalize_identifier(&current));
             current.clear();
+        }
+    }
+    if !current.is_empty() {
+        tokens.push(normalize_identifier(&current));
+    }
+
+    tokens
+}
+
+fn tokenize_table_reference_sql(statement: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut current = String::new();
+
+    for ch in statement.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            current.push(ch);
+            continue;
+        }
+
+        if !current.is_empty() {
+            tokens.push(normalize_identifier(&current));
+            current.clear();
+        }
+        if ch == '.' {
+            tokens.push(".".to_string());
         }
     }
     if !current.is_empty() {

@@ -1,0 +1,13 @@
+export_file(
+    name = "dispatch-worker-fixtures",
+    src = "dispatch_worker_fixtures.rs",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "mobile-evidence-fixtures",
+    src = "mobile_evidence_fixtures.rs",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)

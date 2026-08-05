@@ -1,5 +1,11 @@
 # Talos deployment contexts
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This is retained bootstrap and substrate
+> reference, not evidence of current nodes or authority to bootstrap, apply, or
+> reset Talos. The repository currently authorizes zero production mutations.
+> Start with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 This directory keeps Talos substrate inputs split by deployment context:
 
 | Context | Purpose | Activation state |
@@ -24,11 +30,18 @@ Always-Free-eligible shapes. If you must stay on a non-upgraded account, use the
 boot-volume workaround: launch a throwaway image, attach a second block volume,
 `dd` the Talos raw image onto it, then boot the A1 from that volume.
 
-The boot-volume workaround is the OCI **dd-flasher** path referenced by the
-OpenTofu `oci-guest` compute module. It is only for the OCI guest context:
+The boot-volume workaround is the OCI **dd-flasher** path. It is only for the
+OCI guest context, and it is **history for the live cluster** — the node at
+`140.245.68.253` was flashed this way on 2026-06-22 and is irreplaceable, so
+none of these steps may be re-run against it. What follows is the procedure for
+standing a *new* OCI Talos node up from scratch, in a tenancy with allotment to
+spare. The flasher helper is no longer an OpenTofu resource: it was a one-shot
+bootstrap host, it consumed a second A1, and leaving it in the module meant any
+future apply would try to create one.
 
-1. Apply OpenTofu with `talos_image_ocid = ""` so only the network/storage,
-   bastion, and Oracle Linux flasher helper are created.
+1. Apply OpenTofu for the network/storage/bastion, then launch the Oracle Linux
+   flasher helper **by hand** — a throwaway instance on any shape with spare
+   allotment. Do not add it back to the compute module.
 2. Attach the target boot volume to the flasher helper and identify it by OCI
    volume/device metadata. Never guess a Linux device name and never write to the
    flasher helper's own boot disk.

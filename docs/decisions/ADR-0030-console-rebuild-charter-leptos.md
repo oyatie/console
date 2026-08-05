@@ -20,6 +20,12 @@ The withdrawals in §3 are in effect and the reciprocal edits in the final secti
 landed with acceptance. ADR-0025 remains accepted and authoritative for
 everything §3 does not name.
 
+> **Current observation (2026-08-03):** The accepted text below is preserved as
+> written. Since acceptance, CI removed workflow path filters and the OpenAPI title
+> changed to `Console API`; no contracts-crate emitter or schema-to-wire fidelity
+> proof exists. These observations do not rewrite the Decision or open its frontend
+> implementation gate.
+
 ## Context
 
 **The stack has never had a decision record.** `Leptos` returns zero hits

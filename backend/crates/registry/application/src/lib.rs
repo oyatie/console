@@ -133,6 +133,9 @@ pub struct SubstituteCandidate {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct SubstituteAssignmentCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied. The adapter
+    /// refuses (as `not_found`) a source or substitute outside it.
+    pub branch_scope: BranchScope,
     pub source_equipment_id: EquipmentId,
     pub substitute_equipment_id: EquipmentId,
     pub assigned_to: Option<UserId>,
@@ -144,6 +147,8 @@ pub struct SubstituteAssignmentCommand {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct SubstituteReturnCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub substitution_id: EquipmentSubstitutionId,
     pub trace: TraceContext,
     pub returned_at: Timestamp,
@@ -293,6 +298,8 @@ pub struct EquipmentOwnershipTransferRequest {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct CreateEquipmentOwnershipTransferCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub equipment_id: EquipmentId,
     pub to_owner: String,
     pub reason: String,
@@ -303,6 +310,8 @@ pub struct CreateEquipmentOwnershipTransferCommand {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DecideEquipmentOwnershipTransferCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub request_id: Uuid,
     pub decision: EquipmentOwnershipTransferDecision,
     pub comment: String,
@@ -381,12 +390,15 @@ pub struct CreatedCustomer {
 
 /// Create one site (현장) under an existing customer, directly. The site lands on
 /// the existing customer's branch under `customer_id`; the adapter validates that
-/// the customer belongs to the caller's org (RLS + an explicit check) before writing.
+/// the customer belongs to the caller's org and branch scope before writing.
 /// Optional location/contact fields mirror the PATCH /sites surface so a site can
 /// be onboarded with its address and representative contact in one step.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CreateSiteCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied. A customer in
+    /// another branch of the same org is refused as `not_found`.
+    pub branch_scope: BranchScope,
     pub customer_id: CustomerId,
     pub name: String,
     pub address: Option<String>,
@@ -475,6 +487,9 @@ impl UpdateEquipmentFields {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct UpdateEquipmentCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied. A row outside it
+    /// is refused as `not_found`, exactly like [`UpdateSiteCommand`].
+    pub branch_scope: BranchScope,
     pub equipment_id: EquipmentId,
     pub fields: UpdateEquipmentFields,
     pub trace: TraceContext,
@@ -487,6 +502,8 @@ pub struct UpdateEquipmentCommand {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct RollbackEquipmentCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub equipment_id: EquipmentId,
     pub version: i32,
     pub trace: TraceContext,
@@ -496,6 +513,8 @@ pub struct RollbackEquipmentCommand {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DeleteEquipmentCommand {
     pub actor: UserId,
+    /// Principal-resolved branch scope. Never caller-supplied.
+    pub branch_scope: BranchScope,
     pub equipment_id: EquipmentId,
     pub trace: TraceContext,
     pub occurred_at: Timestamp,

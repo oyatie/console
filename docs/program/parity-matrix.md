@@ -1,3 +1,5 @@
+> **HISTORICAL after the 2026-07-28 pivot.** This document preserves evidence and prior reasoning only. It cannot authorize Buck2, broad product scope, fan-out, or implementation work. Current authority is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md) and the post-pivot program index.
+
 # THE PARITY MATRIX — intended shape (design markdowns) vs built console
 
 > Master remaining-work checklist for the console program. **Binding directive: polish comes only after visual AND functional parity with the intended shape described in `docs/design/oyatie-console/*`.** This document derives that intended shape exhaustively from the design markdowns and diffs it against the built console.

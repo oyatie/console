@@ -133,7 +133,7 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
     assert_eq!(calc["calculated_lines"], 1);
     assert_eq!(calc["blocked_lines"], 0);
     assert_eq!(
-        calc["total_net_won"], 2_626_698,
+        calc["total_net_won"], 2_626_700,
         "3,000,000 gross with the June 2026 statutory tables + verified NTS row"
     );
     assert_eq!(calc["payable"], false, "draft until the release gate flips");
@@ -788,11 +788,24 @@ async fn register_release_gate(pool: &PgPool, run: Uuid) {
                 "official_source_urls": [
                     "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0038M0.do",
                 ],
+                // The case carries its own kernel inputs because the gate now
+                // RE-EXECUTES it: 2026-06-30 is this run's period_end, which
+                // lifecycle.rs passes as pay_date, and it sits inside both the
+                // contribution-rate window and the pension base-limit window,
+                // so these figures are the same ones the domain fixture pins.
+                // The tax row matches seed_verified_import_row below.
                 "golden_cases": [{
                     "case_id": "GC-2026-06-A",
                     "rate_table_version": "statutory-rates-2026-06-27",
                     "professionally_validated": true,
-                    "expected_total_employee_deductions_won": 373_302,
+                    "pay_date": "2026-06-30",
+                    "monthly_gross_pay_won": 3_000_000,
+                    "nts_tax_row": {
+                        "table_version": "NTS-간이세액표-fixture-row-v1",
+                        "monthly_income_tax_won": 74_350,
+                        "local_income_tax_won": 7_430,
+                    },
+                    "expected_total_employee_deductions_won": 373_300,
                 }],
                 "professional_validation": {
                     "reviewer_kind": "labor_attorney",

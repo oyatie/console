@@ -1848,10 +1848,23 @@ impl PgOrgStore {
         .await
     }
 
+    /// Rename a branch and/or move it to another region.
+    ///
+    /// The authorization subject and the mutated object are both branches, so
+    /// they must be compared: a caller may only edit a branch its own scope
+    /// allows (its OWN branch stays editable; `BranchScope::All` keeps every
+    /// branch). Anything else is `not_found`, never `forbidden`, so the
+    /// existence of another branch is not revealed. Checked before the audit
+    /// event is built, so a refused rename writes no audit row.
     pub async fn update_branch(
         &self,
         command: UpdateBranchCommand,
     ) -> Result<BranchSummary, PgOrgError> {
+        if !command.branch_scope.allows(command.branch_id) {
+            return Err(PgOrgError::Domain(KernelError::not_found(
+                "branch not found",
+            )));
+        }
         let org = current_org().map_err(KernelError::from)?;
         let name = command.name.as_deref().map(validate_org_name).transpose()?;
         let region_id = command.region_id;
@@ -1908,6 +1921,14 @@ impl PgOrgStore {
         &self,
         command: DeactivateBranchCommand,
     ) -> Result<BranchSummary, PgOrgError> {
+        // Same self-referential comparison as `update_branch`: the referential
+        // guards below only protect a POPULATED branch, so an empty or newly
+        // created branch in another scope was deletable without this.
+        if !command.branch_scope.allows(command.branch_id) {
+            return Err(PgOrgError::Domain(KernelError::not_found(
+                "branch not found",
+            )));
+        }
         let org = current_org().map_err(KernelError::from)?;
         let branch_id = command.branch_id;
         let occurred_at = command.occurred_at;

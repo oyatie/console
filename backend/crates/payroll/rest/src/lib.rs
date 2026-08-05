@@ -35,6 +35,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 mod lifecycle;
+mod payslip_draft;
 
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
@@ -76,6 +77,10 @@ pub const PAYROLL_RUN_ISSUE_PAYSLIPS_PATH_TEMPLATE: &str =
 pub const PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE: &str =
     "/api/v1/payroll/runs/{id}/payslip-delivery";
 
+pub use payslip_draft::{
+    PAYROLL_EMPLOYEE_CONTRACT_WAGES_PATH_TEMPLATE, PAYROLL_EMPLOYEE_PAYSLIP_DRAFT_PATH_TEMPLATE,
+};
+
 pub const PAYROLL_ROUTE_PATHS: &[&str] = &[
     PAYROLL_RUNS_PATH,
     PAYROLL_RUN_PATH_TEMPLATE,
@@ -92,6 +97,8 @@ pub const PAYROLL_ROUTE_PATHS: &[&str] = &[
     PAYROLL_RUN_DISBURSEMENT_ATTEST_PATH_TEMPLATE,
     PAYROLL_RUN_ISSUE_PAYSLIPS_PATH_TEMPLATE,
     PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE,
+    PAYROLL_EMPLOYEE_PAYSLIP_DRAFT_PATH_TEMPLATE,
+    PAYROLL_EMPLOYEE_CONTRACT_WAGES_PATH_TEMPLATE,
 ];
 
 #[derive(Clone)]
@@ -173,6 +180,7 @@ pub fn router(state: PayrollRestState) -> Router {
             PAYROLL_RUN_PAYSLIP_DELIVERY_PATH_TEMPLATE,
             get(lifecycle::get_payslip_delivery),
         )
+        .merge(payslip_draft::routes())
         .with_state(state);
     console_platform_request_context::with_request_context(router, verifier, pool)
 }

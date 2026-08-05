@@ -97,6 +97,9 @@ if [[ "${source_project}" == "${scratch_project}" ]]; then
   exit 64
 fi
 
+bash "${script_dir}/../../scripts/require-production-operation-authority.sh" \
+  "compose-pitr-drill"
+
 source_compose_args=(-p "${source_project}")
 scratch_compose_args=(-p "${scratch_project}")
 for compose_file in "${compose_files[@]}"; do

@@ -114,7 +114,8 @@ So both halves of §6.5's claim are now measured rather than inferred: the pre-m
 doomed commit, and the post-merge binder — which is the real provenance anchor — works. The recommendation
 remains unexecuted, and this is the second time in one session it cost real effort.
 
-The cost is not the rebind itself; `rebind-authority-train.mjs` does it in seconds. The cost is that **every
+The cost was never the rebind itself, and as of 2026-08-01 there is no rebind: the candidate SHA left
+both registers and `rebind-authority-train.mjs` is deleted. The cost is that **every
 PR needs a signed authority tip whose content is a governance claim**, which is a human decision per PR
 rather than per batch. That is what makes it a per-lane tax rather than a per-batch one, and it is the
 concrete argument for the consolidation-branch shape this document proposes.

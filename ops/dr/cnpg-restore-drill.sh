@@ -36,6 +36,8 @@ Environment overrides:
 USAGE
 }
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 scratch_namespace="${SCRATCH_NAMESPACE:-console-dr-$(date -u +%Y%m%dT%H%M%SZ)}"
 source_namespace="${SOURCE_NAMESPACE:-maintenance}"
 source_cluster="${SOURCE_CLUSTER:-console-db}"
@@ -65,6 +67,9 @@ while [[ $# -gt 0 ]]; do
     *) echo "unknown argument: $1" >&2; usage >&2; exit 64 ;;
   esac
 done
+
+bash "${script_dir}/../../scripts/require-production-operation-authority.sh" \
+  "cnpg-restore-drill"
 
 recovery_cluster="${source_cluster}-recovery"
 recovery_store="${object_store}-recovery"

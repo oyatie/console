@@ -1,3 +1,5 @@
+> **HISTORICAL after the 2026-07-28 pivot.** This document preserves evidence and prior reasoning only. It cannot authorize Buck2, broad product scope, fan-out, or implementation work. Current authority is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md) and the post-pivot program index.
+
 # Console Buck2 hyperscale graph-and-data logistics playbook
 
 **Status:** implementation policy for the console train. The optimization target

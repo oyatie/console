@@ -33,6 +33,7 @@ rust_test(
     name = "console-dispatch-worker-itest-timer_delivery",
     mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/worker", ["tests/timer_delivery.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//backend/test_support:dispatch-worker-fixtures": "backend/test_support/dispatch_worker_fixtures.rs",
     }),
     crate = "timer_delivery",
     edition = "2024",

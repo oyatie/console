@@ -7,11 +7,6 @@ output "object_namespace" { value = module.storage.object_namespace }
 output "db_backups_bucket" { value = module.storage.db_backups_bucket }
 output "evidence_bucket" { value = module.storage.evidence_bucket }
 
-output "flasher_public_ip" {
-  value       = module.compute.flasher_public_ip
-  description = "Helper/management host public IP (SSH as opc)."
-}
-
 output "node_public_ip" {
   value       = module.compute.node_public_ip
   description = "Talos node public IP (Traefik 80/443). Reserve it for stable DNS."

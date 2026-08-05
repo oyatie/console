@@ -6,59 +6,10 @@ on:
       - main
     tags:
       - "v*"
-    # GitHub Actions does not evaluate `paths` for tag pushes; release tags
-    # therefore run the full ADR-0009/0012 CI gate regardless of changed files.
-    paths:
-      - "backend/**"
-      - "backend/openapi/**"
-      - "deploy/**"
-      - "docs/decisions/**"
-      - "docs/program/**"
-      - "docs/CI-GATES.md"
-      - "docs/benchmarks/**"
-      - "docs/specs/**"
-      - "docs/ENTERPRISE-READINESS.md"
-      - "docs/GO-LIVE-CHECKLIST.md"
-      - "docs/i18n.md"
-      - "docs/parity-checklist.md"
-      - "docs/release/**"
-      - "ops/**"
-      - "scripts/**"
-      - "tools/buck/**"
-      - "tools/buck2"
-      - "toolchains/**"
-      - "third-party/rust/**"
-      - "BUCK"
-      - ".buckconfig"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/*.yml"
+  # Required checks must be created for every relevant push and pull request. A
+  # `paths` filter leaves required contexts Pending forever when candidate-controlled
+  # action, trust, security, or tool configuration changes outside an allowlist.
   pull_request:
-    paths:
-      - "backend/**"
-      - "backend/openapi/**"
-      - "deploy/**"
-      - "docs/decisions/**"
-      - "docs/program/**"
-      - "docs/CI-GATES.md"
-      - "docs/benchmarks/**"
-      - "docs/specs/**"
-      - "docs/ENTERPRISE-READINESS.md"
-      - "docs/GO-LIVE-CHECKLIST.md"
-      - "docs/i18n.md"
-      - "docs/parity-checklist.md"
-      - "docs/release/**"
-      - "ops/**"
-      - "scripts/**"
-      - "tools/buck/**"
-      - "tools/buck2"
-      - "toolchains/**"
-      - "third-party/rust/**"
-      - "BUCK"
-      - ".buckconfig"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/*.yml"
   workflow_dispatch:
 
 permissions:
@@ -122,6 +73,50 @@ jobs:
       - name: Foundation gate contract
         run: npm run check:foundation-gates
 
+      - name: Reasoning lens contract regression
+        run: node --test scripts/check-reasoning-lens-contract.test.mjs
+
+      - name: Reasoning lens changed-record admission
+        shell: bash
+        env:
+          REASONING_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REASONING_PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              test -n "$REASONING_PR_BASE_SHA"
+              node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PR_BASE_SHA"
+              ;;
+            push)
+              case "$GITHUB_REF_TYPE" in
+                branch)
+                  test -n "$REASONING_PUSH_BEFORE_SHA"
+                  if [[ "$REASONING_PUSH_BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+                    printf '%s\n' 'push.before is all-zero; running structural reasoning-lens validation'
+                    node scripts/check-reasoning-lens-contract.mjs
+                  else
+                    node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PUSH_BEFORE_SHA"
+                  fi
+                  ;;
+                tag)
+                  node scripts/check-reasoning-lens-contract.mjs
+                  ;;
+                *)
+                  printf 'unsupported push ref type: %s\n' "$GITHUB_REF_TYPE" >&2
+                  exit 2
+                  ;;
+              esac
+              ;;
+            workflow_dispatch)
+              node scripts/check-reasoning-lens-contract.mjs
+              ;;
+            *)
+              printf 'unsupported reasoning-lens event: %s\n' "$GITHUB_EVENT_NAME" >&2
+              exit 2
+              ;;
+          esac
+
       - name: Console truth-ledger exact-M admission
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run check:console-truth-ledger
@@ -138,6 +133,15 @@ jobs:
 
       - name: Console authority-train regression
         run: node --test scripts/console/verify-console-authority-train.test.mjs
+
+      - name: Console PR authority bootstrap regression
+        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs
+
+      - name: Executed-tests baseline set regression
+        run: npm run test:executed-tests-baseline
+
+      - name: Local CI mirror contract
+        run: node --test scripts/verify.test.mjs
 
       - name: Console truth-ledger validator exact-M regression
         run: node --test scripts/console/validate-console-truth-ledger.test.mjs
@@ -160,8 +164,18 @@ jobs:
       - name: Cargo.lock consistency
         run: cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null
 
-  support-domain-unit:
-    name: Support domain — Buck2 unit reachability
+      # Moved here from repo-gates, which has npm and no Rust: the ratchet now
+      # resolves `cargo metadata` as well as the BUCK graph, so it has to run
+      # where cargo does. The step above it is `cargo metadata` on the same
+      # manifest, and preflight is the only job carrying both toolchains.
+      - name: Executed-tests ratchet — a test binary must have a path from a workflow step
+        run: npm run check:executed-tests
+
+      - name: Workflow test-runner credential literals
+        run: npm run check:test-credentials
+
+  domain-unit:
+    name: Domain crates — unit tests
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 20
@@ -172,12 +186,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install pinned DotSlash runtime
-        run: tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for support Buck2 unit
-        uses: ./.github/actions/free-runner-disk
-
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
@@ -187,50 +195,134 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
+          # One shared entry, not one per job. rust-cache keys on job name by
+          # default, so these two maintained separate near-duplicate copies of the
+          # same workspace and evicted each other out of the 10GB LRU budget.
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          # RESTORE-ONLY. This job compiles three crates; `backend` compiles the whole
+          # workspace. Under a shared key without this, whichever finishes first wins —
+          # so a three-crate target dir could become the cache `backend` then restores.
+          # Sharing a key without deciding who writes it is the same poisoning bug as
+          # letting a Buck2 job save a directory it never populated, one level down.
+          save-if: false
 
-      - name: Support domain unit target
-        run: tools/buck2 test //backend/crates/support/domain:console-support-domain-unit
-
-  payroll-domain-unit:
-    # The payroll kernel's 16 unit tests executed in NO workflow until this job
-    # existed. They were compiled by `cargo clippy --all-targets` in the backend
-    # job and never run — the exact never-executed-test class this file warns
-    # about below. The tests include the release-gate contract
-    # (`release_gate_requires_validated_golden_case_and_professional_artifact`)
-    # and the 2026 effective-dated rate and pension-cap selection, so "compiled"
-    # was doing a lot of unearned work.
-    #
-    # Verified before wiring, not after: `tools/buck2 test` on this target
-    # reports `Pass 1. Fail 0. Build failure 0` with 16 tests run.
-    name: Payroll domain — Buck2 unit reachability
-    runs-on: ubuntu-latest
-    needs: preflight
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          persist-credentials: false
-
-      - name: Install pinned DotSlash runtime
-        run: tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for payroll Buck2 unit
-        uses: ./.github/actions/free-runner-disk
-
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
-
-      - name: Payroll domain unit target
-        run: tools/buck2 test //backend/crates/payroll/domain:console-payroll-domain-unit
+      - name: Domain crate unit tests
+        # cargo, not buck2. MEASURED 2026-07-31 on this crate: buck2 cold 118.4s
+        # (176 commands, `cached: 0`) versus cargo cold 6.5s. Buck2 is not slower
+        # by nature — its warm build is 0.17s — but its warm state CANNOT cross a
+        # CI run boundary: the action cache lives in the daemon's in-memory graph,
+        # not portably in buck-out. Proven by tarring buck-out, deleting it,
+        # restoring it and rebuilding: still `cached: 0`, all 176 commands re-ran.
+        # So every buck2 job here was a cold build, every run, with no cache to
+        # restore. cargo's target/ does survive, via rust-cache below.
+        #
+        # --lib is load-bearing on the first command: several of these crates also
+        # carry tests/ suites needing PostgreSQL — payroll_lifecycle_rls_as_runtime_role,
+        # audit_chain_rls, and authz's policy.rs, each verified to panic in sqlx's test
+        # harness without a database. Those belong to postgres-domain-reachability.
+        #
+        # The later commands name the integration files that need NO database, verified
+        # by execution one at a time. Seven crates were added on 2026-07-31 because
+        # check:executed-tests measured that 287 of 314 Rust test files reach no workflow
+        # step at all, and these were the audit-relevant ones needing no database:
+        # the audit chain, the policy and governance domains, the ADR-0021 Cedar
+        # strangler's readiness and legacy-only-observation cases, and the 위치정보법
+        # location-consent FSM — the only consent mechanism in the repository.
+        # 98 tests that previously executed nowhere.
+        #
+        # The adapter crate is here because its 12 pure #[test] cases — the
+        # parse_release_gate half that decides what a stored gate record may parse
+        # INTO — ran in NO workflow. The domain half decides whether a parsed gate
+        # is satisfied; without the adapter half the release gate is half-proven.
+        # They need no database (zero #[sqlx::test]), so they belong in this job.
+        # Runs the SAME 15 tests as the retired Buck2 target, verified by count.
+        # --locked so a drifted Cargo.lock fails rather than silently resolving.
+        #
+        # The last six were added on 2026-08-02, and they are here because
+        # check:executed-tests could not see them until that same change. It asked
+        # whether src/lib.rs itself carried #[cfg(test)], and these crates keep
+        # every one of theirs in src/<module>.rs, so their lib binaries were not
+        # even in the population that can be reported dark. 61 tests that executed
+        # nowhere, all pure, zero #[sqlx::test] — among them workflow/runtime's
+        # `unknown_policy_fails_closed` and `delegated_finalize_denies_when_legacy_guard_denies`,
+        # and platform/auth's two WebAuthn step-up replay-binding cases. The seventh
+        # crate the same measurement exposed, platform/db, is 9 #[sqlx::test] and
+        # needs a database, so it is named in executed-tests-baseline.json instead.
+        run: |
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
+            -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
+            -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
+            -p console-platform-audit-chain -p console-platform-authz \
+            -p console-policy-application -p console-policy-domain \
+            -p console-action-inbox-application -p console-attendance-domain -p console-benefit-application \
+            -p console-benefit-domain -p console-comms-application -p console-comms-domain \
+            -p console-dispatch-application -p console-dispatch-domain -p console-docs-application \
+            -p console-docs-domain -p console-equipment-domain -p console-erp-domain \
+            -p console-evaluation-application -p console-evaluation-domain -p console-finance-gl-domain \
+            -p console-identity-domain -p console-inbox-application -p console-inbox-domain \
+            -p console-inventory-domain -p console-leave-domain -p console-logistics-domain \
+            -p console-messenger-application -p console-notices-domain -p console-notifications-domain \
+            -p console-ontology-application -p console-ontology-domain -p console-orgchange-domain \
+            -p console-recruiting-application -p console-recruiting-domain -p console-reporting-application \
+            -p console-reporting-domain -p console-sales-domain -p console-support-application \
+            -p console-todos-domain -p console-workflow-domain -p console-workorder-application \
+            -p console-analytics-quant-service -p console-attendance-adapter-postgres -p console-attendance-rest \
+            -p console-benefit-rest -p console-comms-adapter-imap -p console-comms-adapter-mox \
+            -p console-comms-adapter-smtp -p console-comms-credential-cipher -p console-comms-mailbox \
+            -p console-comms-rest -p console-compliance-rest -p console-consulting-rest \
+            -p console-dispatch-rest -p console-docs-adapter-postgres -p console-docs-rest \
+            -p console-evaluation-adapter-postgres -p console-facilities-rest -p console-financial-rest \
+            -p console-gate-dev-auth-absence -p console-gate-iac-tier -p console-gate-layer-boundary \
+            -p console-gate-tenant-isolation -p console-gate-vendor-lockin -p console-identity-rest \
+            -p console-inventory-adapter-postgres -p console-inventory-rest -p console-leave-adapter-postgres \
+            -p console-leave-rest -p console-ontology-adapter-postgres -p console-ontology-rest \
+            -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
+            -p console-platform-push -p console-platform-realtime -p console-platform-request-context \
+            -p console-production-rest -p console-reporting-adapter-postgres -p console-support-adapter-postgres \
+            -p console-kernel-core -p console-registry-rest -p console-reporting-rest \
+            -p console-workflow-runtime-adapter-postgres -p console-workorder-rest \
+            -p console-financial-domain -p console-identity-application -p console-integrity \
+            -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime
+          # Doc tests, same step so no new step name has to be declared anywhere.
+          # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
+          # type-boundary claim ("this must not compile"), and they execute nowhere
+          # unless --doc is invoked explicitly.
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            --doc -p console-kernel-core
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-attendance-application --test attendance_policy
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-compliance-domain --test location_consent_fsm --test location_ping_policy
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-authz --test cedar_pbac_readiness_cases --test cedar_pbac_legacy_only_observe_and_record
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-attendance-domain --test range_and_history
+          # ONE -p PER INVOCATION whenever --test is used. Two packages and two --test names on
+          # a single line is ambiguous to any reader that pairs them positionally, and
+          # check-executed-tests.mjs pairs them as a CROSS PRODUCT — 2x2 candidates where only
+          # 2 are real. That produces a FALSE POSITIVE the moment a name exists in both crates,
+          # reporting a test as executed when it is not. Under-reporting darkness is the one
+          # direction that measurement tool must never fail in, so the ambiguity is removed at
+          # the source rather than parsed around.
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-financial-domain --test quote_and_residual
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-registry-domain --test equipment
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-messenger-domain --test mentions --test object_code_refs --test parity --test thread_kind
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-workorder-domain --test approval_and_assignment --test serde_roundtrips \
+            --test settlement_fsm --test workorder_fsm
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-auth --test jwt_es256 --test jwt_verifier --test well_known
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-excel --test template_fidelity --test template_fill_engine
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-realtime --test hub --test notify_payload
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-app --test config --test dev_seed_notification_links --test openslo_files \
+            --test well_known --test workbench_api
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
@@ -244,7 +336,17 @@ jobs:
     name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
     runs-on: ubuntu-latest
     needs: preflight
-    timeout-minutes: 35
+    # 35 -> 80. MEASURED from the run that hit the old ceiling: 240s of build and container
+    # setup, then 21.8s per target serialized, so 189 targets need ~72 minutes. The previous
+    # 19-target job finished in 17.
+    #
+    # Sharding is the better answer and is NOT taken here on purpose. This job's display name
+    # is the literal string branch protection matches on, as the comment above says. A matrix
+    # reports as "name (shard)", so sharding would change the context, silently un-require the
+    # check, and restore exactly the false-green that comment describes — and the branch
+    # protection edit that would make it safe cannot be made from inside a pull request.
+    # Raising the ceiling keeps the required context intact at the cost of wall-clock.
+    timeout-minutes: 80
 
     steps:
       - name: Checkout
@@ -263,10 +365,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Serialized disposable PostgreSQL integration targets
         run: |
@@ -280,24 +378,192 @@ jobs:
             //tools/buck:ontology-object-policy-attach-postgres \
             //tools/buck:ontology-action-execute-postgres \
             //tools/buck:ontology-gaps-postgres \
-            //tools/buck:ontology-projected-dispatch-postgres
+            //tools/buck:ontology-projected-dispatch-postgres \
+            //tools/buck:platform-erasure-ledger-postgres \
+            //tools/buck:platform-db-rls-isolation \
+            //tools/buck:platform-db-rls-rollout-isolation \
+            //tools/buck:platform-audit-chain-rls \
+            //tools/buck:platform-provisioning-rls-auth-chain \
+            //tools/buck:platform-rest-remove-tenant \
+            //tools/buck:compliance-location-consent-status-rls \
+            //tools/buck:compliance-location-store \
+            //tools/buck:payroll-rls-surfaces \
+            //tools/buck:platform-db-feature-catalog-coverage \
+            //tools/buck:app-action-inbox-api-pg \
+            //tools/buck:app-audit-api-pg \
+            //tools/buck:app-auth-rest-pg \
+            //tools/buck:app-board-ack-api-pg \
+            //tools/buck:app-cedar-freshness-mint-pg \
+            //tools/buck:app-cedar-parity-shadow-pg \
+            //tools/buck:app-cedar-shadow-role-manage-pg \
+            //tools/buck:app-compliance-api-pg \
+            //tools/buck:app-console-kill-switch-pg \
+            //tools/buck:app-console-route-telemetry-pg \
+            //tools/buck:app-dev-auth-persona-guard-pg \
+            //tools/buck:app-dispatch-pipeline-api-pg \
+            //tools/buck:app-equipment-3r-api-pg \
+            //tools/buck:app-evaluation-cycle-api-pg \
+            //tools/buck:app-field-visit-api-pg \
+            //tools/buck:app-finance-gl-voucher-sod-pg \
+            //tools/buck:app-health-readiness-pg \
+            //tools/buck:app-hr-attendance-manager-scope-pg \
+            //tools/buck:app-hr-attendance-self-read-pg \
+            //tools/buck:app-hr-ingest-checklist-gate-pg \
+            //tools/buck:app-hr-people-create-api-pg \
+            //tools/buck:app-m2-real-engine-drive-pg \
+            //tools/buck:app-maintenance-chain-api-pg \
+            //tools/buck:app-mobile-api-pg \
+            //tools/buck:app-notif-routing-api-pg \
+            //tools/buck:app-notifications-api-pg \
+            //tools/buck:app-object-graph-api-pg \
+            //tools/buck:app-object-links-api-pg \
+            //tools/buck:app-object-ontology-api-pg \
+            //tools/buck:app-object-resolve-api-pg \
+            //tools/buck:app-office-versions-pg \
+            //tools/buck:app-org-change-api-pg \
+            //tools/buck:app-platform-onboarding-e2e-pg \
+            //tools/buck:app-purchase-request-collection-api-pg \
+            //tools/buck:app-realtime-ws-pg \
+            //tools/buck:app-recruiting-pipeline-api-pg \
+            //tools/buck:app-registry-api-pg \
+            //tools/buck:app-router-layers-pg \
+            //tools/buck:app-search-api-pg \
+            //tools/buck:app-submittable-definitions-api-pg \
+            //tools/buck:app-tenant-context-e2e-pg \
+            //tools/buck:app-workbench-native-api-pg \
+            //tools/buck:app-workflow-automation-triggers-pg \
+            //tools/buck:app-workflow-dynamics-branch-pg \
+            //tools/buck:app-workflow-four-eyes-publish-pg \
+            //tools/buck:app-workflow-object-context-api-pg \
+            //tools/buck:app-workflow-object-kind-dynamics-pg \
+            //tools/buck:app-workflow-run-read-surface-pg \
+            //tools/buck:app-workflow-runtime-finalize-api-pg \
+            //tools/buck:app-workflow-runtime-instance-api-pg \
+            //tools/buck:app-workorder-api-pg \
+            //tools/buck:rls-arming-lib-pg \
+            //tools/buck:attendance-adapter-postgres-self-service-pg \
+            //tools/buck:benefit-adapter-postgres-catalog-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:comms-adapter-postgres-mail-account-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:comms-adapter-postgres-mail-sync-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:comms-adapter-postgres-send-rate-limit-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:comms-rest-mox-webhook-pg \
+            //tools/buck:comms-rest-readiness-pg \
+            //tools/buck:consulting-rest-audit-atomicity-pg \
+            //tools/buck:dispatch-worker-timer-delivery-pg \
+            //tools/buck:docs-rest-evidence-rest-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:finance-gl-adapter-postgres-voucher-rls-and-fsm-as-runtime-role-pg \
+            //tools/buck:financial-adapter-postgres-lifecycle-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:financial-adapter-postgres-period-lock-blocks-ledger-as-runtime-role-pg \
+            //tools/buck:financial-adapter-postgres-use-cases-pg \
+            //tools/buck:financial-rest-purchase-request-list-pg \
+            //tools/buck:governance-adapter-postgres-approvals-create-as-runtime-role-pg \
+            //tools/buck:governance-adapter-postgres-four-eyes-bind-consume-pg \
+            //tools/buck:governance-adapter-postgres-governance-rls-as-runtime-role-pg \
+            //tools/buck:identity-adapter-postgres-deactivate-revokes-credentials-pg \
+            //tools/buck:identity-adapter-postgres-me-workspace-layouts-rls-pg \
+            //tools/buck:identity-adapter-postgres-region-branch-crud-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:identity-adapter-postgres-subject-authz-versions-freshness-rls-pg \
+            //tools/buck:inbox-adapter-postgres-inbox-docs-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:inbox-rest-api-pg \
+            //tools/buck:inspection-adapter-postgres-lifecycle-pg \
+            //tools/buck:inspection-adapter-postgres-schedule-window-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:inventory-adapter-postgres-consume-idempotency-concurrency-pg \
+            //tools/buck:leave-adapter-postgres-leave-migration-expand-contract-pg \
+            //tools/buck:leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:leave-rest-leave-http-personas-pg \
+            //tools/buck:messenger-adapter-postgres-parity-tables-rls-as-runtime-role-pg \
+            //tools/buck:messenger-adapter-postgres-use-cases-pg \
+            //tools/buck:messenger-rest-api-pg \
+            //tools/buck:notices-adapter-postgres-notices-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:notices-rest-api-pg \
+            //tools/buck:notifications-adapter-postgres-notifications-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:notifications-rest-api-pg \
+            //tools/buck:ontology-adapter-postgres-builtin-catalog-additive-upgrade-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-c-chain-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-config-object-types-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-instances-residual-filter-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-instances-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-key-revision-migration-upgrade-pg \
+            //tools/buck:ontology-adapter-postgres-key-write-cas-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-niche-config-object-types-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-projected-instances-read-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-property-derivation-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-property-link-sync-as-runtime-role-pg \
+            //tools/buck:ontology-adapter-postgres-registry-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg \
+            //tools/buck:payroll-rest-api-pg \
+            //tools/buck:payroll-rest-payslip-draft-api-pg \
+            //tools/buck:payroll-rest-run-lifecycle-api-pg \
+            //tools/buck:platform-auth-rest-dev-auth-absence-pg \
+            //tools/buck:platform-auth-refresh-tokens-pg \
+            //tools/buck:platform-auth-webauthn-ceremony-pg \
+            //tools/buck:platform-auth-webauthn-ceremony-replay-pg \
+            //tools/buck:platform-authz-rest-cedar-authoring-rls-as-runtime-role-pg \
+            //tools/buck:platform-authz-rest-decision-feed-as-runtime-role-pg \
+            //tools/buck:platform-authz-policy-pg \
+            //tools/buck:platform-db-attendance-console-migration-contract-pg \
+            //tools/buck:platform-db-code-issuance-pg \
+            //tools/buck:platform-db-group-resolvers-pg \
+            //tools/buck:platform-db-lifecycle-maker-checker-pg \
+            //tools/buck:platform-db-m2-flag-on-runtime-drain-pg \
+            //tools/buck:platform-db-period-locks-and-lifecycle-pg \
+            //tools/buck:platform-db-personal-data-classification-pg \
+            //tools/buck:platform-group-lib-pg \
+            //tools/buck:platform-jobs-apalis-adapter-pg \
+            //tools/buck:platform-jobs-apalis-schema-contract-pg \
+            //tools/buck:platform-platform-rest-onboard-seeds-config-objects-pg \
+            //tools/buck:platform-platform-rest-ops-dashboard-pg \
+            //tools/buck:platform-platform-rest-platform-groups-pg \
+            //tools/buck:platform-platform-rest-view-as-pg \
+            //tools/buck:platform-provisioning-bootstrap-passkey-pg \
+            //tools/buck:platform-provisioning-bootstrap-passkey-replay-pg \
+            //tools/buck:platform-provisioning-roster-import-pg \
+            //tools/buck:platform-provisioning-self-enroll-handoff-as-runtime-role-pg \
+            //tools/buck:platform-realtime-postgres-bridge-pg \
+            //tools/buck:platform-storage-lib-pg \
+            //tools/buck:platform-storage-evidence-processing-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:policy-adapter-postgres-draft-storage-pg \
+            //tools/buck:registry-adapter-postgres-create-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:registry-adapter-postgres-equipment-list-rls-as-runtime-role-pg \
+            //tools/buck:registry-adapter-postgres-equipment-lookup-normalization-rls-as-runtime-role-pg \
+            //tools/buck:registry-adapter-postgres-equipment-versioning-as-runtime-role-pg \
+            //tools/buck:registry-adapter-postgres-master-list-import-pg \
+            //tools/buck:registry-adapter-postgres-master-list-import-rls-as-runtime-role-pg \
+            //tools/buck:registry-adapter-postgres-site-address-postal-roundtrip-rls-as-runtime-role-pg \
+            //tools/buck:registry-rest-equipment-admin-pg \
+            //tools/buck:reporting-adapter-postgres-excel-exports-pg \
+            //tools/buck:reporting-adapter-postgres-kpi-golden-dataset-pg \
+            //tools/buck:reporting-adapter-postgres-ops-summary-pg \
+            //tools/buck:reporting-adapter-postgres-work-diary-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:sales-adapter-postgres-inquiry-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:sales-adapter-postgres-sales-store-pg \
+            //tools/buck:support-adapter-postgres-assignee-name-join-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:support-adapter-postgres-create-internal-ticket-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:support-adapter-postgres-support-tickets-pg \
+            //tools/buck:support-rest-lib-pg \
+            //tools/buck:support-rest-authz-pg \
+            //tools/buck:support-rest-intake-pg \
+            //tools/buck:todos-adapter-postgres-todos-rls-surfaces-as-runtime-role-pg \
+            //tools/buck:workflow-adapter-postgres-notification-bridge-pg \
+            //tools/buck:workflow-adapter-postgres-payroll-drain-period-lock-pg \
+            //tools/buck:workorder-adapter-postgres-m2-flag-off-parity-pg \
+            //tools/buck:workorder-adapter-postgres-rls-read-surfaces-as-runtime-role-pg \
+            //tools/buck:workorder-adapter-postgres-use-cases-pg \
+            //tools/buck:workorder-rest-mobile-device-registration-pg \
+            //tools/buck:workorder-rest-mobile-evidence-pg \
+            //tools/buck:workorder-rest-mobile-sync-pg
 
   company-conformance:
-    # The immutable target the company/HR fan-out aimed at, now GREEN at 12/12 and
-    # a REQUIRED check as of the fan-out's last commit. It was deliberately not
-    # required while it was expected red, because a required red blocks every
-    # merge — and an unwired target that never executes is the false-green class
-    # this repo has already shipped six times. Required at the moment it became
-    # both satisfiable and meaningful, which is the only point where the two
-    # failure modes are simultaneously closed.
+    # Required generic ontology instance-engine regression. Its twelve scenario
+    # ids and five controls exercise useful engine behavior through both REST and
+    # in-process drivers, so the suite remains blocking.
     #
-    # NOTE: it proves the twelve ids the suite can express, and no more. Twice
-    # during the fan-out this target could not distinguish a correct
-    # implementation from a wrong one — link-history churn and an as-of vs
-    # current-head read both left it fully green. The committed mechanism tests
-    # in adapter-postgres cover what it structurally cannot see; do not treat a
-    # green here as sufficient evidence for a mechanism this suite cannot observe.
-    name: Company conformance — 12/12 required target
+    # This is not the current Company/HR product target: all five fixtures are
+    # instance-backed, Person is absent, and the suite proves no projected owning
+    # port or single-writer boundary. Twice it also could not distinguish a
+    # correct mechanism from a wrong one; adapter-postgres mechanism tests cover
+    # those blind spots. A green result must not dispatch the projected fan-out.
+    name: Company conformance — generic-engine regression
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 35
@@ -319,10 +585,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Company conformance against disposable PostgreSQL
         run: |
@@ -456,6 +718,16 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
+          # One shared entry, not one per job. rust-cache keys on job name by
+          # default, so these two maintained separate near-duplicate copies of the
+          # same workspace and evicted each other out of the 10GB LRU budget.
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          # The ONLY writer. `backend` runs clippy --all-targets over the whole
+          # workspace, a strict superset of every other cargo job, so its target dir
+          # is the one worth sharing. Saving only from main keeps PR branches from
+          # publishing a cache shaped by their own diff.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: rustfmt check
         run: cargo fmt --all -- --check
@@ -486,7 +758,26 @@ jobs:
       - name: IaC tier-discipline gate
         run: cargo run -p console-gate-iac-tier
 
-      # The eight `cargo run -p console-gate-*` steps above only prove the gates
+      # An authorization branch must come from the RESOURCE. Deriving it from
+      # `principal.branch_scope` (`All => BranchId::new()`,
+      # `Branches(b) => b.iter().next()/.any()`) makes `authorize`'s
+      # `branch_scope.allows(resource_branch)` check a tautology on BOTH arms, so
+      # the branch dimension disappears silently. That pattern reached 18
+      # production helpers, one of which documented it as correct; a doc comment
+      # is what already failed. This gate also fails if it walked zero .rs files.
+      #
+      # DEFENCE IN DEPTH, NOT A CONTROL. It greps: a fabrication one function
+      # away, a non-literal pick (`.first()`, `.nth(0)`, a `for` loop) and any
+      # `BranchScope::` import alias all scan clean. The three blind spots are
+      # named in the module doc and in docs/CI-GATES.md; the control that closes
+      # them is a `ResourceBranch` newtype, queued separately.
+      - name: Fabricated-branch gate
+        run: cargo run -p console-gate-fabricated-branch
+
+      - name: Personal-data-classification gate
+        run: cargo run -p console-gate-personal-data-classification
+
+      # The ten `cargo run -p console-gate-*` steps above only prove the gates
       # exit 0 against THIS tree. A gate whose scan root no longer resolves --
       # e.g. after the 2026-07-28 deletion moved or emptied a directory it walks
       # -- also exits 0, so "green" cannot be distinguished from "scanned
@@ -495,7 +786,7 @@ jobs:
       # were compiled by clippy --all-targets and never executed.
       #
       # `env -u DATABASE_URL` matches the other hermetic Buck2 steps: none of
-      # these five touch a database (audit-coverage carries a stale
+      # these six touch a database (audit-coverage carries a stale
       # `needs-postgres` label only because gen_first_party.py keys on the
       # literal "sqlx" appearing in its fixture strings -- the crate has zero
       # dependencies). Placed before the DB-heavy steps so a de-fanged gate
@@ -505,8 +796,11 @@ jobs:
         run: |
           env -u DATABASE_URL tools/buck2 test \
             //backend/ci/gates/audit-coverage:console-gate-audit-coverage-itest-gate_detects_violation \
+            //backend/ci/gates/fabricated-branch:console-gate-fabricated-branch-itest-gate_detects_violation \
+            //backend/ci/gates/fabricated-branch:console-gate-fabricated-branch-unit \
             //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation \
             //backend/ci/gates/migration-safety:console-gate-migration-safety-itest-gate_detects_violation \
+            //backend/ci/gates/personal-data-classification:console-gate-personal-data-classification-itest-gate_detects_violation \
             //backend/ci/gates/pii-no-logs:console-gate-pii-no-logs-itest-gate_detects_violation \
             //backend/ci/gates/vendor-lockin:console-gate-vendor-lockin-itest-gate_detects_violation
 
@@ -708,9 +1002,9 @@ jobs:
       # include_str!-ed into the binary. This suite is the only thing that
       # inventories every mounted route against it. It existed but was never
       # invoked by CI, so drift between the router and the spec could land
-      # unnoticed; `check:openapi-app` does not cover this (it only regexes
-      # /api/platform/ paths, then byte-compares the served bytes to the file —
-      # tautological, since the handler returns the const verbatim).
+      # unnoticed; `check:platform-contract-drift` does not cover this (it only
+      # regexes /api/platform/ paths). The byte-compare of the served document
+      # against the file was deleted: include_str! made it tautological.
       - name: Buck2 console-app OpenAPI drift suite
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
@@ -751,10 +1045,6 @@ jobs:
         with:
           toolchain: "1.97.1"
 
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -805,6 +1095,12 @@ jobs:
       - name: ADR governance gate
         if: ${{ !cancelled() }}
         run: npm run check:adrs
+      - name: Documentation link tests
+        if: ${{ !cancelled() }}
+        run: node --test scripts/check-doc-links.test.mjs
+      - name: Documentation local-link gate
+        if: ${{ !cancelled() }}
+        run: npm run check:doc-links
       - name: Doc citations — every code citation must resolve
         if: ${{ !cancelled() }}
         run: npm run check:doc-citations
@@ -868,53 +1164,23 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run check:payroll-release-gate
 
+      - name: Undeclared imports — every bare specifier must be declared
+        if: ${{ !cancelled() }}
+        run: npm run check:undeclared-imports
+
+      - name: Request-body contract — spec fields must exist on the handler
+        if: ${{ !cancelled() }}
+        run: npm run check:request-body-contract
+
   api-contract:
-    name: API contract — app-served OpenAPI
+    name: API contract — text-only contract checks
     runs-on: ubuntu-latest
     needs: preflight
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:18.4
-        env:
-          POSTGRES_DB: console_contract
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres -d console_contract"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      CONTRACT_DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_contract
-      # This job builds console-app before comparing the app-served OpenAPI and
-      # running the generated-client round-trip. Match the backend job's lean
-      # Cargo artifacts so the standard runner does not exhaust disk on cache
-      # misses.
-      CARGO_INCREMENTAL: "0"
-      CARGO_PROFILE_DEV_DEBUG: "0"
 
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-      - name: Install pinned DotSlash runtime
-        run: tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for API contract
-        uses: ./.github/actions/free-runner-disk
-
-      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
-      - name: Cache Rust dependencies + build artifacts
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: backend
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -922,22 +1188,12 @@ jobs:
           node-version: "24"
           cache: npm
 
-      - name: Install client tooling
+      - name: Install Node tooling
         run: npm ci
 
-      - name: OpenAPI app-served drift gate
+      - name: Platform contract drift gate
         if: ${{ !cancelled() }}
-        run: npm run check:openapi-app
-
-      - name: Capture Buck2-built app for contract test
-        if: ${{ !cancelled() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          # check:openapi-app is the sole Buck2 producer for this handoff.
-          console_app_bin="${GITHUB_WORKSPACE}/.tmp/buck2/api-contract/console-app"
-          test -x "${console_app_bin}"
-          printf 'CONSOLE_APP_BIN=%s\n' "${console_app_bin}" >> "${GITHUB_ENV}"
+        run: npm run check:platform-contract-drift
 
       - name: Employee import replay contract
         if: ${{ !cancelled() }}
@@ -1010,3 +1266,33 @@ jobs:
       - name: Production hardening regression tests
         if: ${{ !cancelled() }}
         run: npm run test:production-hardening
+
+  required-ci:
+    name: Required / CI
+    needs:
+      - preflight
+      - domain-unit
+      - postgres-domain-reachability
+      - company-conformance
+      - generated-face-authority
+      - backend
+      - dev-up-smoke
+      - repo-gates
+      - api-contract
+      - kubernetes-manifests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every CI proof to succeed
+        run: |
+          test "${{ needs.preflight.result }}" = success &&
+            test "${{ needs.domain-unit.result }}" = success &&
+            test "${{ needs.postgres-domain-reachability.result }}" = success &&
+            test "${{ needs.company-conformance.result }}" = success &&
+            test "${{ needs.generated-face-authority.result }}" = success &&
+            test "${{ needs.backend.result }}" = success &&
+            test "${{ needs.dev-up-smoke.result }}" = success &&
+            test "${{ needs.repo-gates.result }}" = success &&
+            test "${{ needs.api-contract.result }}" = success &&
+            test "${{ needs.kubernetes-manifests.result }}" = success

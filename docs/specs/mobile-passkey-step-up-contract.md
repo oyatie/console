@@ -1,3 +1,8 @@
+> **SUPERSEDED PRE-PIVOT SPEC:** This frozen record depends on deleted Android,
+> iOS, and generated TypeScript/Kotlin/Swift clients. It is not current product
+> scope, implementation authority, or a runnable command guide. Current authority
+> is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md).
+
 # Mobile passkey step-up binding contract
 
 This contract defines the narrow API and native-client shape needed for issue #407: Android and iOS approval, poll-vote, and queued replay flows must obtain a real passkey assertion and bind it to the sensitive action it authorizes.

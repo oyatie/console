@@ -11,7 +11,10 @@ use std::str::FromStr;
 
 use console_kernel_core::{BranchId, KernelError, OrgId};
 
-use crate::{Action, Feature, PermissionLevel, Principal, authorize, authorize_org_wide};
+use crate::{
+    Action, Feature, PermissionLevel, Principal, authorize, authorize_capability,
+    authorize_org_wide,
+};
 
 /// Real Cedar bundle compile/validate + evaluation adapter.
 ///
@@ -128,6 +131,14 @@ pub struct AuthorizationResource {
     pub branch_id: Option<BranchId>,
     pub resource_type: String,
     pub resource_id: Option<String>,
+    /// Distinguishes the two reasons `branch_id` can be `None`: the resource has
+    /// NO branch at all (`true` → [`authorize_capability`]) versus the action
+    /// spans EVERY branch (`false` → [`authorize_org_wide`]). Private so the
+    /// three constructors stay the only way to build this; `serde(default)`
+    /// keeps every historical audit payload deserializing onto the org-wide arm,
+    /// which is what they were decided under.
+    #[serde(default)]
+    branchless: bool,
 }
 
 impl AuthorizationResource {
@@ -138,9 +149,28 @@ impl AuthorizationResource {
             branch_id: Some(branch_id),
             resource_type: resource_type.into(),
             resource_id: None,
+            branchless: false,
         }
     }
 
+    /// A resource with no branch dimension at all — a workflow run, a workflow
+    /// definition, a row in a table with no `branch_id` column. Decided by
+    /// [`authorize_capability`]: the matrix cell without the branch check, NOT
+    /// [`authorize_org_wide`]'s all-branch/SUPER_ADMIN-or-EXECUTIVE gate.
+    #[must_use]
+    pub fn branchless(org_id: OrgId, resource_type: impl Into<String>) -> Self {
+        Self {
+            org_id,
+            branch_id: None,
+            resource_type: resource_type.into(),
+            resource_id: None,
+            branchless: true,
+        }
+    }
+
+    /// An action that spans every branch in the org. Decided by
+    /// [`authorize_org_wide`] — see [`Self::branchless`] for the other reason a
+    /// request can carry no branch.
     #[must_use]
     pub fn org_wide(org_id: OrgId, resource_type: impl Into<String>) -> Self {
         Self {
@@ -148,6 +178,7 @@ impl AuthorizationResource {
             branch_id: None,
             resource_type: resource_type.into(),
             resource_id: None,
+            branchless: false,
         }
     }
 
@@ -569,17 +600,23 @@ pub fn observe_cedar_pbac_decision(
 /// Evaluate the existing authorization behavior through the new typed contract.
 ///
 /// This is the compatibility adapter: with default freshness and same-org
-/// resources it delegates to the current `authorize` / `authorize_org_wide`
-/// implementation.
+/// resources it delegates to the current `authorize` / `authorize_capability` /
+/// `authorize_org_wide` implementation, one arm per
+/// [`AuthorizationResource`] constructor.
 #[must_use]
 pub fn evaluate_legacy_contract(request: &AuthorizationRequest) -> AuthorizationDecision {
     if let Some(decision) = preflight_denial(request, None) {
         return decision;
     }
 
-    let result = match request.resource.branch_id {
-        Some(branch_id) => authorize(&request.subject.principal, request.action, branch_id),
-        None => authorize_org_wide(&request.subject.principal, request.action),
+    let result = match (request.resource.branch_id, request.resource.branchless) {
+        (Some(branch_id), _) => authorize(&request.subject.principal, request.action, branch_id),
+        (None, true) => authorize_capability(&request.subject.principal, request.action),
+        // Every `AuthorizationResource::org_wide` caller keeps today's semantics.
+        // Widening this arm to `authorize_capability` would drop the
+        // `SUPER_ADMIN | EXECUTIVE` restriction for `ontology/rest`'s
+        // `authority_effect` gate on `Feature::RoleManage`, among others.
+        (None, false) => authorize_org_wide(&request.subject.principal, request.action),
     };
 
     match result {

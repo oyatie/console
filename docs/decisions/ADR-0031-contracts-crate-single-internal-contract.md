@@ -21,6 +21,13 @@ record's scope and need their own decision. Deliberately split from the console 
 the contracts crate benefits the backend whether or not the console ever starts, so it stands as
 its own decision rather than as a clause of a frontend record.
 
+> **Current observation (2026-08-03):** The accepted record below is preserved as
+> written. Since acceptance, the OpenAPI title changed to `Console API`, the
+> tautological `check:openapi-app` script was retired, and
+> `check:platform-contract-drift` now compares only platform method/path inventory
+> with committed text. No contracts-crate emitter or schema-to-wire fidelity proof
+> exists, so the accepted target remains unimplemented.
+
 ## Context
 
 ADR-0009 is accepted and its Decision (`ADR-0009-dualnative-swiftkotlin-parity-strategy-via-single.md:20`)

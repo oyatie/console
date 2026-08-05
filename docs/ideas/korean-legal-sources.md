@@ -109,6 +109,8 @@ infrastructure, and it is the kind of architectural tension that is cheap to res
 is in the system and expensive afterwards. It needs a decision, and the decision needs counsel — but the
 *question* can be written now.
 
+**Written, as proposed ADR-0037** (`docs/decisions/ADR-0037-erasure-versus-pitr-conflict.md`), which prices four options against ADR-0015's restore proof and decides none of them.
+
 ## The official API, and what is known about calling it
 
 `legalize-pipeline` calls **`open.law.go.kr`** — the National Legal Information Center OpenAPI, which **is**

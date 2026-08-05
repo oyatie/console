@@ -1,3 +1,12 @@
+> **SUPERSEDED PRE-CONSOLIDATION GOVERNANCE:** This procedure is retained as a
+> historical checklist, not current merge authority. It does not implement the
+> signed direct-child candidate/authority-tip contract, authenticated synthetic
+> merge admission, or the current two-independent-reviewer rule. Use
+> [`docs/program/console-development-pipeline.md`](../program/console-development-pipeline.md)
+> and
+> [`docs/program/agentic-engineering-playbook.md`](../program/agentic-engineering-playbook.md)
+> for every current review, CI, and merge decision.
+
 # Review/fix and merge governance gates
 
 Source basis: `docs/specs/autonomous-pr-lifecycle-operating-spec.md`.

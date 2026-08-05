@@ -19,7 +19,9 @@ use console_payroll_domain::{
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_authz::{
+    Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
+};
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
@@ -2019,7 +2021,7 @@ async fn report_employee_exit_case(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
     Json(body): Json<ReportEmployeeExitCaseRequest>,
-) -> Result<Json<EmployeeExitCaseResponse>, HrError> {
+) -> Result<(StatusCode, Json<EmployeeExitCaseResponse>), HrError> {
     let effective_exit_date = normalize_date_text(&body.effective_exit_date)?;
     let site_manager_note =
         normalize_limited_text(body.site_manager_note, 1000, "site_manager_note")?;
@@ -2027,26 +2029,7 @@ async fn report_employee_exit_case(
     let org = principal.org_id;
     let org_uuid = *org.as_uuid();
 
-    let event = AuditEvent::new(
-        Some(actor),
-        AuditAction::new("employee.exit.report").map_err(HrError::from_kernel)?,
-        "employee",
-        body.employee_id.to_string(),
-        TraceContext::generate(),
-        OffsetDateTime::now_utc(),
-    )
-    .with_org(org)
-    .with_snapshots(
-        None,
-        Some(json!({
-            "employee_id": body.employee_id,
-            "absence_alert_id": body.absence_alert_id,
-            "effective_exit_date": effective_exit_date,
-            "branch_id": body.branch_id
-        })),
-    );
-
-    let exit_case = with_audit::<_, _, HrError>(&state.pool, event, |tx| {
+    let exit_case = with_audits::<_, _, HrError>(&state.pool, org, |tx| {
         Box::pin(async move {
             let branch_id = resolve_exit_case_branch(
                 tx,
@@ -2057,7 +2040,6 @@ async fn report_employee_exit_case(
             )
             .await?;
             authorize_hr_scoped_write(&principal, Feature::ExitCaseReport, branch_id)?;
-            ensure_employee_exists(tx, org_uuid, body.employee_id).await?;
 
             let case_id: Uuid = sqlx::query_scalar(
                 r#"
@@ -2080,7 +2062,7 @@ async fn report_employee_exit_case(
             .await?;
 
             if let Some(alert_id) = body.absence_alert_id {
-                sqlx::query(
+                let updated = sqlx::query(
                     r#"
                     UPDATE employee_absence_alerts
                     SET status = 'LINKED_EXIT',
@@ -2094,14 +2076,42 @@ async fn report_employee_exit_case(
                 .bind(case_id)
                 .execute(tx.as_mut())
                 .await?;
+                if updated.rows_affected() != 1 {
+                    return Err(HrError::from_kernel(KernelError::internal(
+                        "locked absence alert disappeared before exit-case linkage",
+                    )));
+                }
             }
 
-            load_exit_case_by_id(tx, org_uuid, case_id).await
+            let exit_case = load_exit_case_by_id(tx, org_uuid, case_id).await?;
+            let mut event = AuditEvent::new(
+                Some(actor),
+                AuditAction::new("employee.exit.report").map_err(HrError::from_kernel)?,
+                "employee",
+                body.employee_id.to_string(),
+                TraceContext::generate(),
+                OffsetDateTime::now_utc(),
+            )
+            .with_org(org)
+            .with_snapshots(
+                None,
+                Some(json!({
+                    "employee_id": body.employee_id,
+                    "absence_alert_id": body.absence_alert_id,
+                    "effective_exit_date": effective_exit_date,
+                    "branch_id": branch_id,
+                    "requested_branch_id": body.branch_id
+                })),
+            );
+            if let Some(branch_id) = branch_id {
+                event = event.with_branch(BranchId::from_uuid(branch_id));
+            }
+            Ok((exit_case, vec![event]))
         })
     })
     .await?;
 
-    Ok(Json(exit_case))
+    Ok((StatusCode::CREATED, Json(exit_case)))
 }
 
 // M2-strangler-debt: this absence->exit->settlement flow is a hardcoded cross-module
@@ -6417,56 +6427,77 @@ async fn resolve_exit_case_branch(
     requested_branch_id: Option<Uuid>,
     absence_alert_id: Option<Uuid>,
 ) -> Result<Option<Uuid>, HrError> {
-    if requested_branch_id.is_some() {
-        return Ok(requested_branch_id);
-    }
-    if let Some(alert_id) = absence_alert_id {
-        let branch_id: Option<Uuid> = sqlx::query_scalar(
-            "SELECT branch_id FROM employee_absence_alerts WHERE org_id = $1 AND id = $2 AND employee_id = $3",
-        )
-        .bind(org_uuid)
-        .bind(alert_id)
-        .bind(employee_id)
-        .fetch_optional(tx.as_mut())
-        .await?
-        .flatten();
-        if branch_id.is_some() {
-            return Ok(branch_id);
-        }
-    }
-    let branch_id: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT branch_id
-        FROM attendance_direct_import_events
-        WHERE org_id = $1 AND employee_id = $2
-        ORDER BY work_date DESC, created_at DESC, id DESC
-        LIMIT 1
-        "#,
+    // The employee row is durable authority; a client-supplied branch never is.
+    // FOR SHARE holds the home-branch decision stable until the exit case lands.
+    let employee_branch: Option<Option<Uuid>> = sqlx::query_scalar(
+        "SELECT home_branch_id FROM employees WHERE org_id = $1 AND id = $2 FOR SHARE",
     )
     .bind(org_uuid)
     .bind(employee_id)
     .fetch_optional(tx.as_mut())
     .await?;
-    Ok(branch_id)
-}
-
-async fn ensure_employee_exists(
-    tx: &mut sqlx::Transaction<'_, Postgres>,
-    org_uuid: Uuid,
-    employee_id: Uuid,
-) -> Result<(), HrError> {
-    let exists: bool =
-        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM employees WHERE org_id = $1 AND id = $2)")
-            .bind(org_uuid)
-            .bind(employee_id)
-            .fetch_one(tx.as_mut())
-            .await?;
-    if !exists {
+    let Some(employee_branch) = employee_branch else {
         return Err(HrError::from_kernel(KernelError::not_found(
             "employee not found",
         )));
+    };
+
+    // When an alert is named it must exist for this exact employee. Distinguish
+    // a missing row from a real alert whose branch is NULL; silently falling
+    // through would let a fabricated or stale alert id acquire authority.
+    let alert_branch = if let Some(alert_id) = absence_alert_id {
+        let row: Option<Option<Uuid>> = sqlx::query_scalar(
+            r#"
+            SELECT branch_id
+            FROM employee_absence_alerts
+            WHERE org_id = $1 AND id = $2 AND employee_id = $3
+            FOR UPDATE
+            "#,
+        )
+        .bind(org_uuid)
+        .bind(alert_id)
+        .bind(employee_id)
+        .fetch_optional(tx.as_mut())
+        .await?;
+        let Some(branch_id) = row else {
+            return Err(HrError::from_kernel(KernelError::not_found(
+                "absence alert not found for employee",
+            )));
+        };
+        branch_id
+    } else {
+        None
+    };
+
+    // An alert is the strongest evidence for an absence-driven report; otherwise
+    // use the employee's durable home branch, then the latest imported attendance
+    // fact. A missing branch stays missing and requires org-wide authorization.
+    let derived_branch = if let Some(branch_id) = alert_branch.or(employee_branch) {
+        Some(branch_id)
+    } else {
+        sqlx::query_scalar(
+            r#"
+            SELECT branch_id
+            FROM attendance_direct_import_events
+            WHERE org_id = $1 AND employee_id = $2
+            ORDER BY work_date DESC, created_at DESC, id DESC
+            LIMIT 1
+            "#,
+        )
+        .bind(org_uuid)
+        .bind(employee_id)
+        .fetch_optional(tx.as_mut())
+        .await?
+    };
+
+    if let Some(requested_branch_id) = requested_branch_id
+        && derived_branch != Some(requested_branch_id)
+    {
+        return Err(HrError::from_kernel(KernelError::not_found(
+            "employee or absence alert was not found in the requested branch",
+        )));
     }
-    Ok(())
+    Ok(derived_branch)
 }
 
 async fn insert_confirmed_exit_lifecycle_event(
@@ -8165,23 +8196,17 @@ fn authorize_hr_attendance_branch_query(
 }
 
 fn authorize_hr_scoped(principal: &Principal, feature: Feature) -> Result<(), HrError> {
+    let action = Action::new(feature);
     match &principal.branch_scope {
+        // Preserve the existing org-wide tier: collapsing this arm into the
+        // capability check would admit an all-scoped ADMIN to a surface that
+        // authorize_org_wide deliberately reserves for its org-wide roles.
         BranchScope::All => authorize_hr_org_wide(principal, feature),
-        BranchScope::Branches(branches) if branches.is_empty() => Err(HrError::from_kernel(
-            KernelError::forbidden("branch-scoped HR access requires at least one branch"),
-        )),
-        BranchScope::Branches(branches) => {
-            let action = Action::new(feature);
-            if branches
-                .iter()
-                .any(|branch| authorize(principal, action, *branch).is_ok())
-            {
-                Ok(())
-            } else {
-                Err(HrError::from_kernel(KernelError::forbidden(
-                    "role is not allowed to use feature",
-                )))
-            }
+        // The dashboard/store confines rows to the caller's complete scope. No
+        // concrete resource branch exists at this preflight point, so selecting
+        // one of the principal's own branches would make authorization vacuous.
+        BranchScope::Branches(_) => {
+            authorize_capability(principal, action).map_err(HrError::from_kernel)
         }
     }
 }
@@ -8226,7 +8251,10 @@ fn authorize_hr_scoped_write(
         )
         .map_err(HrError::from_kernel);
     }
-    authorize_hr_scoped(principal, feature)
+    // A branchless employee/case cannot be confined to one of the caller's
+    // branches. Require true org-wide authority instead of treating the write as
+    // a branchless capability over a branch-scoped principal.
+    authorize_hr_org_wide(principal, feature)
 }
 
 fn authorize_home_branch_transition(
@@ -9344,6 +9372,101 @@ E-001,홍길동,본사,2026-07-01,abc
 
         authorize_hr_org_wide(&executive, Feature::EmployeeDirectoryRead)
             .map_err(|err| format!("org-wide executive HR read was rejected: {}", err.message))?;
+        Ok(())
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn scoped_hr_authorization_checks_the_complete_scope_without_picking_a_branch()
+    -> Result<(), String> {
+        use console_kernel_core::{BranchId, OrgId, UserId};
+        use console_platform_authz::{EffectiveFeatureGrant, PermissionLevel, Role};
+        use std::collections::BTreeSet;
+
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let scope = BranchScope::Branches(BTreeSet::from([branch_a, branch_b]));
+
+        let admin = Principal::new(
+            UserId::new(),
+            OrgId::new(),
+            BTreeSet::from([Role::Admin]),
+            scope.clone(),
+        );
+        authorize_hr_scoped(&admin, Feature::EmployeeDirectoryRead)
+            .map_err(|err| format!("branch-scoped ADMIN was rejected: {}", err.message))?;
+        authorize_hr_scoped_write(&admin, Feature::ExitCaseReport, Some(*branch_a.as_uuid()))
+            .map_err(|err| format!("in-branch exit write was rejected: {}", err.message))?;
+        assert!(
+            authorize_hr_scoped_write(
+                &admin,
+                Feature::ExitCaseReport,
+                Some(*BranchId::new().as_uuid()),
+            )
+            .is_err(),
+            "a concrete foreign-branch write must be denied"
+        );
+        assert!(
+            authorize_hr_scoped_write(&admin, Feature::ExitCaseReport, None).is_err(),
+            "a branchless write must require org-wide authority"
+        );
+
+        let empty = Principal::new(
+            UserId::new(),
+            OrgId::new(),
+            BTreeSet::from([Role::Admin]),
+            BranchScope::none(),
+        );
+        assert!(
+            authorize_hr_scoped(&empty, Feature::EmployeeDirectoryRead).is_err(),
+            "an empty branch scope must fail closed"
+        );
+
+        let partial_grant =
+            Principal::new(UserId::new(), OrgId::new(), BTreeSet::new(), scope.clone())
+                .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                    Feature::EmployeeDirectoryRead,
+                    PermissionLevel::Allow,
+                    BranchScope::single(branch_a),
+                )]);
+        assert!(
+            authorize_hr_scoped(&partial_grant, Feature::EmployeeDirectoryRead).is_err(),
+            "a grant over only one of two visible branches must not authorize the whole read"
+        );
+
+        let covering_grant =
+            Principal::new(UserId::new(), OrgId::new(), BTreeSet::new(), scope.clone())
+                .with_effective_feature_grants(vec![EffectiveFeatureGrant::new(
+                    Feature::EmployeeDirectoryRead,
+                    PermissionLevel::Allow,
+                    scope,
+                )]);
+        authorize_hr_scoped(&covering_grant, Feature::EmployeeDirectoryRead)
+            .map_err(|err| format!("covering HR grant was rejected: {}", err.message))?;
+
+        let all_admin = Principal::new(
+            UserId::new(),
+            OrgId::new(),
+            BTreeSet::from([Role::Admin]),
+            BranchScope::All,
+        );
+        assert!(
+            authorize_hr_scoped(&all_admin, Feature::EmployeeDirectoryRead).is_err(),
+            "the existing all-scope ADMIN denial must be preserved"
+        );
+
+        let super_admin = Principal::new(
+            UserId::new(),
+            OrgId::new(),
+            BTreeSet::from([Role::SuperAdmin]),
+            BranchScope::All,
+        );
+        authorize_hr_scoped_write(&super_admin, Feature::ExitCaseReport, None).map_err(|err| {
+            format!(
+                "org-wide branchless exit write was rejected: {}",
+                err.message
+            )
+        })?;
         Ok(())
     }
 
@@ -11099,6 +11222,36 @@ E-001,홍길동,본사,2026-07-01,abc
         .execute(pool)
         .await
         .map_err(|err| format!("seed employee failed: {err}"))?;
+        let mut command = pool
+            .begin()
+            .await
+            .map_err(|err| format!("begin home-branch fixture command failed: {err}"))?;
+        sqlx::query("SET LOCAL ROLE console_leave_definer")
+            .execute(command.as_mut())
+            .await
+            .map_err(|err| format!("set leave definer role failed: {err}"))?;
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org_id.to_string())
+            .execute(command.as_mut())
+            .await
+            .map_err(|err| format!("arm fixture org failed: {err}"))?;
+        let updated =
+            sqlx::query("UPDATE employees SET home_branch_id = $1 WHERE id = $2 AND org_id = $3")
+                .bind(branch_id)
+                .bind(employee_id)
+                .bind(org_id)
+                .execute(command.as_mut())
+                .await
+                .map_err(|err| format!("set fixture employee home branch failed: {err}"))?;
+        if updated.rows_affected() != 1 {
+            return Err(
+                "fixture home-branch command did not update exactly one employee".to_owned(),
+            );
+        }
+        command
+            .commit()
+            .await
+            .map_err(|err| format!("commit home-branch fixture command failed: {err}"))?;
         Ok((org_id, branch_id, employee_id, user_id))
     }
 
@@ -11281,6 +11434,170 @@ E-001,홍길동,본사,2026-07-01,abc
         Ok(())
     }
 
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn exit_report_uses_durable_branch_evidence_and_fails_closed_without_it(
+        pool: sqlx::PgPool,
+    ) -> Result<(), String> {
+        use console_platform_authz::Role;
+
+        let (org_id, home_branch_id, employee_id, actor_id) = seed_g009_base(&pool).await?;
+        let region_id: Uuid = sqlx::query_scalar("SELECT region_id FROM branches WHERE id = $1")
+            .bind(home_branch_id)
+            .fetch_one(&pool)
+            .await
+            .map_err(|err| format!("load region failed: {err}"))?;
+        let foreign_branch_id = Uuid::new_v4();
+        sqlx::query("INSERT INTO branches (id, region_id, name, org_id) VALUES ($1, $2, $3, $4)")
+            .bind(foreign_branch_id)
+            .bind(region_id)
+            .bind("타지점")
+            .bind(org_id)
+            .execute(&pool)
+            .await
+            .map_err(|err| format!("seed foreign branch failed: {err}"))?;
+
+        let org = OrgId::from_uuid(org_id);
+        let state = HrState::new(pool.clone(), None);
+        let principal = |scope| {
+            Principal::new(
+                UserId::from_uuid(actor_id),
+                org,
+                BTreeSet::from([Role::Admin]),
+                scope,
+            )
+        };
+        let request =
+            |target_employee_id, branch_id, absence_alert_id| ReportEmployeeExitCaseRequest {
+                employee_id: target_employee_id,
+                branch_id,
+                absence_alert_id,
+                effective_exit_date: "2026-06-30".to_owned(),
+                site_manager_note: "branch provenance test".to_owned(),
+            };
+
+        let forged = report_employee_exit_case(
+            State(state.clone()),
+            Extension(principal(BranchScope::single(BranchId::from_uuid(
+                foreign_branch_id,
+            )))),
+            Json(request(employee_id, Some(foreign_branch_id), None)),
+        )
+        .await
+        .expect_err("a client branch must not override the employee's home branch");
+        assert_eq!(forged.status, StatusCode::NOT_FOUND);
+
+        let home_scope = BranchScope::single(BranchId::from_uuid(home_branch_id));
+        let other_employee_id = Uuid::new_v4();
+        sqlx::query(
+            r#"
+            INSERT INTO employees (
+                id, org_id, company, name, hire_date,
+                source_filename, source_sheet, source_row, source_key, raw_row, source_metadata
+            )
+            VALUES ($1, $2, '테스트', '다른직원', '2020-01-01',
+                    'other.xlsx', '직원', 2, $3, '{}', '{}')
+            "#,
+        )
+        .bind(other_employee_id)
+        .bind(org_id)
+        .bind(format!("other-{other_employee_id}"))
+        .execute(&pool)
+        .await
+        .map_err(|err| format!("seed other employee failed: {err}"))?;
+        let other_alert_id: Uuid = sqlx::query_scalar(
+            r#"
+            INSERT INTO employee_absence_alerts (org_id, employee_id, branch_id, work_date)
+            VALUES ($1, $2, $3, '2026-06-29')
+            RETURNING id
+            "#,
+        )
+        .bind(org_id)
+        .bind(other_employee_id)
+        .bind(home_branch_id)
+        .fetch_one(&pool)
+        .await
+        .map_err(|err| format!("seed other alert failed: {err}"))?;
+        let wrong_employee_alert = report_employee_exit_case(
+            State(state.clone()),
+            Extension(principal(home_scope.clone())),
+            Json(request(
+                employee_id,
+                Some(home_branch_id),
+                Some(other_alert_id),
+            )),
+        )
+        .await
+        .expect_err("another employee's alert must not authorize an exit report");
+        assert_eq!(wrong_employee_alert.status, StatusCode::NOT_FOUND);
+        let other_alert_state: (String, Option<Uuid>) = sqlx::query_as(
+            "SELECT status, linked_exit_case_id FROM employee_absence_alerts WHERE id = $1",
+        )
+        .bind(other_alert_id)
+        .fetch_one(&pool)
+        .await
+        .map_err(|err| format!("read other alert failed: {err}"))?;
+        assert_eq!(other_alert_state, ("OPEN".to_owned(), None));
+
+        let missing_alert = report_employee_exit_case(
+            State(state.clone()),
+            Extension(principal(home_scope.clone())),
+            Json(request(
+                employee_id,
+                Some(home_branch_id),
+                Some(Uuid::new_v4()),
+            )),
+        )
+        .await
+        .expect_err("a nonexistent alert must not silently fall through");
+        assert_eq!(missing_alert.status, StatusCode::NOT_FOUND);
+
+        let branchless = report_employee_exit_case(
+            State(state.clone()),
+            Extension(principal(home_scope)),
+            Json(request(other_employee_id, None, None)),
+        )
+        .await
+        .expect_err("a branch-scoped ADMIN must not mutate a branchless employee");
+        assert_eq!(branchless.status, StatusCode::FORBIDDEN);
+
+        for failed_employee_id in [employee_id, other_employee_id] {
+            let leaked_cases: i64 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM employee_exit_cases WHERE employee_id = $1",
+            )
+            .bind(failed_employee_id)
+            .fetch_one(&pool)
+            .await
+            .map_err(|err| format!("count leaked cases failed: {err}"))?;
+            let leaked_audits: i64 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM audit_events WHERE action = 'employee.exit.report' AND target_id = $1",
+            )
+            .bind(failed_employee_id.to_string())
+            .fetch_one(&pool)
+            .await
+            .map_err(|err| format!("count leaked audits failed: {err}"))?;
+            assert_eq!(leaked_cases, 0);
+            assert_eq!(leaked_audits, 0);
+        }
+
+        let super_admin = Principal::new(
+            UserId::from_uuid(actor_id),
+            org,
+            BTreeSet::from([Role::SuperAdmin]),
+            BranchScope::All,
+        );
+        let created = report_employee_exit_case(
+            State(state),
+            Extension(super_admin),
+            Json(request(other_employee_id, None, None)),
+        )
+        .await
+        .map_err(|err| format!("org-wide branchless report was rejected: {err:?}"))?;
+        assert_eq!(created.0, StatusCode::CREATED);
+        assert_eq!(created.1.0.branch_id, None);
+        Ok(())
+    }
+
     /// Every G009 state-mutation handler routes its write through `with_audit`,
     /// so an `audit_events` row lands for the exit report, HR confirmation, HQ
     /// confirmation, and approval draft + submission. The settlement upsert is a
@@ -11327,7 +11644,8 @@ E-001,홍길동,본사,2026-07-01,abc
         )
         .await
         .map_err(|err| format!("report failed: {err:?}"))?;
-        let case_id = reported.0.id;
+        assert_eq!(reported.0, StatusCode::CREATED);
+        let case_id = reported.1.0.id;
 
         // (2) HR confirmation (no wage source yet, so the case stays HR_CONFIRMED
         // for the HQ tier rather than being bumped to SETTLEMENT_READY).

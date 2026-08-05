@@ -13,9 +13,9 @@ use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
-use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, TraceContext};
+use console_kernel_core::{ErrorKind, KernelError, TraceContext};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -144,38 +144,18 @@ fn parse_triage_target(raw: &str) -> Result<TriageTarget, RestError> {
 // Authorization helpers
 // ---------------------------------------------------------------------------
 
-/// Authorize for org-wide features (EXECUTIVE / SUPER_ADMIN).
-/// Uses `representative_branch`: BranchScope::All → dummy BranchId, which
-/// always passes the branch check for those roles.
+/// `governance_findings` (migration 0050) has no `branch_id` column, so these are
+/// capability decisions. NOT `authorize_org_wide`: both features are
+/// `[D,D,D,D,A,A]` (EXECUTIVE + SUPER_ADMIN), and a branch-scoped EXECUTIVE holds
+/// them today — org-wide routing would newly deny that principal.
 fn authorize_integrity_read(principal: &Principal) -> Result<(), RestError> {
-    let branch = representative_branch(principal)?;
-    authorize(
-        principal,
-        Action::new(Feature::IntegrityFindingsRead),
-        branch,
-    )
-    .map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(Feature::IntegrityFindingsRead))
+        .map_err(RestError::from_kernel)
 }
 
 fn authorize_integrity_triage(principal: &Principal) -> Result<(), RestError> {
-    let branch = representative_branch(principal)?;
-    authorize(
-        principal,
-        Action::new(Feature::IntegrityFindingTriage),
-        branch,
-    )
-    .map_err(RestError::from_kernel)
-}
-
-fn representative_branch(principal: &Principal) -> Result<BranchId, RestError> {
-    match &principal.branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for integrity access",
-            ))
-        }),
-    }
+    authorize_capability(principal, Action::new(Feature::IntegrityFindingTriage))
+        .map_err(RestError::from_kernel)
 }
 
 // ---------------------------------------------------------------------------

@@ -155,6 +155,18 @@ RESOURCE_CONFIG = {
                 "docs/reference/master-list_251120.xlsx",
         },
     },
+    "console-dispatch-worker": {
+        "itest_external": {
+            "//backend/test_support:dispatch-worker-fixtures":
+                "backend/test_support/dispatch_worker_fixtures.rs",
+        },
+    },
+    "console-workorder-rest": {
+        "itest_external": {
+            "//backend/test_support:mobile-evidence-fixtures":
+                "backend/test_support/mobile_evidence_fixtures.rs",
+        },
+    },
 }
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
@@ -278,6 +290,12 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-gate-dev-auth-absence': {
         'unit': 'none',
     },
+    'console-gate-fabricated-branch': {
+        'unit': 'none',
+        'integration': {
+            'tests/gate_detects_violation.rs': 'none',
+        },
+    },
     'console-gate-iac-tier': {
         'unit': 'none',
     },
@@ -288,6 +306,11 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-gate-migration-safety': {
+        'integration': {
+            'tests/gate_detects_violation.rs': 'none',
+        },
+    },
+    'console-gate-personal-data-classification': {
         'integration': {
             'tests/gate_detects_violation.rs': 'none',
         },
@@ -646,6 +669,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/api.rs': 'postgres',
+            'tests/payslip_draft_api.rs': 'postgres',
             'tests/run_lifecycle_api.rs': 'postgres',
         },
     },
@@ -694,16 +718,23 @@ TEST_RESOURCE_REQUIREMENTS = {
         'integration': {
             'tests/attendance_console_migration_contract.rs': 'postgres',
             'tests/code_issuance.rs': 'postgres',
+            'tests/feature_catalog_covers_every_feature.rs': 'postgres',
             'tests/group_resolvers.rs': 'postgres',
             'tests/lifecycle_maker_checker.rs': 'postgres',
             'tests/m2_flag_on_runtime_drain.rs': 'postgres',
             'tests/period_locks_and_lifecycle.rs': 'postgres',
+            'tests/personal_data_classification.rs': 'postgres',
             'tests/rls_isolation.rs': 'postgres',
             'tests/rls_rollout_isolation.rs': 'postgres',
         },
     },
     'console-platform-email': {
         'unit': 'none',
+    },
+    'console-platform-erasure-ledger': {
+        'integration': {
+            'tests/erasure_ledger_as_runtime_role.rs': 'postgres',
+        },
     },
     'console-platform-excel': {
         'integration': {
@@ -795,6 +826,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-registry-rest': {
+        'unit': 'none',
         'integration': {
             'tests/equipment_admin.rs': 'postgres',
         },
@@ -818,6 +850,9 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-reporting-domain': {
+        'unit': 'none',
+    },
+    'console-reporting-rest': {
         'unit': 'none',
     },
     'console-sales-adapter-postgres': {
@@ -892,6 +927,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-workorder-rest': {
         'unit': 'none',
         'integration': {
+            'tests/mobile_device_registration.rs': 'postgres',
             'tests/mobile_evidence.rs': 'postgres',
             'tests/mobile_sync.rs': 'postgres',
         },

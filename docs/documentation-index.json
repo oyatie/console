@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "coverage": "authority-slice",
+  "class_vocabulary": [
+    "current",
+    "decision",
+    "executable-contract",
+    "evidence",
+    "historical",
+    "quarry"
+  ],
+  "future_full_manifest_fields": [
+    "path",
+    "class",
+    "owner",
+    "status",
+    "replacement",
+    "retention",
+    "blob_sha",
+    "archive_tag"
+  ],
+  "entry": {
+    "path": "README.md",
+    "class": "current",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain"
+  },
+  "authorities": [
+    {
+      "concern": "product",
+      "path": "docs/current/PRODUCT.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain"
+    },
+    {
+      "concern": "roadmap",
+      "path": "docs/current/ROADMAP.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain"
+    },
+    {
+      "concern": "delivery",
+      "path": "docs/current/DELIVERY.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain"
+    }
+  ],
+  "transitions": [
+    {
+      "path": "SPEC.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "redirect",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "one-release redirect"
+    },
+    {
+      "path": "DESIGN.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "redirect",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "one-release redirect"
+    },
+    {
+      "path": "docs/PIVOT-2026-07-28.md",
+      "class": "historical",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": "docs/current/PRODUCT.md",
+      "retention": "retain as historical reconciliation"
+    }
+  ]
+}

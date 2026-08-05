@@ -5,8 +5,6 @@ region           = "ap-chuncheon-1"
 # Hardening: lock the Talos + k8s control-plane APIs to your admin /32.
 admin_cidr = "203.0.113.10/32"
 
-ssh_public_key = "ssh-ed25519 AAAA... you@host"
-
-# Set after the Talos image is imported (see ../talos/README.md). Leave empty to
-# provision only the network/storage/bastion + the flasher helper first.
-talos_image_ocid = ""
+# Required — there is no default. The live node was created from this image and
+# is irreplaceable, so an unset value must stop the plan, not silently drop it.
+talos_image_ocid = "ocid1.image.oc1.ap-chuncheon-1.xxxx"

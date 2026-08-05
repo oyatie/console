@@ -1,5 +1,12 @@
 # Secrets
 
+> **POST-PIVOT UNVERIFIED / HOLD:** The secret-store and projection procedures
+> below are retained as operator and historical reference; they are not proof of
+> current deployment state and do not authorize reading, rotating, copying, or
+> projecting any production secret. The repository currently authorizes zero
+> production mutations. Start with the
+> [disk-wipe consolidation handoff](../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 Secret values never live in git. Their source and Kubernetes projection path are
 deployment-context specific: use the `oci-guest` instructions only for the live
 OCI guest, and use the `on-prem-ha` OpenBao/External-Secrets contract only after

@@ -6,7 +6,6 @@ module "compute" {
   subnet_id           = module.network.public_subnet_id
   node_ocpus          = var.node_ocpus
   node_memory_gbs     = var.node_memory_gbs
-  ssh_public_key      = var.ssh_public_key
   talos_image_ocid    = var.talos_image_ocid
   tags                = var.tags
 }

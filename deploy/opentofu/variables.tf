@@ -28,11 +28,6 @@ variable "admin_cidr" {
   }
 }
 
-variable "ssh_public_key" {
-  type        = string
-  description = "SSH public key for the (optional) bastion VM used to flash/manage Talos."
-}
-
 variable "vcn_cidr" {
   type    = string
   default = "10.0.0.0/16"
@@ -60,7 +55,10 @@ variable "node_memory_gbs" {
 variable "talos_image_ocid" {
   type        = string
   description = "OCID of the bootable Talos arm64 image (see deploy/talos/README.md)."
-  default     = ""
+  # Deliberately no default. It used to default to "", which made the node's
+  # `count` evaluate to 0 whenever a tfvars file was missing or mistyped — a
+  # plan that silently omits the one irreplaceable instance rather than saying
+  # so. Absent input must be an error, not a quiet zero.
 }
 
 variable "tags" {

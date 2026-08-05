@@ -8,17 +8,30 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+// The ONLY repository import in this file, and it resolves from the same protected checkout
+// this script does — never from the pull request. It is here because the alternative is a
+// third copy of the ledger-prefix rule that has already drifted once; see
+// authority-ledger-path.mjs.
+import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
 
 export const TRUSTED_PRINCIPAL = 'jason19931225@gmail.com';
 export const TRUSTED_FINGERPRINT = 'SHA256:5grGNUtX9Zgmy1SWne6wF9DR8W1ElUQaF/Z8SYRz8E8';
 export const TRUSTED_ALLOWED_SIGNER = `${TRUSTED_PRINCIPAL} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAgMAp8vHS9V/9UQQVTa5FtmS9Q9fdB8I520DsZMMDTR`;
-export const REGISTRY_PATH = 'docs/program/console-capability-registry.json';
 export const POLICY_PATH = '.github/trust/console.allowed_signers';
 export const AUTHORITY_PATHS = Object.freeze([
   'docs/program/console-capability-registry.json',
   'docs/program/console-jurisdiction-register.json',
   'docs/program/console-program-ledger.md',
 ]);
+// One file per new ledger entry, so two lanes never write the same bytes. Status `A` is
+// accepted for this prefix and NOWHERE else: the two registers and the legacy ledger .md
+// stay modify-only, and an added file anywhere outside this directory is still refused.
+export { LEDGER_DIRECTORY };
+const isAuthorityPath = (file) => AUTHORITY_PATHS.includes(file) || isLedgerEntryPath(file);
+const allowedChange = (change) => isAuthorityPath(change.path)
+  && (change.status === 'M' || (change.status === 'A' && isLedgerEntryPath(change.path)))
+  && change.newMode === '100644' && change.newType === 'blob'
+  && (change.status === 'A' ? change.oldMode === '000000' && change.oldType === null : change.oldMode === '100644' && change.oldType === 'blob');
 const SHA = /^[0-9a-f]{40}$/;
 const SAFE_ENVIRONMENT_KEYS = Object.freeze(['PATH', 'SystemRoot', 'SYSTEMROOT', 'ComSpec', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ']);
 const fail = (message) => { throw new Error(`console authority bootstrap: ${message}`); };
@@ -43,10 +56,6 @@ export function validatePinnedPolicy(raw) {
   if (raw !== `${TRUSTED_ALLOWED_SIGNER}\n`) fail('C signing policy must contain exactly the pinned signer');
   return raw;
 }
-function candidateLocator(raw) {
-  try { return exactSha(JSON.parse(raw)?.candidate?.sha, 'T registry candidate.sha'); }
-  catch (error) { if (error.message?.startsWith('console authority bootstrap:')) throw error; fail('T registry is not valid JSON'); }
-}
 function assertSigned(status, label) {
   if (status?.ok !== true || status.principal !== TRUSTED_PRINCIPAL || status.fingerprint !== TRUSTED_FINGERPRINT) fail(`${label} is not signed by the pinned SSH authority`);
 }
@@ -55,7 +64,13 @@ function assertSigned(status, label) {
 function verifyAuthorityTrain(ops, authorityTipSha) {
   const T = exactSha(authorityTipSha, 'PR head');
   if (!ops.hasCommit(T)) fail('PR head object is unavailable');
-  const C = candidateLocator(ops.readFile(T, REGISTRY_PATH)); // untrusted locator, never authority
+  // C is Git's own answer, not the PR's: T's single parent. This gate reads NOTHING out of a
+  // document the pull request controls in order to locate C — it used to read the registry's
+  // `candidate.sha` and then require it to equal T's parent, a comparison that could not lose
+  // and whose only lasting effect was to make the register store a copy of a commit SHA.
+  const tipParents = ops.parents(T);
+  if (!Array.isArray(tipParents) || tipParents.length !== 1) fail('T must be the direct single-parent child of C');
+  const C = exactSha(tipParents[0], 'candidate C');
   if (!ops.hasCommit(C)) fail('C object is unavailable');
   const policyEntry = ops.treeEntry(C, POLICY_PATH);
   if (policyEntry?.mode !== '100644' || policyEntry.type !== 'blob') fail('C signing policy must be a regular mode-100644 blob');
@@ -63,16 +78,15 @@ function verifyAuthorityTrain(ops, authorityTipSha) {
   const authority = { policy, principal: TRUSTED_PRINCIPAL, fingerprint: TRUSTED_FINGERPRINT };
   assertSigned(ops.verifyCommit(C, authority), 'C');
   assertSigned(ops.verifyCommit(T, authority), 'T');
-  const tipParents = ops.parents(T);
-  if (!Array.isArray(tipParents) || tipParents.length !== 1 || tipParents[0] !== C) fail('T must be the direct single-parent child of C');
   const changes = ops.diff(C, T);
-  if (!Array.isArray(changes) || changes.length !== AUTHORITY_PATHS.length) fail('C..T must modify exactly the three authority documents');
+  if (!Array.isArray(changes)) fail('C..T diff is unavailable');
   const changed = new Set();
   for (const change of changes) {
-    if (change.status !== 'M' || change.oldMode !== '100644' || change.newMode !== '100644' || change.oldType !== 'blob' || change.newType !== 'blob' || !AUTHORITY_PATHS.includes(change.path) || changed.has(change.path)) fail('C..T may only make regular mode-100644 modifications to exact authority documents');
+    if (!allowedChange(change) || changed.has(change.path)) fail('C..T may only make regular mode-100644 modifications to the authority documents, or add regular mode-100644 files under docs/program/ledger/');
     changed.add(change.path);
   }
-  if (AUTHORITY_PATHS.some((entry) => !changed.has(entry))) fail('C..T authority document set is incomplete');
+  // Allow-list, not a checklist — see verify-console-authority-train.mjs for why "all three" is gone.
+  if (changed.size === 0) fail('C..T must modify at least one authority document');
   return { candidateSha: C, authorityTipSha: T };
 }
 
@@ -109,8 +123,8 @@ function git(repo, args, options = {}) {
 }
 function gitOk(repo, args) { try { git(repo, args); return true; } catch { return false; } }
 function treeEntry(repo, sha, file) { const entry = git(repo, ['ls-tree', sha, '--', file]).trim().match(/^(\d{6}) (\w+) [0-9a-f]{40}\t/); return entry ? { mode: entry[1], type: entry[2] } : null; }
-function rawDiff(repo, from, to) {
-  const fields = git(repo, ['diff', '--raw', '-z', '--abbrev=40', '--no-renames', '--no-ext-diff', from, to]).split('\0'); const changes = [];
+export function rawDiff(repo, from, to) {
+  const fields = git(repo, [...AUTHORITY_DIFF_ARGS, from, to]).split('\0'); const changes = [];
   for (let index = 0; index < fields.length - 1;) {
     const header = fields[index++]; if (!header) continue;
     const match = header.match(/^:(\d{6}) (\d{6}) [0-9a-f]{40} [0-9a-f]{40} ([A-Z])$/); if (!match) fail('Git diff contains an unsupported entry');
@@ -182,7 +196,10 @@ export function candidateCheckPlan(C, T, M) {
     commands: Object.freeze([
       ['node', ['scripts/console/validate-console-truth-ledger.mjs']],
       ['node', ['scripts/console/plan-fanout.mjs', '--candidate', C, '--authority-tip', T, '--synthetic-merge', M]],
-      ['node', ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs']],
+      // This file's OWN regression suite is in the list. It was not, so the highest-privilege
+      // script in the repository was the one console script uncovered on the `pull_request_target`
+      // path — the path that actually gates the merge.
+      ['node', ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs']],
     ]),
   });
 }

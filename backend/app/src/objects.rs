@@ -283,7 +283,7 @@ async fn create_object_link(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
     let audit_after = json!({
         "id": link_id,
@@ -642,7 +642,7 @@ async fn resolve_object(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     let actor = principal.user_id;
@@ -774,7 +774,7 @@ async fn object_graph(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     // Rust-side level-by-level BFS over object_links, NOT a recursive SQL CTE:
@@ -1569,7 +1569,7 @@ async fn list_object_types(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     let types = with_org_conn::<_, _, ObjectError>(&state.pool, org, move |tx| {
@@ -1613,7 +1613,7 @@ async fn get_object_type(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     let response = with_org_conn::<_, Option<ObjectTypeResponse>, ObjectError>(
@@ -1922,7 +1922,7 @@ async fn create_series(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
     let now = OffsetDateTime::now_utc();
     let series_id = Uuid::new_v4();
@@ -2025,7 +2025,7 @@ async fn attach_series_instance(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
     let now = OffsetDateTime::now_utc();
 
@@ -2128,7 +2128,7 @@ async fn get_series(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     let detail = with_org_conn::<_, Option<SeriesDetailResponse>, ObjectError>(
@@ -2201,7 +2201,7 @@ async fn series_by_instance(
     let held_role_keys = crate::workflow_studio::held_authority_role_keys(
         &principal,
         org,
-        crate::workflow_studio::guard_branch(&principal),
+        crate::workflow_studio::WORKFLOW_SPINE_HAS_NO_BRANCH,
     );
 
     let series = with_org_conn::<_, Option<SeriesHead>, ObjectError>(&state.pool, org, move |tx| {

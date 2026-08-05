@@ -264,8 +264,17 @@ async fn seed_fixture(pool: &PgPool) -> Fixture {
     let capacity = Uuid::new_v4();
     sqlx::query("INSERT INTO production_capacity_slots (id,org_id,branch_id,site_id,capacity_date,available_quantity,reserved_quantity,source_system,source_id,source_version,evaluated_at) VALUES ($1,$2,$3,$4,$5,100,0,'erp','capacity-1','v1',now())")
         .bind(capacity).bind(*org.as_uuid()).bind(*branch.as_uuid()).bind(site).bind(due_at.date()).execute(pool).await.unwrap();
+    // 0165:153-157 added the non-deferrable composite FK
+    // ont_object_types(org_id, stable_key) -> ont_object_type_key_revisions(org_id, stable_key).
+    // That sidecar parent is auto-created only by prepare_legacy_object_type_write(), which
+    // no-ops unless the invoker is console_rt — and this fixture inserts on the owner pool, so
+    // the raw insert below had no parent and raised 23503. This test had never executed, so the
+    // FK could be added without anything reporting that the fixture no longer satisfied it.
+    let stable_key = format!("production.plan.test{}", Uuid::new_v4().simple());
+    sqlx::query("INSERT INTO ont_object_type_key_revisions (org_id,stable_key) VALUES ($1,$2) ON CONFLICT (org_id,stable_key) DO NOTHING")
+        .bind(*org.as_uuid()).bind(&stable_key).execute(pool).await.unwrap();
     let ontology: Uuid = sqlx::query_scalar("INSERT INTO ont_object_types (org_id,stable_key,title,backing_kind,schema_version,lifecycle_state,created_by) VALUES ($1,$2,'Production plan','instance',1,'published',$3) RETURNING id")
-        .bind(*org.as_uuid()).bind(format!("production.plan.test{}", Uuid::new_v4().simple())).bind(*planner.as_uuid()).fetch_one(pool).await.unwrap();
+        .bind(*org.as_uuid()).bind(&stable_key).bind(*planner.as_uuid()).fetch_one(pool).await.unwrap();
     Fixture {
         org,
         branch,
@@ -307,7 +316,14 @@ async fn seed_isolated_tenant(pool: &PgPool) -> (OrgId, BranchId, UserId) {
     let org = OrgId::from_uuid(Uuid::new_v4());
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
         .bind(*org.as_uuid())
-        .bind(format!("production-isolated-{}", Uuid::new_v4().simple()))
+        // `organizations.slug` CHECKs `^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$` — a 40-character
+        // ceiling (0026_create_organizations.sql:17-18). A full simple UUID is 32 hex chars,
+        // so `production-isolated-` + 32 was 52 and could never have inserted. Truncating the
+        // UUID keeps the per-test uniqueness this needs at 21 characters.
+        .bind(format!(
+            "prod-iso-{}",
+            &Uuid::new_v4().simple().to_string()[..12]
+        ))
         .bind("Isolated production tenant")
         .execute(pool)
         .await

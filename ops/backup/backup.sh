@@ -73,6 +73,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+bash "${script_dir}/../../scripts/require-production-operation-authority.sh" \
+  "compose-production-backup"
+
 if [[ ${#compose_files[@]} -eq 0 ]]; then
   if [[ -n "${COMPOSE_FILE:-}" ]]; then
     compose_files+=("${COMPOSE_FILE}")

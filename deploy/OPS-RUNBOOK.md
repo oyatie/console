@@ -1,11 +1,21 @@
-# OPS Runbook — live OCI/Talos cluster (knllogistic.com)
+> **UNVERIFIED HISTORICAL OCI RECOVERY NOTES:** The consolidation audit did not
+> establish that this topology is currently live, that the laptop kubeconfig
+> names the production cluster, or that the listed Vault objects remain complete.
+> Do not run commands against the addresses below, mutate OCI/Kubernetes/DNS, or
+> rotate credentials until an authorized operator independently re-establishes
+> account identity, tenancy/compartment, cluster identity, current topology, and
+> change authority. Repository manifests and a passing hardening gate are not live
+> observations. See
+> [`docs/handoffs/2026-08-03-disk-wipe-consolidation.md`](../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
 
-How ANY operator (or a fresh AI session) takes control of the running stack:
-the Talos cluster, the Kubernetes/GitOps server, the database, and routine tasks.
-Everything needed to recover from zero is in **OCI Vault** + this doc.
+# OPS Runbook — historical OCI/Talos recovery record (knllogistic.com)
 
-This file is the **`oci-guest` runbook** for the live Oracle Cloud Ampere A1
-cluster. The additive ADR-0024 bare-metal/on-prem operator path is documented in
+This records how the former operator accessed the declared Talos,
+Kubernetes/GitOps, and database topology. It is recovery input, not permission to
+take control, and completeness of OCI Vault plus this document is unverified.
+
+This file is the historical **`oci-guest` runbook** for a declared Oracle Cloud
+Ampere A1 cluster. The additive ADR-0024 bare-metal/on-prem operator path is documented in
 [`OPS-RUNBOOK-baremetal.md`](OPS-RUNBOOK-baremetal.md). Do not copy OCI-only
 constraints from this file — the single A1 warning, OCI Vault, OCI Bastion, OCI
 Object Storage, the `dd` boot-volume bootstrap, and the OCI MTU workaround — onto
@@ -13,21 +23,21 @@ bare metal.
 
 ## Deployment-context hardening properties (`oci-guest`)
 
-| Property | Live `oci-guest` posture |
+| Property | Repository-declared historical `oci-guest` posture |
 |---|---|
-| Secret store | **OCI Vault** is the recovery source for Talos/kubeconfig/app secret bundles. Kubernetes `Secret` objects are created out of band from that bundle; External Secrets / Sealed Secrets are an upgrade path, not the current live controller. |
-| Object-store endpoint and retention | CNPG/Barman uses OCI Object Storage through the S3-compatible endpoint in `deploy/apps/console/base/database.yaml` (`s3://mnt-db-backups/`), with the `oci-objectstore-creds` customer-secret-key pair. Retention is intentionally indefinite in the manifest today: no `retentionPolicy` means no automatic pruning, so storage growth must be monitored against the Always Free object-storage guardrail. Evidence objects use the same OCI S3-compatible posture until a context-specific endpoint is selected. |
+| Secret store | **OCI Vault** was documented as the recovery source for Talos/kubeconfig/app secret bundles. Kubernetes `Secret` objects were created out of band from that bundle; External Secrets / Sealed Secrets were an upgrade path, not a proven current controller. |
+| Object-store endpoint and retention | CNPG/Barman uses OCI Object Storage through the S3-compatible endpoint in `deploy/apps/console/base/database.yaml` (`s3://mnt-db-backups/`), with the `oci-objectstore-creds` customer-secret-key pair. The manifest sets `retentionPolicy: "35d"`, so the Barman restorable window is finite; this is not proof of an independent off-site copy. Evidence objects use the same OCI S3-compatible posture until a context-specific endpoint is selected. |
 | Database/topology HA | One VM.Standard.A1.Flex node, one schedulable Talos control-plane, and CNPG `instances: 1`. The API/web replicas and PDBs improve rollout behavior but do not survive node loss because they share the same node. |
 | Automatic failover | **Not present** for node or database loss in this context. A failed node is a restore-from-backup / rebuild event using Vault plus Barman backup artifacts, not a transparent failover. |
 
-Passing the production-hardening gate for `oci-guest` means the current live
-single-node deployment is honest and recoverable for its constraints. It does not
-mean the platform has multi-node HA; that is the separate `on-prem-ha` / paid
-multi-node substrate described in the ADR-0024 docs.
+Passing the production-hardening gate for `oci-guest` proves only that repository
+artifacts describe a single-node, restore-not-failover posture consistently. It
+does not prove a live or recoverable deployment, and it does not establish
+multi-node HA.
 
 ## 0. The one rule that bit us
 **Never keep the only copy of a cluster credential in `/tmp` or a single laptop.**
-All cluster secrets live in **OCI Vault** (`bitween-default-vault`, compartment
+The former record says cluster secrets lived in **OCI Vault** (`bitween-default-vault`, compartment
 `cloud`, region `ap-chuncheon-1`, key `oyatie-cloud-master-key`). Retrieve any with:
 ```sh
 oci vault secret list --compartment-id <cloud-compartment-ocid> --region ap-chuncheon-1
@@ -38,7 +48,7 @@ matching talosconfig), `console-talos-kubeconfig` (tar of talosconfig + kubeconf
 `console-app-secrets-bundle` (tar of JWT ES256 keypair, console_rt DB password, coldstart
 OTP, OCI S3 customer-secret-key).
 
-## 1. Facts (region ap-chuncheon-1, prod compartment)
+## 1. Last-recorded facts — unverified (region ap-chuncheon-1, prod compartment)
 - Node: **console-fsm-node**, VM.Standard.A1.Flex 4 OCPU/24 GB (the ENTIRE free-tier
   A1 allotment — never run a second A1).
 - **Reserved public IP `140.245.68.253`** (stable; DNS points here). Private `10.0.0.227`.
@@ -47,7 +57,7 @@ OTP, OCI S3 customer-secret-key).
   3 A-records (apex/www/fsm) PROXIED → `140.245.68.253`. cert-manager uses **DNS-01**
   (the proxy breaks HTTP-01); needs the `cloudflare-api-token` secret in `cert-manager`.
 
-## 2. kubectl (works over the public IP)
+## 2. Historical kubectl path (do not run before identity and authority checks)
 ```sh
 export KUBECONFIG=/Users/jasonlee/.config/talos-mnt/_talos/kubeconfig   # or restore from Vault console-talos-kubeconfig
 kubectl get nodes        # server: https://140.245.68.253:6443
@@ -56,7 +66,7 @@ Large responses work **only because eth0 is pinned to MTU 1500** (OCI VNICs defa
 to 9000; the public path drops oversized frames — ICMP frag-needed is filtered, so
 PMTUD blackholes). This is baked into `deploy/talos/oci-guest/controlplane.patch.yaml`.
 
-## 3. talosctl
+## 3. Historical talosctl path (do not run before identity and authority checks)
 ```sh
 export TALOSCONFIG=/Users/jasonlee/.config/talos-mnt/_talos/talosconfig
 talosctl -e 140.245.68.253 -n 140.245.68.253 <cmd>
@@ -118,7 +128,8 @@ kubectl exec -n console console-db-1 -c postgres -- psql -U postgres -d console 
 
 ### PR 473 governed command topology is not live
 
-The live OCI cluster retains the two-role and PreSync behavior above. PR 473's
+The historical OCI record assumes the two-role and PreSync behavior above; this
+was not re-observed during consolidation. PR 473's
 six-role topology, ordered Sync waves, command credentials, connection budget,
 rotation procedure, recovery bundle, and rollback evidence are held in the
 unreferenced
@@ -466,12 +477,16 @@ operator with cluster access must still run the default deploy path before any
 deployment-complete or production-ready statement.
 
 ## 7. Full rebuild from zero
-Talos was `dd`'d onto the boot volume (free tier blocks image import) and reads its
-config from gzip'd user_data; bootstrap apid via the bastion tunnel. The complete,
-tested sequence + every gotcha is in the AI memory `cluster-rebuild-runbook` and the
-scripts under `/Users/jasonlee/.config/talos-mnt/` (talos-up.sh, reserve-relaunch.sh,
-deploy.sh). DB + DNS data is recoverable: DB has CNPG/Barman backups (bucket
-`mnt-db-backups`), evidence in `mnt-evidence`.
+The former procedure says Talos was `dd`'d onto the boot volume and read config
+from gzip-compressed user data. It also delegated the alleged complete sequence
+to ephemeral AI memory and untracked scripts under
+`/Users/jasonlee/.config/talos-mnt/`. That is not a durable or currently tested
+rebuild procedure. The local scripts and Talos/kubeconfig material are explicit
+encrypted external-custody items in the disk-wipe handoff; they must never be
+copied into Git with credentials. Do not attempt a rebuild until an authorized
+operator has recovered and reviewed that bundle, re-established the OCI topology,
+and independently proved backup/DNS availability. Repository references to Barman
+or object-store buckets do not prove that their data is recoverable.
 
 ## 8. Free-tier guardrails
 1 A1 node (4 OCPU) · ≤200 GB block · ≤20 GB object · 1 reserved IP (assigned).

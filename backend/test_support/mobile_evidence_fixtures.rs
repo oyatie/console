@@ -90,6 +90,20 @@ pub async fn seed_user_with_branch(
         .unwrap();
 }
 
+/// A user with NO `user_branches` row, i.e. a principal whose live branch scope
+/// resolves to `BranchScope::Branches({})` — belonging to no branch in the org.
+/// Only meaningful for a role that is not `SUPER_ADMIN`/`EXECUTIVE`, since those
+/// short-circuit to `BranchScope::All` before the membership read.
+pub async fn seed_user_without_branch(pool: &PgPool, user_id: UserId, role: &str) {
+    sqlx::query("INSERT INTO users (id, display_name, roles, org_id) VALUES ($1, $2, $3, '00000000-0000-0000-0000-0000000000a1')")
+        .bind(*user_id.as_uuid())
+        .bind(format!("Branchless {role}"))
+        .bind(Vec::from([role]))
+        .execute(pool)
+        .await
+        .unwrap();
+}
+
 pub async fn seed_equipment(pool: &PgPool, branch_id: BranchId, management_no: &str) -> uuid::Uuid {
     let equipment_suffix = format!("{:0>4}", management_no);
     let customer_id: uuid::Uuid = sqlx::query_scalar(

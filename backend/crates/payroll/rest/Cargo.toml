@@ -14,6 +14,7 @@ console-inbox-application = { workspace = true }
 console-inbox-domain = { workspace = true }
 console-kernel-core = { workspace = true }
 console-payroll-adapter-postgres = { workspace = true }
+console-payroll-domain = { workspace = true }
 console-platform-auth = { path = "../../platform/auth" }
 console-platform-authz = { path = "../../platform/authz" }
 console-platform-db = { workspace = true }

@@ -14,6 +14,13 @@ related: [ADR-0012, ADR-0031]
 ## Status
 Accepted (consensus-approved plan §2.9).
 
+> **Current reconciliation (2026-08-03):** This accepted record is retained as
+> historical decision text. The canonical pivot removed `web/`, `clients/`,
+> `ios/`, and `android/`; those clauses do not authorize recreating deleted
+> surfaces. ADR-0031 amends only the contract mechanism. Current work must follow
+> [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md), and any further ADR-graph
+> reconciliation must be additive rather than another rewrite of the decision.
+
 ## Context
 The user chose native Swift (iOS) + Kotlin (Android) apps over a single React Native codebase (informed decision, interview R6) for maximal mobile UX. Two codebases create parity-drift risk — the plan's #1 pre-mortem scenario.
 

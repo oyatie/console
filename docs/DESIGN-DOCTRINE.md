@@ -1,3 +1,8 @@
+> **SUPERSEDED PRE-PIVOT RECORD:** The public web, legacy application, React
+> Console, and their visual authorities were deleted or superseded by the
+> 2026-07-28 pivot. This file is preserved as historical design context and must
+> not govern new work. See [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+
 # KNL design doctrine
 
 **One company, coherent product principles, explicit visual authorities. Best practice only.**

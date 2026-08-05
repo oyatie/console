@@ -1,5 +1,12 @@
 # Backup and Restore Runbook
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This runbook is retained historical/operator
+> reference. It does not prove that the described production stack, backups,
+> credentials, RPO, or restore path exist, and it does not authorize backup or
+> restore mutations. The repository currently authorizes zero production
+> mutations. Start with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 ## Scope
 
 This runbook covers the T0.9 nightly backup and restore drill for the Compose

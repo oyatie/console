@@ -352,8 +352,9 @@
 ### The six roles are a published wire enum behind a byte-exact drift gate
 
 - **Patterns:** P7
-- **Incumbent:** OpenAPI PlatformTenantRole + check:openapi-app
+- **Incumbent:** OpenAPI PlatformTenantRole + check:openapi-app *(gate since deleted — see the stale-citation note below)*
 - **Evidence:** `backend/openapi/openapi.yaml:19491-19498 (`PlatformTenantRole: type: string enum: [SUPER_ADMIN, ADMIN, MECHANIC, RECEPTIONIST, EXECUTIVE, MEMBER]`); enforced byte-for-byte against the running binary by scripts/check-openapi-app.mjs:23 and :72-74 (`if (actual !== expected) throw new Error("App-served OpenAPI YAML differs")`), run at .github/workflows/ci.yml:899-901. The yaml is compiled in via backend/app/src/lib.rs:214 `include_str!``
+- **Stale citation (2026-08-01):** `scripts/check-openapi-app.mjs` and its `ci.yml` step no longer exist. Comparing the served bytes to the file was tautological precisely because of the `include_str!` this entry cites, so the byte-exactness the collision rests on was never enforced by that script. The surviving route-inventory half is `check:platform-contract-drift`; `openapi_drift` (`ci.yml:597`) is the gate that actually runs.
 - **Collision:** P7 deletes the compile-time role/feature model. The owner states these six are demo scaffolding that never modelled a real organization — but they are published as a typed enum on the platform API, and the platform-tier docs describe authority in role names throughout (openapi.yaml:709, :741, :4930, :9418 and ~25 more). Failure mode: removing MECHANIC/RECEPTIONIST is a breaking change for every generated typed client that exhaustively matches the enum, and any change at all must land in the same commit as the Rust change or the drift gate fails. Cheap to fix mechanically, expensive to fix honestly: the role names are load-bearing in the human-readable authority descriptions that other gates pin (see the foundation-gate phrase collision).
 
 ### The Cedar cutover contract forbids the materialized half of P16's question

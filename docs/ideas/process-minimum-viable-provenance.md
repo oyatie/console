@@ -1,6 +1,27 @@
 # Minimum Viable Provenance
 
-**Status: SUPERSEDED 2026-07-28 by `execution-plan-DRAFT.md` §0. NOT authorized for execution.**
+**Status: the round-4 refutation was ANSWERED 2026-08-01, not overruled. The strip is built across
+two pull requests (expand, then contract) and is not merged at the time of writing. See
+`docs/program/ledger/2026-08-01-candidate-sha-leaves-the-registers.md`.**
+
+> **How the refutation was answered.** Round 4 was right about the mechanism: the surviving
+> `?.candidate_sha` comparisons were doubling as payload-**existence** checks, so deleting them
+> without replacement would have weakened the gate. Each of those sites now carries an explicit
+> `object(value, label)` check instead of relying on the equality as a side effect —
+> `cap.candidate_evidence` and `control.candidate_evidence` in
+> `scripts/console/validate-console-truth-ledger.mjs` — and `validate-console-truth-ledger.test.mjs`
+> asserts that deleting either payload still fails closed.
+>
+> Round 4's second argument — that the leaves catch a **partial** rebind — dissolved rather than
+> being answered: there is no rebind step and no rebind tool left to fail halfway.
+>
+> This document's own "keep 2 of 390" compromise was also wrong. Zero are kept: the candidate SHA
+> reaches the validator as a parameter derived by CI from the C/T/M train, so a stored copy could
+> only ever agree with it.
+>
+> **What the strip costs, stated plainly:** a WHOLESALE revert of either register now validates
+> clean. The old check refused that; it never caught in-place falsification, which passed both the
+> old and the new validator. The window is bounded to all-HOLD registers — see the ledger entry.
 
 > This document records rounds 1–3 of the register-strip investigation. Its final position
 > ("Keep 2 of 390, add one assertion line") was **refuted in round 4**: the surviving

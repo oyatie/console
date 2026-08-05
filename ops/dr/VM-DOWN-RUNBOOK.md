@@ -1,5 +1,11 @@
 # VM-Down Emergency Dispatch Runbook
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This pre-pivot incident procedure is retained
+> as historical/operator reference. It is not evidence of a current production
+> VM, current personnel/communications authority, or an activated recovery path.
+> The repository currently authorizes zero production mutations. Start with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 ## Trigger
 
 Use this runbook when the production VM, public API, or Postgres primary is down

@@ -37,6 +37,40 @@ rust_library(
 )
 
 rust_test(
+    name = "console-registry-rest-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", glob(["src/**/*.rs"])),
+    crate = "console_registry_rest",
+    edition = "2024",
+    crate_root = "backend/crates/registry/rest/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/rest"},
+    labels = ["owner.backend.crates.registry.rest", "domain.registry", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/platform/test-support:console-platform-test-support",
+        "//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres",
+        "//backend/crates/registry/application:console-registry-application",
+        "//backend/crates/registry/domain:console-registry-domain",
+        "//third-party/rust:axum",
+        "//third-party/rust:http",
+        "//third-party/rust:metrics",
+        "//third-party/rust:p256",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:tower",
+        "//third-party/rust:tracing",
+        "//third-party/rust:uuid",
+    ],
+)
+
+rust_test(
     name = "console-registry-rest-itest-equipment_admin",
     mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", ["tests/equipment_admin.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",

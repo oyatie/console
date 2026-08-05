@@ -10,7 +10,7 @@
 //!   (c) the versions table is append-only (UPDATE/DELETE rejected);
 //!   (d) versions are tenant-isolated under RLS.
 
-use console_kernel_core::{BranchId, EquipmentId, OrgId, TraceContext, UserId};
+use console_kernel_core::{BranchId, BranchScope, EquipmentId, OrgId, TraceContext, UserId};
 use console_registry_adapter_postgres::PgRegistryStore;
 use console_registry_application::{
     RollbackEquipmentCommand, UpdateEquipmentCommand, UpdateEquipmentFields,
@@ -166,6 +166,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
         store
             .update_equipment(UpdateEquipmentCommand {
                 actor: admin,
+                branch_scope: BranchScope::All,
                 equipment_id,
                 fields: update_fields("김철수"),
                 trace: TraceContext::generate(),
@@ -176,6 +177,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
         store
             .update_equipment(UpdateEquipmentCommand {
                 actor: admin,
+                branch_scope: BranchScope::All,
                 equipment_id,
                 fields: update_fields("이영희"),
                 trace: TraceContext::generate(),
@@ -184,7 +186,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
             .await
             .expect("second update must succeed as console_rt");
         store
-            .list_equipment_versions(equipment_id)
+            .list_equipment_versions(equipment_id, &BranchScope::All)
             .await
             .expect("version list must be readable as console_rt")
     })
@@ -214,6 +216,7 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
         store
             .rollback_equipment(RollbackEquipmentCommand {
                 actor: admin,
+                branch_scope: BranchScope::All,
                 equipment_id,
                 version: 1,
                 trace: TraceContext::generate(),
@@ -234,7 +237,10 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
     assert_eq!(manager, None, "live row must return to version 1 content");
 
     let versions = console_platform_request_context::scope_org(org, async {
-        store.list_equipment_versions(equipment_id).await.unwrap()
+        store
+            .list_equipment_versions(equipment_id, &BranchScope::All)
+            .await
+            .unwrap()
     })
     .await;
     assert_eq!(versions.len(), 4);
@@ -264,7 +270,9 @@ async fn equipment_updates_capture_versions_and_rollback_restores(owner_pool: Pg
 
     // (d) Cross-org isolation: org B sees no versions for org A's asset.
     let foreign = console_platform_request_context::scope_org(OrgId::from_uuid(ORG_B), async {
-        store.list_equipment_versions(equipment_id).await
+        store
+            .list_equipment_versions(equipment_id, &BranchScope::All)
+            .await
     })
     .await;
     assert!(

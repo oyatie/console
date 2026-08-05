@@ -152,7 +152,7 @@ incremental through design, big-bang through expansion.
 ### P0 · Repo coherence (blocking, mechanical)
 Fix before anything else so lanes have a green baseline: drop `check:api-drift:*`, `gen:api:*`,
 `check:ts|kotlin|swift`, `web:*` and the ios/android gates; keep the backend/infra gates
-(`check:adrs`, `check:k8s`, `check:openapi-app`, migration-safety).
+(`check:adrs`, `check:k8s`, `check:platform-contract-drift`, migration-safety).
 
 Verified 2026-07-28: `package.json` has already been cleaned (no `workspaces` key, no frontend
 scripts) and `ci.yml` no longer references deleted trees. **Residual:** `image-release.yml` still
@@ -269,7 +269,7 @@ and the conformance suite does not grow to accommodate them.
   **closed** with a named untranslatable term. Negative tests: principal cannot see out-of-policy rows.
 - **Temporal:** as-of reconstruction diffed against the event log; effective-dated future changes do
   not leak into present reads.
-- **Contract:** `openapi_drift` (kept); `check:openapi-app`.
+- **Contract:** `openapi_drift` (kept); `check:platform-contract-drift`.
 - **Determinism:** same input = same output for every automated decision, with the rule string captured
   in the audit event (§4-28/§4-38).
 

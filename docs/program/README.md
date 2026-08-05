@@ -1,37 +1,15 @@
-# Console-overhaul program — durable record
+# Console program records
 
-- `console-enterprise-roadmap.md` — repository-native implementation authority:
-  comprehensive COSS business coverage, shared ontology/workflow architecture,
-  module completion contract, user-story gates, and worktree consolidation.
-- `console-capability-registry.json` — machine-readable dispatch,
-  collision-ownership, priority, signature-story, gate, and implementation-state
-  registry.
-- `console-fanout-epoch-contract.md` — exact-SHA leaf/review/consolidation
-  protocol and quality-weighted bounded-fan-out algorithm.
-- `scripts/console/plan-fanout.mjs` — deterministic planner that admits only
-  disjoint owned leaf lanes, reports holds, and serializes generated/shared
-  faces without creating a second dependency graph.
-- `console-jurisdiction-register.json` — Korea Target Jurisdiction Set and
-  fail-closed legal/control research register.
-- `console-visual-baseline.json` — pinned Claude Design export and current
-  visual-gap receipt.
-- `console-program-ledger.md` — historical program record only; its `.omc`,
-  Cargo, stub-first, in-flight, and completion claims are not current
-  authority.
-- `benchmark-brief.md`, `backend-survey.md`, `be-ontology-engine-arch.md` — the research + backend/ontology-engine architecture grounding the program.
+This path-stable directory contains machine-readable registers, authority ledgers, and historical program material. It is subordinate to the active authorities reached from [`../../README.md`](../../README.md): [`PRODUCT`](../current/PRODUCT.md), [`ROADMAP`](../current/ROADMAP.md), and [`DELIVERY`](../current/DELIVERY.md).
 
-Repository-tracked documents are authoritative. Untracked agent/runtime state,
-including `.omc/`, is not a source of truth and must not be required to resume,
-review, integrate, or verify console work.
+## Path-stable registers and ledgers
 
-## P0/G0 truth-ledger baseline (2026-07-24)
+- `console-capability-registry.json` and `console-jurisdiction-register.json` — machine-readable declarations; they cannot independently establish implementation, exposure, or compliance.
+- `console-program-ledger.md` and `ledger/` — preserved program and authority-history records.
+- `LANE-PROTOCOL.md` — path-stable bounded-writer and integration rules where current DELIVERY delegates to them.
 
-`console-capability-registry-v2` is the exact-candidate ledger. It preserves
-historical local-train claims separately from `DECLARED`/`PLANNED`/`IMPLEMENTED`/
-`VERIFIED`/`EXPOSED`/`HOLD` candidate truth, and requires a capability-native
-benchmark dossier plus the additive omni-platform gate. Every module is held
-until its own dated comparator observations, candidate-bound evidence, and
-independent outcome review are admitted; shared platform evidence cannot waive
-native parity. `node scripts/console/validate-console-truth-ledger.mjs` is the
-fail-closed structural gate. The Korea register remains HOLD pending qualified
-source and attributable review authority.
+## Historical program material
+
+Roadmaps, pipelines, playbooks, catalogs, benchmark matrices, module plans, Buck2 scale guidance, and pre-pivot design material in this directory are historical or reusable reference unless a current authority explicitly delegates to a machine-readable contract. They cannot dispatch work, clear a HOLD, close an issue, or override the current documents.
+
+Runtime state, local worktrees, branches, chats, and handoffs never replace repository authority or exact-candidate evidence.

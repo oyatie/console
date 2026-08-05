@@ -34,7 +34,9 @@ use console_leave_domain::{
     WorkObligation,
 };
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_authz::{
+    Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
+};
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -742,14 +744,31 @@ fn require_manage(principal: &Principal) -> Result<(), RestError> {
     require_feature(principal, Feature::EmployeeDirectoryManage)
 }
 
+/// A directory-wide capability decision, not a branch-less table.
+///
+/// `employees` DOES have a branch column: `home_branch_id`, added by migration
+/// 0166 with an FK to `branches(id, org_id)` — the creating migration (0063) is
+/// not the whole schema. But nothing on this surface reads it: the handlers this
+/// gates list and mutate the directory across the caller's whole scope, and the
+/// `Branches` arm it replaced authorized against `branches.iter().next()`, a
+/// branch taken from the CALLER, so no resource branch was ever checked. The swap
+/// is verdict-identical and makes that visible.
+///
+/// TODO(branch-scope): threading `employees.home_branch_id` through these
+/// handlers would be a real tightening, and is a separate lane — it needs the
+/// column backfilled (it is NULLABLE) before it can gate anything.
+///
+/// The `All` arm deliberately STAYS `authorize_org_wide`. Collapsing both arms
+/// into `authorize_capability` would WIDEN: `EmployeeDirectoryRead` is
+/// `[D,D,D,A,A,A]`, and the group-admin tenant-context path mints a
+/// `{Admin} + BranchScope::All` principal
+/// (`console_platform_request_context`), which `authorize_org_wide`'s
+/// `SUPER_ADMIN|EXECUTIVE` built-in restriction denies today.
 fn require_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
     let action = Action::new(feature);
     let result = match &principal.branch_scope {
         BranchScope::All => authorize_org_wide(principal, action),
-        BranchScope::Branches(branches) => match branches.iter().next() {
-            Some(branch) => authorize(principal, action, *branch),
-            None => Err(KernelError::forbidden("principal has no branch scope")),
-        },
+        BranchScope::Branches(_) => authorize_capability(principal, action),
     };
     result.map_err(RestError::from_kernel)
 }

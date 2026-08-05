@@ -1,3 +1,5 @@
+> **HISTORICAL after the 2026-07-28 pivot.** This document preserves evidence and prior reasoning only. It cannot authorize Buck2, broad product scope, fan-out, or implementation work. Current authority is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md) and the post-pivot program index.
+
 # Backend surface survey (2026-07-09) — console wiring coverage vs HANDOFF contract
 
 Source: `backend/openapi/openapi.yaml` (223 REST paths). Console is **almost entirely wired to the real typed client, not fixtures** (~118 paths used; genuine fixtures essentially absent). Local repo `HANDOFF.md` = old 76-line FSM handoff; the real backend contract = HANDOFF.md in design project `9c7c313a`.

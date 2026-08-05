@@ -22,7 +22,8 @@ use console_platform_auth::{
     MobilePasskeyStepUpVerificationError, PasskeyService,
 };
 use console_platform_authz::{
-    Action, BranchColumn, Feature, PermissionLevel, Principal, Role, authorize, permission_for,
+    Action, BranchColumn, Feature, PermissionLevel, Principal, Role, authorize,
+    authorize_capability, permission_for,
 };
 use console_platform_db::{DbError, with_audit, with_org_conn};
 use console_platform_jobs::{JobQueue, JobRequest};
@@ -1809,9 +1810,12 @@ where
         TraceContext::generate(),
         now,
     )
-    .with_org(principal.org_id)
-    .with_branch(audit_branch_for_principal(&principal)?)
-    .with_snapshots(
+    .with_org(principal.org_id);
+    let event = match audit_branch_for_principal(&principal)? {
+        Some(branch_id) => event.with_branch(branch_id),
+        None => event,
+    };
+    let event = event.with_snapshots(
         None,
         Some(serde_json::json!({
             "platform": body.platform,
@@ -3996,17 +4000,18 @@ fn feature_allowed_in_scope(principal: &Principal, feature: Feature) -> bool {
     authorize_feature_in_scope(principal, feature).is_ok()
 }
 
-/// Authorize a read-style feature against a representative branch from the
-/// principal's scope (the first branch it belongs to, or any branch when the
-/// scope is `All`). Shared by the work-order and daily-plan list gates.
+/// Authorize a LIST/visibility feature. These gates decide what the caller may
+/// see across its whole `branch_scope` — `work_order_list_scope` and
+/// `fetch_approval_source_counts` do the row confinement — so there is no single
+/// resource branch to authorize against. Every row-level site in this file passes
+/// the real `work_orders.branch_id` / `daily_work_plans.branch_id` through
+/// [`authorize`] and must keep doing so.
+///
+/// NOT `authorize_org_wide`: `CompletionReview` is `[D,D,D,A,D,A]`, so org-wide
+/// routing would collapse the approval inbox to SUPER_ADMIN and lock out every
+/// ADMIN who uses it today.
 fn authorize_feature_in_scope(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    let resource_branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden("principal has no branch scope"))
-        })?,
-    };
-    authorize(principal, Action::new(feature), resource_branch).map_err(RestError::from_kernel)
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
 }
 
 async fn fetch_approval_source_counts(
@@ -5263,12 +5268,31 @@ fn normalize_non_empty(value: String, field: &'static str) -> Result<String, Res
     }
 }
 
-fn audit_branch_for_principal(principal: &Principal) -> Result<BranchId, RestError> {
+/// The branch to stamp on a device-registration audit row. `registered_devices`
+/// (migration 0010) has no `branch_id`, so this is the ACTOR's branch, not the
+/// resource's.
+///
+/// The two branch-less outcomes are NOT the same and must not be collapsed into
+/// one `None`:
+///
+/// * `All` — no single branch to name. Leave the audit column NULL rather than
+///   stamp a random UUID that belongs to no branch. Mirrors
+///   `console_app::audit_event_branch`. Still authorized.
+/// * `Branches({})` — no branch membership at all, so the caller belongs nowhere
+///   in this org. FORBIDDEN. This is the ONLY authorization check
+///   [`register_device`] performs beyond authenticating the token, and a
+///   membership-less principal is denied everywhere else in this file
+///   (`authorize_capability` rejects `branch_scope.is_empty()` up front), so it
+///   must be denied here too. Returning a bare `Option` would silently admit it.
+fn audit_branch_for_principal(principal: &Principal) -> Result<Option<BranchId>, RestError> {
     match &principal.branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden("principal has no branch scope"))
-        }),
+        BranchScope::All => Ok(None),
+        // fabricated-branch: ok stamps the ACTOR's branch on an audit row; never reaches authorize
+        BranchScope::Branches(branches) => {
+            branches.iter().next().copied().map(Some).ok_or_else(|| {
+                RestError::from_kernel(KernelError::forbidden("principal has no branch scope"))
+            })
+        }
     }
 }
 
@@ -5303,12 +5327,63 @@ mod tests {
         ApprovalItem, ApprovalOntologyContext, ApprovalPolicyContext, ApprovalStepSummary,
         ApprovalWorkflowContext, AssignmentSummary, CreateWorkOrderRequest, DevicePlatform,
         DeviceRegistrationResponse, EquipmentSummary, EvidenceStatusResponse, EvidenceSummary,
-        NamedEntity, StatusHistorySummary, SyncBatchRequest, WorkOrderDetail, WorkOrderListItem,
-        normalize_management_no,
+        NamedEntity, Principal, StatusCode, StatusHistorySummary, SyncBatchRequest,
+        WorkOrderDetail, WorkOrderListItem, audit_branch_for_principal, normalize_management_no,
     };
-    use console_kernel_core::{BranchId, DeviceId, EvidenceId, OrgId, UserId, WorkOrderId};
+    use console_kernel_core::{
+        BranchId, BranchScope, DeviceId, EvidenceId, OrgId, UserId, WorkOrderId,
+    };
     use console_platform_storage::ProcessingStatus;
     use console_workorder_domain::AttachmentStage;
+    use std::collections::BTreeSet;
+
+    fn device_principal(branch_scope: BranchScope) -> Principal {
+        Principal::new(
+            UserId::from_uuid(uuid::Uuid::nil()),
+            OrgId::from_uuid(uuid::Uuid::nil()),
+            BTreeSet::new(),
+            branch_scope,
+        )
+    }
+
+    /// `POST /devices` has no feature gate: the audit-branch resolution IS its
+    /// authorization check. All three branch-scope shapes are pinned because the
+    /// migration to `Option` once collapsed two of them and admitted a principal
+    /// that was 403 before.
+    ///
+    /// `All`: authorized, and the audit row's branch stays NULL rather than
+    /// carrying a minted UUID that belongs to no branch.
+    #[test]
+    fn device_audit_branch_is_none_for_an_all_scoped_actor() {
+        let principal = device_principal(BranchScope::All);
+
+        assert_eq!(audit_branch_for_principal(&principal).unwrap(), None);
+    }
+
+    /// A member: authorized, and the audit row carries the ACTOR's branch.
+    #[test]
+    fn device_audit_branch_is_the_actors_branch_for_a_member() {
+        let branch = BranchId::new();
+        let principal = device_principal(BranchScope::single(branch));
+
+        assert_eq!(
+            audit_branch_for_principal(&principal).unwrap(),
+            Some(branch)
+        );
+    }
+
+    /// No memberships at all: 403. This is the regression the review caught —
+    /// `BranchScope::Branches({})` is not `All`, and turning both into a bare
+    /// `None` would register the device for a principal that belongs to no branch
+    /// in this org.
+    #[test]
+    fn device_registration_is_forbidden_for_an_empty_branch_scope() {
+        let principal = device_principal(BranchScope::none());
+
+        let error = audit_branch_for_principal(&principal)
+            .expect_err("an empty branch scope must not reach the INSERT");
+        assert_eq!(error.status, StatusCode::FORBIDDEN);
+    }
 
     fn test_equipment_summary() -> EquipmentSummary {
         EquipmentSummary {

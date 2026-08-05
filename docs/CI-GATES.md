@@ -1,17 +1,44 @@
+> **EXECUTABLE-CONTRACT INVENTORY / NON-AUTHORITY:** This path-stable inventory documents currently present and historical machinery; its exact headings and lists remain machine checked. It does not authorize product scope, roadmap order, issue closure, release, or production readiness. Current authority begins at [`README.md`](../README.md) and the three documents under [`docs/current/`](current/).
+
 # CI Gates
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` is the source of truth
 for CI enforcement. This document mirrors the current gate inventory and splits
 the checks into two groups: core local gates that a fresh development session can
 run directly, and CI-contextual/heavy gates that need platform-specific runner
-setup, services, browser/device runtimes, or optional secrets.
+setup, services, or deployment access.
 
 The gates encode the project's non-negotiable invariants (clean-architecture
 layering, audit-first discipline, 위치정보법/PIPA data handling, multi-tenant
-isolation, cross-client contract, and cross-surface parity) so that a violation
-fails before production. Do not treat a lightweight local loop as full CI
-confidence: a change is not "done" until the relevant local gates, review/user
-story evidence, and CI jobs for the touched surfaces are green.
+isolation, and the committed API contract) so that a violation fails before
+production. Do not treat a lightweight local loop as full CI confidence: a
+change is not "done" until the relevant local gates, review evidence, and CI
+jobs for the touched surfaces are green.
+
+### Stable required-context migration
+
+At release `0.3.2`, branch protection requires the ten CI leaf contexts, five
+Security leaf contexts, and `authenticate-console-authority` as sixteen exact,
+GitHub-Actions-app-bound checks. The leaf proofs remain required while the
+workflows introduce the shadow contexts `Required / CI` and
+`Required / Security`.
+
+`Required / CI` is a same-workflow strict-success aggregate over the exact ten CI
+jobs. `Required / Security` applies the same rule to the exact five Security
+jobs. Both run under `always()` and fail when any dependency fails, is cancelled,
+or is skipped. Their dependency and result sets are mutation-tested and locked by
+the repository preflight gates. Neither aggregate checks out repository content
+or executes repository scripts; each runs only its locked status comparison.
+
+The protected-target authority job remains a separate required boundary. Do not
+combine it with candidate-controlled CI/Security workflows or duplicate an
+aggregate display name across workflows. Only after both aggregates pass on the
+exact pull-request train and its post-merge `main` commit may branch protection
+be atomically migrated to the three stable contexts: `Required / CI`,
+`Required / Security`, and `authenticate-console-authority`. Retain all existing
+leaf requirements until that shadow evidence exists, bind the replacements to
+the GitHub Actions app, preserve strict up-to-date checks, and immediately read
+the live rule back after mutation.
 
 ## Review evidence gate
 
@@ -27,8 +54,17 @@ candidate subprocesses run with a sanitized Git environment that ignores inherit
 Git config and `HOME`/XDG configuration. Only after that
 does it create a detached `C` worktree to run the candidate validator, planner, and
 their unit tests.  It has no secrets, cache restore, npm install, or PR executable
-step before authentication.  This bootstrap must be merged to `main` before PR 488
-is rerun; a workflow supplied by the PR cannot establish its own trust root.
+step before authentication. This bootstrap must remain protected-target code; a
+workflow supplied by the PR cannot establish its own trust root.
+
+The five required Security contexts inspect a candidate checkout and therefore
+are not, by themselves, an isolation boundary against deliberately hostile PR
+code. Their workflow shape and proof order are locked against accidental drift,
+but merge admission additionally depends on `authenticate-console-authority`,
+which runs protected-target code and rejects every PR—including forks and
+Dependabot—whose exact C/T train is not signed by the pinned authority. Never
+remove that required-context composition or treat a green scanner context alone
+as authentication of an untrusted contribution.
 
 On a closed, merged same-repository `main` PR, the separate squash-binding job first
 checks out exact `S`, verifies that `HEAD` is `S`, then hook-disabled detaches to
@@ -45,11 +81,10 @@ and requires its SHA to equal the closed-event authority-tip SHA, so a deleted P
 branch cannot make the signed `T` object unavailable.
 
 For user-facing features, PR/review evidence must prove the shipped workflow, not
-just the transport seam. API endpoint tests, handler tests, or generated-client
-round trips are necessary contract evidence, but they are **not sufficient** for
-UI feature claims. When UI is involved, reviewers must require browser/E2E or
-equivalent real-surface proof that walks the user story: sign-up, organization
-onboarding, passkey setup, and the actual domain workflow.
+just the transport seam. API endpoint, handler, and contract tests are necessary
+contract evidence, but they are **not sufficient** for UI feature claims. UI
+evidence belongs with the implementation that owns that surface; this post-pivot
+repository no longer contains the former web/mobile clients or their E2E jobs.
 
 The product guardrail is CRUD-first SaaS: database-backed create/read/update/
 delete UI and normal editing workflows come before upload/import/Excel paths.
@@ -68,35 +103,33 @@ so a fresh session does not gain false confidence from a partial run.
 cargo fmt --all -- --check
 SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
 SQLX_OFFLINE=true DATABASE_URL=postgres://<user>@localhost/console_dev cargo test
-for g in layer-boundary audit-coverage migration-safety tenant-isolation pii-no-logs rls-arming dev-auth-absence; do
+for g in \
+  layer-boundary audit-coverage migration-safety tenant-isolation pii-no-logs \
+  rls-arming dev-auth-absence iac-tier fabricated-branch \
+  personal-data-classification; do
   cargo run -q -p console-gate-$g            # each must exit 0
 done
 SQLX_OFFLINE=true cargo test -p console-platform-auth-rest --features dev-auth
 SQLX_OFFLINE=true cargo test -p console-app --features dev-auth --test dev_auth_persona_guard_feature
 SQLX_OFFLINE=true cargo test -p console-platform-provisioning --test dev_principal_upsert_race
 
-# API/client contract gates (from repo root after npm ci)
-npm run check:api-drift:portable          # regenerate ts+kotlin, expect no diff
-npm run check:ts
-npm run check:kotlin
-npm run check:api-drift:swift             # macOS/Swift toolchain gate
-npm run check:swift                       # macOS/Swift toolchain gate
-npm run check:openapi-app                 # committed openapi.yaml covers mounted routes
-CONTRACT_DATABASE_URL=postgres://<user>@localhost/console_contract npm run test:contract
+# API contract gates (from repo root after npm ci)
+npm run check:platform-contract-drift     # platform route inventory vs committed openapi.yaml
+npm run test:employee-import-contract
+npm run test:ontology-write-precondition
 
-# Web console + product-maturity gates (from repo root after npm ci)
+# Root repository gates (from repo root after npm ci)
 npm run test:adrs
 npm run check:adrs
 for s in \
   check:foundation-gates \
+  check:executed-tests \
+  check:test-credentials \
+  check:request-body-contract \
   check:doc-citations \
+  check:doc-links \
   check:package-lock \
-  check:root-workspaces \
-  check:enterprise-ux-parity \
-  check:browser-persona-matrix \
   check:ci-preflight \
-  check:ios-ui-test-fail-closed \
-  check:android-e2e-fail-closed \
   check:g004-identity-foundation \
   check:g005-workflow-lifecycle \
   check:workflow-runtime-spine \
@@ -109,71 +142,43 @@ for s in \
   check:g008-payroll-readiness \
   check:people-hr-maturity \
   check:payroll-release-gate \
-  check:financial-maturity \
-  check:cx-reporting-maturity \
-  check:operations-intelligence-maturity; do
+  check:undeclared-imports; do
   npm run "$s"
 done
-npm run web:lint
-npm run web:test
-npm run test:production-dev-auth-guards --workspace @console/web
-npm run check:production-dev-auth-absence --workspace @console/web
 
-# Deployment and mobile parity gates
+# Deployment gates
 npm run check:k8s                         # render manifests; CI warns if no live cluster
 CONSOLE_NETWORKPOLICY_PREFLIGHT=require npm run check:k8s:networkpolicy
 CONSOLE_NETWORKPOLICY_EXPECTED_ENFORCER=cilium \
   CONSOLE_NETWORKPOLICY_SMOKE_POSTGRES=auto \
   npm run smoke:k8s:networkpolicy-deny
 npm run check:production-hardening
-node scripts/check-i18n.mjs
-
-# Android local build/unit/screenshot gates
-( cd android && ./gradlew build -x testReleaseUnitTest -x testDebugUnitTest )
-( cd android && ./gradlew testDebugUnitTest )
-( cd android && ./gradlew verifyRoborazziDebug )
-
-# iOS local gates (macOS with Swift toolchain)
-swift build --package-path ios
-swift test --package-path ios
-swift run --package-path ios ConsoleCoreBehaviorTests
 ```
 
 CI also runs heavier or runner-contextual gates. Reproduce them locally only when
 their prerequisites are available:
 
-- `npm run dev:bootstrap`, `/readyz`,
-  `CONSOLE_DEV_AUTH_E2E=1 npm run dev:bootstrap`, and
-  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`
-  for the dev-up/dev-auth smoke.
-- `VITE_CONSOLE_DEV_PREVIEW=1 npm run dev:bootstrap` for the independent,
-  Vite-development-only full console preview. Do not add this flag to the
-  fail-closed dev-auth gate, which must retain production-faithful rollout
-  behavior.
-- `bash e2e/run.sh` for the full browser user-story suite after Postgres, Python
-  helpers, Rust backend, Node dependencies, and Playwright Chromium are ready.
-- `./gradlew fieldApi34DebugAndroidTest` for Android instrumented E2E after
-  KVM/Gradle Managed Device setup. CI provisions PostgreSQL 18.4, migrates and
-  seeds an isolated database, boots the backend built from the exact candidate
-  SHA, and mints a job-local mechanic session through a random short-lived OTP.
-  The required `WorkOrderFlowTest` must execute with zero skips, failures, or
-  errors; no external backend or long-lived refresh-token secret is required.
-- `.github/workflows/ios-ui-tests.yml` for Simulator-bound XCUITest/accessibility
-  audit on one GitHub-hosted `macos-26` VM. The current merge authority is Xcode
-  26.6 build `17F113`, Apple Swift 6.3.3 in strict Swift 6 language mode, and the
-  iOS 26.5 runtime. The job builds checksum-pinned PostgreSQL 18.4 and the exact
-  candidate Rust backend under a job-local root, then runs 15 named fail-slow
-  shards. Each shard receives a fresh random one-use-OTP session, its own
-  presentation precondition/readback, a 45-to-360-second hard budget, timing
-  telemetry, and separate result artifacts. Structured results across all shards
-  must match the source-discovered test set exactly with zero skips, failures, or
-  errors; no external backend/session secret or fork skip path is permitted.
-- Swift client and iOS app gates require macOS/Swift; Linux developers should use
-  CI or a macOS runner for those surfaces.
+- `npm run dev:bootstrap`, `/readyz`, and `npm run dev:down` for the dev-up
+  smoke. CI also runs the compose contract unit test and PostgreSQL topology
+  integration regression before the bootstrap.
 
 The initial **CI preflight** job runs the foundation-gate, CI-preflight,
-workspace-integrity, and deterministic-lockfile contracts before the expensive
-backend, mobile, and browser jobs begin.
+executed-test reachability, credential-argument, and deterministic-lockfile
+contracts before the expensive backend and database jobs begin.
+
+As measured on 2026-08-03, `check:executed-tests` inventories 333 defined test
+binaries: workflow commands directly select 320, leaving an exact dark set of
+13. Those reachable binaries contain 319 source files and 2,097 lexically
+declared test attributes. The attribute count is a source ratchet, not a runtime
+case count: it does not evaluate `cfg`, feature selection, macro expansion, or
+`ignore`. The SeaweedFS tests are recorded in the dark set as out of pivot; they
+are not claimed as executed coverage. Any new or lost declared attribute must
+update the exact baseline intentionally in the same change.
+
+`check:test-credentials` has a deliberately narrow static scope: it rejects
+literal passwords on workflow commands that spell a test runner, and its
+runtime half exercises the opt-in `pgtest.sh` argv guard. It does not prove that
+arbitrary scripts or tests cannot construct credentials internally.
 
 `SQLX_OFFLINE=true` uses the committed `.sqlx/` query cache; regenerate it with
 `cargo sqlx prepare --workspace -- --all-targets` (note `--all-targets`, so test
@@ -181,7 +186,7 @@ queries are cached too) against a database migrated to head.
 
 ## Current CI workflow gate inventory
 
-This inventory is sourced from `.github/workflows/ci.yml` and the root/web
+This inventory is sourced from `.github/workflows/ci.yml` and the root
 `package.json` scripts. When the workflow changes, update this table and the
 runbook together.
 
@@ -193,9 +198,11 @@ names only, not incidental workflow prose or runner setup text.
 
 - `console-gate-audit-coverage`
 - `console-gate-dev-auth-absence`
+- `console-gate-fabricated-branch`
 - `console-gate-iac-tier`
 - `console-gate-layer-boundary`
 - `console-gate-migration-safety`
+- `console-gate-personal-data-classification`
 - `console-gate-pii-no-logs`
 - `console-gate-rls-arming`
 - `console-gate-tenant-isolation`
@@ -206,6 +213,8 @@ names only, not incidental workflow prose or runner setup text.
 - `check:ci-preflight`
 - `check:console-truth-ledger`
 - `check:doc-citations`
+- `check:doc-links`
+- `check:executed-tests`
 - `check:foundation-gates`
 - `check:g004-identity-foundation`
 - `check:g005-workflow-lifecycle`
@@ -213,12 +222,15 @@ names only, not incidental workflow prose or runner setup text.
 - `check:g007-collaboration-mobile-lifecycle`
 - `check:g008-payroll-readiness`
 - `check:k8s`
-- `check:openapi-app`
+- `check:platform-contract-drift`
+- `check:test-credentials`
 - `check:package-lock`
 - `check:payroll-release-gate`
 - `check:people-hr-maturity`
 - `check:pr473-migration-operational`
 - `check:production-hardening`
+- `check:request-body-contract`
+- `check:undeclared-imports`
 - `check:workflow-runtime-m2-cedar-guards`
 - `check:workflow-runtime-m2-drainer`
 - `check:workflow-runtime-m2-runtime`
@@ -226,85 +238,35 @@ names only, not incidental workflow prose or runner setup text.
 - `check:workflow-runtime-spine`
 - `test:adrs`
 - `test:employee-import-contract`
+- `test:executed-tests-baseline`
 - `test:ontology-write-precondition`
 - `test:production-hardening`
 - `test:text-gate`
 
-- **Backend — fmt / clippy / test / gates**: `cargo fmt --all -- --check`,
-  `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`,
-  `SQLX_OFFLINE=true cargo test`, seven `console-gate-*` binaries
+- **Domain crates — unit tests**: an explicit, ratchet-checked set of Cargo
+  `--lib`, doctest, and named non-PostgreSQL test targets. This is broad selected
+  reachability, not a claim that one full-workspace `cargo test` runs.
+- **Backend — fmt / clippy / gates**: `cargo fmt --all -- --check`,
+  `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`, ten `console-gate-*` binaries
   (`layer-boundary`, `audit-coverage`, `migration-safety`, `tenant-isolation`,
-  `pii-no-logs`, `rls-arming`, `dev-auth-absence`), and three dev-auth feature
-  tests for `console-platform-auth-rest`, `console-app`, and
-  `console-platform-provisioning`.
-- **dev-up.mjs smoke — compose deps + migrate + /readyz + dev-auth e2e**:
-  `node scripts/dev-up.mjs bootstrap`, `/readyz` curl, `node scripts/dev-up.mjs
-  down`, dev-auth bootstrap with
-  `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
-  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
-- **API clients — TypeScript / Kotlin generation and compile**:
-  `npm run gen:api:portable`, `git diff --exit-code -- clients/ts
-  clients/kotlin`, `npm run check:ts`, and `npm run check:kotlin`. The local
-  wrapper for the generation+diff check is `npm run check:api-drift:portable`.
-- **Web console — lint / test / production artifact isolation**: ADR governance scripts `test:adrs`
-  and `check:adrs`, followed by root product-maturity scripts
-  `check:foundation-gates`, `check:enterprise-ux-parity`,
-  `check:browser-persona-matrix`, `check:ios-ui-test-fail-closed`,
-  `check:android-e2e-fail-closed`, `check:g004-identity-foundation`,
-  `check:g005-workflow-lifecycle`, `check:workflow-runtime-spine`,
-  `check:workflow-runtime-m2-strangler`, `check:workflow-runtime-m2-cedar-guards`,
-  `check:workflow-runtime-m2-runtime`, `check:workflow-runtime-m2-drainer`,
-  `check:g006-asset-dispatch-lifecycle`, `check:g007-collaboration-mobile-lifecycle`,
-  `check:g008-payroll-readiness`, `check:people-hr-maturity`,
-  `check:payroll-release-gate`, `check:financial-maturity`,
-  `check:cx-reporting-maturity`, and `check:operations-intelligence-maturity`,
-  followed by `npm run lint --workspace @console/web`,
-  `npm run test --workspace @console/web`,
-  `npm run test:production-dev-auth-guards --workspace @console/web`, and
-  `npm run check:production-dev-auth-absence --workspace @console/web`.
-  The last command builds the production bundle before asserting that dev-auth
-  entrypoints are absent. Root shortcuts are `web:lint` and `web:test`.
-- **API contract — app OpenAPI and generated TS round-trip**:
-  `npm run check:openapi-app` and `npm run test:contract` with
-  `CONTRACT_DATABASE_URL`.
+  `pii-no-logs`, `rls-arming`, `dev-auth-absence`, `iac-tier`,
+  `fabricated-branch`, `personal-data-classification`), their named mutation
+  suites, and the explicitly named PostgreSQL harness targets in this and the
+  dedicated reachability jobs. `check:executed-tests` is the inventory ratchet.
+- **dev-up.mjs smoke — compose deps + migrate + /readyz**:
+  the compose contract unit test, PostgreSQL topology integration regression,
+  `node scripts/dev-up.mjs bootstrap`, `/readyz` curl, and unconditional
+  `node scripts/dev-up.mjs down` cleanup.
+- **Repository gates — governance and domain contracts**: ADR, documentation,
+  foundation, package-lock, workflow, domain-maturity, undeclared-import, and
+  request-body gates named in the root-script inventory above.
+- **API contract — platform route inventory (text-only)**:
+  `npm run check:platform-contract-drift` plus the employee-import and
+  ontology-write-precondition contract suites. The job builds and boots
+  nothing.
 - **Kubernetes manifests — render / hardening / NetworkPolicy preflight**:
   `npm run check:k8s` (render plus `scripts/check-networkpolicy-enforcement.sh`)
   and `npm run check:production-hardening`.
-- **API client — Swift generation and build**: `swift --version`,
-  `npm run gen:api:swift`, `git diff --exit-code -- clients/swift`, and
-  `npm run check:swift`. The local wrapper for generation+diff is
-  `npm run check:api-drift:swift`.
-- **Mobile parity — checklist and strings**: `node scripts/check-i18n.mjs` plus
-  the inline workflow check that validates `docs/parity-checklist.md`, Android
-  string keys, and iOS localized string keys. There is not currently a named root
-  package script for the inline checklist/string-key check.
-- **Android app — Gradle build**: `./gradlew build -x testReleaseUnitTest -x
-  testDebugUnitTest`, `./gradlew testDebugUnitTest`, and
-  `./gradlew verifyRoborazziDebug` from `android/`.
-- **Android app — instrumented post-login E2E (emulator)**:
-  `./gradlew fieldApi34DebugAndroidTest` with Gradle Managed Device/KVM setup,
-  a job-local PostgreSQL 18.4 database, and the backend built from the exact
-  checked-out SHA. CI redeems a random short-lived mechanic OTP, supplies the
-  resulting tokens through a mode-0600 runner-temp androidTest asset, and parses
-  JUnit output to require `WorkOrderFlowTest` with zero skips/failures/errors.
-- **iOS app — Swift build and behavior tests**: `swift build`, `swift test`, and
-  `swift run ConsoleCoreBehaviorTests` from `ios/` on macOS.
-- **iOS UI tests — XCUITest/accessibility audit (Simulator)**:
-  `.github/workflows/ios-ui-tests.yml` runs on a GitHub-hosted `macos-26` VM and
-  treats Xcode 26.6 build `17F113`, Apple Swift 6.3.3 in strict Swift 6 language
-  mode, and the iOS 26.5 runtime as the current merge authority. It generates the
-  Xcode project with XcodeGen and executes 15 named fail-slow shards against an
-  exact-SHA backend and checksum-pinned PostgreSQL 18.4. Each shard gets a fresh
-  random one-use-OTP session, a shell-owned Simulator presentation with exact
-  readback, a measured 45-to-360-second hard timeout, and independent timing and
-  result artifacts. The mode-`0600` `.xctestrun`, Cargo/Rust homes and target,
-  PostgreSQL, backend state, DerivedData, and results remain under the job-local
-  runner-temporary root. Missing inputs, entitlements, fixtures, expected tests,
-  secret-scan evidence, or cleanup proof fail; there is no external session
-  secret, `XCTSkip`, or fork-reduced test path.
-- **Browser E2E — Playwright (all user stories)**: backend `console-app` build,
-  Postgres/psql/Python helper setup, `npx playwright install --with-deps
-  chromium`, and `bash e2e/run.sh`.
 
 ---
 
@@ -320,12 +282,15 @@ names only, not incidental workflow prose or runner setup text.
 is an error, including in tests and benches. This also doubles as the offline
 compile check (it fails if the `.sqlx` cache is stale or a query is malformed).
 
-### `cargo test` — workspace tests
+### `cargo test` execution — selected and named inventory
 
-The full workspace suite, including the DB-backed integration tests under
-`backend/app/tests/` and per-crate `tests/`. Requires a `DATABASE_URL` pointing
-at a Postgres database migrated to head (the suite is isolation-safe: tests key
-on fresh UUIDs and do not assert on global counts, so they run in parallel).
+CI does not currently execute a single full-workspace `cargo test`. The
+`Domain crates — unit tests` context runs the selected non-database library,
+doctest, and integration targets enumerated in `.github/workflows/ci.yml`.
+Database-backed suites run through explicitly named disposable-PostgreSQL
+targets, some serialized because they mutate cluster-global roles. The
+`check:executed-tests` ratchet must reject newly dark test roots; neither that
+ratchet nor clippy is represented here as execution of every workspace test.
 
 ### `console-gate-layer-boundary` — clean-architecture + manifest hygiene
 
@@ -368,8 +333,9 @@ destructible and must never enter `audit_events`
 single real writer (`crates/compliance/adapter-postgres/src/lib.rs ::
 record_location_ping`) — the same exemption reason on any other file/function is
 rejected. (Path binding was hardened in `fix/harden-1`; previously the exemption
-matched on reason only, which could silently apply to the wrong handler — see
-[review/security-compliance.md](../.omc/review/security-compliance.md).)
+matched on reason only, which could silently apply to the wrong handler. The
+historical review path was `.omc/review/security-compliance.md`; runtime state is
+not repository authority.)
 
 ### `console-gate-migration-safety` — append-only audit trail
 
@@ -382,6 +348,216 @@ not erode the audit trail. It rejects:
 
 The append-only protection on `audit_events` (REVOKE UPDATE/DELETE + trigger) is
 thus immune to being silently undone by a later migration.
+
+### personal-data classification — two checks, neither subsuming the other
+
+Field-level classification is guarded by a **pair** of checks that read
+different things, and both must run. They are not equal partners: the catalog
+assertion carries the column-membership class, and the text gate is defence in
+depth for what only a text reader can do. Earlier versions of this section have
+been falsified by the next probe three rounds running, so what follows is
+written as measurements with their exit codes rather than as guarantees.
+
+| | reads | CI step |
+| --- | --- | --- |
+| `console-gate-personal-data-classification` | migration **text** | `Personal-data-classification gate` (`cargo run -p console-gate-personal-data-classification`) |
+| `every_application_column_is_classified_or_its_table_is_declared` | the **catalog** of a migrated database | `Serialized disposable PostgreSQL integration targets` → `//tools/buck:platform-db-personal-data-classification-pg` |
+
+**The gate**, `backend/ci/gates/personal-data-classification/`, parses every
+migration into a post-migration column set and requires each column, in a table
+not listed in `unclassified-tables.txt`, to carry a
+`COMMENT ON COLUMN … IS 'pd:<tokens> …'` marker drawn from a closed vocabulary
+(`none`, `personal`, `sensitive/*`, `unique-id/*`, `credit`, `pseudonymous`,
+`undeclared`).
+
+**The catalog assertion**,
+`backend/crates/platform/db/tests/personal_data_classification.rs`, enumerates
+every column of every application table out of
+`pg_attribute`/`pg_class`/`pg_namespace` after the migrations have run and
+requires the same, against its own Rust-side baseline — the per-table SET of
+unclassified column names, generated from the live catalog. Migration 0211 reads
+the same markers back out of `pg_attribute` so the 접속기록 retention floor is
+derived from the schema rather than hand-maintained.
+
+**What each one cannot see, and which of them the class now depends on.** The
+gate re-implements PostgreSQL's parser, so it reads some constructs wrong and
+passes on them: schema qualification is dropped (`shadow.employees` registers as
+`employees`), quoted identifiers are case-folded (`"Employees"."RAW_ROW"` reads
+as `employees.raw_row`), a plpgsql body that assembles a keyword out of fragments
+— `DO $$ BEGIN EXECUTE 'ALTER TA' || 'BLE leave_requests ADD COLUMN
+medical_certificate_no TEXT'; END $$;` — is read as building nothing because the
+body scan looks for `table` within four words of `alter` and finds neither
+spelled whole, and a multi-action `ALTER TABLE` is judged from its FIRST action,
+so this repository's own house idiom with one comma appended —
+`EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY, ADD COLUMN
+medical_certificate_no TEXT', 'leave_requests')`, the shape used in 25 migrations
+— is read as column-neutral with nothing concatenated and every keyword spelled
+whole. All were planted and the gate exited 0 on each.
+
+**The parser is no longer what this class depends on, and is not being hardened
+further.** Six rounds of hardening it each closed one spelling and each was
+followed by another, and every one of those criticals needed TWO things: a
+spelling the parser misreads, AND a net unclassified count that did not move,
+because the catalog side's baseline pinned a per-table COUNT and a count is
+payable — classify one existing column in the same migration that adds an
+unclassified one and the number is unchanged. The last of them measured gate
+EXIT=0, catalog EXIT=0, `3268 / 668 / 2600` against a clean `3267 / 667 / 2600`,
+all 243 pins unmoved, the column confirmed live in `pg_attribute`. Those trios
+are from that measurement and are not today's: a clean tree now reads
+`3288 / 667 / 2621`, because `information_schema` entered the sweep afterwards.
+
+That baseline is now the per-table **SET of unclassified column NAMES** — 247
+tables, 2,621 names, generated from the live catalog by the `#[ignore]`d
+`print_unclassified_baseline` in the same file and never typed by hand. A set has
+nothing to pay with. Adding an unclassified column makes the set gain a name;
+classifying one in the same change makes membership move. Both fail, in both
+directions, with a message naming which columns landed unclassified and which
+baseline names must be removed in the same change — a stale entry is a slot the
+next column takes silently. Replanted against it and measured: the multi-action
+house idiom, the `CREATE FUNCTION … AS 'BEGIN ALTER TABLE …'` body, and the
+concatenation-split `'ALTER TA' || 'BLE …'` form each give **gate EXIT=0,
+catalog EXIT=101**, each naming `medical_certificate_no` and `reason`. The last
+of those is the residual the parser could never reach, and it is the proof the
+new pin does not care how the DDL was spelled. A column added AND classified in
+the same migration passes both, exit 0 each — without that the control would be
+routed around within a week.
+
+**So, precisely:** for any relation the catalog sweep reads, a parser blind spot
+no longer composes into a silent live unclassified column. That is a claim about
+the composite, not about the parser, and it stops where the sweep stops. What it
+excludes, named rather than implied:
+
+- **Relations created at RUNTIME.** In no migration text and in no catalog built
+  from `./migrations`. This already ships:
+  `0005_create_compliance_location_store.sql:90-121` creates a `location_pings`
+  day partition per day with
+  `EXECUTE format('CREATE TABLE IF NOT EXISTS %I PARTITION OF location_pings …')`.
+  All ten `location_pings` columns are classified `pd:personal — 개인위치정보`, but
+  every ping row lands in a partition neither reader sees, and nothing proves the
+  child inherited the parent's markers.
+- **The retention reader uses the same catalog universe.** Migration 0211's
+  `personal_data_columns()` now reads the same non-`pg_catalog`, non-temporary
+  `r/p/m/f` relations across schemas and returns schema-qualified identities.
+  PostgreSQL tests strip the shipped markers, then independently plant a
+  sensitive marker in a non-public table, a materialized view, and a foreign
+  table; each must derive the two-year floor. This closes the former
+  relkind/schema under-retention gap and mutation-locks the alignment.
+
+That list had a third entry that was in the query and in no text.
+`application_columns` also filtered `n.nspname <> 'information_schema'`, a
+predicate its own doc comment never explained, and as the initdb superuser — who
+is exactly who migrates in the pgtest and CI containers, though not the
+`console_app` role production uses — `CREATE TABLE information_schema.pd_leak
+(rrn TEXT, employee_name TEXT)` landed two live columns and left the catalog
+counts byte-identical to a clean tree. The predicate is gone rather than written
+down. What PostgreSQL 18.4 ships there under `relkind IN ('r','p','m','f')` is
+four real tables — `sql_features`, `sql_implementation_info`, `sql_parts`,
+`sql_sizing`, 21 columns, none commented, everything else in that schema being
+`relkind = 'v'` — and they are declared in the baseline like any other
+unclassified table. Replanted after the fix: **catalog EXIT=101**, naming
+`information_schema.pd_leak` and both columns.
+
+A fourth entry was in the query for the same reason and was closed the same way.
+`application_columns` also filtered `n.nspname NOT LIKE 'pg\_%'`, justified in its
+own doc by the claim that the prefix is reserved so nothing can hide behind it.
+That claim is false: `allow_system_table_mods` is a `superuser`-context GUC, and
+with it set, `CREATE SCHEMA pg_evil` succeeds where it otherwise raises
+`42939 unacceptable schema name`. A migration planting
+`pg_evil.pd_leak (rrn, employee_name)` with a stored 주민등록번호 gave gate EXIT=0
+and catalog EXIT=0 with output byte-identical to a clean tree. The prefix pattern
+is replaced by `n.nspname <> 'pg_catalog' AND c.relpersistence <> 't'` — the 64
+system catalogs by name, session-temporary relations by PostgreSQL's own tag
+rather than by the shape of a schema name — which adds zero baseline entries and
+is *stricter* than the enumeration it replaces: a planted `pg_toast.pd_leak` is
+also caught, because a clean `pg_toast` holds only `relkind` `t` and `i` and so
+was excluded by the `relkind` predicate already. `pg_temp_N` needs no predicate;
+`CREATE TABLE pg_temp_99.pd_leak` raises `42P16 cannot create relations in
+temporary schemas of other sessions` even with the GUC on.
+
+**The boundary, named once.** Both of those escapes needed **superuser**, and at
+superuser the migrating session can `INSERT INTO pg_description` and forge a `pd:`
+marker instead of hiding a table — measured, it succeeds. So this control assumes
+a migration that does not exercise superuser catalog-write privilege. Production
+migrates as `console_app` (`deploy/apps/console/base/migrate-job.yaml`), created
+`NOSUPERUSER`, which reaches none of it: `42501 permission denied to set parameter
+"allow_system_table_mods"`, `42939` on `CREATE SCHEMA pg_evil` with no way to lift
+it, `42501 permission denied for schema pg_catalog`, `42501 permission denied for
+table pg_description`. The pgtest and CI containers migrate as the initdb
+superuser, which is why the probes land there. That boundary is not a reason to
+leave a predicate unjustified — the `pg_` filter was closed anyway, because
+closing it was free. The full statement lives in the module doc of
+`backend/crates/platform/db/tests/personal_data_classification.rs`.
+
+**The gate stays, as defence in depth.** It is the only reader that sees a column
+at WRITE time, before any database exists, in milliseconds on a developer's
+machine, and the catalog is consulted only for relations it knows. A newly found
+parser escape is written into the residual register in its crate doc and left
+there.
+
+Two forms have left the blind-spot list, and the distance between them is the
+lesson.
+`DO 'BEGIN CREATE TABLE …; END'` was closed by refusing a `DO` that carries a
+single-quoted literal — a refusal written at the STATEMENT HEAD. The identical
+block one head over,
+`CREATE FUNCTION f() RETURNS void AS 'BEGIN ALTER TABLE … ADD COLUMN …; END'
+LANGUAGE plpgsql`, then passed the gate AND the catalog assertion, exit 0 each,
+over a column live in `pg_attribute` on PostgreSQL 18.4;
+`CREATE OR REPLACE FUNCTION` likewise. The fix was right in kind and one level
+too high. The body scan now reads `Tok::Str` alongside `Tok::Body`, below the
+head, so a body carrying table DDL is `unsupported-ddl` under either quoting and
+under any head. The `DO` refusal is kept on top of it, because
+`DO 'BEGIN PERFORM 1; END'` carries no DDL for a scan to find; it is not extended
+to `CREATE FUNCTION`, whose literals include parameter defaults
+(`0064_platform_group_accounts.sql` writes `DEFAULT ARRAY['MEMBER']` and
+`DEFAULT 'GROUP_ADMIN'`). Cost of the widened scan on the corpus, measured: 3,488
+top-level single-quoted literals across 210 migrations, zero flagged.
+
+Three properties carry the weight:
+
+- **Unparseable means FAIL, by default rather than by list.** `apply_statement`
+  has no fallthrough arm: the forms it recognises are the whole allow-list, and
+  anything else raises `unsupported-ddl` naming the head it could not read. An
+  earlier version enumerated the dangerous constructs instead, which is the same
+  fail-open shape one step along — it tested `head[1] == "table"`, so
+  `CREATE UNLOGGED/TEMP/GLOBAL TEMPORARY TABLE` and
+  `CREATE SCHEMA x CREATE TABLE …` all walked past. A quoted body — dollar- or
+  single-quoted, the scan does not distinguish — is refused the same way unless
+  the DDL inside it is one of the column-neutral `ALTER TABLE` actions the parser
+  already recognises, so a table built in a `DO` block or a plpgsql function body
+  now fails instead of being invisible.
+  `UNSUPPORTED_WAIVERS` records what the corpus still cannot parse — one entry,
+  0005's per-day `location_pings` partitions — with a reason each, and a waiver
+  that matches nothing is itself a violation.
+- **The gate's baseline is shrink-only, enforced.** CI checks out a single
+  commit with no history, so the gate cannot diff against the previous baseline.
+  Migration numbers supply the clock instead: a column introduced after
+  `BASELINE_FROZEN_AFTER_MIGRATION` is not sheltered by a baseline entry,
+  whether it arrived on a new table or on one already listed. That clock is a
+  filename prefix, so the gate also checks that no number at or below the freeze
+  is reused or vacant — otherwise a new migration could name itself `0042_…` and
+  be read as pre-freeze. What is *not* achieved: nothing here proves the
+  baseline file is a subset of yesterday's, because yesterday's is not in the
+  checkout. It proves that every way of adding an entry today is already a
+  violation.
+- **The catalog assertion's baseline is a set of column names, and two-sided.**
+  It declares 247 of 286 tables, so a table-granular baseline would have
+  sheltered 86% of the schema whole. Each entry therefore names that table's
+  unclassified columns — 2,621 names today, of 3,288 columns. A name in the
+  catalog that the entry does not list fails, saying it *landed unclassified*; a
+  listed name that is no longer unclassified fails too, requiring the baseline be
+  updated in the same change, because a stale entry is a slot the next column
+  takes silently. Set membership rather than a count is what makes the two
+  failures independent: classifying one column does not pay for adding another.
+  Separately, the closed vocabulary is applied where `classified` is decided and
+  across every application schema, so `COMMENT ON COLUMN x IS 'pd:lol'` is a
+  violation, and being in the baseline does not shelter it — an entry admits a
+  MISSING marker, never a wrong one.
+
+Coverage is partial by design and the numbers are countable, not claimed: both
+checks print their totals on every run. Listing a table in either baseline is an
+admission that nobody has classified it — **not** a statement that it holds no
+personal data. Neither check asserts anything about whether any statutory
+obligation is met, and neither moves a compliance control off HOLD.
 
 ### `console-gate-pii-no-logs` — PIPA log hygiene
 
@@ -421,6 +597,34 @@ query execution on a bare pool where no per-transaction `app.current_org` GUC is
 armed. Legitimately global reads must carry an inline `// rls-arming: ok
 <reason>` marker so each exception is reviewed and path-local.
 
+### `console-gate-fabricated-branch` — defence in depth, NOT a control
+
+Source: `backend/ci/gates/fabricated-branch/`. `authorize(principal, action,
+resource_branch)` checks `principal.branch_scope.allows(resource_branch)`. Fed a
+branch derived from the principal (`All => BranchId::new()`,
+`Branches(b) => b.iter().next()/.any()`), that check is a tautology on both arms
+and the branch dimension silently disappears. The gate scans `BranchScope::`
+match arms for those shapes; a legitimate representative-branch pick (audit-row
+actor branch, default branch for row creation) needs an inline
+`// fabricated-branch: ok <reason>` marker, like `rls-arming` above.
+
+**Read the module doc before trusting a GREEN.** This gate greps, and three blind
+spots are known and unpatchable by more patterns:
+
+1. a fabrication moved one function away scans clean — it reasons about match-arm
+   bodies, never about what a caller does with the returned `Option`;
+2. the `Branches` rule matches literal substrings only, so
+   `branches.first().copied()`, `.iter().copied().next()`, `.nth(0)` and a plain
+   `for` loop are invisible;
+3. detection keys on the literal prefix `BranchScope::`, so any import alias
+   defeats it entirely.
+
+The control that would close all three is a `ResourceBranch` newtype
+constructible only from a row read, so `authorize` cannot receive a
+principal-derived value at all. That is a cross-lane signature change and is
+queued separately; its absence is known, not overlooked
+([DN-0004](decisions/notes/DN-0004-adr-0028-branchless-capability-authorization.md)).
+
 ### `console-gate-dev-auth-absence` — dev auth stays out of release defaults
 
 Source: `backend/ci/gates/dev-auth-absence/`. Uses `cargo metadata` to prove the
@@ -441,70 +645,17 @@ SQLX_OFFLINE=true cargo test -p console-platform-provisioning --test dev_princip
 
 ---
 
-## Cross-client contract gates
+## API contract gates
 
-The backend serves the committed `backend/openapi/openapi.yaml`; the TypeScript,
-Kotlin, and Swift clients are **generated** from it. These gates keep the three
-clients and the spec in lockstep.
+The committed `backend/openapi/openapi.yaml` remains the reviewed API contract.
+The post-pivot repository contains no generated client or frontend workspaces, so
+the surviving CI job does not build or boot an application and does not claim a
+client round-trip. It checks the committed document and source inventories
+directly.
 
-The authoritative platform-admin API contract is the same OpenAPI document, not a
-sidecar or undocumented internal surface. `/api/platform/*` route definitions in
-`console-platform-rest` must match the OpenAPI path+method inventory, and
-`web/src/api/platform.ts` must consume the generated `@console/api-client-ts`
-types for platform DTOs/request/response shapes. The raw fetch wrapper in the web
-module is transport-only: it preserves bearer/cookie/device behavior while the
-contract remains schema-driven.
+### `check:platform-contract-drift` — spec covers mounted routes
 
-### Generated-client drift — `check:api-drift:portable` / `:swift`
-
-Regenerates the clients from `openapi.yaml` and runs `git diff --exit-code`. Any
-drift between the committed generated code and a fresh regeneration fails. (Hand-
-editing generated client files therefore fails the gate — regenerate instead.)
-`check:ts` / `check:kotlin` / `check:swift` additionally compile each client.
-
-Generated clients are generated artifacts. Durable parser or model changes must
-start from the OpenAPI schema (`backend/openapi/openapi.yaml`) or the generator
-configuration/template/script that produces the checked-in client, then commit the
-regenerated output. Hand-editing `clients/kotlin/src/main/...` to relax JSON
-parsing is only acceptable as a throwaway diagnosis step; the shipped source of
-truth must be schema or generator-driven so the drift gates can reproduce it.
-
-Generated-client source-control policy for cleanup issue #108:
-- `backend/openapi/openapi.yaml` is the reviewed source of truth for generated
-  clients. Keep generated TypeScript, Kotlin, and Swift client output committed
-  and versioned atomically with OpenAPI changes so web/mobile consumers have
-  reproducible source and CI can fail on drift.
-- Regenerate clients with `npm run gen:api:portable` and `npm run gen:api:swift`;
-  do not hand-edit `clients/ts/src/schema.d.ts`, `clients/kotlin/**`, or
-  `clients/swift/Sources/ConsoleAPIClient/Generated/**`.
-- Code review and audit de-emphasize generated hunks and instead review
-  `backend/openapi/openapi.yaml`, generator scripts/configuration, and the drift
-  gate output for intent.
-- This policy can change only after a replacement release path proves consumer
-  builds, package publishing, and drift checks without committed generated
-  clients.
-
-Kotlin generated clients must parse JSON fail-closed by default: unknown response
-keys, non-standard lenient JSON, and malformed payloads are contract drift and
-must fail client/contract tests unless an explicit compatibility exception exists.
-Broad defaults such as `ignoreUnknownKeys = true` or `isLenient = true` are not
-allowed on the shared generated-client `Json` instance because they hide OpenAPI
-or backend/client drift.
-
-Compatibility exceptions must be route- or schema-scoped and documented before
-implementation. Each exception must name the endpoint/`operationId`, request vs.
-response direction, exact parser relaxation, production compatibility reason,
-owner, expiry or removal trigger, source-of-truth change point (schema vs.
-generator config/template/script), and the fixture/test that proves the exception
-is narrow. Exception tests must still run under `check:kotlin` or the relevant
-contract/drift gate so future routes do not inherit compatibility mode silently.
-
-### `check:openapi-app` — spec covers mounted routes
-
-`node scripts/check-openapi-app.mjs` first runs
-`scripts/check-platform-contract-drift.mjs`, then asserts the app-served OpenAPI
-document is byte-for-byte equal to the committed `backend/openapi/openapi.yaml`.
-The platform drift gate parses `console-platform-rest` router definitions in
+`node scripts/check-platform-contract-drift.mjs` parses `console-platform-rest` router definitions in
 `src/lib.rs` and `src/view_as.rs` and fails when any `/api/platform/*`
 path+HTTP-method is missing from OpenAPI, or when OpenAPI documents a platform
 operation that the backend router does not define. The backend
@@ -515,59 +666,8 @@ unowned/undocumented HTTP surface (MFL-0002), including method-level platform
 drift on already-documented paths.
 
 Verification notes for platform route or DTO changes must name both halves of the
-contract check: the route inventory comparison (`node scripts/check-platform-contract-drift.mjs`
-or `npm run check:openapi-app`) and frontend type generation/validation (`npm run gen:api:ts`
-plus `npm run check:ts`).
-
-### `test:contract` — generated client ↔ app round-trip
-
-`npm run test:contract` exercises the generated TS client against the running app
-to confirm request/response shapes round-trip against the real handlers (needs
-`CONTRACT_DATABASE_URL`).
-
----
-
-## Web console and product-maturity gates
-
-The web job runs root-level product maturity scripts before its exact web
-verification sequence. These scripts are local Node gates, not Playwright runtime
-tests:
-
-- `npm run check:foundation-gates`
-- `npm run check:enterprise-ux-parity`
-- `npm run check:browser-persona-matrix`
-- `npm run check:ios-ui-test-fail-closed`
-- `npm run check:g004-identity-foundation`
-- `npm run check:g005-workflow-lifecycle`
-- `npm run check:workflow-runtime-spine`
-- `npm run check:workflow-runtime-m2-strangler`
-- `npm run check:workflow-runtime-m2-cedar-guards`
-- `npm run check:workflow-runtime-m2-runtime`
-- `npm run check:workflow-runtime-m2-drainer`
-- `npm run check:g006-asset-dispatch-lifecycle`
-- `npm run check:g007-collaboration-mobile-lifecycle`
-- `npm run check:g008-payroll-readiness`
-- `npm run check:people-hr-maturity`
-- `npm run check:payroll-release-gate`
-- `npm run check:financial-maturity`
-- `npm run check:cx-reporting-maturity`
-- `npm run check:operations-intelligence-maturity`
-
-### Exact web CI verification sequence
-
-The workflow runs these commands in order against `web/package.json`:
-
-1. `npm run lint --workspace @console/web` runs ESLint and
-   `web/scripts/check-ui-strings.mjs`.
-2. `npm run test --workspace @console/web` runs Vitest.
-3. `npm run test:production-dev-auth-guards --workspace @console/web` verifies
-   production dev-auth entrypoint guards.
-4. `npm run check:production-dev-auth-absence --workspace @console/web` owns the
-   production build (`tsc -b` plus `vite build`) and proves dev-auth entrypoints
-   are absent from the emitted artifact.
-
-Root shortcuts `web:lint` and `web:test` reproduce only the first two commands;
-the production artifact proof is intentionally the explicit workspace sequence.
+contract check: the route inventory comparison (`npm run check:platform-contract-drift`)
+and the backend `openapi_drift.rs` suite.
 
 ---
 
@@ -661,7 +761,12 @@ the enforcement notes in
 
 ---
 
-## Mobile parity gates
+## Retired pre-pivot mobile gates (historical)
+
+> **Not current or runnable.** The `web/`, `android/`, and `ios/` trees and their
+> workflows/scripts were removed after the pivot. The present-tense descriptions
+> below are retained only as context for older review evidence; they do not
+> describe the current repository or a merge gate.
 
 ### `check-i18n.mjs` — UI string-key parity
 
@@ -847,8 +952,8 @@ runner-temp androidTest asset before `./gradlew fieldApi34DebugAndroidTest` runs
 The workflow deliberately avoids external backend/session secrets, GitHub step
 outputs, and raw Gradle CLI arguments for token values.
 
-`npm run check:android-e2e-fail-closed` is the lightweight regression guard for
-issue #359: it statically inspects the workflow and Android debug/release network
+The former `check:android-e2e-fail-closed` package script was the lightweight
+regression guard for issue #359: it statically inspects the workflow and Android debug/release network
 boundaries, while its mutation suite proves that external secrets, a non-PG18
 database, missing exact-SHA verification, deterministic/unhashed OTPs, credential
 leaks, skip-permitting result gates, and release cleartext regressions fail. It
@@ -875,31 +980,27 @@ case, failure, or error fails the job; there is no optional self-skip path.
 
 ---
 
-## CI-contextual browser/dev-up gates
+## CI-contextual dev-up gate
 
-The dev-up smoke and browser E2E jobs are local only when their service/runtime
-dependencies are available:
+The dev-up smoke is local only when its service/runtime dependencies are
+available:
 
 - **dev-up smoke:** `node scripts/dev-up.mjs bootstrap`, `/readyz`, cleanup with
-  `node scripts/dev-up.mjs down`, dev-auth bootstrap with
-  `CONSOLE_DEV_AUTH_E2E=1 node scripts/dev-up.mjs bootstrap`, and
-  `CONSOLE_DEV_AUTH_E2E=1 npx playwright test --project=dev-auth`.
-- **Browser E2E:** `bash e2e/run.sh` after CI-equivalent setup for Postgres,
-  `psql`, Python E2E helpers, Rust `console-app`, Node dependencies, and Playwright
-  Chromium. This is the all-user-stories browser gate and should be used for UI
-  feature completion evidence when applicable.
+  `node scripts/dev-up.mjs down`. CI precedes bootstrap with the compose contract
+  unit test and PostgreSQL topology integration regression.
 
 ---
 
 ## Notes
 
-- The seven `console-gate-*` binaries exit non-zero on the first violation with a
+- The ten `console-gate-*` binaries exit non-zero on the first violation with a
   `file:detail` message; run an individual gate locally to see what it caught.
-- When a change touches OpenAPI routes/schemas, the generated-client drift,
-  client compile, `check:openapi-app`, and `test:contract` gates must all be
-  re-run; a backend-only internal change that does not move API/client surfaces
-  still needs the backend fmt/clippy/test/gate binaries and any touched-surface
-  CI-contextual gates.
+- When a change touches OpenAPI routes/schemas, run
+  `npm run check:platform-contract-drift` and the backend `openapi_drift.rs` suite, plus
+  the employee-import or ontology-write contract suite when that surface moves.
+  A backend-only internal change that does not move API surfaces still needs the
+  backend fmt/clippy/test/gate binaries and any touched-surface CI-contextual
+  gates.
 - Gate provenance and the incidents that motivated several checks are recorded in
   [MISTAKES-LEDGER.md](MISTAKES-LEDGER.md).
 

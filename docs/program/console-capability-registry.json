@@ -1,10 +1,10 @@
 {
   "schema_version": "console-capability-registry-v2",
-  "last_refreshed": "2026-07-28",
+  "last_refreshed": "2026-08-03",
   "authority": "docs/program/console-enterprise-roadmap.md",
-  "source_revision": "fix/backend-dead-helper@ac27e72344231db06fb176dff661547409df5d1d",
-  "dispatch_rule": "A row may enter in_progress only with one writer, an exact isolated worktree, disjoint ownership roots, a signature story, evidence paths, and executable leaf gates.",
-  "hold_rule": "Unassigned worktrees, overlapping ownership, missing backend contracts, empty Buck2 target sets, stale reference digests, or missing jurisdiction and independent-review receipts fail closed.",
+  "source_revision": "origin/main@435e251edfab12750850d5b1d411528b10a3ed8a",
+  "dispatch_rule": "Dispatch is disabled after the 2026-08-03 continuity reset. No row may enter in_progress until current authority deliberately replaces the HOLD reset and admits new exact candidate-bound assignments; historical_* fields never authorize work.",
+  "hold_rule": "No worktree, branch, or lane survives as a continuation dependency. While the continuity reset is HOLD, every current worktree, branch, and lane_assignments field is null and every current state field is HOLD.",
   "review_authority": {
     "reviewers": [
       {
@@ -72,8 +72,8 @@
       },
       "dependencies": [],
       "owner": "console-shell",
-      "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-shell-parity-20260723",
-      "branch": "codex/console-shell-parity-20260723",
+      "worktree": null,
+      "branch": null,
       "commits": [
         "38a53bdd"
       ],
@@ -109,13 +109,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "pinned",
-        "backend": "not_applicable",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_matrix_passed",
-        "runtime": "dev_auth_live_at_localhost_5173",
-        "independent_review": "i1_non_independent_approved",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -164,14 +164,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-CONSOLE-SHELL"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -249,50 +247,56 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
       ],
-      "lane_assignments": {
+      "lane_assignments": null,
+      "historical_worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-shell-parity-20260723",
+      "historical_branch": "codex/console-shell-parity-20260723",
+      "historical_lane_assignments": {
         "consolidation": {
           "phase0_notes": "Wave-4 Phase-0 landed 2026-07-25: WindowManagerProvider mounted in ConsoleShell (it existed only in the legacy AppShell/tests/a nested provider, so every console window-model consumer was green in jsdom and dead in production — the single cause behind the fidelity audit reporting \"window model missing\" across 13 modules); shared ObjectCard a11y; code-grammar converged on objectCodeBodySource; ontology catalog additive upgrade (0211)."
         }
+      },
+      "historical_reset_state": {
+        "design_contract": "pinned",
+        "backend": "not_applicable",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_matrix_passed",
+        "runtime": "dev_auth_live_at_localhost_5173",
+        "independent_review": "i1_non_independent_approved",
+        "production_exposure": "dark"
       }
     },
     {
@@ -322,8 +326,8 @@
         "CAP-CONSOLE-SHELL"
       ],
       "owner": "console-overview",
-      "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-overview-polish-20260723",
-      "branch": "codex/console-overview-polish-20260723",
+      "worktree": null,
+      "branch": null,
       "commits": [
         "3a04a2b4"
       ],
@@ -364,13 +368,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "bounded_improvement_not_full_parity",
-        "backend": "existing_real_action_inbox",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_passed",
-        "runtime": "live_preview_hmr_available",
-        "independent_review": "i1_non_independent_approved",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -424,14 +428,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-OVERVIEW-WORKSPACE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -509,46 +511,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-overview-polish-20260723",
+      "historical_branch": "codex/console-overview-polish-20260723",
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "bounded_improvement_not_full_parity",
+        "backend": "existing_real_action_inbox",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_passed",
+        "runtime": "live_preview_hmr_available",
+        "independent_review": "i1_non_independent_approved",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-BENEFITS-CATALOG",
@@ -576,8 +585,8 @@
         "CAP-SHARED-ONTOLOGY-WORKFLOW"
       ],
       "owner": "console-benefits",
-      "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-benefit-20260723",
-      "branch": "codex/console-benefit-20260723",
+      "worktree": null,
+      "branch": null,
       "commits": [
         "af1b1c85",
         "adfd064f",
@@ -632,13 +641,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "implemented_contract",
-        "backend": "implemented_but_buck2_unregistered",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_and_app_router_passed",
-        "runtime": "dev_auth_empty_state_verified_on_restarted_backend",
-        "independent_review": "i1_non_independent_approved",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -698,14 +707,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-BENEFITS-CATALOG"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -783,46 +790,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-benefit-20260723",
+      "historical_branch": "codex/console-benefit-20260723",
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "implemented_contract",
+        "backend": "implemented_but_buck2_unregistered",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_and_app_router_passed",
+        "runtime": "dev_auth_empty_state_verified_on_restarted_backend",
+        "independent_review": "i1_non_independent_approved",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-COMPLIANCE-CATALOG",
@@ -850,45 +864,13 @@
         "CAP-SHARED-ONTOLOGY-WORKFLOW"
       ],
       "owner": "console-compliance",
-      "worktree": "/private/tmp/compliance-catalog-lifecycle-20260724",
-      "branch": "codex/compliance-catalog-lifecycle-20260724",
+      "worktree": null,
+      "branch": null,
       "commits": [
         "25f6b8e0"
       ],
       "integration_commits": [],
-      "lane_assignments": {
-        "backend": {
-          "owner": "compliance-backend",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-compliance-backend-20260723",
-          "branch": "codex/console-compliance-backend-20260723",
-          "roots": [
-            "backend/crates/compliance/rest/src/lib.rs",
-            "backend/app/tests/compliance_catalog_api.rs",
-            "backend/crates/platform/authz/src/lib.rs"
-          ],
-          "must_not_touch": [
-            "backend/openapi/openapi.yaml"
-          ]
-        },
-        "frontend": {
-          "owner": "compliance-frontend",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-compliance-frontend-20260723",
-          "branch": "codex/console-compliance-frontend-20260723",
-          "roots": [],
-          "must_not_touch": [
-            "backend/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-integration-20260723",
-          "branch": "codex/console-integration-20260723",
-          "roots": [
-            "backend/openapi/openapi.yaml",
-            "docs/program/**"
-          ]
-        }
-      },
+      "lane_assignments": null,
       "ownership": {
         "frontend_roots": [],
         "backend_roots": [
@@ -948,13 +930,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "openapi_and_generated_clients_updated_pending_integrated_review",
-        "backend": "evidence_accept_lifecycle_and_tenant_race_coverage_implemented_pending_central_buck",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_and_contract_coverage_expanded_runtime_postgres_target_pending_central_buck",
-        "runtime": "not_run_in_this_isolated_lane",
-        "independent_review": "request_changes_addressed_pending_re_review",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -1006,14 +988,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-COMPLIANCE-CATALOG"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -1091,46 +1071,84 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": "/private/tmp/compliance-catalog-lifecycle-20260724",
+      "historical_branch": "codex/compliance-catalog-lifecycle-20260724",
+      "historical_lane_assignments": {
+        "backend": {
+          "owner": "compliance-backend",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-compliance-backend-20260723",
+          "branch": "codex/console-compliance-backend-20260723",
+          "roots": [
+            "backend/crates/compliance/rest/src/lib.rs",
+            "backend/app/tests/compliance_catalog_api.rs",
+            "backend/crates/platform/authz/src/lib.rs"
+          ],
+          "must_not_touch": [
+            "backend/openapi/openapi.yaml"
+          ]
+        },
+        "frontend": {
+          "owner": "compliance-frontend",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-compliance-frontend-20260723",
+          "branch": "codex/console-compliance-frontend-20260723",
+          "roots": [],
+          "must_not_touch": [
+            "backend/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-integration-20260723",
+          "branch": "codex/console-integration-20260723",
+          "roots": [
+            "backend/openapi/openapi.yaml",
+            "docs/program/**"
+          ]
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "openapi_and_generated_clients_updated_pending_integrated_review",
+        "backend": "evidence_accept_lifecycle_and_tenant_race_coverage_implemented_pending_central_buck",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_and_contract_coverage_expanded_runtime_postgres_target_pending_central_buck",
+        "runtime": "not_run_in_this_isolated_lane",
+        "independent_review": "request_changes_addressed_pending_re_review",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-SHARED-ONTOLOGY-WORKFLOW",
@@ -1208,13 +1226,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "partial",
-        "backend": "substantial_partial",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "fragmented",
-        "runtime": "partial",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -1259,14 +1277,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-SHARED-ONTOLOGY-WORKFLOW"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -1344,46 +1360,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "partial",
+        "backend": "substantial_partial",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "fragmented",
+        "runtime": "partial",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-PRODUCTION-PILOT",
@@ -1445,13 +1468,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "research_required",
-        "backend": "gap_analysis_required",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -1501,14 +1524,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-PRODUCTION-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -1586,46 +1607,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "research_required",
+        "backend": "gap_analysis_required",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-LOGISTICS-PILOT",
@@ -1683,32 +1711,15 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "research_required",
-        "backend": "gap_analysis_required",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_matrix_passed_no_browser_replay",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-logistics-frontend-20260724",
-          "branch": "claude/console-logistics-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-LOGISTICS-PILOT/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ],
-          "integration_notes": "Merged + mounted DARK 2026-07-24. CEILING: logistics REST is write-only (zero GET routes) — queues are session working set; refresh truthfully empties; history readback + rehydration need a read-endpoint charter (gap manifest in docs/evidence/console/CAP-LOGISTICS-PILOT/). openapi drift fixed via LogisticsTimeTuple (backend not RFC3339 yet — flip-back notes in openapi-applied-notes.md). logistics ConfiguredRouteSurface/RouteSource registration still missing (pre-existing)."
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        }
-      },
+      "lane_assignments": null,
       "resource_requirements": {
         "writer": 1,
         "postgres": 0,
@@ -1746,14 +1757,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-LOGISTICS-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -1831,46 +1840,78 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_required",
+        "backend": "gap_analysis_required",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_matrix_passed_no_browser_replay",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-logistics-frontend-20260724",
+          "branch": "claude/console-logistics-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-LOGISTICS-PILOT/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ],
+          "integration_notes": "Merged + mounted DARK 2026-07-24. CEILING: logistics REST is write-only (zero GET routes) — queues are session working set; refresh truthfully empties; history readback + rehydration need a read-endpoint charter (gap manifest in docs/evidence/console/CAP-LOGISTICS-PILOT/). openapi drift fixed via LogisticsTimeTuple (backend not RFC3339 yet — flip-back notes in openapi-applied-notes.md). logistics ConfiguredRouteSurface/RouteSource registration still missing (pre-existing)."
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_required",
+        "backend": "gap_analysis_required",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_matrix_passed_no_browser_replay",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-IFM-PILOT",
@@ -1932,13 +1973,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "research_required",
-        "backend": "gap_analysis_required",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -1988,14 +2029,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-IFM-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -2073,46 +2112,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "research_required",
+        "backend": "gap_analysis_required",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-EQUIPMENT-3R-PILOT",
@@ -2140,8 +2186,8 @@
         "CAP-SHARED-ONTOLOGY-WORKFLOW"
       ],
       "owner": "equipment-3r-consolidation",
-      "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-equipment-vertical-20260724",
-      "branch": "claude/console-equipment-vertical-20260724",
+      "worktree": null,
+      "branch": null,
       "commits": [
         "47869a9d",
         "d6fc5a76"
@@ -2195,13 +2241,13 @@
         ]
       },
       "state": {
-        "design_contract": "committed_contract",
-        "backend": "integrated_dark_review_remediation_pending",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "console_rt_story_and_focused_tests_passed_browser_replay_pending",
-        "runtime": "blocked",
-        "independent_review": "request_changes_2026_07_23",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -2258,14 +2304,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-EQUIPMENT-3R-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -2343,50 +2387,56 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
       ],
-      "lane_assignments": {
+      "lane_assignments": null,
+      "historical_worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-equipment-vertical-20260724",
+      "historical_branch": "claude/console-equipment-vertical-20260724",
+      "historical_lane_assignments": {
         "consolidation": {
           "integration_notes": "2026-07-25 OPEN HALF: web/src/console/equipment/** still sends evidenceReference and will 422 against the 0184 server. NO GATE CATCHES IT — the module uses hand-written local interfaces, not generated types, so tsc -b and both api-drift gates stay green. Not a rename: the field must become a picker over ADMISSIBLE, non-disposed objects holding a VERIFIED ORIGINAL copy, because the server 404s flat and deliberately cannot say why a document was refused. No live exposure (EXPOSED_SCREEN_KEYS is []). Deferred by D-0 depth-first (equipment is not the CRM focus module); must land before equipment is ever exposed."
         }
+      },
+      "historical_reset_state": {
+        "design_contract": "committed_contract",
+        "backend": "integrated_dark_review_remediation_pending",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "console_rt_story_and_focused_tests_passed_browser_replay_pending",
+        "runtime": "blocked",
+        "independent_review": "request_changes_2026_07_23",
+        "production_exposure": "dark"
       }
     },
     {
@@ -2449,13 +2499,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "research_required",
-        "backend": "gap_analysis_required",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -2505,14 +2555,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-CONSULTING-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -2590,46 +2638,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "research_required",
+        "backend": "gap_analysis_required",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-OWNED-PLANTS-PILOT",
@@ -2690,13 +2745,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "research_required",
-        "backend": "blocked_by_production_pilot",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -2746,14 +2801,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-OWNED-PLANTS-PILOT"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -2831,46 +2884,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "research_required",
+        "backend": "blocked_by_production_pilot",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-PAYROLL-CONSOLE",
@@ -2925,48 +2985,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-payroll-backend-20260724",
-          "branch": "claude/console-payroll-backend-20260724",
-          "roots": [
-            "backend/crates/payroll/**",
-            "backend/app/tests/payroll_run_api.rs",
-            "docs/evidence/console/CAP-PAYROLL-CONSOLE/**",
-            "backend/crates/platform/db/migrations/0186_payroll_run_pipeline.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0186"
-          ]
-        },
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-payroll-frontend-20260724",
-          "branch": "claude/console-payroll-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-PAYROLL-CONSOLE/frontend/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -3012,14 +3039,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-PAYROLL-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -3097,46 +3122,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-payroll-backend-20260724",
+          "branch": "claude/console-payroll-backend-20260724",
+          "roots": [
+            "backend/crates/payroll/**",
+            "backend/app/tests/payroll_run_api.rs",
+            "docs/evidence/console/CAP-PAYROLL-CONSOLE/**",
+            "backend/crates/platform/db/migrations/0186_payroll_run_pipeline.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0186"
+          ]
+        },
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-payroll-frontend-20260724",
+          "branch": "claude/console-payroll-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-PAYROLL-CONSOLE/frontend/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-ATTENDANCE-CONSOLE",
@@ -3193,48 +3266,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-attendance-frontend-20260724",
-          "branch": "claude/console-attendance-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-ATTENDANCE-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-attendance-backend-20260724",
-          "branch": "claude/console-attendance-backend-20260724",
-          "roots": [
-            "backend/crates/attendance/**",
-            "backend/app/tests/attendance_close_api.rs",
-            "backend/crates/platform/db/migrations/0188_create_attendance_close.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0188"
-          ],
-          "mode": "new_crate_for_close_gaps; gaps belonging in existing shared crates go to manifest"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "writer_assigned_gap_closure_in_progress",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -3287,14 +3327,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-ATTENDANCE-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -3372,46 +3410,85 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-attendance-frontend-20260724",
+          "branch": "claude/console-attendance-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-ATTENDANCE-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-attendance-backend-20260724",
+          "branch": "claude/console-attendance-backend-20260724",
+          "roots": [
+            "backend/crates/attendance/**",
+            "backend/app/tests/attendance_close_api.rs",
+            "backend/crates/platform/db/migrations/0188_create_attendance_close.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0188"
+          ],
+          "mode": "new_crate_for_close_gaps; gaps belonging in existing shared crates go to manifest"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "writer_assigned_gap_closure_in_progress",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-RECRUITING",
@@ -3466,48 +3543,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-recruiting-backend-20260724",
-          "branch": "claude/console-recruiting-backend-20260724",
-          "roots": [
-            "backend/crates/recruiting/**",
-            "backend/app/tests/recruiting_pipeline_api.rs",
-            "docs/evidence/console/CAP-RECRUITING/**",
-            "backend/crates/platform/db/migrations/0187_create_recruiting.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0187"
-          ]
-        },
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-recruiting-frontend-20260724",
-          "branch": "claude/console-recruiting-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-RECRUITING/frontend/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -3553,14 +3597,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-RECRUITING"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -3638,46 +3680,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-recruiting-backend-20260724",
+          "branch": "claude/console-recruiting-backend-20260724",
+          "roots": [
+            "backend/crates/recruiting/**",
+            "backend/app/tests/recruiting_pipeline_api.rs",
+            "docs/evidence/console/CAP-RECRUITING/**",
+            "backend/crates/platform/db/migrations/0187_create_recruiting.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0187"
+          ]
+        },
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-recruiting-frontend-20260724",
+          "branch": "claude/console-recruiting-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-RECRUITING/frontend/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-ORG-CONSOLE",
@@ -3730,48 +3820,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-org-frontend-20260724",
-          "branch": "claude/console-org-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-ORG-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-org-backend-20260724",
-          "branch": "claude/console-org-backend-20260724",
-          "roots": [
-            "backend/crates/orgchange/**",
-            "backend/app/tests/org_change_api.rs",
-            "backend/crates/platform/db/migrations/0189_create_org_change.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0189"
-          ],
-          "mode": "new_crate_for_change_lifecycle; identity/registry edits forbidden (hot) -> manifest"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -3817,14 +3874,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-ORG-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -3902,46 +3957,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-org-frontend-20260724",
+          "branch": "claude/console-org-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-ORG-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-org-backend-20260724",
+          "branch": "claude/console-org-backend-20260724",
+          "roots": [
+            "backend/crates/orgchange/**",
+            "backend/app/tests/org_change_api.rs",
+            "backend/crates/platform/db/migrations/0189_create_org_change.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0189"
+          ],
+          "mode": "new_crate_for_change_lifecycle; identity/registry edits forbidden (hot) -> manifest"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-EVALUATION-CONSOLE",
@@ -4001,48 +4104,15 @@
           "//tools/buck:app-evaluation-cycle-api-postgres"
         ]
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-evaluation-frontend-20260724",
-          "branch": "claude/console-evaluation-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-EVALUATION-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-evaluation-backend-20260724",
-          "branch": "claude/console-evaluation-backend-20260724",
-          "roots": [
-            "backend/crates/evaluation/**",
-            "backend/app/tests/evaluation_cycle_api.rs",
-            "backend/crates/platform/db/migrations/0190_create_evaluation.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0190"
-          ],
-          "mode": "new_crate"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -4090,14 +4160,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-EVALUATION-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -4175,46 +4243,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-evaluation-frontend-20260724",
+          "branch": "claude/console-evaluation-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-EVALUATION-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-evaluation-backend-20260724",
+          "branch": "claude/console-evaluation-backend-20260724",
+          "roots": [
+            "backend/crates/evaluation/**",
+            "backend/app/tests/evaluation_cycle_api.rs",
+            "backend/crates/platform/db/migrations/0190_create_evaluation.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0190"
+          ],
+          "mode": "new_crate"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-INVENTORY-CONSOLE",
@@ -4271,48 +4387,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-inventory-frontend-20260724",
-          "branch": "claude/console-inventory-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-INVENTORY-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-inventory-backend-20260724",
-          "branch": "claude/console-inventory-backend-20260724",
-          "roots": [
-            "backend/crates/inventory/**",
-            "backend/app/tests/inventory_count_api.rs",
-            "backend/crates/platform/db/migrations/0191_inventory_rest.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0191"
-          ],
-          "mode": "extend_existing_cold_crate_add_rest"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "writer_assigned_gap_closure_in_progress",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -4362,14 +4445,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-INVENTORY-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -4447,46 +4528,85 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-inventory-frontend-20260724",
+          "branch": "claude/console-inventory-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-INVENTORY-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-inventory-backend-20260724",
+          "branch": "claude/console-inventory-backend-20260724",
+          "roots": [
+            "backend/crates/inventory/**",
+            "backend/app/tests/inventory_count_api.rs",
+            "backend/crates/platform/db/migrations/0191_inventory_rest.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0191"
+          ],
+          "mode": "extend_existing_cold_crate_add_rest"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "writer_assigned_gap_closure_in_progress",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-DISPATCH-CONSOLE",
@@ -4539,48 +4659,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-dispatch-frontend-20260724",
-          "branch": "claude/console-dispatch-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-DISPATCH-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-dispatch-backend-20260724",
-          "branch": "claude/console-dispatch-backend-20260724",
-          "roots": [
-            "backend/crates/dispatch/**",
-            "backend/app/tests/dispatch_pipeline_api.rs",
-            "backend/crates/platform/db/migrations/0192_dispatch_gaps.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0192"
-          ],
-          "mode": "extend_existing_cold_crate"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "spine_landed_spec_consumed",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -4622,14 +4709,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-DISPATCH-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -4707,46 +4792,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "spine_landed_spec_consumed",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-dispatch-frontend-20260724",
+          "branch": "claude/console-dispatch-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-DISPATCH-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-dispatch-backend-20260724",
+          "branch": "claude/console-dispatch-backend-20260724",
+          "roots": [
+            "backend/crates/dispatch/**",
+            "backend/app/tests/dispatch_pipeline_api.rs",
+            "backend/crates/platform/db/migrations/0192_dispatch_gaps.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0192"
+          ],
+          "mode": "extend_existing_cold_crate"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "spine_landed_spec_consumed",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-MAINTENANCE-CONSOLE",
@@ -4799,48 +4932,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-maintenance-frontend-20260724",
-          "branch": "claude/console-maintenance-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-maintenance-backend-20260724",
-          "branch": "claude/console-maintenance-backend-20260724",
-          "roots": [
-            "backend/crates/workorder/**",
-            "backend/app/tests/maintenance_chain_api.rs",
-            "backend/crates/platform/db/migrations/0193_maintenance_gaps.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0193"
-          ],
-          "mode": "extend_existing_crate_after_cold_check"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -4886,14 +4986,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-MAINTENANCE-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -4971,46 +5069,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-maintenance-frontend-20260724",
+          "branch": "claude/console-maintenance-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-MAINTENANCE-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-maintenance-backend-20260724",
+          "branch": "claude/console-maintenance-backend-20260724",
+          "roots": [
+            "backend/crates/workorder/**",
+            "backend/app/tests/maintenance_chain_api.rs",
+            "backend/crates/platform/db/migrations/0193_maintenance_gaps.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0193"
+          ],
+          "mode": "extend_existing_crate_after_cold_check"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-FIELD-CONSOLE",
@@ -5063,48 +5209,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-field-frontend-20260724",
-          "branch": "claude/console-field-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-FIELD-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-field-backend-20260724",
-          "branch": "claude/console-field-backend-20260724",
-          "roots": [
-            "backend/crates/support/**",
-            "backend/app/tests/field_visit_api.rs",
-            "backend/crates/platform/db/migrations/0194_field_gaps.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0194"
-          ],
-          "mode": "extend_support_crate; workorder needs -> manifest (owned by maintenance lane)"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -5150,14 +5263,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-FIELD-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -5235,46 +5346,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-field-frontend-20260724",
+          "branch": "claude/console-field-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-FIELD-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-field-backend-20260724",
+          "branch": "claude/console-field-backend-20260724",
+          "roots": [
+            "backend/crates/support/**",
+            "backend/app/tests/field_visit_api.rs",
+            "backend/crates/platform/db/migrations/0194_field_gaps.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0194"
+          ],
+          "mode": "extend_support_crate; workorder needs -> manifest (owned by maintenance lane)"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-DOCS-EVIDENCE-CONSOLE",
@@ -5327,48 +5486,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-docs-frontend-20260724",
-          "branch": "claude/console-docs-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-DOCS-EVIDENCE-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-docs-backend-20260724",
-          "branch": "claude/console-docs-backend-20260724",
-          "roots": [
-            "backend/crates/docs/**",
-            "backend/app/tests/docs_evidence_api.rs",
-            "backend/crates/platform/db/migrations/0195_docs_gaps.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0195"
-          ],
-          "mode": "extend_existing_crate_after_cold_check"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "deferred_spine_evidence_incompatible",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -5410,14 +5536,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-DOCS-EVIDENCE-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -5495,46 +5619,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "deferred_spine_evidence_incompatible",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-docs-frontend-20260724",
+          "branch": "claude/console-docs-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-DOCS-EVIDENCE-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-docs-backend-20260724",
+          "branch": "claude/console-docs-backend-20260724",
+          "roots": [
+            "backend/crates/docs/**",
+            "backend/app/tests/docs_evidence_api.rs",
+            "backend/crates/platform/db/migrations/0195_docs_gaps.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0195"
+          ],
+          "mode": "extend_existing_crate_after_cold_check"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "deferred_spine_evidence_incompatible",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-NOTIF-CONSOLE",
@@ -5587,48 +5759,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-notif-frontend-20260724",
-          "branch": "claude/console-notif-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-NOTIF-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-notif-backend-20260724",
-          "branch": "claude/console-notif-backend-20260724",
-          "roots": [
-            "backend/crates/notifications/**",
-            "backend/app/tests/notif_routing_api.rs",
-            "backend/crates/platform/db/migrations/0196_notif_routing.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0196"
-          ],
-          "mode": "extend_existing_crate_after_cold_check"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -5674,14 +5813,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-NOTIF-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -5759,46 +5896,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-notif-frontend-20260724",
+          "branch": "claude/console-notif-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-NOTIF-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-notif-backend-20260724",
+          "branch": "claude/console-notif-backend-20260724",
+          "roots": [
+            "backend/crates/notifications/**",
+            "backend/app/tests/notif_routing_api.rs",
+            "backend/crates/platform/db/migrations/0196_notif_routing.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0196"
+          ],
+          "mode": "extend_existing_crate_after_cold_check"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-BOARD-CONSOLE",
@@ -5851,48 +6036,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-board-frontend-20260724",
-          "branch": "claude/console-board-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-BOARD-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        },
-        "backend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-board-backend-20260724",
-          "branch": "claude/console-board-backend-20260724",
-          "roots": [
-            "backend/crates/notices/**",
-            "backend/app/tests/board_ack_api.rs",
-            "backend/crates/platform/db/migrations/0197_board_ack.sql"
-          ],
-          "must_not_touch": [
-            "backend/openapi/**"
-          ],
-          "migration_slots_provisional": [
-            "0197"
-          ],
-          "mode": "extend_existing_crate_after_cold_check"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "integrated_dark_on_pr488",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -5938,14 +6090,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-BOARD-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -6023,46 +6173,94 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-board-frontend-20260724",
+          "branch": "claude/console-board-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-BOARD-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        },
+        "backend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-board-backend-20260724",
+          "branch": "claude/console-board-backend-20260724",
+          "roots": [
+            "backend/crates/notices/**",
+            "backend/app/tests/board_ack_api.rs",
+            "backend/crates/platform/db/migrations/0197_board_ack.sql"
+          ],
+          "must_not_touch": [
+            "backend/openapi/**"
+          ],
+          "migration_slots_provisional": [
+            "0197"
+          ],
+          "mode": "extend_existing_crate_after_cold_check"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "integrated_dark_on_pr488",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-DIRECTORY-CONSOLE",
@@ -6113,31 +6311,15 @@
         "leaf_commands": [],
         "buck2_targets": []
       },
-      "lane_assignments": {
-        "frontend": {
-          "owner": "claude-fanout-20260724",
-          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-directory-frontend-20260724",
-          "branch": "claude/console-directory-frontend-20260724",
-          "roots": [
-            "docs/evidence/console/CAP-DIRECTORY-CONSOLE/**"
-          ],
-          "must_not_touch": [
-            "backend/**",
-            "backend/openapi/**"
-          ]
-        },
-        "consolidation": {
-          "owner": "console-consolidation"
-        }
-      },
+      "lane_assignments": null,
       "state": {
-        "design_contract": "research_in_progress",
-        "backend": "existing_rest_reused_identity_crate_hot_manifest_only",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -6179,14 +6361,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-DIRECTORY-CONSOLE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -6264,46 +6444,77 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_state": {
+        "design_contract": "research_in_progress",
+        "backend": "existing_rest_reused_identity_crate_hot_manifest_only",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      },
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": {
+        "frontend": {
+          "owner": "claude-fanout-20260724",
+          "worktree": "/Users/jasonlee/Developer/maintenance-worktrees/console-directory-frontend-20260724",
+          "branch": "claude/console-directory-frontend-20260724",
+          "roots": [
+            "docs/evidence/console/CAP-DIRECTORY-CONSOLE/**"
+          ],
+          "must_not_touch": [
+            "backend/**",
+            "backend/openapi/**"
+          ]
+        },
+        "consolidation": {
+          "owner": "console-consolidation"
+        }
+      },
+      "historical_reset_state": {
+        "design_contract": "research_in_progress",
+        "backend": "existing_rest_reused_identity_crate_hot_manifest_only",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-ASSET-MASTER-ACTION",
@@ -6366,13 +6577,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "declared",
-        "backend": "not_implemented",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "not_implemented",
-        "runtime": "not_exposed",
-        "independent_review": "not_started",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "resource_requirements": {
         "writer": 1,
@@ -6422,14 +6633,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "No exact candidate-bound module completion receipt has been admitted; legacy implementation and local-train claims remain historical only.",
         "paths": [
           "docs/evidence/console/CAP-ASSET-MASTER-ACTION"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: P1D found the healthy dev-auth backend was built before exact candidate and embeds/exposes no build SHA or binary digest.",
           "database": "HOLD: no exact candidate database receipt admitted.",
           "api": "HOLD: no exact candidate API receipt admitted.",
@@ -6507,46 +6716,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "declared",
+        "backend": "not_implemented",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "not_implemented",
+        "runtime": "not_exposed",
+        "independent_review": "not_started",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-SALES-CRM",
@@ -6615,13 +6831,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "authority_names_crm1_to_crm6_and_wfl9_not_yet_contracted",
-        "backend": "forklift_sales_catalog_only_no_deal_aggregate",
-        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
-        "e2e": "component_tests_only_no_browser_replay",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "notes": [
         "Registry provenance gap this row closes: `sales` was once the sole entry in EXPOSED_SCREEN_KEYS with no capability row backing it, and was emptied by b9e7fd74 'fix(console): fail closed without exposure evidence'. Re-verified 2026-07-25 at 4cabe239673e132765a003de04fd9dce5a86bfe2: EXPOSED_SCREEN_KEYS is [] on this branch and on origin/codex/operational-object-runtime-progress; nav.test.ts asserts toEqual([]). The row must exist before any exposure request is admissible.",
@@ -6684,14 +6900,12 @@
         "source": "exact candidate source inventory"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "Row seeded 2026-07-25 by L-P0-EPOCH so the capability has registry provenance before any exposure request. No candidate-bound completion receipt is admitted; the built surface is a catalog panel, not the CRM the authority specifies.",
         "paths": [
           "docs/evidence/console/CAP-SALES-CRM"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: no candidate-bound backend build receipt admitted for the sales quartet.",
           "database": "HOLD: no candidate-bound database receipt admitted.",
           "api": "HOLD: no candidate-bound API receipt admitted.",
@@ -6791,46 +7005,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "authority_names_crm1_to_crm6_and_wfl9_not_yet_contracted",
+        "backend": "forklift_sales_catalog_only_no_deal_aggregate",
+        "frontend": "frontend_surface_deleted_by_2026_07_28_clean_slate_pivot",
+        "e2e": "component_tests_only_no_browser_replay",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     },
     {
       "id": "CAP-ONTOLOGY-ENGINE",
@@ -6900,13 +7121,13 @@
         "buck2_targets": []
       },
       "state": {
-        "design_contract": "authority_confirmed_projection_model_no_lane_contract_yet",
-        "backend": "27_types_seeded_and_frozen_no_additive_upgrade_function_exists",
-        "frontend": "not_applicable",
-        "e2e": "missing",
-        "runtime": "blocked",
-        "independent_review": "missing",
-        "production_exposure": "dark"
+        "design_contract": "HOLD",
+        "backend": "HOLD",
+        "frontend": "HOLD",
+        "e2e": "HOLD",
+        "runtime": "HOLD",
+        "independent_review": "HOLD",
+        "production_exposure": "HOLD"
       },
       "notes": [
         "Why this is a distinct capability from CAP-SHARED-ONTOLOGY-WORKFLOW: that row covers the ontology manager/explorer surfaces and owns backend/crates/ontology/** as a private root. This row covers the two engine residuals the north star names — the catalog upgrade path and projected-type action dispatch — and therefore declares NO private roots. Its three files are serial roots taken under a strict two-link train (L-A1 then L-X7, same owner) with the parent capability's release confirmed first.",
@@ -6967,14 +7188,12 @@
         "source": "no console route key: this capability is an engine surface consumed through CAP-SHARED-ONTOLOGY-WORKFLOW's screens"
       },
       "candidate_evidence": {
-        "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
         "status": "HOLD",
         "reason": "Row seeded 2026-07-25 by L-P0-EPOCH. The engine exists and the 27-type catalog is installed, but the two capabilities this row names — additive catalog upgrade and a reachable projected-type Action — are absent at the candidate, and no candidate-bound receipt is admitted.",
         "paths": [
           "docs/evidence/console/CAP-ONTOLOGY-ENGINE"
         ],
         "contract": {
-          "source_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "backend_binary_digest_or_build_sha": "HOLD: no candidate-bound backend build receipt admitted for the ontology adapter.",
           "database": "HOLD: no candidate-bound catalog-install or upgrade receipt admitted.",
           "api": "HOLD: no candidate-bound API receipt admitted; the acting routes are present but unexercised for any new type.",
@@ -7065,46 +7284,53 @@
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-PRIVACY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-WORKFORCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-SAFETY-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-FINANCE-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-LOCATION-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         },
         {
           "jurisdiction_id": "JUR-KR-001",
           "control_id": "CTRL-KR-RECORDS-001",
-          "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
           "status": "HOLD",
           "reason": "Qualified Korean legal/control source and candidate-bound test/evidence receipt have not been admitted."
         }
-      ]
+      ],
+      "historical_worktree": null,
+      "historical_branch": null,
+      "historical_lane_assignments": null,
+      "lane_assignments": null,
+      "historical_reset_state": {
+        "design_contract": "authority_confirmed_projection_model_no_lane_contract_yet",
+        "backend": "27_types_seeded_and_frozen_no_additive_upgrade_function_exists",
+        "frontend": "not_applicable",
+        "e2e": "missing",
+        "runtime": "blocked",
+        "independent_review": "missing",
+        "production_exposure": "dark"
+      }
     }
   ],
   "resource_budgets": {
@@ -7117,13 +7343,10 @@
   },
   "provenance": {
     "authority_base_sha": "8e42b9a2ea42c4d79ed498044a9f50f623299f7f",
+    "authority_base_ref": "refs/tags/v0.2.1",
     "historical_implementation_freeze_sha": "78cb5197927a031ead30c6dc0426c23455d3cb16",
-    "exact_current_candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
+    "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD: P0 structure is current; no module completion claim is admitted."
-  },
-  "candidate": {
-    "sha": "ac27e72344231db06fb176dff661547409df5d1d",
-    "evidence_status": "HOLD"
   },
   "design_reference": {
     "source_project": "claude.ai/design/p/9c7c313a-2187-4cf1-bb35-7c07ad0a4d9d",
@@ -7149,7 +7372,6 @@
     "evidence_binding": "candidate:88c57a1d519b43bc4c0e7b721c62bc248b938b38; cross-module proof wave not yet admitted"
   },
   "source_inventory": {
-    "candidate_sha": "ac27e72344231db06fb176dff661547409df5d1d",
     "unmodeled_keys": [],
     "reclassified": [
       {
@@ -7161,7 +7383,7 @@
       }
     ]
   },
-  "source_revision_note": "Refreshed 2026-07-25 (L-P0-EPOCH). The previous pin origin/main@8e42b9a2 was 935 commits behind while last_refreshed claimed 2026-07-25. This SHA is the wave-4 spine tip and the base HEAD of every wave-4 lane worktree. provenance.authority_base_sha and candidate.sha are deliberately NOT moved here: rebinding the candidate is the integrator's act, and the validator requires authority_base_sha to stay distinct from the candidate.",
+  "source_revision_note": "Reset 2026-08-03 to the exact remote-main base of the consolidation train. plan-fanout.mjs reads this as a reproducibility floor: the SHA must exist and remain an ancestor of both the candidate and the named ref. It is not a continuation assignment, a live-environment claim, or dispatch authority; continuation_reset keeps all current lanes on HOLD. No candidate SHA is stored in this document because CI supplies it from the exact C/T/M train.",
   "hold_rule_amendment": {
     "as_of": "2026-07-25",
     "lane": "L-P0-EPOCH",
@@ -7174,5 +7396,22 @@
       "Does not permit a gap manifest in place of an implementation the lane's own scope covers. It applies only to surfaces outside the lane's declared roots.",
       "Does not affect exposure: ADR-0025 evidence requirements are unchanged."
     ]
+  },
+  "continuation_reset": {
+    "as_of": "2026-08-03",
+    "status": "HOLD",
+    "worktree_dependency": "none",
+    "branch_dependency": "none",
+    "lane_dispatch": "disabled",
+    "historical_fields": [
+      "historical_worktree",
+      "historical_branch",
+      "historical_lane_assignments",
+      "historical_state",
+      "historical_reset_state"
+    ],
+    "reason": "The pre-wipe consolidation invalidated every old local worktree, deleted remote branch, and pre-pivot lane assignment as a continuation dependency. A fresh session starts from main and the disk-wipe handoff; new writer lanes require new candidate-bound authority and review.",
+    "historical_snapshot_scope": "For every capability: id plus historical_worktree, historical_branch, historical_lane_assignments, historical_state, and exact pre-reset historical_reset_state.",
+    "historical_snapshot_sha256": "65edb195ff699e4afc6d67b7f953deddaf6ea0ec83f251c27e05273c7214fbe4"
   }
 }

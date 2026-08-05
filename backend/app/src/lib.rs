@@ -90,7 +90,9 @@ use console_platform_auth::{
     WebauthnSettings, android_assetlinks_json, apple_app_site_association_json,
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
-use console_platform_authz::{Action, Feature, Principal, Role, authorize, authorize_org_wide};
+use console_platform_authz::{
+    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
+};
 use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audit};
 use console_platform_email::{
@@ -2536,6 +2538,10 @@ fn update_equipment_projected_handler(store: PgRegistryStore) -> ProjectedHandle
             store
                 .update_equipment(UpdateEquipmentCommand {
                     actor: input.principal.user_id,
+                    // The projected dispatch is a second door onto the SAME
+                    // use-case, so it carries the same branch scope; without it
+                    // the ontology action would be a way around the check.
+                    branch_scope: input.principal.branch_scope.clone(),
                     equipment_id: EquipmentId::from_uuid(equipment_uuid),
                     fields: UpdateEquipmentFields {
                         status: Some(status),
@@ -3696,21 +3702,14 @@ fn principal_from_claims(claims: AccessClaims) -> Result<Principal, ApiError> {
     Ok(Principal::new(user_id, org_id, roles, branch_scope).with_access_scope(access_scope))
 }
 
+/// `GET /api/audit` is a QUERY over the caller's whole branch scope, not a read of
+/// one branch's row — `fetch_audit_records` is already handed `branch_scope` and
+/// confines the rows. There is no single resource branch to authorize against, so
+/// this is a capability check. (Its sibling `authorize_audit_attestation` is
+/// deliberately org-wide; see its doc comment.)
 fn authorize_audit_read(principal: &Principal) -> Result<(), ApiError> {
-    let resource_branch = match &principal.branch_scope {
-        BranchScope::All => BranchId::new(),
-        BranchScope::Branches(branches) => branches
-            .iter()
-            .next()
-            .copied()
-            .ok_or_else(|| ApiError::forbidden("principal has no branch scope"))?,
-    };
-    authorize(
-        principal,
-        Action::new(Feature::AuditLogRead),
-        resource_branch,
-    )
-    .map_err(ApiError::from_kernel)
+    authorize_capability(principal, Action::new(Feature::AuditLogRead))
+        .map_err(ApiError::from_kernel)
 }
 
 fn authorize_audit_attestation(principal: &Principal) -> Result<(), ApiError> {
@@ -3781,6 +3780,7 @@ fn audit_read_event(principal: &Principal) -> Result<AuditEvent, ApiError> {
 fn audit_event_branch(scope: &BranchScope) -> Option<BranchId> {
     match scope {
         BranchScope::All => None,
+        // fabricated-branch: ok stamps the ACTOR's branch on an audit row; never reaches authorize
         BranchScope::Branches(branches) => branches.iter().next().copied(),
     }
 }

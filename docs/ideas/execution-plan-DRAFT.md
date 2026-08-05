@@ -1,5 +1,18 @@
 # EXECUTION PLAN — from proven substrate to a demonstrable company
 
+> **§0 REVERSED 2026-08-01. Everything outside §0 stands.** §0's verdict ("the register strip is
+> DELETED, not deferred") and the `.gitattributes` remedy it recommended are both reversed:
+> `.gitattributes` is deleted and the strip is built across two pull requests (expand, then
+> contract). Neither is merged at the time of writing.
+>
+> §0's refutation was **correct on the mechanism** and was answered rather than ignored. The three
+> `?.candidate_sha` comparisons were doubling as payload-existence checks; each site now carries an
+> explicit `object(value, label)` check, asserted by `validate-console-truth-ledger.test.mjs`. The
+> other half of the refutation — that the leaves catch a *partial* rebind — dissolved: there is no
+> rebind step and no rebind tool left. The residual cost is a wholesale register revert validating
+> clean; it is stated and bounded in
+> `docs/program/ledger/2026-08-01-candidate-sha-leaves-the-registers.md`.
+
 **Status: APPROVED 2026-07-28 — execution authorized.**
 Date: 2026-07-28 · Mode: deliberate (`/ralplan --deliberate`) · **Rev 3**
 Rev 1 → Architect: gate-weakening found. Rev 2 → Critic: **REJECT**, weakening survived the fix.
@@ -20,8 +33,10 @@ declared it proven:
 | 4 | "retain `independent_outcome_review.candidate_sha` ×27" | **that field exists on 0 of 27 capabilities.** I invented a count from codex's phrasing and never checked it |
 
 Two further self-inflicted errors, both found by my own measurement:
-- **I corrected a correct number.** `390` was right (`rebind-authority-train.mjs:14`); `426` counts all
-  40-hex strings, a different quantity. The `candidate_sha` key occurs 358 times.
+- **I corrected a correct number.** `390` was right — it was the count stated in the header comment of
+  `scripts/console/rebind-authority-train.mjs`, a file this train deletes, so the citation is
+  historical and no longer resolvable in the tree; `426` counts all 40-hex strings, a different
+  quantity. The `candidate_sha` key occurs 358 times.
 - **The absence-ratchet I proposed cannot go green** — `registry.source_inventory.candidate_sha`
   legitimately carries that key, so an unscoped assertion rejects the clean baseline.
 
@@ -198,9 +213,13 @@ tautological bindings" without citing `:297`/`:301`.
   leaves, and it moves the invariant off the signed side; doing nothing — defensible but the fix is
   cheaper than the argument.
 - **Consequences:** the registers stay verbose but signature-covered and collapsed in review;
-  `rebind-authority-train.mjs` keeps rewriting 780 lines per cycle — mechanical, automated, and no
-  longer in anyone's way.
+  `rebind-authority-train.mjs` keeps rewriting the bindings every cycle — mechanical, automated, and
+  no longer in anyone's way.
+  *(2026-08-01: reversed. Both rebind tools and `.gitattributes` are deleted; a routine authority
+  commit now changes zero lines in either register.)*
 - **Follow-ups:** release-signing or branch-exemption (the ledger's own named throughput fix, still
   unbuilt — **this is the real throughput item, not the strip**); `rebind-candidate.test.mjs` is a dead
-  test and needs wiring or deleting; `rebind-authority-train.mjs:43-49` can emit a 2-file T that CI
-  rejects; `source_revision` ancestry under squash; L-WIRE charter for 6b.
+  test and needs wiring or deleting *(2026-08-01: deleted with its tool)*;
+  `rebind-authority-train.mjs:43-49` can emit a 2-file T that CI rejects *(2026-08-01: moot — the
+  tool is gone and a 1-document T is now admissible)*; `source_revision` ancestry under squash;
+  L-WIRE charter for 6b.

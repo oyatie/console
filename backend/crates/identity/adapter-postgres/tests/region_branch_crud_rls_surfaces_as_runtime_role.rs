@@ -29,9 +29,11 @@
 
 use console_identity_adapter_postgres::{PgOrgError, PgOrgStore};
 use console_identity_application::{
-    DeactivateBranchCommand, DeactivateRegionCommand, UpdateRegionCommand,
+    DeactivateBranchCommand, DeactivateRegionCommand, UpdateBranchCommand, UpdateRegionCommand,
 };
-use console_kernel_core::{BranchId, ErrorKind, OrgId, RegionId, TraceContext, UserId};
+use console_kernel_core::{
+    BranchId, BranchScope, ErrorKind, OrgId, RegionId, TraceContext, UserId,
+};
 use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -394,6 +396,7 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
             org,
             store.deactivate_branch(DeactivateBranchCommand {
                 actor,
+                branch_scope: BranchScope::All,
                 branch_id: user_branch,
                 trace: TraceContext::generate(),
                 occurred_at: OffsetDateTime::now_utc(),
@@ -413,6 +416,7 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
             org,
             store.deactivate_branch(DeactivateBranchCommand {
                 actor,
+                branch_scope: BranchScope::All,
                 branch_id: equip_branch,
                 trace: TraceContext::generate(),
                 occurred_at: OffsetDateTime::now_utc(),
@@ -431,6 +435,7 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
             org,
             store.deactivate_branch(DeactivateBranchCommand {
                 actor,
+                branch_scope: BranchScope::All,
                 branch_id: empty_branch,
                 trace: TraceContext::generate(),
                 occurred_at: OffsetDateTime::now_utc(),
@@ -450,6 +455,170 @@ async fn deactivate_branch_soft_deletes_and_guards_references_as_runtime_role(ow
         .await
         .expect("list_branches as console_rt");
     assert!(!branches.iter().any(|b| b.id == empty_branch));
+}
+
+// ===========================================================================
+// BranchManage is self-referential: the authorization subject and the mutated
+// object are BOTH branches. The feature matrix says an ADMIN may manage
+// branches; only the branch scope says WHICH. Without the second half, a
+// branch-A admin renamed or re-parented any branch in the tenant, HQ included.
+// ===========================================================================
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn branch_manage_is_confined_to_the_callers_own_branch_as_runtime_role(owner_pool: PgPool) {
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let org_uuid = *org.as_uuid();
+    seed_org(&owner_pool, org_uuid, "A").await;
+    let region = seed_region(&owner_pool, org_uuid, "수도권").await;
+    let other_region = seed_region(&owner_pool, org_uuid, "영남권").await;
+    let mine = seed_branch(&owner_pool, org_uuid, region, "내지점").await;
+    let theirs = seed_branch(&owner_pool, org_uuid, region, "남의지점").await;
+    let spare = seed_branch(&owner_pool, org_uuid, region, "예비지점").await;
+    let actor = seed_active_user(&owner_pool, org_uuid, Some(mine)).await;
+    let store = PgOrgStore::new(rt_pool.clone());
+    let scope = BranchScope::single(mine);
+
+    // (a) + (c) are probed before either is asserted, so one run reports EVERY
+    // surface still open rather than stopping at the first.
+    let mut breaches: Vec<String> = Vec::new();
+
+    // (a) Renaming and re-parenting ANOTHER branch: not_found, never forbidden —
+    // a 403 would confirm the branch exists.
+    let refused = CURRENT_ORG
+        .scope(
+            org,
+            store.update_branch(UpdateBranchCommand {
+                actor,
+                branch_scope: scope.clone(),
+                branch_id: theirs,
+                region_id: Some(other_region),
+                name: Some("탈취된지점".to_owned()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await;
+    if !matches!(refused, Err(PgOrgError::Domain(ref e)) if e.kind == ErrorKind::NotFound) {
+        breaches.push(format!("cross-branch rename was not refused: {refused:?}"));
+    }
+    let (name, parent, _) = branch_row(&owner_pool, theirs).await;
+    if name != "남의지점" {
+        breaches.push(format!("the foreign branch was RENAMED to {name}"));
+    }
+    if parent != *region.as_uuid() {
+        breaches.push(format!("the foreign branch was RE-PARENTED to {parent}"));
+    }
+    if audit_count(&owner_pool, "branch.update", &theirs.to_string()).await != 0 {
+        breaches.push("a refused rename still wrote an audit row".to_owned());
+    }
+
+    // (c) Deactivation too. The referential guards only protect a POPULATED
+    // branch, so an EMPTY foreign branch like this one had no protection at all.
+    let refused = CURRENT_ORG
+        .scope(
+            org,
+            store.deactivate_branch(DeactivateBranchCommand {
+                actor,
+                branch_scope: scope.clone(),
+                branch_id: theirs,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await;
+    if !matches!(refused, Err(PgOrgError::Domain(ref e)) if e.kind == ErrorKind::NotFound) {
+        breaches.push(format!(
+            "cross-branch deactivate was not refused: {refused:?}"
+        ));
+    }
+    if branch_row(&owner_pool, theirs).await.2.is_some() {
+        breaches.push("the foreign branch was DEACTIVATED".to_owned());
+    }
+    assert!(
+        breaches.is_empty(),
+        "the branch boundary was crossed {} time(s):\n  {}",
+        breaches.len(),
+        breaches.join("\n  ")
+    );
+
+    // (b) The caller's OWN branch stays editable: BranchManage on branch A must
+    // keep meaning "may manage branch A".
+    let renamed = CURRENT_ORG
+        .scope(
+            org,
+            store.update_branch(UpdateBranchCommand {
+                actor,
+                branch_scope: scope.clone(),
+                branch_id: mine,
+                region_id: None,
+                name: Some("내지점-개편".to_owned()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await
+        .expect("a branch admin must still rename its OWN branch");
+    assert_eq!(renamed.name, "내지점-개편");
+    assert_eq!(
+        audit_count(&owner_pool, "branch.update", &mine.to_string()).await,
+        1
+    );
+
+    // (d) Non-regression: BranchScope::All manages every branch exactly as before.
+    let org_wide = CURRENT_ORG
+        .scope(
+            org,
+            store.update_branch(UpdateBranchCommand {
+                actor,
+                branch_scope: BranchScope::All,
+                branch_id: theirs,
+                region_id: Some(other_region),
+                name: Some("본사개편지점".to_owned()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await
+        .expect("an org-wide principal must still manage every branch");
+    assert_eq!(org_wide.name, "본사개편지점");
+    assert_eq!(org_wide.region_id, other_region);
+    let deactivated = CURRENT_ORG
+        .scope(
+            org,
+            store.deactivate_branch(DeactivateBranchCommand {
+                actor,
+                branch_scope: BranchScope::All,
+                // A branch neither side has touched, so this assertion cannot be
+                // confused by an earlier (broken) cross-branch deactivate.
+                branch_id: spare,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await
+        .expect("an org-wide principal must still deactivate an empty branch");
+    assert!(deactivated.deactivated_at.is_some());
+}
+
+/// `(name, region_id, deactivated_at)` read as the owner with row security off,
+/// so the assertion sees the true stored row rather than an RLS-filtered view.
+async fn branch_row(
+    owner_pool: &PgPool,
+    branch: BranchId,
+) -> (String, Uuid, Option<OffsetDateTime>) {
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL row_security = off")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let row: (String, Uuid, Option<OffsetDateTime>) =
+        sqlx::query_as("SELECT name, region_id, deactivated_at FROM branches WHERE id = $1")
+            .bind(*branch.as_uuid())
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+    tx.commit().await.unwrap();
+    row
 }
 
 // ===========================================================================

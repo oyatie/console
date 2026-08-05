@@ -165,6 +165,30 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
         self.assertIn("src/workbench.rs", config["srcs"])
 
+    def test_cross_package_path_modules_are_explicit_mapped_inputs(self) -> None:
+        expected = {
+            ("console-dispatch-worker", "tests/timer_delivery.rs"): {
+                "//backend/test_support:dispatch-worker-fixtures":
+                    "backend/test_support/dispatch_worker_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_device_registration.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_evidence.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_sync.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+        }
+
+        for (crate, test_file), external in expected.items():
+            config = GENERATOR.integration_resource_config(crate, test_file)
+            self.assertEqual(external, config["external"], f"{crate}:{test_file}")
+
     def test_manifest_env_is_hermetic_and_repo_relative(self) -> None:
         env = GENERATOR.base_env("backend/crates/example", uses_sqlx=True)
 
@@ -204,9 +228,9 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(152, len(ordinary_tests))
+        self.assertEqual(153, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
-        self.assertEqual(17, len(sqlx_tests))
+        self.assertEqual(18, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
         self.assertEqual(
             ("dev-auth",),

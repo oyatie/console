@@ -1,5 +1,11 @@
 # Disaster Recovery Policy
 
+> **POST-PIVOT UNVERIFIED / HOLD:** This pre-pivot policy is retained as
+> historical/operator reference, not as evidence of current production data,
+> topology, RPO/RTO attainment, drill status, or activation authority. The
+> repository currently authorizes zero production mutations. Start with the
+> [disk-wipe consolidation handoff](../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
+
 ## Scope
 
 This policy covers the single-VM Docker Compose production deployment declared

@@ -72,6 +72,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+bash "${script_dir}/../../scripts/require-production-operation-authority.sh" \
+  "compose-restore-drill"
+
 compose_args=(-p "${scratch_project}")
 for compose_file in "${compose_files[@]}"; do
   compose_args+=(-f "${compose_file}")

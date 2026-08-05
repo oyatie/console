@@ -18,6 +18,10 @@ sqlx = { workspace = true }
 tokio = { workspace = true }
 
 [dev-dependencies]
+# Dev-only: feature_catalog_covers_every_feature asserts every shipped Feature is grantable.
+# The layer-boundary gate scopes its layer-edge check to normal deps (backend/ci/gates/
+# layer-boundary/src/lib.rs:397), so a dev-dep here is sanctioned rather than tolerated.
+console-platform-authz = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [lints]

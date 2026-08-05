@@ -35,7 +35,7 @@ fn master_list_path() -> PathBuf {
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
-        let harness = Harness::new(&pool, "ADMIN").await;
+        let harness = Harness::new(&pool, "SUPER_ADMIN").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
         let body = multipart_xlsx(&bytes);
 
@@ -67,6 +67,38 @@ async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
         .await
         .unwrap();
         assert_eq!(audited, 1);
+    })
+    .await;
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn branch_scoped_admin_cannot_run_tenant_wide_master_import(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let harness = Harness::new(&pool, "ADMIN").await;
+        let bytes = std::fs::read(master_list_path()).unwrap();
+        let body = multipart_xlsx(&bytes);
+
+        let (status, _) = harness
+            .send(
+                "POST",
+                "/api/v1/equipment/import",
+                Some((format!("multipart/form-data; boundary={BOUNDARY}"), body)),
+            )
+            .await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+
+        let equipment: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM registry_equipment")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let audits: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM audit_events WHERE action = 'registry.import'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(equipment, 0);
+        assert_eq!(audits, 0);
     })
     .await;
 }
@@ -649,6 +681,43 @@ async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn create_site_under_another_branchs_customer_is_not_found(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let branch_b_admin = Harness::new(&pool, "ADMIN").await;
+        let (status, customer) = branch_b_admin
+            .send(
+                "POST",
+                "/api/v1/customers",
+                Some(json_body(&json!({ "name": "타지점고객" }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED, "{customer:?}");
+
+        let branch_a_admin = Harness::new(&pool, "ADMIN").await;
+        assert_ne!(branch_a_admin.branch, branch_b_admin.branch);
+        let (status, _) = branch_a_admin
+            .send(
+                "POST",
+                "/api/v1/sites",
+                Some(json_body(&json!({
+                    "customer_id": customer["id"],
+                    "name": "타지점침범현장"
+                }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+
+        let sites: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM registry_sites WHERE name = $1")
+            .bind("타지점침범현장")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(sites, 0);
+    })
+    .await;
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn create_site_rejects_one_sided_coordinate(pool: PgPool) {
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
@@ -827,16 +896,366 @@ async fn create_equipment(harness: &Harness, equipment_no: &str, management_no: 
 }
 
 // ---------------------------------------------------------------------------
+// Cross-branch containment
+//
+// Every route below names a row by primary key. The feature-tier check
+// (`EquipmentManage`, `WorkOrderReadAll`) authorizes against a branch the
+// caller already belongs to, so for a branch-scoped principal it can only ever
+// say "this ROLE may do this"; it can never say "on THIS row". The row's own
+// branch is what decides, and the answer for a foreign branch is 404 — never
+// 403, which would confirm the row exists.
+// ---------------------------------------------------------------------------
+
+/// The lowest-privilege leak, and the widest: `GET /equipment/{id}/versions` is
+/// admitted to MECHANIC and RECEPTIONIST, and each version row carries the full
+/// equipment master — owner, insurer, policy holder, rental fee, vehicle value,
+/// residual value, notes.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn mechanic_cannot_read_another_branchs_equipment_versions(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let branch_b_admin = Harness::new(&pool, "ADMIN").await;
+        let equipment = create_equipment(&branch_b_admin, "CFO25-7801", "801").await;
+        // One edit, so the history is non-empty and carries commercial figures.
+        let (status, body) = branch_b_admin
+            .send(
+                "PATCH",
+                &format!("/api/v1/equipment/{equipment}"),
+                Some(json_body(
+                    &json!({ "residual_value": 9_100_000, "insurer": "대차보험" }),
+                )),
+            )
+            .await;
+        assert_eq!(status, StatusCode::NO_CONTENT, "{body:?}");
+
+        // Branch B's OWN mechanic still reads the history — the route works.
+        let insider = Harness::in_branch(&pool, "MECHANIC", branch_b_admin.branch).await;
+        let (status, body) = insider
+            .send(
+                "GET",
+                &format!("/api/v1/equipment/{equipment}/versions"),
+                None,
+            )
+            .await;
+        assert_eq!(status, StatusCode::OK, "{body:?}");
+        let items = body["items"].as_array().unwrap();
+        assert!(!items.is_empty(), "the in-branch read must return history");
+        assert_eq!(
+            items[0]["content"]["residual_value"],
+            json!(9_100_000),
+            "the history really does carry the commercial figures this test protects"
+        );
+
+        // A mechanic in ANOTHER branch gets 404, and no rows.
+        let outsider = Harness::new(&pool, "MECHANIC").await;
+        assert_ne!(outsider.branch, branch_b_admin.branch);
+        let (status, body) = outsider
+            .send(
+                "GET",
+                &format!("/api/v1/equipment/{equipment}/versions"),
+                None,
+            )
+            .await;
+        assert_eq!(
+            status,
+            StatusCode::NOT_FOUND,
+            "a cross-branch version read must be 404, got {status}: {body:?}"
+        );
+        assert!(
+            body["items"].is_null(),
+            "no history may cross the boundary: {body:?}"
+        );
+    })
+    .await;
+}
+
+/// Ownership-transfer history and every by-primary-key equipment mutation:
+/// findings 1, 3 and 4 share one fixture because they share one boundary.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn branch_admin_cannot_read_or_write_another_branchs_equipment(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let owner = Harness::new(&pool, "ADMIN").await;
+        let equipment = create_equipment(&owner, "CFO25-7802", "802").await;
+        let (status, body) = owner
+            .send(
+                "POST",
+                &format!("/api/v1/equipment/{equipment}/ownership-transfer-requests"),
+                Some(json_body(&json!({
+                    "to_owner": "케이앤엘",
+                    "reason": "지점 간 소유권 이전 기록"
+                }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED, "{body:?}");
+        let transfer_id = body["id"].as_str().unwrap().to_owned();
+
+        // A live substitution in the owner's branch, plus a spare pair the
+        // intruder could try to pair up on its own.
+        let sub_source = create_equipment(&owner, "CFO25-7803", "803").await;
+        let sub_target = create_equipment(&owner, "CFO25-7804", "804").await;
+        let (status, body) = owner
+            .send(
+                "POST",
+                "/api/v1/equipment-substitutions",
+                Some(json_body(&json!({
+                    "source_equipment_id": sub_source,
+                    "substitute_equipment_id": sub_target,
+                    "assignment_location": "본사 정비고"
+                }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED, "{body:?}");
+        let substitution_id = body["id"].as_str().unwrap().to_owned();
+        let free_source = create_equipment(&owner, "CFO25-7805", "805").await;
+        let free_target = create_equipment(&owner, "CFO25-7806", "806").await;
+
+        let intruder = Harness::new(&pool, "ADMIN").await;
+        assert_ne!(intruder.branch, owner.branch);
+        let before = fetch_equipment_view(&pool, &equipment).await;
+
+        // Every route is probed before anything is asserted, so one run reports
+        // EVERY surface that is still open rather than stopping at the first.
+        let mut breaches: Vec<String> = Vec::new();
+        for (finding, method, path, payload) in [
+            (
+                "1: ownership-transfer history",
+                "GET",
+                format!("/api/v1/equipment/{equipment}/ownership-transfer-requests"),
+                None,
+            ),
+            (
+                "3: update_equipment",
+                "PATCH",
+                format!("/api/v1/equipment/{equipment}"),
+                Some(json!({ "status": "disposed", "asset_owner": "탈취자" })),
+            ),
+            (
+                "3: delete_equipment",
+                "DELETE",
+                format!("/api/v1/equipment/{equipment}"),
+                None,
+            ),
+            (
+                "3: rollback_equipment",
+                "POST",
+                format!("/api/v1/equipment/{equipment}/versions/1/rollback"),
+                None,
+            ),
+            (
+                "3: create ownership transfer",
+                "POST",
+                format!("/api/v1/equipment/{equipment}/ownership-transfer-requests"),
+                Some(json!({ "to_owner": "탈취자", "reason": "무단 이전 시도" })),
+            ),
+            (
+                "3: decide ownership transfer",
+                "POST",
+                format!("/api/v1/equipment/ownership-transfer-requests/{transfer_id}/decisions"),
+                Some(json!({ "decision": "approve", "comment": "무단 승인 시도" })),
+            ),
+            (
+                "4: assign substitute",
+                "POST",
+                "/api/v1/equipment-substitutions".to_owned(),
+                Some(json!({
+                    "source_equipment_id": free_source,
+                    "substitute_equipment_id": free_target,
+                    "assignment_location": "무단 배차"
+                })),
+            ),
+            (
+                "4: return substitute",
+                "POST",
+                format!("/api/v1/equipment-substitutions/{substitution_id}/return"),
+                Some(json!({ "return_note": "무단 반납" })),
+            ),
+        ] {
+            let (status, body) = intruder
+                .send(method, &path, payload.as_ref().map(json_body))
+                .await;
+            if status != StatusCode::NOT_FOUND {
+                breaches.push(format!(
+                    "finding {finding}: {method} {path} answered {status}, expected 404 — {body}"
+                ));
+            }
+            // Checked after EVERY probe, not only at the end: a later rollback
+            // can restore an earlier illegal write and hide it from a single
+            // end-state comparison.
+            let now = fetch_equipment_view(&pool, &equipment).await;
+            if now.status != before.status || now.asset_owner != before.asset_owner {
+                breaches.push(format!(
+                    "finding {finding}: the equipment row was MUTATED across branches: status {} -> {}, asset_owner {:?} -> {:?}",
+                    before.status, now.status, before.asset_owner, now.asset_owner
+                ));
+            }
+        }
+
+        let transfer_status = transfer_status(&pool, &transfer_id).await;
+        if transfer_status != "PENDING" {
+            breaches.push(format!(
+                "finding 3: the transfer request was decided across branches: status is {transfer_status}"
+            ));
+        }
+        if substitution_returned_at(&pool, &substitution_id)
+            .await
+            .is_some()
+        {
+            breaches.push(
+                "finding 4: the substitution was returned across branches".to_owned(),
+            );
+        }
+        let created = open_substitution_count(&pool, &free_source).await;
+        if created != 0 {
+            breaches.push(format!(
+                "finding 4: {created} substitution(s) were created across branches"
+            ));
+        }
+
+        assert!(
+            breaches.is_empty(),
+            "the branch boundary was crossed {} time(s):\n  {}",
+            breaches.len(),
+            breaches.join("\n  ")
+        );
+    })
+    .await;
+}
+
+/// Non-regression: `BranchScope::All` (SUPER_ADMIN) reaches every one of the
+/// surfaces the test above closes. The fix narrows branch-scoped callers only.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn org_wide_principal_still_reaches_every_branch(pool: PgPool) {
+    console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
+        let owner = Harness::new(&pool, "ADMIN").await;
+        let equipment = create_equipment(&owner, "CFO25-7807", "807").await;
+        let (status, _) = owner
+            .send(
+                "PATCH",
+                &format!("/api/v1/equipment/{equipment}"),
+                Some(json_body(&json!({ "residual_value": 1_000_000 }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::NO_CONTENT);
+        let sub_source = create_equipment(&owner, "CFO25-7808", "808").await;
+        let sub_target = create_equipment(&owner, "CFO25-7809", "809").await;
+
+        // Seeded into a DIFFERENT branch on purpose: SUPER_ADMIN resolves to
+        // BranchScope::All, so its own membership must be irrelevant.
+        let org_wide = Harness::new(&pool, "SUPER_ADMIN").await;
+        assert_ne!(org_wide.branch, owner.branch);
+
+        let (status, body) = org_wide
+            .send(
+                "GET",
+                &format!("/api/v1/equipment/{equipment}/versions"),
+                None,
+            )
+            .await;
+        assert_eq!(status, StatusCode::OK, "{body:?}");
+        assert!(!body["items"].as_array().unwrap().is_empty());
+
+        let (status, body) = org_wide
+            .send(
+                "GET",
+                &format!("/api/v1/equipment/{equipment}/ownership-transfer-requests"),
+                None,
+            )
+            .await;
+        assert_eq!(status, StatusCode::OK, "{body:?}");
+        assert_eq!(body["items"].as_array().unwrap().len(), 0);
+
+        let (status, body) = org_wide
+            .send(
+                "PATCH",
+                &format!("/api/v1/equipment/{equipment}"),
+                Some(json_body(&json!({ "asset_owner": "본사" }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::NO_CONTENT, "{body:?}");
+        assert_eq!(
+            fetch_equipment_view(&pool, &equipment)
+                .await
+                .asset_owner
+                .as_deref(),
+            Some("본사")
+        );
+
+        let (status, body) = org_wide
+            .send(
+                "POST",
+                "/api/v1/equipment-substitutions",
+                Some(json_body(&json!({
+                    "source_equipment_id": sub_source,
+                    "substitute_equipment_id": sub_target,
+                    "assignment_location": "본사 정비고"
+                }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED, "{body:?}");
+        let substitution_id = body["id"].as_str().unwrap().to_owned();
+        let (status, body) = org_wide
+            .send(
+                "POST",
+                &format!("/api/v1/equipment-substitutions/{substitution_id}/return"),
+                Some(json_body(&json!({ "return_note": "본사 회수" }))),
+            )
+            .await;
+        assert_eq!(status, StatusCode::OK, "{body:?}");
+
+        let (status, body) = org_wide
+            .send("DELETE", &format!("/api/v1/equipment/{equipment}"), None)
+            .await;
+        assert_eq!(status, StatusCode::NO_CONTENT, "{body:?}");
+        assert_eq!(fetch_equipment_view(&pool, &equipment).await.status, "폐기");
+    })
+    .await;
+}
+
+async fn transfer_status(pool: &PgPool, transfer_id: &str) -> String {
+    sqlx::query_scalar("SELECT status FROM equipment_ownership_transfer_requests WHERE id = $1")
+        .bind(uuid::Uuid::parse_str(transfer_id).unwrap())
+        .fetch_one(pool)
+        .await
+        .unwrap()
+}
+
+async fn substitution_returned_at(pool: &PgPool, substitution_id: &str) -> Option<OffsetDateTime> {
+    sqlx::query_scalar("SELECT returned_at FROM equipment_substitutions WHERE id = $1")
+        .bind(uuid::Uuid::parse_str(substitution_id).unwrap())
+        .fetch_one(pool)
+        .await
+        .unwrap()
+}
+
+async fn open_substitution_count(pool: &PgPool, source_equipment_id: &str) -> i64 {
+    sqlx::query_scalar(
+        "SELECT COUNT(*) FROM equipment_substitutions WHERE source_equipment_id = $1",
+    )
+    .bind(uuid::Uuid::parse_str(source_equipment_id).unwrap())
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+// ---------------------------------------------------------------------------
 // Harness
 // ---------------------------------------------------------------------------
 
 struct Harness {
     service: Router,
     token: String,
+    branch: BranchId,
 }
 
 impl Harness {
     async fn new(pool: &PgPool, role: &str) -> Self {
+        let branch = seed_branch(pool).await;
+        Self::in_branch(pool, role, branch).await
+    }
+
+    /// A second caller inside an EXISTING branch, so one test can hold two
+    /// principals whose branch scopes do not overlap. `SUPER_ADMIN` resolves to
+    /// `BranchScope::All` regardless of the branch it is seeded into.
+    async fn in_branch(pool: &PgPool, role: &str, branch: BranchId) -> Self {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_pem = signing_key
@@ -844,7 +1263,6 @@ impl Harness {
             .to_public_key_pem(LineEnding::LF)
             .unwrap();
 
-        let branch = seed_branch(pool).await;
         let user = seed_user_in_branch(pool, role, branch).await;
         let token = issue_token(
             private_pem.as_bytes(),
@@ -866,7 +1284,11 @@ impl Harness {
             PgRegistryStore::new(runtime_role_pool(pool).await),
             Some(verifier),
         ));
-        Self { service, token }
+        Self {
+            service,
+            token,
+            branch,
+        }
     }
 
     async fn send(

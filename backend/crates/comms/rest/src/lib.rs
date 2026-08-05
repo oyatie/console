@@ -42,9 +42,9 @@ use console_comms_application::{
 };
 use console_comms_credential_cipher::EnvelopeCredentialCipher;
 use console_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
-use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext};
+use console_kernel_core::{ErrorKind, KernelError, OrgId, TraceContext};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize};
+use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 use subtle::ConstantTimeEq;
@@ -879,26 +879,16 @@ impl CommsRestState {
     }
 }
 
+/// Mail is org-global: `email_folders`, `email_threads`, `email_messages` and
+/// `email_attachments` have no `branch_id`, and every handler keys off
+/// `principal.org_id` and never loads a branch. Capability decision.
+///
+/// TODO(branch-scope): `email_accounts.branch_id` IS present but NULLABLE
+/// (migration 0053) and unused by these handlers. If account-level branch
+/// confinement is ever wanted, `MailAccountManage` should thread that real
+/// column into `authorize` instead of widening this check.
 fn authorize_feature(principal: &Principal, feature: Feature) -> Result<(), RestError> {
-    authorize(
-        principal,
-        Action::new(feature),
-        representative_branch(&principal.branch_scope)?,
-    )
-    .map_err(RestError::from_kernel)
-}
-
-/// Mail is an org-global feature (no per-branch resource); pick any in-scope
-/// branch to satisfy the branch-scope check (SUPER_ADMIN/EXECUTIVE span all).
-fn representative_branch(branch_scope: &BranchScope) -> Result<BranchId, RestError> {
-    match branch_scope {
-        BranchScope::All => Ok(BranchId::new()),
-        BranchScope::Branches(branches) => branches.iter().next().copied().ok_or_else(|| {
-            RestError::from_kernel(KernelError::forbidden(
-                "principal has no branch scope for mail access",
-            ))
-        }),
-    }
+    authorize_capability(principal, Action::new(feature)).map_err(RestError::from_kernel)
 }
 
 async fn principal_from_headers(

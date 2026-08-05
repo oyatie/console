@@ -42,9 +42,13 @@ this historical ledger cannot promote Support exposure.
 Authority model (2026-07-09 directive):
 
 Truth-ledger candidate model (C/T/M): the **product candidate C** is the signed,
-full Git SHA declared in `console-capability-registry.json`. The signed
-**authority tip T** must be the direct single-parent child of C and may change
-exactly the three console authority documents—no product paths. The structural
+full Git SHA CI derives from Git parentage—T's single parent—and cross-checks
+against `console-capability-registry.json` while that document still declares
+one. The signed **authority tip T** must be the direct single-parent child of C
+and may change at least one console authority document and nothing else: the
+three named documents, plus added `.md` entries directly under
+`docs/program/ledger/`—no product paths. (Superseded 2026-08-01; T was required
+to change exactly the three.) The structural
 **synthetic merge M** must resolve to exactly two parents with T as its second
 parent and must have the same tree as T with an empty `T..M` diff. CI supplies
 these immutable objects as `CONSOLE_CANDIDATE_SHA`,
@@ -1177,7 +1181,6 @@ synthetic merge — because each one skipped is a full rebind later.
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
-||||||| 18a21d7cd
 
 ## 2026-07-30 — fourth rebind, and the merge that proves the mechanism works as designed
 
@@ -1206,3 +1209,1293 @@ caused by an upstream merge rather than by a fix here, which is the unavoidable 
 Every capability, evidence contract, jurisdiction binding, Korea control, review
 disposition, and exposure state remains `HOLD`; this authority-only child makes no
 completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for two comments that miscounted a carve-out set
+
+The registers rebind to the audit carve-out candidate. The candidate changes two comments
+and no logic: both said the audit-coverage carve-out set had a single member —
+*"the only carve-out is LocationPing ingestion"* — against a gate whose
+`allowed_audit_exclusions()` returns two and whose own test asserts `len() == 2`.
+
+Nothing in the candidate changes what any capability may do. No gate logic, no assertion,
+no threshold. The set was already two and the test already proved it; only the prose was
+wrong.
+
+One property is worth recording at the authority layer. This closes the last of ten
+findings from an ADR acceptance-verification pass, and it belongs to a class that
+recurred all day: **four comments outlived the problem they described, and three were
+written by the hand that then closed the gap.** A comment is the one artifact in this
+repository with no gate behind it — `check:doc-citations` now verifies that documents
+cite code that exists, but nothing verifies that a comment still describes the code
+beneath it. The counts here were falsifiable only because someone thought to count.
+
+Fifth and final rebind of the day. The candidate is two comments; the binding cost 390
+references. That ratio is the mechanism working as designed, not a complaint — but it is
+the strongest argument yet for batching small corrections rather than landing them one at
+a time.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — sixth rebind, and the update-branch button as a train breaker
+
+The registers rebind again. A branch-update merge reached the remote while this train was
+being built locally, so the tip this branch's registers had just been bound to was no
+longer the tip. Its content was redundant with the local merge — the same two commits,
+verified by diff — but including it was still required to push without force.
+
+This is the second time today the same shape occurred: a second writer produces a
+content-identical merge, and the cost is a full 390-reference rebind because the candidate
+SHA moved. The first instance was a subagent, this one an interface button.
+
+The observation the ledger should carry forward is that **the train binds a SHA, so
+anything that changes the tip invalidates it, including operations that change no
+content.** A no-op merge is not a no-op to this mechanism. Where a branch has a train
+built, the update-branch button should not be used — refresh by rebuilding the train, or
+the next push fails and costs a rebind either way.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the registry retry
+
+The registers rebind to the PostgreSQL image-pull candidate. The candidate adds an
+explicit digest-pinned pull with bounded retry to `tools/buck/test_needs_postgres.sh`,
+and three tests for it.
+
+Nothing in the candidate changes what any capability may do, and it weakens no pin: the
+image is fetched by digest, so a retry either resolves that exact content or fails.
+
+One property is worth recording at the authority layer. The defect was found because a
+**documentation-only** pull request went red, and the failure named the docs PR rather
+than the registry. `docker run` pulled implicitly, so an unreachable registry surfaced as
+`exit 125` from the run — indistinguishable, at a glance, from a broken harness. The
+readiness retry that already existed runs after the container exists and never covered
+the pull.
+
+That is a small instance of a pattern this program has recorded before: a red signal that
+names the wrong thing is worse than a slow one, because it spends attention on the
+innocent change. The candidate makes the registry's own error visible on exhaustion
+rather than swallowing it.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the erasure-versus-PITR question
+
+The registers rebind to the ADR-0037 candidate: one `proposed` decision record, its index
+row, and a pointer from the Korean legal source notes. No code, no migration, no gate. The
+record decides nothing — its Decision section says so in its first line.
+
+Three properties are worth recording at the authority layer.
+
+**The record found a condition sharper than the one it was asked to describe.** The brief
+posed a general conflict between an erasure obligation and point-in-time recovery. The
+record established from `deploy/apps/console/base/database.yaml` that the backup
+`ObjectStore` declares **no retention policy at all** — the manifest's own comment states
+PITR *"reaches back to the first backup forever"* and that storage grows unbounded, and the
+ops runbook confirms the indefinite retention is intentional and dated. The window is not
+merely long; it is unbounded, by decision. A `DELETE` is therefore not destruction at any
+horizon, which is stronger than the question began with.
+
+**The record was incomplete on first writing, and no gate could have caught it.** It framed
+two forces — a destruction duty against a recovery capability — and omitted a third that
+dominates an HR and payroll product: data other statutes oblige the operator to keep. That
+omission was found by the owner reading the record. `check:adrs` verifies structure and
+`check:doc-citations` verifies that cited code exists; neither can observe that a record
+reasons about two forces where three apply. Both gates were green over the incomplete
+draft. That is the standing limit of this program's document gates, and it is recorded here
+so that passing gates are not read as completeness.
+
+**The review already planned does not cover this.** A 노무사 is a labour professional and a
+세무사 a tax professional; the payroll sign-off this program has scheduled is neither privacy
+counsel nor able to answer this question. The record says so explicitly so the coverage is
+not assumed.
+
+The record quotes 개인정보 보호법 제21조 verbatim from the official portal and draws only
+architectural observations from its vocabulary, concluding nothing about what it requires.
+It adopts no option, prices four against ADR-0015's restore proof, and carries `status:
+proposed`.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for two comments that miscounted a carve-out set
+
+The registers rebind to the audit carve-out candidate. The candidate changes two comments
+and no logic: both said the audit-coverage carve-out set had a single member —
+*"the only carve-out is LocationPing ingestion"* — against a gate whose
+`allowed_audit_exclusions()` returns two and whose own test asserts `len() == 2`.
+
+Nothing in the candidate changes what any capability may do. No gate logic, no assertion,
+no threshold. The set was already two and the test already proved it; only the prose was
+wrong.
+
+One property is worth recording at the authority layer. This closes the last of ten
+findings from an ADR acceptance-verification pass, and it belongs to a class that
+recurred all day: **four comments outlived the problem they described, and three were
+written by the hand that then closed the gap.** A comment is the one artifact in this
+repository with no gate behind it — `check:doc-citations` now verifies that documents
+cite code that exists, but nothing verifies that a comment still describes the code
+beneath it. The counts here were falsifiable only because someone thought to count.
+
+Fifth and final rebind of the day. The candidate is two comments; the binding cost 390
+references. That ratio is the mechanism working as designed, not a complaint — but it is
+the strongest argument yet for batching small corrections rather than landing them one at
+a time.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — sixth rebind, and the update-branch button as a train breaker
+
+The registers rebind again. A branch-update merge reached the remote while this train was
+being built locally, so the tip this branch's registers had just been bound to was no
+longer the tip. Its content was redundant with the local merge — the same two commits,
+verified by diff — but including it was still required to push without force.
+
+This is the second time today the same shape occurred: a second writer produces a
+content-identical merge, and the cost is a full 390-reference rebind because the candidate
+SHA moved. The first instance was a subagent, this one an interface button.
+
+The observation the ledger should carry forward is that **the train binds a SHA, so
+anything that changes the tip invalidates it, including operations that change no
+content.** A no-op merge is not a no-op to this mechanism. Where a branch has a train
+built, the update-branch button should not be used — refresh by rebuilding the train, or
+the next push fails and costs a rebind either way.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the gate-integrity adjudication
+
+The registers rebind to the gate-integrity candidate: four false-green holes adjudicated by
+execution, two new gates wired, and one live client-facing defect fixed.
+
+The adjudication itself is the property worth recording. `docs/program/false-green-gate-holes.md`
+asserted that H-1 through H-4 lacked checks. Re-verified against code rather than accepted,
+they resolved as **one OPEN, three MISSTATED** — and the document's claim that
+`0196_platform_force_command_and_fk_closure.sql` does not exist on `main` was itself stale,
+since it does. Two holes received checks; two received dated in-place corrections. Building
+gates for the two MISSTATED holes to reach a tidy four-of-four would have shipped exactly
+the unfalsifiable gate this work exists to eliminate — a gate with zero possible inputs
+cannot be proven red, and a gate that cannot fail is the meta-finding, not its cure.
+
+**A gate found a live defect on its first run.** `ConsumeInventoryItemRequest` published
+`quantity_consumed_milli`, `occurred_at` and `idempotency_key` while the bound handler is
+`rename_all = "camelCase"` with `deny_unknown_fields` — so every spec-conformant request to
+that endpoint was rejected with 422, not merely mis-parsed. The sibling receipt body already
+used camelCase, so the contract was the outlier and has been corrected to the shipped
+behaviour. The gate was deliberately NOT wired while red, and NOT allowlisted around the
+defect; the defect was fixed and then the gate wired.
+
+**The archived-evidence exception is named rather than hidden.** The undeclared-imports gate
+would otherwise be permanently red on an evidence artifact whose subject was deleted — a
+script cited four times by a verification record, one citation recording `10/10 checks
+passed`. Deleting an audit artifact to make a gate green trades evidence integrity for a
+green light. Instead the exclusion is a named export, its count is printed every run, and a
+test observes the gate go red when the classification is removed.
+
+Residuals recorded and not papered over: the request-body gate compares 51 of 223 bodies, a
+floor rather than a claim; two further unowned escalations are named in the holes document.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — rebind after #531 moved the tip under the gate-integrity candidate
+
+Mechanical rebind. #531 merged, producing a new squash tip and invalidating this branch's
+train. No claim in the candidate changes.
+
+## 2026-07-31 — the candidate binding for the CI build-system measurement
+
+The registers rebind to the CI cargo candidate. Two leaf unit jobs move from buck2 to
+cargo and consolidate into one, on measurement rather than preference.
+
+MEASURED on `console-payroll-domain`: buck2 cold 118.4s (176 commands, `cached: 0`)
+against cargo cold 6.5s. The decisive datum is the third measurement, not the first: with
+`buck-out` **intact** and only the daemon killed, all 176 actions re-ran. Buck2 keeps no
+persistent local action cache — reuse lives in the daemon's in-memory graph — so every CI
+job was a cold build and no `actions/cache` on `buck-out` could have changed that.
+Caching `buck-out` would have recovered the fetch and materialisation (118s → ~29s) and
+never the compilation.
+
+Two properties are worth recording at the authority layer.
+
+**This is not a judgement that cargo beats buck2.** It is a judgement that buck2
+unconfigured beats nothing. The repo declares no `[buck2_re_client]`, so every build
+reports `remote: 0`; buck2's incrementality and caching are switched off, while its
+DotSlash download and daemon start are paid on every job. A NativeLink CAS with mTLS,
+split reader/writer and action-cache stores has been running in-cluster for two days with
+nothing pointed at it. When that is wired, this decision is worth revisiting on the same
+measurements.
+
+**The PostgreSQL jobs deliberately stay on buck2.** Their `//tools/buck` wrappers enforce
+the credential loader — *"raw backend test targets bypass the credential loader"* — which
+is a security control, not a build preference, and it is not traded for build speed.
+
+Consolidation is the larger lever and was applied for a reason outside this repository:
+the self-hosted runner pool is three runners on 12.9 allocatable vCPU and is registered to
+a different repository, so concurrency is neither free nor ours. Where runners are scarce,
+a queued job costs more wall-clock than a serial step inside a job already holding one.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-30 — the candidate binding for the payroll tests that ran nowhere
+
+The registers rebind to the payroll CI candidate. The candidate wires
+`//backend/crates/payroll/domain:console-payroll-domain-unit` into a workflow for the
+first time: its 16 tests were compiled by `cargo clippy --all-targets` and never
+executed, which is the fifth instance of that class this week.
+
+Nothing in the candidate changes what any capability may do. It changes which tests
+run, and it renames two of them.
+
+Three properties are worth recording at the authority layer, because a green train
+invites inferences it does not support.
+
+The candidate **renames two tests, and the rename is the load-bearing part** rather
+than cosmetic. `transition_payroll_run` has no non-test caller, and two tests were
+named for system properties this repository does not have — that calculation is
+blocked without validated release evidence, and that issuance is blocked without
+step-up. Wiring them into CI unrenamed would have converted a dormant falsehood into
+a CI-endorsed one: a green check certifying guarantees the production path does not
+implement. No assertion was deleted or weakened; both tests pin exactly what they
+pinned before.
+
+The candidate does **not** make payroll safe to release. The release gate is consulted
+in exactly one place, inside payslip issuance and after the run reaches `PAID`, so the
+lifecycle through payment remains ungated and the gate withholds the 임금명세서 rather
+than the money. A separate audit recorded 19 blocking golden-case gaps against this
+kernel on the same day. Running the unit tests proves the unit tests run.
+
+The candidate's integration coverage is **still not wired and is not claimed to be**.
+`run_lifecycle_api.rs` holds the only gate-blocks-issuance assertion, needs PostgreSQL,
+and belongs in a wrapper target under `postgres-domain-reachability`. It was left out
+because it could not be verified locally, and an unverified wrapper is the defect the
+candidate exists to stop repeating.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the candidate binding for the executable golden case
+
+The registers rebind to the golden-case candidate. It closes ONE of the nineteen blocking
+gaps recorded in `docs/ideas/payroll-goldencase-gaps.md` — B-03/M-02 — and does not close
+the other eighteen.
+
+Before this candidate, `expected_total_employee_deductions_won` was declared, parsed, and
+compared to nothing. A golden case was a stored assertion that **could not fail**: no gross,
+no pay date, no NTS row, so no code could recompute the figure a professional signed. If a
+rate constant or a rounding rule changed, nothing detected that the kernel no longer
+reproduced the approved numbers.
+
+The case now carries `LineCalculationInput` whole rather than field-by-field, and the gate
+re-executes `build_line_calculation` for every case, failing closed and naming the case, the
+expected figure and the computed one.
+
+Three properties are worth recording at the authority layer.
+
+**The comparison is load-bearing, proven by mutation.** Neutering it to `if false` fails
+three tests, not one. A single failing test would have left open the possibility that the
+others passed for unrelated reasons.
+
+**The silent-zero path is gone, and that was the load-bearing requirement rather than the
+arithmetic.** `parse_release_gate` previously defaulted an absent expectation to `0` with
+`.unwrap_or(0)`, so a stored case that could not be recomputed read as satisfied. It now
+errors. Arithmetic that runs on cases nobody can supply would have been decoration.
+
+**This does not make payroll releasable and must not be read that way.** The gate is still
+consulted in exactly one place — inside payslip issuance, after the run reaches `PAID` — so
+the lifecycle through payment remains ungated and the gate withholds the 임금명세서 rather
+than the money. Eighteen blocking gaps remain, including the absent pay-item model, which
+means a case can still only express a single scalar gross. What changed is that a signed
+figure can now fail; what did not change is how much of payroll a signed figure covers.
+
+Asserts no Korean legal conclusion: the candidate makes an arithmetic comparison executable
+and decides nothing about which figures are correct.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — rebind after #534 moved the tip under the golden-case candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — rebind after the adapter half was given somewhere to run
+
+The registers rebind. The candidate adds `console-payroll-adapter-postgres` to the
+consolidated unit job, because 12 pure `#[test]` cases — the `parse_release_gate` half of
+the release gate, including the removal of the silent-zero default — executed in no
+workflow at all.
+
+Worth recording: this was caught by an assertion the slice itself wrote to prevent it, and
+broken by a consolidation in a different pull request by the same hand. Two changes, each
+correct alone, produced a gap neither would have produced by itself. The assertion is the
+only reason it surfaced before merge rather than after.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the candidate binding for the finite backup window
+
+The registers rebind to the retention candidate. The backup ObjectStore gains a finite
+90d retention policy, and ADR-0037 gains the research and one corrected citation.
+
+Two properties are worth recording at the authority layer.
+
+**The change was free only because it was made before deployment.** Verified: no CNPG
+cluster in the tenancy declares a backup, the barmancloud ObjectStore CRD is not installed,
+and the target namespace does not exist. There are no backups for the policy to prune.
+ADR-0037 had said this was cheap to resolve before a person's data is in the system and
+expensive afterwards; that window was still open, and is now used rather than merely
+observed.
+
+**A cited article was wrong, and the correction strengthened the finding.** The record had
+grounded 복구 또는 재생 in 법 제21조제2항 alone. The owner pointed at the deletion-request
+path and named 시행령 제43조제2항, which on fetch is procedural and carries no such wording —
+but 법 제36조제3항 does, for subject-requested deletion, alongside a 단서 barring deletion
+where another statute designates the data for collection. The substance held, the location
+moved, and the standard turns out to bind on both the 파기 and the request paths. Recorded
+because a citation corrected upward is worth as much as one retracted.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — a retraction the owner caught, and the rule it broke
+
+The registers rebind after ADR-0037 retracted a claim of its own making.
+
+The record had argued that Korea's 복구 또는 재생 wording made the European deferred-overwrite
+package a poor fit, and elevated crypto-shredding accordingly. The owner disputed it. The
+statute settles it against the record: 법 제21조제1항 and 법 제36조제2항 both say 지체 없이,
+not 즉시 — the same 'without undue delay' standard the European position is built on.
+
+The rule that was broken is worth stating because this program keeps meeting it from both
+directions. The research had already found that Korea's silence on backups is **an absence,
+not a permission**. The retracted draft converted the same silence into a **prohibition**.
+Both are the same error wearing opposite signs: treating the absence of authority as
+authority. The uncertainty_rule says missing or unqualified authority is HOLD — not
+permissive, not restrictive, HOLD.
+
+No gate could have caught this either. The record was structurally valid and every citation
+resolved; what was wrong was an inference drawn from correctly quoted text.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`; this authority-only child makes no
+completion, deployment, or production-exposure claim.
+
+## 2026-07-31 — the live GitOps inputs are frozen, and nothing said so
+
+Rebind after the retention change was withdrawn from this candidate.
+
+`scripts/check-command-database-wiring.test.mjs` asserts
+`git diff --exit-code origin/main` across `deploy/argocd/apps/console.yaml`,
+`deploy/apps/console/base`, `deploy/apps/console/overlays/prod` and
+`deploy/apps/secrets-management/wiring`. ArgoCD syncs those paths from `main` with
+`targetRevision: main`, so a branch change to any of them fails the gate and would take
+effect the instant it merged.
+
+**Verified: no file under `deploy/apps/console/base/` has changed since that gate landed.**
+`database.yaml`'s last change (`a17acf14f`, #495) predates the gate (`962fb98b7`, #503).
+This candidate was the first to touch those paths since, which is why the freeze surfaced
+now rather than earlier.
+
+The gate's stated purpose is keeping the DARK governed-command-database topology out of
+live wiring, and it does that with explicit `doesNotMatch` patterns. The blanket diff is a
+separate, stronger assertion that cannot distinguish a retention policy from a topology
+leak. It was not weakened to land a one-line change; the change was withdrawn instead.
+
+What this leaves open, and it is an owner decision rather than an engineering one: **there
+is no documented route by which the live GitOps inputs may legitimately change.** A control
+with no defined exception either stops all change or gets weakened by whoever needs the
+next change badly enough. Recorded so that the next person to need one finds this entry
+rather than the assertion.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #536 moved the tip under the ADR-0037 candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — four jobs cached a directory their build system never writes
+
+The registers rebind to the CI cache-shape candidate.
+
+Six jobs carried a Rust build cache; four of them run Buck2, which does not write
+`backend/target`. Those four restored and saved a cache they could not use, and — because
+`rust-cache` keys on job name by default and none set a shared key — the six entries were
+near-duplicates of one workspace evicting each other from a 10GB budget.
+
+Worth recording at the authority layer: **the obvious fix was worse than the defect.**
+Adding a shared key to all six would let a Buck2-only job finish first and save a
+near-empty `backend/target` under the shared key, poisoning it for the two jobs that
+actually compile. The correct shape was the opposite of the intuitive one — remove the
+cache where it is unused, share it only between the jobs that populate it.
+
+Also recorded: the candidate adds a guard for its own change. Deleting the shared key
+passed every gate before that guard existed, verified by execution, so the consolidation
+could have silently refragmented while CI stayed green. A cache optimisation with no
+protection against its own reversion is the same defect class this program keeps meeting —
+a green signal that has stopped meaning anything.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a shared cache key with no named writer poisons itself
+
+Rebind after designating the single writer of the shared Rust build cache.
+
+The previous entry recorded that four jobs cached a directory Buck2 never writes. This one
+records the same defect one level down, inside the two jobs that DO compile: `domain-unit`
+builds three crates, `backend` builds the whole workspace. Sharing a key without deciding
+who saves it means whichever finishes first publishes the entry — so a three-crate target
+directory could become the cache a whole-workspace lint then restores.
+
+`backend` is now the only writer, and only from `main`, so a pull-request branch cannot
+publish a cache shaped by its own diff.
+
+Worth recording: this was found by an adversarial review of a separate migration plan,
+which recommended the same `save-if` discipline. The same review recommended KEEPING the
+cache on two jobs it had measured at a stale commit. Re-verified against `origin/main`
+before acting: six cache blocks rather than seven, and zero cargo references in either job
+or any npm script they invoke. **The refinement was taken and the contradicting
+recommendation was refused, both on the same re-measurement.** A review is evidence, not
+authority, and the difference is whether its claims still hold at the commit in front of
+you.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after an upstream merge under the cache-shape candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — 287 of 314 Rust test files execute nowhere
+
+The registers rebind to the executed-tests candidate, which computes for the first time
+what fraction of this repository's Rust tests are reachable from a workflow step.
+
+**314 defined, 28 reachable, 287 executing nowhere.** The meta-finding in
+`false-green-gate-holes.md` said gate coverage is not correctness coverage and that this
+program had been reading the former as the latter. This is that statement with a number
+attached, and the number is worse than the document implied: H-8 had found one wrapper
+covering 1 of 63 app story-test files, and the same shape holds across the tree.
+
+Two properties are worth recording at the authority layer.
+
+**The candidate found a bug in itself before shipping, and the counts did not reveal it.**
+Its `cargo test` matcher consumed the trailing backslash of a shell line-continuation, so
+every flag on a following line was invisible. The resulting numbers were entirely
+plausible. What caught it was a named anchor asserting that one specific known-executed
+file must resolve. A resolver that degrades reports a smaller executed set and a larger
+gap — which reads as a finding rather than as a broken tool, and that asymmetry is why
+counts cannot guard themselves.
+
+**The ratchet states its own cost.** From now on a test file must be wired in the pull
+request that adds it. An adversarial review of the plan that produced this gate objected
+that 'may only shrink' contradicts adding new files unless the implication is stated
+outright. It is now stated outright rather than discovered later by whoever hits it.
+
+This number is a measurement, not a claim of readiness, and it lowers no control: nothing
+here makes any currently-dark test execute. It makes the count visible and monotone.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #537 under the executed-tests candidate
+
+Mechanical rebind. The 287/314 measurement is unchanged.
+
+## 2026-07-31 — 98 audit-critical tests stop being unable to fail
+
+The registers rebind to the test-wiring candidate. Seven crates join the consolidated unit
+job: the audit chain, the policy and governance domains, the ADR-0021 Cedar strangler's
+readiness and legacy-only-observation cases, the 위치정보법 location-consent state machine,
+and attendance policy. 79 lib tests and 19 integration tests that previously executed
+nowhere.
+
+Two properties are worth recording at the authority layer.
+
+**These were chosen by audit relevance, not by convenience.** `check:executed-tests`
+measured 287 of 314 Rust test files reaching no workflow step; these are the subset that
+is audit-relevant AND needs no database. That the gates enforcing tenancy had unit tests
+which never executed is the sharpest available form of this program's meta-finding — a
+gate that cannot fail occupying a slot that reads as coverage.
+
+**A measurement bug nearly prevented the work it was measuring.** The loop that checked
+whether these tests run without a database reported every one as failing. They all pass;
+zsh does not word-split unquoted parameters, so the package name argument was malformed.
+Had that reading been trusted, the conclusion would have been that these tests need
+PostgreSQL and cannot be wired cheaply — the opposite of the truth, reached by a broken
+instrument rather than by evidence. Recorded because this program's failures are
+overwhelmingly of that shape: not wrong reasoning over good data, but confident reasoning
+over an instrument nobody checked.
+
+This lowers no control and asserts no Korean legal conclusion. It makes 98 tests capable
+of failing.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after an upstream merge
+
+Mechanical rebind. No claim in the candidate changes.
+
+## 2026-07-31 — an append-only erasure ledger, and what it does not solve
+
+The registers rebind to the erasure-ledger candidate: migration 0207, a platform crate,
+and a PostgreSQL wrapper target wired into the reachability job.
+
+It builds the third of the four elements the erasure research found in the only
+articulated international position — erase from live systems, let backups expire on a
+finite scheduled cycle, keep an erasure log OUTSIDE the backup, and re-apply it after any
+restore. This is the log, and it makes the fourth possible. It performs and authorises
+nothing; ADR-0037 still adopts no option and every Korea control stays HOLD.
+
+Three properties are worth recording at the authority layer.
+
+**It refuses an escape hatch the codebase offers.** Existing append-only triggers here
+carry an `app.platform_force_remove_org` bypass so tenant teardown can proceed. This one
+does not. For an erasure ledger that branch is a reachable DELETE path through a SECURITY
+DEFINER, and it would make the append-only test a lie. The recorded consequence is that
+ledger rows OUTLIVE tenant force-removal holding an `org_id` that no longer names a row —
+stated in the migration header rather than discovered later.
+
+**It states its own limit.** A ledger inside the database is rolled back by the same
+point-in-time restore it exists to record. The design detects that rather than preventing
+it, and the header says so. What it cannot do is survive a restore; what it can do is make
+one visible.
+
+**The slice edited the three authority documents despite being told not to.** Reset to
+`origin/main` and rebuilt here. Recorded because the instruction existed precisely so the
+train binds a candidate ending in the work rather than in a rebind performed on a stale
+base, and the instruction was not enough on its own.
+
+Its tests need PostgreSQL and did not run locally — the execution proof is CI, through the
+credential-loader wrapper. Verified locally instead: buck2 resolves both the wrapper and
+its target, the crate compiles, and six gates pass.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #540 moved the tip under the erasure-ledger candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+The merge that moved the tip resolved the three authority documents as a **union**: the two
+registers were taken from `main` and rebound, and the ledger keeps every entry from both
+sides. `assertAuthorityDiff` verifies that these documents changed, never what they say, so
+a `--theirs` resolution would have deleted entries with no gate noticing.
+
+Git could not parse the conflict hunks in this file during that merge, because the file
+already carries unresolved `|||||||` marker lines from earlier union resolutions — ten of
+them on `main` as of this merge, up from nine before #540. This candidate adds none. The
+count and the gate that stops it growing are a separate change.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the ledger carried unresolved merge markers, and nothing looked
+
+Rebind onto the merge-hygiene candidate.
+
+`docs/program/console-program-ledger.md` carried ten lines beginning `|||||||`, with zero
+`<<<<<<<` and zero `>>>>>>>`. The asymmetry is the diagnosis: the authority documents
+conflict on nearly every merge, the correct resolution is a **union** — nothing verifies
+what this file SAYS, only that it changed — and a union done by hand strips two markers out
+of three. Every one of the ten sat on a clean boundary between two complete entries, so the
+resolutions were right and only the litter was wrong.
+
+The count grew by one per merge. Nine at `810f7c81a`, ten after #540. Git failed to parse
+the conflict hunks while merging #541, because the markers already in the file are not
+valid conflict syntax — so the litter had begun to break the machinery that produces it.
+
+`assertNoUnresolvedMerge` now reads the three authority documents at the integration tip and
+refuses any line starting `<<<<<<<`, `|||||||` or `>>>>>>>`. It runs inside train validation,
+which is already unconditional on every PR. `=======` is deliberately exempt: it is a Markdown
+setext heading rule, and that exemption is proven by a test rather than asserted in a comment.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — 47 test files in 40 domain crates executed nowhere and needed no infrastructure
+
+Rebind onto the domain-coverage candidate.
+
+`check:executed-tests` reported 276 files reachable from no workflow step after #540. 47 of
+them sit in `domain` and `application` crates — no database, no fixture, no wrapper target.
+The only thing keeping them dark was that no `-p` flag named them.
+
+All 47 were **run before being wired**, not assumed: 36 crates via `--lib` gave 224 tests
+across 36 suites with 0 failed, and 11 files via `--test` gave 41 tests across 11 suites with
+0 failed. 265 tests that could not previously fail can now fail. `executed nowhere` falls
+**276 -> 229** and the baseline moves with it, so the ratchet holds the gain.
+
+Two lists, not one: a crate named in `domainUnitPackages` does not imply its `tests/` files
+run, because `--lib` does not reach an integration test under `tests/`.
+
+`--json` on the measuring tool was not emitting JSON — the ratchet's informational line
+followed the document on stdout. Moved to stderr.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a second dark-test tranche, and four crates that proved the assumption wrong
+
+Rebind onto the extended domain-coverage candidate.
+
+41 further `--lib` unit tests in `rest`, `adapter-postgres` and CI-gate crates executed in no
+workflow step. Measured before wiring: **308 tests, 41 suites, 0 failed**. `executed nowhere`
+falls **229 -> 188**, and the baseline moves with it.
+
+**The tranche was selected on an assumption that turned out to be false.** "`--lib` means no
+database" does not hold: `console-platform-group`, `console-platform-storage`,
+`console-gate-rls-arming` and `console-support-rest` each carry a `#[sqlx::test]` in
+`src/lib.rs` and panic with `DATABASE_URL must be set`. They are excluded and belong to the
+PostgreSQL tranche. A unit test living beside the code it tests is not evidence that it needs
+no fixture, and only execution distinguished the two.
+
+The first run used cargo's default fail-fast and stopped at 34 of 45 suites, so one failure
+concealed ten crates' results. The figure above is from a `--no-fail-fast` re-run, which is
+what makes it a count rather than a lower bound.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #542 under the domain-coverage candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+The three authority documents were resolved as a union, and for the first time since these
+merges began git parsed the conflict hunks without error — #542 removed the ten stray
+`|||||||` lines that were not valid conflict syntax. The gate it added asserts this
+resolution is clean rather than trusting that it is.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the live GitOps freeze gains a door, and the backup window gains a bound
+
+Rebind onto the retention candidate.
+
+The entry of 2026-07-31 recorded that there was no documented route by which the live GitOps
+inputs could legitimately change, and that a control with no exception either stops all
+change or gets deleted by whoever needs the next change badly enough. There is now a route:
+every changed live path must appear on a line ADDED to
+`deploy/apps/console/LIVE-GITOPS-CHANGES.md` relative to `origin/main`. The gate reads that
+file's diff, not its contents, so naming a path once does not buy silence for a later change.
+The DARK-topology `doesNotMatch` assertions are untouched.
+
+`console-backups` now declares `retentionPolicy: "35d"`, where it previously declared none
+and point-in-time recovery reached back to the first base backup forever.
+
+**A prior finding in ADR-0037 was wrong and is corrected there.** That record stated 백업
+appears zero times in PIPA and its 시행령 — true of those two instruments, and false as a
+claim about Korean law, because the binding security standard is a 고시, which is 행정규칙 and
+a different search target. 개인정보의 안전성 확보조치 기준 (제2026-9호, 시행 2026-07-01) 제11조
+requires a backup-and-recovery **plan** above a subject-count threshold and states no period.
+
+**No Korean legal conclusion is asserted.** The 35-day figure is not derived from any statute;
+it is derived from the payroll cycle, because no instrument found sets a duration for a backup
+archive. ADR-0037 remains `proposed`, decides nothing, and adopts none of its four options.
+Whether a bounded window means anything is routed to privacy counsel, unchanged.
+
+ADR-0037's option B claimed that shortening the window amends accepted ADR-0015. That
+paragraph is retracted in this candidate: ADR-0015 states no window length anywhere.
+
+Recorded and out of scope: 안전성 확보조치 기준 제8조제1항제2호 sets a 2년 floor on 접속기록 for
+any system processing 고유식별정보, which `개인정보 보호법 시행령` 제19조제1호 defines to include
+주민등록번호.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #543 under the retention candidate
+
+Mechanical rebind. No claim in the candidate changes, and no Korean legal conclusion is
+asserted by it.
+
+Fifth rebind of the day across three landed pull requests. Each rewrites the same ~390
+denormalised leaves, every one of which carries the single value declared at
+`registry.candidate.sha`. Recorded as a measurement, not a complaint: it is the cost the
+next change is expected to reduce.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — 385 copies of one SHA, of which 33 were doing work
+
+Rebind onto the denormalisation candidate — and the last one that will cost 390 references.
+
+Every rebind rewrote 385 `candidate_sha`/`source_sha` leaves holding the value already declared
+at `registry.candidate.sha`. Three pull requests landed today cost five rebinds between them, and
+the registers conflicted on every concurrent merge because every lane rewrote every leaf.
+
+**352 removed, 33 kept, and which 33 was not obvious.** Ten agents were tasked with refuting the
+claim that all 385 were safe. Two refutations held, and both would have been silent gate removals:
+
+- `controls[].candidate_evidence.candidate_sha` — the `?.` in
+  `control.candidate_evidence?.candidate_sha !== candidate.sha` sits on the **parent**, making that
+  one expression both the candidate binding and the only existence gate for control evidence
+  anywhere. Without it, a control with no candidate evidence validates clean, and so does one bound
+  to a previous candidate — the failure mode a union merge produces.
+- `capabilities[].candidate_evidence.candidate_sha` — the sole equality binding on a sub-object
+  whose `status` gates every non-HOLD benchmark verdict.
+
+Removing `capability_traceability[].candidate_sha` deleted the only executable tie between the
+jurisdiction register and the candidate. The document already declared `jurisdiction.candidate.sha`
+and nothing read it; one assertion now does what 162 leaves did redundantly.
+
+Verified by running 13 structural mutations against the validator and documents before and after:
+nothing that failed before passes now, and two cases that previously validated clean — a stale and
+an absent `jurisdiction.candidate.sha` — are now caught. Rebind cost 390 -> 38.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review disposition, and
+exposure state remains `HOLD`.
+
+## 2026-07-31 — 위치정보법 says 즉시, and the erasure record reasoned from 지체 없이
+
+Rebind onto the 위치정보법 candidate. First rebind since the denormalisation: **38 references,
+not 390.**
+
+ADR-0037 argued throughout from PIPA, where 제21조제1항 and 제36조제2항 say **지체 없이** — a
+standard this repository had already recorded as tolerating a reasonable operational window, and
+the standard under which a 35-day backup retention window was set earlier today.
+
+`위치정보의 보호 및 이용 등에 관한 법률` 제23조제1항 (제21066호, 시행 2025-10-01) requires
+개인위치정보 to be destroyed **즉시**. 시행령 제26조의2제2항 admits exactly one exception — the
+data subject's separate consent — capped at 1년 by 제3항, and 제40조의2 makes non-destruction
+criminal (2년 이하의 징역). `0005_create_compliance_location_store.sql:47-70` holds `latitude`,
+`longitude` and `accuracy_m` against `user_id`, so the data the article governs is already here.
+
+The consequence is structural, not preferential: ADR-0037's option B — shorten the PITR window —
+**cannot satisfy 제23조 at any N**. Only crypto-shredding or a segregated store can.
+
+**No Korean legal conclusion is asserted, and no control moves.** Whether the instrument binds
+this deployment turns on 위치정보사업자 / 위치기반서비스사업자 registration status under 제5조/제9조,
+which is a legal determination outside this repository's authority. The counsel follow-up now
+names 위치정보법 first, ahead of the retention number.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a third dark-test tranche, and a false positive in the tool that counts them
+
+Rebind onto the tranche-3 candidate.
+
+13 further test files under `tests/` executed in no workflow step and needed no database.
+Measured with `--no-fail-fast` before wiring: 59 tests, 13 suites, 0 failed. `executed nowhere`
+falls **188 -> 175**.
+
+**`check-executed-tests.mjs` pairs `-p` and `--test` on a line as a cross product.** ci.yml
+carried one line with two packages and two test names, generating four candidate pairs where two
+were real. Verified not firing — neither cross file exists, so every count reported to date was
+sound, and cargo resolved that line correctly. It fires the moment either file is added, and it
+would report a test as executed when it is not.
+
+That direction is worse than the one the tool was built to catch. Its own header warns about
+silently under-reporting coverage; a cross-product false positive silently over-reports it. Fixed
+at the source — one `-p` per cargo invocation wherever `--test` appears — rather than by making
+the parser cleverer.
+
+The same rule handles `well_known`, which is a test name in both `console-platform-auth` and
+`console-app`. `domainUnitTestFiles` holds bare names and cannot distinguish them, so that entry
+is weaker than it looks; the comment beside it records that rather than implying coverage it does
+not have.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #546 under the tranche-3 candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+**38 references, not 390** — the first conflict resolution since the denormalisation landed, and
+the registers no longer carry a per-row copy of the candidate for every lane to rewrite.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a passing verdict was self-assertable by declaring no reviewer
+
+Rebind onto the self-assertion candidate.
+
+`benchmark.verdict: MEET` with `candidate_evidence.status: VERIFIED` and
+`independent_outcome_review.status: HOLD` validated clean. Both of the first two words are written
+by the hand that owns the capability, so a passing verdict needed no second party.
+
+The controls existed and were unreachable. Everything under `independent_outcome_review` — the
+SSH-signed review commit, the canonical registry and jurisdiction digests pinned into the receipt,
+the receipt path bound to capability and candidate, and the outright refusal of
+`review.reviewer_id === cap.owner` — hangs off the `status !== 'HOLD'` branch. Leaving the review
+at HOLD skipped all of it. **A prohibition on reviewing your own work is not a control while "no
+reviewer" is an accepted answer.**
+
+Proven before the fix against the real registers: a MEET verdict with a HOLD review was ACCEPTED,
+while a MEET verdict without verified evidence and a non-HOLD review without a real receipt were
+both REFUSED. The two adjacent controls worked; the one joining them did not exist.
+
+A non-HOLD verdict now requires a non-HOLD independent review, which forces the receipt chain that
+was already written. Inert on this candidate — all 27 capabilities are HOLD on verdict, review and
+evidence — which is exactly why it was cheap to add now rather than at the first promotion.
+
+Found while verifying #545, where it was recorded as pre-existing rather than fixed inside a
+refactor.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — eight tenant-isolation and PII proofs that executed nowhere
+
+Rebind onto the PostgreSQL tranche-1 candidate.
+
+52 of the 175 remaining dark files are RLS surface proofs — the evidence an audit asks for first,
+and none of it ran. The eight highest-value are wired here: `platform/db` rls_isolation and
+rls_rollout_isolation, `platform/audit-chain` audit_chain_rls, `platform/provisioning`
+rls_auth_chain, `platform-rest` remove_tenant, `compliance` location_consent_status_rls and
+location_store, and `payroll` payroll_rls_surfaces. `executed nowhere` falls **175 -> 167**.
+
+**Measured: all 175 remaining dark files already have a `rust_test` target carrying
+`needs-postgres`.** The gap is wiring, not authoring. Each needs a `//tools/buck` sh_test wrapper,
+a reachability line, and a `postgresWrapperContracts` pair — and the wrapper indirection is itself
+the credential control, since `test_needs_postgres.sh` refuses a raw `//backend/...` target.
+
+**CI is the first execution of these eight**, stated rather than implied: the Docker daemon is
+unavailable here, so the harness could not run locally. The reachability job is required, so a
+failure blocks the pull request rather than reaching main. Verified locally instead: every target
+resolves with the right label, the dark count falls by exactly eight, and the preflight guard
+bites when a wrapper line is deleted.
+
+Sized at eight to **measure** the marginal cost against the 996s / 11-wrapper baseline before
+sharding the remaining 167. Estimating it was the alternative, and estimates have been wrong three
+times today.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — a never-executed RLS proof could not build its own fixture, and the cost model was wrong
+
+Rebind after CI ran the tranche-1 PostgreSQL tests for the first time.
+
+**Seven of eight passed. One failed before reaching an assertion.**
+`evidence_acceptance_is_tenant_invisible_and_does_not_leak_audit_as_runtime_role` died in setup on
+`23514 new row for relation "organizations" violates check constraint "organizations_slug_check"` —
+`seed_org` lowercased its tag but did not remove spaces, so `"Evidence A"` became the slug
+`org-evidence a`, and `0026_create_organizations.sql:18` CHECKs `^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$`.
+
+Nothing was broken in production. The test was **stale**: the constraint could be added and the
+fixture silently stop satisfying it, because the test executed in no workflow step and so could not
+report it. A test named for an audit property had been unable to run at all.
+
+**The cost model in the candidate's own pull-request body was refuted by the run it predicted.**
+That body reasoned per-wrapper cost is "roughly linear" and 175 in one job "is not viable".
+Measured: 11 wrappers 996s, 19 wrappers 1032s — **4.5s marginal per wrapper**. The dominant cost is
+the shared dependency build, 2773 commands at 0% cache, paid once regardless of how many test
+binaries hang off it. The remaining 167 project to roughly +750s: one job, not twenty pull
+requests. A lower bound rather than a guarantee, since these eight are small.
+
+Recorded because the estimate was stated confidently and was wrong, and the correction came only
+from executing it.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the same never-executed proof was stale in three places
+
+Rebind after the second and third fixture defects in the same file.
+
+The organizations-slug fix let the fixture reach one insert further and fail on the next:
+`compliance_frameworks.code` is CHECKed `^FW-[0-9]{4,}$` (0148:122) and the test bound the literal
+`RLS-EVIDENCE-A`, which has never been legal for that column.
+
+Rather than spend a third CI round-trip discovering the next one, every INSERT in the file was
+checked against its table's constraints at once. That found a **third** defect before CI did:
+`control_key` is `^[A-Z0-9][A-Z0-9._-]{0,63}$`, and its single caller satisfies it only by luck.
+All three helpers now sanitise, verified against the real regexes for five tag shapes.
+
+**Three constraint violations in one file, none a production defect, none detectable while the
+test executed nowhere.** The migrations moved and the fixture did not. A test that reads as
+coverage of an audit property — tenant-invisible evidence acceptance that does not leak audit —
+has never reached a single one of its assertions.
+
+That is the expectation to carry into the remaining 167: some will not run on first execution
+either, and each such failure is a proof that was believed and never held.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — executed-nowhere reaches zero
+
+Rebind onto the final PostgreSQL tranche.
+
+Every remaining dark test file is wired. **`executed nowhere` 167 -> 0**, and the ratchet baseline
+goes with it: a test file added without a path from a workflow step now fails CI outright, because
+there is no slack left in the number. On 2026-07-30 that number was 287.
+
+A 32-agent audit read all 167 against the live migrations first. Three fixtures were confirmed
+broken and repaired — a helper called twice with constant identifiers colliding on three UNIQUE
+constraints, a 52-character slug against a 40-character ceiling, and an `equipment_no` that never
+matched its CHECK. Two further claims were **refuted**: they asserted no `console_rt` GRANT existed,
+on the strength of a grep, but `0035_enable_rls_rollout.sql:78-80` emits those grants dynamically
+through `EXECUTE format(...)`. A text search cannot see dynamic SQL, and without the refutation
+pass this candidate would have "fixed" a non-problem.
+
+Wired as one tranche because the marginal cost was measured — 11 wrappers 996s, 19 wrappers 1032s,
+~4.5s each — retracting this repository's earlier claim that the cost is roughly linear.
+
+**What is not claimed: that all 167 pass.** They have never executed. The audit checked fixtures
+against constraints without running anything, and reported findings without per-file CLEAN
+attestations, so 109 files carrying no finding are UNVERIFIED rather than proven clean. CI is the
+first execution, and it is a required check, so failures block the pull request rather than
+reaching main.
+
+60 FRAGILE findings are recorded and deliberately unfixed: they pass today and would break on a
+different caller. The largest is 43 verbatim copies of `format!("org-{}", tag.to_lowercase())`,
+rooted in one line of `platform/test-support/src/lib.rs`.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — wiring 167 dark tests found a production defect
+
+Rebind after the first execution of the newly wired PostgreSQL targets.
+
+CI reached 86 of 186 targets before the 35-minute ceiling: 82 passed, 4 failed. Three failures were
+fixture rot that had accumulated precisely because nothing executed those files. **One was a defect
+in a production path.**
+
+`platform_force_remove_organization` calls its catalog-driven closure (0196:192) before the
+hand-ordered deletes at 0196:228-231. The closure sweeps `equipment_cost_ledger` — single-column
+`org_id` FK, ON DELETE RESTRICT (0034:85) — while that table's children are invisible to the same
+closure by two independent filters: a COMPOSITE FK against `cardinality(conkey) = 1`, and ON DELETE
+CASCADE against `confdeltype IN ('a','r')`. So force-removing an organization that holds equipment
+maintenance costs raises 23001. Migration 0208 adds the ledger to the exclusion list 0196 already
+maintains for exactly this class of root.
+
+The two apalis failures were **cross-test poisoning of a cluster-global credential**: four sibling
+files rewrite `console_app`'s password to a hardcoded literal and none restores it, so every later
+target authenticating from the harness URL fails 28P01 for a reason having nothing to do with
+itself. Each apalis test now re-asserts the passwords it needs before connecting, which is correct
+regardless of sibling order or panic.
+
+**The ceiling was raised 35 -> 80 minutes rather than sharded.** Measured: 240s of build and setup,
+then 21.8s per target serialized, so 186 targets need ~71 minutes. Sharding is the better answer and
+was rejected deliberately — this job's display name is the literal string branch protection matches
+on, a matrix reports as "name (shard)", and that would silently un-require the check and restore the
+false green the job's own comment describes. It also retracts the 4.5s marginal figure recorded
+earlier today, which was measured across 11->19 wrappers while the fixed build cost still dominated.
+
+`executed nowhere` is 0 in the candidate. That is wiring, not proof, and this is what the first
+proof produced.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after regenerating the first-party BUCK face
+
+Mechanical rebind. No claim in the candidate changes.
+
+Adding the credential re-assertion to the apalis tests introduced `sqlx::` usage, and
+`tools/buck/gen_first_party.py` correctly detected it: the generated `rust_test` now carries the
+migrations tree and `SQLX_OFFLINE`. The cheap generated-face gate caught the drift on the first CI
+run, which is the gate working rather than failing.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — eleven shipped features could not be granted to anyone
+
+Rebind onto the feature-catalog candidate.
+
+`policy_role_permissions.feature_key` FKs to `feature_catalog` (0065), so a `Feature` with no
+catalog row is unreachable through the tenant grant path whatever the compile-time matrix permits.
+Eleven of the 96 keys in `Feature::as_str` had no row, and the failure is silent in both
+directions — nothing panics, the capability simply cannot be held.
+
+Among them: `payroll_run_read` and `payroll_run_manage`, which together are payroll's
+separation-of-duties split, so no reviewer-who-cannot-pay role could exist; `approval_finalize`,
+which the matrix permits ADMIN and above and nobody could hold; and the entire 퇴직 flow.
+
+Migration 0209 seeds the rows. It grants nothing — `feature_catalog` is the set of keys a grant may
+NAME, so a row makes a feature expressible rather than held.
+`feature_catalog_covers_every_feature` asserts the coverage against a migrated database and is
+wired into the required PostgreSQL job, with a second case ensuring the first cannot pass on a
+truncated catalog.
+
+**An earlier count of 19 was wrong**, derived by naive snake_case conversion of the variant names,
+which produces `equipment3r_approve` where the real key is `equipment_3r_approve` and invents eight
+phantom gaps. The serialization function is the authority, not the variant name. Recomputed against
+the arms of `as_str`: exactly 11.
+
+Thirteen catalog rows with no `Feature` are deliberately left alone. Deleting one would break the FK
+of any grant already naming it, and a row no code reads is inert; a MISSING row removes capability.
+Only that direction is asserted.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — 176 of 186 execute and pass; nine are deferred by name
+
+Rebind after the full PostgreSQL reachability run completed inside the raised ceiling.
+
+**Pass 176, Fail 8, Build failure 3.** The 35 -> 80 minute raise worked: the job finished rather
+than being cancelled at 86 of 186.
+
+**The production defect was a class, not an instance.** 0208 excluded `equipment_cost_ledger` from
+the force-removal closure; the next run failed on
+`equipment_maintenance_history_evidence_media_same_org_fk` — same shape, one table over. Migration
+0193 declares four composite RESTRICT foreign keys, and every parent they name can be swept by the
+closure while its 0193 children are invisible to it under `cardinality(fk.conkey) = 1`. 0208 now
+excludes the whole family, verified against the hand-ordered block in 0196 which already deletes all
+five child-first. Fixing one member would have moved the failure to the next on the following
+80-minute cycle, which had already happened once.
+
+**Nine tests are deferred and named in the baseline rather than counted.** Seven fail on fixture rot
+or a defect the silence hid; two fail to BUILD because they include a shared file from
+`backend/test_support/` by relative path that the generated `mapped_srcs` does not carry — a gap in
+`tools/buck/gen_first_party.py`, not a defect in those tests. `dark_baseline` goes 0 -> 9 rather
+than pretending, and the file records why for each.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the class fix regressed a passing test, and is narrowed
+
+Rebind after narrowing 0208.
+
+The previous candidate excluded the whole 0193 composite-FK family from the force-removal closure.
+Fail went 8 -> 2, but one of the two is a **regression**: `platform-rest remove_tenant` had been
+passing and now fails 23001 on `registry_equipment_site_id_fkey`.
+
+The reasoning was right about which tables CAN be reached too early and wrong about which need
+excluding. The closure deletes `registry_equipment` before `registry_sites` under its
+OID-descending order; removing it from the sweep left `registry_sites` blocked by a child that no
+longer got deleted first. Presence in 0196's hand-ordered block was verified and taken as proof
+that exclusion was safe — but presence is not order, and that block runs AFTER the closure, so
+excluding a table moves it later, which is wrong for anything the sweep was already handling
+correctly.
+
+Narrowed to the two roots actually observed failing: `equipment_cost_ledger` and `evidence_media`.
+The other three were never observed failing; the generalization from two instances to a class of
+five was untested, and the test that would have caught it was already green.
+
+Recorded because this is the first change in this branch to break something that worked. An
+over-narrow fix costs a cycle; an over-broad one costs a passing test, and only execution
+distinguishes them.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — delete the invisible subtree before the sweep, not tables from it
+
+Rebind onto the subtree pre-delete.
+
+Pass 176, Fail 1. The `remove_tenant` regression is gone and `workorder use_cases` failed on the
+THIRD constraint of the same family. Chasing members one per run cost four cycles at ~71 minutes
+each.
+
+The maintenance-history subtree is invisible to `platform_force_remove_direct_org_children` by two
+independent filters — its parent is ON DELETE CASCADE where the sweep admits only 'a'/'r', and its
+children reach their parents by COMPOSITE FK where the sweep requires `cardinality(conkey) = 1`.
+Migration 0193 declares four such RESTRICT foreign keys and CI surfaced them one at a time.
+
+The fix is the one the original diagnosis recommended and this work first declined: three DELETEs,
+child-first, at the top of the function, before the sweep can reach anything they reference.
+Nothing is excluded and the sweep's ordering is untouched.
+
+Both earlier attempts are recorded in the migration header. Excluding `equipment_cost_ledger` moved
+the failure to the next constraint; excluding the whole family regressed a passing test. **Presence
+in 0196's hand-ordered block is not correct order** — that block runs after the sweep, so excluding
+a table moves it later, which is wrong for anything the sweep already handled correctly.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — Pass 177, Fail 0
+
+Rebind after the PostgreSQL suite reached zero failures.
+
+Deleting the maintenance-history subtree before the catalog sweep closed all three constraints at
+once. Excluding tables from the sweep had fixed one per 71-minute cycle and then regressed a
+passing test; the subtree pre-delete is the fix the original diagnosis recommended.
+
+**177 previously-dark PostgreSQL targets now execute and pass**, from a starting point of 287 test
+files that executed nowhere. One production defect was found and fixed by that execution.
+
+Ten tests remain deferred and named in `executed-tests-baseline.json`: seven on fixture rot or a
+defect the silence hid, three that fail to BUILD because they include a shared file from
+`backend/test_support/` by relative path that the generated `mapped_srcs` does not carry.
+
+The tenth was a bug in the unwiring itself: the removal script matched entries by their trailing
+line-continuation, and the last target in a list has none, so it reported "removed 9" against 10
+requested and the arithmetic was not checked. Same under-reporting shape as a CI waiter that reads
+a cancelled job as zero failures.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the location purge has never run, and ADR-0038 decides the mechanism
+
+Rebind onto the erasure-architecture candidate.
+
+**`purge_expired_location_data` has no production caller.** The only repo-wide references are the
+migration that defines it, the adapter wrapper at `compliance/adapter-postgres/src/lib.rs:392`, one
+integration test, and an audit-coverage exclusion list — no worker, no cron, no route. ADR-0037
+presented it as a shipped retention mechanism and is corrected. Nothing bounds the growth of
+`location_pings` in the live database, which is a more immediate exposure than the archive question
+that record was about.
+
+ADR-0037 also still described the archive window as unbounded, which #544 ended by setting
+`retentionPolicy: "35d"`. A supersession note records that, and what it changes: mitigations that
+wait for the archive to age out now terminate.
+
+ADR-0038 decides the mechanism for 개인위치정보: declare `location_pings` `UNLOGGED` so coordinates
+never enter the WAL, base backups or standbys; run the purge; then envelope-encrypt per subject in a
+gated second phase. The segregation boundary sits at `relpersistence` rather than at a second
+cluster, which is what keeps the outbound RESTRICT foreign keys, the FORCE-RLS enrolment, the five
+org-removal deletes and single-transaction consent withdrawal intact.
+
+**Two claims of this author's are retracted there.** "Nothing references `location_pings`" was true
+only inbound, and the outbound conclusion drawn from it — that segregation was structurally safe —
+was wrong. And the record's first draft collapsed the table to one row per subject; its own
+falsification test then found that dispatch eligibility reads a time window
+(`dispatch/adapter-postgres/src/lib.rs:1501,1570`), so the collapse would have silently changed who
+receives work. Minimisation survives as retention, not as shape.
+
+No code changed and no personal data was touched. Every capability, evidence contract, jurisdiction
+binding, Korea control, review disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — rebind after #550 under the erasure-architecture candidate
+
+Mechanical rebind. No claim in the candidate changes.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-07-31 — the build was compiling single-threaded to serialize the tests
+
+Rebind onto the build-parallelism candidate.
+
+`--num-threads=1` is passed to `buck2 test` to serialize the test phase. Buck2's own help states
+what the flag does: *"Number of threads to use during execution (default is # cores)"* — the whole
+invocation, compile actions included. Every PostgreSQL CI run has therefore been compiling
+single-threaded on a multi-core runner, as a side effect of a flag whose purpose is test isolation.
+
+The two phases need different things and were sharing one setting. Tests must be serialized because
+three files issue cluster-global `ALTER ROLE ... PASSWORD` that outlives the per-test database
+`#[sqlx::test]` drops. Compiling has no such constraint. The build is now a separate pass at default
+parallelism, before the serialized test pass; the daemon carries the result forward so nothing is
+rebuilt.
+
+This does not make the tests parallel. The three role-mutating files still force serialization, and
+the answer there is namespaced role names — the pattern PostgreSQL's own regression suite uses,
+where every object in a parallel group carries a reserved prefix.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
+
+## 2026-08-01 — The authority gate accepts two shapes (expand)
+
+The three authority documents conflicted on nearly every merge because
+`verify-console-authority-train.mjs` REQUIRED each PR's `C..T` to modify all three. That
+requirement was satisfiable only because the two registers store the candidate SHA
+denormalised: every commit to main changes 30 lines in the capability register and 8 in the
+jurisdiction register, all carrying the same SHA, none of them semantic. `ci.yml` derives that
+SHA from git parentage before it opens either file, so the stored copies tell no reader
+anything git had not already said.
+
+The gate enforcing this validates itself. `console-authority-bootstrap.yml` is
+`pull_request_target` and checks out `ref: main`, so a pull request is judged by MAIN's copy of
+`verify-console-pr-authority-bootstrap.mjs` — which located C by parsing
+`T:console-capability-registry.json` → `candidate.sha`. Executed against a branch that had
+deleted the field, main's gate answered:
+
+    MAIN BOOTSTRAP GATE: REFUSED — console authority bootstrap: T registry candidate.sha must
+    be a lowercase 40-character SHA
+
+A self-validating gate cannot be replaced in one step. This is the expand half: main learns to
+accept both shapes and NOTHING is deleted. This train still modifies all three documents and
+the registers still carry `candidate.sha`, rebound as usual — it has to, because the rule it
+relaxes is the rule it must still satisfy.
+
+What changed:
+
+- C is Git's own answer, T's single parent, not a field read out of the pull request. The
+  stored value became a cross-check: present it must agree, absent it must not fail. The
+  agreement check is new — before, the value was compared against the parent it was used to
+  find, so it could not lose.
+- "all three" became "at least one", in the three places that enforced it. The ALLOW-LIST is
+  byte-for-byte unchanged: nothing outside it may change, which is the property that keeps
+  product code out of the authority tip. What is gone is a count, not a control.
+- `docs/program/ledger/` joins the allow-list as a path PREFIX, and status `A` is admissible
+  there and nowhere else. The registers, the legacy ledger, and every other path stay
+  modify-only; a proof of each refusal is in the test files. The 1208-line
+  `console-program-ledger.md` is not migrated — it stays the historical archive.
+- The prefix admits a FLAT directory of lowercase `.md` files, not a subtree. A bare
+  `startsWith` is a string test, not a path test: it accepted
+  `docs/program/ledger/../../evil`, which names a location outside the prefix entirely.
+  Refusing any `/` in the remainder removes traversal and nesting together. `.md` is a
+  deliberate constraint rather than decoration — this is the only prefix at which the tip may
+  add a file, and without it the same allowance admits a new `.mjs` under `docs/`, i.e.
+  executable content added by the one commit forbidden to touch a product path.
+- The prefix rule and the diff FLAGS now live in one module, `authority-ledger-path.mjs`,
+  imported by all three gates. They previously held three copies and two flag sets:
+  `validate-console-truth-ledger.mjs` passed `--find-renames --find-copies-harder`, the other
+  two `--no-renames`. A new ledger entry ≥50% similar to a file already in the tree is then
+  status `C` with two paths to one reader and `A` with one path to the others — measured at
+  `C084` versus `A` — so the same commit was refused by one gate and accepted by the two that
+  decide the merge. All three now pass `--no-renames`, the strict reading: detection can only
+  relabel an added file as `R`/`C`, which every reader here refuses outright.
+- `verify-console-pr-authority-bootstrap.test.mjs` executed nowhere. It is now wired into
+  `ci.yml`, locked in `check-ci-preflight.mjs`, and added to `candidateCheckPlan` — the
+  `pull_request_target` list that runs on the path actually gating the merge, where the
+  highest-privilege script in the repository was the one console script left uncovered.
+  Wiring it immediately failed it, which is the point. One of its sixteen tests pinned the
+  literal commit `28642975`, an ancestor of no remote ref: it survives only in the local
+  branch it was authored on, so the test could pass in exactly one clone. It now resolves
+  `HEAD`, the commit the gate actually checks out. The failure it produced said only
+  `128 !== 0`, because `git rev-parse` prints nothing for an absent object and
+  `checkout --detach ''` never names what was missing; an added assertion on the resolved
+  SHA turns that into a sentence. Verified by cloning this branch with `--single-branch`,
+  which reproduces CI's ref set: 15/16 before, 16/16 after.
+- Two `?.candidate_sha` comparisons were doubling as payload checks stronger than existence:
+  `control.candidate_evidence?.candidate_sha !== candidate.sha` refuses `{}`, because
+  `undefined !== sha`. Replacing them with `object(...)` alone would have been weaker, not
+  equal, so the jurisdiction control payload now carries the same explicit `status` and
+  `reason` checks the capability rows have always carried.
+
+**An accepted loss, named before it is taken.** It is not taken here: this train still stores
+`candidate.sha` in both registers, and the validator still refuses a stored value that
+disagrees, so a wholesale revert of either register is still caught today. The contract half
+deletes the field, and at that point a wholesale REVERT of either register validates clean.
+Measured on the earlier full-removal branch, not on this one: the old validator refused 9 of 9
+revert combinations, the new one accepted 15 of 15. The window is exactly "all-HOLD
+registers". What still holds inside it: every jurisdiction control is forced HOLD; Buck targets
+and route facts are read from C and fail closed; a promoted capability binds
+`registry_canonical_sha256` and `jurisdiction_canonical_sha256` in a separately signed receipt;
+and the C..T train itself is signed, single-parent and allow-listed. What the old check never
+caught: falsifying `freshness.status` in place passed BOTH validators. Keeping the field
+permanently would reintroduce the shared-file mutex this change exists to remove, so the
+contract half removes it and this loss is accepted rather than traded back.
+
+The conflict is not yet gone — it consolidates. With the registers static, "modify at least
+one" means in practice that every PR writes the ledger, and two lanes appending to
+`console-program-ledger.md` still conflict. The ledger directory is the seat for that fix; this
+train only makes the gate able to accept it.
+
+Every capability, evidence contract, jurisdiction binding, Korea control, review
+disposition, and exposure state remains `HOLD`.
