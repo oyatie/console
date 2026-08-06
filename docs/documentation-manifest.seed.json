@@ -3370,6 +3370,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-w0-pol-domain-wire-tests.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "f981b02ace0e3a39a3f0baf2b68acb634f351187",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

@@ -306,7 +306,7 @@
     "backend/crates/platform/storage/tests/evidence_processing_rls_surfaces_as_runtime_role.rs": 1,
     "backend/crates/policy/adapter-postgres/tests/draft_storage.rs": 1,
     "backend/crates/policy/application/src/lib.rs": 1,
-    "backend/crates/policy/domain/src/lib.rs": 2,
+    "backend/crates/policy/domain/src/lib.rs": 5,
     "backend/crates/production/rest/src/lib.rs": 5,
     "backend/crates/recruiting/application/src/lib.rs": 4,
     "backend/crates/recruiting/domain/src/lib.rs": 4,

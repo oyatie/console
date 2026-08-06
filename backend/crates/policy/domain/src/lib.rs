@@ -534,4 +534,51 @@ mod tests {
         );
         assert!(invalid.is_err());
     }
+
+    #[test]
+    fn cedar_policy_status_wire_roundtrips_and_runtime_enforcement() {
+        for st in [
+            CedarPolicyStatus::Enforced,
+            CedarPolicyStatus::Shadow,
+            CedarPolicyStatus::Draft,
+            CedarPolicyStatus::ReviewPending,
+            CedarPolicyStatus::Rejected,
+            CedarPolicyStatus::Retired,
+        ] {
+            assert_eq!(CedarPolicyStatus::from_db_str(st.as_db_str()).unwrap(), st);
+        }
+        assert!(CedarPolicyStatus::Shadow.is_runtime_enforced());
+        assert!(!CedarPolicyStatus::Rejected.is_runtime_enforced());
+        assert!(!CedarPolicyStatus::Retired.is_runtime_enforced());
+        assert!(CedarPolicyStatus::from_db_str("not_a_status").is_err());
+    }
+
+    #[test]
+    fn validate_key_rejects_empty_uppercase_and_overlong() {
+        assert!(validate_key("action", "clock.in").is_ok());
+        assert!(validate_key("action", "").is_err());
+        assert!(validate_key("action", "ClockIn").is_err());
+        assert!(validate_key("action", &"a".repeat(129)).is_err());
+    }
+
+    #[test]
+    fn effect_and_validation_status_roundtrip() {
+        assert_eq!(
+            CedarPolicyEffect::from_db_str(CedarPolicyEffect::Permit.as_db_str()).unwrap(),
+            CedarPolicyEffect::Permit
+        );
+        assert_eq!(
+            CedarPolicyEffect::from_db_str(CedarPolicyEffect::Forbid.as_db_str()).unwrap(),
+            CedarPolicyEffect::Forbid
+        );
+        assert!(CedarPolicyEffect::from_db_str("allow").is_err());
+        assert_eq!(
+            CedarValidationStatus::from_db_str("valid").unwrap(),
+            CedarValidationStatus::Valid
+        );
+        assert_eq!(
+            CedarValidationStatus::from_db_str("invalid").unwrap(),
+            CedarValidationStatus::Invalid
+        );
+    }
 }
