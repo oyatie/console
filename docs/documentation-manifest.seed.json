@@ -3310,6 +3310,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-05-product-buck-residual-gate.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "736d193acb1d433a03be4971683a7ae5de08cac0",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-05-program-workflows.md",
     "class": "evidence",
     "owner": "repository maintainers",
