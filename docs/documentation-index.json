@@ -3514,6 +3514,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-06-w0-rec-posting-wire-tests.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3335f7c34e9b202e5b4d1c5f03da02ed1fe2981e",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/legacy-intent-register.md",
       "class": "evidence",
       "owner": "repository maintainers",
