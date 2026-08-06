@@ -228,7 +228,7 @@
     "backend/crates/ontology/adapter-postgres/tests/property_link_sync_as_runtime_role.rs": 2,
     "backend/crates/ontology/adapter-postgres/tests/registry_rls_surfaces_as_runtime_role.rs": 16,
     "backend/crates/ontology/application/src/lib.rs": 6,
-    "backend/crates/ontology/domain/src/lib.rs": 8,
+    "backend/crates/ontology/domain/src/lib.rs": 10,
     "backend/crates/ontology/rest/src/lib.rs": 6,
     "backend/crates/ontology/rest/tests/action_execute_as_runtime_role.rs": 9,
     "backend/crates/ontology/rest/tests/company_conformance.rs": 4,

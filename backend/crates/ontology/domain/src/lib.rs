@@ -469,4 +469,33 @@ mod tests {
         assert!(FieldKind::parse("choice").is_known());
         assert_eq!(FieldKind::parse("choice").as_tag(), "choice");
     }
+
+    #[test]
+    fn field_kind_known_tags_roundtrip_and_are_known() {
+        for tag in [
+            "text",
+            "integer",
+            "decimal",
+            "boolean",
+            "date",
+            "timestamp",
+            "choice",
+            "multi_choice",
+            "reference",
+            "attachment",
+            "geo_point",
+            "json",
+        ] {
+            let kind = FieldKind::parse(tag);
+            assert!(kind.is_known(), "tag {tag} should be known");
+            assert_eq!(kind.as_tag(), tag);
+            assert_eq!(FieldKind::parse(kind.as_tag()), kind);
+        }
+    }
+
+    #[test]
+    fn instance_fsm_allows_discarding_a_never_activated_draft() {
+        use InstanceLifecycleState::{Archived, Draft};
+        assert!(validate_instance_transition(Draft, Archived).is_ok());
+    }
 }
