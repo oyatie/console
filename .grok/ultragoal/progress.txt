@@ -1,0 +1,4 @@
+# Ralph / ultragoal progress
+
+Patterns and learnings (append-only during execution):
+

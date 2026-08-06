@@ -65,6 +65,27 @@
       "detector": "compare hosted fail step to admit_commands for class",
       "control": "domain-increment Admit phase; optional PreToolUse on push",
       "admit_commands": ["npm run check:ci-preflight"]
+    },
+    {
+      "id": "ops.soft-red-silence",
+      "symptom": "Soft red or non-hard block observed but not on lane board / left unowned",
+      "detector": "work-manager silence_check; program-control productivity audit; lane-board.live.json vs open PR scan",
+      "control": "work-manager must upsert every soft_red_sources/hard_block_sources hit; pr-babysit requeues residuals",
+      "admit_commands": []
+    },
+    {
+      "id": "ops.tip-serial-contention",
+      "symptom": "Multiple open tip-writing PRs (manifest/baseline/tip/ci.yml) thrashing serial queue",
+      "detector": "tools/ci/assess-tip-contention.mjs or work-manager tip writer inventory",
+      "control": "Serialize tip queue; batch pure-domain tests; no new tip PR while tip_writers>=2",
+      "admit_commands": []
+    },
+    {
+      "id": "ops.review-not-approve-stall",
+      "symptom": "PR review not approve and no fix loop / board review_fix item",
+      "detector": "pr-babysit FixLoop; board kind review_fix",
+      "control": "Fix until approve or max rounds then board blocked with evidence; merge only on approve",
+      "admit_commands": []
     }
   ]
 }

@@ -20,7 +20,7 @@
     "check:foundation-gates": "node scripts/check-foundation-gates.mjs",
     "check:undeclared-imports": "node --test scripts/check-undeclared-imports.test.mjs && node scripts/check-undeclared-imports.mjs",
     "check:request-body-contract": "node --test scripts/check-request-body-contract.test.mjs && node scripts/check-request-body-contract.mjs",
-    "check:ci-preflight": "node scripts/check-ci-preflight.mjs && node --test tools/ci/postgres-shard.test.mjs tools/ci/work-order-request-no-seed.test.mjs tools/ci/check-product-buck-residual.test.mjs tools/ci/check-nextest-config.test.mjs && node tools/ci/check-product-buck-residual.mjs && node tools/ci/check-nextest-config.mjs",
+    "check:ci-preflight": "node scripts/check-ci-preflight.mjs && node --test tools/ci/postgres-shard.test.mjs tools/ci/work-order-request-no-seed.test.mjs tools/ci/check-product-buck-residual.test.mjs tools/ci/check-nextest-config.test.mjs tools/ci/ingest-soft-reds.test.mjs && node tools/ci/check-product-buck-residual.mjs && node tools/ci/check-nextest-config.mjs",
     "check:reasoning-lens-contract": "node scripts/check-reasoning-lens-contract.mjs",
     "check:doc-links": "node scripts/check-doc-links.mjs",
     "check:doc-manifest": "node scripts/console/generate-documentation-manifest.mjs --check",
@@ -79,7 +79,11 @@
     "test:js-test-reachability": "node --test scripts/check-js-test-reachability.test.mjs",
     "check:postgres-cargo-map": "node tools/ci/check-postgres-cargo-map.mjs",
     "check:product-buck-residual": "node tools/ci/check-product-buck-residual.mjs",
-    "check:nextest-config": "node tools/ci/check-nextest-config.mjs"
+    "check:nextest-config": "node tools/ci/check-nextest-config.mjs",
+    "check:soft-red-board": "node --test tools/ci/ingest-soft-reds.test.mjs && node tools/ci/ingest-soft-reds.mjs --check",
+    "queue:soft-reds": "node tools/ci/ingest-soft-reds.mjs",
+    "console:goal": "python3 .grok/bin/console-goal",
+    "console:learn": "python3 .grok/bin/console-learn"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"

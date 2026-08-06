@@ -3340,6 +3340,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-admit-fmt-baseline-gates.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "7ac48d335c46ecb887100d34749de97debc9d593",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-06-grok-process-harness.md",
     "class": "evidence",
     "owner": "repository maintainers",

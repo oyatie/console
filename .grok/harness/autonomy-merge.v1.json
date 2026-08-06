@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "description": "Autonomous merge policy: agent review approve + Required CI/Security green → merge without human gate. Human supervises; intervenes only if awry.",
+  "merge_when": {
+    "agent_review_verdict": "approve",
+    "required_ci": "success",
+    "required_security": "success",
+    "mergeable": true,
+    "not_behind": true
+  },
+  "do_not_wait_for_human_if": [
+    "approve_and_green"
+  ],
+  "if_not_approve": {
+    "action": "enqueue_review_fix",
+    "board_kind": "review_fix",
+    "loop": "fix until approve or max_fix_rounds",
+    "max_fix_rounds": 5,
+    "on_exhaust": "board status blocked + notify operator; do not silent-drop"
+  },
+  "soft_reds_and_blocks": {
+    "must_enqueue": true,
+    "owner": "work-manager + pr-babysit",
+    "forbidden": "silent leave unaddressed"
+  },
+  "human_supervision": {
+    "default": "observe_only",
+    "intervene_if": [
+      "operator_flags_awry",
+      "product_hold_would_be_cleared",
+      "production_secrets_exposure",
+      "max_fix_rounds_exhausted"
+    ]
+  },
+  "supersedes": "leader-only merge for routine agent-approved PRs (Console operator override 2026-08-06)"
+}

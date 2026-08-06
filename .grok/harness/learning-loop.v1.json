@@ -1,10 +1,13 @@
 {
-  "version": "1.0.0",
-  "description": "Closed process learning loop for Console — edit workflows/tools, not product scope. Inspired by Bun rewrite + Hermes learning ideas without external CLIs.",
+  "version": "1.1.0",
+  "description": "Closed process learning loop for Console — edit workflows/tools, not product scope. Inspired by Bun rewrite + Hermes Agent learning (NousResearch) without hermes/omc/omx/gjc CLIs.",
   "inspired_by": [
     "https://bun.com/blog/bun-in-rust",
-    "oyatie .grok/harness/learning-loop.v1.json"
+    "https://github.com/NousResearch/hermes-agent",
+    "oyatie .grok/bin/mm-learn",
+    "OMC ultragoal/ralplan/ralph ideas only"
   ],
+  "forbidden_clis": ["hermes", "omc", "omx", "gjc"],
   "lanes": {
     "daily_reflection": {
       "path_template": ".grok/memory/reflections/{date}.md",
@@ -14,27 +17,51 @@
       "path_template": ".grok/memory/tips/{slug}.md",
       "purpose": "Reusable operational prescription for a failure class"
     },
+    "curated_memory": {
+      "path_template": ".grok/memory/MEMORY.md",
+      "purpose": "Bounded Hermes-style curated facts; promote durable rules to harness"
+    },
+    "skill_draft": {
+      "path_template": ".grok/skills/{slug}/SKILL.md",
+      "purpose": "Skill creation from experience; revise on recurrence"
+    },
+    "trajectory": {
+      "path_template": ".grok/memory/trajectories/{id}.md",
+      "purpose": "Compressed execution learnings"
+    },
     "process_edit": {
       "path_template": ".grok/programs/evidence/process-edits-{date}.md",
       "purpose": "Record workflow/harness files changed for a class"
     }
   },
+  "tools": {
+    "console_learn": ".grok/bin/console-learn",
+    "workflow": "learn"
+  },
   "triggers": {
     "after_hard_fail": true,
     "after_repeat_failure_class": 2,
     "after_hosted_preflight_red": true,
-    "after_passive_wait_incident": true
+    "after_passive_wait_incident": true,
+    "after_ralph_iteration": true,
+    "after_program_control_tick": true,
+    "after_soft_red_silence": true
   },
   "actions": {
     "map_to_failure_class": true,
     "run_process_upgrade_workflow": true,
+    "run_console_learn": true,
     "forbid_one_shot_hooks": true,
-    "product_scope_unchanged": true
+    "product_scope_unchanged": true,
+    "skill_self_improve_on_repeat": true
   },
   "process_edit_allowlist": [
     ".grok/workflows/**",
     ".grok/harness/**",
     ".grok/programs/**",
+    ".grok/hooks/**",
+    ".grok/bin/**",
+    ".grok/ultragoal/**",
     "tools/ci/**",
     "scripts/console/**",
     "scripts/check-*.mjs",
@@ -45,5 +72,9 @@
     "backend/crates/**",
     "deploy/**"
   ],
-  "verified_empty_is_work": true
+  "verified_empty_is_work": true,
+  "see_also": [
+    ".grok/harness/hermes-learning.v1.json",
+    ".grok/harness/ultragoal.v1.json"
+  ]
 }

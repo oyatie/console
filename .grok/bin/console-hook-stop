@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Grok Stop hook: ultragoal/ralph loop-back + workflow dispatch instruction.
+
+Reads stdin JSON (Grok hook payload). Writes decision JSON to stdout.
+
+If active-goal.live.json.active:
+  - increment iteration
+  - block stop with reason that tells the model to run the dispatch workflow
+  - force-stop if max_iterations exceeded
+
+If idle: allow stop (exit 0, empty/allow).
+"""
+from __future__ import annotations
+
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def find_repo(cwd: Path) -> Path:
+    cur = cwd.resolve()
+    for p in [cur, *cur.parents]:
+        if (p / ".grok" / "ultragoal" / "active-goal.live.json").is_file():
+            return p
+    return cur
+
+
+def main() -> int:
+    raw = sys.stdin.read()
+    try:
+        payload = json.loads(raw) if raw.strip() else {}
+    except json.JSONDecodeError:
+        payload = {}
+
+    # Session-end Stop fires must not gate
+    reason = payload.get("reason") or payload.get("stopReason") or ""
+    if reason in ("channel_closed", "shutdown"):
+        return 0
+
+    cwd = Path(payload.get("cwd") or payload.get("workspaceRoot") or ".")
+    repo = find_repo(cwd)
+    active_path = repo / ".grok" / "ultragoal" / "active-goal.live.json"
+    if not active_path.is_file():
+        return 0
+
+    try:
+        active = json.loads(active_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return 0
+
+    if not active.get("active"):
+        return 0
+
+    # Avoid infinite same-turn thrash: still block but note stopHookActive
+    stop_hook_active = bool(payload.get("stopHookActive"))
+    iteration = int(active.get("iteration") or 0) + 1
+    max_i = int(active.get("max_iterations") or 50)
+    active["iteration"] = iteration
+    active["updated_at"] = now()
+
+    if iteration > max_i:
+        active["status"] = "exhausted"
+        active_path.write_text(json.dumps(active, indent=2) + "\n")
+        out = {
+            "continue": False,
+            "stopReason": f"ultragoal max_iterations={max_i} exhausted — human supervise",
+        }
+        sys.stdout.write(json.dumps(out))
+        return 0
+
+    active_path.write_text(json.dumps(active, indent=2) + "\n")
+
+    wf = active.get("dispatch_workflow") or "console-drive"
+    # Prefer console-drive (implements product+fleet) over board-only heartbeats
+    dispatch_wf = "console-drive" if wf in ("program-control", "console-drive", "") else wf
+    obj = active.get("objective") or "(see active-goal.live.json)"
+    boulder = "The boulder never stops." if active.get("ralph_active") else "Ultragoal loop continues."
+
+    # Mechanical dispatch artifact (workflows/agents read this; not aspirational only)
+    dispatch_path = repo / ".grok" / "ultragoal" / "dispatch.live.json"
+    dispatch = {
+        "ts": now(),
+        "iteration": iteration,
+        "max_iterations": max_i,
+        "workflow": dispatch_wf,
+        "objective": obj,
+        "commands": [
+            "node tools/ci/ingest-soft-reds.mjs",
+            f"/workflow {dispatch_wf}",
+            "/workflow learn",
+        ],
+        "ralph_active": bool(active.get("ralph_active")),
+        "ralplan_required": bool(active.get("ralplan_required")),
+        "stop_hook_active": stop_hook_active,
+    }
+    try:
+        dispatch_path.write_text(json.dumps(dispatch, indent=2) + "\n")
+    except OSError:
+        pass
+
+    # Best-effort soft-red ingest so silence cannot accumulate across Stop fires
+    try:
+        import subprocess
+
+        subprocess.run(
+            ["node", str(repo / "tools" / "ci" / "ingest-soft-reds.mjs")],
+            cwd=str(repo),
+            capture_output=True,
+            timeout=120,
+            check=False,
+        )
+    except Exception:
+        pass
+
+    msg = (
+        f"{boulder} Ultragoal ACTIVE (iteration {iteration}/{max_i}). "
+        f"Objective: {obj}. "
+        f"Dispatch artifact: .grok/ultragoal/dispatch.live.json → /workflow {dispatch_wf}. "
+        f"Do NOT end the turn idle — IMPLEMENT via durable workflows, not ticket status. "
+        f"1) Soft reds: `node tools/ci/ingest-soft-reds.mjs` (hook already attempted). "
+        f"2) `/workflow {dispatch_wf}` (console-drive runs fleet repair + product build). "
+        f"3) If ralplan_required and no approved plan, `/workflow ralplan` first. "
+        f"4) `/workflow learn` after progress; edit console-drive.rhai when drive fails as a class. "
+        f"5) Only clear goal after quality gate + `.grok/bin/console-goal deactivate`. "
+    )
+    if stop_hook_active:
+        msg += "stopHookActive=true — make concrete tool progress this round (no pure narration). "
+
+    # Grok Stop decision: block keeps agent working
+    sys.stdout.write(json.dumps({"decision": "block", "reason": msg}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

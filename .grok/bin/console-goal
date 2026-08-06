@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+"""Grok-native ultragoal helpers (ideas from OMC/GJC ultragoal; no omc CLI).
+
+Subcommands:
+  status
+  activate --objective "..." [--story-id ID] [--workflow program-control|ralph]
+  deactivate
+  checkpoint --story-id ID --status complete|blocked --evidence "..."
+  ledger-append --event TYPE --payload-json '{...}'
+  handoff   # print native /goal handoff text
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def repo_root(start: Path) -> Path:
+    cur = start.resolve()
+    for p in [cur, *cur.parents]:
+        if (p / ".grok" / "harness" / "ultragoal.v1.json").is_file():
+            return p
+    return cur
+
+
+def ug_dir(repo: Path) -> Path:
+    return repo / ".grok" / "ultragoal"
+
+
+def load_json(path: Path, default: Any) -> Any:
+    if not path.is_file():
+        return default
+    return json.loads(path.read_text())
+
+
+def write_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def append_ledger(repo: Path, event: str, payload: dict[str, Any]) -> None:
+    line = {"ts": now(), "event": event, **payload}
+    path = ug_dir(repo) / "ledger.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a") as f:
+        f.write(json.dumps(line, separators=(",", ":")) + "\n")
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    active = load_json(ug_dir(repo) / "active-goal.live.json", {})
+    goals = load_json(ug_dir(repo) / "goals.json", {})
+    prd = load_json(ug_dir(repo) / "prd.live.json", {})
+    stories = prd.get("stories") or []
+    done = sum(1 for s in stories if s.get("passes") is True)
+    print(
+        json.dumps(
+            {
+                "active": active,
+                "goals_count": len(goals.get("goals") or []),
+                "activeGoalId": goals.get("activeGoalId"),
+                "prd_stories": len(stories),
+                "prd_passes": done,
+                "ledger": str(ug_dir(repo) / "ledger.jsonl"),
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_activate(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    active = {
+        "active": True,
+        "mode": args.mode,
+        "objective": args.objective,
+        "plan_id": args.plan_id,
+        "story_id": args.story_id,
+        "status": "active",
+        "iteration": 0,
+        "max_iterations": args.max_iterations,
+        "dispatch_workflow": args.workflow,
+        "ralph_active": args.workflow == "ralph",
+        "ralplan_required": args.ralplan_required,
+        "updated_at": now(),
+        "handoff": (
+            f"Native Grok goal: run `/goal {args.objective}` in this session. "
+            f"Then `/workflow {args.workflow}`. Soft reds must stay on lane board. "
+            f"Hooks will block Stop while active-goal.live.json.active is true."
+        ),
+    }
+    write_json(ug_dir(repo) / "active-goal.live.json", active)
+    append_ledger(
+        repo,
+        "activate",
+        {
+            "objective": args.objective,
+            "story_id": args.story_id,
+            "workflow": args.workflow,
+        },
+    )
+    print(json.dumps(active, indent=2))
+    print("\n--- HANDOFF (paste / run) ---\n", file=sys.stderr)
+    print(active["handoff"], file=sys.stderr)
+    return 0
+
+
+def cmd_deactivate(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    active = {
+        "active": False,
+        "mode": None,
+        "objective": None,
+        "plan_id": None,
+        "story_id": None,
+        "status": "idle",
+        "iteration": 0,
+        "max_iterations": 50,
+        "dispatch_workflow": "program-control",
+        "ralph_active": False,
+        "ralplan_required": False,
+        "updated_at": now(),
+        "handoff": "No active ultragoal.",
+    }
+    write_json(ug_dir(repo) / "active-goal.live.json", active)
+    append_ledger(repo, "deactivate", {"reason": args.reason})
+    print(json.dumps(active, indent=2))
+    return 0
+
+
+def cmd_checkpoint(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    goals_path = ug_dir(repo) / "goals.json"
+    goals = load_json(goals_path, {"goals": []})
+    found = False
+    for g in goals.get("goals") or []:
+        if g.get("id") == args.story_id:
+            found = True
+            g["status"] = args.status
+            g["updatedAt"] = now()
+            g["evidence"] = args.evidence
+            if args.status == "complete":
+                g["completedAt"] = now()
+            break
+    if not found and args.story_id:
+        goals.setdefault("goals", []).append(
+            {
+                "id": args.story_id,
+                "title": args.story_id,
+                "objective": args.evidence,
+                "status": args.status,
+                "attempt": 1,
+                "updatedAt": now(),
+                "evidence": args.evidence,
+            }
+        )
+    goals["updatedAt"] = now()
+    write_json(goals_path, goals)
+    append_ledger(
+        repo,
+        "checkpoint",
+        {
+            "story_id": args.story_id,
+            "status": args.status,
+            "evidence": args.evidence,
+        },
+    )
+    print(json.dumps({"ok": True, "story_id": args.story_id, "status": args.status}, indent=2))
+    return 0
+
+
+def cmd_handoff(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    active = load_json(ug_dir(repo) / "active-goal.live.json", {})
+    if not active.get("active"):
+        print("No active ultragoal. Activate first: console-goal activate --objective '…'")
+        return 1
+    obj = active.get("objective") or ""
+    wf = active.get("dispatch_workflow") or "program-control"
+    print(
+        f"""# Ultragoal handoff (Grok-native)
+
+1. Ensure session goal is set (Grok native):
+   /goal {obj}
+
+2. Drive the control plane (hook will re-dispatch on Stop while active):
+   /workflow {wf}
+
+3. Soft reds/blocks: work-manager must enqueue (ops.soft-red-silence forbidden).
+
+4. Autonomy: agent review APPROVE + Required CI/Security → merge.
+
+5. When quality gate met for final story:
+   .grok/bin/console-goal checkpoint --story-id <id> --status complete --evidence '…'
+   .grok/bin/console-goal deactivate --reason complete
+   /goal clear
+
+Active state: {json.dumps(active, indent=2)}
+"""
+    )
+    return 0
+
+
+def cmd_ledger_append(args: argparse.Namespace) -> int:
+    repo = repo_root(Path(args.cwd))
+    payload = json.loads(args.payload_json) if args.payload_json else {}
+    append_ledger(repo, args.event, payload)
+    print(json.dumps({"ok": True, "event": args.event}, indent=2))
+    return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="console-goal ultragoal helpers")
+    ap.add_argument("--cwd", default=".")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    p = sub.add_parser("status")
+    p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser("activate")
+    p.add_argument("--objective", required=True)
+    p.add_argument("--story-id", default=None)
+    p.add_argument("--plan-id", default=None)
+    p.add_argument("--mode", default="aggregate", choices=["aggregate", "per_story"])
+    p.add_argument("--workflow", default="program-control")
+    p.add_argument("--max-iterations", type=int, default=50)
+    p.add_argument("--ralplan-required", action="store_true")
+    p.set_defaults(func=cmd_activate)
+
+    p = sub.add_parser("deactivate")
+    p.add_argument("--reason", default="manual")
+    p.set_defaults(func=cmd_deactivate)
+
+    p = sub.add_parser("checkpoint")
+    p.add_argument("--story-id", required=True)
+    p.add_argument("--status", required=True, choices=["complete", "blocked", "in_progress"])
+    p.add_argument("--evidence", required=True)
+    p.set_defaults(func=cmd_checkpoint)
+
+    p = sub.add_parser("handoff")
+    p.set_defaults(func=cmd_handoff)
+
+    p = sub.add_parser("ledger-append")
+    p.add_argument("--event", required=True)
+    p.add_argument("--payload-json", default="{}")
+    p.set_defaults(func=cmd_ledger_append)
+
+    args = ap.parse_args()
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

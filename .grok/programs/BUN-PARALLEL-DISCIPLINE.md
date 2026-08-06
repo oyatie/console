@@ -7,10 +7,26 @@ Workflows (edit these when fixing process):
 
 | Workflow | Role |
 |----------|------|
-| `program-tick` | Fleet heartbeat + failure-class retro + next actions |
-| `domain-increment` | One backend lane SDLC; admit before handoff |
-| `open-pr-fleet` | Open-PR status, tip-sync needs, anti-passive wait |
-| `process-upgrade` | Map a failure class → harness/workflow/tool PR only |
+| **`console-drive`** | **Primary Bun-style driver** — process tools + fleet repair/merge + **product implement** + process-edit + learn. Edit *this* when the drive fails as a class. |
+| `program-control` | Lighter heartbeat (fleet + implement + audit); prefer `console-drive` for full implementation |
+| `ultragoal` | Durable multi-story plan + activate Stop-hook loop + native `/goal` handoff |
+| `ralplan` | Planner → Architect → Critic consensus before heavy execute |
+| `ralph` | PRD story loop until passes + APPROVE (“boulder never stops”) |
+| `learn` | Hermes-style reflection / tip / skill draft / process-upgrade promote |
+| `work-manager` | Discover lanes; **enqueue every soft red/block** (no silence) |
+| `implement-lane` | Claim board/beads item → **implement code** → open PR |
+| `pr-babysit` | Repair → agent review → **approve then merge**; fix until approve |
+| `domain-increment` | Full backend SDLC + Admit (build is capability `all`) |
+| `process-upgrade` | Map a failure class → permanent control |
+| `program-tick` | Legacy dual-track (fleet + product/process) |
+
+**Primary entry:** `/workflow console-drive` — not “track reds only”.
+
+### Hook-driven loop (Grok-native)
+
+`.grok/hooks/ultragoal-loop.json` → `SessionStart` + `Stop` run `bin/console-hook-*`.  
+While `ultragoal/active-goal.live.json.active`, Stop **blocks** and dispatches `/workflow program-control` or `ralph`.  
+Pair with native `/goal <objective>`. Trust project hooks: `/hooks-trust`.
 
 Authority remains `docs/current/{PRODUCT,ROADMAP,DELIVERY}.md`. This file is **process**, not product.
 
@@ -57,11 +73,31 @@ When a mistake class repeats **twice**, promote a process edit (see `learning-lo
 `waiting_ci` is **not** idle. Every autonomous wake must: merge-report · fix · restack/preflight · fan-out ready work · or advance tracker.  
 Unchanged WAIT narration alone is forbidden (Hindsight `autonomous-drive-no-passive-watch`).
 
-## Leader merge (Console difference from Oyatie)
+## Autonomous merge (operator override 2026-08-06)
 
-Agents **open PRs, babysit, report CLEAN**. Humans/leader **squash-merge**. Workflows must never call `gh pr merge` unless the operator explicitly overrides in a future process edit with dual-SSOT.
+Policy file: `.grok/harness/autonomy-merge.v1.json`.
+
+1. **Agent review** must produce verdict `approve` | `changes_requested` | `comment`.
+2. If **not approve** → fix on branch (and/or board `review_fix`) until **approve**, up to max fix rounds; residual becomes board **blocked** with evidence — **never silent**.
+3. If **approve** + Required CI green + Required Security green + mergeable/not BEHIND → **`gh pr merge --squash` without human gate**.
+4. **Human supervises** and intervenes only if something looks awry, HOLD clearance is required, or production/secrets exposure.
+5. Soft reds and blocks are first-class work: see **Soft reds & blocks** below.
+
+## Soft reds & blocks (no silent drop)
+
+Harness: `.grok/harness/lane-board.v1.json` + live board `.grok/harness/lane-board.live.json`.
+
+**Soft reds** include (non-exhaustive): non-required CI fails, cancelled/flaky runs, BEHIND/DIRTY/CONFLICTING, auth bootstrap fail, tip prebind/unsigned, stale waiting_ci, review not approve, tip_serial contention, baseline/manifest drift, beads blocked without owner.
+
+**Rules:**
+
+- Every observed soft red or block **must** become a board item (`source_key` dedupe).
+- `work-manager` silence_check fails closed if any observation is missing from the board.
+- `pr-babysit` / `program-control` productivity audit fails if open PR issues exist with no board coverage.
+- Class id: `ops.soft-red-silence` — treating a soft red as "noise" or leaving it unowned is a process defect.
 
 ## Parallelism
 
 - **Serialize:** authority tip, `ci.yml` / preflight digests, migrations, Cargo.lock, OpenAPI faces, `docs/current/**`.
 - **Parallel:** path-disjoint backend crates after prep pack; process-upgrade PRs vs product PRs when paths disjoint.
+- Prefer **one tip-writing PR** at a time; batch pure-domain tests rather than N tip PRs.

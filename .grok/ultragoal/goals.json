@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "createdAt": null,
+  "updatedAt": null,
+  "briefPath": ".grok/ultragoal/brief.md",
+  "goalsPath": ".grok/ultragoal/goals.json",
+  "ledgerPath": ".grok/ultragoal/ledger.jsonl",
+  "claudeGoalMode": "aggregate",
+  "grokGoalMode": "aggregate",
+  "activeGoalId": null,
+  "goals": [],
+  "notes": "Empty plan. Inject via /workflow ultragoal or console-goal create-goals."
+}

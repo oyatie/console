@@ -1,0 +1,94 @@
+{
+  "version": "1.0.0",
+  "description": "Shared lane board for Console autonomous drive. Projection of Beads + open-PR + soft-red inventory. Not product authority.",
+  "path": ".grok/harness/lane-board.live.json",
+  "statuses": [
+    "ready",
+    "claimed",
+    "implementing",
+    "pr_open",
+    "review_pending",
+    "fixing",
+    "approved",
+    "merged",
+    "blocked",
+    "deferred"
+  ],
+  "lane_kinds": [
+    "product",
+    "process",
+    "substrate",
+    "soft_red",
+    "hard_block",
+    "fleet_fix",
+    "review_fix"
+  ],
+  "priority_order": [
+    "hard_block",
+    "soft_red",
+    "review_fix",
+    "fleet_fix",
+    "substrate",
+    "process",
+    "product"
+  ],
+  "soft_red_sources": [
+    "ci_non_required_fail",
+    "ci_flaky_or_cancelled",
+    "merge_behind",
+    "merge_dirty_or_conflicting",
+    "auth_bootstrap_fail",
+    "tip_unsigned_or_prebind",
+    "repo_gates_or_preflight_fail",
+    "waiting_ci_stale_gt_threshold",
+    "review_changes_requested",
+    "review_comment_unaddressed",
+    "tip_serial_contention",
+    "baseline_or_manifest_drift",
+    "beads_blocked_without_owner"
+  ],
+  "hard_block_sources": [
+    "required_ci_fail",
+    "required_security_fail",
+    "product_hold",
+    "authority_train_reject",
+    "merge_protection_reject"
+  ],
+  "silence_forbidden": true,
+  "rules": {
+    "every_soft_red_must_become_board_item": true,
+    "every_block_must_become_board_item": true,
+    "no_silent_drop": "If a soft red or block is observed and not already on the board with same source_key, work-manager MUST enqueue it.",
+    "dedupe_key": "source_key",
+    "autonomous_merge": {
+      "require_agent_review_approve": true,
+      "require_required_ci_green": true,
+      "require_required_security_green": true,
+      "human_required_only_if": [
+        "product_hold_clearance",
+        "production_or_secrets",
+        "operator_explicit_pause",
+        "review_cannot_approve_after_max_fix_rounds"
+      ],
+      "max_fix_rounds_default": 5
+    }
+  },
+  "item_schema": {
+    "id": "string board id or beads id",
+    "source_key": "stable dedupe e.g. soft_red:pr:591:auth_bootstrap_fail",
+    "kind": "lane_kinds enum",
+    "title": "string",
+    "status": "statuses enum",
+    "priority": "P0|P1|P2|P3",
+    "allowlist": ["path globs"],
+    "forbidden": ["path globs"],
+    "holds_checked": "string",
+    "pr_number": "number|null",
+    "beads_id": "string|null",
+    "goal_id": "G00x|null",
+    "evidence": "urls or paths",
+    "fix_rounds": "number",
+    "last_review_verdict": "approve|changes_requested|comment|null",
+    "updated_at": "ISO-8601 when written by a tick"
+  }
+}

@@ -1,47 +1,114 @@
-# Console delivery harness (Grok workflows)
+# Console delivery harness (Grok-native)
 
 Process control plane for parallel backend roadmap delivery.  
-**Not product authority** — that stays `docs/current/*`.  
-**Not merge authority** — leader squash-merges.
+**Not product authority** — that stays `docs/current/*`.
 
-## Bun doctrine
+**Does not use** `omc`, `omx`, `gjc`, or `hermes` CLIs. Ideas are incorporated; implementations live under `.grok/`.
 
-[Rewriting Bun in Rust](https://bun.com/blog/bun-in-rust): when agents fail a *class* of mistake, **edit a reusable workflow or tool** so the next agent cannot repeat it. See `programs/BUN-PARALLEL-DISCIPLINE.md`.
+## Ideas absorbed
 
-## Dual-track anti-wait (two workflows)
+| Source | What we took |
+|--------|----------------|
+| [Bun rewrite](https://bun.com/blog/bun-in-rust) | Prep contract, dual adversarial review, **edit the process** |
+| OMC **ultragoal** | Durable `goals.json` + `ledger.jsonl` + native `/goal` handoff |
+| OMC **ralplan** | Planner → Architect → Critic until APPROVE before heavy execute |
+| OMC **ralph** | PRD story loop + “boulder never stops” Stop-hook loop |
+| [Hermes Agent](https://github.com/NousResearch/hermes-agent) | Closed learning: curated memory, skill drafts, trajectories, persist nudges |
+| Oyatie `.grok` | mm-learn / dual-track / soft-red queue patterns |
 
-| Workflow | Role |
-|----------|------|
-| `ci-fleet-tick` | PR/CI classify, CLEAN for leader, fail URLs, tip-sync needs |
-| `product-process-tick` | Product or process work **while** CI runs |
-| `program-tick` | Runs **both** — forbids CI-only completion |
+## Autonomy (default)
+
+Under human **supervision** (intervene only if awry):
+
+1. **`console-drive`** runs the Bun control plane: soft-red tools → fleet fix/merge → **product implement** → process-edit → learn.
+2. Soft reds are **inputs to fix loops**, not the product of the drive.
+3. When a *class* of drive failure recurs, **edit** `console-drive.rhai` / harness / `tools/ci/*` (not chat memory).
+4. Agent review **APPROVE** + Required CI/Security → merge (`autonomy-merge.v1.json`).
+5. **Stop hook** loop-back while ultragoal active → re-dispatch `/workflow console-drive`.
+
+## Primary entry (implementation, not board-only)
 
 ```text
-/workflow program-tick
-# or separately:
-/workflow ci-fleet-tick
-/workflow product-process-tick
+/workflow console-drive
 ```
 
-## Other durable workflows
+Optional: `{ "skip_product": true }` · `{ "allow_merge": false }`
+
+## Ultragoal + native `/goal` + hooks
+
+```text
+# 1) Inject durable plan + arm loop
+/workflow ultragoal {"action":"activate","objective":"Drain tip-serial queue and land Wave 0 pure tests","workflow":"console-drive"}
+
+# 2) Session-native goal (Grok)
+/goal <same objective printed in handoff>
+
+# 3) Drive implementation
+/workflow console-drive
+# vague/large first:
+/workflow ralplan {"task":"…"}
+/workflow ralph
+
+# 4) Learn → process-upgrade if class repeats
+/workflow learn
+```
+
+Hooks (project trust required — `/hooks-trust`):
+
+| Event | Script | Effect |
+|-------|--------|--------|
+| `SessionStart` | `bin/console-hook-session-start` | Injects active ultragoal context |
+| `Stop` | `bin/console-hook-stop` | **Blocks stop** while `active-goal.live.json.active`; instructs `/workflow …` dispatch |
+
+```json
+// .grok/hooks/ultragoal-loop.json
+```
+
+CLI helpers:
+
+```bash
+.grok/bin/console-goal status|activate|deactivate|checkpoint|handoff
+.grok/bin/console-learn from-event --id … --summary '…' --classes 'ops.soft-red-silence'
+```
+
+## Workflow catalog
 
 | Workflow | Role |
 |----------|------|
-| `domain-increment` | Backend lane SDLC + Admit phase |
-| `process-upgrade` | Failure class → permanent control (process allowlist only) |
+| **`console-drive`** | **Implementation control plane**: soft-red tools → fleet fix/merge → product build → process-edit → learn |
+| **`program-control`** | Lighter meta heartbeat (prefer console-drive) |
+| **`ultragoal`** | Durable goals + activate hook loop + `/goal` handoff |
+| **`ralplan`** | Consensus planning (Planner/Architect/Critic) |
+| **`ralph`** | PRD story execution loop until APPROVE |
+| **`learn`** | Hermes-style reflection/tip/skill promotion |
+| **`work-manager`** | Board + soft reds/blocks (no silence) |
+| **`implement-lane`** | Claim one item → PR |
+| **`pr-babysit`** | Repair → review → merge |
+| `program-tick` | Legacy dual-track |
+| `domain-increment` | Full backend SDLC + Admit |
+| `process-upgrade` | Failure class → permanent control |
 
-## Harness
+## Layout
 
-| Path | Purpose |
-|------|---------|
-| `harness/failure-classes.v1.json` | Class catalog + detectors |
-| `harness/learning-loop.v1.json` | When to promote process edits |
-| `programs/briefs/console-backend-roadmap-durable.brief.md` | Durable goal + session prompt |
-| `programs/ROADMAP-DURABLE-GOAL.md` | Operator spine |
+```text
+.grok/
+  bin/           console-goal console-learn console-hook-*
+  hooks/         ultragoal-loop.json   (SessionStart + Stop)
+  ultragoal/     goals.json ledger.jsonl active-goal prd progress brief
+  harness/       autonomy-merge lane-board learning-loop hermes-learning ultragoal
+  workflows/     *.rhai
+  memory/        MEMORY.md reflections/ tips/ trajectories/
+  skills/        learned skill drafts
+  programs/      BUN-PARALLEL-DISCIPLINE ROADMAP-DURABLE-GOAL
+```
 
-## Fix the process checklist
+## Soft reds & blocks
 
-1. Map red → `failure-classes.v1.json` id  
-2. If control missing or class ≥2 → `/workflow process-upgrade` with `args.class_id`  
-3. Edit **workflows/harness/tools**, not chat memory  
-4. Never one-shot hooks named for a PR  
+Every soft red/block → `harness/lane-board.live.json` (`ops.soft-red-silence` if dropped).
+
+## Fix the process
+
+1. Map red → `failure-classes.v1.json`
+2. `/workflow learn` then `/workflow process-upgrade` if class ≥2
+3. Edit workflows/harness/tools — not chat memory
+4. Never one-shot hooks named for a PR

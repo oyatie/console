@@ -130,7 +130,8 @@ build_prompt += "Run verification commands when done: " + json_encode(spec.outpu
 build_prompt += "Return a short summary of files changed and test results as plain text.\n";
 let build = agent(build_prompt, #{
     label: "build:" + lane_id,
-    capability_mode: "execute",
+    // all: write + shell (execute-only is too weak for real implementation)
+    capability_mode: "all",
     isolation_worktree: true,
 });
 if build == () || !build.success {

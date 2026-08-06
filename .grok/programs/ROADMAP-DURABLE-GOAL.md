@@ -62,10 +62,17 @@ G009 Human-blocked ops (prod/secrets/erase — prepare only)
 cd ~/Developer/console
 bd prime
 bd ready
-# optional: pin brief into session / Hindsight
+# Trust project hooks once: /hooks-trust
+# Durable ultragoal (optional):
+#   /workflow ultragoal {"action":"activate","objective":"…"}
+#   /goal <same objective>
 # Every wake:
-#   /workflow program-tick
-# While CI red/waiting: do not stop after fleet — product-process leg is mandatory
+#   /workflow program-control
+# Vague large work first:
+#   /workflow ralplan {"task":"…"}
+#   /workflow ralph
+# After ticks:
+#   /workflow learn
 ```
 
 ## Durable goal prompt (copy-paste)
