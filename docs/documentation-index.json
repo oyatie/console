@@ -3504,6 +3504,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-06-w0-pol-2-fail-closed-tests.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8321d0fb09e47ed6e48141de63536eb6099ddd96",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-06-w0-pol-domain-wire-tests.md",
       "class": "evidence",
       "owner": "repository maintainers",

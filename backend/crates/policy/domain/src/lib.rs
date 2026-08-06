@@ -581,4 +581,93 @@ mod tests {
             CedarValidationStatus::Invalid
         );
     }
+
+    /// Fail-closed staging invariant: review lifecycle never maps into catalog
+    /// statuses the live engine may consult (`enforced`/`shadow`). Promotion is
+    /// a separate governance lane; domain mapping must not short-circuit it.
+    #[test]
+    fn review_status_catalog_mapping_never_runtime_enforced() {
+        for review in [
+            CedarPolicyReviewStatus::Draft,
+            CedarPolicyReviewStatus::ReviewPending,
+            CedarPolicyReviewStatus::Rejected,
+            CedarPolicyReviewStatus::ApprovedForPromotion,
+        ] {
+            let catalog = review.catalog_status();
+            assert!(
+                !catalog.is_runtime_enforced(),
+                "review_status {review:?} must not map to runtime-enforced catalog status {catalog:?}"
+            );
+        }
+        assert_eq!(
+            CedarPolicyReviewStatus::ApprovedForPromotion.catalog_status(),
+            CedarPolicyStatus::ReviewPending
+        );
+        // Wire values that would smuggle engine status into review lifecycle fail closed.
+        assert!(CedarPolicyReviewStatus::from_db_str("enforced").is_err());
+        assert!(CedarPolicyReviewStatus::from_db_str("shadow").is_err());
+        assert!(CedarPolicyReviewStatus::from_db_str("not_a_review").is_err());
+    }
+
+    /// Constructors reject incomplete authority/condition material rather than
+    /// constructing a half-open policy block that could later be treated as valid.
+    #[test]
+    fn condition_and_principal_constructors_fail_closed() {
+        assert!(
+            CedarCondition::new(
+                "org_eq",
+                CedarConditionAttribute::Org,
+                CedarConditionOperator::Equals,
+                Vec::new(),
+                "org equals",
+            )
+            .is_err(),
+            "non-present operators require at least one value"
+        );
+        assert!(
+            CedarCondition::new(
+                "device_posture",
+                CedarConditionAttribute::DevicePosture,
+                CedarConditionOperator::Present,
+                Vec::new(),
+                "device posture present",
+            )
+            .is_ok(),
+            "present operator may omit values"
+        );
+        assert!(
+            CedarCondition::new(
+                "org_eq",
+                CedarConditionAttribute::Org,
+                CedarConditionOperator::Equals,
+                vec!["   ".to_owned()],
+                "org equals",
+            )
+            .is_err(),
+            "blank condition values fail closed"
+        );
+
+        assert!(
+            CedarPrincipalSelector::new(CedarPrincipalKind::User, None, None, "user").is_err(),
+            "user principal requires user_id"
+        );
+        assert!(
+            CedarPrincipalSelector::new(CedarPrincipalKind::Role, None, None, "role").is_err(),
+            "role principal requires key"
+        );
+        assert!(
+            CedarPrincipalSelector::new(
+                CedarPrincipalKind::User,
+                Some("spoofed_role".to_owned()),
+                Some(UserId::from_uuid(uuid::Uuid::from_u128(0x11))),
+                "user",
+            )
+            .is_err(),
+            "user principal must not carry a client authority key"
+        );
+
+        assert!(CedarPrincipalKind::from_db_str("superadmin").is_err());
+        assert!(CedarConditionOperator::from_db_str("regex").is_err());
+        assert!(CedarResourceScope::from_db_str("universe").is_err());
+    }
 }
