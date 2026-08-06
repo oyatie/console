@@ -465,4 +465,49 @@ mod tests {
         assert_eq!(assessment.blocking.len(), 1);
         assert_eq!(assessment.total_dependents, 2);
     }
+
+    #[test]
+    fn four_eyes_false_is_pending_not_allow() {
+        // Distinct-human gate: not yet approved is pending, not a silent pass.
+        let config = GateChainConfig {
+            four_eyes: true,
+            ..GateChainConfig::default()
+        };
+        let evidence = GateEvidence {
+            four_eyes_approved: Some(false),
+            ..GateEvidence::default()
+        };
+        let outcome = evaluate_gate_chain(config, &evidence);
+        assert!(!outcome.allow);
+        let blocking = outcome.first_blocking().unwrap();
+        assert_eq!(blocking.gate, GateKind::FourEyes);
+        assert!(matches!(blocking.status, GateStatus::Pending { .. }));
+    }
+
+    #[test]
+    fn impact_preflight_allows_when_only_detach_dependents() {
+        let dependents = vec![Dependent {
+            kind: "ont_link".to_owned(),
+            id: "x".to_owned(),
+            on_delete: OnDelete::Detach,
+        }];
+        let assessment = assess_impact(dependents);
+        assert!(assessment.allow);
+        assert!(assessment.blocking.is_empty());
+        assert_eq!(assessment.total_dependents, 1);
+    }
+
+    #[test]
+    fn gate_kind_order_is_authority_checklist_four_eyes_egress() {
+        assert_eq!(
+            GateKind::ORDER.as_slice(),
+            [
+                GateKind::Authority,
+                GateKind::SelfChecklist,
+                GateKind::FourEyes,
+                GateKind::EgressDlp,
+            ]
+            .as_slice()
+        );
+    }
 }

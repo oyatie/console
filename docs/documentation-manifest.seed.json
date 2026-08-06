@@ -3360,6 +3360,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-w0-apr-four-eyes-preflight-tests.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "640743aba58f6fb3db138a17464ded0c09395c88",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-06-w0-ont-fieldkind-roundtrip.md",
     "class": "evidence",
     "owner": "repository maintainers",
