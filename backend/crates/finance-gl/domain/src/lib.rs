@@ -342,4 +342,62 @@ mod tests {
         assert_eq!(original.debit_total_won, contra.credit_total_won);
         assert_eq!(original.credit_total_won, contra.debit_total_won);
     }
+
+    #[test]
+    fn debit_credit_wire_roundtrips_and_rejects_aliases() {
+        for side in [DebitCredit::Debit, DebitCredit::Credit] {
+            assert_eq!(DebitCredit::from_db_str(side.as_db_str()).unwrap(), side);
+            assert_eq!(side.reversed().reversed(), side);
+        }
+        assert_eq!(DebitCredit::Debit.as_db_str(), "DEBIT");
+        assert_eq!(DebitCredit::Credit.as_db_str(), "CREDIT");
+        assert_eq!(DebitCredit::Debit.label(), "차변");
+        assert_eq!(DebitCredit::Credit.label(), "대변");
+        // Plausible wire aliases and empty/unknown tags fail closed.
+        for bad in ["debit", "credit", "DR", "CR", "차변", "대변", "", "UNKNOWN"] {
+            assert!(
+                DebitCredit::from_db_str(bad).is_err(),
+                "expected reject for {bad:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn voucher_status_wire_roundtrips_terminal_matrix_and_rejects_unknown() {
+        for st in [
+            VoucherStatus::Draft,
+            VoucherStatus::BalanceChecked,
+            VoucherStatus::Approved,
+            VoucherStatus::Posted,
+            VoucherStatus::Reversed,
+        ] {
+            assert_eq!(VoucherStatus::from_db_str(st.as_db_str()).unwrap(), st);
+        }
+        assert_eq!(VoucherStatus::Draft.as_db_str(), "DRAFT");
+        assert_eq!(VoucherStatus::BalanceChecked.as_db_str(), "BALANCE_CHECKED");
+        assert_eq!(VoucherStatus::Draft.label(), "기표");
+        assert_eq!(VoucherStatus::BalanceChecked.label(), "차대검증");
+        assert_eq!(VoucherStatus::Approved.label(), "승인");
+        assert_eq!(VoucherStatus::Posted.label(), "전기");
+        assert_eq!(VoucherStatus::Reversed.label(), "역분개");
+        assert!(!VoucherStatus::Draft.is_terminal_posted());
+        assert!(!VoucherStatus::BalanceChecked.is_terminal_posted());
+        assert!(!VoucherStatus::Approved.is_terminal_posted());
+        assert!(VoucherStatus::Posted.is_terminal_posted());
+        assert!(VoucherStatus::Reversed.is_terminal_posted());
+        for bad in [
+            "draft",
+            "posted",
+            "BALANCECHECKED",
+            "balance_checked",
+            "POST",
+            "",
+            "UNKNOWN",
+        ] {
+            assert!(
+                VoucherStatus::from_db_str(bad).is_err(),
+                "expected reject for {bad:?}"
+            );
+        }
+    }
 }

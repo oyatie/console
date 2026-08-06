@@ -3484,6 +3484,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-06-w0-fgl-debit-credit-voucher-wire.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "3f02062bcd46c4f08d393c7fc1d6a3834a968d3d",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-06-w0-ont-enum-wire-roundtrips.md",
       "class": "evidence",
       "owner": "repository maintainers",
