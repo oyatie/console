@@ -115,6 +115,7 @@ const domainUnitPackages = [
   "console-evaluation-application",
   "console-evaluation-domain",
   "console-finance-gl-domain",
+  "console-inspection-domain",
   "console-identity-domain",
   "console-inbox-application",
   "console-inbox-domain",
@@ -571,7 +572,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "5a1888f6a67b92f3448b4a5e532170a3eb53bf1f12679a755670235d764d1edc"),
+    proofDigest("Domain crate unit tests", "50f5cc1abb3f5c759df584cefb33cc30830919c07a4009d22f0d8cff498a115b"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),

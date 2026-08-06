@@ -3400,6 +3400,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-w0-insp-domain-wire-tests.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "86e698031e104f851a5f412b0908e8822e48f54e",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-06-w0-ont-enum-wire-roundtrips.md",
     "class": "evidence",
     "owner": "repository maintainers",
