@@ -386,4 +386,36 @@ mod tests {
         assert_eq!(scored.distance_meters, None);
         assert_eq!(scored.reason(), "SCHEDULE_FALLBACK_PRIORITY_LOAD");
     }
+
+    #[test]
+    fn dispatch_wire_enums_roundtrip_db_str_and_reject_unknown() {
+        for status in [
+            DispatchStatus::Broadcasting,
+            DispatchStatus::AutoAssigned,
+            DispatchStatus::ManagerForcePending,
+        ] {
+            assert_eq!(DispatchStatus::from_db_str(status.as_db_str()).unwrap(), status);
+        }
+        assert!(DispatchStatus::from_db_str("broadcasting").is_err());
+        assert!(DispatchStatus::from_db_str("ASSIGNED").is_err());
+
+        for kind in [DispatchResponseKind::Accept, DispatchResponseKind::Decline] {
+            assert_eq!(DispatchResponseKind::from_db_str(kind.as_db_str()).unwrap(), kind);
+        }
+        assert!(DispatchResponseKind::from_db_str("YES").is_err());
+
+        for role in [DispatchTargetRole::Technician, DispatchTargetRole::Manager] {
+            assert_eq!(DispatchTargetRole::from_db_str(role.as_db_str()).unwrap(), role);
+        }
+        assert!(DispatchTargetRole::from_db_str("tech").is_err());
+    }
+
+    #[test]
+    fn dispatch_status_display_uses_db_wire_tag() {
+        assert_eq!(
+            DispatchStatus::ManagerForcePending.to_string(),
+            "MANAGER_FORCE_PENDING"
+        );
+    }
+
 }
