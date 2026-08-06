@@ -67,6 +67,8 @@ When a mistake class repeats **twice**, promote a process edit (see `learning-lo
 | `ops.mid-run-push` | Push while CI in_progress cancels cone | Fleet rule: one push → wait complete |
 | `ops.missed-tip-sync` | PR BEHIND after main moves | `open-pr-fleet` tip-sync report (leader restacks) |
 | `ops.skip-admit` | Push without local gates | PreToolUse / admit phase in workflows |
+| `ops.tip-serial-contention` | Multiple tip-writing PRs thrashing serial queue | `npm run assess:tip-contention`; tip-serial merge queue |
+| `ops.multi-pr-wall-tax` | N small PRs each pay full Required CI wall | Batch pure tests; stack when tip would serialize |
 
 ## Anti-passive rule
 
@@ -101,3 +103,24 @@ Harness: `.grok/harness/lane-board.v1.json` + live board `.grok/harness/lane-boa
 - **Serialize:** authority tip, `ci.yml` / preflight digests, migrations, Cargo.lock, OpenAPI faces, `docs/current/**`.
 - **Parallel:** path-disjoint backend crates after prep pack; process-upgrade PRs vs product PRs when paths disjoint.
 - Prefer **one tip-writing PR** at a time; batch pure-domain tests rather than N tip PRs.
+
+## Tip-serial queue (authority + baseline)
+
+These paths are a **single writer** across the fleet (not just concurrent git conflicts — each PR pays full CI after restack):
+
+- `docs/documentation-manifest.seed.json` / `docs/documentation-index.json`
+- `docs/program/ledger/**` (authority tip train)
+- `docs/program/executed-tests-baseline.json`
+
+**Rules:**
+
+1. Maintain an explicit **tip-serial queue** ordered by merge readiness.
+2. Do **not** open a new tip-writing PR while ≥2 tip writers are already open — stack commits or wait.
+3. Pure `#[test]` hardenings across domains: **prefer one PR / stack** when tip would serialize them anyway.
+4. `program-tick` must report `tip_writers` and flag `ops.tip-serial-contention`.
+
+## CI wall tax
+
+Hosted Required CI wall is ~25–45m. Opening N independent PRs multiplies wall cost.  
+Fan-out is still correct for **path-disjoint product crates that do not share tip/baseline** — rare under current authority train. Until tip binding is less chatty, **local parallelism** (implement next stack commit while CI runs) beats **remote PR fan-out**.
+

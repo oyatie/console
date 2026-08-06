@@ -89,6 +89,8 @@ sel_prompt += "- forbidden always includes docs/current/** edits unless track=do
 sel_prompt += "- allowlist must be concrete globs.\n";
 sel_prompt += "- next_commands: 1-5 shell/workflow invocations (e.g. /workflow process-upgrade, bd update, worktree add).\n";
 sel_prompt += "- If fleet waiting_ci non-empty, still pick product or process work that does not require that PR's tip writer.\n";
+sel_prompt += "- COUNT open PRs that touch documentation-manifest, ledger/, or executed-tests-baseline. If count >= 2, do NOT choose a new tip-writing product PR; either stack on existing branch or process-only allowlist.\n";
+
 sel_prompt += "- Read .grok/harness/failure-classes.v1.json if process track.\n";
 let selected = agent(sel_prompt, #{
     label: "pp-select",

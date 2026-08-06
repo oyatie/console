@@ -3350,6 +3350,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-efficiency-tip-serial.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "8551109f2a27e5e74f9de9890ff86284f474a311",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-06-grok-process-harness.md",
     "class": "evidence",
     "owner": "repository maintainers",

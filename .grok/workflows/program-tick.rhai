@@ -85,6 +85,10 @@ syn_prompt += "2) Required pair: workflows ci-fleet-tick + product-process-tick 
 syn_prompt += "3) Next human: leader merge list\n";
 syn_prompt += "4) Next agent: exact workflow name + args\n";
 syn_prompt += "5) Anti-passive attestation: what productive work happens while CI runs\n";
+syn_prompt += "6) Tip-serial assessment: which open PRs touch documentation-manifest, ledger/, or executed-tests-baseline.json\n";
+syn_prompt += "   List tip_writers count; if >=2 flag ops.tip-serial-contention and forbid opening another tip PR.\n";
+syn_prompt += "7) Wall-tax: estimate if batching pure-test PRs would cut runner hours.\n";
+syn_prompt += "8) One process improvement suggestion if any failure class repeated.\n";
 syn_prompt += "Plain text.\n";
 let syn = agent(syn_prompt, #{
     label: "tick-synthesize",

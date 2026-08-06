@@ -83,7 +83,8 @@
     "check:soft-red-board": "node --test tools/ci/ingest-soft-reds.test.mjs && node tools/ci/ingest-soft-reds.mjs --check",
     "queue:soft-reds": "node tools/ci/ingest-soft-reds.mjs",
     "console:goal": "python3 .grok/bin/console-goal",
-    "console:learn": "python3 .grok/bin/console-learn"
+    "console:learn": "python3 .grok/bin/console-learn",
+    "assess:tip-contention": "node tools/ci/assess-tip-contention.mjs"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"

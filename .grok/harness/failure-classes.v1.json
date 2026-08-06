@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools — never one-shot PR-named hooks.",
+  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools \u2014 never one-shot PR-named hooks.",
   "promote_process_edit_after_repeats": 2,
   "classes": [
     {
@@ -15,28 +15,37 @@
       "symptom": "REASONING-LENS-EVIDENCE block fails canonical JSON.stringify(value, null, 2)+newline",
       "detector": "node scripts/check-reasoning-lens-contract.mjs --changed-since <base>",
       "control": "Always re-serialize lens JSON via JSON.stringify; include in admit for ledger paths",
-      "admit_commands": ["node scripts/check-reasoning-lens-contract.mjs --changed-since origin/main"]
+      "admit_commands": [
+        "node scripts/check-reasoning-lens-contract.mjs --changed-since origin/main"
+      ]
     },
     {
       "id": "docs.tip-blob-prebind",
       "symptom": "documentation-manifest blob_sha does not match tip ledger blob",
       "detector": "npm run check:doc-manifest (on tip tree)",
       "control": "Prebind tip blob on C; T only adds Authority tip section",
-      "admit_commands": ["npm run check:doc-manifest", "npm run check:doc-links"]
+      "admit_commands": [
+        "npm run check:doc-manifest",
+        "npm run check:doc-links"
+      ]
     },
     {
       "id": "ci.verify-job-ids",
       "symptom": "verify.mjs / preflight digests missing new CI jobs",
       "detector": "npm run check:ci-preflight",
       "control": "Update digests/verify when editing ci.yml job graph",
-      "admit_commands": ["npm run check:ci-preflight"]
+      "admit_commands": [
+        "npm run check:ci-preflight"
+      ]
     },
     {
       "id": "ci.residual-buck-growth",
       "symptom": "New //tools/buck product wrappers in ci.yml without map row",
       "detector": "npm run check:product-buck-residual",
       "control": "Map or document unmapped; ceiling only shrinks",
-      "admit_commands": ["npm run check:product-buck-residual"]
+      "admit_commands": [
+        "npm run check:product-buck-residual"
+      ]
     },
     {
       "id": "ops.passive-wait",
@@ -49,7 +58,7 @@
       "id": "ops.mid-run-push",
       "symptom": "Push while Required CI in_progress cancels running cone",
       "detector": "gh run list status in_progress on same branch",
-      "control": "Batch local fixes → one push → wait complete",
+      "control": "Batch local fixes \u2192 one push \u2192 wait complete",
       "admit_commands": []
     },
     {
@@ -64,7 +73,9 @@
       "symptom": "Push/PR without local gates that would have caught hosted red",
       "detector": "compare hosted fail step to admit_commands for class",
       "control": "domain-increment Admit phase; optional PreToolUse on push",
-      "admit_commands": ["npm run check:ci-preflight"]
+      "admit_commands": [
+        "npm run check:ci-preflight"
+      ]
     },
     {
       "id": "ops.soft-red-silence",
@@ -86,6 +97,31 @@
       "detector": "pr-babysit FixLoop; board kind review_fix",
       "control": "Fix until approve or max rounds then board blocked with evidence; merge only on approve",
       "admit_commands": []
+    },
+    {
+      "id": "ops.multi-pr-wall-tax",
+      "symptom": "Several small PRs each pay full Required CI wall (~25-45m)",
+      "detector": "count open PRs with full CI vs total LOC changed",
+      "control": "Stack or batch when work is pure unit tests and would tip-serialize anyway",
+      "admit_commands": []
+    },
+    {
+      "id": "ops.rustfmt-drift",
+      "symptom": "Backend rustfmt check fails",
+      "detector": "cd backend && cargo fmt --all -- --check",
+      "control": "Admit requires rustfmt",
+      "admit_commands": [
+        "cd backend && cargo fmt --all -- --check"
+      ]
+    },
+    {
+      "id": "ops.executed-tests-baseline",
+      "symptom": "executed-tests gain without baseline update",
+      "detector": "node scripts/check-executed-tests.mjs",
+      "control": "Admit requires baseline --update commit",
+      "admit_commands": [
+        "node scripts/check-executed-tests.mjs"
+      ]
     }
   ]
 }
