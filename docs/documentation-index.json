@@ -3484,6 +3484,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-06-w0-ont-enum-wire-roundtrips.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "ad65ec847cc1cfcfe25f2950381e4a5ab23ddd2d",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-06-w0-ont-fieldkind-roundtrip.md",
       "class": "evidence",
       "owner": "repository maintainers",

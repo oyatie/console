@@ -498,4 +498,62 @@ mod tests {
         use InstanceLifecycleState::{Archived, Draft};
         assert!(validate_instance_transition(Draft, Archived).is_ok());
     }
+
+    #[test]
+    fn schema_lifecycle_state_roundtrips_and_rejects_unknown() {
+        for st in [
+            SchemaLifecycleState::Draft,
+            SchemaLifecycleState::ReviewPending,
+            SchemaLifecycleState::Published,
+            SchemaLifecycleState::Superseded,
+            SchemaLifecycleState::Retired,
+        ] {
+            assert_eq!(
+                SchemaLifecycleState::from_db_str(st.as_db_str()).unwrap(),
+                st
+            );
+        }
+        assert!(SchemaLifecycleState::from_db_str("not_a_state").is_err());
+        assert!(SchemaLifecycleState::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn backing_kind_roundtrips_and_rejects_unknown() {
+        for kind in [BackingKind::Projected, BackingKind::Instance] {
+            assert_eq!(BackingKind::from_db_str(kind.as_db_str()).unwrap(), kind);
+        }
+        assert!(BackingKind::from_db_str("hybrid").is_err());
+        assert!(BackingKind::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn link_cardinality_roundtrips_and_rejects_unknown() {
+        for card in [
+            LinkCardinality::OneOne,
+            LinkCardinality::OneMany,
+            LinkCardinality::ManyMany,
+        ] {
+            assert_eq!(
+                LinkCardinality::from_db_str(card.as_db_str()).unwrap(),
+                card
+            );
+        }
+        // Reject aliases that look plausible but are not the stored tags.
+        assert!(LinkCardinality::from_db_str("one_to_many").is_err());
+        assert!(LinkCardinality::from_db_str("1:n").is_err());
+        assert!(LinkCardinality::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn action_dispatch_roundtrips_and_rejects_unknown() {
+        for d in [
+            ActionDispatch::ProjectedUsecase,
+            ActionDispatch::InstanceRevision,
+        ] {
+            assert_eq!(ActionDispatch::from_db_str(d.as_db_str()).unwrap(), d);
+        }
+        assert!(ActionDispatch::from_db_str("inline").is_err());
+        assert!(ActionDispatch::from_db_str("projected").is_err());
+        assert!(ActionDispatch::from_db_str("").is_err());
+    }
 }
