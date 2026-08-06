@@ -3340,6 +3340,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-grok-process-harness.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "6c3e219d833e22dabbe1a474ade7af10b9ad2449",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

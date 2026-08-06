@@ -1,15 +1,19 @@
-// Domain lane increment lifecycle: specify → design → build → verify → review → handoff.
+// Domain lane increment lifecycle: specify → design → build → verify → admit → review → handoff.
 // Leader merges. Executors must not clear PRODUCT HOLDs or edit docs/current/**.
+// Pair with ci-fleet-tick while PR CI runs (never CI-only wait): product-process-tick / program-tick.
+// Process doctrine: .grok/programs/BUN-PARALLEL-DISCIPLINE.md
 let meta = #{
     name: "domain-increment",
-    description: "SDLC workflow for one backend domain lane increment (admission → design → build → verify → review)",
+    description: "SDLC for one backend domain lane (admission → design → build → verify → admit → review → handoff)",
+    when_to_use: "Product track work under PRODUCT/ROADMAP; while CI waits use with program-tick dual track",
     phases: [
         #{ title: "Specify", detail: "admission record and acceptance criteria" },
         #{ title: "Design", detail: "architect CLEAR/WATCH/BLOCK" },
         #{ title: "Build", detail: "executor in allowlisted paths" },
         #{ title: "Verify", detail: "run verification commands" },
+        #{ title: "Admit", detail: "local process gates (lens/doc/ci) before handoff" },
         #{ title: "Review", detail: "code + optional security review" },
-        #{ title: "Handoff", detail: "PR body and candidate SHA for leader merge" },
+        #{ title: "Handoff", detail: "PR body for leader merge; no auto-merge" },
     ],
 };
 
@@ -150,6 +154,26 @@ if verify == () || !verify.success {
     complete(#{ ok: false, stage: "verify", error: "verify agent failed", admission: spec.output });
 }
 
+// --- Admit (process gate — prevents hosted reds that local tools catch) ---
+phase("Admit");
+let admit_prompt = "";
+admit_prompt += "Local admission for lane " + lane_id + " before handoff/PR.\n";
+admit_prompt += "Run applicable gates based on changed paths (use git status/diff).\n";
+admit_prompt += "Always consider: npm run check:ci-preflight if CI/tools touched;\n";
+admit_prompt += "node scripts/check-reasoning-lens-contract.mjs --changed-since origin/main if docs/program/ledger/** touched;\n";
+admit_prompt += "npm run check:doc-manifest if documentation-manifest or ledger tip touched;\n";
+admit_prompt += "npm run check:product-buck-residual if ci.yml or postgres map touched.\n";
+admit_prompt += "Map any failure to .grok/harness/failure-classes.v1.json class id.\n";
+admit_prompt += "If admit fails due to missing permanent control, recommend /workflow process-upgrade — do not only patch one file and forget the class.\n";
+admit_prompt += "Return plain text: commands run, pass/fail, class ids, go/no-go for handoff.\n";
+let admit = agent(admit_prompt, #{
+    label: "admit:" + lane_id,
+    capability_mode: "execute",
+});
+if admit == () || !admit.success {
+    complete(#{ ok: false, stage: "admit", error: "admit agent failed", admission: spec.output, verify: verify.output });
+}
+
 // --- Review ---
 phase("Review");
 let review_jobs = [];
@@ -178,6 +202,8 @@ handoff_prompt += "Design verdict: " + design.output.verdict + "\n";
 handoff_prompt += "Build notes: " + json_encode(build.output) + "\n";
 handoff_prompt += "Verify notes: " + json_encode(verify.output) + "\n";
 handoff_prompt += "Include Closes " + issue + " if appropriate. State HOLDs not cleared. Leader will merge.\n";
+handoff_prompt += "Admit notes: " + json_encode(admit.output) + "\n";
+handoff_prompt += "After PR open: run program-tick (ci-fleet-tick + product-process-tick) — never pure CI wait.\n";
 let handoff = agent(handoff_prompt, #{
     label: "handoff:" + lane_id,
     capability_mode: "read-only",
@@ -193,7 +219,8 @@ complete(#{
     design: design.output,
     build: build.output,
     verify: verify.output,
+    admit: admit.output,
     reviews: reviews,
     handoff: if handoff != () && handoff.success { handoff.output } else { () },
-    note: "Leader owns git push, gh pr create/merge, and beads updates.",
+    note: "Leader owns git push, gh pr create/merge, and beads updates. Dual-track while CI runs.",
 });

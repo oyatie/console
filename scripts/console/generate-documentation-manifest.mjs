@@ -12,6 +12,8 @@ const excludedDocumentationPrefixes = [
   "node_modules/",
   "target/",
   "third-party/",
+  // Agent delivery harness (workflows/briefs) — not product documentation custody.
+  ".grok/",
 ];
 const classVocabulary = [
   "current",

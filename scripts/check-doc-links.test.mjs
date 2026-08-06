@@ -31,6 +31,7 @@ const excludedDocumentationPrefixes = [
   "node_modules/",
   "target/",
   "third-party/",
+  ".grok/",
 ];
 
 const authorityPaths = {
