@@ -1,58 +1,185 @@
 #!/usr/bin/env node
 /**
- * ops.tip-serial-contention — report open PRs that share tip/baseline writers.
- * Usage: node tools/ci/assess-tip-contention.mjs
- * Requires: gh CLI authenticated.
+ * Mechanical tip-serial contention assessor.
+ *
+ * Realizes failure class ops.tip-serial-contention (+ feeds ops.missed-tip-sync):
+ * open PRs that touch tip-serial roots are "tip writers"; BEHIND tip writers
+ * need restack before any new tip PR.
+ *
+ * Usage:
+ *   node tools/ci/assess-tip-contention.mjs           # JSON report; exit 0
+ *   node tools/ci/assess-tip-contention.mjs --check    # exit 2 if any tip writer is BEHIND (restack debt)
+ *   # tip_writers>=2 alone does NOT fail --check (open tip PRs fan-out CI/review; only MERGE is serial)
+ *   node tools/ci/assess-tip-contention.mjs --dry-run  # no gh required if --fixture
  */
-import { spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const TIP_PATHS = [
-  "docs/documentation-manifest.seed.json",
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+/** Paths that force tip-serial merge order (manifest / baseline / ledger / CI graph / locks). */
+export const TIP_SERIAL_PATH_PREFIXES = [
   "docs/documentation-index.json",
-  "docs/program/executed-tests-baseline.json",
+  "docs/program/console-program-ledger.md",
+  "docs/program/ledger/",
+  "docs/program/console-jurisdiction-register.json",
+  "docs/current/",
+  ".github/workflows/ci.yml",
+  "scripts/check-ci-preflight.mjs",
+  "scripts/verify.mjs",
+  "scripts/lib/executed-tests-baseline",
+  "backend/Cargo.lock",
+  "package-lock.json",
+  "tools/buck/",
+  "registry/",
 ];
 
-function ghJson(args) {
-  const r = spawnSync("gh", args, { encoding: "utf8" });
-  if (r.status !== 0) {
-    console.error(r.stderr || r.stdout);
-    process.exit(r.status ?? 1);
-  }
-  return JSON.parse(r.stdout);
+const args = new Set(process.argv.slice(2));
+const checkOnly = args.has("--check");
+
+export function pathIsTipSerial(path) {
+  if (!path || typeof path !== "string") return false;
+  const p = path.replace(/^\.\//, "");
+  return TIP_SERIAL_PATH_PREFIXES.some(
+    (prefix) => p === prefix || p.startsWith(prefix) || prefix.startsWith(p + "/"),
+  );
 }
 
-const prs = ghJson([
-  "pr", "list", "--state", "open", "--limit", "30",
-  "--json", "number,title,headRefName,mergeStateStatus,url",
-]);
+export function classifyPrFiles(files) {
+  const tip_files = [];
+  for (const f of files || []) {
+    const path = typeof f === "string" ? f : f.path || f.filename || "";
+    if (pathIsTipSerial(path)) tip_files.push(path);
+  }
+  return { is_tip_writer: tip_files.length > 0, tip_files };
+}
 
-const tipWriters = [];
-for (const pr of prs) {
-  const r = spawnSync("gh", ["pr", "diff", String(pr.number), "--name-only"], { encoding: "utf8" });
-  if (r.status !== 0) continue;
-  const files = (r.stdout || "").split("\n").filter(Boolean);
-  const hits = files.filter(
-    (f) =>
-      TIP_PATHS.includes(f) ||
-      f.startsWith("docs/program/ledger/") ||
-      f.startsWith(".grok/"),
-  );
-  if (hits.length) {
-    tipWriters.push({
+/**
+ * @param {object[]} prs - gh pr list/view shaped objects with number, title, mergeStateStatus, files?
+ * @returns {{ tip_writers: number, writers: object[], behind: object[], class_ids: string[] }}
+ */
+export function assessTipContention(prs) {
+  const writers = [];
+  const behind = [];
+  for (const pr of prs || []) {
+    const files = pr.files || pr.filePaths || [];
+    const { is_tip_writer, tip_files } = classifyPrFiles(files);
+    const ms = pr.mergeStateStatus || "";
+    const row = {
       number: pr.number,
-      title: pr.title,
-      ms: pr.mergeStateStatus,
-      hits,
-      url: pr.url,
-    });
+      title: pr.title || "",
+      mergeStateStatus: ms,
+      is_tip_writer,
+      tip_files,
+      url: pr.url || "",
+    };
+    if (is_tip_writer) writers.push(row);
+    if (ms === "BEHIND") behind.push(row);
+  }
+  writers.sort((a, b) => a.number - b.number);
+  const class_ids = [];
+  if (writers.length >= 2) class_ids.push("ops.tip-serial-contention");
+  if (behind.some((b) => b.is_tip_writer) || behind.length > 0) {
+    if (behind.length > 0) class_ids.push("ops.missed-tip-sync");
+  }
+  return {
+    tip_writers: writers.length,
+    writers,
+    behind,
+    behind_count: behind.length,
+    class_ids: [...new Set(class_ids)],
+    tip_serial_prefixes: TIP_SERIAL_PATH_PREFIXES,
+  };
+}
+
+function ghJson(argv) {
+  const out = execFileSync("gh", argv, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  return JSON.parse(out);
+}
+
+function prFiles(number) {
+  try {
+    const files = ghJson([
+      "pr",
+      "view",
+      String(number),
+      "--json",
+      "files",
+    ]);
+    return (files.files || []).map((f) => f.path);
+  } catch {
+    return [];
   }
 }
 
-console.log(JSON.stringify({ tip_writers: tipWriters.length, prs: tipWriters }, null, 2));
-if (tipWriters.length >= 2) {
-  console.error(
-    `ops.tip-serial-contention: ${tipWriters.length} open tip-writing PRs — merge queue serial; do not open another tip PR`,
-  );
-  process.exit(2);
+function main() {
+  let prs;
+  try {
+    prs = ghJson([
+      "pr",
+      "list",
+      "--state",
+      "open",
+      "--limit",
+      "40",
+      "--json",
+      "number,title,mergeable,mergeStateStatus,headRefOid,url",
+    ]);
+  } catch (e) {
+    console.error("gh pr list failed:", e.message || e);
+    process.exit(1);
+  }
+
+  const enriched = prs.map((pr) => ({
+    ...pr,
+    files: prFiles(pr.number),
+  }));
+
+  const report = assessTipContention(enriched);
+  const tipBehind = report.behind.filter((b) => b.is_tip_writer);
+  const out = {
+    ok: true,
+    ...report,
+    tip_behind_count: tipBehind.length,
+    product_capacity_hint:
+      tipBehind.length > 0
+        ? "BEHIND tip writers — restack before next tip merge (open PRs still OK)"
+        : report.tip_writers >= 2
+          ? "tip_writers>=2 — open/CI/review fan-out OK; serialize tip MERGES only; restack after each tip land"
+          : "tip serial free or single writer — open tip PR + merge when green",
+    merge_policy:
+      "Serialize tip merges only; never hold tip PRs unopened for contention reasons",
+  };
+
+  console.log(JSON.stringify(out, null, 2));
+
+  // Fail closed on restack debt (velocity + correctness), not on parallel open tip PRs
+  if (checkOnly && tipBehind.length > 0) {
+    console.error(
+      JSON.stringify(
+        {
+          class_id: "ops.missed-tip-sync",
+          tip_writers: report.tip_writers,
+          tip_behind: tipBehind.map((w) => w.number),
+          message:
+            "BEHIND tip writers must be restacked (signed C/T + prebind) before next tip merge — open tip PRs remain allowed",
+        },
+        null,
+        2,
+      ),
+    );
+    process.exit(2);
+  }
 }
-console.error("tip contention OK (fewer than 2 tip writers open)");
+
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.endsWith("assess-tip-contention.mjs")
+) {
+  main();
+}

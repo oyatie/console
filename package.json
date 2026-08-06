@@ -80,11 +80,21 @@
     "check:postgres-cargo-map": "node tools/ci/check-postgres-cargo-map.mjs",
     "check:product-buck-residual": "node tools/ci/check-product-buck-residual.mjs",
     "check:nextest-config": "node tools/ci/check-nextest-config.mjs",
-    "check:soft-red-board": "node --test tools/ci/ingest-soft-reds.test.mjs && node tools/ci/ingest-soft-reds.mjs --check",
+    "check:soft-red-board": "node tools/ci/ingest-soft-reds.mjs --check",
     "queue:soft-reds": "node tools/ci/ingest-soft-reds.mjs",
     "console:goal": "python3 .grok/bin/console-goal",
     "console:learn": "python3 .grok/bin/console-learn",
-    "assess:tip-contention": "node tools/ci/assess-tip-contention.mjs"
+    "assess:tip-contention": "node tools/ci/assess-tip-contention.mjs",
+    "check:tip-contention": "node tools/ci/assess-tip-contention.mjs",
+    "check:tip-contention:gate": "node tools/ci/assess-tip-contention.mjs --check",
+    "check:mjs-dark-suites": "node tools/ci/check-mjs-dark-suites.mjs",
+    "check:mjs-dark-suites:tools-ci": "node tools/ci/check-mjs-dark-suites.mjs --check",
+    "admit": "node scripts/local-admission.mjs",
+    "admit:json": "node scripts/local-admission.mjs --json",
+    "admit:dry": "node scripts/local-admission.mjs --dry-run",
+    "classify:ci-failure": "node tools/ci/classify-ci-failure.mjs",
+    "test:local-admission": "node --test scripts/local-admission.test.mjs",
+    "test:ci-tools": "node --test tools/ci/assess-tip-contention.test.mjs tools/ci/check-mjs-dark-suites.test.mjs tools/ci/ingest-soft-reds.test.mjs tools/ci/classify-ci-failure.test.mjs"
   },
   "devDependencies": {
     "js-yaml": "4.3.0"
