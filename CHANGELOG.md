@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/jason931225/console/compare/v0.3.2...v0.3.3) (2026-08-06)
+
+
+### Bug Fixes
+
+* unique work_order request_no in docs evidence RLS fixture ([#579](https://github.com/jason931225/console/issues/579)) ([5b9af4c](https://github.com/jason931225/console/commit/5b9af4c72c61aef4ff484269ffd1060fbf714812))
+
 ## [0.3.2](https://github.com/jason931225/console/compare/v0.3.1...v0.3.2) (2026-08-04)
 
 

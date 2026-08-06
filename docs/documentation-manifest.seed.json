@@ -46,7 +46,7 @@
     "status": "frozen",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "289ef6cc96fc5bfb8dec98c1bed93fc51a0968f6",
+    "blob_sha": "c03fa5339deefc66b037e0c63158cd138e93f408",
     "archive_tag": null
   },
   {
@@ -3377,6 +3377,16 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "6f1bbedabd9c7be02a2a8ea1d48bf0cf06a294fa",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/program/ledger/2026-08-06-release-0-3-3-authority.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "8fa5fb849cee62a3ee165353fb89ca5b2b7221a2",
     "archive_tag": null
   },
   {
