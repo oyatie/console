@@ -20,6 +20,14 @@ related: [ADR-0037, ADR-0038]
 > `src/` trees and fails closed when a target root is missing, and `tools/lanes/pgtest.sh` refuses
 > credentials in argv. Those repairs close the named immediate holes. The proposed Cargo/nextest
 > convergence remains a future simplification and grants no authority while this ADR is proposed.
+>
+> **Disposition (2026-08-05).** RE/CAS for Buck2 remains absent; cargo portable cache (GHA
+> `rust-cache` + local `sccache`) is the only working cross-run/local compile reuse for this
+> workspace. Product PostgreSQL has begun cargo-native sharding (S0–S2). **DN-0005** records the
+> binding inventory and the phased cutover (equivalence → nextest serial groups → residual switch →
+> drop Buck product jobs; faces carved out). This ADR remains **proposed** and grants no Buck
+> deletion authority until sequence steps 1–3 have dual-green evidence. Generated faces are out of
+> scope for the product-test cutover. Do not keep Buck as the product test driver “until RE lands.”
 
 ## The obligation this is anchored to
 

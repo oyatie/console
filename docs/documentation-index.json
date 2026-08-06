@@ -1090,7 +1090,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "c87813aca565d801bb83fb45e1e949146a6159f0",
+      "blob_sha": "62d77c83c26a13168b0c81040832fff12119fefb",
       "archive_tag": null
     },
     {
@@ -1100,7 +1100,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "f279240cb06b027e5ac0ddde84bc78ac19a493cd",
+      "blob_sha": "b2f40d74db930a966fef378d843517fbdee2e5f7",
       "archive_tag": null
     },
     {
@@ -1142,6 +1142,16 @@
       "retention": "retain",
       "blob_sha": "9d631261d39134503bc09fc06cf65c3205250ce2",
       "archive_tag": null
+    },
+    {
+      "path": "docs/decisions/notes/DN-0005-adr-0039-re-cas-absence-cargo-cache-path.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null,
+      "blob_sha": "80ac043171d22ed11e6fc125ac326972ef29027d"
     },
     {
       "path": "docs/design/oyatie-console/AGENTS.md",
@@ -3292,6 +3302,16 @@
       "retention": "retain",
       "blob_sha": "f609ac41948811ffed54abed6d8f6b604e5e0363",
       "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-05-dn-0005-adr-0039-cargo-path.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null,
+      "blob_sha": "1f2310883ad545714308f6fe1348c5419fd08867"
     },
     {
       "path": "docs/program/ledger/2026-08-05-docs-evidence-request-no-collision.md",
