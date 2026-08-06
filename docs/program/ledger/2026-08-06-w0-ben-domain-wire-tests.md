@@ -49,3 +49,7 @@ cargo test -p console-benefit-domain --lib
 }
 ```
 <!-- REASONING-LENS-EVIDENCE:END -->
+
+## Authority tip
+
+T is the signed authority tip for this candidate train. C prebinds this ledger blob.
