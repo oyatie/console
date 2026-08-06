@@ -906,4 +906,90 @@ mod tests {
             vec![AdmissibilityReason::TsaImprintMismatch]
         );
     }
+
+
+
+    #[test]
+    fn evidence_vocab_roundtrips_parse_and_db_str() {
+        for v in [
+            EvidenceClassification::General,
+            EvidenceClassification::Internal,
+            EvidenceClassification::Sensitive,
+            EvidenceClassification::Confidential,
+            EvidenceClassification::Secret,
+        ] {
+            assert_eq!(EvidenceClassification::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(EvidenceClassification::parse("TOP_SECRET").is_err());
+
+        for v in [
+            EvidenceSourceType::RecordArchive,
+            EvidenceSourceType::InboxDoc,
+            EvidenceSourceType::MailAttachment,
+            EvidenceSourceType::IngestJob,
+            EvidenceSourceType::WorkOrderEvidenceMedia,
+            EvidenceSourceType::ExternalDocument,
+        ] {
+            assert_eq!(EvidenceSourceType::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(EvidenceSourceType::parse("usb_drive").is_err());
+
+        for v in [
+            WormStorageStatus::Pending,
+            WormStorageStatus::Verified,
+            WormStorageStatus::Failed,
+        ] {
+            assert_eq!(WormStorageStatus::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(WormStorageStatus::parse("ok").is_err());
+
+        for v in [
+            TsaProofStatus::Missing,
+            TsaProofStatus::Pending,
+            TsaProofStatus::Verified,
+            TsaProofStatus::Failed,
+            TsaProofStatus::Revoked,
+            TsaProofStatus::ExpiredCa,
+        ] {
+            assert_eq!(TsaProofStatus::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(TsaProofStatus::parse("unknown").is_err());
+
+        for v in [
+            CustodyStage::Registered,
+            CustodyStage::HashRecorded,
+            CustodyStage::TsaSubmitted,
+            CustodyStage::TsaVerified,
+            CustodyStage::WormReplicated,
+            CustodyStage::CustodyTransferred,
+            CustodyStage::UnderReview,
+            CustodyStage::AdmissibilityEvaluated,
+            CustodyStage::LegalHoldApplied,
+            CustodyStage::LegalHoldReleased,
+            CustodyStage::Exported,
+            CustodyStage::Archived,
+        ] {
+            assert_eq!(CustodyStage::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(CustodyStage::parse("deleted").is_err());
+
+        for v in [LegalHoldState::Clear, LegalHoldState::Active] {
+            assert_eq!(LegalHoldState::parse(v.as_db_str()).unwrap(), v);
+        }
+        for v in [LegalHoldStatus::Active, LegalHoldStatus::Released] {
+            assert_eq!(LegalHoldStatus::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(LegalHoldStatus::parse("PENDING").is_err());
+
+        for v in [
+            AdmissibilityStatus::Admissible,
+            AdmissibilityStatus::ReviewNeeded,
+            AdmissibilityStatus::Blocked,
+            AdmissibilityStatus::Inadmissible,
+        ] {
+            assert_eq!(AdmissibilityStatus::parse(v.as_db_str()).unwrap(), v);
+        }
+        assert!(AdmissibilityStatus::parse("maybe").is_err());
+    }
+
 }
