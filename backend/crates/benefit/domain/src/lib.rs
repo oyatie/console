@@ -399,4 +399,48 @@ mod tests {
         assert!(validate_condition_value(&serde_json::json!(["site-a"])).is_err());
         assert!(validate_condition_value(&serde_json::json!({"site": "A"})).is_ok());
     }
+
+    #[test]
+    fn benefit_vocab_roundtrips_parse_and_db_str() {
+        for cat in [BenefitCategory::Legal, BenefitCategory::Extra] {
+            assert_eq!(BenefitCategory::parse(cat.as_db_str()).unwrap(), cat);
+            assert_eq!(BenefitCategory::parse(cat.as_wire_str()).unwrap(), cat);
+        }
+        assert!(BenefitCategory::parse("LEGACY").is_err());
+
+        for scope in [
+            BenefitScopeKind::Org,
+            BenefitScopeKind::Branch,
+            BenefitScopeKind::Site,
+            BenefitScopeKind::Team,
+            BenefitScopeKind::Role,
+            BenefitScopeKind::EmployeeSegment,
+        ] {
+            assert_eq!(BenefitScopeKind::parse(scope.as_db_str()).unwrap(), scope);
+        }
+        assert!(BenefitScopeKind::parse("org").is_err());
+
+        for kind in [
+            BenefitConditionKind::Org,
+            BenefitConditionKind::Tenure,
+            BenefitConditionKind::EmploymentType,
+            BenefitConditionKind::Custom,
+        ] {
+            assert_eq!(BenefitConditionKind::parse(kind.as_db_str()).unwrap(), kind);
+        }
+        assert!(BenefitConditionKind::parse("TENURE_YEARS").is_err());
+
+        for op in [
+            BenefitConditionOperator::Eq,
+            BenefitConditionOperator::In,
+            BenefitConditionOperator::NotIn,
+            BenefitConditionOperator::Gte,
+            BenefitConditionOperator::Range,
+            BenefitConditionOperator::CustomPolicy,
+        ] {
+            assert_eq!(BenefitConditionOperator::parse(op.as_db_str()).unwrap(), op);
+        }
+        assert!(BenefitConditionOperator::parse("==").is_err());
+    }
+
 }
