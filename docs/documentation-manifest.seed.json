@@ -3350,6 +3350,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-nextest-serial-group-p3.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "6f1bbedabd9c7be02a2a8ea1d48bf0cf06a294fa",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

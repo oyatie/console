@@ -1,0 +1,22 @@
+# ADR-0039 / DN-0005 P3: serial minority for cluster-global mutators.
+# Only these filters use max-threads = 1; the rest stay parallel.
+#
+# CI pin: cargo-nextest 0.9.138 (install via taiki-e/install-action tool=nextest@0.9.138).
+# Local: `cargo install cargo-nextest --locked --version 0.9.138` or newer compatible.
+
+[test-groups.cluster-global]
+max-threads = 1
+
+[[profile.default.overrides]]
+filter = '''
+  test(/leave_migration_expand_contract/)
+  + test(/key_revision_migration_upgrade/)
+  + test(/attendance_console_migration_contract/)
+  + test(/apalis_adapter/)
+  + test(/apalis_schema_contract/)
+'''
+test-group = 'cluster-global'
+
+[profile.ci]
+# Hosted: no flake-hide retries. Slow timeout generous for PG.
+slow-timeout = { period = "120s", terminate-after = 3 }
