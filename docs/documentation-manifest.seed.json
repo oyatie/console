@@ -3400,6 +3400,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-w0-ont-1-schema-registry-sendback.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "e6e031908bffbf1124e02bc8fb371840767c1f00",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-06-w0-ont-enum-wire-roundtrips.md",
     "class": "evidence",
     "owner": "repository maintainers",
