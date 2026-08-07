@@ -358,4 +358,38 @@ mod tests {
         assert!(DispositionState::from_db("BROKEN").is_err());
         assert!(DispositionKind::from_db("BROKEN").is_err());
     }
+
+    /// Fail-closed wire matrix: empty, case-mismatched, whitespace-padded, and
+    /// near-miss tokens must not parse as legal SCREAMING_SNAKE states.
+    #[test]
+    fn from_db_fails_closed_on_empty_case_and_near_miss_wires() {
+        for bad in [
+            "",
+            "available",
+            "AVAILABLE ",
+            "ON-RENT",
+            "sold",
+            " IN_REPAIR",
+        ] {
+            assert!(
+                Availability::from_db(bad).is_err(),
+                "availability wire {bad:?}"
+            );
+        }
+        for bad in ["", "quoted", "QUOTED ", "HANDED OVER", "closed"] {
+            assert!(CaseState::from_db(bad).is_err(), "case wire {bad:?}");
+        }
+        for bad in ["", "open", "OPEN ", "complete", "COMPLETED\n"] {
+            assert!(
+                DispositionState::from_db(bad).is_err(),
+                "disposition state wire {bad:?}"
+            );
+        }
+        for bad in ["", "repair", "REPAIR ", "REDEPLOYED", "re-deploy"] {
+            assert!(
+                DispositionKind::from_db(bad).is_err(),
+                "disposition kind wire {bad:?}"
+            );
+        }
+    }
 }

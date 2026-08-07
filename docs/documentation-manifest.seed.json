@@ -3430,6 +3430,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-06-wave-module-substrate.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "0b846a6f639b8f674c78ea5e56e7ff8feec5bb9d",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

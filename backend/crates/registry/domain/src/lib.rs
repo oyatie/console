@@ -451,3 +451,125 @@ fn normalize_required(value: String, field: &str) -> Result<String, KernelError>
         Ok(trimmed)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn equipment_no_accepts_aaann_nnnn_shape() {
+        for value in ["CFO25-0290", "DFO30-0010", "ABC1A-1234", "  XYZ99-0001  "] {
+            let parsed = EquipmentNo::parse(value).expect("valid equipment number");
+            assert_eq!(parsed.as_str(), value.trim());
+        }
+    }
+
+    #[test]
+    fn equipment_no_rejects_wrong_length_case_dash_and_digits() {
+        for value in [
+            "",
+            "CF-290",
+            "CFO25-029",
+            "CFO25-02901",
+            "cfo25-0290",
+            "CFo25-0290",
+            "CFO250290",
+            "CFO25_0290",
+            "CFO25-029A",
+            "CFO25-ABCD",
+            "---00-0000",
+            "12345-6789",
+        ] {
+            assert!(
+                EquipmentNo::parse(value).is_err(),
+                "expected reject for {value:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn equipment_status_korean_wire_roundtrips_and_rejects_unknown() {
+        for status in [
+            EquipmentStatus::Rented,
+            EquipmentStatus::Spare,
+            EquipmentStatus::Disposed,
+            EquipmentStatus::Replacement,
+            EquipmentStatus::Sold,
+        ] {
+            let wire = status.as_db_str();
+            assert_eq!(EquipmentStatus::parse(wire).unwrap(), status);
+            assert_eq!(
+                EquipmentStatus::parse(&format!("  {wire}  ")).unwrap(),
+                status
+            );
+        }
+
+        for bad in [
+            "",
+            "rented",
+            "RENT",
+            "Rented",
+            "상태",
+            "예비예비",
+            "임대중",
+            "SPARE",
+        ] {
+            assert!(
+                EquipmentStatus::parse(bad).is_err(),
+                "expected reject for {bad:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn ton_parses_t_suffix_milli_tons_and_keeps_plain_text() {
+        let numeric = Ton::parse("12.5T");
+        assert_eq!(numeric.as_text(), "12.5T");
+        assert_eq!(numeric.milli_tons(), Some(12_500));
+
+        let whole = Ton::parse("  3T  ");
+        assert_eq!(whole.as_text(), "3T");
+        assert_eq!(whole.milli_tons(), Some(3_000));
+
+        let plain = Ton::parse("12.5");
+        assert_eq!(plain.as_text(), "12.5");
+        assert_eq!(plain.milli_tons(), None);
+
+        let undecided = Ton::parse("미정");
+        assert_eq!(undecided.as_text(), "미정");
+        assert_eq!(undecided.milli_tons(), None);
+    }
+
+    #[test]
+    fn customer_and_site_require_non_empty_names() {
+        let branch = BranchId::new();
+        let customer_id = CustomerId::new();
+        let site_id = SiteId::new();
+
+        assert!(Customer::new(customer_id, branch, "  ").is_err());
+        assert!(Customer::new(customer_id, branch, "").is_err());
+        let customer = Customer::new(customer_id, branch, "  Acme  ").unwrap();
+        assert_eq!(customer.name(), "Acme");
+
+        assert!(Site::new(site_id, branch, customer_id, "\t").is_err());
+        assert!(Site::new(site_id, branch, customer_id, "").is_err());
+        let site = Site::new(site_id, branch, customer_id, "  Site A  ").unwrap();
+        assert_eq!(site.name(), "Site A");
+    }
+
+    #[test]
+    fn equipment_drops_blank_management_no() {
+        let equipment = Equipment::new(
+            EquipmentId::new(),
+            BranchId::new(),
+            EquipmentNo::parse("CFO25-0290").unwrap(),
+            Some("   ".into()),
+            CustomerId::new(),
+            SiteId::new(),
+            EquipmentStatus::Spare,
+        );
+        assert_eq!(equipment.management_no(), None);
+        assert_eq!(equipment.status(), EquipmentStatus::Spare);
+        assert_eq!(equipment.equipment_no().as_str(), "CFO25-0290");
+    }
+}

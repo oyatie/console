@@ -232,4 +232,49 @@ mod tests {
             console_kernel_core::ErrorKind::Validation
         );
     }
+
+    #[test]
+    fn posting_vocab_roundtrips_and_input_vs_internal_errors() {
+        for status in [
+            PostingStatus::Draft,
+            PostingStatus::Published,
+            PostingStatus::Closed,
+        ] {
+            assert_eq!(PostingStatus::from_db(status.as_db()).unwrap(), status);
+            assert_eq!(PostingStatus::from_input(status.as_db()).unwrap(), status);
+        }
+        assert_eq!(
+            PostingStatus::from_db("OPEN").unwrap_err().kind,
+            console_kernel_core::ErrorKind::Internal
+        );
+        assert_eq!(
+            PostingStatus::from_input("OPEN").unwrap_err().kind,
+            console_kernel_core::ErrorKind::Validation
+        );
+
+        for scope in [PostingScope::Internal, PostingScope::External] {
+            assert_eq!(PostingScope::from_db(scope.as_db()).unwrap(), scope);
+            assert_eq!(PostingScope::from_input(scope.as_db()).unwrap(), scope);
+        }
+        assert!(PostingScope::from_input("BOTH").is_err());
+
+        for et in [
+            EmploymentType::Regular,
+            EmploymentType::ResidentShift,
+            EmploymentType::PartTime,
+            EmploymentType::PoolDaily,
+        ] {
+            assert_eq!(EmploymentType::from_db(et.as_db()).unwrap(), et);
+            assert_eq!(EmploymentType::from_input(et.as_db()).unwrap(), et);
+        }
+        assert!(EmploymentType::from_input("CONTRACTOR").is_err());
+
+        for score in [
+            AssessmentScore::Suitable,
+            AssessmentScore::Neutral,
+            AssessmentScore::Unsuitable,
+        ] {
+            assert_eq!(AssessmentScore::from_db(score.as_db()).unwrap(), score);
+        }
+    }
 }

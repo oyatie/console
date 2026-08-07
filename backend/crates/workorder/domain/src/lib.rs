@@ -1295,3 +1295,171 @@ impl WorkOrder {
         Ok(transition)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn work_order_status_wire_roundtrips_and_rejects_unknown() {
+        for status in ALL_WORK_ORDER_STATUSES {
+            assert_eq!(
+                WorkOrderStatus::from_db_str(status.as_db_str()).unwrap(),
+                *status
+            );
+        }
+        assert_eq!(WorkOrderStatus::InProgress.as_db_str(), "IN_PROGRESS");
+        assert_eq!(
+            WorkOrderStatus::from_db_str("REPORT_SUBMITTED").unwrap(),
+            WorkOrderStatus::ReportSubmitted
+        );
+        // Fail-closed: lowercase / wrong tags must not parse.
+        assert!(WorkOrderStatus::from_db_str("received").is_err());
+        assert!(WorkOrderStatus::from_db_str("in_progress").is_err());
+        assert!(WorkOrderStatus::from_db_str("BROADCASTING").is_err());
+        assert!(WorkOrderStatus::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn priority_level_wire_roundtrips_and_rejects_unknown() {
+        for priority in [
+            PriorityLevel::P1,
+            PriorityLevel::P2,
+            PriorityLevel::P3,
+            PriorityLevel::Outsource,
+            PriorityLevel::Unset,
+        ] {
+            assert_eq!(
+                PriorityLevel::from_db_str(priority.as_db_str()).unwrap(),
+                priority
+            );
+        }
+        assert_eq!(PriorityLevel::Outsource.as_db_str(), "OUTSOURCE");
+        assert!(PriorityLevel::from_db_str("p1").is_err());
+        assert!(PriorityLevel::from_db_str("outsource").is_err());
+        assert!(PriorityLevel::from_db_str("P4").is_err());
+        assert!(PriorityLevel::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn maintenance_type_wire_roundtrips_and_rejects_unknown() {
+        for kind in [
+            MaintenanceType::Emergency,
+            MaintenanceType::Corrective,
+            MaintenanceType::Preventive,
+            MaintenanceType::Inspection,
+        ] {
+            assert_eq!(
+                MaintenanceType::from_db_str(kind.as_db_str()).unwrap(),
+                kind
+            );
+        }
+        assert_eq!(MaintenanceType::Emergency.as_db_str(), "EMERGENCY");
+        assert!(MaintenanceType::from_db_str("emergency").is_err());
+        assert!(MaintenanceType::from_db_str("CORRECTIVE_MAINTENANCE").is_err());
+        assert!(MaintenanceType::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn maintenance_cause_wire_roundtrips_and_rejects_unknown() {
+        for cause in [
+            MaintenanceCause::Breakdown,
+            MaintenanceCause::ReturnPrep,
+            MaintenanceCause::Scheduled,
+            MaintenanceCause::InspectionFinding,
+            MaintenanceCause::Other,
+        ] {
+            assert_eq!(
+                MaintenanceCause::from_db_str(cause.as_db_str()).unwrap(),
+                cause
+            );
+        }
+        assert_eq!(MaintenanceCause::ReturnPrep.as_db_str(), "RETURN_PREP");
+        assert!(MaintenanceCause::from_db_str("breakdown").is_err());
+        assert!(MaintenanceCause::from_db_str("return_prep").is_err());
+        assert!(MaintenanceCause::from_db_str("UNKNOWN_CAUSE").is_err());
+        assert!(MaintenanceCause::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn settlement_status_wire_roundtrips_and_rejects_unknown() {
+        for status in [
+            SettlementStatus::Draft,
+            SettlementStatus::Submitted,
+            SettlementStatus::Approved,
+            SettlementStatus::Void,
+        ] {
+            assert_eq!(
+                SettlementStatus::from_db_str(status.as_db_str()).unwrap(),
+                status
+            );
+        }
+        assert_eq!(SettlementStatus::Submitted.as_db_str(), "SUBMITTED");
+        assert!(SettlementStatus::from_db_str("draft").is_err());
+        assert!(SettlementStatus::from_db_str("submitted").is_err());
+        assert!(SettlementStatus::from_db_str("PAID").is_err());
+        assert!(SettlementStatus::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn settlement_line_kind_wire_roundtrips_and_rejects_unknown() {
+        for kind in [
+            SettlementLineKind::Labor,
+            SettlementLineKind::Part,
+            SettlementLineKind::Outsource,
+            SettlementLineKind::Other,
+        ] {
+            assert_eq!(
+                SettlementLineKind::from_db_str(kind.as_db_str()).unwrap(),
+                kind
+            );
+        }
+        assert_eq!(SettlementLineKind::Labor.as_db_str(), "LABOR");
+        assert!(SettlementLineKind::from_db_str("labor").is_err());
+        assert!(SettlementLineKind::from_db_str("part").is_err());
+        assert!(SettlementLineKind::from_db_str("MATERIAL").is_err());
+        assert!(SettlementLineKind::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn settlement_eligible_work_order_statuses_are_report_review_and_final() {
+        assert_eq!(SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES.len(), 3);
+        assert_eq!(
+            SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES,
+            &[
+                WorkOrderStatus::ReportSubmitted,
+                WorkOrderStatus::AdminReview,
+                WorkOrderStatus::FinalCompleted,
+            ]
+        );
+        assert!(!SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES.contains(&WorkOrderStatus::InProgress));
+        assert!(!SETTLEMENT_ELIGIBLE_WORK_ORDER_STATUSES.contains(&WorkOrderStatus::Assigned));
+    }
+
+    #[test]
+    fn validate_status_transition_rejects_illegal_edges_fail_closed() {
+        // Open path with no special fixtures: pure table lookup fail-closed.
+        let open = TransitionGuardContext::mechanic();
+        assert!(
+            validate_status_transition(
+                WorkOrderStatus::Received,
+                WorkOrderStatus::FinalCompleted,
+                open
+            )
+            .is_err()
+        );
+        assert!(
+            validate_status_transition(
+                WorkOrderStatus::Archived,
+                WorkOrderStatus::InProgress,
+                open
+            )
+            .is_err()
+        );
+        // Legal open edge still accepts under mechanic context.
+        assert!(
+            validate_status_transition(WorkOrderStatus::Received, WorkOrderStatus::Assigned, open)
+                .is_ok()
+        );
+    }
+}

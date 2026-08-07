@@ -263,7 +263,7 @@ jobs:
             -p console-benefit-domain -p console-comms-application -p console-comms-domain \
             -p console-dispatch-application -p console-dispatch-domain -p console-docs-application \
             -p console-docs-domain -p console-equipment-domain -p console-erp-domain \
-            -p console-evaluation-application -p console-evaluation-domain -p console-finance-gl-domain \
+            -p console-evaluation-application -p console-evaluation-domain -p console-finance-gl-domain -p console-inspection-domain -p console-messenger-domain -p console-registry-domain -p console-workorder-domain \
             -p console-identity-domain -p console-inbox-application -p console-inbox-domain \
             -p console-inventory-domain -p console-leave-domain -p console-logistics-domain \
             -p console-messenger-application -p console-notices-domain -p console-notifications-domain \

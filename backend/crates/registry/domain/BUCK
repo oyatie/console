@@ -23,6 +23,21 @@ rust_library(
 )
 
 rust_test(
+    name = "console-registry-domain-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/registry/domain", glob(["src/**/*.rs"])),
+    crate = "console_registry_domain",
+    edition = "2024",
+    crate_root = "backend/crates/registry/domain/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/domain"},
+    labels = ["owner.backend.crates.registry.domain", "domain.registry", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+    ],
+)
+
+rust_test(
     name = "console-registry-domain-itest-equipment",
     mapped_srcs = repo_mapped_srcs("backend/crates/registry/domain", ["tests/equipment.rs"]),
     crate = "equipment",

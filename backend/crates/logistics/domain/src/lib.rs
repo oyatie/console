@@ -105,4 +105,37 @@ mod tests {
             assert!(from.can_transition_to(to).is_err());
         }
     }
+
+    #[test]
+    fn fulfillment_state_wire_and_illegal_matrix() {
+        // Full wire set + extra illegal edges beyond the three-spot smoke.
+        for state in [
+            FulfillmentState::Released,
+            FulfillmentState::Picked,
+            FulfillmentState::ShortPick,
+            FulfillmentState::Packed,
+            FulfillmentState::Dispatched,
+            FulfillmentState::Delivered,
+            FulfillmentState::Settled,
+        ] {
+            assert_eq!(FulfillmentState::from_db(state.as_db()).unwrap(), state);
+        }
+        assert!(FulfillmentState::from_db("released").is_err());
+        assert!(FulfillmentState::from_db("PICKED ").is_err());
+
+        // Skip steps and reverse edges stay fail-closed.
+        for (from, to) in [
+            (FulfillmentState::Released, FulfillmentState::Dispatched),
+            (FulfillmentState::Released, FulfillmentState::Settled),
+            (FulfillmentState::Picked, FulfillmentState::Released),
+            (FulfillmentState::Packed, FulfillmentState::Picked),
+            (FulfillmentState::Settled, FulfillmentState::Released),
+            (FulfillmentState::Dispatched, FulfillmentState::Released),
+        ] {
+            assert!(
+                from.can_transition_to(to).is_err(),
+                "{from:?} -> {to:?} must be illegal"
+            );
+        }
+    }
 }

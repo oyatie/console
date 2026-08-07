@@ -232,3 +232,156 @@ impl MessageBody {
         &self.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    /// Fixed RFC-4122 UUID that parses as [`UserId`] (version nibble 4, variant 8).
+    const ALICE: &str = "11111111-1111-4111-8111-111111111111";
+    const BOB: &str = "22222222-2222-4222-8222-222222222222";
+
+    fn alice() -> UserId {
+        UserId::from_str(ALICE).expect("ALICE is a valid UserId")
+    }
+
+    fn bob() -> UserId {
+        UserId::from_str(BOB).expect("BOB is a valid UserId")
+    }
+
+    #[test]
+    fn thread_kind_db_str_roundtrip_and_rejects_unknown() {
+        for kind in [
+            ThreadKind::WorkOrder,
+            ThreadKind::Team,
+            ThreadKind::Dm,
+            ThreadKind::Group,
+        ] {
+            assert_eq!(ThreadKind::from_db_str(kind.as_db_str()).unwrap(), kind);
+        }
+        assert_eq!(ThreadKind::WorkOrder.as_db_str(), "work_order");
+        assert_eq!(ThreadKind::Team.as_db_str(), "team");
+        assert_eq!(ThreadKind::Dm.as_db_str(), "dm");
+        assert_eq!(ThreadKind::Group.as_db_str(), "group");
+        assert!(ThreadKind::from_db_str("WORK_ORDER").is_err());
+        assert!(ThreadKind::from_db_str("unknown").is_err());
+        assert!(ThreadKind::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn thread_visibility_db_str_roundtrip_and_rejects_unknown() {
+        for v in [ThreadVisibility::Channel, ThreadVisibility::Direct] {
+            assert_eq!(ThreadVisibility::from_db_str(v.as_db_str()).unwrap(), v);
+        }
+        assert_eq!(ThreadVisibility::Channel.as_db_str(), "channel");
+        assert_eq!(ThreadVisibility::Direct.as_db_str(), "direct");
+        assert!(ThreadVisibility::from_db_str("CHANNEL").is_err());
+        assert!(ThreadVisibility::from_db_str("nonsense").is_err());
+        assert!(ThreadVisibility::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn thread_visibility_default_for_named_team_is_channel_else_direct() {
+        assert_eq!(
+            ThreadVisibility::default_for(ThreadKind::Team, true),
+            ThreadVisibility::Channel
+        );
+        assert_eq!(
+            ThreadVisibility::default_for(ThreadKind::Team, false),
+            ThreadVisibility::Direct
+        );
+        for kind in [ThreadKind::WorkOrder, ThreadKind::Dm, ThreadKind::Group] {
+            assert_eq!(
+                ThreadVisibility::default_for(kind, true),
+                ThreadVisibility::Direct
+            );
+            assert_eq!(
+                ThreadVisibility::default_for(kind, false),
+                ThreadVisibility::Direct
+            );
+        }
+    }
+
+    #[test]
+    fn presence_status_for_age_thresholds() {
+        assert_eq!(presence_status_for_age(None), PresenceStatus::Offline);
+        // Negative age (clock skew / future stamp) is online.
+        assert_eq!(presence_status_for_age(Some(-1)), PresenceStatus::Online);
+        assert_eq!(presence_status_for_age(Some(0)), PresenceStatus::Online);
+        assert_eq!(
+            presence_status_for_age(Some(PRESENCE_ONLINE_SECONDS - 1)),
+            PresenceStatus::Online
+        );
+        // <300 online; <1800 away; else offline (constants: 5*60 / 30*60).
+        assert_eq!(
+            presence_status_for_age(Some(PRESENCE_ONLINE_SECONDS)),
+            PresenceStatus::Away
+        );
+        assert_eq!(
+            presence_status_for_age(Some(PRESENCE_AWAY_SECONDS - 1)),
+            PresenceStatus::Away
+        );
+        assert_eq!(
+            presence_status_for_age(Some(PRESENCE_AWAY_SECONDS)),
+            PresenceStatus::Offline
+        );
+        assert_eq!(
+            presence_status_for_age(Some(PRESENCE_AWAY_SECONDS + 1)),
+            PresenceStatus::Offline
+        );
+    }
+
+    #[test]
+    fn message_body_rejects_empty_whitespace_and_over_max_accepts_valid() {
+        assert!(MessageBody::new("").is_err());
+        assert!(MessageBody::new(" \t\n ").is_err());
+        let too_long = "a".repeat(MAX_MESSAGE_BODY_CHARS + 1);
+        assert!(MessageBody::new(too_long).is_err());
+
+        let ok = MessageBody::new("  누유 확인  ").unwrap();
+        assert_eq!(ok.as_str(), "누유 확인");
+        let at_cap = "a".repeat(MAX_MESSAGE_BODY_CHARS);
+        assert!(MessageBody::new(at_cap).is_ok());
+    }
+
+    #[test]
+    fn extract_mention_user_ids_boundary_dedupe_and_mid_word_ignore() {
+        let body = format!("확인 부탁 @{ALICE} 그리고 (@{BOB}) 다시 @{ALICE}");
+        assert_eq!(
+            extract_mention_user_ids(&body),
+            vec![alice(), bob()],
+            "valid UUID after @ with boundary; first-seen order; dedupe"
+        );
+        // Mid-word @ is not a mention (email local-part / attached letter).
+        assert!(extract_mention_user_ids(&format!("메일a@{ALICE}")).is_empty());
+        assert!(extract_mention_user_ids(&format!("user@{ALICE}")).is_empty());
+        // Non-UUID after @ is ignored.
+        assert!(extract_mention_user_ids("@홍길동 안녕").is_empty());
+        assert!(extract_mention_user_ids("@@ @! @123").is_empty());
+    }
+
+    #[test]
+    fn extract_object_code_refs_wo_shape_rejects_noise_and_caps() {
+        assert_eq!(
+            extract_object_code_refs("확인 #WO-20260612-001 그리고 (#AP-3121)"),
+            vec!["WO-20260612-001".to_owned(), "AP-3121".to_owned()],
+        );
+        // Hashtag noise / malformed: no dash, lowercase prefix, empty body after dash.
+        assert!(
+            extract_object_code_refs(
+                "#hashtag #wo-1 #WO- plain @11111111-1111-4111-8111-111111111111"
+            )
+            .is_empty()
+        );
+        let body = (0..MAX_OBJECT_CODE_REFS + 25)
+            .map(|i| format!("#CODE-{i}"))
+            .collect::<Vec<_>>()
+            .join(" ");
+        assert_eq!(
+            extract_object_code_refs(&body).len(),
+            MAX_OBJECT_CODE_REFS,
+            "refs capped at MAX_OBJECT_CODE_REFS"
+        );
+    }
+}

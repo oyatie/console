@@ -543,6 +543,9 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/schedule_window_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
+    'console-inspection-domain': {
+        'unit': 'none',
+    },
     'console-inventory-domain': {
         'unit': 'none',
     },
@@ -578,6 +581,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-messenger-domain': {
+        'unit': 'none',
         'integration': {
             'tests/mentions.rs': 'none',
             'tests/object_code_refs.rs': 'none',
@@ -821,6 +825,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-registry-domain': {
+        'unit': 'none',
         'integration': {
             'tests/equipment.rs': 'none',
         },
@@ -917,6 +922,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-workorder-domain': {
+        'unit': 'none',
         'integration': {
             'tests/approval_and_assignment.rs': 'none',
             'tests/serde_roundtrips.rs': 'none',

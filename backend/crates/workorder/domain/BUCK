@@ -24,6 +24,23 @@ rust_library(
 )
 
 rust_test(
+    name = "console-workorder-domain-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/workorder/domain", glob(["src/**/*.rs"])),
+    crate = "console_workorder_domain",
+    edition = "2024",
+    crate_root = "backend/crates/workorder/domain/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/workorder/domain"},
+    labels = ["owner.backend.crates.workorder.domain", "domain.workorder", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:time",
+    ],
+)
+
+rust_test(
     name = "console-workorder-domain-itest-approval_and_assignment",
     mapped_srcs = repo_mapped_srcs("backend/crates/workorder/domain", ["tests/approval_and_assignment.rs"]),
     crate = "approval_and_assignment",

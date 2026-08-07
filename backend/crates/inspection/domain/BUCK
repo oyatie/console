@@ -21,3 +21,18 @@ rust_library(
         "//third-party/rust:serde",
     ],
 )
+
+rust_test(
+    name = "console-inspection-domain-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/inspection/domain", glob(["src/**/*.rs"])),
+    crate = "console_inspection_domain",
+    edition = "2024",
+    crate_root = "backend/crates/inspection/domain/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/inspection/domain"},
+    labels = ["owner.backend.crates.inspection.domain", "domain.inspection", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+    ],
+)

@@ -97,9 +97,6 @@ const domainUnitPackages = [
   "console-platform-authz",
   "console-policy-application",
   "console-policy-domain",
-  // Added 2026-07-31. Every crate below held test code that executed in no workflow step.
-  // They are domain and application crates — no database, no fixture, no wrapper target —
-  // so the only thing that had ever kept them dark was that nobody named them here.
   "console-action-inbox-application",
   "console-attendance-domain",
   "console-benefit-application",
@@ -115,6 +112,10 @@ const domainUnitPackages = [
   "console-evaluation-application",
   "console-evaluation-domain",
   "console-finance-gl-domain",
+  "console-inspection-domain",
+  "console-messenger-domain",
+  "console-registry-domain",
+  "console-workorder-domain",
   "console-identity-domain",
   "console-inbox-application",
   "console-inbox-domain",
@@ -136,12 +137,6 @@ const domainUnitPackages = [
   "console-todos-domain",
   "console-workflow-domain",
   "console-workorder-application",
-  // Second tranche, same day. These are `--lib` unit tests in `rest`, `adapter-postgres`
-  // and CI-gate crates. FOUR sibling crates were excluded because their lib carries a
-  // `#[sqlx::test]` and needs DATABASE_URL — console-platform-group, console-platform-storage,
-  // console-gate-rls-arming, console-support-rest. "--lib means no database" is false here,
-  // and the only reason that is known is that running them produced
-  // "DATABASE_URL must be set" rather than a green summary.
   "console-analytics-quant-service",
   "console-attendance-adapter-postgres",
   "console-attendance-rest",
@@ -182,9 +177,6 @@ const domainUnitPackages = [
   "console-reporting-adapter-postgres",
   "console-support-adapter-postgres",
   "console-kernel-core",
-  // Added 2026-08-03: the consolidation changed authorization decisions in these
-  // REST libraries. Their pure unit tests must remain part of the protected job,
-  // rather than becoming implementation-specific tests that exist but never run.
   "console-registry-rest",
   "console-reporting-rest",
   "console-workflow-runtime-adapter-postgres",
@@ -195,7 +187,7 @@ const domainUnitPackages = [
   "console-platform-auth",
   "console-platform-authz-rest",
   "console-workflow-runtime",
-];
+]
 const domainUnitIntegrationInvocations = [
   ["console-attendance-application", ["attendance_policy"]],
   ["console-compliance-domain", ["location_consent_fsm", "location_ping_policy"]],
@@ -571,7 +563,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "5a1888f6a67b92f3448b4a5e532170a3eb53bf1f12679a755670235d764d1edc"),
+    proofDigest("Domain crate unit tests", "e36958f192c903c89c6299d9a09ec954073ae365a70ddf2c485b36debd3454df"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),

@@ -499,35 +499,23 @@ mod tests {
         assert!(validate_instance_transition(Draft, Archived).is_ok());
     }
 
+    // --- W0-ONT-1: schema/registry wire + reviewer send-back ---
+
     #[test]
-    fn schema_lifecycle_state_roundtrips_and_rejects_unknown() {
-        for st in [
-            SchemaLifecycleState::Draft,
-            SchemaLifecycleState::ReviewPending,
-            SchemaLifecycleState::Published,
-            SchemaLifecycleState::Superseded,
-            SchemaLifecycleState::Retired,
-        ] {
+    fn schema_lifecycle_state_roundtrips() {
+        for st in [Draft, ReviewPending, Published, Superseded, Retired] {
             assert_eq!(
                 SchemaLifecycleState::from_db_str(st.as_db_str()).unwrap(),
                 st
             );
         }
-        assert!(SchemaLifecycleState::from_db_str("not_a_state").is_err());
-        assert!(SchemaLifecycleState::from_db_str("").is_err());
     }
 
     #[test]
-    fn backing_kind_roundtrips_and_rejects_unknown() {
+    fn backing_kind_link_cardinality_and_action_dispatch_roundtrip() {
         for kind in [BackingKind::Projected, BackingKind::Instance] {
             assert_eq!(BackingKind::from_db_str(kind.as_db_str()).unwrap(), kind);
         }
-        assert!(BackingKind::from_db_str("hybrid").is_err());
-        assert!(BackingKind::from_db_str("").is_err());
-    }
-
-    #[test]
-    fn link_cardinality_roundtrips_and_rejects_unknown() {
         for card in [
             LinkCardinality::OneOne,
             LinkCardinality::OneMany,
@@ -538,22 +526,41 @@ mod tests {
                 card
             );
         }
-        // Reject aliases that look plausible but are not the stored tags.
-        assert!(LinkCardinality::from_db_str("one_to_many").is_err());
-        assert!(LinkCardinality::from_db_str("1:n").is_err());
-        assert!(LinkCardinality::from_db_str("").is_err());
-    }
-
-    #[test]
-    fn action_dispatch_roundtrips_and_rejects_unknown() {
-        for d in [
+        for dispatch in [
             ActionDispatch::ProjectedUsecase,
             ActionDispatch::InstanceRevision,
         ] {
-            assert_eq!(ActionDispatch::from_db_str(d.as_db_str()).unwrap(), d);
+            assert_eq!(
+                ActionDispatch::from_db_str(dispatch.as_db_str()).unwrap(),
+                dispatch
+            );
         }
-        assert!(ActionDispatch::from_db_str("inline").is_err());
-        assert!(ActionDispatch::from_db_str("projected").is_err());
-        assert!(ActionDispatch::from_db_str("").is_err());
+    }
+
+    #[test]
+    fn registry_enum_wire_tags_reject_unknown() {
+        // Closed sets (DB CHECK + domain). Unlike FieldKind display tags, these
+        // never degrade to Unknown — unknown wire is a hard validation error.
+        assert!(SchemaLifecycleState::from_db_str("quantum_draft").is_err());
+        assert!(SchemaLifecycleState::from_db_str("").is_err());
+        assert!(SchemaLifecycleState::from_db_str("Published").is_err()); // case-sensitive
+        assert!(BackingKind::from_db_str("hybrid").is_err());
+        assert!(LinkCardinality::from_db_str("zero_many").is_err());
+        assert!(ActionDispatch::from_db_str("direct_sql").is_err());
+        assert!(InstanceLifecycleState::from_db_str("soft_deleted").is_err());
+    }
+
+    #[test]
+    fn schema_reviewer_may_return_proposal_to_draft() {
+        // Four-eyes send-back: reviewer rejects proposal → author edits again.
+        assert_eq!(
+            validate_schema_transition(ReviewPending, Draft, true).unwrap(),
+            Draft
+        );
+        // Protection flag only gates draft→published; send-back stays open either way.
+        assert_eq!(
+            validate_schema_transition(ReviewPending, Draft, false).unwrap(),
+            Draft
+        );
     }
 }

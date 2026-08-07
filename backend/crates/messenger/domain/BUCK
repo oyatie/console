@@ -23,6 +23,21 @@ rust_library(
 )
 
 rust_test(
+    name = "console-messenger-domain-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/messenger/domain", glob(["src/**/*.rs"])),
+    crate = "console_messenger_domain",
+    edition = "2024",
+    crate_root = "backend/crates/messenger/domain/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/messenger/domain"},
+    labels = ["owner.backend.crates.messenger.domain", "domain.messenger", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+    ],
+)
+
+rust_test(
     name = "console-messenger-domain-itest-mentions",
     mapped_srcs = repo_mapped_srcs("backend/crates/messenger/domain", ["tests/mentions.rs"]),
     crate = "mentions",
