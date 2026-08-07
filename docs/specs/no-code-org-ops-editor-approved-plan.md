@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Approved Plan: No-Code Org/Ops Editor, Cedar/PBAC, and Cross-Org Work
 
 Date: 2026-07-01  

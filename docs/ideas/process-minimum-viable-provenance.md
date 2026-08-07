@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Minimum Viable Provenance
 
 **Status: the round-4 refutation was ANSWERED 2026-08-01, not overruled. The strip is built across

@@ -12,7 +12,7 @@
 > last. Repo renamed `maintenance` → `console`. Scope narrowed to Ontology · Foundry · Policy, then
 > Organization + Employee, then HR + Payroll.
 >
-> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md). Nothing below is
+> Current product authority: [`docs/current/PRODUCT.md`](../../current/PRODUCT.md). Pivot history only: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md) (non-authority). Nothing below is
 > updated to match it — read it as a record of what was designed, not what is being built.
 
 Extracted from the **Acme Group Console** — a Palantir-benchmarked, ontology-first B2B SaaS console for conglomerate HR/operations (근태·급여·연차·복리후생·채용·전자결재·문서·권한정책, with built-in messenger/mail/notification). Source of truth: `Oyatie Console.dc.html` (the working console) + `DESIGN.md` (design charter) + `TODO.md` (roadmap) at project root. Korean-first UI.

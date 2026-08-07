@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Spec: Standalone corporate MX/IMAP/JMAP mailbox server
 
 ## Objective

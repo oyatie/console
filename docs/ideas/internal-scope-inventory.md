@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Internal scope inventory — what is already decided, and what today's requirements change
 
 Status: ANALYSIS — read-only inventory

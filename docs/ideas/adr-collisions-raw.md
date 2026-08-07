@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # ADR / pattern collisions — Collide phase output, UNADJUDICATED
 
 > `Status: RAW FINDINGS — the adversarial adjudication did not run (quota exhaustion 2026-07-29).`

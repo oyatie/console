@@ -13,7 +13,7 @@
 > Organization + Employee, then HR + Payroll — ERP modules, field ops, dispatch, comms modules,
 > compliance modules, ingest, evidence/WORM and the office editor are explicitly **out of scope**.
 >
-> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
+> Current product authority: [`docs/current/PRODUCT.md`](../../current/PRODUCT.md). Pivot history only: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md) (non-authority).
 
 > 목적: 콘솔 **전 모듈을 엔터프라이즈 프로덕션 목업 품질**로 완성한다 — no stubs·no filler·no "good for now". 모든 화면이 상호작용하고, **온톨로지·데이터 상관·워크플로·자동화**를 실증한다. "배선(백엔드 연결)만 하면 되는" 상태가 목표.
 > 이 문서는 실행 계획의 단일 출처다. 설계 원칙=DESIGN.md, 백엔드 계약=HANDOFF.md, 세션 작업목록=TODO.md, 운영노트=AGENTS.md. 매 모듈 완료 시 본 문서의 상태표를 갱신한다.

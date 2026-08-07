@@ -1,9 +1,8 @@
-> **RETIRED PRE-PIVOT CHECKLIST:** Every checkbox below is a frozen record of the
-> former field/mobile pilot. A checked box means only that the item was recorded
-> complete then; it is not current readiness, release evidence, or product scope.
-> Field ops, dispatch, evidence/WORM, web/mobile clients, and their release tooling
-> are outside the current pivot. Current authority is
-> [`docs/PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+> **RETIRED PRE-PIVOT CHECKLIST — NOT CURRENT AUTHORITY.**  
+> Every checkbox below is a frozen record of the former field/mobile pilot only.  
+> Checked boxes are **not** readiness, release evidence, HOLD clearance, or product scope.  
+> **Current authority:** [`README.md`](../README.md) + [`docs/current/{PRODUCT,ROADMAP,DELIVERY}.md`](current/PRODUCT.md).  
+> Pivot history (non-authority): [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
 
 # Go-Live Checklist (T6.5)
 

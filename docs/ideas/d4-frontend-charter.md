@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # D4 resolved — the console rebuild charter, and the two ADRs it amends
 
 > `Status: PENDING APPROVAL — owner decisions captured 2026-07-30; ADR numbers assigned by the integrator.`

@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Governed Object Engine
 
 > Status: **idea one-pager, pending approval.** Output of `/deep-interview` (round 1) + `/idea-refine`, 2026-07-28.

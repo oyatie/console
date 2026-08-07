@@ -1,3 +1,5 @@
+> **EXECUTABLE-CONTRACT / NON-AUTHORITY.** CI-bound gate contract (machine-checked). Cannot authorize product scope, clear HOLDs, release, or production readiness. Current product authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Foundation Gates — G002 Shared Contracts and Hard Gates
 
 FOUNDATION-GATE-READY: true

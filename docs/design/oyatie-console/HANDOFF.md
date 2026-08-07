@@ -13,7 +13,7 @@
 > mock-console inventory in §0, and sections covering now-descoped areas (ingest, evidence/WORM,
 > the office editor, mail/mox, ERP and field ops) are **historical**.
 >
-> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md).
+> Current product authority: [`docs/current/PRODUCT.md`](../../current/PRODUCT.md). Pivot history only: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md) (non-authority).
 
 > 프런트(Oyatie Console)는 **온톨로지·이벤트·정책(Cedar PBAC)**을 UI로 시뮬레이션한다. 이 문서는 그 UI 계약을 실제 백엔드로 구현할 때의 데이터 모델·이벤트·정책·통합 지점을 정리한다. Palantir Foundry(온톨로지/액션/펑션) 벤치마크.
 

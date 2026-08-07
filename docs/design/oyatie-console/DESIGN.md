@@ -12,7 +12,7 @@
 > last. Repo renamed `maintenance` → `console`. Scope narrowed to Ontology · Foundry · Policy, then
 > Organization + Employee, then HR + Payroll.
 >
-> Canonical truth set: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md). Nothing below is
+> Current product authority: [`docs/current/PRODUCT.md`](../../current/PRODUCT.md). Pivot history only: [`docs/PIVOT-2026-07-28.md`](../../PIVOT-2026-07-28.md) (non-authority). Nothing below is
 > updated to match it — read it as a record of what was designed, not what is being built.
 > 이 문서는 콘솔의 설계 헌장이다. 모든 화면·컴포넌트·텍스트·인터랙션은 아래 원칙에 대해 **항상 audit** 되어야 한다.
 

@@ -1,3 +1,5 @@
+> **EXECUTABLE-CONTRACT / NON-AUTHORITY:** Mistake rows and preventions only. Does not set product scope or clear HOLDs. Authority: repository README + `docs/current/*`.
+
 # Mistakes Ledger
 
 Every mistake gets a row with the mechanical prevention that stops it recurring. (Pattern: oyatie.)

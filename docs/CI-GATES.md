@@ -2,8 +2,8 @@
 
 # CI Gates
 
-The GitHub Actions workflow in `.github/workflows/ci.yml` is the source of truth
-for CI enforcement. This document mirrors the current gate inventory and splits
+The GitHub Actions workflow in `.github/workflows/ci.yml` is the **executable inventory**
+of CI enforcement (this doc is a non-authority mirror). This document mirrors the current gate inventory and splits
 the checks into two groups: core local gates that a fresh development session can
 run directly, and CI-contextual/heavy gates that need platform-specific runner
 setup, services, or deployment access.

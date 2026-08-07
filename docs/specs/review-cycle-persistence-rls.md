@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Review-cycle persistence and RLS design
 
 Status: implementation-ready persistence/RLS design note for Kanban `t_c402ad93` / GitHub issue #309.

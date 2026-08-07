@@ -5,16 +5,18 @@
 > phases for traceability. It is not the current implementation authority,
 > dispatch queue, completion evidence, or build policy. Do not resume work from
 > its `IN FLIGHT`, `DONE`, stub-first, Cargo, model-routing, or merge claims.
-> Current authority is
-> [`console-enterprise-roadmap.md`](console-enterprise-roadmap.md), its
-> machine-readable capability and jurisdiction registers, current repository
-> contracts, the
-> [`console-development-pipeline.md`](console-development-pipeline.md)
-> plan-to-deployment pipeline, and exact-candidate evidence.
-> The current Buck2 execution policy is
-> [`console-buck2-scale-playbook.md`](console-buck2-scale-playbook.md). The
-> older Buck2-CI charter below is historical context and cannot authorize Cargo
-> product-test completion evidence.
+> **Historical ledger only — NOT current authority.**
+> Current product/roadmap/delivery authority is
+> [`docs/current/PRODUCT.md`](../current/PRODUCT.md),
+> [`ROADMAP.md`](../current/ROADMAP.md), and
+> [`DELIVERY.md`](../current/DELIVERY.md) (entry: repository README).
+> Files such as `console-enterprise-roadmap.md`,
+> `console-development-pipeline.md`, and Buck2 playbooks in this directory are
+> **historical or reusable reference** and cannot dispatch work, clear HOLDs,
+> or authorize Cargo/Buck product-test completion evidence.
+> Machine-readable capability and jurisdiction registers remain AUTHORITY_PATHS
+> / plan-fanout inputs; they are not demoted by this banner and are not product-
+> dispatch authority.
 
 ## Phase 0 Support SLO truth-down (2026-07-25)
 

@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # X1 and X2 — the two silent-empty traps, run
 
 Both experiments from `ecosystem-plan-DRAFT.md` §8 Phase 6. Both were CONFIRMED by code reading

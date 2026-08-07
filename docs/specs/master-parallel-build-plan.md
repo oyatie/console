@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Master Parallel Build Plan — maintenance → enterprise multi-tenant SaaS (oyatie-borrowed)
 
 > Output of the oyatie-borrow-scan workflow + planning-and-task-breakdown. Companion to

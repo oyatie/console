@@ -1,6 +1,6 @@
 # Build Strategy — Full Enterprise SaaS at Massive Parallel Scale
 
-> **SUPERSEDED — 2026-07-28 pivot.** This document describes a surface or plan that no longer exists. See `docs/PIVOT-2026-07-28.md` for what is currently true. Content below is retained as a historical record and is not current intent.
+> **SUPERSEDED — 2026-07-28 pivot.** This document describes a surface or plan that no longer exists. See `docs/current/PRODUCT.md` for current product authority; `docs/PIVOT-2026-07-28.md` is historical only. Content below is retained as a historical record and is not current intent.
 
 > idea-refine output (refined direction), feeding `/review` → `/agent-skills:review` →
 > `/planning-and-task-breakdown`. Companion to `docs/specs/roadmap-to-production.md`.

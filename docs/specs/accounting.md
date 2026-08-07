@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Accounting / 회계 Sub-Spec (G013)
 
 Status: regulated foundation slice. This is an accounting implementation contract, not tax/accounting advice. Production financial statements, VAT filing support, and e-tax-invoice issuance remain blocked until a licensed 세무사 validates golden cases and signs the release gate.

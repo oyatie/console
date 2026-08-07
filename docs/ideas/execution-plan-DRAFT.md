@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # EXECUTION PLAN — from proven substrate to a demonstrable company
 
 > **§0 REVERSED 2026-08-01. Everything outside §0 stands.** §0's verdict ("the register strip is

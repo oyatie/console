@@ -1,3 +1,5 @@
+> **HISTORICAL / NON-AUTHORITY (oyatie-console design import).** Not Console product authority. See `docs/current/PRODUCT.md`.
+
 # SYNC-MANIFEST — claude.ai/design → local mirror
 
 Source project: `claude.ai/design/p/9c7c313a-2187-4cf1-bb35-7c07ad0a4d9d` (`B2B SaaS Console Design`).

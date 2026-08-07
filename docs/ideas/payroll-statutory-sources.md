@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Payroll statutory source register — the fetch list for release-gate condition 1
 
 > `Status: RESEARCH — discovery layer only. No citation here is an allowed source; asserts no Korean legal conclusion.`

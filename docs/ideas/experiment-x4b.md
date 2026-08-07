@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Experiment X4b — a group-scoped grant cannot live in Tier N
 
 > Runs the half of **X4** that `docs/ideas/ecosystem-plan-review.md` finding **B9** (`:271-301`)

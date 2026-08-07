@@ -1,13 +1,17 @@
 # 정비 콘솔 App Shell + Routing Overhaul Spec
 
-**Version:** 1.0  
-**Domain:** Field-service maintenance console (B2B SaaS, Korean UI)  
-**Benchmark apps:** Linear, Stripe Dashboard, Vercel, Datadog, Retool  
-**Stack:** React 19 + Vite 8 + Tailwind v4 + shadcn-style primitives + `lucide-react` 0.555 + `openapi-fetch`
+> **QUARRY / NON-AUTHORITY.**  
+> React 19 + Vite CSR shell for a deleted `web/` surface. **Does not authorize** frontend work.  
+> Current frontend charter is Leptos SSR under **PRODUCT HOLD** until ADR-0030 gates and `Layer::Ui` (see [`docs/current/PRODUCT.md`](current/PRODUCT.md), ADR-0030).  
+> Use only as design quarry. Do not implement this stack.
+
+**Version:** 1.0 (historical)  
+**Domain:** Field-service maintenance console (B2B SaaS, Korean UI) — pre-pivot  
+**Stack (historical quarry):** React 19 + Vite 8 + Tailwind v4 + shadcn-style primitives
 
 ---
 
-## 0. Current State Summary
+## 0. Current State Summary (historical; paths may not exist)
 
 `src/App.tsx` (375 lines) is a monolith that owns:
 

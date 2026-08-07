@@ -1,3 +1,5 @@
+> **HISTORICAL / NON-AUTHORITY (oyatie-console design import).** Not Console product authority. See `docs/current/PRODUCT.md`.
+
 # Acme Group 콘솔 — TODO
 
 > **Authority boundary (re-applied atop the change-log-190 upstream sync):** 이 파일은 Claude Design 프로토타입의 작업목록이다. 모든 `[x]`는 목업·작성·시뮬레이션 계약 완료(디자인 프로토타입 레이어)를 뜻하며 저장소 구현·배포·런타임 증거가 아니다. Cedar/PBAC 항목이 전제하는 상태는 레거시 서버 권한/미들웨어와 PostgreSQL RLS 집행, Cedar target/shadow다. 저장소 구현 권한은 [`docs/program/console-enterprise-roadmap.md`](../../program/console-enterprise-roadmap.md). 이 blockquote 아래 전체가 byte-exact 업스트림 문서다.

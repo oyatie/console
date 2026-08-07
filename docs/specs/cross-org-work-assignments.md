@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Cross-Org Work Assignments and Operations Workflow Spec
 
 Status: planning spec for the no-code org/ops editor. This is not an implementation plan and does not authorize code, schema, or production policy changes by itself.

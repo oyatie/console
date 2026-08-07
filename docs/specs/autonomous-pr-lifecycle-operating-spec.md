@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Autonomous PR Lifecycle Operating Spec
 
 Source directive: Kanban `t_5db03578` / operating-spec card `t_bd85ccd9`.

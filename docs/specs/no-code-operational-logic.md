@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Spec: No-Code Operational Logic, Policy Inheritance, and Payroll Rulesets
 
 > **Status:** Planning spec for `NORTHSTAR-NOCODE-ORG-OPS-EDITOR-20260701` child task `t_388bf246`.

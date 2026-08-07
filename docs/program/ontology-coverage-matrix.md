@@ -1,8 +1,10 @@
+> **HISTORICAL / NON-AUTHORITY.** Planning snapshot only. Current authority: `docs/current/*`.
+
 # Ontology lifecycle coverage matrix
 
 This is a fixed-revision source audit of the accepted target
 `86a97771a76b7e770dfcf8c6c7d83fd9d70a98bf` (tree
-`fb94f53a5725357bc58b1f6ae6d4f441d5293516`). It is a living planning aid,
+`fb94f53a5725357bc58b1f6ae6d4f441d5293516`). It is a **historical** planning snapshot (non-authority),
 not a deployment or production-readiness record.
 
 The Phase 0 Support-only overlay below was re-audited at exact source

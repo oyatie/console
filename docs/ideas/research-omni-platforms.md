@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Omni / all-in-one platforms — delta over `docs/program/benchmark-matrix/`
 
 Status: RESEARCH — sourced, confidence-labelled

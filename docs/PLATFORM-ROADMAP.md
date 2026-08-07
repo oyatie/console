@@ -1,14 +1,11 @@
-# KNL one-stop platform — vision & roadmap
+# KNL one-stop platform — historical vision notes (non-authority)
 
-> **HISTORICAL / NON-AUTHORITY:** The current ordered roadmap is [`current/ROADMAP.md`](current/ROADMAP.md), constrained by [`current/PRODUCT.md`](current/PRODUCT.md). The broad pre-pivot plan below is retained in place as history and cannot dispatch implementation or clear a HOLD.
+> **HISTORICAL / NON-AUTHORITY.**  
+> **Current ordered roadmap:** [`current/ROADMAP.md`](current/ROADMAP.md), constrained by [`current/PRODUCT.md`](current/PRODUCT.md).  
+> This file is a **frozen pre-pivot plan**. It is not a living plan, does not dispatch work, and cannot clear HOLDs.  
+> Phrases below such as “Living plan”, “Already built”, or live hostnames are **historical claims**, not present-tense product truth.
 
-Living plan so nothing is lost. The platform is **one integrated product**: corporate web
-front + FSM operational dashboard + governance/observability + CX SaaS — running the full
-business **lifecycles** (maintenance; asset acquisition→use→sale; employee/HR), with cost
-and governance woven through. Bar: **highest quality, industry-best UI/UX, no stubs, no
-filler, online-centric** (phone is a last resort). Korean-first, multi-tenant (RLS).
-
-## Already built & verified (browser E2E: 76/78 specs pass)
+## Historical snapshot (pre-pivot claims; not current verification)
 - **FSM operations** — dispatch board, work orders (= the per-asset maintenance record),
   daily plans, evidence upload, mobile offline sync. State machine RECEIVED→…→FINAL_COMPLETED.
 - **Approvals / 기안서 chain** — purchase-request approval incl. executive final-approve

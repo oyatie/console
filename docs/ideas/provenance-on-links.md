@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Provenance belongs on the link, not in the prose around it
 
 > `Status: RESEARCH — sourced 2026-07-30. Asserts no Korean legal conclusion and changes no control's HOLD.`

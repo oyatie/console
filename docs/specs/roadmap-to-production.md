@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Roadmap to Production — All Remaining Work to a Finished Enterprise-Grade SaaS
 
 > Planning artifact (agent-skills:planning-and-task-breakdown). Reconciles the ultragoal ledger

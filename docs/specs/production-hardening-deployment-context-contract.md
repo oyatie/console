@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Production hardening deployment-context contract
 
 This note defines the replacement contract for `scripts/check-production-hardening.mjs` under ADR-0024 / issue #371. The gate must validate security and production-hardening properties, not assume every production path has the current OCI single-node shape.

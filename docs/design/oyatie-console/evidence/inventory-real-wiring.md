@@ -1,3 +1,5 @@
+> **HISTORICAL / NON-AUTHORITY (oyatie-console design import).** Not Console product authority. See `docs/current/PRODUCT.md`.
+
 # 재고 화면 실연결 근거
 
 - **사용자 흐름:** 재고 운영자는 `/console/inventory`에서 품목명·SKU·IV 코드와 안전재고 부족 상태로 서버 목록을 필터링하고, 선택한 품목의 보관 위치·현재고·안전재고·출고 이력을 확인한다. 서버가 반환한 같은 지점의 작업 지시만 원천으로 선택해 milli-unit 수량의 출고를 기록한다.

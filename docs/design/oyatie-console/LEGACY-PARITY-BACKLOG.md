@@ -1,3 +1,5 @@
+> **HISTORICAL / NON-AUTHORITY (oyatie-console design import).** Not Console product authority. See `docs/current/PRODUCT.md`.
+
 # LEGACY-PARITY-BACKLOG — superset register (legacy console → Oyatie console)
 
 > **Goal (founder, 2026-07-09):** the finished console is the **superset** of planned features/capabilities of BOTH generations. The Oyatie design is the sole UI/UX authority; nothing below is ported as-is — each capability is **re-expressed in the Oyatie grammar** (typed objects with codes and chains, pin-panel details, token grammar, PBAC-gated rendering deny-by-omission, audit-everywhere, §3.9 lifecycle), preserving the philosophy: intuitive · seamless integration · object-oriented · self-explanatory (no explanatory copy, §4-12).

@@ -1,3 +1,5 @@
+> **EXECUTABLE-CONTRACT / NON-AUTHORITY.** CI-bound gate contract (machine-checked). Cannot authorize product scope, clear HOLDs, release, or production readiness. Current product authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Korean Payroll Kernel Spec (G012)
 
 Status: first regulated-kernel slice. This spec is an implementation contract, not legal/tax advice. Production payroll remains blocked until a licensed 노무사/세무사 validates the worked examples and signs the release gate.

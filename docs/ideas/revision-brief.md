@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Revision brief — `docs/ideas/ecosystem-plan-DRAFT.md`
 
 > Status: REVISION BRIEF — derived from a verified triage; killed items listed so they are not re-proposed

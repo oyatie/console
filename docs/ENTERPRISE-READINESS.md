@@ -1,10 +1,8 @@
-> **RETIRED PRE-PIVOT READINESS RECORD:** This document preserves deployment
-> topology, hardening work, and historical gaps. It is not current product
-> readiness, release, deployment, or live-state evidence. The frontend and former
-> field/mobile pilot were removed by the pivot, and repository configuration
-> cannot prove what is presently running in OCI. Current authority is
-> [`docs/PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md); current verification is the
-> workflow and test inventory at the exact candidate being reviewed.
+> **RETIRED PRE-PIVOT READINESS RECORD — NOT CURRENT AUTHORITY.**  
+> Preserves historical deployment topology and gaps only. Not readiness, release,  
+> live OCI posture, or HOLD clearance. Scorecards and digests below are **frozen**.  
+> **Current authority:** [`README.md`](../README.md) + [`docs/current/{PRODUCT,ROADMAP,DELIVERY}.md`](current/PRODUCT.md).  
+> Verification is always the workflow/test inventory at the **exact candidate SHA**.
 
 # Enterprise Production Readiness (historical)
 

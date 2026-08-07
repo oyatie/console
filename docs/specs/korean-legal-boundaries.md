@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Korean legal/compliance boundaries for enterprise operations
 
 Status: engineering guardrails for product planning and implementation. This is not legal advice and does not replace Korean counsel/management sign-off before launch.

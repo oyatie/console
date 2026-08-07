@@ -1,3 +1,5 @@
+> **EXECUTABLE-CONTRACT / NON-AUTHORITY.** CI-bound gate contract (machine-checked). Cannot authorize product scope, clear HOLDs, release, or production readiness. Current product authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # HR / Payroll Readiness and Annual Leave Workflow Contract (G008)
 
 Status: regulated readiness slice. This is an engineering control contract, not legal/tax advice. Payroll calculation remains blocked until the release gate is professionally validated by a licensed 노무사/세무사 and every payroll run references immutable source/version evidence.

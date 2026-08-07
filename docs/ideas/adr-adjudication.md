@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # ADR adjudication — 12 themes over 75 collisions
 
 Status: PENDING APPROVAL — adversarially adjudicated by theme, not yet accepted

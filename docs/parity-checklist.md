@@ -1,15 +1,15 @@
-> **SUPERSEDED PRE-PIVOT RECORD:** The native clients, generated clients, mobile CI,
-> and release tooling named below were deleted by the 2026-07-28 pivot. This file
-> is retained only as historical context and is not a current checklist or release
-> authority. See [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+> **SUPERSEDED PRE-PIVOT RECORD — NOT CURRENT AUTHORITY.**  
+> Native clients, generated clients, mobile CI, and release tooling named below were deleted by the pivot.  
+> **Not** a release parity source, checklist gate, or HOLD-clearing evidence.  
+> **Current authority:** [`docs/current/{PRODUCT,ROADMAP,DELIVERY}.md`](current/PRODUCT.md).
 
-# Console Native Parity Checklist
+# Console Native Parity Checklist (historical)
 
-References: `android/app/src`, `ios/`, generated clients under `clients/{kotlin,swift}`, `backend/openapi/openapi.yaml`, ADR-0009, and ADR-0012.
+References below may point at deleted trees. ADR-0009 / ADR-0012 are historical context unless still accepted on `main`.
 
-## Scope boundary
+## Scope boundary (historical)
 
-This checklist is the release parity source for the Console native iOS and Android technician apps only. It covers user-visible mobile capability in `ios/**`, `android/app/**`, generated Swift/Kotlin client use, mobile string keys, and the browser enrollment/admin flows that are prerequisites for mobile passkey or admin-managed stories.
+This checklist **was** the release parity source for native iOS/Android technician apps. Those surfaces are outside current PRODUCT scope; rows below are frozen records only.
 
 The standalone COSS public-site React Native application was retired by ADR-0026 and is not a repository surface. Console parity evidence must not cite historical COSS RN artifacts, public-site native hosts, or their former release evidence.
 

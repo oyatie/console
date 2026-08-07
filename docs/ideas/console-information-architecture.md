@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Console information architecture — surfaces, navigation, routes
 
 > `Status: IDEA ONE-PAGER — pending approval. Planning only; implementation is gated.`

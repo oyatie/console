@@ -1,4 +1,4 @@
-> **Post-pivot reconciliation (2026-08-03):** The canonical authority is [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md). This document is subordinate and must not authorize work outside Ontology/Foundry/Policy → Company/OrgUnit/Employee → HR/Payroll. Conflicting ERP, finance, communications, compliance-product, ingest/evidence, office-editing, AI-judgment, frontend, or Buck2 execution claims are historical context or **HOLD** until explicitly reconciled by a current candidate.
+> **Post-pivot reconciliation (2026-08-03):** Current product authority is [`docs/current/PRODUCT.md`](../current/PRODUCT.md) (+ ROADMAP/DELIVERY). Pivot history: [`docs/PIVOT-2026-07-28.md`](../PIVOT-2026-07-28.md) (non-authority). This document is subordinate and must not authorize work outside Ontology/Foundry/Policy → Company/OrgUnit/Employee → HR/Payroll. Conflicting ERP, finance, communications, compliance-product, ingest/evidence, office-editing, AI-judgment, frontend, or Buck2 execution claims are historical context or **HOLD** until explicitly reconciled by a current candidate.
 
 # CATALOG.md — the transliteration rules for adding a domain type
 

@@ -1,3 +1,5 @@
+> **QUARRY / NON-AUTHORITY.** Idea or draft only. Cannot dispatch work, clear HOLDs, or override product scope. Current authority: repository README + [`docs/current/PRODUCT.md`](../current/PRODUCT.md) / ROADMAP / DELIVERY.
+
 # Revision log — `docs/ideas/ecosystem-plan-DRAFT.md`
 
 Two lines per wave: what the wave changed, and anything found that the brief did not anticipate.

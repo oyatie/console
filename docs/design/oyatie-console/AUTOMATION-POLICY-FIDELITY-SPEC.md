@@ -1,3 +1,5 @@
+> **HISTORICAL / NON-AUTHORITY (oyatie-console design import).** Not Console product authority. See `docs/current/PRODUCT.md`.
+
 # Automation / Policy Console Fidelity Spec
 
 Status: implementation-facing fidelity spec for screenshot review.

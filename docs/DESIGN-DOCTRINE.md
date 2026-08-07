@@ -1,7 +1,8 @@
-> **SUPERSEDED PRE-PIVOT RECORD:** The public web, legacy application, React
-> Console, and their visual authorities were deleted or superseded by the
-> 2026-07-28 pivot. This file is preserved as historical design context and must
-> not govern new work. See [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
+> **SUPERSEDED PRE-PIVOT RECORD — NOT CURRENT AUTHORITY.**  
+> Public web, legacy application, and React Console visual authorities were deleted or superseded.  
+> **Do not govern new work from this file.**  
+> **Current authority:** [`docs/current/PRODUCT.md`](current/PRODUCT.md); frontend HOLD + ADR-0030.  
+> Pivot history only: [`PIVOT-2026-07-28.md`](PIVOT-2026-07-28.md).
 
 # KNL design doctrine
 
