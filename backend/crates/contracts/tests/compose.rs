@@ -9,7 +9,9 @@
 //! Tests return `Result` so they can use `?` without tripping the workspace
 //! `unwrap_used` / `expect_used` / `panic` lints.
 
-use console_contracts::{DuplicateKind, Fragment, NamedYaml, Operation, PathItem, compose};
+use console_contracts::{
+    DuplicateKind, Fragment, NamedYaml, Operation, PathItem, compose, schema_refs,
+};
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -567,4 +569,130 @@ fn a_ref_is_terminated_by_the_yaml_delimiter_that_follows_it()
     };
     compose(&[&DELIMITED])?;
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Refs into component sections other than `schemas` (console-qjb)
+// ---------------------------------------------------------------------------
+
+/// A `$ref` into a section OpenAPI does not define resolves in NO document, so
+/// it must not compose.
+///
+/// `#/components/schema/Todo` is a one-character typo of `schemas`. It is not a
+/// ref this crate declines to resolve — it is a ref nothing can ever resolve,
+/// and before this was checked it composed clean and shipped into the published
+/// document.
+#[test]
+fn a_ref_into_a_component_section_openapi_does_not_define_is_rejected()
+-> Result<(), Box<dyn std::error::Error>> {
+    const TYPO: Fragment = Fragment {
+        source: "console-demo-typo-rest",
+        paths: &[PathItem {
+            path: "/api/v1/demo",
+            operations: &[Operation {
+                method: "get",
+                body: "responses:\n  '200':\n    content:\n      application/json:\n        schema:\n          $ref: '#/components/schema/Todo'\n",
+            }],
+        }],
+        schemas: &[],
+        external_schemas: &[],
+    };
+    let error = compose(&[&TYPO])
+        .err()
+        .ok_or("a ref into a section OpenAPI does not define must be rejected")?;
+    assert_eq!(
+        error
+            .unknown_sections
+            .first()
+            .map(|unknown| unknown.section.as_str()),
+        Some("schema"),
+        "got {error:#?}"
+    );
+    assert_eq!(
+        error.unknown_sections.first().map(|unknown| unknown.source),
+        Some("console-demo-typo-rest"),
+        "got {error:#?}"
+    );
+    assert!(
+        error.to_string().contains("schema"),
+        "an operator must find the bad section in the message: {error}"
+    );
+    Ok(())
+}
+
+/// The converse, and the one that is load-bearing in production: a ref into a
+/// component section OpenAPI DOES define is legitimate and must still compose.
+///
+/// `backend/crates/todos/rest/src/openapi.rs` ships exactly these refs and
+/// `backend/openapi/openapi.yaml` defines them under `components/responses` and
+/// `components/parameters`. `Fragment` models only schemas, so the published
+/// document — not the fragment set — is what resolves them. Rejecting them here
+/// would break the shipping todos face, so this test is the guard against
+/// "fixing" the section check by making it total over everything but `schemas`.
+#[test]
+fn a_ref_into_a_real_non_schema_component_section_composes()
+-> Result<(), Box<dyn std::error::Error>> {
+    const BORROWED: Fragment = Fragment {
+        source: "console-demo-sections-rest",
+        paths: &[PathItem {
+            path: "/api/v1/demo",
+            operations: &[Operation {
+                method: "get",
+                body: "parameters:\n  - $ref: '#/components/parameters/BranchId'\nresponses:\n  '401':\n    $ref: '#/components/responses/Unauthorized'\n",
+            }],
+        }],
+        schemas: &[],
+        external_schemas: &[],
+    };
+    compose(&[&BORROWED])?;
+    Ok(())
+}
+
+/// A ref carrying a FILE prefix is not resolved against the local schema set.
+///
+/// `compose` emits one document, so `common.yaml#/components/schemas/Uuid`
+/// cannot be satisfied by it. Today that is reported as a dangling `Uuid`,
+/// which is the fail-closed direction; what must never happen is silent
+/// acceptance.
+#[test]
+fn a_cross_file_ref_is_not_silently_accepted() -> Result<(), Box<dyn std::error::Error>> {
+    const FOREIGN: Fragment = Fragment {
+        source: "console-demo-foreign-rest",
+        paths: &[],
+        schemas: &[NamedYaml {
+            name: "Page",
+            body: "type: object\nproperties:\n  id:\n    $ref: 'common.yaml#/components/schemas/Uuid'\n",
+        }],
+        external_schemas: &[],
+    };
+    let error = compose(&[&FOREIGN])
+        .err()
+        .ok_or("a ref into another file must not compose against the local set")?;
+    assert_eq!(
+        error.dangling.first().map(|d| d.schema.as_str()),
+        Some("Uuid"),
+        "got {error:#?}"
+    );
+    Ok(())
+}
+
+/// `schema_refs` yields schema refs and nothing else — including for a ref into
+/// a real non-schema section, which is a component reference but not a schema
+/// one.
+///
+/// This is a MECHANISM test over the parser, and it pins the boundary that
+/// `console_todos_rest`'s drift test inherits: that test roots a transitive
+/// `$ref` closure at the published path blocks and walks it with `schema_refs`,
+/// so the closure STOPS at a non-schema component and never enters its body. No
+/// schema is missed today only because every published response reaches
+/// `ErrorBody`, which the todos paths also ref directly.
+#[test]
+fn schema_refs_yields_schema_refs_only() {
+    let body = "parameters:\n  - $ref: '#/components/parameters/BranchId'\nresponses:\n  '401':\n    $ref: '#/components/responses/Unauthorized'\n  '200':\n    schema:\n      $ref: '#/components/schemas/TodoPage'\n";
+    assert_eq!(
+        schema_refs(body).collect::<Vec<_>>(),
+        vec!["TodoPage"],
+        "schema_refs must see the schema ref and neither of the two \
+         non-schema component refs"
+    );
 }

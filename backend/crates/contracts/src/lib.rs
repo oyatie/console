@@ -14,9 +14,18 @@
 //!   on registration order or on how an author indented a raw string.
 //! * **Every schema `$ref` resolves.** A ref whose target no fragment defines
 //!   and no fragment declares external is a [`DanglingRef`]; a target that is
-//!   not an OpenAPI component key at all is a [`MalformedRef`]. Without this, a
-//!   schema deleted from a fragment is silent: the paths keep pointing at it
-//!   and the composed document simply loses the definition.
+//!   not an OpenAPI component key at all is a [`MalformedRef`]; a ref into a
+//!   component section OpenAPI does not define — a typo of `schemas`, say — is
+//!   an [`UnknownSection`]. Without this, a schema deleted from a fragment is
+//!   silent: the paths keep pointing at it and the composed document simply
+//!   loses the definition.
+//!
+//! A ref into a component section OpenAPI DOES define but [`Fragment`] does not
+//! model — `responses`, `parameters`, … — is neither resolved nor rejected
+//! here: the published document supplies those sections, and the faces ship
+//! such refs today. [`compose`] cannot see the published document, so it is not
+//! the control for them; only the section NAME is checkable from a fragment
+//! alone, and that is what it checks.
 //!
 //! Fragment bodies are raw YAML text rather than a typed model: the faces
 //! already author this YAML by hand, and a typed re-implementation of OpenAPI
@@ -164,10 +173,51 @@ impl fmt::Display for MalformedRef {
 
 impl std::error::Error for MalformedRef {}
 
+/// A `$ref` into a component section OpenAPI does not define, so it names no
+/// part of any document and can never resolve — almost always a typo.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownSection {
+    /// The segment after `#/components/`, e.g. `schema` for a typo of `schemas`.
+    pub section: String,
+    /// Crate whose fragment body contains the ref.
+    pub source: &'static str,
+}
+
+impl fmt::Display for UnknownSection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} refs '#/components/{}/…', but OpenAPI defines no '{}' component \
+             section, so the ref resolves in no document",
+            self.source, self.section, self.section
+        )
+    }
+}
+
+impl std::error::Error for UnknownSection {}
+
+/// The component sections OpenAPI 3.1 defines, which is the version
+/// `backend/openapi/openapi.yaml` declares. Closed by the specification rather
+/// than by observation: a section a later OpenAPI version adds is rejected
+/// until it is listed here, which is the fail-closed direction.
+const COMPONENT_SECTIONS: [&str; 10] = [
+    "callbacks",
+    "examples",
+    "headers",
+    "links",
+    "parameters",
+    "pathItems",
+    "requestBodies",
+    "responses",
+    "schemas",
+    "securitySchemes",
+];
+
 /// Everything wrong with one composition run.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComposeError {
     pub duplicates: Vec<DuplicateKey>,
+    pub unknown_sections: Vec<UnknownSection>,
     pub malformed: Vec<MalformedRef>,
     pub dangling: Vec<DanglingRef>,
 }
@@ -177,6 +227,9 @@ impl fmt::Display for ComposeError {
         write!(f, "OpenAPI composition failed:")?;
         for duplicate in &self.duplicates {
             write!(f, "\n  {duplicate}")?;
+        }
+        for unknown in &self.unknown_sections {
+            write!(f, "\n  {unknown}")?;
         }
         for malformed in &self.malformed {
             write!(f, "\n  {malformed}")?;
@@ -257,12 +310,14 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
         // Ref resolution needs the complete schema set, which a collision denies.
         return Err(ComposeError {
             duplicates,
+            unknown_sections: Vec::new(),
             malformed: Vec::new(),
             dangling: Vec::new(),
         });
     }
 
     let mut known: BTreeSet<&str> = schemas.keys().copied().collect();
+    let mut unknown_sections = Vec::new();
     let mut malformed = Vec::new();
     let mut dangling = Vec::new();
     for fragment in fragments {
@@ -274,7 +329,18 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
             .iter()
             .flat_map(|item| item.operations.iter().map(|operation| operation.body))
             .chain(fragment.schemas.iter().map(|schema| schema.body));
-        for target in bodies.flat_map(schema_refs) {
+        for (section, target) in bodies.flat_map(component_refs) {
+            if section != "schemas" {
+                if !COMPONENT_SECTIONS.contains(&section) {
+                    unknown_sections.push(UnknownSection {
+                        section: section.to_owned(),
+                        source: fragment.source,
+                    });
+                }
+                // A section OpenAPI defines but `Fragment` does not model is
+                // resolved by the published document, not by the fragment set.
+                continue;
+            }
             if !is_component_key(target) {
                 malformed.push(MalformedRef {
                     target: target.to_owned(),
@@ -288,9 +354,10 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
             }
         }
     }
-    if !malformed.is_empty() || !dangling.is_empty() {
+    if !unknown_sections.is_empty() || !malformed.is_empty() || !dangling.is_empty() {
         return Err(ComposeError {
             duplicates,
+            unknown_sections,
             malformed,
             dangling,
         });
@@ -325,18 +392,33 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
 /// Anything left that is not a component key is reported by [`compose`] as a
 /// [`MalformedRef`] rather than resolved.
 ///
-/// Refs into other component sections (`responses`, …) are not modelled by
-/// [`Fragment`] and so are not resolvable here.
+/// Refs into other component sections (`responses`, …) are NOT yielded: they
+/// are component references but not schema ones, and [`Fragment`] models only
+/// schemas. A caller walking a transitive `$ref` closure with this therefore
+/// stops at the boundary of a non-schema component and never enters its body —
+/// which is what `console_todos_rest`'s drift test does. Crossing that boundary
+/// needs `component_refs` below, which is private until a caller wants it.
 ///
 /// Public so a face's drift test can walk the PUBLISHED document with the same
 /// parser [`compose`] uses; a second ref parser in a test is a second source of
 /// truth about what a ref is.
 pub fn schema_refs(body: &str) -> impl Iterator<Item = &str> {
-    body.split("#/components/schemas/").skip(1).map(|rest| {
+    component_refs(body).filter_map(|(section, target)| (section == "schemas").then_some(target))
+}
+
+/// Every `#/components/<section>/<target>` reference named in `body`, whole.
+///
+/// The one splitter behind [`schema_refs`] and [`compose`]'s section check, so
+/// there is a single answer to "what is a ref" no matter which section it names.
+/// A reference with no `/` after the section yields an empty target, which is
+/// not a component key and so is reported rather than dropped.
+fn component_refs(body: &str) -> impl Iterator<Item = (&str, &str)> {
+    body.split("#/components/").skip(1).map(|rest| {
         let end = rest
             .find(|c: char| c.is_whitespace() || matches!(c, '\'' | '"' | ',' | ']' | '}'))
             .unwrap_or(rest.len());
-        &rest[..end]
+        let reference = &rest[..end];
+        reference.split_once('/').unwrap_or((reference, ""))
     })
 }
 
