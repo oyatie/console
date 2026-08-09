@@ -583,6 +583,13 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-logistics-domain': {
         'unit': 'none',
     },
+    'console-logistics-rest': {
+        # The POD contract-agreement tests are pure logic: they embed
+        # backend/openapi/openapi.yaml with include_str! at COMPILE time and compare the published
+        # evidenceReference schema against validate_evidence_reference. No database, and no runtime
+        # file read, so no resource -- the document is in the binary.
+        'unit': 'none',
+    },
     'console-messenger-adapter-postgres': {
         'integration': {
             'tests/parity_tables_rls_as_runtime_role.rs': 'postgres',
