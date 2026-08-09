@@ -512,12 +512,15 @@ fn a_ref_target_that_is_not_a_component_key_is_rejected() -> Result<(), Box<dyn 
     let error = compose(&[&NESTED])
         .err()
         .ok_or("a ref target that is not a component key must be rejected")?;
-    let malformed = error
-        .malformed
+    let unresolvable = error
+        .unresolvable
         .first()
-        .ok_or_else(|| format!("expected a MalformedRef, got {error:#?}"))?;
-    assert_eq!(malformed.target, "Todo/properties/id");
-    assert_eq!(malformed.source, "console-demo-nested-rest");
+        .ok_or_else(|| format!("expected an UnresolvableRef, got {error:#?}"))?;
+    assert_eq!(
+        unresolvable.value,
+        "#/components/schemas/Todo/properties/id"
+    );
+    assert_eq!(unresolvable.source, "console-demo-nested-rest");
     assert!(
         error.to_string().contains("Todo/properties/id"),
         "an operator must find the bad target in the message: {error}"
@@ -540,8 +543,8 @@ fn an_empty_ref_target_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
         .err()
         .ok_or("a ref with no target must be rejected")?;
     assert_eq!(
-        error.malformed.first().map(|m| m.target.as_str()),
-        Some(""),
+        error.unresolvable.first().map(|r| r.value.as_str()),
+        Some("#/components/schemas/"),
         "got {error:#?}"
     );
     Ok(())
@@ -601,21 +604,18 @@ fn a_ref_into_a_component_section_openapi_does_not_define_is_rejected()
         .err()
         .ok_or("a ref into a section OpenAPI does not define must be rejected")?;
     assert_eq!(
-        error
-            .unknown_sections
-            .first()
-            .map(|unknown| unknown.section.as_str()),
-        Some("schema"),
+        error.unresolvable.first().map(|r| r.value.as_str()),
+        Some("#/components/schema/Todo"),
         "got {error:#?}"
     );
     assert_eq!(
-        error.unknown_sections.first().map(|unknown| unknown.source),
+        error.unresolvable.first().map(|r| r.source),
         Some("console-demo-typo-rest"),
         "got {error:#?}"
     );
     assert!(
-        error.to_string().contains("schema"),
-        "an operator must find the bad section in the message: {error}"
+        error.to_string().contains("#/components/schema/Todo"),
+        "an operator must find the bad ref in the message: {error}"
     );
     Ok(())
 }
@@ -648,31 +648,174 @@ fn a_ref_into_a_real_non_schema_component_section_composes()
     Ok(())
 }
 
-/// A ref carrying a FILE prefix is not resolved against the local schema set.
+/// A `$ref` carrying a file-or-URL prefix is rejected EVEN WHEN the local set
+/// knows the trailing name.
 ///
 /// `compose` emits one document, so `common.yaml#/components/schemas/Uuid`
-/// cannot be satisfied by it. Today that is reported as a dangling `Uuid`,
-/// which is the fail-closed direction; what must never happen is silent
-/// acceptance.
+/// cannot be satisfied by it however the local schemas are arranged. Both
+/// fixtures below make the trailing name resolvable — one via
+/// `external_schemas`, which is the shipping todos face's exact shape, one by
+/// defining `Uuid` locally — because a check that only catches the prefix when
+/// the SUFFIX also happens to be unknown is not checking the prefix at all. The
+/// URL case is the sharp end: a validated ref that instructs every generated
+/// client to fetch a foreign host.
 #[test]
-fn a_cross_file_ref_is_not_silently_accepted() -> Result<(), Box<dyn std::error::Error>> {
-    const FOREIGN: Fragment = Fragment {
+fn a_cross_file_ref_is_rejected_even_when_the_local_set_knows_the_name()
+-> Result<(), Box<dyn std::error::Error>> {
+    const BORROWED_NAME: Fragment = Fragment {
         source: "console-demo-foreign-rest",
         paths: &[],
         schemas: &[NamedYaml {
             name: "Page",
             body: "type: object\nproperties:\n  id:\n    $ref: 'common.yaml#/components/schemas/Uuid'\n",
         }],
+        external_schemas: &["Uuid"],
+    };
+    const FOREIGN_HOST: Fragment = Fragment {
+        source: "console-demo-foreign-host-rest",
+        paths: &[],
+        schemas: &[
+            NamedYaml {
+                name: "Uuid",
+                body: "type: string\n",
+            },
+            NamedYaml {
+                name: "Page",
+                body: "type: object\nproperties:\n  id:\n    $ref: 'https://evil.example/x.yaml#/components/schemas/Uuid'\n",
+            },
+        ],
         external_schemas: &[],
     };
-    let error = compose(&[&FOREIGN])
+    for (fragment, value) in [
+        (&BORROWED_NAME, "common.yaml#/components/schemas/Uuid"),
+        (
+            &FOREIGN_HOST,
+            "https://evil.example/x.yaml#/components/schemas/Uuid",
+        ),
+    ] {
+        let error = compose(&[fragment])
+            .err()
+            .ok_or("a ref into another file must not compose against the local set")?;
+        assert_eq!(
+            error.unresolvable.first().map(|r| r.value.as_str()),
+            Some(value),
+            "got {error:#?}"
+        );
+    }
+    Ok(())
+}
+
+/// A `$ref` that stops before naming a target resolves in no document, in EVERY
+/// section — not just in `schemas`.
+///
+/// `#/components/responses` is an author deleting `/Unauthorized` mid-edit. It
+/// points at the responses MAP, not at a Response Object, so nothing can
+/// resolve it; the `schemas` twin of this input is already rejected by
+/// `an_empty_ref_target_is_rejected`.
+#[test]
+fn a_ref_truncated_before_its_target_is_rejected_in_every_section()
+-> Result<(), Box<dyn std::error::Error>> {
+    const TRUNCATED: Fragment = Fragment {
+        source: "console-demo-truncated-rest",
+        paths: &[PathItem {
+            path: "/api/v1/demo",
+            operations: &[Operation {
+                method: "get",
+                body: "responses:\n  '401':\n    $ref: '#/components/responses'\n",
+            }],
+        }],
+        schemas: &[],
+        external_schemas: &[],
+    };
+    let error = compose(&[&TRUNCATED])
         .err()
-        .ok_or("a ref into another file must not compose against the local set")?;
+        .ok_or("a ref naming a component SECTION but no component must be rejected")?;
     assert_eq!(
-        error.dangling.first().map(|d| d.schema.as_str()),
-        Some("Uuid"),
+        error.unresolvable.first().map(|r| r.value.as_str()),
+        Some("#/components/responses"),
         "got {error:#?}"
     );
+    assert_eq!(
+        error.unresolvable.first().map(|r| r.source),
+        Some("console-demo-truncated-rest"),
+        "got {error:#?}"
+    );
+    Ok(())
+}
+
+/// A `$ref` value that is not a `#/components/…` pointer at all is rejected.
+///
+/// Each of these composed clean while the check split on the literal
+/// `#/components/`: the typo is one segment to the LEFT of the section name, or
+/// the pointer is a different dialect entirely, so the substring the check
+/// looked for simply is not there and the ref was invisible rather than
+/// checked. `#/definitions/…` is the Swagger 2.0 / JSON Schema spelling and the
+/// likeliest paste-in error.
+#[test]
+fn a_ref_that_is_not_a_components_pointer_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
+    // `Todo` IS defined below, so nothing here is rejected for being unknown —
+    // only for not being a pointer the composed document can follow.
+    const DIALECTS: [(&str, &[PathItem]); 4] = [
+        (
+            "#/componentss/schemas/Todo",
+            &[PathItem {
+                path: "/api/v1/demo",
+                operations: &[Operation {
+                    method: "get",
+                    body: "responses:\n  '200':\n    $ref: '#/componentss/schemas/Todo'\n",
+                }],
+            }],
+        ),
+        (
+            "#/component/schemas/Todo",
+            &[PathItem {
+                path: "/api/v1/demo",
+                operations: &[Operation {
+                    method: "get",
+                    body: "responses:\n  '200':\n    $ref: '#/component/schemas/Todo'\n",
+                }],
+            }],
+        ),
+        (
+            "#/definitions/Todo",
+            &[PathItem {
+                path: "/api/v1/demo",
+                operations: &[Operation {
+                    method: "get",
+                    body: "responses:\n  '200':\n    $ref: '#/definitions/Todo'\n",
+                }],
+            }],
+        ),
+        (
+            "Todo.yaml",
+            &[PathItem {
+                path: "/api/v1/demo",
+                operations: &[Operation {
+                    method: "get",
+                    body: "responses:\n  '200':\n    $ref: 'Todo.yaml'\n",
+                }],
+            }],
+        ),
+    ];
+    for (value, paths) in DIALECTS {
+        let fragment = Fragment {
+            source: "console-demo-dialect-rest",
+            paths,
+            schemas: &[NamedYaml {
+                name: "Todo",
+                body: "type: object\n",
+            }],
+            external_schemas: &[],
+        };
+        let error = compose(&[&fragment])
+            .err()
+            .ok_or_else(|| format!("`{value}` is not a component pointer and must be rejected"))?;
+        assert_eq!(
+            error.unresolvable.first().map(|r| r.value.as_str()),
+            Some(value),
+            "got {error:#?}"
+        );
+    }
     Ok(())
 }
 
