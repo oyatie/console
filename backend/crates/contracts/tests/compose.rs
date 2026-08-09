@@ -840,6 +840,23 @@ fn schema_refs_yields_schema_refs_only() {
     );
 }
 
+/// `schema_refs` follows a `discriminator.mapping`, because a mapping entry is
+/// a schema edge like any other.
+///
+/// Asserted separately from `compose` because `schema_refs` is PUBLIC and is
+/// what `console_todos_rest`'s drift test walks the published document with:
+/// while the parser keyed on `$ref:`, a subtype reachable only through a
+/// mapping dropped out of that closure and the drift oracle shrank silently.
+#[test]
+fn schema_refs_follows_a_discriminator_mapping() {
+    let body = "oneOf:\n- $ref: '#/components/schemas/Ok'\ndiscriminator:\n  propertyName: kind\n  mapping:\n    ok: '#/components/schemas/Ok'\n    gone: '#/components/schemas/Subtype'\n";
+    assert_eq!(
+        schema_refs(body).collect::<Vec<_>>(),
+        vec!["Ok", "Ok", "Subtype"],
+        "a subtype named only by a mapping is still a schema this document needs"
+    );
+}
+
 // ---------------------------------------------------------------------------
 // 5. A pointer is checked wherever it is written, not only after `$ref:`
 //
