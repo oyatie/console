@@ -14,6 +14,16 @@
 //!   (d) a submission-criterion failure ⇒ CriteriaFailed AND zero rows;
 //!   (e) a projected_usecase action ⇒ NotWiredYet AND zero rows (no domain write);
 //!   (f) a cross-org action is invisible (NotFound) under another tenant's GUC.
+//!   (g) preflight and execute reject the SAME commands — the two entry points
+//!       share one `PreparedCommand`, so a command execute refuses can never be
+//!       reported by preflight as one that `would_execute`;
+//!   (h) preflight is READ-ONLY: zero row delta across every affected table
+//!       (business, receipt, approval-consumption, audit, outbox), and the
+//!       four-eyes approval it peeked at is still spendable afterwards;
+//!   (i) a failed mutation NEVER spends the four-eyes approval;
+//!   (j) a replay returns the STORED receipt (proven by MOVING the head between
+//!       the first execution and the replay: a recomputed receipt could not still
+//!       describe v1), while a changed digest or actor conflicts.
 //!
 //! NOTE (migrations path): runs against the canonical
 //! `../../platform/db/migrations` (the ship path). The earlier concurrent-lane
@@ -717,4 +727,589 @@ async fn command_id_can_be_reused_by_different_tenants(owner_pool: PgPool) {
         assert_eq!(count_execute_audits(&owner_pool, org).await, 1);
         assert_eq!(count_command_receipts(&owner_pool, org).await, 1);
     }
+}
+
+/// (g) PARITY, and its ONE bounded exception. Preflight exists to answer "would
+/// execute proceed?", so a command execute refuses for a bad input must be
+/// refused by preflight too — otherwise the console shows a green preflight for a
+/// command that cannot run. Both entry points resolve the same `PreparedCommand`,
+/// so that list is the whole shared input contract, not a sample of it.
+///
+/// The exception is `command_id` and `expected_revision`: the writeback consumes
+/// them, preflight evaluates neither, and the shipped request schema requires
+/// neither. Preflight must therefore ACCEPT a body without them — a console that
+/// preflights before minting a command id would otherwise get a validation error
+/// instead of its gate report. The second half of this test pins that divergence
+/// to exactly those two inputs so it cannot quietly grow a third.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn preflight_rejects_every_command_execute_rejects(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let type_id = seed_instance_type_with_action(
+        &owner_pool,
+        org,
+        actor,
+        "wo.parity",
+        "set_priority",
+        json!(["authority"]),
+        json!([]),
+    )
+    .await;
+    attach_enforced_view_permit(&owner_pool, *org.as_uuid(), *type_id.as_uuid(), "wo.parity").await;
+
+    // One committed instance so the edit cases address a real target.
+    let created = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                create_command(type_id, "lo"),
+            )
+            .await
+    })
+    .await
+    .expect("seed instance");
+    let instance_id = created.instance.unwrap().instance.id;
+
+    let cases: Vec<(&str, ActionCommand)> = vec![
+        (
+            "param not declared in params_schema",
+            ActionCommand {
+                params: json!({"priority": "hi", "undeclared": 1}),
+                ..create_command(type_id, "hi")
+            },
+        ),
+        (
+            "params fail the declared schema",
+            ActionCommand {
+                params: json!({}),
+                ..create_command(type_id, "hi")
+            },
+        ),
+    ];
+
+    for (label, command) in cases {
+        let preflighted = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .preflight_action(&super_admin(actor, org), "set_priority", command.clone())
+                .await
+        })
+        .await;
+        assert!(
+            matches!(preflighted, Err(ActionError::Validation(_))),
+            "{label}: preflight must reject exactly what execute rejects, got {preflighted:?}"
+        );
+
+        let executed = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .execute_action(&super_admin(actor, org), "set_priority", command)
+                .await
+        })
+        .await;
+        assert!(
+            matches!(executed, Err(ActionError::Validation(_))),
+            "{label}: execute must reject with Validation, got {executed:?}"
+        );
+    }
+
+    // THE BOUNDED DIVERGENCE. Each of these is a body preflight must ANSWER and
+    // execute must refuse — the writeback-only inputs, and nothing else.
+    let writeback_only: Vec<(&str, ActionCommand)> = vec![
+        (
+            "command_id missing",
+            ActionCommand {
+                command_id: None,
+                ..create_command(type_id, "hi")
+            },
+        ),
+        (
+            "expected_revision missing for an instance edit",
+            ActionCommand {
+                instance_id: Some(instance_id),
+                title: None,
+                expected_revision: None,
+                ..create_command(type_id, "hi")
+            },
+        ),
+    ];
+
+    for (label, command) in writeback_only {
+        let preflighted = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .preflight_action(&super_admin(actor, org), "set_priority", command.clone())
+                .await
+        })
+        .await
+        .unwrap_or_else(|e| panic!("{label}: preflight must still report the gates, got {e:?}"));
+        assert!(
+            preflighted.would_execute,
+            "{label}: preflight evaluates neither input, so its verdict must be the \
+             gate chain's: {preflighted:?}"
+        );
+
+        let executed = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .execute_action(&super_admin(actor, org), "set_priority", command)
+                .await
+        })
+        .await;
+        assert!(
+            matches!(executed, Err(ActionError::Validation(_))),
+            "{label}: execute must refuse with Validation, got {executed:?}"
+        );
+    }
+
+    assert_eq!(
+        count_instances(&owner_pool, org).await,
+        1,
+        "only the seeded instance exists — every refused command wrote nothing, \
+         and no preflight wrote at all"
+    );
+    assert_eq!(count_execute_audits(&owner_pool, org).await, 1);
+}
+
+/// Every table an action command can touch: business (instance, revision, link),
+/// receipt, approval consumption, audit, outbox.
+///
+/// The census digests each table's whole CONTENT (`string_agg` of every row's
+/// text form, ordered), not its row count — an execute UPDATEs `ont_instances`
+/// in place rather than inserting, and a count cannot see that. Compared as a
+/// whole rather than table by table, so a write to a table nobody thought to
+/// assert on still fails the equality.
+async fn row_census(owner_pool: &PgPool, org: OrgId) -> Vec<(&'static str, String)> {
+    // Literal SQL per table: `sqlx` refuses an interpolated query string, and the
+    // digest expression is character-identical across every row of this table.
+    let mut census = Vec::new();
+    for (table, query) in [
+        (
+            "ont_instances",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM ont_instances t WHERE org_id = $1",
+        ),
+        (
+            "ont_instance_revisions",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM ont_instance_revisions t WHERE org_id = $1",
+        ),
+        (
+            "ont_links",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM ont_links t WHERE org_id = $1",
+        ),
+        (
+            "ont_action_command_receipts",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM ont_action_command_receipts t WHERE org_id = $1",
+        ),
+        (
+            "gov_approval_consumptions",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM gov_approval_consumptions t WHERE org_id = $1",
+        ),
+        (
+            "audit_events",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM audit_events t WHERE org_id = $1",
+        ),
+        (
+            "workflow_outbox_events",
+            "SELECT coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '<empty>') FROM workflow_outbox_events t WHERE org_id = $1",
+        ),
+    ] {
+        let digest: String = sqlx::query_scalar(query)
+            .bind(*org.as_uuid())
+            .fetch_one(owner_pool)
+            .await
+            .unwrap();
+        census.push((table, digest));
+    }
+    census
+}
+
+/// The tables whose content differs between two censuses.
+fn moved(before: &[(&'static str, String)], after: &[(&'static str, String)]) -> Vec<&'static str> {
+    before
+        .iter()
+        .zip(after)
+        .filter(|((_, b), (_, a))| b != a)
+        .map(|((table, _), _)| *table)
+        .collect()
+}
+
+async fn count_approval_consumptions(owner_pool: &PgPool, org: OrgId) -> i64 {
+    sqlx::query_scalar("SELECT COUNT(*) FROM gov_approval_consumptions WHERE org_id = $1")
+        .bind(*org.as_uuid())
+        .fetch_one(owner_pool)
+        .await
+        .unwrap()
+}
+
+/// Record an approved four-eyes decision bound to `target` under `kind`.
+async fn approve_four_eyes(
+    rt: &PgPool,
+    org: OrgId,
+    requested_by: UserId,
+    approver: UserId,
+    kind: &str,
+    target: Uuid,
+) -> Uuid {
+    let request_ref = Uuid::new_v4();
+    console_platform_request_context::scope_org(org, async {
+        PgGovernanceStore::new(rt.clone())
+            .decide_approval(DecideApprovalCommand {
+                approver,
+                request_ref,
+                kind: kind.to_owned(),
+                requested_by,
+                target_ref: Some(target),
+                decision: ApprovalDecision::Approved,
+                trace: TraceContext::generate(),
+                occurred_at: AT,
+            })
+            .await
+            .expect("record four-eyes approval");
+    })
+    .await;
+    request_ref
+}
+
+/// (h) PREFLIGHT IS READ-ONLY. Driven through the SHIPPED entry point — the same
+/// `preflight_action` the `POST .../preflight` route calls — with a command whose
+/// gates are all SATISFIED, i.e. the one case that has something to write and a
+/// live approval to spend. Zero delta across every affected table, and the
+/// approval is still spendable afterwards.
+///
+/// The command is an EDIT of a committed instance, not a create: that is the case
+/// where execute's `ont_instances` write is an in-place UPDATE (the head pointer)
+/// rather than an INSERT, so the census below has to be content-sensitive to see
+/// it at all. A create would have left the strongest column of the oracle untested.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn preflight_writes_zero_rows_and_never_spends_the_approval(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let approver = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b").await;
+    let type_id = seed_instance_type_with_action(
+        &owner_pool,
+        org,
+        actor,
+        "wo.readonly",
+        "set_priority",
+        json!(["authority", "four_eyes"]),
+        json!([]),
+    )
+    .await;
+    attach_enforced_view_permit(
+        &owner_pool,
+        *org.as_uuid(),
+        *type_id.as_uuid(),
+        "wo.readonly",
+    )
+    .await;
+
+    // One committed instance, so the edit below addresses a real head.
+    let seed_ref = approve_four_eyes(
+        &rt,
+        org,
+        actor,
+        approver,
+        "set_priority",
+        *type_id.as_uuid(),
+    )
+    .await;
+    let created = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    four_eyes_request_ref: Some(seed_ref),
+                    ..create_command(type_id, "lo")
+                },
+            )
+            .await
+    })
+    .await
+    .expect("seed instance");
+    let instance_id = created.instance.unwrap().instance.id;
+
+    // An EDIT's four-eyes approval binds to the instance, not the object type.
+    let request_ref = approve_four_eyes(
+        &rt,
+        org,
+        actor,
+        approver,
+        "set_priority",
+        *instance_id.as_uuid(),
+    )
+    .await;
+    let edit = ActionCommand {
+        instance_id: Some(instance_id),
+        title: None,
+        expected_revision: Some(1),
+        four_eyes_request_ref: Some(request_ref),
+        valid_from: Some(AT + time::Duration::seconds(1)),
+        ..create_command(type_id, "hi")
+    };
+
+    let before = row_census(&owner_pool, org).await;
+    let outcome = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .preflight_action(
+                &super_admin(actor, org),
+                "set_priority",
+                // Without the writeback-only inputs: this is the body a console
+                // sends to render the gate report before minting a command id.
+                ActionCommand {
+                    command_id: None,
+                    expected_revision: None,
+                    ..edit.clone()
+                },
+            )
+            .await
+    })
+    .await
+    .expect("preflight must resolve");
+    assert!(
+        outcome.would_execute,
+        "the admitting case is the one that could write: {outcome:?}"
+    );
+    let after_preflight = row_census(&owner_pool, org).await;
+    assert_eq!(
+        before, after_preflight,
+        "preflight wrote rows — it must be read-only across business, receipt, \
+         approval, audit and outbox"
+    );
+
+    // The approval it PEEKED at is still there to be spent: proof the read was
+    // non-consuming, not merely that no consumption row was visible.
+    let executed = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(&super_admin(actor, org), "set_priority", edit)
+            .await
+    })
+    .await
+    .expect("the approval preflight peeked at must still admit the execute");
+    assert!(executed.gates.allow);
+    assert_eq!(count_approval_consumptions(&owner_pool, org).await, 2);
+
+    // POSITIVE CONTROL for the census itself. The SAME command, now executed,
+    // must move exactly this footprint — proof the census can see a write rather
+    // than reading equal because it looks at nothing. `ont_instances` is the
+    // load-bearing entry: this edit only UPDATEs it in place (one instance before,
+    // one after), so a row-COUNT census would list every other table here and
+    // still miss it.
+    let after_execute = row_census(&owner_pool, org).await;
+    assert_eq!(
+        moved(&after_preflight, &after_execute),
+        vec![
+            "ont_instances",
+            "ont_instance_revisions",
+            "ont_action_command_receipts",
+            "gov_approval_consumptions",
+            "audit_events",
+        ],
+        "execute's write footprint changed — if the census cannot see these, the \
+         zero-delta assertion above proves nothing"
+    );
+    assert_eq!(
+        count_instances(&owner_pool, org).await,
+        1,
+        "the edit moved ont_instances WITHOUT changing its row count — which is \
+         exactly what a count-only census cannot see"
+    );
+}
+
+/// (i) A FAILED MUTATION NEVER SPENDS THE APPROVAL. The four-eyes consume happens
+/// inside the owner transaction, so a chain that denies AFTER the consume must
+/// roll the consumption back with everything else. Silently spending an approval
+/// here costs the user a second round of approvals for a command that never ran.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_failed_mutation_never_spends_the_approval(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let approver = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b").await;
+    // self_checklist sits AFTER the four-eyes consume in the writeback, so an
+    // unacknowledged checklist denies once the approval has already been spent
+    // inside the tx — exactly the ordering that must roll back.
+    let type_id = seed_instance_type_with_action(
+        &owner_pool,
+        org,
+        actor,
+        "wo.unspent",
+        "set_priority",
+        json!(["authority", "self_checklist", "four_eyes"]),
+        json!([]),
+    )
+    .await;
+    let request_ref = approve_four_eyes(
+        &rt,
+        org,
+        actor,
+        approver,
+        "set_priority",
+        *type_id.as_uuid(),
+    )
+    .await;
+
+    let err = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    four_eyes_request_ref: Some(request_ref),
+                    checklist_all_acknowledged: None,
+                    ..create_command(type_id, "hi")
+                },
+            )
+            .await
+    })
+    .await
+    .expect_err("an unacknowledged checklist must deny");
+    assert!(matches!(err, ActionError::GateDenied(_)), "got {err:?}");
+    assert_eq!(count_instances(&owner_pool, org).await, 0);
+    assert_eq!(count_command_receipts(&owner_pool, org).await, 0);
+    assert_eq!(
+        count_approval_consumptions(&owner_pool, org).await,
+        0,
+        "the rolled-back mutation must leave the approval UNSPENT"
+    );
+
+    // Unspent means genuinely re-usable, not merely unrecorded.
+    let retried = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    four_eyes_request_ref: Some(request_ref),
+                    checklist_all_acknowledged: Some(true),
+                    ..create_command(type_id, "hi")
+                },
+            )
+            .await
+    })
+    .await
+    .expect("the unspent approval must still admit the corrected retry");
+    assert!(retried.gates.allow);
+    assert_eq!(count_instances(&owner_pool, org).await, 1);
+    assert_eq!(count_approval_consumptions(&owner_pool, org).await, 1);
+}
+
+/// (j) A REPLAY RETURNS THE STORED RECEIPT. Proven without tampering (the receipt
+/// row is DB-immutable): the head is MOVED between the first execution and the
+/// replay, so a recomputed receipt could not possibly still describe v1 with the
+/// original attributes. A changed digest or a changed actor under the same
+/// command id conflicts instead of replaying.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_replay_returns_the_stored_receipt_not_a_recomputed_one(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let other = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "b").await;
+    let type_id = seed_instance_type_with_action(
+        &owner_pool,
+        org,
+        actor,
+        "wo.replay",
+        "set_priority",
+        json!(["authority"]),
+        json!([]),
+    )
+    .await;
+    attach_enforced_view_permit(&owner_pool, *org.as_uuid(), *type_id.as_uuid(), "wo.replay").await;
+
+    let create = create_command(type_id, "lo");
+    let first = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(&super_admin(actor, org), "set_priority", create.clone())
+            .await
+    })
+    .await
+    .expect("first execution");
+    let instance_id = first.instance.clone().unwrap().instance.id;
+
+    // Move the head so a recomputed receipt could not match the stored one.
+    console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    instance_id: Some(instance_id),
+                    title: None,
+                    expected_revision: Some(1),
+                    params: json!({"priority": "hi", "count": 5}),
+                    valid_from: Some(AT + time::Duration::seconds(1)),
+                    ..create_command(type_id, "hi")
+                },
+            )
+            .await
+    })
+    .await
+    .expect("the head moves to v2 under a different command id");
+
+    let replay = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(&super_admin(actor, org), "set_priority", create.clone())
+            .await
+    })
+    .await
+    .expect("the same command id + actor + digest must replay");
+    let stored = first.receipt.clone().unwrap();
+    assert_eq!(
+        serde_json::to_value(&stored).unwrap(),
+        serde_json::to_value(replay.receipt.as_ref().unwrap()).unwrap(),
+        "the replay must return the STORED receipt byte-for-byte"
+    );
+    assert_eq!(
+        replay.instance.clone().unwrap().revision.version,
+        1,
+        "the stored receipt still describes v1 even though the live head is v2"
+    );
+    assert_eq!(
+        replay.instance.unwrap().revision.attributes["priority"],
+        "lo"
+    );
+    assert_eq!(count_instances(&owner_pool, org).await, 1);
+    assert_eq!(count_execute_audits(&owner_pool, org).await, 2);
+    assert_eq!(count_command_receipts(&owner_pool, org).await, 2);
+
+    // A CHANGED DIGEST under the same command id conflicts.
+    let changed_digest = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    params: json!({"priority": "hi", "count": 5}),
+                    ..create.clone()
+                },
+            )
+            .await
+    })
+    .await
+    .expect_err("a changed payload must not replay");
+    assert!(
+        format!("{changed_digest:?}").contains("different payload"),
+        "got {changed_digest:?}"
+    );
+
+    // A CHANGED ACTOR under the same command id conflicts.
+    let changed_actor = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(&super_admin(other, org), "set_priority", create)
+            .await
+    })
+    .await
+    .expect_err("another principal must not replay this command");
+    assert!(
+        format!("{changed_actor:?}").contains("another principal"),
+        "got {changed_actor:?}"
+    );
+
+    assert_eq!(count_instances(&owner_pool, org).await, 1);
+    assert_eq!(count_execute_audits(&owner_pool, org).await, 2);
+    assert_eq!(count_command_receipts(&owner_pool, org).await, 2);
 }

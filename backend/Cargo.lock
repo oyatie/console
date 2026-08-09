@@ -1291,6 +1291,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-contracts"
+version = "0.1.0"
+
+[[package]]
 name = "console-dispatch-adapter-postgres"
 version = "0.1.0"
 dependencies = [
@@ -3322,6 +3326,7 @@ name = "console-todos-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",

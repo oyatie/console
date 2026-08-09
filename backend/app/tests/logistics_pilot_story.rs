@@ -141,15 +141,138 @@ async fn authenticated_runtime_role_completes_pilot_lifecycle_without_finance_po
     let (status, shipment) = send(&rt, &keys, "POST", &format!("{FULFILLMENTS}/{fulfillment}/dispatch"), &token, Some(json!({"branchId": branch, "carrierName": "Pilot Carrier", "vehicleReference": "TRUCK-1"})), None).await;
     assert_eq!(status, StatusCode::CREATED, "dispatch: {shipment}");
     let shipment = shipment["id"].as_str().unwrap();
-    let (status, pod) = send(&rt, &keys, "POST", &format!("/api/v1/logistics/shipments/{shipment}/pod"), &token, Some(json!({"branchId": branch, "recipientName": "Recipient", "evidenceReference": "evidence://pod/story-0001", "confirmedAt": OffsetDateTime::now_utc()})), None).await;
+
+    // 0179 shipped `evidence_reference ~ '^evidence://[A-Za-z0-9._/-]{8,400}$'`.
+    // 400 exceeds Postgres RE_DUP_MAX (255), and a CHECK regex compiles lazily at
+    // INSERT time, so the table was created but no proof of delivery could ever be
+    // written. 0212 keeps the 8..400 contract by splitting it: the character class
+    // is matched unbounded and the length window (11-character scheme + 8..400)
+    // lives in char_length. Both halves must bite, and the window's own ends must
+    // be inside it -- a mis-derived 20..410 would still reject everything below.
+    let pod_url = format!("/api/v1/logistics/shipments/{shipment}/pod");
+    for rejected in [
+        format!("evidence://{}", "a".repeat(7)), // 18 characters: under the floor
+        format!("evidence://{}", "a".repeat(401)), // 412 characters: over the ceiling
+        "evidence://pod/bad space".to_owned(),   // outside the character class
+        "https://pod/story-0001xx".to_owned(),   // wrong scheme
+    ] {
+        let (status, body) = send(&rt, &keys, "POST", &pod_url, &token, Some(json!({"branchId": branch, "recipientName": "Recipient", "evidenceReference": rejected, "confirmedAt": OffsetDateTime::now_utc()})), None).await;
+        assert_ne!(
+            status,
+            StatusCode::OK,
+            "POD must reject evidence reference of length {}: {body}",
+            rejected.len()
+        );
+        // A malformed reference is a CLIENT error. Before the boundary validation
+        // landed this surfaced as a 500 raised out of the store, because the CHECK
+        // constraint was the only validator. Asserting the exact status keeps that
+        // from silently regressing to an internal error again.
+        assert_eq!(
+            status,
+            StatusCode::BAD_REQUEST,
+            "POD must reject evidence reference of length {} as a client error, not an internal one: {body}",
+            rejected.len()
+        );
+    }
+    let stored: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM logistics_pod_evidence WHERE shipment_id = $1")
+            .bind(Uuid::parse_str(shipment).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        stored, 0,
+        "a rejected POD writes no evidence and rolls back"
+    );
+    for accepted in [
+        format!("evidence://{}", "a".repeat(8)), // 19 characters: the floor itself
+        format!("evidence://{}", "a".repeat(400)), // 411 characters: the ceiling itself
+    ] {
+        sqlx::query("INSERT INTO logistics_pod_evidence (org_id,branch_id,shipment_id,recipient_name,evidence_reference,confirmed_at) VALUES ($1,$2,$3,'Boundary',$4,now())")
+            .bind(*OrgId::knl().as_uuid()).bind(*branch.as_uuid()).bind(Uuid::parse_str(shipment).unwrap()).bind(&accepted)
+            .execute(&pool).await
+            .unwrap_or_else(|e| panic!("evidence reference of length {} is inside the contract: {e}", accepted.len()));
+        sqlx::query("DELETE FROM logistics_pod_evidence WHERE evidence_reference = $1")
+            .bind(&accepted)
+            .execute(&pool)
+            .await
+            .unwrap();
+    }
+
+    let (status, pod) = send(&rt, &keys, "POST", &pod_url, &token, Some(json!({"branchId": branch, "recipientName": "Recipient", "evidenceReference": "evidence://pod/story-0001", "confirmedAt": OffsetDateTime::now_utc()})), None).await;
     assert_eq!(status, StatusCode::OK, "recipient-confirmed POD: {pod}");
     assert_eq!(pod["slaAssessment"], "MET");
+
+    // 0179's logistics_terminal_immutable() raised on any transition out of
+    // DELIVERED, which forbade the DELIVERED -> SETTLED settlement below and left
+    // the pilot's terminal state unreachable; it was invisible while the CHECK
+    // above kept anything from reaching DELIVERED at all. 0212 admits settlement
+    // only. Every other exit from DELIVERED must still raise.
+    let rolled_back = sqlx::query("UPDATE logistics_shipments SET status='DISPATCHED' WHERE id=$1")
+        .bind(Uuid::parse_str(shipment).unwrap())
+        .execute(&pool)
+        .await
+        .expect_err("a DELIVERED shipment may not return to DISPATCHED");
+    assert!(
+        rolled_back
+            .to_string()
+            .contains("terminal logistics state is immutable"),
+        "{rolled_back}"
+    );
+
     let (status, settled) = send(&rt, &keys, "POST", &format!("/api/v1/logistics/shipments/{shipment}/settlements"), &token, Some(json!({"branchId": branch, "currencyCode": "KRW", "amountMinor": 12000, "settledAt": OffsetDateTime::now_utc()})), None).await;
     assert_eq!(status, StatusCode::OK, "operational settlement: {settled}");
     assert_eq!(settled["status"], "SETTLED");
     assert!(
         settled["financeGlPosting"].is_null(),
         "pilot must not claim a GL posting: {settled}"
+    );
+    // The response JSON is the adapter's own claim; read the committed rows. The
+    // settle path writes SETTLED to BOTH tables, and under 0179 both writes hit
+    // the trigger, so both must be confirmed reachable.
+    let shipment_status: String =
+        sqlx::query_scalar("SELECT status FROM logistics_shipments WHERE id=$1")
+            .bind(Uuid::parse_str(shipment).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        shipment_status, "SETTLED",
+        "shipment reaches its terminal state"
+    );
+    let fulfillment_status: String =
+        sqlx::query_scalar("SELECT status FROM logistics_fulfillments WHERE id=$1")
+            .bind(Uuid::parse_str(fulfillment).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        fulfillment_status, "SETTLED",
+        "fulfillment reaches its terminal state"
+    );
+
+    let terminal = sqlx::query("UPDATE logistics_shipments SET status='DISPATCHED' WHERE id=$1")
+        .bind(Uuid::parse_str(shipment).unwrap())
+        .execute(&pool)
+        .await
+        .expect_err("SETTLED remains the terminal state");
+    assert!(
+        terminal
+            .to_string()
+            .contains("terminal logistics state is immutable"),
+        "{terminal}"
+    );
+    let terminal_fulfillment =
+        sqlx::query("UPDATE logistics_fulfillments SET status='DELIVERED' WHERE id=$1")
+            .bind(Uuid::parse_str(fulfillment).unwrap())
+            .execute(&pool)
+            .await
+            .expect_err("the trigger guards logistics_fulfillments too");
+    assert!(
+        terminal_fulfillment
+            .to_string()
+            .contains("terminal logistics state is immutable"),
+        "{terminal_fulfillment}"
     );
 
     let histories: i64 =

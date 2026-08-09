@@ -286,7 +286,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 26,
+      preflight: 27,
       "domain-unit": 1,
       backend: 23,
       "dev-up-smoke": 6,
@@ -332,8 +332,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 105, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 315, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 106, "required and planned job run-step coverage must not shrink");
+    assert.equal(mutationCount, 318, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

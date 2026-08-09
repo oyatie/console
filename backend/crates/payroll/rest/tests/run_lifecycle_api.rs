@@ -24,6 +24,7 @@ use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use std::collections::BTreeMap;
 use time::format_description::well_known::Rfc3339;
 use time::macros::date;
 use time::{Duration, OffsetDateTime};
@@ -532,6 +533,352 @@ async fn lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible(poo
         probe_audits, 0,
         "denied probes must not commit audit events"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Close preflight is a TRUE read; close recomputes it (TOCTOU)
+// ---------------------------------------------------------------------------
+
+/// The SHIPPED preflight — `GET /api/v1/payroll/runs/{id}/close-preflight`,
+/// driven through the assembled router — must persist NO VERDICT: the only row
+/// it may leave behind anywhere in the database is its own `preflight_read`
+/// audit row. Asserted as a whole-database content delta on all three branches
+/// (`can_close = true`, blocked, and the 404 for a run that does not exist), so
+/// a verdict cached on any one of them is caught — the `can_close = true`
+/// branch is merely the one a "helpfully" caching implementation would want to
+/// write first. `audit_events` is checked row by row rather than as one digest,
+/// because it is itself a readable table: a verdict parked in a snapshot column
+/// there would be the same TOCTOU cache as one parked on the run.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn close_preflight_persists_no_verdict_only_its_read_audit(pool: PgPool) {
+    let keys = Keys::generate();
+    let rt = runtime_role_pool(&pool).await;
+    let org = OrgId::knl();
+    seed_org(&pool, org).await;
+    let executive = seed_user(&pool, org, "EXECUTIVE", None).await;
+    let token = keys.token(executive, org, "EXECUTIVE");
+    let employee = seed_employee(&pool, org, "Alice").await;
+    let run = seed_run(&pool, org).await;
+    let import_row = seed_verified_import_row(&pool, org).await;
+    seed_calculable_line(&pool, org, run, employee, import_row).await;
+    seed_period_lock(&pool, org).await;
+
+    let before = snapshot_db(&pool).await;
+    // The snapshot is not vacuous: the tables a preflight would be tempted to
+    // write are watched, and the ones it reads already hold rows.
+    for table in [
+        "public.payroll_draft_runs",
+        "public.payroll_draft_lines",
+        "public.audit_events",
+        "public.workflow_outbox_events",
+        "public.period_locks",
+    ] {
+        assert!(
+            before.digests.contains_key(table),
+            "{table} must be watched by the snapshot"
+        );
+    }
+    for table in [
+        "public.payroll_draft_runs",
+        "public.payroll_draft_lines",
+        "public.period_locks",
+    ] {
+        assert!(
+            !before.digests[table].starts_with("0:"),
+            "{table} must already hold rows for the digest to be able to change, got {:?}",
+            before.digests[table]
+        );
+    }
+
+    // BRANCH 1 — `can_close = true`, twice.
+    for pass in 1..=2 {
+        let (status, preflight) = send(
+            &rt,
+            &keys,
+            "GET",
+            &format!("/api/v1/payroll/runs/{run}/close-preflight"),
+            &token,
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "pass {pass}: {preflight}");
+        assert_eq!(
+            preflight["can_close"], true,
+            "pass {pass} must reach the can_close branch: {preflight}"
+        );
+    }
+    let after = snapshot_db(&pool).await;
+    assert_only_the_read_audit_changed(&before, &after, "can_close = true", 2);
+
+    // BRANCH 2 — blocked. Releasing the period lock flips the verdict; a
+    // refusal is exactly the thing an implementation is tempted to record.
+    sqlx::query(
+        "UPDATE period_locks SET unlocked_at = now(), unlock_reason = '동결창 해제' \
+         WHERE domain = 'payroll'",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let before = snapshot_db(&pool).await;
+    let (status, blocked) = send(
+        &rt,
+        &keys,
+        "GET",
+        &format!("/api/v1/payroll/runs/{run}/close-preflight"),
+        &token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{blocked}");
+    assert_eq!(
+        blocked["can_close"], false,
+        "must reach the blocked branch: {blocked}"
+    );
+    let after = snapshot_db(&pool).await;
+    assert_only_the_read_audit_changed(&before, &after, "blocked", 1);
+
+    // BRANCH 3 — the run does not exist: 404, and not even an audit row, since
+    // there is no run whose access could be recorded.
+    let before = snapshot_db(&pool).await;
+    let missing = Uuid::new_v4();
+    let (status, body) = send(
+        &rt,
+        &keys,
+        "GET",
+        &format!("/api/v1/payroll/runs/{missing}/close-preflight"),
+        &token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND, "{body}");
+    let after = snapshot_db(&pool).await;
+    let changed = changed_tables(&before.digests, &after.digests);
+    assert!(
+        changed.is_empty(),
+        "a 404 preflight must persist nothing at all; changed: {changed:?}"
+    );
+
+    // The three preflights that found a run left exactly three audit rows and
+    // nothing else — in particular no verdict on the run itself.
+    let reads: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events \
+         WHERE action = 'payroll_run.preflight_read' AND target_id = $1",
+    )
+    .bind(run.to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(reads, 3, "every preflight that read a run must be audited");
+    let receipt: Option<serde_json::Value> =
+        sqlx::query_scalar("SELECT close_receipt FROM payroll_draft_runs WHERE id = $1")
+            .bind(run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(
+        receipt.is_none(),
+        "preflight must not stash a verdict on the run: {receipt:?}"
+    );
+}
+
+/// The preflight's ONLY permitted persistent effect is `expected_reads` bare
+/// read-audit rows. Any other changed table — above all a verdict cached on
+/// `payroll_draft_runs` — fails; so does an extra row inside `audit_events`, or
+/// a verdict carried in the read row's own `before_snap`/`after_snap`. The
+/// table digest cannot tell those last two from a legitimate read audit, which
+/// is why the rows are compared individually.
+fn assert_only_the_read_audit_changed(
+    before: &DbSnapshot,
+    after: &DbSnapshot,
+    branch: &str,
+    expected_reads: usize,
+) {
+    let changed = changed_tables(&before.digests, &after.digests);
+    let tables: Vec<&str> = changed.iter().map(|(table, ..)| table.as_str()).collect();
+    assert_eq!(
+        tables,
+        vec!["public.audit_events"],
+        "[{branch}] the close preflight may persist its read audit and NOTHING \
+         else; changed (table, before digest, after digest): {changed:?}"
+    );
+    // `audit_events` is append-only (migration 0003), so its delta is exactly
+    // the rows whose id is new.
+    let appended: Vec<(&Uuid, &AuditRow)> = after
+        .audits
+        .iter()
+        .filter(|(id, _)| !before.audits.contains_key(*id))
+        .collect();
+    assert_eq!(
+        appended.len(),
+        expected_reads,
+        "[{branch}] the close preflight may append exactly {expected_reads} audit \
+         row(s); appended (id, action, before_snap, after_snap): {appended:?}"
+    );
+    for (id, (action, before_snap, after_snap)) in appended {
+        assert_eq!(
+            action, "payroll_run.preflight_read",
+            "[{branch}] audit row {id} is not the read marker"
+        );
+        assert_eq!(
+            (before_snap, after_snap),
+            (&None, &None),
+            "[{branch}] audit row {id} must record only THAT the run was read; a \
+             verdict in its snapshot columns is a cached verdict like any other"
+        );
+    }
+}
+
+/// Close must RECOMPUTE the preflight in its own transaction, never trust a
+/// verdict computed earlier. The verdict the caller was shown said `can_close`;
+/// the state it checked then changed; close must refuse.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn close_recomputes_the_preflight_after_the_read_verdict_goes_stale(pool: PgPool) {
+    let keys = Keys::generate();
+    let rt = runtime_role_pool(&pool).await;
+    let org = OrgId::knl();
+    seed_org(&pool, org).await;
+    let executive = seed_user(&pool, org, "EXECUTIVE", None).await;
+    let token = keys.token(executive, org, "EXECUTIVE");
+    let employee = seed_employee(&pool, org, "Alice").await;
+    let run = seed_run(&pool, org).await;
+    let import_row = seed_verified_import_row(&pool, org).await;
+    seed_calculable_line(&pool, org, run, employee, import_row).await;
+    seed_period_lock(&pool, org).await;
+
+    let (status, preflight) = send(
+        &rt,
+        &keys,
+        "GET",
+        &format!("/api/v1/payroll/runs/{run}/close-preflight"),
+        &token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{preflight}");
+    assert_eq!(preflight["can_close"], true, "{preflight}");
+
+    // TIME OF USE: the period lock the verdict above was built on is released.
+    sqlx::query(
+        "UPDATE period_locks SET unlocked_at = now(), unlock_reason = '동결창 해제' \
+         WHERE domain = 'payroll'",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (status, blocked) = send(
+        &rt,
+        &keys,
+        "POST",
+        &format!("/api/v1/payroll/runs/{run}/close-attendance"),
+        &token,
+        Some(json!({"attest": true})),
+    )
+    .await;
+    assert_eq!(
+        status,
+        StatusCode::CONFLICT,
+        "close must recompute the preflight against current state, not trust the earlier \
+         verdict: {blocked}"
+    );
+    assert_eq!(blocked["error"]["code"], "preflight_blocked");
+    assert_eq!(blocked["error"]["details"]["can_close"], false);
+
+    let status: String = sqlx::query_scalar("SELECT status FROM payroll_draft_runs WHERE id = $1")
+        .bind(run)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(status, "STAGED", "the refused close must not have advanced");
+}
+
+/// `(action, before_snap, after_snap)` — the columns a verdict cached in the
+/// audit log would travel in.
+type AuditRow = (String, Option<Value>, Option<Value>);
+
+/// A whole-database snapshot: a content digest per table, plus every
+/// `audit_events` row. The digests alone are table-granular, which is too
+/// coarse for `audit_events`: an extra audit row, or a verdict stuffed into the
+/// read row's `after_snap`, changes that one table's digest exactly as a
+/// legitimate read audit does.
+struct DbSnapshot {
+    digests: BTreeMap<String, String>,
+    audits: BTreeMap<Uuid, AuditRow>,
+}
+
+async fn snapshot_db(owner_pool: &PgPool) -> DbSnapshot {
+    let audits: Vec<(Uuid, String, Option<Value>, Option<Value>)> =
+        sqlx::query_as("SELECT id, action, before_snap, after_snap FROM audit_events")
+            .fetch_all(owner_pool)
+            .await
+            .unwrap();
+    DbSnapshot {
+        digests: content_digest_of_every_table(owner_pool).await,
+        audits: audits
+            .into_iter()
+            .map(|(id, action, before_snap, after_snap)| (id, (action, before_snap, after_snap)))
+            .collect(),
+    }
+}
+
+/// Content digest of every catalog-listed table, so an UPDATE is caught as well
+/// as an INSERT (a row count is blind to an UPDATE, and `console_rt` holds
+/// UPDATE on `payroll_draft_runs` — "preflight caches its verdict in
+/// `close_receipt`" is a mutation the runtime role is actually permitted to
+/// make). Tables come from `pg_class`, NOT `information_schema.tables`: the
+/// latter lists only tables the current role holds some privilege on, so a
+/// table created under another owner and granted only to `console_rt` (the
+/// `console_platform_force_cmd` pattern, migration 0196) would be invisible
+/// here and a write into it would pass unnoticed. `pg_class` is unfiltered,
+/// so a table added later is watched automatically.
+async fn content_digest_of_every_table(owner_pool: &PgPool) -> BTreeMap<String, String> {
+    sqlx::query_as::<_, (String, String)>(
+        r#"
+        SELECT format('%I.%I', n.nspname, c.relname)::text AS qualified_name,
+               (xpath(
+                   '/row/d/text()',
+                   query_to_xml(
+                       format(
+                           'SELECT count(*)::text || '':'' || coalesce(md5(string_agg(r::text, '''' ORDER BY r::text)), ''empty'') AS d FROM %I.%I AS r',
+                           n.nspname, c.relname
+                       ),
+                       false, true, ''
+                   )
+               ))[1]::text AS digest
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind IN ('r', 'p')
+          AND n.nspname NOT LIKE 'pg\_%'
+          AND n.nspname <> 'information_schema'
+        "#,
+    )
+    .fetch_all(owner_pool)
+    .await
+    .unwrap()
+    .into_iter()
+    .collect()
+}
+
+fn changed_tables(
+    before: &BTreeMap<String, String>,
+    after: &BTreeMap<String, String>,
+) -> Vec<(String, String, String)> {
+    let mut changed: Vec<(String, String, String)> = before
+        .iter()
+        .filter_map(|(table, was)| {
+            let now = after
+                .get(table)
+                .cloned()
+                .unwrap_or_else(|| "absent".to_owned());
+            (&now != was).then(|| (table.clone(), was.clone(), now))
+        })
+        .collect();
+    for (table, now) in after {
+        if !before.contains_key(table) {
+            changed.push((table.clone(), "absent".to_owned(), now.clone()));
+        }
+    }
+    changed
 }
 
 // ---------------------------------------------------------------------------

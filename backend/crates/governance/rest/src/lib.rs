@@ -10,16 +10,17 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Json, Router};
-use console_governance_adapter_postgres::{PgGovernanceError, PgGovernanceStore};
+use console_governance_adapter_postgres::{
+    LifecyclePreflightQuery, PgGovernanceError, PgGovernanceStore,
+};
 use console_governance_application::{
-    ApprovalDecision, ConfigureTransitionCommand, CreateApprovalCommand, DecideApprovalCommand,
-    OpenOverrideCommand,
+    ApprovalDecision, ConfigureTransitionCommand, CreateApprovalCommand,
+    DecidePendingApprovalCommand, OpenOverrideCommand,
 };
 use console_governance_domain::{
-    AuthorityEffect, GateChainConfig, GateChainOutcome, GateEvidence, LifecycleState,
-    TransitionRequirements, evaluate_gate_chain, validate_lifecycle_transition,
+    GateChainConfig, GateChainOutcome, LifecycleState, TransitionRequirements,
 };
-use console_kernel_core::{ErrorKind, KernelError, TraceContext, UserId};
+use console_kernel_core::{ErrorKind, KernelError, TraceContext};
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::DbError;
@@ -108,6 +109,11 @@ fn empty_object() -> serde_json::Value {
 struct DecideApprovalRequest {
     request_ref: Uuid,
     kind: String,
+    /// Deprecated. Still accepted on the wire (the published OpenAPI contract
+    /// carries it) but IGNORED as authority: the requester is read from the open
+    /// pending request row inside the decision transaction, so a client cannot
+    /// name the person the approver is supposedly distinct from.
+    #[allow(dead_code)]
     requested_by: Uuid,
     decision: ApprovalDecision,
 }
@@ -209,14 +215,10 @@ async fn decide_approval(
     let principal = authorize_governance(&state, &headers).await?;
     let summary = state
         .store
-        .decide_approval(DecideApprovalCommand {
+        .decide_pending_approval(DecidePendingApprovalCommand {
             approver: principal.user_id,
             request_ref: body.request_ref,
             kind: body.kind,
-            requested_by: UserId::from_uuid(body.requested_by),
-            // The binding target is sourced authoritatively from the pending request
-            // row (the approver can't redirect it), so the decide body carries none.
-            target_ref: None,
             decision: body.decision,
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
@@ -258,76 +260,27 @@ async fn lifecycle_preflight(
     Json(body): Json<PreflightRequest>,
 ) -> Result<impl IntoResponse, RestError> {
     let _ = authorize_governance(&state, &headers).await?;
-    // Base-FSM check first: an illegal edge can never preflight to allow.
-    validate_lifecycle_transition(body.from_state, body.to_state)
-        .map_err(RestError::from_kernel)?;
-
-    let requirements = state
+    // The whole preflight — base-FSM check, configured requirements, four-eyes
+    // peek, gate chain — lives in the store, so the zero-row-delta non-mutation
+    // test exercises this exact code rather than a copy of it.
+    let preflight = state
         .store
-        .transition_requirements(body.object_type_id, body.from_state, body.to_state)
+        .lifecycle_preflight(LifecyclePreflightQuery {
+            object_type_id: body.object_type_id,
+            from_state: body.from_state,
+            to_state: body.to_state,
+            authority_allow: body.authority_allow,
+            checklist_all_acknowledged: body.checklist_all_acknowledged,
+            four_eyes_request_ref: body.four_eyes_request_ref,
+            egress_cleared: body.egress_cleared,
+        })
         .await
         .map_err(RestError::from_store)?;
 
-    // An unconfigured edge is fail-closed: report not-configured with a denying
-    // authority gate so the caller cannot proceed.
-    let (configured, reqs) = match requirements {
-        Some(reqs) => (true, reqs),
-        None => (
-            false,
-            TransitionRequirements {
-                requires_reason: false,
-                requires_four_eyes: false,
-                requires_checklist: false,
-            },
-        ),
-    };
-
-    // Lifecycle transitions always pass the Authority gate; four-eyes/checklist
-    // are required per the configured flags. Egress/DLP is not part of a pure
-    // lifecycle transition (it gates outbound action side-effects).
-    let config = GateChainConfig {
-        authority: true,
-        self_checklist: reqs.requires_checklist,
-        four_eyes: reqs.requires_four_eyes,
-        egress_dlp: false,
-    };
-
-    // Read four-eyes evidence from the DB (never trust the client for it). This is
-    // an advisory, config-level preview (no concrete instance), so it peeks the
-    // approval bound to the object type; the enforcing gate in the ontology
-    // lifecycle writeback binds to the specific instance and consumes single-use.
-    let four_eyes_approved = match body.four_eyes_request_ref {
-        Some(request_ref) => state
-            .store
-            .four_eyes_approved(request_ref, "ontology.lifecycle", Some(body.object_type_id))
-            .await
-            .map_err(RestError::from_store)?,
-        None => None,
-    };
-
-    let evidence = GateEvidence {
-        // Unconfigured edge ⇒ force an authority deny so the outcome cannot allow.
-        authority: if configured {
-            body.authority_allow.map(|allow| {
-                if allow {
-                    AuthorityEffect::Allow
-                } else {
-                    AuthorityEffect::Deny
-                }
-            })
-        } else {
-            Some(AuthorityEffect::Deny)
-        },
-        checklist_all_acknowledged: body.checklist_all_acknowledged,
-        four_eyes_approved,
-        egress_cleared: body.egress_cleared,
-    };
-
-    let outcome = evaluate_gate_chain(config, &evidence);
     Ok(Json(PreflightResponse {
-        configured,
-        config,
-        outcome,
+        configured: preflight.configured,
+        config: preflight.config,
+        outcome: preflight.outcome,
     }))
 }
 

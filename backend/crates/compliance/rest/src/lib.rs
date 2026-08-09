@@ -138,24 +138,19 @@ pub fn router(state: ComplianceRestState) -> Router {
 /// from authenticated request context. Callers may choose a business owner, but
 /// may never impersonate the actor or select an organization.
 #[derive(Debug, Deserialize)]
-struct CatalogPageQuery {
+struct RegulationQuery {
     limit: Option<i64>,
     offset: Option<i64>,
     q: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct RegulationQuery {
-    #[serde(flatten)]
-    page: CatalogPageQuery,
     status: Option<RegulationImpactStatus>,
     risk_level: Option<ComplianceRiskLevel>,
 }
 
 #[derive(Debug, Deserialize)]
 struct ObligationQuery {
-    #[serde(flatten)]
-    page: CatalogPageQuery,
+    limit: Option<i64>,
+    offset: Option<i64>,
+    q: Option<String>,
     status: Option<ObligationStatus>,
     severity: Option<ComplianceRiskLevel>,
     scope_type: Option<ComplianceScopeKind>,
@@ -165,8 +160,9 @@ struct ObligationQuery {
 
 #[derive(Debug, Deserialize)]
 struct FrameworkQuery {
-    #[serde(flatten)]
-    page: CatalogPageQuery,
+    limit: Option<i64>,
+    offset: Option<i64>,
+    q: Option<String>,
     status: Option<FrameworkStatus>,
     kind: Option<FrameworkKind>,
 }
@@ -174,15 +170,16 @@ struct FrameworkQuery {
 #[derive(Debug, Deserialize)]
 struct ControlQuery {
     framework_id: String,
-    #[serde(flatten)]
-    page: CatalogPageQuery,
+    limit: Option<i64>,
+    offset: Option<i64>,
+    q: Option<String>,
     status: Option<ControlStatus>,
 }
 
 #[derive(Debug, Deserialize)]
 struct EvidenceQuery {
-    #[serde(flatten)]
-    page: CatalogPageQuery,
+    limit: Option<i64>,
+    offset: Option<i64>,
     control_id: Option<String>,
     obligation_id: Option<String>,
     target_type: Option<EvidenceTargetType>,
@@ -402,8 +399,8 @@ fn require_branch_compliance_feature(
     authorize(principal, Action::new(feature), branch_id).map_err(RestError::from_kernel)
 }
 
-fn catalog_page(page: CatalogPageQuery) -> Result<PageRequest, RestError> {
-    PageRequest::new(page.limit, page.offset).map_err(RestError::from_kernel)
+fn catalog_page(limit: Option<i64>, offset: Option<i64>) -> Result<PageRequest, RestError> {
+    PageRequest::new(limit, offset).map_err(RestError::from_kernel)
 }
 
 fn require_obligation_scope_manage(
@@ -427,8 +424,8 @@ async fn list_regulations(
 ) -> Result<Json<console_compliance_application::RegulationImpactPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
-    let q = query.page.q.clone();
-    let page = catalog_page(query.page)?;
+    let q = query.q.clone();
+    let page = catalog_page(query.limit, query.offset)?;
     let result = state
         .store
         .list_regulation_impacts(RegulationImpactQuery {
@@ -487,8 +484,8 @@ async fn list_obligations(
         // obligation in the tenant, including branch-scoped rows.
         require_compliance_read(&principal)?;
     }
-    let q = query.page.q.clone();
-    let page = catalog_page(query.page)?;
+    let q = query.q.clone();
+    let page = catalog_page(query.limit, query.offset)?;
     let result = state
         .store
         .list_compliance_obligations(ComplianceObligationQuery {
@@ -590,8 +587,8 @@ async fn list_frameworks(
 ) -> Result<Json<console_compliance_application::ComplianceFrameworkPage>, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
     require_compliance_read(&principal)?;
-    let q = query.page.q.clone();
-    let page = catalog_page(query.page)?;
+    let q = query.q.clone();
+    let page = catalog_page(query.limit, query.offset)?;
     let result = state
         .store
         .list_compliance_frameworks(ComplianceFrameworkQuery {
@@ -641,8 +638,8 @@ async fn list_framework_controls(
     let framework_id = query.framework_id.parse().map_err(|_| {
         RestError::from_kernel(KernelError::validation("framework_id must be a UUID"))
     })?;
-    let q = query.page.q.clone();
-    let page = catalog_page(query.page)?;
+    let q = query.q.clone();
+    let page = catalog_page(query.limit, query.offset)?;
     let result = state
         .store
         .list_compliance_controls(ComplianceControlQuery {
@@ -735,7 +732,7 @@ async fn list_evidence_bindings(
             })
         })
         .transpose()?;
-    let page = catalog_page(query.page)?;
+    let page = catalog_page(query.limit, query.offset)?;
     let result = state
         .store
         .list_evidence_bindings(EvidenceBindingQuery {

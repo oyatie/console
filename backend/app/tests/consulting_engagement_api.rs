@@ -13,6 +13,7 @@ use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -71,6 +72,8 @@ async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(ow
     let engagement_id = response_uuid(&created.json, "id");
     assert_eq!(created.json["status"], "DRAFT");
     assert_eq!(created.json["version"], 1);
+    assert_rfc3339(&created.json, "created_at");
+    assert_rfc3339(&created.json, "updated_at");
 
     let replayed = send(
         service.clone(),
@@ -82,6 +85,7 @@ async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(ow
     .await;
     assert_eq!(replayed.status, StatusCode::CREATED, "{:?}", replayed.json);
     assert_eq!(response_uuid(&replayed.json, "id"), engagement_id);
+    assert_rfc3339(&replayed.json, "created_at");
 
     let mismatch = send(
         service.clone(),
@@ -298,6 +302,10 @@ async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(ow
         "{:?}",
         observation.json
     );
+    // The literal posted above must come back byte for byte: proves both halves
+    // of the `observed_at` wire contract, not just that some value survived.
+    assert_eq!(observation.json["observed_at"], "2026-07-23T12:00:00Z");
+    assert_rfc3339(&observation.json, "created_at");
     let observation_id = response_uuid(&observation.json, "id");
 
     let measured = transition(
@@ -422,6 +430,90 @@ async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(ow
         observation_id,
     )
     .await;
+}
+
+/// Replay records are immutable, so engagements created before the RFC 3339
+/// switch keep `time`'s nine-element component array in `idempotency_response`
+/// forever. Replaying one must still return its stored response, and must return
+/// it as RFC 3339 — the array shape stays out of the wire contract.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn legacy_component_array_replay_survives_rfc3339_switch(owner_pool: PgPool) {
+    let fixture = seed_fixture(&owner_pool).await;
+    let keys = keys();
+    let requester_token = bearer(&keys, fixture.requester, fixture.org);
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let service = build_router(app_state(runtime_pool, &keys));
+
+    let create_body = json!({
+        "customerId": fixture.customer,
+        "customerDocumentId": fixture.document,
+        "ontologyInstanceId": fixture.ontology,
+        "title": "Engagement stored before the wire fix",
+        "idempotencyKey": "consulting-legacy-replay"
+    });
+    let created = send(
+        service.clone(),
+        "POST",
+        "/api/v1/consulting/engagements",
+        Some(&requester_token),
+        Some(create_body.clone()),
+    )
+    .await;
+    assert_eq!(created.status, StatusCode::CREATED, "{:?}", created.json);
+    let engagement_id = response_uuid(&created.json, "id");
+    let created_at = created.json["created_at"].as_str().unwrap().to_owned();
+    let updated_at = created.json["updated_at"].as_str().unwrap().to_owned();
+
+    // Age the stored replay record into the pre-fix on-disk shape. Only the two
+    // timestamps differ, so this is exactly what a pre-fix row still holds.
+    let mut legacy = created.json.clone();
+    legacy["created_at"] = legacy_time_components(&created_at);
+    legacy["updated_at"] = legacy_time_components(&updated_at);
+    assert!(legacy["created_at"].is_array(), "{legacy}");
+    sqlx::query("UPDATE consulting_engagements SET idempotency_response=$1 WHERE id=$2")
+        .bind(legacy)
+        .bind(engagement_id)
+        .execute(&owner_pool)
+        .await
+        .unwrap();
+
+    let replayed = send(
+        service.clone(),
+        "POST",
+        "/api/v1/consulting/engagements",
+        Some(&requester_token),
+        Some(create_body),
+    )
+    .await;
+    assert_eq!(replayed.status, StatusCode::CREATED, "{:?}", replayed.json);
+    assert_eq!(response_uuid(&replayed.json, "id"), engagement_id);
+    assert_rfc3339(&replayed.json, "created_at");
+    assert_rfc3339(&replayed.json, "updated_at");
+    assert_eq!(replayed.json["created_at"], json!(created_at));
+    assert_eq!(replayed.json["updated_at"], json!(updated_at));
+    assert_eq!(
+        count_engagements(&owner_pool, fixture.org, "consulting-legacy-replay").await,
+        1
+    );
+}
+
+/// `time`'s non-human-readable `OffsetDateTime` representation, which is what
+/// `serde_json::to_value` produced before the RFC 3339 attributes landed: year,
+/// ordinal, hour, minute, second, nanosecond, then the offset's whole hours,
+/// minutes past the hour, and seconds past the minute.
+fn legacy_time_components(rfc3339: &str) -> Value {
+    let value = OffsetDateTime::parse(rfc3339, &Rfc3339).unwrap();
+    json!([
+        value.year(),
+        value.ordinal(),
+        value.hour(),
+        value.minute(),
+        value.second(),
+        value.nanosecond(),
+        value.offset().whole_hours(),
+        value.offset().minutes_past_hour(),
+        value.offset().seconds_past_minute()
+    ])
 }
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -792,6 +884,17 @@ fn response_uuid(value: &Value, field: &str) -> Uuid {
         .unwrap_or_else(|| panic!("response field {field} must be a UUID: {value}"))
         .parse()
         .unwrap()
+}
+
+/// The published schema declares every engagement timestamp as
+/// `{type: string, format: date-time}`; time's default `OffsetDateTime` impl
+/// emits a nine-element integer array instead, which this rejects.
+fn assert_rfc3339(value: &Value, field: &str) {
+    let raw = value[field]
+        .as_str()
+        .unwrap_or_else(|| panic!("response field {field} must be an RFC 3339 string: {value}"));
+    OffsetDateTime::parse(raw, &Rfc3339)
+        .unwrap_or_else(|error| panic!("response field {field} is not RFC 3339: {raw} ({error})"));
 }
 
 fn keys() -> Keys {

@@ -8,7 +8,10 @@
 //! solely via a custom org-wide PBAC grant, branch-scoped callers 403.
 //!
 //! Every mutation runs inside `with_audits` (mutation + audit event atomic);
-//! admin reads of run-scoped data are themselves audited the same way. A 404
+//! admin reads of run-scoped data are themselves audited the same way. The
+//! close preflight is audited too, but computes its verdict in a read-only
+//! transaction so the verdict itself can never be persisted and later trusted
+//! (TOCTOU); the close recomputes it in the closing transaction. A 404
 //! never distinguishes "does not exist" from "another org's run" (RLS,
 //! deny-by-omission). Lifecycle guards make every mutation replay-safe: a
 //! second identical POST hits a state guard and returns a typed 409 instead
@@ -28,7 +31,7 @@ use console_payroll_adapter_postgres::lifecycle::{
 };
 use console_payroll_adapter_postgres::{PayrollRunDetail, get_run_in_tx};
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
-use console_platform_db::{with_audits, with_org_conn};
+use console_platform_db::{with_audit, with_audits, with_org_conn};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use time::OffsetDateTime;
@@ -150,29 +153,32 @@ pub(crate) async fn get_close_preflight(
     require_run_read(&principal)?;
     let (org, actor) = (principal.org_id, principal.user_id);
     let pool = state.store.pool().clone();
-    let preflight = with_audits::<_, Option<ClosePreflight>, RestError>(&pool, org, move |tx| {
+    // The verdict is computed in a read-only transaction, so no path here can
+    // persist it — and `close_attendance_in_tx` therefore has no stored verdict
+    // to trust instead of recomputing (TOCTOU). The read is still audited, in
+    // its own transaction below, before the blocking refs are disclosed.
+    let preflight = with_org_conn::<_, Option<ClosePreflight>, RestError>(&pool, org, move |tx| {
         Box::pin(async move {
-            let preflight = lifecycle::close_preflight_in_tx(tx, run_id)
+            lifecycle::close_preflight_in_tx(tx, run_id)
                 .await
-                .map_err(RestError::from_lifecycle)?;
-            let events = if preflight.is_some() {
-                vec![audit_event(
-                    actor,
-                    org,
-                    "payroll_run.preflight_read",
-                    "payroll_draft_run",
-                    run_id,
-                    None,
-                )?]
-            } else {
-                Vec::new()
-            };
-            Ok((preflight, events))
+                .map_err(RestError::from_lifecycle)
         })
     })
     .await?;
     let preflight = preflight
         .ok_or_else(|| RestError::new(StatusCode::NOT_FOUND, "not_found", "run not found"))?;
+    let read_event = audit_event(
+        actor,
+        org,
+        "payroll_run.preflight_read",
+        "payroll_draft_run",
+        run_id,
+        // No `after_snap`: this row records THAT the run was read, never the
+        // verdict. A verdict in the audit log is a readable cache, and
+        // `close_attendance_in_tx` must recompute rather than trust one.
+        None,
+    )?;
+    with_audit::<_, (), RestError>(&pool, read_event, |_tx| Box::pin(async { Ok(()) })).await?;
     Ok(Json(preflight).into_response())
 }
 

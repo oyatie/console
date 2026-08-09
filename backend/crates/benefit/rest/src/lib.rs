@@ -190,9 +190,9 @@ struct CreateItemBody {
     legal_basis: Option<String>,
     related_domain: Option<String>,
     related_object_id: Option<Uuid>,
-    #[serde(with = "iso_date_opt")]
+    #[serde(default, with = "iso_date_opt")]
     effective_on: Option<Date>,
-    #[serde(with = "iso_date_opt")]
+    #[serde(default, with = "iso_date_opt")]
     retires_on: Option<Date>,
     #[serde(default)]
     display_order: i32,

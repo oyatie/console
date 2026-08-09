@@ -167,6 +167,13 @@ RESOURCE_CONFIG = {
                 "backend/test_support/mobile_evidence_fixtures.rs",
         },
     },
+    # tests/openapi_fragment.rs include_str!s the published contract to prove the
+    # composed fragment reproduces it byte for byte.
+    "console-todos-rest": {
+        "itest_external": {
+            "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+        },
+    },
 }
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
@@ -415,6 +422,11 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/audit_atomicity.rs': 'postgres',
         },
     },
+    'console-contracts': {
+        'integration': {
+            'tests/compose.rs': 'none',
+        },
+    },
     'console-dispatch-application': {
         'unit': 'none',
     },
@@ -654,6 +666,14 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/ont_gaps_as_runtime_role.rs': 'postgres',
             'tests/projected_dispatch_as_runtime_role.rs': 'postgres',
             'tests/publish_auto_create_action_as_runtime_role.rs': 'postgres',
+        },
+    },
+    'console-orgchange-adapter-postgres': {
+        # No 'unit' key: this crate generates no unit-test target, and
+        # validate_resource_metadata raises on a STALE declaration as readily as
+        # on a missing one -- declaring 'unit': 'none' here fails the gate.
+        'integration': {
+            'tests/preflight_persists_nothing.rs': 'postgres',
         },
     },
     'console-orgchange-domain': {
@@ -897,6 +917,11 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-todos-domain': {
         'unit': 'none',
+    },
+    'console-todos-rest': {
+        'integration': {
+            'tests/openapi_fragment.rs': 'none',
+        },
     },
     'console-workflow-runtime-adapter-postgres': {
         'unit': 'none',

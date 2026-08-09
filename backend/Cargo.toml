@@ -13,6 +13,7 @@ members = [
   "crates/benefit/*",
   "crates/consulting/*",
   "crates/compliance/*",
+  "crates/contracts",
   "crates/docs/*",
   "crates/evaluation/*",
   "crates/financial/*",

@@ -2,14 +2,15 @@
 
 use std::collections::BTreeSet;
 
-use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, UserId};
+use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, Timestamp, UserId};
 use console_platform_authz::{
     Action, AuthorizationContext, AuthorizationRequest, AuthorizationResource, BranchColumn,
-    CedarEvaluation, CoexistenceMapEntry, CompiledBundleCacheKey, DecisionEffect, DecisionEngine,
-    DecisionReason, DualEngineMode, EffectiveFeatureGrant, Feature, PermissionLevel, Principal,
-    RlsScopeProof, Role, SubjectFreshness, SubjectFreshnessRequirement, authorize,
-    authorize_org_wide, evaluate_cedar_pbac_boundary, evaluate_legacy_contract,
-    observe_cedar_pbac_decision, permission_for, repository_filter, resolve_branch_scope_in_org,
+    BranchScopedResource, CedarEvaluation, CoexistenceMapEntry, CompiledBundleCacheKey,
+    DecisionEffect, DecisionEngine, DecisionReason, DualEngineMode, EffectiveFeatureGrant, Feature,
+    PermissionLevel, Principal, ResourceBranch, RlsScopeProof, Role, SubjectFreshness,
+    SubjectFreshnessRequirement, authorize, authorize_org_wide, authorize_scoped,
+    evaluate_cedar_pbac_boundary, evaluate_legacy_contract, observe_cedar_pbac_decision,
+    permission_for, repository_filter, resolve_branch_scope_in_org,
     resolve_effective_feature_grants_in_org,
 };
 use sqlx::PgPool;
@@ -1528,5 +1529,264 @@ async fn assign_policy_roles(pool: &PgPool, user_id: uuid::Uuid, role_ids: &[uui
         .execute(pool)
         .await
         .unwrap();
+    }
+}
+
+/// `ResourceBranch::lookup` is the ONLY production way into a `ResourceBranch`,
+/// so it is proven against a real row rather than trusted.
+///
+/// The branch it yields must be the RESOURCE's branch — allowed for the branch
+/// the principal is a member of, denied for the sibling it is not. The caller
+/// picks the row and the resource KIND; it does not pick the table or the
+/// column, so it has no way to aim this at the principal's own membership row.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn a_resource_branch_looked_up_by_id_decides_as_the_resources_branch(pool: PgPool) {
+    let seeded = seed_user_with_two_branches_and_one_membership(&pool, "ADMIN").await;
+    let principal = Principal::new(
+        UserId::from_uuid(seeded.user),
+        OrgId::knl(),
+        BTreeSet::from([Role::Admin]),
+        BranchScope::single(BranchId::from_uuid(seeded.member_branch)),
+    );
+    let action = Action::new(Feature::CompletionReview);
+    let at = Timestamp::now_utc();
+
+    for (branch, expected_ok) in [(seeded.member_branch, true), (seeded.other_branch, false)] {
+        let customer: uuid::Uuid = sqlx::query_scalar(
+            "INSERT INTO registry_customers (branch_id, name, org_id)
+             VALUES ($1, $2, $3) RETURNING id",
+        )
+        .bind(branch)
+        .bind(format!("Customer {branch}"))
+        .bind(*OrgId::knl().as_uuid())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        let resource_branch = ResourceBranch::lookup(
+            &pool,
+            principal.org_id,
+            BranchScopedResource::RegistryCustomer,
+            customer,
+        )
+        .await
+        .unwrap();
+
+        // Asserted through the door, because the door is the only way out of a
+        // `ResourceBranch` from outside this crate: the accessor is
+        // crate-private so that no caller can unwrap the branch and re-enter
+        // via `authorize`, which has no tenant to compare. The pair below is
+        // the same claim an equality on the branch would make — a lookup that
+        // returned the PRINCIPAL's branch instead of the resource's would allow
+        // both rows.
+        assert_eq!(
+            authorize_scoped(&principal, action, resource_branch, at).is_ok(),
+            expected_ok,
+            "a branch looked up by resource id must decide as the RESOURCE's branch"
+        );
+    }
+}
+
+/// A resource that does not exist has no branch, and that must surface as a
+/// typed refusal. It must NOT collapse into the branch-less (`None`) arm:
+/// "the row is missing" and "the row has no branch" authorize differently.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn a_missing_resource_row_is_a_typed_refusal_not_a_branchless_pass(pool: PgPool) {
+    let absent = ResourceBranch::lookup(
+        &pool,
+        OrgId::knl(),
+        BranchScopedResource::RegistryCustomer,
+        uuid::Uuid::new_v4(),
+    )
+    .await
+    .unwrap_err();
+
+    assert_eq!(absent.kind, ErrorKind::NotFound);
+}
+
+/// CROSS-TENANT. "This uuid came back from Postgres" is not the claim — "this is
+/// THIS TENANT's resource branch" is. A row id is a bare uuid on the wire and
+/// nothing about it names an org, so a lookup that does not bind the tenant
+/// resolves another tenant's row and hands back a branch the principal's own org
+/// never contained. The whole point of the type dissolves one org over.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn a_resource_branch_lookup_cannot_resolve_another_tenants_resource(pool: PgPool) {
+    let (other_org, other_customer) = seed_other_tenant_customer(&pool).await;
+
+    let leaked = ResourceBranch::lookup(
+        &pool,
+        OrgId::knl(),
+        BranchScopedResource::RegistryCustomer,
+        other_customer,
+    )
+    .await
+    .expect_err("org knl must not resolve another tenant's resource branch");
+    assert_eq!(leaked.kind, ErrorKind::NotFound);
+
+    // The control: the row is genuinely there, and its OWN tenant reads it.
+    ResourceBranch::lookup(
+        &pool,
+        other_org,
+        BranchScopedResource::RegistryCustomer,
+        other_customer,
+    )
+    .await
+    .expect("the owning tenant must still resolve its own resource branch");
+}
+
+/// The org `lookup` binds is an ARGUMENT, and the shape a handler reaches for
+/// first is the one on the request path — `path.org_id`, which the caller of the
+/// API chose. So the tenant the row was read under is re-checked against the
+/// principal at the decision.
+///
+/// Without that, this is the whole attack: look the resource up under ITS org
+/// (the predicate is satisfied — it is that tenant's row), then authorize a
+/// principal from a different tenant against it. A `BranchScope::All` principal
+/// allows every branch, so the branch check cannot object, and the answer would
+/// be ALLOW against another tenant's resource.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn a_resource_branch_read_under_another_tenant_does_not_authorize(pool: PgPool) {
+    let (other_org, other_customer) = seed_other_tenant_customer(&pool).await;
+    let principal = Principal::new(
+        UserId::new(),
+        OrgId::knl(),
+        BTreeSet::from([Role::Admin]),
+        BranchScope::All,
+    );
+    let action = Action::new(Feature::CompletionReview);
+    let at = Timestamp::now_utc();
+
+    // The lookup succeeds: it is that tenant's row, read under that tenant.
+    let other_tenants_branch = ResourceBranch::lookup(
+        &pool,
+        other_org,
+        BranchScopedResource::RegistryCustomer,
+        other_customer,
+    )
+    .await
+    .unwrap();
+
+    let err = authorize_scoped(&principal, action, other_tenants_branch, at)
+        .expect_err("a knl principal must not be authorized against another tenant's resource");
+    assert_eq!(err.kind, ErrorKind::Forbidden);
+
+    // THE CONTROL: the same principal, the same action, the same wide scope,
+    // against a resource in its OWN tenant — so the refusal above is the tenant
+    // and nothing else.
+    let seeded = seed_user_with_two_branches_and_one_membership(&pool, "ADMIN").await;
+    let own_customer: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO registry_customers (branch_id, name, org_id)
+         VALUES ($1, $2, $3) RETURNING id",
+    )
+    .bind(seeded.member_branch)
+    .bind("KNL Customer")
+    .bind(*OrgId::knl().as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let own_branch = ResourceBranch::lookup(
+        &pool,
+        OrgId::knl(),
+        BranchScopedResource::RegistryCustomer,
+        own_customer,
+    )
+    .await
+    .unwrap();
+
+    assert!(authorize_scoped(&principal, action, own_branch, at).is_ok());
+}
+
+async fn seed_other_tenant_customer(pool: &PgPool) -> (OrgId, uuid::Uuid) {
+    let org: uuid::Uuid =
+        sqlx::query_scalar("INSERT INTO organizations (slug, name) VALUES ($1, $2) RETURNING id")
+            .bind("other-tenant")
+            .bind("Other Tenant")
+            .fetch_one(pool)
+            .await
+            .unwrap();
+
+    let region: uuid::Uuid =
+        sqlx::query_scalar("INSERT INTO regions (name, org_id) VALUES ($1, $2) RETURNING id")
+            .bind("Other Tenant Region")
+            .bind(org)
+            .fetch_one(pool)
+            .await
+            .unwrap();
+
+    let branch: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO branches (region_id, name, org_id) VALUES ($1, $2, $3) RETURNING id",
+    )
+    .bind(region)
+    .bind("Other Tenant Branch")
+    .bind(org)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+
+    let customer: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO registry_customers (branch_id, name, org_id)
+         VALUES ($1, $2, $3) RETURNING id",
+    )
+    .bind(branch)
+    .bind("Other Tenant Customer")
+    .bind(org)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+
+    (OrgId::from_uuid(org), customer)
+}
+
+/// `assignment_validities` stamps every 발령 with `GrantValidity::always()`,
+/// and that is correct only while `user_role_assignments` has no interval
+/// columns. When ADR-0032's other half lands them and that function is not
+/// changed to read them, two legitimately consecutive 발령 of one role —
+/// `[100, 200)` then `[200, 300)`, the case
+/// `touching_half_open_intervals_for_one_role_do_not_overlap` exists to permit —
+/// become two `always()` intervals that DO overlap, and
+/// `resolve_effective_feature_grants_in_org` returns `Conflict` instead of that
+/// user's whole custom-role authority.
+///
+/// A comment saying so is not an obligation, so the absence is asserted against
+/// the live schema instead: the migration that adds the columns turns this red,
+/// and the message names the function that must change with it.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn assignment_validity_is_stamped_only_while_the_schema_has_no_intervals(pool: PgPool) {
+    let columns: Vec<String> = sqlx::query_scalar(
+        "SELECT column_name::text FROM information_schema.columns
+         WHERE table_name = 'user_role_assignments'
+           AND column_name IN ('valid_from', 'valid_to')
+         ORDER BY column_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert!(
+        columns.is_empty(),
+        "user_role_assignments now carries {columns:?}. `assignment_validities` in \
+         platform/authz/src/lib.rs must read them instead of stamping \
+         GrantValidity::always(), or every user holding two consecutive appointments \
+         of one role loses their entire custom-role authority"
+    );
+}
+
+/// TOTALITY. Every `BranchScopedResource` variant must name a table and a branch
+/// column that really exist: a wrong name is a database error, which surfaces as
+/// `Internal`, never as `NotFound`. Without this, a variant added with a typo
+/// would fail every authorization at runtime and no test would say why.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn every_resource_kind_names_a_table_and_branch_column_that_exist(pool: PgPool) {
+    for &resource in BranchScopedResource::ALL {
+        let err = ResourceBranch::lookup(&pool, OrgId::knl(), resource, uuid::Uuid::new_v4())
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            err.kind,
+            ErrorKind::NotFound,
+            "{resource:?} did not resolve against the live schema: {}",
+            err.message
+        );
     }
 }

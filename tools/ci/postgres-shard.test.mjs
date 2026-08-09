@@ -76,7 +76,13 @@ test("real postgres-cargo-map workflow set partitions cleanly with balanced doma
   const da = parts["domain-a"].length;
   const db = parts["domain-b"].length;
   assert.ok(Math.abs(da - db) <= 5, `domain halves unbalanced: ${da} vs ${db}`);
-  assert.equal(da + db, 78, `expected 78 domain entries, got ${da + db}`);
+  // Inventory tripwire, not a safety property: the balance assertion above is the invariant.
+  // 78 -> 80 when identity-rest org_setup and production-rest production_lifecycle_http were
+  // repaired and joined the workflow set (P1 dark-test wiring, console-5lh.6).
+  // 80 -> 81 when orgchange-preflight-zero-write-pg joined it: the P3 proof that org-change
+  // preflight persists nothing, which needs a real database because it works by fingerprinting
+  // every base table either side of the call (console-tai / leaf 52a003cba).
+  assert.equal(da + db, 81, `expected 81 domain entries, got ${da + db}`);
 });
 
 test("shardIdForPackage with domain map resolves domain packages", () => {

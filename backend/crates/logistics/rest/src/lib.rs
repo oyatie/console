@@ -281,6 +281,45 @@ struct PodBody {
     evidence_reference: String,
     confirmed_at: OffsetDateTime,
 }
+/// Reject a malformed proof-of-delivery reference at the boundary.
+///
+/// Mirrors the `logistics_pod_evidence_evidence_reference_check` constraint
+/// (migration 0212): an `evidence://` scheme followed by `[A-Za-z0-9._/-]`,
+/// total length 19..=411. The database constraint remains authoritative and is
+/// deliberately left in place as defence in depth; this only decides whether the
+/// caller gets an actionable 400 instead of a 500 raised from the store.
+fn validate_evidence_reference(reference: &str) -> Result<(), RestError> {
+    const SCHEME: &str = "evidence://";
+    let invalid = |detail: &str| {
+        RestError::new(
+            StatusCode::BAD_REQUEST,
+            "invalid_evidence_reference",
+            detail,
+        )
+    };
+    let Some(suffix) = reference.strip_prefix(SCHEME) else {
+        return Err(invalid(
+            "evidenceReference must begin with the evidence:// scheme",
+        ));
+    };
+    if suffix.is_empty()
+        || !suffix
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '/' | '-'))
+    {
+        return Err(invalid(
+            "evidenceReference may contain only letters, digits, '.', '_', '/' and '-' after the scheme",
+        ));
+    }
+    let len = reference.chars().count();
+    if !(19..=411).contains(&len) {
+        return Err(invalid(
+            "evidenceReference must be between 19 and 411 characters including the evidence:// scheme",
+        ));
+    }
+    Ok(())
+}
+
 async fn pod(
     State(s): State<LogisticsRestState>,
     h: HeaderMap,
@@ -294,6 +333,10 @@ async fn pod(
         .await
         .map_err(RestError::store)?;
     allow(&p, Feature::LogisticsPod, branch)?;
+    // Validate only after authn/authz: an unauthenticated caller must not be able
+    // to probe input validation, and must not learn a malformed body from a 400
+    // where it should see 401.
+    validate_evidence_reference(&b.evidence_reference)?;
     Ok(Json(
         s.store
             .pod(

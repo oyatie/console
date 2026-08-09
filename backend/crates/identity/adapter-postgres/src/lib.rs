@@ -860,8 +860,15 @@ impl PgOrgStore {
 
         let mut page_builder = QueryBuilder::<Postgres>::new("SELECT id FROM users u WHERE ");
         push_filter(&mut page_builder);
+        // No deployment pins the database collation (neither the CI service nor
+        // deploy/apps/console/base/database.yaml sets one), so an unqualified
+        // ORDER BY display_name pages differently per environment. "und-x-icu"
+        // is the ICU root locale: identical on every server AND still the
+        // human-readable name order a directory needs. Do not swap it for "C",
+        // which is byte order and would file every uppercase and every Hangul
+        // name away from where a reader looks for it.
         page_builder
-            .push(" ORDER BY u.display_name ASC, u.id ASC LIMIT ")
+            .push(" ORDER BY u.display_name COLLATE \"und-x-icu\" ASC, u.id ASC LIMIT ")
             .push_bind(limit)
             .push(" OFFSET ")
             .push_bind(offset);

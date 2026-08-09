@@ -120,6 +120,7 @@ const PLAN = new Map([
   ["JavaScript test reachability unit tests", { tier: "fast" }],
   // Execs tools/lanes/no-credential-in-argv.sh directly. No container, no
   // bypass env var, so `fast`.
+  ["Lane fan-out harness preflight", { tier: "fast" }],
   ["Workflow test-runner credential literals", { tier: "fast" }],
 
   // ---- domain-unit -------------------------------------------------------

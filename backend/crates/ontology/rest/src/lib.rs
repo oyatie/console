@@ -45,8 +45,8 @@ use console_ontology_adapter_postgres::{
     PropertyDefSummary, ResolvedInstance,
 };
 use console_ontology_application::{
-    ActionDispatch, apply_edits, egress_evidence, evaluate_submission_criteria, evaluation_context,
-    parse_control_points, validate_params,
+    ActionDefinition, ActionDispatch, CommandInputs, PreparedCommand, PreparedDispatch,
+    WritebackInputs,
 };
 use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
@@ -1232,18 +1232,29 @@ impl ActionError {
     }
 }
 
-/// Everything resolved for an action request, shared by preflight + execute.
+/// Everything resolved for an action request, shared by preflight + execute: the
+/// registry row (for the ids only this tier persists) plus the ONE prepared
+/// command that owns every decision both paths act on.
 struct Prepared {
     action: ActionTypeSummary,
-    config: GateChainConfig,
-    params: Value,
-    base_attrs: Value,
-    criteria: Result<(), KernelError>,
+    command: PreparedCommand,
 }
 
 impl OntologyRestState {
-    /// Preflight an action: resolve it, run the §16 gate chain and evaluate submit
-    /// criteria, and report the per-gate status WITHOUT committing anything.
+    /// Preflight an action: prepare it, read (never consume) the four-eyes
+    /// decision, run the §16 gate chain and report the per-gate status WITHOUT
+    /// committing anything.
+    ///
+    /// Nothing on this path can write: the two DB touches are the registry read
+    /// and the policy-gated head read, the four-eyes read is the non-consuming
+    /// [`PgGovernanceStore::four_eyes_approved`], and every decision after that
+    /// belongs to the pure [`PreparedCommand`]. Purity is a property of that type
+    /// only — the reads are ordinary reads, so what actually holds the zero-write
+    /// claim is the row-delta census in
+    /// `preflight_writes_zero_rows_and_never_spends_the_approval`.
+    ///
+    /// A command this refuses is exactly a command [`Self::execute_action`]
+    /// refuses, because both prepare through the same constructor.
     pub async fn preflight_action(
         &self,
         principal: &Principal,
@@ -1251,17 +1262,16 @@ impl OntologyRestState {
         command: ActionCommand,
     ) -> Result<PreflightOutcome, ActionError> {
         let prepared = self.prepare(principal, action_key, &command).await?;
-        let gates = self.evaluate_gates(principal, &prepared, &command).await?;
-        let criteria_ok = prepared.criteria.is_ok();
-        let criteria_error = prepared.criteria.as_ref().err().map(|e| e.message.clone());
+        let gates = self.evaluate_gates(principal, &prepared).await?;
+        let criteria_ok = prepared.command.criteria_ok();
         Ok(PreflightOutcome {
-            dispatch: prepared.action.dispatch,
-            dispatch_target: prepared.action.dispatch_target.clone(),
-            config: prepared.config,
+            dispatch: prepared.command.dispatch(),
+            dispatch_target: prepared.command.dispatch_target().map(str::to_owned),
+            config: prepared.command.config(),
             would_execute: gates.allow && criteria_ok,
             gates,
             criteria_ok,
-            criteria_error,
+            criteria_error: prepared.command.criteria_error().map(str::to_owned),
         })
     }
 
@@ -1279,13 +1289,13 @@ impl OntologyRestState {
     ) -> Result<ExecuteOutcome, ActionError> {
         let prepared = self.prepare(principal, action_key, &command).await?;
 
-        if let Err(err) = &prepared.criteria {
-            return Err(ActionError::CriteriaFailed(err.message.clone()));
+        if let Some(message) = prepared.command.criteria_error() {
+            return Err(ActionError::CriteriaFailed(message.to_owned()));
         }
 
-        match prepared.action.dispatch {
-            ActionDispatch::ProjectedUsecase => {
-                let gates = self.evaluate_gates(principal, &prepared, &command).await?;
+        match prepared.command.prepared_dispatch() {
+            PreparedDispatch::ProjectedUsecase => {
+                let gates = self.evaluate_gates(principal, &prepared).await?;
                 if !gates.allow {
                     return Err(ActionError::GateDenied(
                         "an action gate is not satisfied".to_owned(),
@@ -1302,40 +1312,28 @@ impl OntologyRestState {
                 // last-write-wins with non-destructive version capture) — the engine
                 // makes no claim about it here.
                 //
-                // Fail-closed on config the engine cannot honor: in v1 the engine
-                // cannot read a projected domain row generically, so a submission
-                // criterion (which would evaluate against an EMPTY base and could
-                // silently pass — fail-open) is not faithfully evaluable for a
-                // projected action. Reject it rather than dispatch on a criterion we
-                // did not really check. Params-scoped projected criteria return with
-                // the projected-state-read follow-up.
-                if prepared
-                    .action
-                    .submission_criteria
-                    .as_array()
-                    .is_some_and(|criteria| !criteria.is_empty())
-                {
-                    return Err(ActionError::CriteriaFailed(
-                        "submission criteria are not evaluable for a projected_usecase \
-                         action in v1 (the engine cannot read the projected domain row); \
-                         nothing was dispatched"
-                            .to_owned(),
-                    ));
-                }
-                let target = prepared.action.dispatch_target.clone().ok_or(
-                    // A projected action with no target can never resolve a handler.
-                    ActionError::NotWiredYet { target: None },
-                )?;
+                // The "submission criteria are not evaluable for a projected action"
+                // refusal now lives in `PreparedCommand::prepare`, so preflight
+                // reports it too instead of promising an execute that cannot run.
+                let target = prepared
+                    .command
+                    .dispatch_target()
+                    .map(str::to_owned)
+                    .ok_or(
+                        // A projected action with no target can never resolve a handler.
+                        ActionError::NotWiredYet { target: None },
+                    )?;
                 // The §16 chain (incl. the four-eyes peek) passed above, but a
                 // projected use-case owns its own tx we cannot join, so we bind-match
                 // AND consume the approval in our own committed step right before
                 // dispatch (single-use — a replay is denied). A failed dispatch spends
                 // the approval: fail-closed, the requester re-requests.
-                if let Some(request_ref) = command
-                    .four_eyes_request_ref
-                    .filter(|_| prepared.config.four_eyes)
+                if let Some(request_ref) = prepared
+                    .command
+                    .four_eyes_request_ref()
+                    .filter(|_| prepared.command.config().four_eyes)
                 {
-                    let (kind, bound_target) = action_four_eyes_binding(&prepared, &command);
+                    let (kind, bound_target) = prepared.command.four_eyes_binding();
                     let consumed = self
                         .governance
                         .four_eyes_consume(request_ref, kind, Some(bound_target), principal.user_id)
@@ -1355,7 +1353,7 @@ impl OntologyRestState {
                         principal: principal.clone(),
                         target,
                         target_id: command.instance_id.map(|id| *id.as_uuid()),
-                        params: prepared.params.clone(),
+                        params: prepared.command.params().clone(),
                         reason: command.reason.clone(),
                         occurred_at: OffsetDateTime::now_utc(),
                     })
@@ -1368,18 +1366,19 @@ impl OntologyRestState {
                     receipt: None,
                 })
             }
-            ActionDispatch::InstanceRevision => {
-                // Resolve the declarative edits into the new attribute bag.
-                let new_attrs = apply_edits(
-                    &prepared.action.edits,
-                    &prepared.params,
-                    &prepared.base_attrs,
-                )
-                .map_err(|e| ActionError::Validation(e.message))?;
+            PreparedDispatch::InstanceRevision { .. } => {
+                // The two inputs only the writeback consumes. Refused HERE — the
+                // one tier that maps a preparation refusal — so preflight, which
+                // evaluates neither, is never refused for them.
+                let writeback = prepared
+                    .command
+                    .writeback_inputs()
+                    .map_err(|e| ActionError::Validation(e.message))?;
+                // The edits already resolved during preparation (so preflight saw
+                // any malformed edit too), against the same base the gate chain and
+                // the criteria were evaluated from.
                 let receipt = self
-                    .execute_instance_revision(
-                        principal, action_key, &command, &prepared, new_attrs,
-                    )
+                    .execute_instance_revision(principal, action_key, &command, &prepared, writeback)
                     .await
                     .map_err(|error| match &error {
                         PgOntologyError::Domain(kernel)
@@ -1402,8 +1401,11 @@ impl OntologyRestState {
         }
     }
 
-    /// Resolve the action, validate params, load the target's current attributes,
-    /// evaluate submission criteria — the deterministic prep both paths share.
+    /// Resolve the action and load the target's current attributes (the two DB
+    /// reads only this tier can do), then hand both to the ONE
+    /// [`PreparedCommand`] preparation. Every decision after this point — control
+    /// points, params, inputs, edits, criteria, gate evidence — is that value's,
+    /// which is why preflight and execute cannot disagree.
     async fn prepare(
         &self,
         principal: &Principal,
@@ -1416,11 +1418,6 @@ impl OntologyRestState {
             .await
             .map_err(ActionError::Store)?
             .ok_or(ActionError::NotFound)?;
-
-        let config = parse_control_points(&action.control_points)
-            .map_err(|e| ActionError::Validation(e.message))?;
-        let params = validate_params(&action.params_schema, &command.params)
-            .map_err(|e| ActionError::Validation(e.message))?;
 
         // Load the edit target's current attributes (empty for a create) so submit
         // criteria can read both the pending params and the object's current state.
@@ -1447,33 +1444,30 @@ impl OntologyRestState {
             _ => Value::Object(serde_json::Map::new()),
         };
 
-        let context = evaluation_context(&base_attrs, &params);
-        let criteria = evaluate_submission_criteria(&action.submission_criteria, &context);
+        let command = PreparedCommand::prepare(
+            action_definition(&action),
+            command_inputs(command),
+            &base_attrs,
+        )
+        .map_err(|e| ActionError::Validation(e.message))?;
 
-        Ok(Prepared {
-            action,
-            config,
-            params,
-            base_attrs,
-            criteria,
-        })
+        Ok(Prepared { action, command })
     }
 
     /// Gather gate evidence and evaluate the chain. Authority is the legacy
     /// authorization contract's effect (the sole enforcer today; the seam is
-    /// `authority_effect_from_cedar`); four-eyes is read from the DB; egress is
-    /// derived from declared side effects; checklist is client-supplied.
+    /// `authority_effect_from_cedar`); four-eyes is read from the DB. Checklist
+    /// and egress come from the prepared command, so the evidence bag is not
+    /// hand-assembled twice.
     async fn evaluate_gates(
         &self,
         principal: &Principal,
         prepared: &Prepared,
-        command: &ActionCommand,
     ) -> Result<GateChainOutcome, ActionError> {
-        let authority = authority_effect(principal);
         // Non-consuming peek only — the authoritative bind-match + single-use
         // consume happens inside the writeback tx (`instance_revision_writeback`).
-        let (expected_kind, expected_target) = action_four_eyes_binding(prepared, command);
-        let four_eyes_approved = match command.four_eyes_request_ref {
+        let (expected_kind, expected_target) = prepared.command.four_eyes_binding();
+        let four_eyes_approved = match prepared.command.four_eyes_request_ref() {
             Some(request_ref) => self
                 .governance
                 .four_eyes_approved(request_ref, expected_kind, Some(expected_target))
@@ -1481,13 +1475,9 @@ impl OntologyRestState {
                 .map_err(|e| ActionError::Store(governance_to_ontology(e)))?,
             None => None,
         };
-        let evidence = GateEvidence {
-            authority: Some(authority),
-            checklist_all_acknowledged: command.checklist_all_acknowledged,
-            four_eyes_approved,
-            egress_cleared: egress_evidence(&prepared.action.side_effects),
-        };
-        Ok(evaluate_gate_chain(prepared.config, &evidence))
+        Ok(prepared
+            .command
+            .gates(authority_effect(principal), four_eyes_approved))
     }
 
     async fn execute_instance_revision(
@@ -1496,9 +1486,37 @@ impl OntologyRestState {
         action_key: &str,
         command: &ActionCommand,
         prepared: &Prepared,
-        new_attrs: Value,
+        writeback: WritebackInputs,
     ) -> Result<CommandReceipt, PgOntologyError> {
-        instance_revision_writeback(self, principal, action_key, command, prepared, new_attrs).await
+        instance_revision_writeback(self, principal, action_key, command, prepared, writeback).await
+    }
+}
+
+/// Copy the registry row's declarative facts into the application layer's
+/// [`ActionDefinition`] (which may not depend on the adapter's row type).
+fn action_definition(action: &ActionTypeSummary) -> ActionDefinition {
+    ActionDefinition {
+        stable_key: action.stable_key.clone(),
+        dispatch: action.dispatch,
+        dispatch_target: action.dispatch_target.clone(),
+        control_points: action.control_points.clone(),
+        params_schema: action.params_schema.clone(),
+        submission_criteria: action.submission_criteria.clone(),
+        side_effects: action.side_effects.clone(),
+        edits: action.edits.clone(),
+    }
+}
+
+/// The untrusted half of the command, as bare ids for the pure layer.
+fn command_inputs(command: &ActionCommand) -> CommandInputs {
+    CommandInputs {
+        object_type_id: *command.object_type_id.as_uuid(),
+        instance_id: command.instance_id.map(|id| *id.as_uuid()),
+        command_id: command.command_id,
+        expected_revision: command.expected_revision,
+        params: command.params.clone(),
+        checklist_all_acknowledged: command.checklist_all_acknowledged,
+        four_eyes_request_ref: command.four_eyes_request_ref,
     }
 }
 
@@ -1514,21 +1532,6 @@ fn authority_effect(principal: &Principal) -> AuthorityEffect {
         AuthorizationResource::org_wide(principal.org_id, "ontology_action"),
     );
     authority_effect_from_cedar(evaluate_legacy_contract(&request).effect)
-}
-
-/// The (action_kind, target) a four-eyes approval must be bound to for this action:
-/// the action's stable key, and the object it acts on — the instance for an edit,
-/// or the object type for a create (which has no instance target yet). Both are
-/// server-derived, never trusted from the caller, so an approval decided for a
-/// different action or object can never satisfy this gate.
-fn action_four_eyes_binding<'a>(
-    prepared: &'a Prepared,
-    command: &ActionCommand,
-) -> (&'a str, Uuid) {
-    let target = command
-        .instance_id
-        .map_or_else(|| *command.object_type_id.as_uuid(), |id| *id.as_uuid());
-    (prepared.action.stable_key.as_str(), target)
 }
 
 /// The four-eyes `kind` a lifecycle-transition approval is decided under. A
@@ -1575,34 +1578,43 @@ async fn instance_revision_writeback(
     action_key: &str,
     command: &ActionCommand,
     prepared: &Prepared,
-    new_attrs: Value,
+    writeback: WritebackInputs,
 ) -> Result<CommandReceipt, PgOntologyError> {
     let body = command;
     let org = current_org().map_err(KernelError::from)?;
     let actor = principal.user_id;
     let action_type_id = prepared.action.id;
-    let config = prepared.config;
     let authority = authority_effect(principal);
-    let checklist = body.checklist_all_acknowledged;
-    let egress = egress_evidence(&prepared.action.side_effects);
-    let four_eyes_ref = body.four_eyes_request_ref;
     let instance_id = body.instance_id;
     let object_type_id = body.object_type_id;
     let title = body.title.clone();
     let reason = body.reason.clone();
     let valid_from = body.valid_from;
-    let expected_revision = body.expected_revision;
-    let (expected_kind, expected_target) = action_four_eyes_binding(prepared, command);
-    let expected_kind = expected_kind.to_owned();
     let action_key = action_key.to_owned();
-    let command_id = body.command_id.ok_or_else(|| {
-        KernelError::validation("command_id is required for instance_revision actions")
-    })?;
-    if instance_id.is_some() && body.expected_revision.is_none() {
-        return Err(
-            KernelError::validation("expected_revision is required for an instance edit").into(),
-        );
-    }
+    // Every input this closure gates on is the ONE prepared command, moved in
+    // whole: no field is re-derived here, so the writeback cannot gate on
+    // anything preflight did not already see.
+    let prepared_command = prepared.command.clone();
+    let (expected_kind, expected_target) = {
+        let (kind, target) = prepared_command.four_eyes_binding();
+        (kind.to_owned(), target)
+    };
+    let four_eyes_ref = prepared_command.four_eyes_request_ref();
+    let WritebackInputs {
+        command_id,
+        expected_revision,
+    } = writeback;
+    // The attribute bag was resolved during preparation, from the same base the
+    // criteria and the gate chain were evaluated against.
+    let PreparedDispatch::InstanceRevision {
+        attributes: new_attrs,
+    } = prepared_command.prepared_dispatch().clone()
+    else {
+        return Err(KernelError::validation(
+            "instance_revision writeback reached with a non-instance dispatch",
+        )
+        .into());
+    };
     let payload_digest = action_command_digest(&action_key, body, &new_attrs)?;
 
     with_audits::<_, CommandReceipt, PgOntologyError>(state.registry.pool(), org, move |tx| {
@@ -1630,12 +1642,16 @@ async fn instance_revision_writeback(
                     .and_then(|value| serde_json::from_value(value).map_err(|e| KernelError::validation(format!("invalid command receipt: {e}"))))?, vec![]));
             }
 
-            // Lock and compare the edit head before consuming a four-eyes approval.
+            // Lock and CAS the edit head before consuming a four-eyes approval. The
+            // version match pins the same immutable revision row `prepare` read, so
+            // `new_attrs` is derived from exactly the state the criteria and the
+            // gate chain were evaluated against; a head that moved fails here.
             if let (Some(id), Some(expected)) = (instance_id, expected_revision) {
-                let current: i64 = sqlx::query_scalar(
+                let locked = sqlx::query(
                     "SELECT r.version FROM ont_instances i JOIN ont_instance_revisions r ON r.id = i.current_revision_id WHERE i.id = $1 FOR UPDATE",
                 ).bind(*id.as_uuid()).fetch_optional(tx.as_mut()).await?
                     .ok_or_else(|| KernelError::not_found("instance was not found"))?;
+                let current: i64 = locked.try_get("version")?;
                 if current != expected {
                     return Err(PgOntologyError::ActionPreconditionFailed { current });
                 }
@@ -1656,13 +1672,7 @@ async fn instance_revision_writeback(
                 .map_err(governance_to_ontology)?,
                 None => None,
             };
-            let evidence = GateEvidence {
-                authority: Some(authority),
-                checklist_all_acknowledged: checklist,
-                four_eyes_approved,
-                egress_cleared: egress,
-            };
-            let gates = evaluate_gate_chain(config, &evidence);
+            let gates = prepared_command.gates(authority, four_eyes_approved);
             if !gates.allow {
                 return Err(KernelError::forbidden(
                     "action gate re-check failed inside the writeback transaction",

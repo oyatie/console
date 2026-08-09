@@ -377,6 +377,10 @@ pub async fn close_attendance_in_tx(
     if !CLOSEABLE.contains(&run.status.as_str()) {
         return Err(invalid_state("close attendance for", &run.status));
     }
+    // Recomputed HERE, inside the closing transaction, behind the run's
+    // FOR UPDATE lock — never read back from a verdict computed earlier
+    // (`close_receipt` is the attestation record this close writes, never an
+    // input to it). A verdict trusted later is a TOCTOU hole.
     let preflight = preflight_for(tx, &run).await?;
     if !preflight.can_close {
         return Err(LifecycleError::PreflightBlocked(preflight));

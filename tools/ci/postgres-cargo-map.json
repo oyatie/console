@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers \u2192 cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 205,
+    "mapped": 208,
     "unmapped": 3,
-    "workflow_targets": 183,
-    "workflow_mapped": 183,
+    "workflow_targets": 193,
+    "workflow_mapped": 193,
     "workflow_missing": 0
   },
   "entries": [
@@ -99,7 +99,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-board-ack-api-pg",
@@ -237,7 +237,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-console-kill-switch-pg",
@@ -306,7 +306,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-dev-auth-persona-guard-pg",
@@ -490,7 +490,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-field-visit-api-pg",
@@ -674,7 +674,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-m2-real-engine-drive-pg",
@@ -2146,7 +2146,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:inbox-adapter-postgres-inbox-docs-rls-surfaces-as-runtime-role-pg",
@@ -4007,7 +4007,7 @@
         "--",
         "--test-threads=1"
       ],
-      "in_workflow_postgres_job": false
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:provisioning-dev-principal-upsert-race-postgres",
@@ -4715,6 +4715,73 @@
         "console-workorder-rest",
         "--test",
         "mobile_sync",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:platform-db-lib-pg",
+      "name": "platform-db-lib-pg",
+      "buck_inner": "//backend/crates/platform/db:console-platform-db-unit",
+      "package": "console-platform-db",
+      "crate_dir": "backend/crates/platform/db",
+      "kind": "lib",
+      "test": null,
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:auth-rest-lib-pg",
+      "name": "auth-rest-lib-pg",
+      "buck_inner": "//backend/crates/platform/auth-rest:console-platform-auth-rest-unit",
+      "package": "console-platform-auth-rest",
+      "crate_dir": "backend/crates/platform/auth-rest",
+      "kind": "lib",
+      "test": null,
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth-rest",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:orgchange-preflight-zero-write-pg",
+      "name": "orgchange-preflight-zero-write-pg",
+      "buck_inner": "//backend/crates/orgchange/adapter-postgres:console-orgchange-adapter-postgres-itest-preflight_persists_nothing",
+      "package": "console-orgchange-adapter-postgres",
+      "crate_dir": "backend/crates/orgchange/adapter-postgres",
+      "kind": "test",
+      "test": "preflight_persists_nothing",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-orgchange-adapter-postgres",
+        "--test",
+        "preflight_persists_nothing",
         "--",
         "--test-threads=1"
       ],

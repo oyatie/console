@@ -42,8 +42,11 @@ impl ApprovalDecision {
 }
 
 /// Open a post-draft edit override: a reason + before-value snapshot recorded
-/// before a non-draft instance is edited (arch §3b). Four-eyes approval is a
-/// separate [`DecideApprovalCommand`] keyed by the created override id.
+/// before a non-draft instance is edited (arch §3b). Opening an override does NOT
+/// open a four-eyes request: to have one decided, the requester must first send a
+/// [`CreateApprovalCommand`] keyed by the created override id, and a distinct
+/// approver then sends a [`DecidePendingApprovalCommand`] for the same ref. A
+/// decision without that open request is refused.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OpenOverrideCommand {
     pub actor: UserId,
@@ -94,6 +97,29 @@ pub struct DecideApprovalCommand {
     /// authoritative — the approver can no more redirect the target than spoof the
     /// requester.
     pub target_ref: Option<Uuid>,
+    pub decision: ApprovalDecision,
+    pub trace: TraceContext,
+    pub occurred_at: OffsetDateTime,
+}
+
+/// Record a four-eyes decision on a request that MUST already be open as a
+/// pending [`CreateApprovalCommand`]. This is the hardened decision contract and
+/// the one the REST surface uses.
+///
+/// There is deliberately **no `requested_by` field**: the requester (and the
+/// binding target) are read from the open request row inside the decision
+/// transaction. Without an open request there is no authenticated requester to be
+/// distinct from, so an org admin could otherwise name any other user and
+/// manufacture a "four-eyes" approval single-handedly.
+///
+/// [`DecideApprovalCommand`] remains as the deprecated compatibility contract for
+/// in-process callers that seed a decision without opening a request first; it
+/// does not require an open request.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DecidePendingApprovalCommand {
+    pub approver: UserId,
+    pub request_ref: Uuid,
+    pub kind: String,
     pub decision: ApprovalDecision,
     pub trace: TraceContext,
     pub occurred_at: OffsetDateTime,

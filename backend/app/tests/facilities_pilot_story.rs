@@ -12,6 +12,7 @@ use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
+use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -56,7 +57,7 @@ async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool:
             service.clone(),
             &format!("/api/v1/facilities/cases/{case_id}/triage"),
             &fixture.admin,
-            json!({"scheduledFor": OffsetDateTime::now_utc() + Duration::hours(1)})
+            json!({"scheduledFor": rfc3339(OffsetDateTime::now_utc() + Duration::hours(1))})
         )
         .await
         .status,
@@ -85,7 +86,7 @@ async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool:
         StatusCode::OK
     );
 
-    let observed = post(service.clone(), &format!("/api/v1/facilities/cases/{case_id}/observations"), &fixture.tech, json!({"preKwh":"100.000", "postKwh":"91.500", "costKrw":42000, "observedAt":OffsetDateTime::now_utc()})).await;
+    let observed = post(service.clone(), &format!("/api/v1/facilities/cases/{case_id}/observations"), &fixture.tech, json!({"preKwh":"100.000", "postKwh":"91.500", "costKrw":42000, "observedAt":rfc3339(OffsetDateTime::now_utc())})).await;
     assert_eq!(observed.status, StatusCode::OK);
     assert_eq!(observed.json["energyDeltaKwh"], "-8.500");
     assert_eq!(observed.json["totalCostKrw"], 42000);
@@ -237,6 +238,105 @@ async fn create_replay_is_idempotent_and_changed_payload_conflicts(pool: PgPool)
     );
 }
 
+/// The facilities intake must not empty out. `FacilitiesManage` is `[D,D,D,A,D,A]`
+/// and `FacilitiesObserve` is `[D,A,A,A,A,A]`; routing create/read through
+/// `authorize_org_wide` collapsed both to SUPER_ADMIN and locked out every
+/// branch-scoped ADMIN, even though the branch check that follows admits them.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn branch_scoped_admin_can_create_and_read_a_facilities_case(pool: PgPool) {
+    let fixture = Fixture::new(&pool).await;
+    let obligation = fixture
+        .obligation(OffsetDateTime::now_utc() + Duration::days(1))
+        .await;
+    let service = fixture.router();
+
+    let created = post(
+        service.clone(),
+        "/api/v1/facilities/cases",
+        &fixture.admin,
+        json!({"obligationId": obligation, "idempotencyKey":"facilities-admin-key-0001"}),
+    )
+    .await;
+    assert_eq!(
+        created.status,
+        StatusCode::OK,
+        "a branch-scoped ADMIN holds FacilitiesManage on its own branch"
+    );
+    assert_eq!(created.json["branchId"], json!(fixture.branch.as_uuid()));
+
+    let case_id = created.json["id"].as_str().unwrap();
+    let read = get(
+        service.clone(),
+        &format!("/api/v1/facilities/cases/{case_id}"),
+        &fixture.admin,
+    )
+    .await;
+    assert_eq!(
+        read.status,
+        StatusCode::OK,
+        "a branch-scoped ADMIN holds FacilitiesObserve on its own branch"
+    );
+    assert_eq!(read.json["id"], created.json["id"]);
+    for field in ["responseDueAt", "completionDueAt", "acceptanceDueAt"] {
+        assert_date_time(&read.json, field);
+    }
+
+    let listed = get(service, "/api/v1/facilities/cases", &fixture.admin).await;
+    assert_eq!(
+        listed.status,
+        StatusCode::OK,
+        "the list route must admit the same branch-scoped ADMIN the single-case route admits"
+    );
+    assert_eq!(listed.json, json!([read.json]));
+}
+
+/// The list route reads every row through the per-row `FacilitiesObserve` branch gate,
+/// which errors rather than skips, so an org-wide select would make one foreign-branch
+/// case 403 the entire list for a branch-scoped caller.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn list_cases_is_confined_to_the_callers_branch_scope(pool: PgPool) {
+    let fixture = Fixture::new(&pool).await;
+    let service = fixture.router();
+    let mine = post(
+        service.clone(),
+        "/api/v1/facilities/cases",
+        &fixture.admin,
+        json!({
+            "obligationId": fixture.obligation(OffsetDateTime::now_utc() + Duration::days(1)).await,
+            "idempotencyKey": "facilities-list-own-key-0001"
+        }),
+    )
+    .await;
+    assert_eq!(mine.status, StatusCode::OK);
+
+    let other_branch = fixture.other_branch().await;
+    let other_obligation = seed_obligation(
+        &pool,
+        other_branch,
+        OffsetDateTime::now_utc() + Duration::days(1),
+    )
+    .await;
+    let other_admin = fixture
+        .token_for(UserId::new(), vec!["ADMIN"], vec![other_branch])
+        .await;
+    let theirs = post(
+        service.clone(),
+        "/api/v1/facilities/cases",
+        &other_admin,
+        json!({"obligationId": other_obligation, "idempotencyKey":"facilities-list-other-key-01"}),
+    )
+    .await;
+    assert_eq!(theirs.status, StatusCode::OK);
+
+    let listed = get(service, "/api/v1/facilities/cases", &fixture.admin).await;
+    assert_eq!(listed.status, StatusCode::OK);
+    assert_eq!(
+        listed.json,
+        json!([mine.json]),
+        "a foreign-branch case must be filtered out of the select, not 403 the whole list"
+    );
+}
+
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
     let fixture = Fixture::new(&pool).await;
@@ -253,7 +353,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
         service.clone(),
         &format!("/api/v1/facilities/cases/{case_id}/observations"),
         &fixture.tech,
-        json!({"preKwh":"1.000","observedAt":OffsetDateTime::now_utc()}),
+        json!({"preKwh":"1.000","observedAt":rfc3339(OffsetDateTime::now_utc())}),
     )
     .await;
     assert_eq!(
@@ -270,7 +370,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
         service.clone(),
         &format!("/api/v1/facilities/cases/{case_id}/triage"),
         &scoped_admin,
-        json!({"scheduledFor":OffsetDateTime::now_utc()}),
+        json!({"scheduledFor":rfc3339(OffsetDateTime::now_utc())}),
     )
     .await;
     assert_eq!(
@@ -284,7 +384,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
             service.clone(),
             &format!("/api/v1/facilities/cases/{case_id}/triage"),
             &fixture.admin,
-            json!({"scheduledFor":OffsetDateTime::now_utc()})
+            json!({"scheduledFor":rfc3339(OffsetDateTime::now_utc())})
         )
         .await
         .status,
@@ -353,7 +453,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
         service,
         &format!("/api/v1/facilities/cases/{case_id}/observations"),
         &fixture.tech,
-        json!({"preKwh":"1.000","observedAt":OffsetDateTime::now_utc()}),
+        json!({"preKwh":"1.000","observedAt":rfc3339(OffsetDateTime::now_utc())}),
     )
     .await;
     assert_eq!(
@@ -363,23 +463,56 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
     );
 }
 
+/// Every facilities `date-time` field is declared `{type: string, format: date-time}`
+/// in `openapi.yaml`. Sending `OffsetDateTime` through `json!` instead runs the same
+/// numeric-tuple serializer the handler used to accept, so the array round-trips and
+/// the suite stays blind to a response no spec-conformant client can read.
+fn rfc3339(at: OffsetDateTime) -> String {
+    at.format(&Rfc3339).unwrap()
+}
+
+/// Asserts a response field is an RFC 3339 string, not `time`'s component array.
+fn assert_date_time(response: &Value, field: &str) {
+    let raw = response[field].as_str().unwrap_or_else(|| {
+        panic!(
+            "{field} is declared {{type: string, format: date-time}}, got {}",
+            response[field]
+        )
+    });
+    OffsetDateTime::parse(raw, &Rfc3339).unwrap();
+}
+
 struct Response {
     status: StatusCode,
     json: Value,
 }
 async fn post(service: axum::Router, uri: &str, token: &str, body: Value) -> Response {
-    let response = service
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri(uri)
-                .header(header::AUTHORIZATION, format!("Bearer {token}"))
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(body.to_string()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    send(
+        service,
+        Request::builder()
+            .method("POST")
+            .uri(uri)
+            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(body.to_string()))
+            .unwrap(),
+    )
+    .await
+}
+async fn get(service: axum::Router, uri: &str, token: &str) -> Response {
+    send(
+        service,
+        Request::builder()
+            .method("GET")
+            .uri(uri)
+            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await
+}
+async fn send(service: axum::Router, request: Request<Body>) -> Response {
+    let response = service.oneshot(request).await.unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     Response {

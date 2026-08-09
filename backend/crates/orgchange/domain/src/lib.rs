@@ -111,9 +111,13 @@ impl OrgChangeStatus {
     pub fn can_transition_to(self, next: Self) -> Result<(), KernelError> {
         let allowed = matches!(
             (self, next),
-            // preflight: blockers keep it in DRAFT, a clean run promotes.
-            (Self::Draft, Self::Prechecked)
-                // draft edit invalidates a precheck receipt.
+            // Preflight persists nothing, so submit drives DRAFT → IN_APPROVAL
+            // directly off a receipt recomputed in the submit transaction.
+            (Self::Draft, Self::InApproval)
+                // DRAFT → PRECHECKED is deliberately absent: nothing may
+                // promote a draft on the strength of a preflight run. PRECHECKED
+                // is now an inbound-only legacy state — rows already stored in
+                // it keep every exit they had.
                 | (Self::Prechecked, Self::Draft)
                 | (Self::Prechecked, Self::InApproval)
                 | (Self::InApproval, Self::Approved | Self::Rejected)
@@ -555,7 +559,8 @@ mod tests {
     fn allows_each_documented_transition() {
         use OrgChangeStatus as S;
         for (from, to) in [
-            (S::Draft, S::Prechecked),
+            // The shipped submit path: preflight persists nothing.
+            (S::Draft, S::InApproval),
             (S::Prechecked, S::Draft),
             (S::Prechecked, S::InApproval),
             (S::InApproval, S::Approved),
@@ -574,7 +579,9 @@ mod tests {
     fn rejects_illegal_terminal_and_skip_transitions() {
         use OrgChangeStatus as S;
         for (from, to) in [
-            (S::Draft, S::InApproval),
+            // Preflight persists nothing: no caller may promote a DRAFT to
+            // PRECHECKED. Re-introducing the write fails here, with no database.
+            (S::Draft, S::Prechecked),
             (S::Draft, S::Approved),
             (S::InApproval, S::Cancelled),
             (S::Approved, S::Archived),

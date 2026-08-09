@@ -8,11 +8,12 @@
 
 use console_governance_application::{
     ApprovalDecision, ApprovalRequestSummary, ApprovalSummary, ConfigureTransitionCommand,
-    CreateApprovalCommand, DecideApprovalCommand, LifecycleTransitionConfig, OpenOverrideCommand,
-    OverrideSummary, governance_audit_event,
+    CreateApprovalCommand, DecideApprovalCommand, DecidePendingApprovalCommand,
+    LifecycleTransitionConfig, OpenOverrideCommand, OverrideSummary, governance_audit_event,
 };
 use console_governance_domain::{
-    AuthorityEffect, LifecycleState, TransitionRequirements, validate_lifecycle_transition,
+    AuthorityEffect, GateChainConfig, GateChainOutcome, GateEvidence, LifecycleState,
+    TransitionRequirements, evaluate_gate_chain, validate_lifecycle_transition,
 };
 use console_kernel_core::{KernelError, UserId};
 use console_platform_authz::cedar_pbac::DecisionEffect;
@@ -31,6 +32,58 @@ pub fn authority_effect_from_cedar(effect: DecisionEffect) -> AuthorityEffect {
         DecisionEffect::Allow => AuthorityEffect::Allow,
         DecisionEffect::Deny => AuthorityEffect::Deny,
     }
+}
+
+/// Which four-eyes decision contract `record_decision` is enforcing.
+///
+/// Deliberately NOT `PartialEq`: selecting a contract by `contract == Hardened`
+/// would let a third variant silently inherit the weak behaviour. Every
+/// selection must be an exhaustive `match`, so the compiler makes the author of
+/// a new variant choose.
+#[derive(Debug, Clone, Copy)]
+enum DecisionContract {
+    /// The contract every authenticated surface uses: an open pending request is
+    /// required, so the requester the approver must differ from is one an
+    /// authenticated requester recorded.
+    Hardened,
+    /// Deprecated: decides without an open request, falling back to the
+    /// client-supplied `requested_by` / `target_ref`.
+    DeprecatedCompat,
+}
+
+/// The approval kind a lifecycle four-eyes gate binds to. Server-derived: the
+/// preflight peek and the committing writeback must agree on it, so it is a
+/// constant here rather than anything a caller supplies — and `pub` so callers
+/// can import THIS one instead of keeping a copy. NOT YET the single source:
+/// `backend/crates/ontology/rest/src/lib.rs` still declares its own private
+/// `LIFECYCLE_FOUR_EYES_KIND`, so the peek here and the consuming writeback can
+/// still drift apart and no test compares them.
+pub const LIFECYCLE_FOUR_EYES_KIND: &str = "ontology.lifecycle";
+
+/// Inputs to [`PgGovernanceStore::lifecycle_preflight`]. `authority_allow` is the
+/// Cedar effect the console already has (the writeback lane re-runs Cedar
+/// itself); absent ⇒ fail-closed. The four-eyes verdict is NOT an input — it is
+/// read from the DB under `four_eyes_request_ref`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LifecyclePreflightQuery {
+    pub object_type_id: Uuid,
+    pub from_state: LifecycleState,
+    pub to_state: LifecycleState,
+    pub authority_allow: Option<bool>,
+    pub checklist_all_acknowledged: Option<bool>,
+    pub four_eyes_request_ref: Option<Uuid>,
+    pub egress_cleared: Option<bool>,
+}
+
+/// The advisory verdict of [`PgGovernanceStore::lifecycle_preflight`]. Advisory
+/// only: nothing about it is persisted, and the committing gate re-evaluates.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LifecyclePreflight {
+    /// `false` when the edge is not configured for this object type — an
+    /// unconfigured edge is denied (fail-closed), even if the base FSM allows it.
+    pub configured: bool,
+    pub config: GateChainConfig,
+    pub outcome: GateChainOutcome,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -121,7 +174,7 @@ impl PgGovernanceStore {
 
     /// Open a pending four-eyes request (arch §19). Records who is asking and a
     /// payload summary; a *distinct* approver decides it later via
-    /// [`Self::decide_approval`] keyed by the same `request_ref`. One open request
+    /// [`Self::decide_pending_approval`] keyed by the same `request_ref`. One open request
     /// per `(org, request_ref)` — a second open for the same ref conflicts.
     pub async fn create_approval(
         &self,
@@ -182,9 +235,55 @@ impl PgGovernanceStore {
 
     // -- four-eyes decision --------------------------------------------------
 
+    /// Decide a four-eyes request that MUST already be open as a pending request
+    /// (arch §19). The requester, kind and binding target all come from that row
+    /// inside the decision transaction; the command carries no `requested_by` at
+    /// all, so an approver cannot name the account they are supposedly distinct
+    /// from. This is the contract the REST surface uses.
+    pub async fn decide_pending_approval(
+        &self,
+        command: DecidePendingApprovalCommand,
+    ) -> Result<ApprovalSummary, PgGovernanceError> {
+        self.record_decision(
+            DecideApprovalCommand {
+                approver: command.approver,
+                request_ref: command.request_ref,
+                kind: command.kind,
+                // Never read on this path — a pending row is required. Were that
+                // ever to regress, approver == requested_by trips the
+                // self-approval guard below, so the failure is closed.
+                requested_by: command.approver,
+                // Ditto: the pending row's target is authoritative.
+                target_ref: None,
+                decision: command.decision,
+                trace: command.trace,
+                occurred_at: command.occurred_at,
+            },
+            DecisionContract::Hardened,
+        )
+        .await
+    }
+
+    /// Deprecated compatibility contract: decides even when no pending request is
+    /// open, taking the client-supplied `requested_by` / `target_ref` on trust.
+    /// Retained only for in-process test fixtures in ontology/docs that seed a
+    /// decision directly; it has no caller in any `src/`. Every authenticated
+    /// surface uses [`Self::decide_pending_approval`].
+    ///
+    /// When a pending request DOES exist it is still authoritative here — the
+    /// `(requester, kind, target)` binding is enforced for both contracts.
     pub async fn decide_approval(
         &self,
         command: DecideApprovalCommand,
+    ) -> Result<ApprovalSummary, PgGovernanceError> {
+        self.record_decision(command, DecisionContract::DeprecatedCompat)
+            .await
+    }
+
+    async fn record_decision(
+        &self,
+        command: DecideApprovalCommand,
+        contract: DecisionContract,
     ) -> Result<ApprovalSummary, PgGovernanceError> {
         if !matches!(
             command.decision,
@@ -221,20 +320,49 @@ impl PgGovernanceStore {
 
         with_audit::<_, ApprovalSummary, PgGovernanceError>(&self.pool, event, |tx| {
             Box::pin(async move {
-                // If a pending request exists for this ref, its recorded requester
-                // AND target are authoritative (never the client-supplied values),
-                // so an approver can neither spoof the requester to dodge the
-                // self-approval bar nor redirect the binding target. Read it in THIS
-                // tx (RLS-armed, TOCTOU-safe).
+                // If a pending request exists for this ref, IT is authoritative for
+                // every field a §16 gate later matches on — never the
+                // client-supplied values — so an approver can neither spoof the
+                // requester to dodge the self-approval bar, nor redirect the
+                // binding target, nor swap the kind to open a gate that was never
+                // requested. Read it in THIS tx (RLS-armed, TOCTOU-safe).
                 let pending =
                     pending_request_binding_conn(tx.as_mut(), command.request_ref).await?;
+                let requires_open_request = match contract {
+                    DecisionContract::Hardened => true,
+                    DecisionContract::DeprecatedCompat => false,
+                };
+                if requires_open_request && pending.is_none() {
+                    return Err(KernelError::conflict(
+                        "a four-eyes decision requires an open pending approval request",
+                    )
+                    .into());
+                }
                 let requested_by = pending
                     .as_ref()
                     .map_or(command.requested_by, |p| p.requested_by);
-                let target_ref = pending
-                    .as_ref()
-                    .and_then(|p| p.target_ref)
-                    .or(command.target_ref);
+                let target_ref = match pending.as_ref() {
+                    // The open row is authority for the target INCLUDING when that
+                    // target is NULL (0164 supports NULL-target create-style
+                    // requests). Falling back to the command there would bind the
+                    // approval to an object the requester never named.
+                    Some(pending) => pending.target_ref,
+                    None => command.target_ref,
+                };
+                // `kind` is rejected on mismatch rather than silently overridden:
+                // the audit event's payload was snapshotted from the command before
+                // this closure runs, so overriding would leave the audit row and the
+                // approval row disagreeing about which gate was opened.
+                if let Some(pending) = pending.as_ref()
+                    && pending.kind != command.kind.trim()
+                {
+                    return Err(KernelError::conflict(format!(
+                        "approval kind {:?} does not match the open request's kind {:?}",
+                        command.kind.trim(),
+                        pending.kind
+                    ))
+                    .into());
+                }
                 // Self-approval is blocked here (fast, clear error) and at the DB
                 // CHECK (`approver_id <> requested_by`). Defense in depth.
                 if command.approver == requested_by {
@@ -348,6 +476,96 @@ impl PgGovernanceStore {
         .await
     }
 
+    // -- §16 lifecycle preflight (read-only) --------------------------------
+
+    /// Evaluate the §16 gate chain for one lifecycle edge and COMMIT NOTHING.
+    ///
+    /// This is the whole of `POST /api/v1/governance/lifecycle/preflight` below
+    /// authorization; the handler adds only auth and JSON shaping. Keeping the
+    /// body here rather than in the handler is what lets
+    /// `governance_rls_as_runtime_role::preflight_writes_no_row_in_any_table`
+    /// assert its zero-row-delta against the code that actually ships instead of
+    /// against a re-assembled copy of the chain.
+    ///
+    /// Every step is a read: base-FSM validation, the configured requirements,
+    /// a NON-consuming four-eyes peek, and the pure chain evaluation. No receipt,
+    /// no approval consumption, no audit row, no outbox row.
+    pub async fn lifecycle_preflight(
+        &self,
+        query: LifecyclePreflightQuery,
+    ) -> Result<LifecyclePreflight, PgGovernanceError> {
+        // Base-FSM check first: an illegal edge can never preflight to allow.
+        validate_lifecycle_transition(query.from_state, query.to_state)?;
+
+        // An unconfigured edge is fail-closed: report not-configured with a
+        // denying authority gate so the caller cannot proceed.
+        let (configured, reqs) = match self
+            .transition_requirements(query.object_type_id, query.from_state, query.to_state)
+            .await?
+        {
+            Some(reqs) => (true, reqs),
+            None => (
+                false,
+                TransitionRequirements {
+                    requires_reason: false,
+                    requires_four_eyes: false,
+                    requires_checklist: false,
+                },
+            ),
+        };
+
+        // Lifecycle transitions always pass the Authority gate; four-eyes/checklist
+        // are required per the configured flags. Egress/DLP is not part of a pure
+        // lifecycle transition (it gates outbound action side-effects).
+        let config = GateChainConfig {
+            authority: true,
+            self_checklist: reqs.requires_checklist,
+            four_eyes: reqs.requires_four_eyes,
+            egress_dlp: false,
+        };
+
+        // Four-eyes evidence comes from the DB, never from the client. This is an
+        // advisory, config-level preview (no concrete instance), so it peeks the
+        // approval bound to the object type; the enforcing gate in the ontology
+        // lifecycle writeback binds to the specific instance and consumes
+        // single-use.
+        let four_eyes_approved = match query.four_eyes_request_ref {
+            Some(request_ref) => {
+                self.four_eyes_approved(
+                    request_ref,
+                    LIFECYCLE_FOUR_EYES_KIND,
+                    Some(query.object_type_id),
+                )
+                .await?
+            }
+            None => None,
+        };
+
+        let evidence = GateEvidence {
+            // Unconfigured edge ⇒ force an authority deny so the outcome cannot allow.
+            authority: if configured {
+                query.authority_allow.map(|allow| {
+                    if allow {
+                        AuthorityEffect::Allow
+                    } else {
+                        AuthorityEffect::Deny
+                    }
+                })
+            } else {
+                Some(AuthorityEffect::Deny)
+            },
+            checklist_all_acknowledged: query.checklist_all_acknowledged,
+            four_eyes_approved,
+            egress_cleared: query.egress_cleared,
+        };
+
+        Ok(LifecyclePreflight {
+            configured,
+            config,
+            outcome: evaluate_gate_chain(config, &evidence),
+        })
+    }
+
     /// Four-eyes evidence for a request, read under the armed org — a NON-consuming
     /// peek for preview/preflight only (the committing gate uses
     /// [`four_eyes_consume_conn`]). Binds to the action: the approval must match the
@@ -458,11 +676,18 @@ async fn approval_request_row_conn(
     })
 }
 
-/// The authoritative (requester, target) binding of a pending approval request, if
-/// one is open for `request_ref`. `None` = no pending request (decide falls back to
-/// the client-supplied values). RLS-scoped by the caller's armed org.
+/// The authoritative binding of a pending approval request, if one is open for
+/// `request_ref`. `None` = no pending request (decide falls back to the
+/// client-supplied values). RLS-scoped by the caller's armed org.
+///
+/// These are ALL THREE fields the §16 gate matches on
+/// (`0164_bind_consume_four_eyes.sql`: `(request_ref, kind, target_ref)`) plus the
+/// requester the approver must differ from. Anything the gate binds on must be
+/// read from here rather than from the approver's command, or the approver
+/// chooses which gate their decision opens.
 struct PendingRequestBinding {
     requested_by: UserId,
+    kind: String,
     target_ref: Option<Uuid>,
 }
 
@@ -471,13 +696,14 @@ async fn pending_request_binding_conn(
     request_ref: Uuid,
 ) -> Result<Option<PendingRequestBinding>, PgGovernanceError> {
     let row = sqlx::query(
-        "SELECT requested_by, target_ref FROM gov_approval_requests WHERE request_ref = $1",
+        "SELECT requested_by, kind, target_ref FROM gov_approval_requests WHERE request_ref = $1",
     )
     .bind(request_ref)
     .fetch_optional(conn)
     .await?;
     Ok(row.map(|row| PendingRequestBinding {
         requested_by: UserId::from_uuid(row.get("requested_by")),
+        kind: row.get("kind"),
         target_ref: row.get("target_ref"),
     }))
 }

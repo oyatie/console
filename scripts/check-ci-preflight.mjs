@@ -193,6 +193,8 @@ const domainUnitIntegrationInvocations = [
   ["console-compliance-domain", ["location_consent_fsm", "location_ping_policy"]],
   ["console-platform-authz", ["cedar_pbac_readiness_cases", "cedar_pbac_legacy_only_observe_and_record"]],
   ["console-attendance-domain", ["range_and_history"]],
+  ["console-contracts", ["compose"]],
+  ["console-todos-rest", ["openapi_fragment"]],
   ["console-financial-domain", ["quote_and_residual"]],
   ["console-registry-domain", ["equipment"]],
   ["console-messenger-domain", ["mentions", "object_code_refs", "parity", "thread_kind"]],
@@ -560,10 +562,11 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests"),
     proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability"),
     proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability"),
+    proofRun("Lane fan-out harness preflight", "node .claude/workflows/lane-fanout.test.mjs"),
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "e36958f192c903c89c6299d9a09ec954073ae365a70ddf2c485b36debd3454df"),
+    proofDigest("Domain crate unit tests", "e87c4c10d44fcf60d4dd2121f5fa28d422d4d24cad095a8103be156a33854360"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),

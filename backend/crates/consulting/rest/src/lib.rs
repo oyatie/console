@@ -113,9 +113,78 @@ struct Engagement {
     approval_id: Option<Uuid>,
     workflow_execution_id: Option<Uuid>,
     version: i64,
+    #[serde(with = "engagement_timestamp")]
     created_at: OffsetDateTime,
+    #[serde(with = "engagement_timestamp")]
     updated_at: OffsetDateTime,
 }
+
+/// Read tolerant, write strict, for the one `Engagement` timestamp pair that is
+/// both a wire field and a persisted one.
+///
+/// `Engagement` is stored verbatim in `consulting_engagements.idempotency_response`
+/// (JSONB) and read back by the replay branch of `create_engagement`. Rows written
+/// before the RFC 3339 attributes landed hold `time`'s non-human-readable
+/// component form, a nine-element integer array. Replay records are immutable, so
+/// those rows are never rewritten and reading must accept both shapes. Writing is
+/// always RFC 3339: the array form must never reach the wire, where
+/// `openapi.yaml` declares these fields `{type: string, format: date-time}`.
+///
+/// DELETE WHEN no reachable environment still holds a pre-RFC-3339 replay record,
+/// which is exactly:
+/// `SELECT count(*) FROM consulting_engagements WHERE jsonb_typeof(idempotency_response->'created_at') = 'array'`
+/// returning 0 in every deployed database. Until then this is live compatibility
+/// code, not dead code, and `legacy_component_array_replay_survives_rfc3339_switch`
+/// in `backend/app/tests/consulting_engagement_api.rs` proves it.
+mod engagement_timestamp {
+    use serde::de::Error as _;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use time::format_description::well_known::Rfc3339;
+    use time::{Date, OffsetDateTime, Time, UtcOffset};
+
+    /// `time`'s two persisted shapes: RFC 3339 (current) and the component array
+    /// its non-human-readable `Serialize` impl emits (legacy, read-only).
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Stored {
+        Rfc3339(String),
+        LegacyComponents(i32, u16, u8, u8, u8, u32, i8, i8, i8),
+    }
+
+    pub(super) fn serialize<S: Serializer>(
+        value: &OffsetDateTime,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        time::serde::rfc3339::serialize(value, serializer)
+    }
+
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<OffsetDateTime, D::Error> {
+        match Stored::deserialize(deserializer)? {
+            Stored::Rfc3339(raw) => OffsetDateTime::parse(&raw, &Rfc3339).map_err(D::Error::custom),
+            Stored::LegacyComponents(
+                year,
+                ordinal,
+                hour,
+                minute,
+                second,
+                nanosecond,
+                offset_hours,
+                offset_minutes,
+                offset_seconds,
+            ) => {
+                let date = Date::from_ordinal_date(year, ordinal).map_err(D::Error::custom)?;
+                let time = Time::from_hms_nano(hour, minute, second, nanosecond)
+                    .map_err(D::Error::custom)?;
+                let offset = UtcOffset::from_hms(offset_hours, offset_minutes, offset_seconds)
+                    .map_err(D::Error::custom)?;
+                Ok(date.with_time(time).assume_offset(offset))
+            }
+        }
+    }
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
 struct EngagementDetail {
@@ -132,6 +201,7 @@ struct Diagnostic {
     id: Uuid,
     summary: String,
     document_id: Option<Uuid>,
+    #[serde(with = "time::serde::rfc3339")]
     created_at: OffsetDateTime,
 }
 #[derive(Serialize)]
@@ -142,6 +212,7 @@ struct Finding {
     statement: String,
     evidence_id: Uuid,
     document_id: Option<Uuid>,
+    #[serde(with = "time::serde::rfc3339")]
     created_at: OffsetDateTime,
 }
 #[derive(Serialize)]
@@ -153,6 +224,7 @@ struct Initiative {
     hypothesis: String,
     kpi_definition_id: Uuid,
     target_direction: String,
+    #[serde(with = "time::serde::rfc3339")]
     created_at: OffsetDateTime,
 }
 #[derive(Serialize)]
@@ -162,8 +234,10 @@ struct Observation {
     initiative_id: Uuid,
     kpi_definition_id: Uuid,
     evidence_id: Uuid,
+    #[serde(with = "time::serde::rfc3339")]
     observed_at: OffsetDateTime,
     note: String,
+    #[serde(with = "time::serde::rfc3339")]
     created_at: OffsetDateTime,
 }
 #[derive(Serialize)]
@@ -175,6 +249,7 @@ struct History {
     to_status: Option<String>,
     version: i64,
     payload: serde_json::Value,
+    #[serde(with = "time::serde::rfc3339")]
     occurred_at: OffsetDateTime,
 }
 
@@ -224,6 +299,7 @@ struct CreateObservation {
     initiative_id: Uuid,
     kpi_definition_id: Uuid,
     evidence_id: Uuid,
+    #[serde(with = "time::serde::rfc3339")]
     observed_at: OffsetDateTime,
     note: String,
 }

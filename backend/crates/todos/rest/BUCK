@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/todos/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -28,5 +29,33 @@ rust_library(
         "//third-party/rust:serde",
         "//third-party/rust:time",
         "//third-party/rust:tracing",
+    ],
+)
+
+rust_test(
+    name = "console-todos-rest-itest-openapi_fragment",
+    mapped_srcs = repo_mapped_srcs("backend/crates/todos/rest", ["tests/openapi_fragment.rs"], external = {
+        "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+    }),
+    crate = "openapi_fragment",
+    edition = "2024",
+    crate_root = "backend/crates/todos/rest/tests/openapi_fragment.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/todos/rest"},
+    labels = ["owner.backend.crates.todos.rest", "domain.todos", "test.integration", "resource.none"],
+    deps = [
+        "//backend/crates/contracts:console-contracts",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/todos/adapter-postgres:console-todos-adapter-postgres",
+        "//backend/crates/todos/application:console-todos-application",
+        "//backend/crates/todos/domain:console-todos-domain",
+        "//third-party/rust:axum",
+        "//third-party/rust:serde",
+        "//third-party/rust:time",
+        "//third-party/rust:tracing",
+        ":console-todos-rest",
     ],
 )

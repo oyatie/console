@@ -5,8 +5,9 @@
 //!   kernel → (nothing)
 //!   domain → kernel
 //!   application → domain, kernel
-//!   adapter/platform → application, domain, kernel
-//!   rest/worker → adapter, platform, application, domain, kernel
+//!   contracts → kernel
+//!   adapter/platform → application, contracts, domain, kernel
+//!   rest/worker → adapter, contracts, platform, application, domain, kernel
 //!   app → everything
 //!   gate → (exempt from layer checks)
 //!
@@ -64,8 +65,9 @@ pub enum Layer {
     Kernel,
     Domain,
     Application,
-    Adapter,  // includes platform (adapter-equivalent)
-    Platform, // crates/platform/* — adapter-layer privileges
+    Contracts, // crates/contracts — wire contracts; adapters may depend, domain may not
+    Adapter,   // includes platform (adapter-equivalent)
+    Platform,  // crates/platform/* — adapter-layer privileges
     Rest,
     Worker,
     App,
@@ -78,6 +80,7 @@ impl Layer {
             Layer::Kernel => "kernel",
             Layer::Domain => "domain",
             Layer::Application => "application",
+            Layer::Contracts => "contracts",
             Layer::Adapter => "adapter",
             Layer::Platform => "platform",
             Layer::Rest => "rest",
@@ -93,15 +96,21 @@ impl Layer {
             Layer::Kernel => &[],
             Layer::Domain => &[Layer::Kernel],
             Layer::Application => &[Layer::Domain, Layer::Kernel],
+            // Contracts describe the wire, so they must not reach into the
+            // model they describe: kernel only. Deliberately NOT reachable from
+            // domain/application (see their allowed_deps above).
+            Layer::Contracts => &[Layer::Kernel],
             // adapter and platform have the same dependency privileges
             Layer::Adapter | Layer::Platform => &[
                 Layer::Application,
+                Layer::Contracts,
                 Layer::Domain,
                 Layer::Kernel,
                 Layer::Platform,
             ],
             Layer::Rest | Layer::Worker => &[
                 Layer::Adapter,
+                Layer::Contracts,
                 Layer::Platform,
                 Layer::Application,
                 Layer::Domain,
@@ -113,6 +122,7 @@ impl Layer {
                 Layer::Application,
                 Layer::Adapter,
                 Layer::Platform,
+                Layer::Contracts,
                 Layer::Rest,
                 Layer::Worker,
                 Layer::App,
@@ -158,6 +168,12 @@ pub fn classify_crate(name: &str, manifest_path: &str, workspace_root: &str) -> 
     // crates/platform/* → Platform
     if rel.starts_with("crates/platform/") {
         return Layer::Platform;
+    }
+
+    // crates/contracts* → Contracts (not the generic Adapter fallback: the
+    // fallback would let a contracts crate depend on domain and application).
+    if rel.starts_with("crates/contracts/") {
+        return Layer::Contracts;
     }
 
     // For crates/*, classify by name suffix

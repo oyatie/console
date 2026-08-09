@@ -9,9 +9,11 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use console_kernel_core::{AuditAction, AuditEvent, BranchId, KernelError, OrgId, TraceContext};
+use console_kernel_core::{
+    AuditAction, AuditEvent, BranchId, BranchScope, KernelError, OrgId, TraceContext,
+};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
+use console_platform_authz::{Action, Feature, Principal, authorize, authorize_capability};
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::{RequestContextError, resolve_principal};
 use serde::{Deserialize, Serialize};
@@ -127,8 +129,15 @@ struct CaseView {
     branch_id: Uuid,
     status: String,
     assignee_id: Option<Uuid>,
+    // `openapi.yaml` declares these three, `scheduledFor` and `observedAt` below
+    // as `{type: string, format: date-time}`. The default `OffsetDateTime` serde
+    // representation is an internal nine-element numeric tuple: it emits an array
+    // no spec-conformant client can read, and rejects the ISO 8601 string one sends.
+    #[serde(with = "time::serde::rfc3339")]
     response_due_at: time::OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     completion_due_at: time::OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     acceptance_due_at: time::OffsetDateTime,
     energy_delta_kwh: Option<String>,
     total_cost_krw: i64,
@@ -142,6 +151,7 @@ struct DueCaseBody {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct TriageBody {
+    #[serde(with = "time::serde::rfc3339")]
     scheduled_for: time::OffsetDateTime,
 }
 #[derive(Deserialize)]
@@ -167,6 +177,7 @@ struct AcceptanceBody {
 struct ObservationBody {
     pre_kwh: Option<String>,
     post_kwh: Option<String>,
+    #[serde(with = "time::serde::rfc3339")]
     observed_at: time::OffsetDateTime,
     cost_krw: Option<i64>,
 }
@@ -198,8 +209,14 @@ fn require_feature(p: &Principal, feature: Feature, branch: Uuid) -> Result<(), 
     authorize(p, Action::new(feature), BranchId::from_uuid(branch)).map_err(RestError::kernel)
 }
 
-fn require_org_feature(p: &Principal, feature: Feature) -> Result<(), RestError> {
-    authorize_org_wide(p, Action::new(feature)).map_err(RestError::kernel)
+/// Pre-gate for a route whose resource branch is only known after the row is
+/// read (or, for a list, is the caller's whole scope); the concrete branch is
+/// still enforced by [`require_feature`] on every row.
+/// Not `authorize_org_wide`: that requires `BranchScope::All` and so collapses
+/// `FacilitiesManage` (`[D,D,D,A,D,A]`) and `FacilitiesObserve` (`[D,A,A,A,A,A]`)
+/// to SUPER_ADMIN, locking every branch-scoped ADMIN out of the intake.
+fn require_capability(p: &Principal, feature: Feature) -> Result<(), RestError> {
+    authorize_capability(p, Action::new(feature)).map_err(RestError::kernel)
 }
 fn hash<T: Serialize>(v: &T) -> String {
     let bytes = serde_json::to_vec(v).unwrap_or_default();
@@ -232,7 +249,7 @@ async fn create_due_case(
     Json(b): Json<DueCaseBody>,
 ) -> Result<Json<CaseView>, RestError> {
     let p = principal(&s, &h).await?;
-    require_org_feature(&p, Feature::FacilitiesManage)?;
+    require_capability(&p, Feature::FacilitiesManage)?;
     if b.idempotency_key.len() < 16 {
         return Err(RestError::new(
             StatusCode::UNPROCESSABLE_ENTITY,
@@ -303,14 +320,23 @@ async fn list_cases(
     h: HeaderMap,
 ) -> Result<Json<Vec<CaseView>>, RestError> {
     let p = principal(&s, &h).await?;
-    require_org_feature(&p, Feature::FacilitiesObserve)?;
+    require_capability(&p, Feature::FacilitiesObserve)?;
     let org = p.org_id;
+    // The row gate below is `require_feature` per case, which ERRORS on a foreign
+    // branch rather than skipping it, so an unfiltered org-wide select would make
+    // the whole list 403 on the first row outside the caller's scope. Confine the
+    // select to the caller's `branch_scope` first; empty scope binds an empty array
+    // and selects nothing, which is the correct default deny.
+    let (org_wide, branches) = match &p.branch_scope {
+        BranchScope::All => (true, Vec::new()),
+        BranchScope::Branches(b) => (false, b.iter().map(|id| *id.as_uuid()).collect()),
+    };
     let ids = with_org_conn::<_, _, RestError>(&s.pool, org, move |tx| {
         Box::pin(async move {
             sqlx::query_scalar::<_, Uuid>(
-        "SELECT id FROM facilities_cases WHERE org_id=$1 ORDER BY created_at DESC LIMIT 100",
+        "SELECT id FROM facilities_cases WHERE org_id=$1 AND ($2::boolean OR branch_id = ANY($3::uuid[])) ORDER BY created_at DESC LIMIT 100",
     )
-    .bind(*org.as_uuid()).fetch_all(tx.as_mut()).await.map_err(RestError::db)
+    .bind(*org.as_uuid()).bind(org_wide).bind(branches).fetch_all(tx.as_mut()).await.map_err(RestError::db)
         })
     })
     .await?;
@@ -326,12 +352,12 @@ async fn get_case(
     Path(id): Path<Uuid>,
 ) -> Result<Json<CaseView>, RestError> {
     let p = principal(&s, &h).await?;
-    require_org_feature(&p, Feature::FacilitiesObserve)?;
+    require_capability(&p, Feature::FacilitiesObserve)?;
     get_case_view(&s.pool, &p, id).await.map(Json)
 }
 async fn get_case_view(pool: &PgPool, p: &Principal, id: Uuid) -> Result<CaseView, RestError> {
     let org = p.org_id;
-    let r = with_org_conn::<_, _, RestError>(pool, org, move |tx| Box::pin(async move { sqlx::query("SELECT c.id,c.status,c.assignee_id,c.response_due_at,c.completion_due_at,c.acceptance_due_at,c.branch_id, (SELECT post.kwh-pre.kwh FROM facilities_energy_observations pre JOIN facilities_energy_observations post ON post.case_id=pre.case_id AND post.phase='POST' WHERE pre.case_id=c.id AND pre.phase='PRE')::text energy_delta_kwh, COALESCE((SELECT sum(amount_krw) FROM facilities_cost_observations WHERE case_id=c.id),0) total_cost_krw FROM facilities_cases c WHERE c.id=$1 AND c.org_id=$2").bind(id).bind(*org.as_uuid()).fetch_optional(tx.as_mut()).await.map_err(RestError::db) })).await?.ok_or_else(||RestError::new(StatusCode::NOT_FOUND,"not_found","facilities case was not found"))?;
+    let r = with_org_conn::<_, _, RestError>(pool, org, move |tx| Box::pin(async move { sqlx::query("SELECT c.id,c.status,c.assignee_id,c.response_due_at,c.completion_due_at,c.acceptance_due_at,c.branch_id, (SELECT post.kwh-pre.kwh FROM facilities_energy_observations pre JOIN facilities_energy_observations post ON post.case_id=pre.case_id AND post.phase='POST' WHERE pre.case_id=c.id AND pre.phase='PRE')::text energy_delta_kwh, COALESCE((SELECT sum(amount_krw) FROM facilities_cost_observations WHERE case_id=c.id),0)::bigint total_cost_krw FROM facilities_cases c WHERE c.id=$1 AND c.org_id=$2").bind(id).bind(*org.as_uuid()).fetch_optional(tx.as_mut()).await.map_err(RestError::db) })).await?.ok_or_else(||RestError::new(StatusCode::NOT_FOUND,"not_found","facilities case was not found"))?;
     let b: Uuid = r.try_get("branch_id").map_err(RestError::db)?;
     require_feature(p, Feature::FacilitiesObserve, b)?;
     Ok(CaseView {
@@ -611,7 +637,7 @@ async fn observe(
         }
         for (phase, value) in [("PRE", b.pre_kwh), ("POST", b.post_kwh)] {
             if let Some(kwh) = value {
-                sqlx::query("INSERT INTO facilities_energy_observations(org_id,case_id,phase,source,observed_at,kwh,recorded_by) VALUES($1,$2,$3,'MANUAL',$4,$5,$6) ON CONFLICT (org_id,case_id,phase) DO UPDATE SET observed_at=EXCLUDED.observed_at,kwh=EXCLUDED.kwh,recorded_by=EXCLUDED.recorded_by")
+                sqlx::query("INSERT INTO facilities_energy_observations(org_id,case_id,phase,source,observed_at,kwh,recorded_by) VALUES($1,$2,$3,'MANUAL',$4,$5::numeric,$6) ON CONFLICT (org_id,case_id,phase) DO UPDATE SET observed_at=EXCLUDED.observed_at,kwh=EXCLUDED.kwh,recorded_by=EXCLUDED.recorded_by")
                     .bind(*org.as_uuid()).bind(id).bind(phase).bind(b.observed_at).bind(kwh).bind(*actor.user_id.as_uuid()).execute(tx.as_mut()).await.map_err(RestError::db)?;
             }
         }

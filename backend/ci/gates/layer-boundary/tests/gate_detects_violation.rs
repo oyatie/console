@@ -435,3 +435,187 @@ publish.workspace = true
     );
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// Contracts layer: crates/contracts/* is its own layer, not a generic adapter.
+//
+// Rule under test: DOMAIN crates must NOT depend on console-contracts, while
+// REST adapters MAY. Contracts itself sits near the leaf (kernel only), so a
+// contracts → domain edge is also forbidden — that is the edge a plain
+// Adapter fallback would have silently allowed.
+// ---------------------------------------------------------------------------
+
+/// Builds a temp workspace containing `console-contracts` (at crates/contracts)
+/// plus one extra crate whose manifest body is supplied by the caller.
+fn contracts_workspace(
+    tag: &str,
+    other_dir: &str,
+    other_manifest: &str,
+    contracts_deps: &str,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let ws = temp_workspace(tag)?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        &format!(
+            r#"
+[workspace]
+resolver = "3"
+members = ["crates/contracts", "{other_dir}"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#
+        ),
+    )?;
+
+    let contracts_dir = ws.join("crates/contracts");
+    write_file(
+        &contracts_dir.join("Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "console-contracts"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+{contracts_deps}
+
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(&contracts_dir.join("src/lib.rs"), "// contracts\n")?;
+
+    let other = ws.join(other_dir);
+    write_file(&other.join("Cargo.toml"), other_manifest)?;
+    write_file(&other.join("src/lib.rs"), "// other\n")?;
+    Ok(ws)
+}
+
+#[test]
+fn contracts_crate_is_classified_as_its_own_layer() {
+    assert_eq!(
+        classify_crate(
+            "console-contracts",
+            "/ws/crates/contracts/Cargo.toml",
+            "/ws"
+        ),
+        Layer::Contracts,
+        "crates/contracts must classify as the Contracts layer, not the Adapter fallback"
+    );
+}
+
+#[test]
+fn gate_detects_domain_depends_on_contracts() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = contracts_workspace(
+        "contracts-domain",
+        "crates/demo/domain",
+        r#"
+[package]
+name = "console-demo-domain"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-contracts = { path = "../../contracts" }
+
+[lints]
+workspace = true
+"#,
+        "",
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+
+    let edge = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge);
+    assert!(
+        edge.is_some(),
+        "domain → console-contracts must be an IllegalLayerEdge, got: {:#?}",
+        result.violations
+    );
+    let detail = edge.map(|v| v.detail.clone()).unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-domain (domain) → console-contracts (contracts)"),
+        "violation must name the contracts layer explicitly, got: {detail}"
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_forbids_contracts_depending_on_domain() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = contracts_workspace(
+        "contracts-inverted",
+        "crates/demo/domain",
+        r#"
+[package]
+name = "console-demo-domain"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+        r#"console-demo-domain = { path = "../demo/domain" }"#,
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+
+    let detail = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge)
+        .map(|v| v.detail.clone())
+        .unwrap_or_default();
+    assert!(
+        detail.contains("console-contracts (contracts) → console-demo-domain (domain)"),
+        "contracts must not be allowed to reach back into domain, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_rest_depends_on_contracts() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = contracts_workspace(
+        "contracts-rest",
+        "crates/demo/rest",
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-contracts = { path = "../../contracts" }
+
+[lints]
+workspace = true
+"#,
+        "",
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+
+    assert!(
+        result.passed(),
+        "rest → console-contracts must be allowed, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}

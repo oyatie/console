@@ -9,6 +9,7 @@ publish.workspace = true
 
 [dependencies]
 axum = { workspace = true }
+console-contracts = { path = "../../contracts" }
 console-kernel-core = { workspace = true }
 console-todos-adapter-postgres = { workspace = true }
 console-todos-application = { workspace = true }

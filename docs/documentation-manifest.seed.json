@@ -3460,6 +3460,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-08-lane-harness-false-green.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "8a5ccabdb4034d1dd17dd8714d7087a886feeea1",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",
@@ -3566,7 +3576,7 @@
     "status": "frozen",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "2e029843b738638eff05a7d60bcbbc1b35287c11",
+    "blob_sha": "f86ebd7dfb31b14c332efcedb2232c2cf1cbc959",
     "archive_tag": null
   },
   {

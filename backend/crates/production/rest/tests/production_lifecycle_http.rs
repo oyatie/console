@@ -11,7 +11,7 @@ use axum::http::{Request, StatusCode, header};
 use base64::Engine as _;
 use console_kernel_core::{BranchId, OrgId, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
-use console_platform_test_support::runtime_role_pool;
+use console_platform_test_support::{grant_console_rt, runtime_role_pool};
 use console_production_rest::{
     PRODUCTION_CAPACITY_SLOTS_PATH, PRODUCTION_PLAN_PATH, PRODUCTION_PLANS_PATH,
     PRODUCTION_SOURCE_INGRESS_PATH, PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH,
@@ -200,6 +200,11 @@ async fn get(service: axum::Router, uri: &str, token: &str) -> (StatusCode, Valu
 }
 
 async fn seed_fixture(pool: &PgPool) -> Fixture {
+    // `resolve_required_sources` joins `customer_inquiries` to reject demand whose
+    // inquiry is CLOSED. Production hands console_rt that table through the
+    // default-privilege auto-grant, but `#[sqlx::test]` migrates as a different
+    // superuser, so the runtime role reaches it here only via an explicit GRANT.
+    grant_console_rt(pool, &["GRANT SELECT ON customer_inquiries TO console_rt"]).await;
     let org = OrgId::knl();
     sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING")
         .bind(*org.as_uuid())
@@ -253,7 +258,13 @@ async fn seed_fixture(pool: &PgPool) -> Fixture {
     sqlx::query("INSERT INTO customer_inquiries (id, org_id, name, phone, topic, status) VALUES ($1, $2, $3, $4, 'OTHER', 'NEW')")
         .bind(inquiry).bind(*org.as_uuid()).bind("Production customer").bind("010-0000-0000")
         .execute(pool).await.unwrap();
-    let due_at = OffsetDateTime::now_utc() + Duration::days(7);
+    // `production_demand_contracts.due_at` is compared to the request body for exact
+    // equality (lib.rs `demand_due_at != request.due_at`). Postgres stores timestamptz
+    // at microsecond precision, so a nanosecond-precision `now_utc()` would come back
+    // truncated and never match the value the wire carried.
+    let due_at = (OffsetDateTime::now_utc() + Duration::days(7))
+        .replace_nanosecond(0)
+        .unwrap();
     let demand = Uuid::new_v4();
     sqlx::query("INSERT INTO production_demand_contracts (id, org_id, inquiry_id, product_code, quantity, due_at, source_system, source_id, source_version, evaluated_at) VALUES ($1,$2,$3,'IV-PROD-001',10,$4,'sales','inquiry-1','v1',now())")
         .bind(demand).bind(*org.as_uuid()).bind(inquiry).bind(due_at).execute(pool).await.unwrap();
@@ -264,17 +275,35 @@ async fn seed_fixture(pool: &PgPool) -> Fixture {
     let capacity = Uuid::new_v4();
     sqlx::query("INSERT INTO production_capacity_slots (id,org_id,branch_id,site_id,capacity_date,available_quantity,reserved_quantity,source_system,source_id,source_version,evaluated_at) VALUES ($1,$2,$3,$4,$5,100,0,'erp','capacity-1','v1',now())")
         .bind(capacity).bind(*org.as_uuid()).bind(*branch.as_uuid()).bind(site).bind(due_at.date()).execute(pool).await.unwrap();
-    // 0165:153-157 added the non-deferrable composite FK
-    // ont_object_types(org_id, stable_key) -> ont_object_type_key_revisions(org_id, stable_key).
-    // That sidecar parent is auto-created only by prepare_legacy_object_type_write(), which
-    // no-ops unless the invoker is console_rt — and this fixture inserts on the owner pool, so
-    // the raw insert below had no parent and raised 23503. This test had never executed, so the
-    // FK could be added without anything reporting that the fixture no longer satisfied it.
+    // 0165 closed ont_object_types to unaudited writers: every row must be
+    // accompanied by exactly one ontology.object_type.create audit row inserted by the
+    // same transaction (trg_ont_object_types_current_audit), and only console_rt or
+    // console_ontology_cmd may write that audit row (protected_audit_writer_guard).
+    // console_rt is also the only invoker for which prepare_legacy_object_type_write()
+    // auto-creates the ont_object_type_key_revisions sidecar the composite FK needs.
+    // Seeding this row on the owner pool satisfied neither guard, so it is written here
+    // through the same retained-binary shape the runtime uses. This test had never
+    // executed, so both guards could land without anything reporting the fixture broke.
     let stable_key = format!("production.plan.test{}", Uuid::new_v4().simple());
-    sqlx::query("INSERT INTO ont_object_type_key_revisions (org_id,stable_key) VALUES ($1,$2) ON CONFLICT (org_id,stable_key) DO NOTHING")
-        .bind(*org.as_uuid()).bind(&stable_key).execute(pool).await.unwrap();
-    let ontology: Uuid = sqlx::query_scalar("INSERT INTO ont_object_types (org_id,stable_key,title,backing_kind,schema_version,lifecycle_state,created_by) VALUES ($1,$2,'Production plan','instance',1,'published',$3) RETURNING id")
-        .bind(*org.as_uuid()).bind(&stable_key).bind(*planner.as_uuid()).fetch_one(pool).await.unwrap();
+    let ontology = Uuid::new_v4();
+    let ontology_at = OffsetDateTime::now_utc();
+    let mut ontology_tx = pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL ROLE console_rt")
+        .execute(&mut *ontology_tx)
+        .await
+        .unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.as_uuid().to_string())
+        .execute(&mut *ontology_tx)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO ont_object_types (id,org_id,stable_key,title,backing_kind,schema_version,lifecycle_state,created_by,created_at,updated_at) VALUES ($1,$2,$3,'Production plan','instance',1,'published',$4,$5,$5)")
+        .bind(ontology).bind(*org.as_uuid()).bind(&stable_key).bind(*planner.as_uuid()).bind(ontology_at)
+        .execute(&mut *ontology_tx).await.unwrap();
+    sqlx::query("INSERT INTO audit_events (actor,action,target_type,target_id,trace_id,span_id,occurred_at,org_id) VALUES ($1,'ontology.object_type.create','ont_object_types',$2,'0123456789abcdef0123456789abcdef','0123456789abcdef',$3,$4)")
+        .bind(*planner.as_uuid()).bind(ontology.to_string()).bind(ontology_at).bind(*org.as_uuid())
+        .execute(&mut *ontology_tx).await.unwrap();
+    ontology_tx.commit().await.unwrap();
     Fixture {
         org,
         branch,
@@ -350,6 +379,14 @@ async fn seed_isolated_tenant(pool: &PgPool) -> (OrgId, BranchId, UserId) {
     (org, branch, user)
 }
 
+/// `CreatePlan::due_at` is `#[serde(with = "time::serde::rfc3339")]`, while the
+/// `OffsetDateTime` default `Serialize` emits the crate's own format. Sending the
+/// bare value was rejected by the extractor as a 422 before any handler ran.
+fn rfc3339(at: OffsetDateTime) -> String {
+    at.format(&time::format_description::well_known::Rfc3339)
+        .unwrap()
+}
+
 fn create_body(fixture: &Fixture, key: &str) -> Value {
     json!({
         "branch_id": fixture.branch,
@@ -357,7 +394,7 @@ fn create_body(fixture: &Fixture, key: &str) -> Value {
         "capacity_slot_id": fixture.capacity,
         "material_item_id": fixture.material,
         "quantity": 10,
-        "due_at": fixture.due_at,
+        "due_at": rfc3339(fixture.due_at),
         "idempotency_key": key,
         "ontology_type_id": fixture.ontology,
     })
@@ -561,7 +598,7 @@ async fn create_rejects_a_demand_quantity_or_due_date_that_does_not_match_the_in
         fixture.branch,
     );
     let mut body = create_body(&fixture, "production-demand-due-mismatch");
-    body["due_at"] = json!(fixture.due_at + Duration::days(1));
+    body["due_at"] = json!(rfc3339(fixture.due_at + Duration::days(1)));
     let (status, unavailable) = post(service, PRODUCTION_PLANS_PATH, &token, body).await;
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{unavailable:?}");
     let created: i64 = sqlx::query_scalar("SELECT count(*) FROM production_plans")
@@ -906,7 +943,14 @@ async fn human_reviewer_cannot_assert_production_source_truth(pool: PgPool) {
         body.clone(),
     )
     .await;
-    assert_eq!(status, StatusCode::FORBIDDEN, "{denied:?}");
+    // The ingress route is machine-Basic-only and deliberately sits outside the JWT
+    // middleware (lib.rs `router`), so a human bearer token is not a credential it can
+    // even parse. `parse_basic_credentials` collapses every non-Basic and malformed
+    // form to one indistinguishable 401 on purpose — telling a caller that its
+    // credential *form* was recognised but rejected is the probe that comment forbids.
+    // 403 was never reachable here; the denial this test exists to prove is the zero
+    // audit rows below.
+    assert_eq!(status, StatusCode::UNAUTHORIZED, "{denied:?}");
     let audit_count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM production_source_ingress_claims WHERE org_id=$1 AND kind='MATERIAL'",
     )

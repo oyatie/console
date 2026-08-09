@@ -50,14 +50,55 @@
 //! impossible to reintroduce silently, and to force every remaining exception to
 //! be a sentence a human wrote.
 //!
-//! ## The fix that WOULD be a control (queued, deliberately not here)
+//! ## The control now EXISTS, and this gate is still needed
 //!
-//! A `ResourceBranch` newtype constructible only from a row read, so
-//! `authorize(principal, action, ResourceBranch)` cannot receive a
-//! principal-derived value at all — the compiler refuses, and none of the three
-//! blind spots above can exist because none of them is about text. That is a
-//! cross-lane signature change to `authorize` and all of its callers, and it is
-//! queued separately. Its absence here is a known limitation, not an oversight.
+//! `console_platform_authz::ResourceBranch`
+//! (`backend/crates/platform/authz/src/resource_branch.rs`) is the newtype this
+//! section used to describe as queued. It wraps a `BranchId` in a
+//! module-private field with no constructor that takes one, so a fabricated
+//! branch does not compile — including when the fabrication is moved one
+//! function away, which is blind spot 1 and is not a text property. The proof is
+//! executable: `compile_fail` doctests on the type, paired with compiling
+//! controls so that a failure for the wrong reason still shows up as a failure.
+//!
+//! Its one entrance is `ResourceBranch::lookup(executor, OrgId,
+//! BranchScopedResource, id)`. The caller picks its tenant, a resource kind from
+//! a closed enum, and a row id; it does not pick the table, the column, the
+//! `org_id` predicate or any part of the SQL. That matters
+//! because "this uuid came back from Postgres" is a strictly weaker claim than
+//! "this is the resource's branch", and the gap between them is where the
+//! tautology reappears as a row read — `branch_id` off the principal's own
+//! membership row satisfies the first claim and not the second.
+//!
+//! `authorize_scoped(principal, action, ResourceBranch, at)` is the door that
+//! consumes it, and the resource is NOT optional. The branch-less case is
+//! `authorize_capability_at(principal, action, at)` — a different function, not
+//! an omitted argument, because `None` on a shared door is the one spelling of a
+//! fabricated branch that a compiler cannot object to.
+//!
+//! What is NOT done, and why this gate does not retire yet: `authorize(principal,
+//! action, BranchId)` keeps its signature, because changing it is a change to
+//! every one of its call sites across ~27 crates and that is one lease, not
+//! several. Until those callers move to `authorize_scoped`, a fabricated
+//! `BranchId` can still reach `authorize` — and for exactly that surface, these
+//! three text rules are all there is.
+//!
+//! ## Retiring this scan
+//!
+//! BOTH must hold, and the second is not implied by the first:
+//!
+//! 1. No `authorize(.., BranchId)` call site remains — every one has moved to
+//!    `authorize_scoped`, so no authorization entry point still takes a bare
+//!    `BranchId`.
+//! 2. No entrance to `ResourceBranch` accepts caller-chosen SQL, a caller-chosen
+//!    table, or a caller-chosen column name, and every statement stays bound to
+//!    one `org_id` — an unscoped read proves only that a uuid came back from
+//!    Postgres, which is true of another tenant's row too. A `from_row(row,
+//!    column)` or a `Decode` impl reopens the whole hole while leaving criterion 1 satisfied,
+//!    and the text rules here would not see it — neither shape contains a
+//!    `BranchScope::` match arm.
+//!
+//! Check the second by reading `resource_branch.rs`, not by reading this file.
 //!
 //! ## The fix at a call site is never "add a marker"
 //!

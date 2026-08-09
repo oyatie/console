@@ -1,11 +1,15 @@
 //! Ontology action application layer (§2 dispatch, §6 request composition).
 //!
 //! This layer is PURE (domain + kernel only, no sqlx / axum / tokio — enforced by
-//! the layer-boundary gate). The DB orchestration of the execute path (resolve the
-//! action → run the §16 gate chain → writeback inside one audited tx) lives in
-//! `console-ontology-rest`, which can touch the stores and Cedar. Here we own the
+//! the layer-boundary gate). The DB *I/O* of the execute path (read the action,
+//! read the target through the object-policy gate, open the audited tx) lives in
+//! `console-ontology-rest`, which can touch the stores and Cedar; the DECISION
+//! both preflight and execute act on is assembled here, once. Here we own the
 //! deterministic, unit-testable pieces of that path:
 //!
+//!  * [`PreparedCommand`] — the ontology action command's single preparation
+//!    step: control points, params, inputs, edits, criteria and the §16 evidence
+//!    bag resolved ONCE, so preflight and execute cannot drift;
 //!  * [`parse_control_points`] — the action's `control_points` JSONB → a §16
 //!    [`GateChainConfig`], **fail-closed** on any gate name this build cannot
 //!    enforce (a security gate we don't understand must never be silently skipped);
@@ -21,6 +25,12 @@ use console_governance_domain::GateChainConfig;
 use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+mod prepared;
+
+pub use prepared::{
+    ActionDefinition, CommandInputs, PreparedCommand, PreparedDispatch, WritebackInputs,
+};
 
 /// Which dispatch a resolved action performs — mirrors
 /// [`console_ontology_domain::ActionDispatch`] but re-exported here so the rest layer

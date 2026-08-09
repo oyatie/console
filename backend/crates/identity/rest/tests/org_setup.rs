@@ -397,6 +397,14 @@ async fn people_directory_filters_scope_orders_and_counts_truthfully(pool: PgPoo
         Some("정비"),
     )
     .await;
+    let _hangul = seed_user_with_team(
+        &pool,
+        "김철수",
+        &["MECHANIC"],
+        Some(visible_branch),
+        Some("정비"),
+    )
+    .await;
     let same_name_a = seed_user_with_team(
         &pool,
         "same name",
@@ -431,7 +439,7 @@ async fn people_directory_filters_scope_orders_and_counts_truthfully(pool: PgPoo
         .iter()
         .map(|item| item["display_name"].as_str().unwrap())
         .collect();
-    assert_eq!(names, ["ALPHA", "alpha"]);
+    assert_eq!(names, ["alpha", "ALPHA"]);
     let linked = page["items"]
         .as_array()
         .unwrap()
@@ -487,6 +495,27 @@ async fn people_directory_filters_scope_orders_and_counts_truthfully(pool: PgPoo
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{scoped:?}");
+    // The page order is pinned to the `und-x-icu` collation, so it is the same
+    // on every server and is the order a human reads a name list in. A server
+    // whose own collation happened to differ (libc en_US files 김철수 first;
+    // `C` files every Latin name ahead of it) must not change this page.
+    let scoped_names: Vec<&str> = scoped["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["display_name"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        scoped_names,
+        [
+            "alpha",
+            "ALPHA",
+            "beta shared",
+            "same name",
+            "same name",
+            "김철수"
+        ]
+    );
     let shared_row = scoped["items"]
         .as_array()
         .unwrap()

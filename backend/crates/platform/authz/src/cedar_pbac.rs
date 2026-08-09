@@ -41,6 +41,12 @@ pub mod authoring;
 /// never silently enroll or drop.
 pub mod map;
 
+/// Test-only lock on the four [`DualEngineMode`] arms: who decides in each mode,
+/// and that every Cedar-requiring mode still denies an invalid enrollment map, a
+/// stale identity, an RLS mismatch, or an unavailable bundle.
+#[cfg(test)]
+mod mode_contract;
+
 /// List-filtering residual (arch §5d / decision D1): lower our own no-code
 /// condition grammar to a parameterized SQL `WHERE` fragment that composes as
 /// `WHERE <RLS org floor> AND <residual>`. Pure (no DB); the consumer binds the
@@ -324,15 +330,31 @@ impl CompiledBundleCacheKey {
     }
 }
 
-/// Explicit dual-engine migration mode from the coexistence map.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum DualEngineMode {
+/// Declares [`DualEngineMode`] and [`DualEngineMode::ALL`] from one token list,
+/// so the roster cannot go stale: a variant can only be added inside the
+/// invocation below, which extends `ALL` in the same edit.
+macro_rules! dual_engine_modes {
+    ($($variant:ident),+ $(,)?) => {
+        /// Explicit dual-engine migration mode from the coexistence map.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+        #[serde(rename_all = "snake_case")]
+        pub enum DualEngineMode {
+            $($variant,)+
+        }
+
+        impl DualEngineMode {
+            /// Every mode. The exhaustive source guards and audits enumerate.
+            pub const ALL: &'static [Self] = &[$(Self::$variant,)+];
+        }
+    };
+}
+
+dual_engine_modes!(
     LegacyOnly,
     CedarShadowLegacyEnforce,
     CedarEnforceLegacyCompare,
     CedarOnly,
-}
+);
 
 impl FromStr for DualEngineMode {
     type Err = KernelError;
@@ -799,6 +821,12 @@ fn preflight_denial(
     None
 }
 
+/// Whether `mode` arms the Cedar-side fail-closed guards in
+/// [`evaluate_cedar_pbac_boundary`]: the subject-freshness / RLS-scope-proof
+/// preconditions and the bundle-availability denial.
+///
+/// Membership is positive and closed: only the modes named here are guarded,
+/// and the const block below makes that list total over [`DualEngineMode`].
 const fn cedar_required(mode: DualEngineMode) -> bool {
     matches!(
         mode,
@@ -807,6 +835,31 @@ const fn cedar_required(mode: DualEngineMode) -> bool {
             | DualEngineMode::CedarOnly
     )
 }
+
+/// Exhaustiveness anchor for [`cedar_required`], checked at compile time.
+///
+/// `matches!` is not exhaustiveness-checked, so on its own a new
+/// [`DualEngineMode`] would compile clean and fall out of every Cedar-side
+/// fail-closed guard. `posture` below is a real `match`: adding a variant is a
+/// compile error until its guard posture is stated, and stating a posture that
+/// disagrees with `cedar_required` fails const evaluation.
+const _: () = {
+    const fn posture(mode: DualEngineMode) -> bool {
+        match mode {
+            DualEngineMode::LegacyOnly => false,
+            DualEngineMode::CedarShadowLegacyEnforce
+            | DualEngineMode::CedarEnforceLegacyCompare
+            | DualEngineMode::CedarOnly => true,
+        }
+    }
+
+    let mut i = 0;
+    while i < DualEngineMode::ALL.len() {
+        let mode = DualEngineMode::ALL[i];
+        assert!(posture(mode) == cedar_required(mode));
+        i += 1;
+    }
+};
 
 fn cedar_matches_map(map_entry: &CoexistenceMapEntry, cedar: &CedarEvaluation) -> bool {
     match (map_entry.bundle_key.as_ref(), cedar) {

@@ -771,7 +771,7 @@ async fn create_plan(
         &sources.snapshot,
         request.ontology_type_id,
     ))?;
-    sqlx::query("INSERT INTO production_plans (id, org_id, branch_id, customer_demand_id, product_code, quantity, due_at, checks, source_snapshot, idempotency_key, ontology_type_id, first_operation_id, created_by, created_at, updated_at, plan_digest) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$15,$16)")
+    sqlx::query("INSERT INTO production_plans (id, org_id, branch_id, customer_demand_id, product_code, quantity, due_at, checks, source_snapshot, idempotency_key, ontology_type_id, first_operation_id, created_by, created_at, updated_at, plan_digest) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$14,$15)")
         .bind(plan_id).bind(*org.as_uuid()).bind(*request.branch_id.as_uuid()).bind(request.customer_demand_id).bind(&sources.product_code).bind(request.quantity).bind(request.due_at).bind(&sources.checks).bind(&sources.snapshot).bind(request.idempotency_key.trim()).bind(request.ontology_type_id).bind(operation_id).bind(*principal.user_id.as_uuid()).bind(now).bind(&plan_digest).execute(tx.as_mut()).await.map_err(RestError::db)?;
     sqlx::query("INSERT INTO production_operations (id, org_id, plan_id, sequence, status) VALUES ($1,$2,$3,1,'PENDING')").bind(operation_id).bind(*org.as_uuid()).bind(plan_id).execute(tx.as_mut()).await.map_err(RestError::db)?;
     event(
@@ -850,7 +850,12 @@ async fn release_plan(
     }
     {
         let approval_kind = format!("release:v{}:{}", request.expected_version, plan.plan_digest);
-        let approval = sqlx::query("SELECT requested_by, approver_id FROM gov_approvals WHERE id=$1 AND decision='approved' AND kind=$2 AND target_ref=$3 FOR UPDATE")
+        // No row lock: `gov_approvals` is append-only and 0153:140 revokes UPDATE from
+        // console_rt, which is exactly the privilege `FOR UPDATE` demands — the runtime
+        // role could never run this read. Single use is owned by the
+        // `gov_approval_consumptions` UNIQUE (org_id, approval_id) insert below
+        // (0164:16-18), whose 23505 this handler already maps to a conflict.
+        let approval = sqlx::query("SELECT requested_by, approver_id FROM gov_approvals WHERE id=$1 AND decision='approved' AND kind=$2 AND target_ref=$3")
             .bind(request.approval_ref).bind(&approval_kind).bind(plan_id).fetch_optional(tx.as_mut()).await.map_err(RestError::db)?
             .ok_or_else(|| RestError::conflict("release requires an approved plan-bound approval"))?;
         let requested_by: Uuid = approval.try_get("requested_by").map_err(RestError::db)?;
@@ -1052,7 +1057,12 @@ async fn resolve_required_sources(
     org_id: Uuid,
 ) -> Result<ResolvedSources, RestError> {
     let demand = sqlx::query(
-        "SELECT d.id,d.product_code,d.quantity,d.due_at,d.source_system,d.source_id,d.source_version,d.evaluated_at FROM production_demand_contracts d JOIN customer_inquiries i ON i.id=d.inquiry_id WHERE d.id=$1 AND i.status <> 'CLOSED'",
+        // `FOR UPDATE OF d` locks the demand row, and only it — the joined inquiry is
+        // read-only here and console_rt holds no UPDATE on it. This lock is what makes
+        // the "planned exactly once" count below atomic; without it two concurrent
+        // creates for one demand both read 0 under READ COMMITTED. console_rt holds
+        // UPDATE on production_demand_contracts (0176:83 re-grants what 0173:147 revoked).
+        "SELECT d.id,d.product_code,d.quantity,d.due_at,d.source_system,d.source_id,d.source_version,d.evaluated_at FROM production_demand_contracts d JOIN customer_inquiries i ON i.id=d.inquiry_id WHERE d.id=$1 AND i.status <> 'CLOSED' FOR UPDATE OF d",
     )
     .bind(request.customer_demand_id)
     .fetch_optional(&mut **tx)
@@ -1065,6 +1075,23 @@ async fn resolve_required_sources(
     if demand_quantity != request.quantity || demand_due_at != request.due_at {
         return Err(RestError::unavailable(
             "demand contract does not match quantity and due date",
+        ));
+    }
+    // A demand contract is planned in full exactly once — the quantity check above
+    // admits only a plan for the whole contract, so a second idempotency key would
+    // reserve capacity and material for the same demand twice. Serialized by the
+    // demand row lock taken above, which this count must stay after.
+    let already_planned: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM production_plans WHERE org_id=$1 AND customer_demand_id=$2",
+    )
+    .bind(org_id)
+    .bind(request.customer_demand_id)
+    .fetch_one(&mut **tx)
+    .await
+    .map_err(RestError::db)?;
+    if already_planned > 0 {
+        return Err(RestError::conflict(
+            "customer demand is already committed to a production plan",
         ));
     }
     let material = sqlx::query("SELECT id, iv_code, quantity_on_hand_milli, safety_stock_milli, updated_at FROM inventory_items WHERE id=$1 AND branch_id=$2 AND status='ACTIVE' FOR UPDATE")

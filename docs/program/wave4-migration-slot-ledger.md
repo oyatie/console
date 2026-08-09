@@ -121,9 +121,33 @@ the lane is later dropped, the number is not recycled.
 | 8 | — | L-X7 | ontology projections (deal / listing / inquiry) | number assigned at merge (§5) | 2026-07-25 |
 | 9 | — | L-X8 | lead PII: consent, retention, masking, audited sensitive view | number assigned at merge (§5) | 2026-07-25 |
 | 10 | 0204 | L-A1 | ontology catalog additive-upgrade path — assigned AT MERGE per §5 (pre-assignment had said 0211; taking the next free number keeps the sequence contiguous) | landed | 2026-07-25 |
-| 11 | 0212 | hf-audit-guard | extend protected_audit_writer_guard to the two builtin-catalog audit actions (console_rt can currently forge them) | assigned | 2026-07-25 |
+| 11 | ~~0212~~ | hf-audit-guard | extend protected_audit_writer_guard to the two builtin-catalog audit actions (console_rt can currently forge them) | pre-assignment VOIDED 2026-08-09 — takes its number at merge per §5, exactly as row 10 did | 2026-07-25 |
+| 12 | 0212 | admission/backend-p1-p5 | repair the logistics POD evidence reference check | assigned AT MERGE per §5 | 2026-08-09 |
 
-Next free slot after the seeded assignments: **0211**.
+Next free slot after the seeded assignments: **0213**.
+
+### Why row 11's pre-assignment was voided rather than honoured
+
+A reviewer read row 11 as reserving 0212 and asked the P1–P5 lane to "allocate the
+next serialized free slot" instead. That was measured before it was believed, and it
+turns the tree red:
+
+```
+$ cargo run -q -p console-gate-migration-safety          # 0212 occupied
+console-gate-migration-safety: PASSED                                    EXIT=0
+
+$ git mv .../0212_repair_....sql .../0213_repair_....sql # the prescribed fix
+console-gate-migration-safety: FAILED - 1 violation(s):
+  [NonContiguousMigrationVersion] ...: missing migration version 0212 before 0213
+                                                                          EXIT=1
+```
+
+`origin/main` tops out at 0211, so 0212 is not merely *a* free slot — it is the only
+legal one, and any lane that skips it fails the gate. A reserved number and a
+contiguity gate cannot both be satisfied by the lane that merges first; this is the
+same defect §5 was written for, and the same one row 10 already resolved by
+overriding a pre-assignment of 0211. Rows carrying a bare slot number are therefore
+advisory. **§5 governs: the number is taken at merge, by whoever merges first.**
 
 ### Standing hazards for these nine
 

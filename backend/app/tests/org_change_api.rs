@@ -4,6 +4,8 @@
 //! effective-dated apply, plus deny-by-omission authorization, cross-tenant
 //! concealment, and audit readback. It crosses the assembled HTTP router.
 
+use std::collections::BTreeMap;
+
 use axum::body::{Body, to_bytes};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use console_kernel_core::{OrgId, UserId};
@@ -32,8 +34,8 @@ fn today_kst() -> time::Date {
     OffsetDateTime::now_utc().to_offset(offset!(+9)).date()
 }
 
-/// Full REORG lifecycle: idempotent create, preflight receipt, draft-edit
-/// staleness, ordered SoD chain with self-approval + out-of-order refusals,
+/// Full REORG lifecycle: idempotent create, preflight as a zero-write READ,
+/// ordered SoD chain with self-approval + out-of-order refusals,
 /// effective-date gate, one-transaction apply, and audit readback.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
@@ -105,23 +107,10 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
     .await;
     assert_eq!(status, StatusCode::CONFLICT, "changed replay: {conflicted}");
 
-    // Submit before preflight fails closed; preflight promotes to PRECHECKED.
-    let (status, early) = send(
-        &rt,
-        &keys,
-        "POST",
-        &format!("{CHANGES}/{id}/submit"),
-        &draft_token,
-        None,
-        None,
-    )
-    .await;
-    assert_eq!(
-        status,
-        StatusCode::CONFLICT,
-        "submit without receipt: {early}"
-    );
-    let (status, prechecked) = send(
+    // Preflight is a READ: it reports the receipt it computed and persists
+    // nothing — no status flip, no stored verdict. There is no PRECHECKED step
+    // to reach, because submit recomputes the receipt in its own transaction.
+    let (status, checked) = send(
         &rt,
         &keys,
         "POST",
@@ -131,13 +120,36 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
         None,
     )
     .await;
-    assert_eq!(status, StatusCode::OK, "preflight: {prechecked}");
-    assert_eq!(prechecked["status"], "PRECHECKED");
-    assert_eq!(prechecked["preflight"]["blockers"], json!([]));
-    assert_eq!(prechecked["preflight"]["stale"], false);
+    assert_eq!(status, StatusCode::OK, "preflight: {checked}");
+    assert_eq!(
+        checked["status"], "DRAFT",
+        "preflight promotes nothing: {checked}"
+    );
+    assert_eq!(checked["preflight"]["blockers"], json!([]));
+    assert_eq!(checked["preflight"]["stale"], false);
+    // ...and the verdict it just reported is not on the row: the next reader
+    // sees a DRAFT with no receipt at all.
+    let (status, reread) = send(
+        &rt,
+        &keys,
+        "GET",
+        &format!("{CHANGES}/{id}"),
+        &draft_token,
+        None,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "post-preflight read: {reread}");
+    assert_eq!(reread["status"], "DRAFT");
+    assert_eq!(
+        reread["preflight"],
+        Value::Null,
+        "the preflight verdict is reported, never stored: {reread}"
+    );
 
-    // A draft edit knocks the request back to DRAFT and marks the receipt
-    // stale — the submit gate recomputes, never trusts the stored receipt.
+    // A draft edit leaves it DRAFT, and there is still no stored receipt that
+    // could go stale — submit's in-transaction recompute replaced staleness as
+    // the defence, so the strongest statement is that nothing is persisted.
     let (status, edited) = send(
         &rt,
         &keys,
@@ -150,8 +162,12 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
     .await;
     assert_eq!(status, StatusCode::OK, "draft edit: {edited}");
     assert_eq!(edited["status"], "DRAFT");
-    assert_eq!(edited["preflight"]["stale"], true);
-    let (status, reprechecked) = send(
+    assert_eq!(
+        edited["preflight"],
+        Value::Null,
+        "no stored receipt exists to go stale: {edited}"
+    );
+    let (status, rechecked) = send(
         &rt,
         &keys,
         "POST",
@@ -161,7 +177,34 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
         None,
     )
     .await;
-    assert_eq!(status, StatusCode::OK, "re-preflight: {reprechecked}");
+    assert_eq!(status, StatusCode::OK, "re-preflight: {rechecked}");
+
+    // A row WRITTEN BEFORE P3 still carries a stored receipt: the old preflight
+    // saved one, and a later draft edit moved `updated_at` without clearing it.
+    // Nothing in the P3 write path can produce that shape any more, so seeding
+    // it is the only way to keep the `stale` derivation — which is DERIVED on
+    // read, not stored, and is published in the API — under test.
+    let legacy_at = seed_legacy_receipt(&pool, &id, "DRAFT").await;
+    let (status, legacy) = send(
+        &rt,
+        &keys,
+        "GET",
+        &format!("{CHANGES}/{id}"),
+        &draft_token,
+        None,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "legacy read: {legacy}");
+    assert_eq!(
+        parse_rfc3339(&legacy["preflight"]["computedAt"]),
+        legacy_at,
+        "the stored receipt is served as stored: {legacy}"
+    );
+    assert_eq!(
+        legacy["preflight"]["stale"], true,
+        "a receipt older than the last draft edit reads back stale: {legacy}"
+    );
 
     let (status, submitted) = send(
         &rt,
@@ -175,6 +218,16 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
     .await;
     assert_eq!(status, StatusCode::OK, "submit: {submitted}");
     assert_eq!(submitted["status"], "IN_APPROVAL");
+    // Submit accepted the legacy row and refused to trust its receipt: the
+    // receipt now stored is one submit computed inside its own transaction, so
+    // it is strictly newer than the seeded one. `stale` is NOT the oracle here
+    // — it is derived false for every non-draft-editable status, so it could
+    // not fail on an IN_APPROVAL readback whatever submit stored.
+    assert_eq!(submitted["preflight"]["blockers"], json!([]));
+    assert!(
+        parse_rfc3339(&submitted["preflight"]["computedAt"]) > legacy_at,
+        "submit recomputed the receipt instead of trusting the stored one: {submitted}"
+    );
     let steps = submitted["approvalSteps"].as_array().unwrap();
     assert_eq!(
         steps
@@ -260,6 +313,14 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
         last = decided;
     }
     assert_eq!(last["status"], "APPROVED", "all four decided: {last}");
+    // Each decision moved `updated_at` past the receipt's `computedAt`, so the
+    // only thing holding `stale` false here is the draft-editable guard in the
+    // derivation: an APPROVED request cannot be edited, so no edit can have
+    // overtaken its receipt.
+    assert_eq!(
+        last["preflight"]["stale"], false,
+        "staleness applies only while the draft is still editable: {last}"
+    );
     let (status, redecided) = send(
         &rt,
         &keys,
@@ -328,43 +389,51 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
     )
     .await;
     assert_eq!(status, StatusCode::OK, "detail: {detail}");
-    let actions: Vec<&str> = detail["events"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|e| e["action"].as_str().unwrap())
-        .collect();
-    for expected in [
-        "create",
-        "preflight",
-        "draft.update",
-        "submit",
-        "step.decide",
-        "effectuate",
-    ] {
-        assert!(
-            actions.contains(&expected),
-            "event {expected} in {actions:?}"
-        );
+    // A COUNTED census, not a set: this lifecycle ran two preflights, and both
+    // a `contains` probe and a deduplicated set stay green if a preflight
+    // appends an extra row under a name that is already on the list. Row counts
+    // are what actually move when a read starts writing.
+    let mut events: BTreeMap<&str, usize> = BTreeMap::new();
+    for event in detail["events"].as_array().unwrap() {
+        *events.entry(event["action"].as_str().unwrap()).or_default() += 1;
     }
+    assert_eq!(
+        events.into_iter().collect::<Vec<_>>(),
+        [
+            ("create", 1),
+            ("draft.update", 1),
+            ("effectuate", 1),
+            ("step.decide", 4),
+            ("submit", 1),
+        ],
+        "exact transition chain and row counts; `preflight` is a READ and writes \
+         no event: {detail}"
+    );
 
-    // Audit spine readback: every lifecycle mutation appended an audit event.
-    for action in [
-        "org_change.create",
-        "org_change.preflight",
-        "org_change.draft.update",
-        "org_change.submit",
-        "org_change.step.decide",
-        "org_change.effectuate",
-        "org_change.apply.op",
-    ] {
-        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM audit_events WHERE action = $1")
-            .bind(action)
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-        assert!(count >= 1, "audit action {action} recorded");
-    }
+    // Audit spine readback, likewise counted. `#[sqlx::test]` gives this test
+    // its own database, so this is every audit row the run produced — a
+    // `count >= 1` loop over the actions we WANT would pass while preflight
+    // quietly persisted its verdict beside them, and so would a DISTINCT set.
+    let audited: Vec<(String, i64)> = sqlx::query_as(
+        "SELECT action, count(*) FROM audit_events WHERE action LIKE 'org_change.%' \
+         GROUP BY action ORDER BY action",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        audited,
+        [
+            // Two proposal ops applied: CREATE_BRANCH and RENAME_REGION.
+            ("org_change.apply.op".to_owned(), 2),
+            ("org_change.create".to_owned(), 1),
+            ("org_change.draft.update".to_owned(), 1),
+            ("org_change.effectuate".to_owned(), 1),
+            ("org_change.step.decide".to_owned(), 4),
+            ("org_change.submit".to_owned(), 1),
+        ],
+        "exact audit spine and row counts; preflight is a READ and appends nothing"
+    );
     // Each SoD decision also passed through the gov_approvals second net.
     let gov: i64 =
         sqlx::query_scalar("SELECT count(*) FROM gov_approvals WHERE kind = 'org_change_step'")
@@ -409,8 +478,10 @@ async fn dissolve_settles_then_archives_with_referential_net(pool: PgPool) {
     assert_eq!(status, StatusCode::CREATED, "create: {created}");
     let id = created["id"].as_str().unwrap().to_owned();
 
-    // Dissolve dependents surface as settlement WARNINGS, never blockers.
-    let (status, prechecked) = send(
+    // Dissolve dependents surface as settlement WARNINGS, never blockers — and
+    // the read that surfaces them leaves the request DRAFT, because preflight
+    // persists nothing.
+    let (status, checked) = send(
         &rt,
         &keys,
         "POST",
@@ -420,19 +491,26 @@ async fn dissolve_settles_then_archives_with_referential_net(pool: PgPool) {
         None,
     )
     .await;
-    assert_eq!(status, StatusCode::OK, "preflight: {prechecked}");
-    assert_eq!(prechecked["status"], "PRECHECKED");
-    assert_eq!(prechecked["preflight"]["blockers"], json!([]));
+    assert_eq!(status, StatusCode::OK, "preflight: {checked}");
+    assert_eq!(
+        checked["status"], "DRAFT",
+        "preflight promotes nothing: {checked}"
+    );
+    assert_eq!(checked["preflight"]["blockers"], json!([]));
     assert!(
-        prechecked["preflight"]["warnings"]
+        checked["preflight"]["warnings"]
             .as_array()
             .unwrap()
             .iter()
             .any(|w| w["code"] == "ACTIVE_USERS"),
-        "resident user surfaces as a settlement warning: {prechecked}"
+        "resident user surfaces as a settlement warning: {checked}"
     );
 
-    let (_, submitted) = send(
+    // A request written before P3 is on disk as PRECHECKED with a stored
+    // receipt. Submit must still accept it — refusing would strand every row
+    // written before this change — and must recompute rather than trust it.
+    let legacy_at = seed_legacy_receipt(&pool, &id, "PRECHECKED").await;
+    let (status, submitted) = send(
         &rt,
         &keys,
         "POST",
@@ -442,6 +520,16 @@ async fn dissolve_settles_then_archives_with_referential_net(pool: PgPool) {
         None,
     )
     .await;
+    assert_eq!(
+        status,
+        StatusCode::OK,
+        "submit a legacy PRECHECKED row: {submitted}"
+    );
+    assert_eq!(submitted["status"], "IN_APPROVAL");
+    assert!(
+        parse_rfc3339(&submitted["preflight"]["computedAt"]) > legacy_at,
+        "submit recomputed the receipt instead of trusting the stored one: {submitted}"
+    );
     for step in submitted["approvalSteps"].as_array().unwrap() {
         let step_id = step["id"].as_str().unwrap();
         let (status, decided) = send(
@@ -1406,6 +1494,39 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+}
+
+fn parse_rfc3339(value: &Value) -> OffsetDateTime {
+    OffsetDateTime::parse(
+        value.as_str().expect("an rfc3339 timestamp string"),
+        &time::format_description::well_known::Rfc3339,
+    )
+    .unwrap()
+}
+
+/// Rewrite `id` into a pre-P3 on-disk shape: `status` plus a stored preflight
+/// receipt six hours older than the row's last write. `updated_at` is left
+/// where the last real write put it, so the derived `stale` flag has a later
+/// edit to compare the receipt against. Returns the receipt's `computedAt`.
+async fn seed_legacy_receipt(pool: &PgPool, id: &str, status: &str) -> OffsetDateTime {
+    let computed_at = OffsetDateTime::now_utc() - Duration::hours(6);
+    sqlx::query("UPDATE org_change_requests SET status = $2, preflight = $3 WHERE id = $1")
+        .bind(Uuid::parse_str(id).unwrap())
+        .bind(status)
+        .bind(json!({
+            "computedAt": computed_at
+                .format(&time::format_description::well_known::Rfc3339)
+                .unwrap(),
+            "stale": false,
+            "blockers": [],
+            "warnings": [],
+            "headcount": 0,
+            "dependentsTotal": 0,
+        }))
+        .execute(pool)
+        .await
+        .unwrap();
+    computed_at
 }
 
 async fn seed_org(pool: &PgPool, slug: &str) -> OrgId {

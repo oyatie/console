@@ -1259,14 +1259,23 @@ impl PgOrgChangeStore {
         .await
     }
 
+    /// Preflight is a READ. It computes the receipt and returns it, and it
+    /// persists NOTHING — no `PRECHECKED` status flip, no `org_change_events`
+    /// row, no audit row, no column rewrite. `submit` recomputes the same
+    /// receipt inside its own transaction and is the only writer, so there is
+    /// no stored receipt that can disagree with the state at submit time.
+    ///
+    /// The request row is still read under a `SELECT ... FOR UPDATE` so the
+    /// receipt is computed against a state no concurrent draft edit can shift
+    /// mid-scan; the lock is released by the read transaction's commit.
     pub async fn preflight(
         &self,
-        actor: UserId,
+        _actor: UserId,
         id: Uuid,
     ) -> Result<OrgChangeDetail, PgOrgChangeError> {
         let org = current_org().map_err(KernelError::from)?;
         let now = OffsetDateTime::now_utc();
-        with_audits(&self.pool, org, |tx| {
+        with_org_conn(&self.pool, org, |tx| {
             Box::pin(async move {
                 let request = lock_request(tx, id).await?;
                 if !request.status.is_draft_editable() {
@@ -1284,44 +1293,16 @@ impl PgOrgChangeStore {
                     now,
                 )
                 .await?;
-                let next = if report.blockers.is_empty() {
-                    OrgChangeStatus::Prechecked
-                } else {
-                    OrgChangeStatus::Draft
-                };
-                if request.status != next {
-                    request.status.can_transition_to(next)?;
-                }
                 let (site_count, team_count) = proposal_stats(&request.target, &request.proposal);
-                store_preflight(tx, id, &report, next, site_count, team_count, now).await?;
-                insert_event(
-                    tx,
-                    org,
-                    id,
-                    actor,
-                    "preflight",
-                    Some(request.status),
-                    Some(next),
-                    Some(&format!(
-                        "blockers={} warnings={}",
-                        report.blockers.len(),
-                        report.warnings.len()
-                    )),
-                    now,
-                )
-                .await?;
-                let detail = require_detail(tx, id).await?;
-                Ok((
-                    detail,
-                    vec![audit(
-                        org,
-                        actor,
-                        "org_change.preflight",
-                        "org_change_request",
-                        id.to_string(),
-                        now,
-                    )?],
-                ))
+                let mut detail = require_detail(tx, id).await?;
+                // The receipt and the counts derived from it are reported, not
+                // stored; the persisted columns keep whatever the last WRITE
+                // (create/update_draft/submit) left there.
+                detail.summary.headcount = report.headcount;
+                detail.summary.site_count = site_count;
+                detail.summary.team_count = team_count;
+                detail.preflight = Some(report);
+                Ok(detail)
             })
         })
         .await
@@ -1337,9 +1318,13 @@ impl PgOrgChangeStore {
         with_audits(&self.pool, org, |tx| {
             Box::pin(async move {
                 let request = lock_request(tx, id).await?;
-                if request.status != OrgChangeStatus::Prechecked {
+                // Preflight persists nothing, so a request now reaches submit
+                // as DRAFT. Rows written before that change are PRECHECKED on
+                // disk and must keep working: both are accepted and the
+                // receipt is recomputed below either way.
+                if !request.status.is_draft_editable() {
                     return Err(KernelError::conflict(
-                        "submit requires a PRECHECKED request with a clean preflight receipt",
+                        "submit requires a DRAFT or PRECHECKED request",
                     )
                     .into());
                 }
@@ -1392,7 +1377,7 @@ impl PgOrgChangeStore {
                     id,
                     actor,
                     "submit",
-                    Some(OrgChangeStatus::Prechecked),
+                    Some(request.status),
                     Some(OrgChangeStatus::InApproval),
                     None,
                     now,

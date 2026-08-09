@@ -12635,8 +12635,13 @@ paths:
   /api/v1/governance/approvals/decide:
     post:
       operationId: decideGovernanceApproval
-      summary: Decide a four-eyes approval
-      description: Records a four-eyes approval decision; the approver must differ from the requester (self-approval is rejected).
+      summary: Decide a four-eyes approval that is already open (step 2 of 2)
+      description: >-
+        Decides a four-eyes request that MUST already be open. Step 1 is POST /api/v1/governance/approvals for the
+        same request_ref; deciding without it is a 409, not an implicit create. The open row — not the request body —
+        is authority for the requester and for the object the approval binds to. 409 when no open pending request
+        exists for request_ref, and 409 when kind differs from the kind that request was opened with. 403 when the
+        approver is that row's recorded requester (self-approval).
       tags:
       - Governance
       security:
@@ -16664,9 +16669,11 @@ paths:
       tags:
       - org
       operationId: preflightOrgChange
-      summary: Run the impact preflight
-      description: DRAFT or PRECHECKED only. Computes the blocker/warning receipt in-transaction; a clean run promotes
-        the request to PRECHECKED, blockers hold it at DRAFT.
+      summary: Run the impact preflight (read-only; persists nothing)
+      description: DRAFT or PRECHECKED only. Computes the blocker/warning receipt in-transaction and RETURNS it, and
+        persists NOTHING — no status change, no stored receipt, no event, no audit row. A clean run does NOT promote
+        the request, so a client must never wait for PRECHECKED before calling submit; submit is reachable straight
+        from DRAFT and recomputes the same receipt inside its own transaction, which is the only writer.
       security:
       - bearerAuth: []
       parameters:
@@ -16677,7 +16684,9 @@ paths:
           $ref: '#/components/schemas/Uuid'
       responses:
         '200':
-          description: Receipt stored and returned inside the request detail.
+          description: Receipt computed and returned inside the request detail. Nothing was written; `summary.status`
+            is whatever the last write left, and re-reading the request afterwards returns the receipt stored by an
+            earlier submit — or none at all — not this one.
           content:
             application/json:
               schema:
@@ -16700,8 +16709,11 @@ paths:
       - org
       operationId: submitOrgChange
       summary: Submit for SoD approval
-      description: Requires PRECHECKED; recomputes the receipt inside the submit transaction (a stale or blocked receipt
-        conflicts) and seeds the ordered hr → finance → legal → executive approval chain.
+      description: DRAFT or PRECHECKED only — running preflight first is optional and is never a prerequisite, because
+        submit recomputes the receipt inside its own transaction (blockers found there are a 409) and is what stores
+        it, before seeding the ordered hr → finance → legal → executive approval chain. PRECHECKED is still accepted
+        only so requests written before preflight became read-only keep working; their stored receipt is replaced,
+        never trusted.
       security:
       - bearerAuth: []
       parameters:
@@ -31731,6 +31743,10 @@ components:
           type: string
         requested_by:
           $ref: '#/components/schemas/Uuid'
+          deprecated: true
+          description: Deprecated and IGNORED. Still required on the wire — omitting it is a 422 — but the requester is
+            read from the open pending approval request inside the decision transaction, so whatever is sent here has
+            no effect on the self-approval check or on the recorded approval. Send the open request's requested_by.
         decision:
           type: string
           enum:
@@ -34896,6 +34912,9 @@ components:
       enum: [NEW, REORG, DISSOLVE]
     OrgChangeStatus:
       type: string
+      description: PRECHECKED is legacy and is never entered by a request created today — preflight is read-only, so
+        the lifecycle is DRAFT → IN_APPROVAL at submit. It stays in the enum because rows written before that change
+        still carry it on disk and are still accepted by PATCH, preflight, submit and cancel. Do not poll for it.
       enum: [DRAFT, PRECHECKED, IN_APPROVAL, APPROVED, APPLIED, SETTLING, ARCHIVED, REJECTED, CANCELLED]
     OrgChangeTargetKind:
       type: string

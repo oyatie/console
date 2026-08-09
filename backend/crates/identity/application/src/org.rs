@@ -262,7 +262,9 @@ pub const MAX_DIRECTORY_PAGE_LIMIT: i64 = 200;
 /// Validated filters for a tenant people-directory query.
 ///
 /// The persistence adapter must apply every filter to both its count and page
-/// queries, and order by `(display_name, id)` before applying pagination.
+/// queries, and order by `(display_name, id)` — `display_name` under the
+/// `und-x-icu` (ICU root) collation, so paging is identical on every server
+/// without abandoning human name order — before applying pagination.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DirectoryListQuery {
     /// Lowercase, trimmed search term; `None` means no name search filter.

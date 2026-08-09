@@ -794,6 +794,10 @@ async fn a_row_hidden_from_the_list_is_refused_by_preflight_execute_and_lifecycl
     // POSITIVE CONTROLS, one per route. Every refusal below is ALSO satisfied by
     // a gate that refuses everything, so without a positive control on the same
     // route the refusal proves nothing.
+    // Preflight is asked WITHOUT `command_id`/`expected_revision`: it evaluates
+    // neither, and the shipped request schema does not require them. A preflight
+    // that refused this body would 422 the console dialog that renders the gate
+    // report before a command id is minted.
     let permitted_preflight = fx
         .post(
             "/api/v1/ontology/actions/set_code/preflight",
@@ -3392,6 +3396,10 @@ const INSTANCE_ROUTE_CLASSIFICATION: &[(&str, InstanceVisibility)] = &[
         InstanceVisibility::Gated {
             method: "POST",
             uri: "/api/v1/ontology/actions/set_code/preflight",
+            // Preflight's own input contract: it evaluates neither `command_id`
+            // nor `expected_revision`, so it must answer the gate chain without
+            // them. A 422 here would mean the positive control never reached the
+            // gate chain, which the `assert_ne!` below now catches.
             body: r#"{"object_type_id":"{type}","instance_id":"{id}","params":{"code":"CODE-SWEPT"}}"#,
         },
     ),
@@ -3484,6 +3492,17 @@ async fn every_gated_route_refuses_a_policy_hidden_instance(owner_pool: PgPool) 
             StatusCode::NOT_FOUND,
             "{path}: the PERMITTED row must reach this route, or its 404 below \
              proves nothing: {:?}",
+            res.body
+        );
+        // A 422 means the request never reached the gate chain at all, so the
+        // hidden row's 404 below would be indistinguishable from the same
+        // rejection. The entry's body must stay a request this route accepts;
+        // this is what fails when it drifts out of the route's input contract.
+        assert_ne!(
+            res.status,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "{path}: the PERMITTED row was refused before the gate chain, so its \
+             404 below proves nothing -- fix this entry's body: {:?}",
             res.body
         );
     }

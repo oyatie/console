@@ -6,10 +6,14 @@
 //! notification-center REST template.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::routing::{delete, get, post};
+use axum::routing::{MethodRouter, delete, get, post};
 use axum::{Json, Router};
 use console_kernel_core::{ErrorKind, KernelError, TodoId, TraceContext};
 use console_platform_auth::JwtVerifier;
@@ -26,11 +30,28 @@ pub const ME_TODOS_PATH: &str = "/api/v1/me/todos";
 pub const ME_TODO_PATH_TEMPLATE: &str = "/api/v1/me/todos/{todoId}";
 pub const ME_TODO_DONE_PATH_TEMPLATE: &str = "/api/v1/me/todos/{todoId}/done";
 
-pub const TODOS_ROUTE_PATHS: &[&str] = &[
-    ME_TODOS_PATH,
-    ME_TODO_PATH_TEMPLATE,
-    ME_TODO_DONE_PATH_TEMPLATE,
-];
+/// Every route this face serves, as the single table [`router`] is built from.
+///
+/// [`route_paths`] reads the same table, so the contract-coverage test compares
+/// the fragment against what the router is actually assembled from rather than
+/// against a second hand-maintained list that can drift silently.
+///
+/// ponytail: the ceiling is that `router` must contain nothing but the fold
+/// below — a `.route()` bolted on afterwards would still escape. Upgrade to
+/// enumerating the built `Router` if axum ever exposes its route table.
+fn routes() -> Vec<(&'static str, MethodRouter<TodoRestState>)> {
+    vec![
+        (ME_TODOS_PATH, get(list_todos).post(create_todo)),
+        (ME_TODO_DONE_PATH_TEMPLATE, post(set_done)),
+        (ME_TODO_PATH_TEMPLATE, delete(delete_todo)),
+    ]
+}
+
+/// The path templates [`router`] serves, derived from the same table.
+#[must_use]
+pub fn route_paths() -> Vec<&'static str> {
+    routes().into_iter().map(|(path, _)| path).collect()
+}
 
 #[derive(Debug, Clone)]
 pub struct TodoRestState {
@@ -51,10 +72,11 @@ impl TodoRestState {
 pub fn router(state: TodoRestState) -> Router {
     let verifier = state.jwt_verifier.clone();
     let pool = state.store.pool().clone();
-    let router = Router::new()
-        .route(ME_TODOS_PATH, get(list_todos).post(create_todo))
-        .route(ME_TODO_DONE_PATH_TEMPLATE, post(set_done))
-        .route(ME_TODO_PATH_TEMPLATE, delete(delete_todo))
+    let router = routes()
+        .into_iter()
+        .fold(Router::new(), |router, (path, methods)| {
+            router.route(path, methods)
+        })
         .with_state(state);
     console_platform_request_context::with_request_context(router, verifier, pool)
 }
