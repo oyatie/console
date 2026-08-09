@@ -12,8 +12,15 @@
 //! * **Output is a function of the fragment set.** Keys are emitted in sorted
 //!   order and bodies are re-indented from scratch, so the bytes do not depend
 //!   on registration order or on how an author indented a raw string.
-//! * **Every `$ref` points into this document, and every schema `$ref`
-//!   resolves.** A `$ref` value that is not exactly
+//! * **Every `$ref` this scanner SEES points into this document, and every
+//!   schema `$ref` it sees resolves.** Read the qualifier: this is a text scan,
+//!   not a parse, so it is total over the positions it covers and NOT over YAML.
+//!   The positions it does not cover are named at the end of this list, with the
+//!   reason they are still open. An earlier revision stated this bullet without
+//!   the qualifier, which made it a false claim about a control rather than a
+//!   description of one — the failure mode this crate exists to prevent in
+//!   published contracts, committed in its own module doc. A `$ref` value that
+//!   is not exactly
 //!   `#/components/<section>/<key>` — a foreign file or URL, a nested JSON
 //!   pointer, a missing target, a `#/definitions/…` pointer, a typo anywhere in
 //!   the pointer — is an [`UnresolvableRef`]; one that is well formed but names
@@ -21,6 +28,30 @@
 //!   [`DanglingRef`]. Without this, a schema deleted from a fragment is silent:
 //!   the paths keep pointing at it and the composed document simply loses the
 //!   definition.
+//!
+//! **WHAT THIS SCANNER STILL MISSES, measured rather than assumed.** Adversarial
+//! review of the two-axis rule proved four positions still fail open, and they
+//! are recorded here because a gap nobody wrote down is a gap the next reader
+//! believes is closed:
+//!
+//!   * a `$ref` written in YAML **flow style** (`{ $ref: "..." }`), including the
+//!     foreign-URL case this check exists to close;
+//!   * a quoted `$ref` whose pointer contains an **internal space**, which
+//!     truncates to a resolvable prefix and composes clean — the `Todo-Summary`
+//!     prefix trap this crate has a dedicated test for;
+//!   * an OpenAPI 3.1 `discriminator.mapping` value in the implicit
+//!     **schema-NAME** form (`gone: Ghost`), which carries no pointer to find;
+//!   * a foreign prefix ending in `{ } [ ] ,`, which the backward scan treats as
+//!     a scalar delimiter even though those are legal inside a quoted YAML scalar.
+//!
+//! These are not oversights to patch one at a time — that is the enumeration
+//! this revision already replaced twice. **Two text scans cannot be total over
+//! YAML.** The total primitive is parsing the fragment body and walking every
+//! scalar, which needs a YAML crate; this crate has ZERO dependencies today, so
+//! that is a decision about the layer's dependency surface and its Buck
+//! vendoring, not a change a lane can make inside this file. Until it is made,
+//! this scanner is a strict improvement over matching a bare substring and is
+//! NOT a guarantee.
 //!
 //! The rule is stated over two axes at once, because a reference has two parts
 //! and keying the check on either alone is a fail-open the other catches: every

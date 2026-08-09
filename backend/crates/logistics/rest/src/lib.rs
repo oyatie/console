@@ -311,6 +311,8 @@ fn validate_evidence_reference(reference: &str) -> Result<(), RestError> {
             "evidenceReference may contain only letters, digits, '.', '_', '/' and '-' after the scheme",
         ));
     }
+    // The class check above admits ASCII only, so bytes and characters agree by
+    // here; `chars()` is the unit migration 0212's `char_length` counts.
     let len = reference.chars().count();
     if !(19..=411).contains(&len) {
         return Err(invalid(
@@ -522,10 +524,19 @@ mod published_evidence_reference_contract {
     /// means this test examined zero subjects, and a control that examined zero
     /// subjects must never report green.
     fn published_property() -> &'static str {
-        const OPERATION: &str = "operationId: verifyLogisticsPod";
-        let at = OPENAPI_YAML
-            .find(OPERATION)
+        // The trailing newline makes this the WHOLE operation id. Without it,
+        // `verifyLogisticsPodDraft` published earlier in the file would be read
+        // instead, and its schema would be compared in place of this one's.
+        const OPERATION: &str = "operationId: verifyLogisticsPod\n";
+        let mut hits = OPENAPI_YAML.match_indices(OPERATION);
+        let (at, _) = hits
+            .next()
             .expect("openapi.yaml publishes no verifyLogisticsPod operation");
+        assert!(
+            hits.next().is_none(),
+            "openapi.yaml publishes verifyLogisticsPod more than once; this test would \
+             read only the first"
+        );
         // Confine the read to this operation, so a neighbouring operation's
         // evidenceReference can never be mistaken for this one's.
         let after = &OPENAPI_YAML[at + OPERATION.len()..];
@@ -593,20 +604,23 @@ mod published_evidence_reference_contract {
             anchor, "+$",
             "published pattern {pattern} is outside the subset this test evaluates ([class]+$)"
         );
-        assert!(
-            !class.contains('\\'),
-            "published pattern {pattern} escapes inside its class; this test does not evaluate escapes"
-        );
         (literal, Some(class))
     }
 
     /// Membership in an OpenAPI character class, `a-z` ranges expanded. A `-` with
-    /// no member after it is itself, which is exactly how this class ends.
+    /// no member after it is itself, which is exactly how this class ends. A `\`
+    /// escapes the member after it, so `[..._/\-]` and `[..._/-]` — the same class,
+    /// and the two spellings tooling emits for a trailing hyphen — read alike.
     fn class_contains(class: &str, c: char) -> bool {
         let members: Vec<char> = class.chars().collect();
         let mut at = 0;
         while at < members.len() {
-            if at + 2 < members.len() && members[at + 1] == '-' {
+            if members[at] == '\\' {
+                if members.get(at + 1) == Some(&c) {
+                    return true;
+                }
+                at += 2;
+            } else if at + 2 < members.len() && members[at + 1] == '-' {
                 if (members[at]..=members[at + 2]).contains(&c) {
                     return true;
                 }
@@ -737,12 +751,6 @@ mod published_evidence_reference_contract {
                 format!("{c:?} in the suffix, at the floor length"),
             ));
         }
-
-        // Multi-byte characters: the window must count CHARACTERS, not bytes.
-        out.push((
-            format!("{scheme}{}", "각".repeat(min - scheme.chars().count())),
-            format!("{min} characters of Hangul, three bytes each"),
-        ));
 
         // Schemes. The third is legal — a leading `/` is inside the class — and is
         // here so the corpus is not classified all one way.
