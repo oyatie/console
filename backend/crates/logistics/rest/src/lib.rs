@@ -723,15 +723,18 @@ mod published_evidence_reference_contract {
         })
         .collect();
 
-        // Characters outside the enforced class, at a length the window accepts,
-        // so the verdict turns on the class and not on the length.
-        for excluded in [' ', '%', '#', '?', '\\'] {
+        // The class dimension, SWEPT rather than sampled, at a length the window
+        // accepts so each verdict turns on the class alone. A hand-picked list of
+        // excluded characters is invisible to drift in both directions for every
+        // character it forgot; the length dimension above is already probed
+        // totally, and this is the same shape.
+        for c in (0_u8..=0x7f).map(char::from).chain(['각', 'é', '\u{200b}']) {
             let mut candidate = reference_of_len(scheme, min);
             candidate.pop();
-            candidate.push(excluded);
+            candidate.push(c);
             out.push((
                 candidate,
-                format!("{excluded:?} in the suffix, at the floor length"),
+                format!("{c:?} in the suffix, at the floor length"),
             ));
         }
 
