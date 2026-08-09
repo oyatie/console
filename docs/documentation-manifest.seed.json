@@ -3470,6 +3470,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-09-contract-refs-and-pod-evidence.md",
+    "blob_sha": "9d2c6e344d866963b1a8a64c2b234c19575fde6e",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",
