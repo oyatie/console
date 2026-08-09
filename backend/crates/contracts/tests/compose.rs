@@ -839,3 +839,159 @@ fn schema_refs_yields_schema_refs_only() {
          non-schema component refs"
     );
 }
+
+// ---------------------------------------------------------------------------
+// 5. A pointer is checked wherever it is written, not only after `$ref:`
+//
+// `$ref` is a KEY, and a key has more than one legal spelling; a pointer is
+// also written where there is no `$ref` key at all. Keying the check on the
+// literal text `$ref:` made every other position invisible rather than
+// checked, which is the same fail-open as keying it on `#/components/`.
+// ---------------------------------------------------------------------------
+
+/// Bodies below all point at `Ghost`, which no fragment defines and none
+/// declares external. Every one must be a [`DanglingRef`].
+///
+/// `mapping` is the load-bearing entry: an OpenAPI `discriminator.mapping`
+/// value is a pointer with NO `$ref` key anywhere near it, and
+/// `backend/openapi/openapi.yaml` publishes 27 of them today. The rest are
+/// spellings of the `$ref` KEY that YAML and JSON-in-YAML both accept.
+const GHOST_POINTERS: [(&str, &str); 6] = [
+    (
+        "discriminator mapping",
+        "oneOf:\n- $ref: '#/components/schemas/Ok'\ndiscriminator:\n  propertyName: kind\n  mapping:\n    gone: '#/components/schemas/Ghost'\n",
+    ),
+    (
+        "double-quoted key",
+        "type: object\nproperties:\n  id:\n    \"$ref\": '#/components/schemas/Ghost'\n",
+    ),
+    (
+        "single-quoted key",
+        "type: object\nproperties:\n  id:\n    '$ref': '#/components/schemas/Ghost'\n",
+    ),
+    (
+        "space before the colon",
+        "type: object\nproperties:\n  id:\n    $ref : '#/components/schemas/Ghost'\n",
+    ),
+    (
+        "JSON-in-YAML flow mapping",
+        "type: object\nproperties:\n  id: {\"$ref\": \"#/components/schemas/Ghost\"}\n",
+    ),
+    (
+        "value on the next line",
+        "type: object\nproperties:\n  id:\n    $ref:\n      '#/components/schemas/Ghost'\n",
+    ),
+];
+
+/// A fragment defining `Ok` plus an `Envelope` carrying `body`.
+///
+/// Leaked because `Fragment` is `&'static` end to end — the composer's real
+/// inputs are compile-time tables — while a corpus test derives its bodies at
+/// runtime so both directions are driven from ONE list of spellings.
+fn envelope_fragment(source: &'static str, body: &'static str) -> Fragment {
+    Fragment {
+        source,
+        paths: &[],
+        schemas: Box::leak(Box::new([
+            NamedYaml {
+                name: "Ok",
+                body: "type: object\n",
+            },
+            NamedYaml {
+                name: "Envelope",
+                body,
+            },
+        ])),
+        external_schemas: &[],
+    }
+}
+
+#[test]
+fn a_pointer_to_an_undefined_schema_is_rejected_in_every_position()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (spelling, body) in GHOST_POINTERS {
+        let fragment = envelope_fragment("console-demo-position-rest", body);
+        let error = compose(&[&fragment]).err().ok_or_else(|| {
+            format!("a pointer to Ghost written as `{spelling}` must not compose")
+        })?;
+        assert_eq!(
+            error.dangling.first().map(|d| d.schema.as_str()),
+            Some("Ghost"),
+            "`{spelling}`: got {error:#?}"
+        );
+    }
+    Ok(())
+}
+
+/// The same six positions, resolving this time: a pointer the fragment set CAN
+/// satisfy must compose from every one of them.
+///
+/// Without this the check above is satisfied by rejecting everything, and a
+/// face writing a discriminated union — or a `$ref` value on its own line,
+/// which is legal YAML — gets a composition failure for a valid document.
+#[test]
+fn a_resolving_pointer_composes_from_every_position() -> Result<(), Box<dyn std::error::Error>> {
+    for (spelling, ghost_body) in GHOST_POINTERS {
+        let body: &'static str = Box::leak(ghost_body.replace("Ghost", "Ok").into_boxed_str());
+        let fragment = envelope_fragment("console-demo-position-ok-rest", body);
+        compose(&[&fragment])
+            .map_err(|error| format!("`{spelling}` points at the defined `Ok`: {error}"))?;
+    }
+    Ok(())
+}
+
+/// A file-or-URL prefix is rejected wherever the pointer sits, not only after a
+/// `$ref` key.
+///
+/// `a_cross_file_ref_is_rejected_even_when_the_local_set_knows_the_name` pins
+/// this for the `$ref:` position and calls the URL case "the sharp end". The
+/// identical value one key over, in a `discriminator.mapping`, instructs every
+/// generated client to resolve that subtype against a foreign host — so it is
+/// the same defect and must be the same error.
+#[test]
+fn a_foreign_host_pointer_is_rejected_outside_a_ref_key() -> Result<(), Box<dyn std::error::Error>>
+{
+    const MAPPED_FOREIGN: Fragment = Fragment {
+        source: "console-demo-foreign-mapping-rest",
+        paths: &[],
+        schemas: &[
+            NamedYaml {
+                name: "Ok",
+                body: "type: object\n",
+            },
+            NamedYaml {
+                name: "Envelope",
+                body: "oneOf:\n- $ref: '#/components/schemas/Ok'\ndiscriminator:\n  propertyName: kind\n  mapping:\n    evil: 'https://evil.example/x.yaml#/components/schemas/Ok'\n",
+            },
+        ],
+        external_schemas: &[],
+    };
+    let error = compose(&[&MAPPED_FOREIGN])
+        .err()
+        .ok_or("a foreign-host pointer in a discriminator mapping must not compose")?;
+    assert_eq!(
+        error.unresolvable.first().map(|r| r.value.as_str()),
+        Some("https://evil.example/x.yaml#/components/schemas/Ok"),
+        "got {error:#?}"
+    );
+    Ok(())
+}
+
+/// The characters `$ref:` inside a description are prose, not a reference.
+///
+/// A check keyed on the literal text `$ref:` reports this as an unfollowable
+/// ref and a face author gets a composition failure for writing documentation.
+#[test]
+fn prose_that_mentions_a_ref_key_is_not_a_ref() -> Result<(), Box<dyn std::error::Error>> {
+    const PROSE: Fragment = Fragment {
+        source: "console-demo-prose-rest",
+        paths: &[],
+        schemas: &[NamedYaml {
+            name: "Page",
+            body: "type: object\ndescription: 'authors write $ref: pointers here'\n",
+        }],
+        external_schemas: &[],
+    };
+    compose(&[&PROSE])?;
+    Ok(())
+}
