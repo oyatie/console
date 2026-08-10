@@ -5,15 +5,17 @@ use std::sync::{Arc, Mutex};
 use console_kernel_core::{BranchId, ErrorKind, OrgId, TraceContext, UserId, WorkOrderId};
 use console_workorder_adapter_postgres::PgWorkOrderStore;
 use console_workorder_application::{
-    AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateWorkOrderCommand,
-    DailyPlanItemInput, DailyPlanStatus, ReviewDailyPlanCommand, ReviewTargetChangeCommand,
-    SendDailyPlanForReviewCommand, SubmitReportCommand, TargetChangeDecision,
-    TargetChangeRequestCommand, UpdatePriorityCommand, UpdateWorkOrderIntakeCommand,
-    WorkOrderApprovalCommand, WorkOrderAssignmentCommand, WorkOrderCreatedEvent,
-    WorkOrderCreatedFuture, WorkOrderCreatedListener, WorkOrderStartCommand,
+    AssignmentInput, CreateDailyPlanCommand, CreateOutsourceWorkCommand, CreateSettlementCommand,
+    CreateWorkOrderCommand, DailyPlanItemInput, DailyPlanStatus, ReviewDailyPlanCommand,
+    ReviewTargetChangeCommand, SendDailyPlanForReviewCommand, SettlementLineInput,
+    SubmitReportCommand, SubmitSettlementCommand, TargetChangeDecision, TargetChangeRequestCommand,
+    UpdatePriorityCommand, UpdateWorkOrderIntakeCommand, WorkOrderApprovalCommand,
+    WorkOrderAssignmentCommand, WorkOrderCreatedEvent, WorkOrderCreatedFuture,
+    WorkOrderCreatedListener, WorkOrderStartCommand,
 };
 use console_workorder_domain::{
-    AssignmentRole, AttachmentStage, PriorityLevel, WorkOrderStatus, WorkResultType,
+    AssignmentRole, AttachmentStage, PriorityLevel, SettlementLineKind, WorkOrderStatus,
+    WorkResultType,
 };
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime, macros::date};
@@ -1306,4 +1308,250 @@ async fn insert_cost_ledger_for_work_order(
     .fetch_one(pool)
     .await
     .unwrap()
+}
+
+/// gh#395 / bead console-ls3: every audit row written by the work-order,
+/// daily-plan, and settlement mutations must carry the ACTING tenant's org.
+/// The application-layer audit builders hardcoded `.with_org(OrgId::knl())`,
+/// so any call site that did not remember to override stamped a non-KNL
+/// tenant's audit rows as KNL — and, because `with_audit` arms the
+/// transaction-local RLS GUC from `event.org_id`, RLS-scoped the audited
+/// mutation itself to the wrong tenant.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn audit_rows_carry_acting_tenant_org_not_hardcoded_knl(pool: PgPool) {
+    let tenant = OrgId::new();
+    sqlx::query("INSERT INTO organizations (id, slug, name, status) VALUES ($1, $2, $3, 'ACTIVE')")
+        .bind(*tenant.as_uuid())
+        .bind(format!("ls3-{}", uuid::Uuid::new_v4().simple()))
+        .bind("LS3 audit-tenant fixture")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let seeded = seed_operational_context_for_org(&pool, tenant).await;
+
+    console_platform_request_context::scope_org(tenant, async move {
+        let store = PgWorkOrderStore::new(pool.clone());
+
+        let created = store
+            .create_work_order(CreateWorkOrderCommand {
+                maintenance_type: None,
+                maintenance_cause: None,
+                actor: seeded.receptionist,
+                branch_id: seeded.branch_id,
+                management_no: "#290".to_owned(),
+                symptom: "Hydraulic oil leak".to_owned(),
+                customer_request: None,
+                target_due_at: Some(OffsetDateTime::now_utc() + Duration::days(1)),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .update_priority(UpdatePriorityCommand {
+                actor: seeded.admin,
+                work_order_id: created.id,
+                priority: PriorityLevel::P2,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .update_work_order_intake(UpdateWorkOrderIntakeCommand {
+                actor: seeded.admin,
+                work_order_id: created.id,
+                symptom: Some("Hydraulic oil leak worsens under load".to_owned()),
+                customer_request: None,
+                maintenance_type: None,
+                maintenance_cause: None,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        let target_change = store
+            .request_target_change(TargetChangeRequestCommand {
+                actor: seeded.admin,
+                work_order_id: created.id,
+                requested_target_due_at: OffsetDateTime::now_utc() + Duration::days(3),
+                reason: "Parts on backorder".to_owned(),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .review_target_change(ReviewTargetChangeCommand {
+                actor: seeded.executive,
+                request_id: target_change.id,
+                decision: TargetChangeDecision::Approved,
+                memo: Some("Approved for backordered parts".to_owned()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .assign_work_order(WorkOrderAssignmentCommand {
+                actor: seeded.admin,
+                work_order_id: created.id,
+                assignments: vec![AssignmentInput {
+                    mechanic_id: seeded.mechanic,
+                    role: AssignmentRole::Primary,
+                }],
+                admin_approver_id: Some(seeded.admin),
+                executive_approver_id: Some(seeded.executive),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .start_work(WorkOrderStartCommand {
+                actor: seeded.mechanic,
+                work_order_id: created.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .submit_report(SubmitReportCommand {
+                actor: seeded.mechanic,
+                work_order_id: created.id,
+                result_type: WorkResultType::Completed,
+                diagnosis: "Hose fitting loosened under load".to_owned(),
+                action_taken: "Retightened fitting and pressure-tested".to_owned(),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        let settlement = store
+            .create_settlement(CreateSettlementCommand {
+                actor: seeded.admin,
+                work_order_id: created.id,
+                lines: vec![SettlementLineInput {
+                    kind: SettlementLineKind::Labor,
+                    label: "Labor".to_owned(),
+                    amount_krw: 150_000,
+                    source_ref: None,
+                    sort_order: None,
+                }],
+                note: None,
+                idempotency_key: format!("ls3-{}", uuid::Uuid::new_v4()),
+                request_hash: "a".repeat(64),
+                require_actor_assignment: false,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .submit_settlement(SubmitSettlementCommand {
+                actor: seeded.admin,
+                settlement_id: settlement.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        let plan = store
+            .create_daily_plan(CreateDailyPlanCommand {
+                actor: seeded.mechanic,
+                branch_id: seeded.branch_id,
+                mechanic_id: seeded.mechanic,
+                plan_date: date!(2026 - 08 - 12),
+                items: vec![DailyPlanItemInput {
+                    work_order_id: created.id,
+                    description: "Repair hydraulic leak".to_owned(),
+                }],
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .request_daily_plan_review(SendDailyPlanForReviewCommand {
+                actor: seeded.mechanic,
+                plan_id: plan.id,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        store
+            .review_daily_plan(ReviewDailyPlanCommand {
+                actor: seeded.admin,
+                plan_id: plan.id,
+                decision: DailyPlanStatus::Approved,
+                memo: Some("Plan accepted".to_owned()),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+            .unwrap();
+
+        let targets = vec![
+            created.id.to_string(),
+            settlement.id.to_string(),
+            plan.id.to_string(),
+        ];
+        let rows: Vec<(String, Option<uuid::Uuid>)> = sqlx::query_as(
+            r#"
+            SELECT action, org_id
+            FROM audit_events
+            WHERE target_id = ANY($1)
+            ORDER BY occurred_at, created_at
+            "#,
+        )
+        .bind(&targets)
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+        let expected_actions = [
+            "work_order.create",
+            "work_order.priority",
+            "work_order.update_intake",
+            "target_change.request",
+            "target_change.review",
+            "work_order.assign",
+            "work_order.start",
+            "work_order.report",
+            "work_order_settlement.create",
+            "work_order_settlement.submit",
+            "daily_plan.create",
+            "daily_plan.request",
+            "daily_plan.review",
+        ];
+        let seen: Vec<&str> = rows.iter().map(|(action, _)| action.as_str()).collect();
+        for expected in expected_actions {
+            assert!(
+                seen.contains(&expected),
+                "expected audit action {expected} to be recorded (got {seen:?})"
+            );
+        }
+        for (action, org_id) in &rows {
+            assert_eq!(
+                *org_id,
+                Some(*tenant.as_uuid()),
+                "audit row {action} must carry the acting tenant's org, not a hardcoded default"
+            );
+        }
+    })
+    .await;
 }

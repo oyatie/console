@@ -14,8 +14,8 @@ use std::sync::Arc;
 
 use console_kernel_core::{AuditAction, AuditEvent, BranchId, OrgId, TraceContext, UserId};
 use console_platform_audit_chain::{
-    AuditChainError, ChainReportKind, InMemoryEd25519Signer, SealConfig, SealSignError, SealSigner,
-    seal_org_once, verify_org_chain,
+    AuditChainError, ChainReportKind, ExternalSealSigner, InMemoryEd25519Signer, SealConfig,
+    SealSignError, SealSignTransport, SealSigner, seal_org_once, verify_org_chain,
 };
 use console_platform_db::{DbError, with_audit};
 use sqlx::PgPool;
@@ -70,6 +70,55 @@ impl SealSigner for InfraFailingVerifier {
     ) -> Result<bool, SealSignError> {
         Err(SealSignError::KeyGen)
     }
+}
+
+/// A stand-in for the external key-custody service. It actually holds an
+/// in-process Ed25519 keypair (reusing the dev signer's keygen) and signs with
+/// it, modelling a reachable self-host signer whose PRIVATE key never lands in a
+/// seal. The pinned trust anchor is this keypair's public key.
+struct CustodyStub {
+    inner: InMemoryEd25519Signer,
+}
+
+impl CustodyStub {
+    fn generate() -> Self {
+        Self {
+            inner: InMemoryEd25519Signer::generate().unwrap(),
+        }
+    }
+
+    /// Raw Ed25519 public key bytes, to pin as a trust anchor.
+    fn public_key(&self) -> Vec<u8> {
+        self.inner.public_key()
+    }
+}
+
+impl SealSignTransport for CustodyStub {
+    fn sign(&self, _key_ref: &str, message: &[u8]) -> Result<Vec<u8>, SealSignError> {
+        self.inner.sign(message)
+    }
+}
+
+/// A custody transport that is always unreachable: every sign attempt fails
+/// closed with `Unavailable`, so a seal can NEVER be produced without the
+/// external signer.
+struct UnreachableCustody;
+
+impl SealSignTransport for UnreachableCustody {
+    fn sign(&self, _key_ref: &str, _message: &[u8]) -> Result<Vec<u8>, SealSignError> {
+        Err(SealSignError::Unavailable(
+            "custody transport down (test)".to_owned(),
+        ))
+    }
+}
+
+/// Build an `ExternalSealSigner` whose single pinned anchor is `custody`'s
+/// public key under `key_ref`, signing through `custody`.
+fn external_signer_from(custody: Arc<CustodyStub>, key_ref: &str) -> Arc<dyn SealSigner> {
+    let mut anchors = std::collections::BTreeMap::new();
+    anchors.insert(key_ref.to_owned(), custody.public_key());
+    let transport: Arc<dyn SealSignTransport> = custody;
+    Arc::new(ExternalSealSigner::new(key_ref.to_owned(), transport, anchors).unwrap())
 }
 
 /// Immediate-seal config: zero lag so freshly written rows are sealable at once
@@ -1122,6 +1171,208 @@ async fn verify_propagates_genuine_signer_failures(owner_pool: PgPool) {
         err,
         AuditChainError::Signer(SealSignError::KeyGen)
     ));
+}
+
+// ---------------------------------------------------------------------------
+// §6.15 RED baseline (gh#271): the full re-sign attack DEFEATS the dev signer
+// ---------------------------------------------------------------------------
+/// Executes the exact attack the crate header names: a DB-writer edits a sealed
+/// row, deletes the seal, and re-seals the chain with a FRESH keypair — so
+/// `signature` and `key_ref` are attacker-written. Because
+/// `InMemoryEd25519Signer::verify` reconstructs the public key from the seal's
+/// own stored `key_ref`, the tampered chain VERIFIES CLEAN.
+///
+/// This test asserts the DEFECT (report.ok == true after tamper) and is kept
+/// permanently as executable documentation of why [`InMemoryEd25519Signer`] is
+/// dev/test-only: it can never provide custody-backed tamper evidence. The
+/// pinned-anchor external signer's companion test proves the SAME attack is
+/// detected once trust anchors stop living in attacker-writable storage.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn resign_attack_defeats_key_ref_derived_dev_signer(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let victim_signer = signer();
+    let org = *OrgId::knl().as_uuid();
+    let (branch, user) = seed_tenant(&owner_pool, org, "A").await;
+    let ids = write_events(&rt, org, user, branch, 3).await;
+    let now = db_now(&owner_pool).await;
+    let cfg = immediate();
+    seal_org_once(&rt, OrgId::from_uuid(org), &victim_signer, now, &cfg)
+        .await
+        .unwrap()
+        .unwrap();
+
+    // Attack step 1: edit a sealed row's content (trigger + RLS bypassed).
+    owner_tamper_uuid(
+        &owner_pool,
+        "UPDATE audit_events SET action = 'tampered.action' WHERE id = $1",
+        ids[1],
+    )
+    .await;
+    // Attack step 2: delete the victim's seal (owner bypass) ...
+    owner_tamper_seal(
+        &owner_pool,
+        "DELETE FROM audit_chain_seals WHERE org_id = $1 AND seq = $2",
+        org,
+        1,
+    )
+    .await;
+    // Attack step 3: ... and re-seal from genesis with a fresh attacker keypair,
+    // overwriting `signature` + `key_ref` with attacker-controlled values.
+    let attacker_signer = signer();
+    seal_org_once(&rt, OrgId::from_uuid(org), &attacker_signer, now, &cfg)
+        .await
+        .unwrap()
+        .expect("attacker re-seal covers the tampered batch");
+
+    // The victim verifies with their OWN signer instance — and the tampered
+    // chain passes, because verify() trusts the attacker-written key_ref.
+    let report = verify_org_chain(&rt, OrgId::from_uuid(org), &victim_signer, now, &cfg)
+        .await
+        .unwrap();
+    assert!(
+        report.ok,
+        "RED baseline (gh#271): the re-sign attack must be UNDETECTED by the \
+         key_ref-derived dev signer — if this ever fails, the dev signer grew \
+         custody semantics and this documentation test needs re-review: {report:?}"
+    );
+    assert_eq!(report.kind, ChainReportKind::Ok);
+}
+
+// ---------------------------------------------------------------------------
+// §6.16 GREEN (gh#271): the SAME re-sign attack is DETECTED by the pinned-anchor
+// external signer — real tamper evidence against the DB-writer threat actor.
+// ---------------------------------------------------------------------------
+/// The exact attack of `resign_attack_defeats_key_ref_derived_dev_signer`, now
+/// verified with an [`ExternalSealSigner`] whose trust anchors are pinned
+/// LOCALLY (never derived from the seal's attacker-writable `key_ref`). The
+/// attacker's fresh keypair is not a pinned anchor, so the re-signed chain is
+/// rejected → `BadSignature`.
+#[sqlx::test(migrations = "../db/migrations")]
+async fn external_signer_detects_resign_attack(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let custody = Arc::new(CustodyStub::generate());
+    let signer = external_signer_from(custody, "external:selfhost:active");
+    let org = *OrgId::knl().as_uuid();
+    let (branch, user) = seed_tenant(&owner_pool, org, "A").await;
+    let ids = write_events(&rt, org, user, branch, 3).await;
+    let now = db_now(&owner_pool).await;
+    let cfg = immediate();
+    seal_org_once(&rt, OrgId::from_uuid(org), &signer, now, &cfg)
+        .await
+        .unwrap()
+        .unwrap();
+
+    owner_tamper_uuid(
+        &owner_pool,
+        "UPDATE audit_events SET action = 'tampered.action' WHERE id = $1",
+        ids[1],
+    )
+    .await;
+    owner_tamper_seal(
+        &owner_pool,
+        "DELETE FROM audit_chain_seals WHERE org_id = $1 AND seq = $2",
+        org,
+        1,
+    )
+    .await;
+    // Attacker re-seals with a FRESH keypair under an UNPINNED key_ref.
+    let attacker_custody = Arc::new(CustodyStub::generate());
+    let attacker_signer = external_signer_from(attacker_custody, "external:evil:attacker");
+    seal_org_once(&rt, OrgId::from_uuid(org), &attacker_signer, now, &cfg)
+        .await
+        .unwrap()
+        .expect("attacker re-seal writes a seal row");
+
+    let report = verify_org_chain(&rt, OrgId::from_uuid(org), &signer, now, &cfg)
+        .await
+        .unwrap();
+    assert!(
+        !report.ok,
+        "the re-sign attack MUST be detected by the pinned-anchor signer: {report:?}"
+    );
+    assert_eq!(report.kind, ChainReportKind::BadSignature, "{report:?}");
+    assert_eq!(report.first_bad_seq, Some(1));
+}
+
+// ---------------------------------------------------------------------------
+// §6.17 fail-closed: an unreachable custody signer MUST NOT produce a seal
+// (no silent in-memory fallback).
+// ---------------------------------------------------------------------------
+#[sqlx::test(migrations = "../db/migrations")]
+async fn external_signer_seal_fails_closed_when_custody_unreachable(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    // A pinned anchor exists, but the transport is down: signing must still fail
+    // closed rather than fall back to any in-crate key.
+    let mut anchors = std::collections::BTreeMap::new();
+    anchors.insert(
+        "external:selfhost:active".to_owned(),
+        CustodyStub::generate().public_key(),
+    );
+    let signer: Arc<dyn SealSigner> = Arc::new(
+        ExternalSealSigner::new(
+            "external:selfhost:active".to_owned(),
+            Arc::new(UnreachableCustody),
+            anchors,
+        )
+        .unwrap(),
+    );
+    let org = *OrgId::knl().as_uuid();
+    let (branch, user) = seed_tenant(&owner_pool, org, "A").await;
+    write_events(&rt, org, user, branch, 2).await;
+    let now = db_now(&owner_pool).await;
+    let cfg = immediate();
+
+    let err = seal_org_once(&rt, OrgId::from_uuid(org), &signer, now, &cfg)
+        .await
+        .expect_err("seal must fail closed when the custody signer is unreachable");
+    assert!(
+        matches!(err, AuditChainError::Signer(SealSignError::Unavailable(_))),
+        "unreachable custody must surface as a fail-closed Unavailable error, got: {err:?}"
+    );
+    assert_eq!(
+        owner_seal_count(&owner_pool, org).await,
+        0,
+        "no seal row may be written when the signer is unavailable (no in-memory fallback)"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// §6.18 operability: verification/attestation MUST NOT depend on the custody
+// signer being reachable (else a DoS of the signer blinds tamper detection).
+// ---------------------------------------------------------------------------
+#[sqlx::test(migrations = "../db/migrations")]
+async fn external_signer_verify_works_while_custody_unreachable(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let custody = Arc::new(CustodyStub::generate());
+    let pinned_pk = custody.public_key();
+    let key_ref = "external:selfhost:active";
+    let sealing = external_signer_from(custody, key_ref);
+    let org = *OrgId::knl().as_uuid();
+    let (branch, user) = seed_tenant(&owner_pool, org, "A").await;
+    write_events(&rt, org, user, branch, 3).await;
+    let now = db_now(&owner_pool).await;
+    let cfg = immediate();
+    seal_org_once(&rt, OrgId::from_uuid(org), &sealing, now, &cfg)
+        .await
+        .unwrap()
+        .unwrap();
+
+    // Verify-only signer: same pinned anchor, but an unreachable custody
+    // transport. Attestation still succeeds because verify() consults only the
+    // local trust anchors, never the signing service.
+    let mut anchors = std::collections::BTreeMap::new();
+    anchors.insert(key_ref.to_owned(), pinned_pk);
+    let verify_only: Arc<dyn SealSigner> = Arc::new(
+        ExternalSealSigner::new(key_ref.to_owned(), Arc::new(UnreachableCustody), anchors).unwrap(),
+    );
+    let report = verify_org_chain(&rt, OrgId::from_uuid(org), &verify_only, now, &cfg)
+        .await
+        .unwrap();
+    assert!(
+        report.ok,
+        "verify must not depend on custody availability: {report:?}"
+    );
+    assert_eq!(report.kind, ChainReportKind::Ok);
 }
 
 /// A structurally-corrupt stored hash (<32 bytes) → `CorruptSeal` verdict.

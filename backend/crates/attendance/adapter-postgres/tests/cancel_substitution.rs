@@ -834,7 +834,7 @@ async fn legacy_assignment_rechecks_after_leave_commit(owner_pool: PgPool) {
             .execute(&mut *leave)
             .await
             .unwrap();
-        sqlx::query("INSERT INTO leave_requests (org_id,branch_id,requester_user_id,subject_employee_id,leave_type,days,start_date,end_date,reason,status,decided_by,decided_at,charge_state,charge_review_reasons,charge_units) VALUES ($1,$2,$3,$4,'annual',1,$5,$5,'legacy race','approved',$6,statement_timestamp(),'legacy_unverified',ARRAY[]::TEXT[],1)")
+        sqlx::query("INSERT INTO leave_requests (org_id,branch_id,requester_user_id,subject_employee_id,leave_type,days,start_date,end_date,status,decided_by,decided_at,charge_state,charge_review_reasons,charge_units) VALUES ($1,$2,$3,$4,'annual',1,$5,$5,'approved',$6,statement_timestamp(),'legacy_unverified',ARRAY[]::TEXT[],1)")
             .bind(*OrgId::knl().as_uuid())
             .bind(*branch.as_uuid())
             .bind(*provisioner.as_uuid())

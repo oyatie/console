@@ -23,9 +23,9 @@ fn write_file(path: &Path, content: &str) -> Result<(), Box<dyn std::error::Erro
 }
 
 #[test]
-fn allowed_exclusion_set_is_the_two_location_carveouts() {
+fn allowed_exclusion_set_is_the_bound_carveouts() {
     let exclusions = allowed_audit_exclusions();
-    assert_eq!(exclusions.len(), 2);
+    assert_eq!(exclusions.len(), 3);
     // Each exemption is bound to the REAL writer: repo-relative file + function.
     // This is what prevents the carve-out from silently applying to the wrong
     // handler (ADR-0014 "exactly one path" invariant).
@@ -43,6 +43,10 @@ fn allowed_exclusion_set_is_the_two_location_carveouts() {
         "crates/compliance/adapter-postgres/src/lib.rs"
     );
     assert_eq!(exclusions[1].function, "purge_expired_location_data");
+    // High-volume console RUM/route telemetry must not flood audit_events.
+    assert_eq!(exclusions[2].reason, "console_route_telemetry_ingestion");
+    assert_eq!(exclusions[2].file, "app/src/console_telemetry.rs");
+    assert_eq!(exclusions[2].function, "insert_route_telemetry");
 }
 
 #[test]
@@ -367,6 +371,123 @@ pub async fn backfill_work_order(pool: &PgPool) {
             .iter()
             .any(|v| v.kind == ViolationKind::UnknownAuditExclusion),
         "expected UnknownAuditExclusion, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_fails_unmarked_mutating_app_handler() -> Result<(), Box<dyn std::error::Error>> {
+    // Regression for console-937 / gh#396: backend/app/src is a handler surface.
+    let ws = temp_workspace("app-unmarked-mutation")?;
+    write_file(
+        &ws.join("app/src/collaboration.rs"),
+        r#"
+pub async fn create_calendar_event(pool: &PgPool) {
+    sqlx::query!("INSERT INTO collaboration_calendar_events (id) VALUES ($1)", id)
+        .execute(pool)
+        .await;
+}
+"#,
+    )?;
+
+    let result = check_source_tree(&ws);
+    assert!(
+        !result.passed(),
+        "expected unmarked mutating app handler violation"
+    );
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::MissingAuditEvent
+                && v.function_name.as_deref() == Some("create_calendar_event")),
+        "expected MissingAuditEvent on app collaboration handler, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_passes_audited_app_workflow_studio_handler() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("app-workflow-studio-audit")?;
+    write_file(
+        &ws.join("app/src/workflow_studio.rs"),
+        r#"
+pub async fn publish_definition(pool: &PgPool) {
+    let event = AuditEvent::new(Some(actor), action, "workflow_definition", id, trace, occurred_at);
+    with_audit(pool, event, |tx| Box::pin(async move {
+        sqlx::query!("UPDATE workflow_definitions SET status = 'PUBLISHED' WHERE id = $1", id)
+            .execute(tx.as_mut())
+            .await?;
+        Ok(())
+    })).await
+}
+"#,
+    )?;
+
+    let result = check_source_tree(&ws);
+    assert!(
+        result.passed(),
+        "expected audited workflow studio app handler to pass, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_bound_console_telemetry_exemption() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("app-telemetry-exemption")?;
+    write_file(
+        &ws.join("app/src/console_telemetry.rs"),
+        r#"
+// console-gate: state-changing-handler
+// console-gate: audit-exempt console_route_telemetry_ingestion
+pub async fn insert_route_telemetry(pool: &PgPool) {
+    sqlx::query!("INSERT INTO console_route_telemetry (org_id) VALUES ($1)")
+        .execute(pool)
+        .await;
+}
+"#,
+    )?;
+
+    let result = check_source_tree(&ws);
+    assert!(
+        result.passed(),
+        "expected bound console telemetry carve-out to pass, got {:#?}",
+        result.violations
+    );
+    assert_eq!(result.observed_exclusions.len(), 1);
+    assert_eq!(
+        result.observed_exclusions[0].reason,
+        "console_route_telemetry_ingestion"
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_does_not_treat_header_insert_as_sql_mutation() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("header-insert-not-sql")?;
+    write_file(
+        &ws.join("app/src/hr.rs"),
+        r#"
+pub async fn export_csv(pool: &PgPool) {
+    let rows = sqlx::query!("SELECT id FROM employees")
+        .fetch_all(pool)
+        .await;
+    let mut response = String::new().into_response();
+    response.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("text/csv"),
+    );
+}
+"#,
+    )?;
+
+    let result = check_source_tree(&ws);
+    assert!(
+        result.passed(),
+        "Rust HeaderMap::insert must not count as SQL INSERT: {:#?}",
         result.violations
     );
     Ok(())

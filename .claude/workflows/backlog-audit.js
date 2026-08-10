@@ -177,9 +177,8 @@ Emit, in ONE batched pass each (not a loop of small commands):
     enough to get them all, and say how many you got.
  2. Every bead: id, title, status, priority, and its dependency edges. \`bd list\` and \`bd dep\`.
  3. The crate inventory under backend/crates, with each crate's line count, so domains can be sized.
-     ALSO run \`find backend/crates -name Cargo.toml -print\` (or equivalent) once and return EVERY path
-     in \`cargoTomlPaths\` — this is the independent on-disk census the script cross-checks against
-     \`crates\`; do not invent or truncate it.
+     (A separate in-script disk census measures \`find backend/crates -name Cargo.toml\` independently —
+     do NOT invent a matching \`cargoTomlPaths\` here; that would validate the census against itself.)
  4. Recently merged PRs (last 40) with number, title and merge commit — a closed issue often has its
     fix sitting in one of these, and that is the cheapest evidence of CLOSE-FIXED there is.
  5. The abandoned-worktree roots that must be EXCLUDED from every later search, listed explicitly.
@@ -195,7 +194,7 @@ editorialises makes its own errors invisible.`,
     phase: 'Collect',
     schema: {
       type: 'object',
-      required: ['openIssueNumbers', 'openIssueCount', 'issues', 'beads', 'crates', 'cargoTomlPaths'],
+      required: ['openIssueNumbers', 'openIssueCount', 'issues', 'beads', 'crates'],
       properties: {
         openIssueNumbers: { type: 'array', items: { type: 'number' }, description: 'EVERY open issue number. This drives the triage fan-out, so an omission here silently un-audits that issue.' },
         openIssueCount: { type: 'number', description: 'what gh reported, so the script can catch a truncated list' },
@@ -214,14 +213,38 @@ editorialises makes its own errors invisible.`,
             },
           },
         },
-        // Independent on-disk oracle from Collect's find. Workflow sandbox cannot import Node fs.
+        mergedPrs: { type: 'array', items: { type: 'object' } },
+        excludedRoots: { type: 'array', items: { type: 'string' } },
+      },
+    },
+  },
+)
+
+// INDEPENDENT ON-DISK CRATE CENSUS. Workflow sandboxes have no Node filesystem API and reject
+// `import()`, so the script cannot `ls`/`find` itself — but a control must not validate Collect's
+// crate list against another field from the SAME Collect return (cargoTomlPaths co-emitted with
+// crates). A coordinated partial list then reads as full coverage. Measure the disk set in a
+// dedicated find-only agent whose sole schema field is the path list, then compare.
+const diskCensus = await agent(
+  `Measure the on-disk crate set for REPO: ${REPO}. Do NOT audit, triage, or summarise.
+
+Run ONE command only (cwd = REPO):
+  find backend/crates -name Cargo.toml -print
+
+Return EVERY path it prints, repo-relative (e.g. "backend/crates/identity/Cargo.toml").
+Do not invent paths, do not truncate, do not dedupe by hand — emit the find output as cargoTomlPaths.`,
+  {
+    label: 'crate-disk-census',
+    phase: 'Collect',
+    schema: {
+      type: 'object',
+      required: ['cargoTomlPaths'],
+      properties: {
         cargoTomlPaths: {
           type: 'array',
           items: { type: 'string' },
-          description: 'EVERY path from `find backend/crates -name Cargo.toml` (repo-relative), e.g. "backend/crates/identity/Cargo.toml"',
+          description: 'EVERY path from `find backend/crates -name Cargo.toml` (repo-relative)',
         },
-        mergedPrs: { type: 'array', items: { type: 'object' } },
-        excludedRoots: { type: 'array', items: { type: 'string' } },
       },
     },
   },
@@ -277,10 +300,11 @@ if (crateNames.length < crateEntries.length || !crateNames.length) {
   )
 }
 // THE CENSUS CAN OMIT A CRATE AND STILL LOOK WELL-FORMED. A partial list whose every entry has a
-// name satisfies the guard above while the omitted crate receives no audit lane. Collect must
-// return cargoTomlPaths from `find backend/crates -name Cargo.toml`; the script derives on-disk
-// names from that list and aborts on any omission. Workflow sandboxes have no Node filesystem API,
-// so the collector is the oracle — not an in-process directory walk.
+// name satisfies the guard above while the omitted crate receives no audit lane. The on-disk set
+// comes from the dedicated crate-disk-census agent (find-only), NOT from Collect's own return —
+// validating crates against a co-emitted cargoTomlPaths field is still validating the census
+// against itself. Workflow sandboxes have no Node filesystem API, so find runs in that agent;
+// examined-zero / dead oracle / omitted crate all fail closed here.
 function cratesOmittedFromCensus(onDiskNames, censusNames) {
   return onDiskNames.filter((c) => !censusNames.some((n) => c === n || c.startsWith(`${n}/`)))
 }
@@ -300,25 +324,32 @@ function crateNamesFromCargoTomlPaths(paths) {
   return [...new Set(out)].sort()
 }
 {
-  const cargoTomlPaths = collected && collected.cargoTomlPaths
+  if (!diskCensus) {
+    throw new Error(
+      'backlog-audit: crate-disk-census agent returned nothing, so domain coverage cannot be ' +
+      'cross-checked against an independent on-disk find. Re-run Collect.',
+    )
+  }
+  const cargoTomlPaths = diskCensus.cargoTomlPaths
   if (!Array.isArray(cargoTomlPaths)) {
     throw new Error(
-      'backlog-audit: Collect must return cargoTomlPaths (array) from `find backend/crates -name Cargo.toml`. ' +
-      'The harness cannot walk the crate tree itself inside the workflow sandbox.',
+      'backlog-audit: crate-disk-census must return cargoTomlPaths (array) from ' +
+      '`find backend/crates -name Cargo.toml`. The harness cannot walk the crate tree itself ' +
+      'inside the workflow sandbox.',
     )
   }
   const onDisk = crateNamesFromCargoTomlPaths(cargoTomlPaths)
   if (!onDisk.length) {
     throw new Error(
-      'backlog-audit: Collect returned an empty cargoTomlPaths list — domain coverage cannot be ' +
-      'cross-checked against the on-disk Cargo.toml census. Re-run Collect with find output.',
+      'backlog-audit: crate-disk-census returned an empty cargoTomlPaths list — domain coverage ' +
+      'cannot be cross-checked against the on-disk Cargo.toml census. Re-run with find output.',
     )
   }
   const omitted = cratesOmittedFromCensus(onDisk, crateNames)
   if (omitted.length) {
     throw new Error(
       `backlog-audit: the census omitted ${omitted.length} crate(s) present under backend/crates ` +
-      `(${onDisk.length} on disk via cargoTomlPaths, ${crateNames.length} named). Omitted: ${omitted.slice(0, 20).join(', ')}` +
+      `(${onDisk.length} on disk via crate-disk-census, ${crateNames.length} named). Omitted: ${omitted.slice(0, 20).join(', ')}` +
       `${omitted.length > 20 ? ', ...' : ''}. Re-run Collect so every Cargo.toml is named.`,
     )
   }

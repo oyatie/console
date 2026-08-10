@@ -101,7 +101,6 @@ async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit
             "idempotency_key": Uuid::new_v4(),
             "start_date": "2026-07-21",
             "end_date": "2026-07-21",
-            "reason": "self service",
             "subject_employee_id": Uuid::new_v4(),
             "branch_id": Uuid::new_v4()
         })),
@@ -147,8 +146,7 @@ async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit
             "idempotency_key": Uuid::new_v4(),
             "partial_day_period": "pm",
             "start_date": "2026-07-21",
-            "end_date": "2026-07-21",
-            "reason": "medical appointment"
+            "end_date": "2026-07-21"
         })),
     )
     .await;
@@ -188,23 +186,19 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
         .execute(&definer_pool)
         .await
         .unwrap();
-    for (id, reason) in [
-        (v1_request, "v1 versionless decision"),
-        (modern_request, "modern stale decision"),
-    ] {
+    for id in [v1_request, modern_request] {
         sqlx::query(
             "INSERT INTO leave_requests \
              (id, org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, \
-              start_date, end_date, reason, status) \
+              start_date, end_date, status) \
              VALUES ($1, $2, $3, $4, $5, 'annual', 1, DATE '2026-10-01', \
-                     DATE '2026-10-01', $6, 'pending')",
+                     DATE '2026-10-01', 'pending')",
         )
         .bind(id)
         .bind(*org.as_uuid())
         .bind(*branch.as_uuid())
         .bind(*requester.as_uuid())
         .bind(employee)
-        .bind(reason)
         .execute(&definer_pool)
         .await
         .unwrap();
@@ -222,7 +216,9 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
         Some(auth.verifier),
     ));
 
-    let versionless = request_json(
+    // 근로기준법 §60: refusal is not a decision — even the frozen v1 route must
+    // fail closed rather than mint a 'rejected' row.
+    let refusal = request_json(
         service.clone(),
         "POST",
         &format!("/api/v1/leave/requests/{v1_request}/decide"),
@@ -230,8 +226,23 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
         Some(json!({"decision": "reject", "comment": "v1 reject"})),
     )
     .await;
+    assert_eq!(
+        refusal.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        refusal.body
+    );
+
+    let versionless = request_json(
+        service.clone(),
+        "POST",
+        &format!("/api/v1/leave/requests/{v1_request}/decide"),
+        &auth.token,
+        Some(json!({"decision": "time_change", "comment": "성수기 — 시기 변경 협의"})),
+    )
+    .await;
     assert_eq!(versionless.status, StatusCode::OK, "{:?}", versionless.body);
-    assert_eq!(versionless.body["status"], "rejected");
+    assert_eq!(versionless.body["status"], "time_change_consult");
     let legacy_keys = versionless
         .body
         .as_object()
@@ -265,7 +276,7 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
         "POST",
         &format!("/api/v1/leave/requests/{v1_request}/decide"),
         &auth.token,
-        Some(json!({"decision": "reject", "comment": "repeated"})),
+        Some(json!({"decision": "time_change", "comment": "repeated"})),
     )
     .await;
     assert_eq!(repeated.status, StatusCode::CONFLICT, "{:?}", repeated.body);
@@ -278,7 +289,7 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
         &auth.token,
         Some(json!({
             "expected_version": 99,
-            "decision": "reject",
+            "decision": "time_change",
             "comment": "stale"
         })),
     )

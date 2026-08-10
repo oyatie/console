@@ -6749,10 +6749,12 @@ paths:
       - name: status
         in: query
         required: false
-        description: Filter to one status; omitted returns all four.
+        description: >-
+          Filter to one status; omitted returns every status, including the
+          read-only historical `returned`/`rejected` rows.
         schema:
           type: string
-          enum: [pending, approved, returned, rejected]
+          enum: [pending, approved, time_change_consult, returned, rejected]
       - name: limit
         in: query
         required: false
@@ -6782,12 +6784,15 @@ paths:
       tags:
         - leave
       operationId: decideLeaveRequest
-      summary: Approve, return, or reject a pending leave request
+      summary: Approve a pending leave request or open a 시기변경 협의
       description: >-
         Requires `employee_directory_manage` in the request's branch. An
         APPROVE writes the leave ledger (used += days, remaining -= days) in the
         same audited transaction. Separation of duties — a request cannot be
-        decided by its own requester (403). `return`/`reject` require a comment.
+        decided by its own requester (403). 근로기준법 §60 forbids refusing 연차:
+        `return`/`reject` are retired (422) and the only non-approve decision is
+        `time_change` (§60⑤ 시기변경 협의), which requires a comment stating the
+        사업 운영에 막대한 지장 grounds and never touches the ledger.
         A non-pending request is 409; an out-of-branch / unknown request is 404.
       security:
       - bearerAuth: []
@@ -6888,10 +6893,12 @@ paths:
       - name: status
         in: query
         required: false
-        description: Filter to one status; omitted returns all four.
+        description: >-
+          Filter to one status; omitted returns every status, including the
+          read-only historical `returned`/`rejected` rows.
         schema:
           type: string
-          enum: [pending, approved, returned, rejected]
+          enum: [pending, approved, time_change_consult, returned, rejected]
       - name: limit
         in: query
         required: false
@@ -6973,7 +6980,9 @@ paths:
                 $ref: '#/components/schemas/ErrorBody'
         '422':
           description: >-
-            Invalid leave type, date range, reason, or partial-day intent.
+            Invalid leave type, date range, or partial-day intent — or a body
+            carrying the retired `reason` field (근로기준법 §60: 연차에는 사유가
+            없다).
           content:
             application/json:
               schema:
@@ -7043,13 +7052,16 @@ paths:
       tags:
         - leave
       operationId: decideLeaveRequestV2
-      summary: Approve, return, or reject a pending leave request
+      summary: Approve a pending leave request or open a 시기변경 협의
       description: >-
         Requires `employee_directory_manage` in the request's branch. An
         APPROVE writes the leave ledger (used += exact resolved charge units,
         remaining -= exact resolved charge units) in the same audited transaction.
         Separation of duties — a request cannot be
-        decided by its own requester (403). `return`/`reject` require a comment.
+        decided by its own requester (403). 근로기준법 §60 forbids refusing 연차:
+        `return`/`reject` are retired (422) and the only non-approve decision is
+        `time_change` (§60⑤ 시기변경 협의), which requires a comment and never
+        touches the ledger.
         Approval additionally requires a resolved exact charge and a distinct
         resolver. Clients must carry the current request_version as
         `expected_version`; omission is rejected so every v2 decision is an
@@ -18931,13 +18943,15 @@ components:
       description: >-
         A self-service leave-request filing. The subject employee and branch are
         NOT accepted here — they are resolved from the authenticated caller.
+        There is deliberately no `reason` field: 근로기준법 §60 grants the worker
+        the 시기지정권, so a 연차/반차 filing carries no 사유 and a body that
+        still sends one is rejected (422).
       additionalProperties: false
       required:
         - idempotency_key
         - leave_type
         - start_date
         - end_date
-        - reason
       properties:
         idempotency_key:
           type: string
@@ -18959,10 +18973,6 @@ components:
         end_date:
           type: string
           format: date
-        reason:
-          type: string
-          minLength: 1
-          maxLength: 500
     ProjectionRequest:
       type: object
       required: [series, horizon, kind]
@@ -26501,9 +26511,17 @@ components:
           format: date
         reason:
           type: string
+          description: >-
+            Frozen v1 key. Requests filed since the 근로기준법 §60 guardrail carry
+            no 사유 and serialize as an empty string; only historical rows still
+            hold text.
         status:
           type: string
-          enum: [pending, approved, returned, rejected]
+          enum: [pending, approved, time_change_consult, returned, rejected]
+          description: >-
+            `returned`/`rejected` are historical rows only — no decision can
+            produce them since the §60 guardrail. `time_change_consult` is the
+            lawful non-approve outcome.
         decided_by:
           type:
           - string
@@ -26516,7 +26534,7 @@ components:
           format: date-time
         decision_comment:
           type: string
-          description: Mandatory on return/reject; present only when set.
+          description: Mandatory on time_change; present only when set.
         ap_run_id:
           type: string
           format: uuid
@@ -26539,10 +26557,13 @@ components:
       properties:
         decision:
           type: string
-          enum: [approve, return, reject]
+          enum: [approve, time_change]
+          description: >-
+            근로기준법 §60: refusal is not representable. `time_change` opens the
+            §60⑤ 시기변경 협의; `return`/`reject` are rejected with 422.
         comment:
           type: string
-          description: Mandatory for return/reject; optional for approve.
+          description: Mandatory for time_change; optional for approve.
     LeaveRequestV2View:
       type: object
       description: One leave request in the approval queue (결재함 leave variant).
@@ -26560,7 +26581,6 @@ components:
       - charge_version
       - start_date
       - end_date
-      - reason
       - status
       - decided_by
       - decided_at
@@ -26625,9 +26645,16 @@ components:
           format: date
         reason:
           type: string
+          description: >-
+            Historical rows only (filed before the 근로기준법 §60 guardrail);
+            omitted for requests that carry no 사유.
         status:
           type: string
-          enum: [pending, approved, returned, rejected]
+          enum: [pending, approved, time_change_consult, returned, rejected]
+          description: >-
+            `returned`/`rejected` are historical rows only — no decision can
+            produce them since the §60 guardrail. `time_change_consult` is the
+            lawful non-approve outcome.
         decided_by:
           type:
           - string
@@ -26640,7 +26667,7 @@ components:
           format: date-time
         decision_comment:
           type: string
-          description: Mandatory on return/reject; present only when set.
+          description: Mandatory on time_change; present only when set.
         ap_run_id:
           type: string
           format: uuid
@@ -26677,10 +26704,13 @@ components:
           description: Required mutable request_version compare-and-swap token; never use charge_version.
         decision:
           type: string
-          enum: [approve, return, reject]
+          enum: [approve, time_change]
+          description: >-
+            근로기준법 §60: refusal is not representable. `time_change` opens the
+            §60⑤ 시기변경 협의; `return`/`reject` are rejected with 422.
         comment:
           type: string
-          description: Mandatory for return/reject; optional for approve.
+          description: Mandatory for time_change; optional for approve.
     LeaveUnits:
       type: string
       pattern: '^(0|[1-9][0-9]{0,9})\.[0-9]{6}$'

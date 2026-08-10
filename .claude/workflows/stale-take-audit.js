@@ -156,8 +156,6 @@ const confirmed = await parallel(suspect.map((s) => () =>
 
 CLAIM: ${MAIN} contains content that HEAD dropped by reversion, in ${s.file}.
 EVIDENCE OFFERED: ${s.evidence}
-MISSING-FROM-HEAD PAYLOAD OFFERED (graft candidate):
-${s.missingFromHead || '(none supplied by first pass)'}
 
 ${RULES}
 
@@ -165,9 +163,11 @@ Refute it if: the content is absent from HEAD deliberately (it is the branch's s
 or main's version is not actually newer, or the lines quoted do not exist as claimed. Run the diffs
 yourself rather than trusting the quote.
 
-If you uphold STALE (refuted=false), you MUST return missingFromHead as the exact graft payload you
-attest after re-reading the diffs — not the first agent's quote copied unseen. An upheld STALE
-without that payload is unresolved, not confirmed.`,
+Do NOT be handed a graft candidate from the first pass — a payload nobody re-read is a claim, not
+evidence. If you uphold STALE (refuted=false), you MUST return missingFromHead as the exact graft
+payload YOU reconstruct after re-reading the diffs. An upheld STALE without that payload is
+unresolved, not confirmed. A mismatched or missing confirmation payload must not be substituted
+from the first agent's text.`,
     {
       schema: {
         type: 'object',
@@ -225,10 +225,17 @@ return {
       ? `coverage INCOMPLETE — deadBatches=${dead}, missing=${missingAuditFiles.length}, duplicated=${duplicatedAuditFiles.length}, unresolved=${unconfirmed.length}`
       : 'full coverage',
   ].filter(Boolean),
+  // Publish ONLY the confirmer-attested graft. Never r.missingFromHead from the audit spread —
+  // that is an unconfirmed claim even when the STALE verdict itself was upheld.
   stale: real.map((r) => ({ file: r.file, missingFromHead: r.confirmedMissing, wouldBreak: r.wouldBreak, evidence: r.evidence })),
-  // Carried at top level with their audit evidence, so an operator sees the accusation rather than
-  // having to notice that a count did not add up.
-  unconfirmed: unconfirmed.map((u) => ({ file: u.file, evidence: u.evidence, missingFromHead: u.missingFromHead, wouldBreak: u.wouldBreak })),
+  // Unresolved accusations keep the first-pass claim under a non-graft key so an operator sees
+  // what was alleged without a ready-to-apply missingFromHead payload.
+  unconfirmed: unconfirmed.map((u) => ({
+    file: u.file,
+    evidence: u.evidence,
+    claimedMissingFromHead: u.missingFromHead,
+    wouldBreak: u.wouldBreak,
+  })),
   refuted: answered.filter((c) => c.refuted).map((c) => ({ file: c.file, why: c.refutation })),
   uncertain: all.filter((r) => r.verdict === 'UNCERTAIN').map((r) => ({ file: r.file, evidence: r.evidence })),
   missingAuditFiles,

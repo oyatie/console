@@ -681,9 +681,16 @@ pub struct OutsourceWorkSummary {
     pub status: OutsourceWorkStatus,
 }
 
+/// Build the audit event for a work-order mutation.
+///
+/// `org_id` is the ACTING tenant and must come from the authoritative request
+/// context (`current_org()`) at the call site — never a constant. `with_audit`
+/// arms the transaction-local RLS GUC from this value, so a wrong org here
+/// both mislabels the audit row and mis-scopes the audited mutation (gh#395).
 pub fn work_order_audit_event(
     action: &str,
     actor: UserId,
+    org_id: OrgId,
     branch_id: BranchId,
     work_order_id: WorkOrderId,
     trace: TraceContext,
@@ -698,12 +705,15 @@ pub fn work_order_audit_event(
         occurred_at,
     )
     .with_branch(branch_id)
-    .with_org(OrgId::knl()))
+    .with_org(org_id))
 }
 
+/// Build the audit event for a settlement mutation. See
+/// [`work_order_audit_event`] for the `org_id` contract.
 pub fn settlement_audit_event(
     action: &str,
     actor: UserId,
+    org_id: OrgId,
     branch_id: BranchId,
     settlement_id: uuid::Uuid,
     trace: TraceContext,
@@ -718,12 +728,15 @@ pub fn settlement_audit_event(
         occurred_at,
     )
     .with_branch(branch_id)
-    .with_org(OrgId::knl()))
+    .with_org(org_id))
 }
 
+/// Build the audit event for a daily-plan mutation. See
+/// [`work_order_audit_event`] for the `org_id` contract.
 pub fn daily_plan_audit_event(
     action: &str,
     actor: UserId,
+    org_id: OrgId,
     branch_id: BranchId,
     plan_id: DailyPlanId,
     trace: TraceContext,
@@ -738,5 +751,91 @@ pub fn daily_plan_audit_event(
         occurred_at,
     )
     .with_branch(branch_id)
-    .with_org(OrgId::knl()))
+    .with_org(org_id))
+}
+
+#[cfg(test)]
+mod audit_event_builder_tests {
+    use super::*;
+
+    // gh#395 / bead console-ls3: the audit builders used to hardcode
+    // `.with_org(OrgId::knl())`, so every caller that forgot to override got
+    // its audit rows stamped — and its `with_audit` transaction RLS-armed —
+    // as the KNL tenant. The builders now take the acting tenant as a
+    // required parameter and must thread EXACTLY that org, no default.
+
+    #[test]
+    fn work_order_audit_event_threads_exactly_the_callers_org() {
+        let org = OrgId::new();
+        let event = work_order_audit_event(
+            "work_order.create",
+            UserId::new(),
+            org,
+            BranchId::new(),
+            WorkOrderId::new(),
+            TraceContext::generate(),
+            Timestamp::now_utc(),
+        )
+        .unwrap();
+        assert_eq!(
+            event.org_id,
+            Some(org),
+            "builder must stamp the caller's org, not a default"
+        );
+        assert_ne!(
+            event.org_id,
+            Some(OrgId::knl()),
+            "a fresh org must not come back as the KNL tenant"
+        );
+    }
+
+    #[test]
+    fn settlement_audit_event_threads_exactly_the_callers_org() {
+        let org = OrgId::new();
+        let event = settlement_audit_event(
+            "work_order_settlement.create",
+            UserId::new(),
+            org,
+            BranchId::new(),
+            uuid::Uuid::new_v4(),
+            TraceContext::generate(),
+            Timestamp::now_utc(),
+        )
+        .unwrap();
+        assert_eq!(
+            event.org_id,
+            Some(org),
+            "builder must stamp the caller's org, not a default"
+        );
+        assert_ne!(
+            event.org_id,
+            Some(OrgId::knl()),
+            "a fresh org must not come back as the KNL tenant"
+        );
+    }
+
+    #[test]
+    fn daily_plan_audit_event_threads_exactly_the_callers_org() {
+        let org = OrgId::new();
+        let event = daily_plan_audit_event(
+            "daily_plan.create",
+            UserId::new(),
+            org,
+            BranchId::new(),
+            DailyPlanId::new(),
+            TraceContext::generate(),
+            Timestamp::now_utc(),
+        )
+        .unwrap();
+        assert_eq!(
+            event.org_id,
+            Some(org),
+            "builder must stamp the caller's org, not a default"
+        );
+        assert_ne!(
+            event.org_id,
+            Some(OrgId::knl()),
+            "a fresh org must not come back as the KNL tenant"
+        );
+    }
 }

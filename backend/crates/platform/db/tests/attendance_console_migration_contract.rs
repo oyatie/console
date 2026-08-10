@@ -721,8 +721,8 @@ async fn employee_day_locks_serialize_leave_approval_and_release_terminal_transi
         .unwrap();
     sqlx::query(
         "INSERT INTO leave_requests \
-         (id, org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, start_date, end_date, reason) \
-         VALUES ($1, $2, $3, $4, $5, 'annual', 1, DATE '2026-07-03', DATE '2026-07-03', 'coordination proof')",
+         (id, org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, start_date, end_date) \
+         VALUES ($1, $2, $3, $4, $5, 'annual', 1, DATE '2026-07-03', DATE '2026-07-03')",
     )
     .bind(leave_request)
     .bind(ORG_A)

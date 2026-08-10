@@ -2,9 +2,17 @@
 //!
 //! Pure value objects and validation only. Persistence, audit, org/branch
 //! scoping, and REST live in outer layers. A [`LeaveRequest`] moves through a
-//! four-state machine (`pending` → `approved`/`returned`/`rejected`); only a
+//! three-state machine (`pending` → `approved`/`time_change_consult`); only a
 //! `pending` request can be decided, and the decider is always separated from
 //! the requester (SoD, mirroring the workflow-engine initiator guard #205).
+//!
+//! 근로기준법 §60 guardrail (charter §4-31, "연차=사유란 없음·거부 불가 (시기
+//! 변경 협의만)"): a 연차/반차 request carries **no reason field** — the law
+//! grants the worker the 시기지정권 and the employer may not demand a 사유 —
+//! and **refusal is not representable**. The only lawful non-approve outcome
+//! is opening a 시기변경 협의 under the §60⑤ proviso (사업 운영에 막대한 지장).
+//! The retired `returned`/`rejected` statuses survive only as read-only
+//! historical row states; no decision can produce them.
 //!
 //! The statutory push ([`PromotionKind`]) is the employer's 연차 사용 촉진
 //! (§61, two rounds) and, after the second round, the 노무수령거부 notice. Each
@@ -23,7 +31,6 @@ pub use promotion::{
 use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
-const REASON_MAX: usize = 500;
 const COMMENT_MAX: usize = 500;
 /// Longest single leave span we accept (one fiscal year of working days). Wider
 /// spans are almost always a client bug, not a real request.
@@ -436,12 +443,23 @@ impl LeaveType {
 }
 
 /// The lifecycle status of a leave request.
+///
+/// `Returned` and `Rejected` are **read-only historical states**: rows decided
+/// before the 근로기준법 §60 guardrail landed still carry them and must remain
+/// readable, but no [`LeaveDecision`] can produce them and the database
+/// refuses any new transition into them (fail-closed).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum LeaveStatus {
     Pending,
     Approved,
+    /// 시기변경 협의 opened under the §60⑤ proviso — the lawful non-approve
+    /// outcome. The request row is terminal; the employee refiles once a new
+    /// 시기 is agreed.
+    TimeChangeConsult,
+    /// Historical rows only (pre-guardrail 반려). Not reachable by decision.
     Returned,
+    /// Historical rows only (pre-guardrail 거부). Not reachable by decision.
     Rejected,
 }
 
@@ -451,6 +469,7 @@ impl LeaveStatus {
         match self {
             Self::Pending => "pending",
             Self::Approved => "approved",
+            Self::TimeChangeConsult => "time_change_consult",
             Self::Returned => "returned",
             Self::Rejected => "rejected",
         }
@@ -460,6 +479,7 @@ impl LeaveStatus {
         match value {
             "pending" => Ok(Self::Pending),
             "approved" => Ok(Self::Approved),
+            "time_change_consult" => Ok(Self::TimeChangeConsult),
             "returned" => Ok(Self::Returned),
             "rejected" => Ok(Self::Rejected),
             other => Err(KernelError::validation(format!(
@@ -470,16 +490,16 @@ impl LeaveStatus {
 }
 
 /// A decision on a pending leave request. `Approve` is the only action that
-/// writes the leave ledger (used += days, remaining -= days); the other two are
-/// terminal negative outcomes. `Return` and `Reject` require a comment (the
-/// requester must be told why), mirroring the approval-inbox mandatory-comment
-/// rule; `Approve`'s comment is optional.
+/// writes the leave ledger (used += days, remaining -= days). 근로기준법 §60
+/// forbids refusing 연차 (charter §4-31: "거부 불가"), so the only other
+/// decision is `TimeChange` — opening a 시기변경 협의 under the §60⑤ proviso.
+/// `TimeChange` requires a comment: the employer must state the 사업 운영에
+/// 막대한 지장 grounds it invokes. `Approve`'s comment is optional.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum LeaveDecision {
     Approve,
-    Return,
-    Reject,
+    TimeChange,
 }
 
 impl LeaveDecision {
@@ -487,18 +507,17 @@ impl LeaveDecision {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Approve => "approve",
-            Self::Return => "return",
-            Self::Reject => "reject",
+            Self::TimeChange => "time_change",
         }
     }
 
     pub fn parse(value: &str) -> Result<Self, KernelError> {
         match value {
             "approve" => Ok(Self::Approve),
-            "return" => Ok(Self::Return),
-            "reject" => Ok(Self::Reject),
+            "time_change" => Ok(Self::TimeChange),
             other => Err(KernelError::validation(format!(
-                "unknown leave decision: {other} (expected approve|return|reject)"
+                "unknown leave decision: {other} (expected approve|time_change; \
+                 연차 거부는 근로기준법 §60상 불가)"
             ))),
         }
     }
@@ -508,15 +527,14 @@ impl LeaveDecision {
     pub fn resulting_status(self) -> LeaveStatus {
         match self {
             Self::Approve => LeaveStatus::Approved,
-            Self::Return => LeaveStatus::Returned,
-            Self::Reject => LeaveStatus::Rejected,
+            Self::TimeChange => LeaveStatus::TimeChangeConsult,
         }
     }
 
     /// Whether this decision requires a mandatory comment.
     #[must_use]
     pub fn requires_comment(self) -> bool {
-        matches!(self, Self::Return | Self::Reject)
+        matches!(self, Self::TimeChange)
     }
 
     /// Whether applying this decision writes the leave ledger effect.
@@ -603,13 +621,15 @@ pub fn validate_push(
 }
 
 /// A validated leave intent. Quantity is deliberately absent: it is resolved
-/// from authoritative work-calendar and policy evidence after filing.
+/// from authoritative work-calendar and policy evidence after filing. A reason
+/// is deliberately **unrepresentable**: 근로기준법 §60 gives the worker the
+/// 시기지정권, and the charter (§4-31) forbids demanding — or even offering a
+/// place to store — a 사유 for 연차/반차.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NewLeaveRequest {
     pub leave_type: LeaveType,
     pub start_date: console_kernel_core::Date,
     pub end_date: console_kernel_core::Date,
-    pub reason: String,
     pub partial_day_period: Option<PartialDayPeriod>,
 }
 
@@ -618,7 +638,6 @@ impl NewLeaveRequest {
         leave_type: LeaveType,
         start_date: console_kernel_core::Date,
         end_date: console_kernel_core::Date,
-        reason: &str,
         partial_day_period: Option<PartialDayPeriod>,
     ) -> Result<Self, KernelError> {
         if end_date < start_date {
@@ -651,12 +670,10 @@ impl NewLeaveRequest {
                 }
             }
         }
-        let reason = bounded(reason, "leave reason", REASON_MAX)?;
         Ok(Self {
             leave_type,
             start_date,
             end_date,
-            reason,
             partial_day_period,
         })
     }
@@ -709,30 +726,47 @@ mod tests {
         assert_eq!(LeaveType::parse("half_day").unwrap(), LeaveType::HalfDay);
         assert!(LeaveType::parse("quarter").is_err());
         assert_eq!(LeaveStatus::parse("pending").unwrap(), LeaveStatus::Pending);
+        assert_eq!(
+            LeaveStatus::parse("time_change_consult").unwrap(),
+            LeaveStatus::TimeChangeConsult
+        );
         assert!(LeaveStatus::parse("bogus").is_err());
+        // Historical rows decided before the §60 guardrail must stay readable.
+        assert_eq!(
+            LeaveStatus::parse("returned").unwrap(),
+            LeaveStatus::Returned
+        );
+        assert_eq!(
+            LeaveStatus::parse("rejected").unwrap(),
+            LeaveStatus::Rejected
+        );
     }
 
     #[test]
     fn decision_semantics() {
         assert!(LeaveDecision::Approve.writes_ledger());
-        assert!(!LeaveDecision::Return.writes_ledger());
-        assert!(LeaveDecision::Reject.requires_comment());
+        assert!(!LeaveDecision::TimeChange.writes_ledger());
+        assert!(LeaveDecision::TimeChange.requires_comment());
         assert!(!LeaveDecision::Approve.requires_comment());
         assert_eq!(
             LeaveDecision::Approve.resulting_status(),
             LeaveStatus::Approved
         );
         assert_eq!(
-            LeaveDecision::Return.resulting_status(),
-            LeaveStatus::Returned
+            LeaveDecision::TimeChange.resulting_status(),
+            LeaveStatus::TimeChangeConsult
         );
     }
 
     #[test]
-    fn return_and_reject_need_a_comment() {
-        assert!(validate_decision_comment(LeaveDecision::Reject, None).is_err());
-        assert!(validate_decision_comment(LeaveDecision::Return, Some("   ")).is_err());
-        assert!(validate_decision_comment(LeaveDecision::Reject, Some("사유 미비")).is_ok());
+    fn time_change_needs_the_employer_grounds_comment() {
+        // §60⑤: the employer invokes 사업 운영에 막대한 지장 — the grounds must
+        // be stated to the requester.
+        assert!(validate_decision_comment(LeaveDecision::TimeChange, None).is_err());
+        assert!(validate_decision_comment(LeaveDecision::TimeChange, Some("   ")).is_err());
+        assert!(
+            validate_decision_comment(LeaveDecision::TimeChange, Some("성수기 인력 공백")).is_ok()
+        );
         // Approve may omit a comment.
         assert!(validate_decision_comment(LeaveDecision::Approve, None).is_ok());
     }
@@ -740,59 +774,61 @@ mod tests {
     #[test]
     fn new_request_validation() {
         assert!(
-            NewLeaveRequest::new(
-                LeaveType::Annual,
-                d(2026, 7, 7),
-                d(2026, 7, 6),
-                "휴가",
-                None
-            )
-            .is_err()
+            NewLeaveRequest::new(LeaveType::Annual, d(2026, 7, 7), d(2026, 7, 6), None).is_err()
         );
         assert!(
             NewLeaveRequest::new(
                 LeaveType::HalfDay,
                 d(2026, 7, 6),
                 d(2026, 7, 7),
-                "반차",
                 Some(PartialDayPeriod::Am)
             )
             .is_err(),
             "half day must not span multiple dates"
         );
         assert!(
-            NewLeaveRequest::new(LeaveType::Annual, d(2026, 7, 6), d(2026, 7, 6), "  ", None)
-                .is_err()
+            NewLeaveRequest::new(LeaveType::HalfDay, d(2026, 7, 6), d(2026, 7, 6), None).is_err()
+        );
+        assert!(
+            NewLeaveRequest::new(LeaveType::Annual, d(2026, 7, 6), d(2026, 7, 8), None).is_ok()
         );
         assert!(
             NewLeaveRequest::new(
                 LeaveType::HalfDay,
                 d(2026, 7, 6),
                 d(2026, 7, 6),
-                "반차",
-                None
-            )
-            .is_err()
-        );
-        assert!(
-            NewLeaveRequest::new(
-                LeaveType::Annual,
-                d(2026, 7, 6),
-                d(2026, 7, 8),
-                "여름 휴가",
-                None
-            )
-            .is_ok()
-        );
-        assert!(
-            NewLeaveRequest::new(
-                LeaveType::HalfDay,
-                d(2026, 7, 6),
-                d(2026, 7, 6),
-                "오전 반차",
                 Some(PartialDayPeriod::Am)
             )
             .is_ok()
+        );
+    }
+
+    /// Charter §4-31 / 근로기준법 §60: "연차=사유란 없음". Filing 연차 must not
+    /// demand any 사유 from the employee — the intent type has no reason slot.
+    #[test]
+    fn kr_charter_annual_leave_never_demands_a_reason() {
+        assert!(
+            NewLeaveRequest::new(LeaveType::Annual, d(2026, 7, 6), d(2026, 7, 6), None).is_ok(),
+            "an annual-leave request must be fileable without stating any reason"
+        );
+    }
+
+    /// Charter §4-31 / 근로기준법 §60: "거부 불가 (시기변경 협의만)". Refusal of a
+    /// 연차 request must not be expressible; the only lawful non-approve
+    /// outcome is a 시기변경 협의.
+    #[test]
+    fn kr_charter_refusal_is_not_a_decision() {
+        assert!(
+            LeaveDecision::parse("reject").is_err(),
+            "거부 (reject) must not be a representable decision"
+        );
+        assert!(
+            LeaveDecision::parse("return").is_err(),
+            "반려 (return) is refusal in effect and must not be representable"
+        );
+        assert!(
+            LeaveDecision::parse("time_change").is_ok(),
+            "시기변경 협의 must be the lawful non-approve outcome"
         );
     }
 

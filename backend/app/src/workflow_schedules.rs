@@ -172,6 +172,7 @@ pub fn spawn(pool: sqlx::PgPool) -> WorkflowSchedulePollerHandle {
 /// One poll tick: enumerate tenants, then poll each under its armed org scope.
 async fn run_tick(pool: &sqlx::PgPool, store: &PgWorkflowRuntimeStore) {
     let orgs: Vec<Uuid> = match sqlx::query_scalar("SELECT id FROM platform_list_organizations()")
+        // rls-arming: ok platform_list_organizations() is the SECURITY DEFINER id-only tenant discovery; every per-org pass below runs under scope_org / with_org_conn
         .fetch_all(pool)
         .await
     {

@@ -501,7 +501,7 @@ async fn seed_approved_leave(
         .await
         .unwrap();
     sqlx::query(
-        "INSERT INTO leave_requests (id,org_id,branch_id,requester_user_id,subject_employee_id,leave_type,days,start_date,end_date,reason,status,decided_by,decided_at,charge_state,charge_review_reasons,charge_units) VALUES ($1,$2,$3,$4,$5,'annual',1,DATE '2026-07-02',DATE '2026-07-02','approved attendance coverage','approved',$6,now(),'legacy_unverified',ARRAY[]::text[],1)",
+        "INSERT INTO leave_requests (id,org_id,branch_id,requester_user_id,subject_employee_id,leave_type,days,start_date,end_date,status,decided_by,decided_at,charge_state,charge_review_reasons,charge_units) VALUES ($1,$2,$3,$4,$5,'annual',1,DATE '2026-07-02',DATE '2026-07-02','approved',$6,now(),'legacy_unverified',ARRAY[]::text[],1)",
     )
     .bind(Uuid::new_v4())
     .bind(*OrgId::knl().as_uuid())

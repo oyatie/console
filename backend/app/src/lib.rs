@@ -3532,6 +3532,7 @@ async fn readiness_dependency_status(
         },
         DatabaseDependency::Postgres(pool) => {
             let ready = sqlx::query("SELECT 1")
+                // rls-arming: ok readiness health probe is SELECT 1 (non-tenant, non-RLS)
                 .execute(pool)
                 .instrument(tracing::info_span!(
                     "db.readiness",
@@ -4116,14 +4117,15 @@ pub async fn serve(config: AppConfig, state: AppState) -> Result<(), AppError> {
 #[cfg(not(feature = "dev-auth"))]
 pub async fn assert_no_dev_auth_personas(pool: &sqlx::PgPool) -> Result<(), AppError> {
     let count: i64 = sqlx::query_scalar("SELECT count(*) FROM users WHERE phone LIKE 'dev-auth:%'")
+        // rls-arming: ok fail-closed boot guard (global users phone prefix census); enforced by console-gate-dev-auth-absence, not a tenant read
         .fetch_one(pool)
         .await
         .map_err(AppError::Database)?;
     if count > 0 {
         return Err(AppError::Internal(format!(
             "refusing to start: {count} dev-auth:* persona row(s) found in `users` — a dev-only \
-             database dump reached a build without the dev-auth feature. Purge them before \
-             starting this environment: DELETE FROM users WHERE phone LIKE 'dev-auth:%';"
+             database dump reached a build without the dev-auth feature. Purge those phone-prefix \
+             persona rows before starting this environment (phone LIKE 'dev-auth:%')."
         )));
     }
     Ok(())

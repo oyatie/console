@@ -7,11 +7,17 @@
 //! ```
 //!
 //! Such handlers must construct an `AuditEvent` and route the mutation through
-//! `with_audit`. There are exactly TWO allowed carve-outs, both location-derived,
-//! and `allowed_audit_exclusions()` below is the authority: `record_location_ping`
-//! and `purge_expired_location_data`. Raw coordinates must remain destructible and
-//! must never enter audit_events, and the retention purge that ERASES them cannot
-//! itself write a row naming what it erased.
+//! `with_audit`. There are three allowed carve-outs, and
+//! `allowed_audit_exclusions()` below is the authority: `record_location_ping`,
+//! `purge_expired_location_data`, and `insert_route_telemetry`. Raw coordinates
+//! must remain destructible and must never enter audit_events; the retention
+//! purge that ERASES them cannot itself write a row naming what it erased; and
+//! high-volume RUM/route-selection telemetry must not flood the durable business
+//! audit trail.
+//!
+//! Handler surfaces include path components `application` | `rest` | `worker` |
+//! `app` (so `backend/app/src` is scanned — console-937 / gh#396), plus the
+//! bound compliance LocationPing writer.
 
 use std::path::{Path, PathBuf};
 use std::{collections::HashMap, fs};
@@ -106,11 +112,34 @@ pub fn allowed_audit_exclusions() -> &'static [AuditExclusion] {
             file: "crates/compliance/adapter-postgres/src/lib.rs",
             function: "purge_expired_location_data",
         },
+        // Cardinality-safe console RUM / route-selection telemetry. High-volume
+        // instrumentation must not flood `audit_events`; the writer is bound to
+        // the single app ingestion helper (console-937 / gh#396 expanded app
+        // surfaces into this gate).
+        AuditExclusion {
+            reason: "console_route_telemetry_ingestion",
+            file: "app/src/console_telemetry.rs",
+            function: "insert_route_telemetry",
+        },
     ]
 }
 
 pub fn check_workspace(workspace_dir: &Path) -> Result<GateResult, String> {
+    let app_src = workspace_dir.join("app").join("src");
+    if !app_src.is_dir() {
+        return Err(format!(
+            "audit-coverage: expected app/src scan root missing at {}",
+            app_src.display()
+        ));
+    }
     let files = collect_rust_files(workspace_dir)?;
+    let app_files = files
+        .iter()
+        .filter(|path| path_contains_components(path, &["app", "src"]))
+        .count();
+    if app_files == 0 {
+        return Err("audit-coverage: examined zero app/src Rust files (fail closed)".into());
+    }
     Ok(check_files(files))
 }
 
@@ -156,11 +185,22 @@ fn check_source_file(
     result: &mut GateResult,
     exclusion_counts: &mut HashMap<String, usize>,
 ) {
+    let lines: Vec<&str> = source.lines().collect();
+    let in_test = compute_test_mask(&lines);
     let mut pending_state_changing = false;
     let mut pending_exemption: Option<String> = None;
     let mut byte_offset = 0usize;
+    let mut line_idx = 0usize;
 
     for line in source.lines() {
+        if in_test.get(line_idx).copied().unwrap_or(false) {
+            pending_state_changing = false;
+            pending_exemption = None;
+            byte_offset += line.len() + 1;
+            line_idx += 1;
+            continue;
+        }
+
         let trimmed = line.trim_start();
         if trimmed.starts_with("//") && trimmed.contains("console-gate: state-changing-handler") {
             pending_state_changing = true;
@@ -243,6 +283,7 @@ fn check_source_file(
         }
 
         byte_offset += line.len() + 1;
+        line_idx += 1;
     }
 }
 
@@ -451,31 +492,214 @@ fn detects_unmarked_state_changing_handler(file: &Path, body: &str) -> bool {
 }
 
 fn is_handler_surface(file: &Path) -> bool {
+    // `app` covers `backend/app/src/**` composition-root handlers/pollers that
+    // talk to Postgres directly (collaboration, workflow studio, HR, …). This is
+    // a path-component mechanism, not a one-file allowlist.
     file.components().any(|component| {
         let part = component.as_os_str().to_string_lossy();
-        matches!(part.as_ref(), "application" | "rest" | "worker")
+        matches!(part.as_ref(), "application" | "rest" | "worker" | "app")
     }) || is_compliance_location_ping_writer_surface(file)
 }
 
 /// The real LocationPing writer lives in the compliance Postgres adapter, not in
-/// an `application`/`rest`/`worker` crate. We scan that adapter as a handler
+/// an `application`/`rest`/`worker`/`app` crate. We scan that adapter as a handler
 /// surface so the writer is detected as state-changing and must carry the bound
 /// audit exemption — closing the gap where the actual writer escaped coverage.
 fn is_compliance_location_ping_writer_surface(file: &Path) -> bool {
     path_ends_with_repo_relative(file, "crates/compliance/adapter-postgres/src/lib.rs")
 }
 
+fn path_contains_components(path: &Path, needle: &[&str]) -> bool {
+    let parts: Vec<String> = path
+        .components()
+        .map(|component| component.as_os_str().to_string_lossy().into_owned())
+        .collect();
+    parts
+        .windows(needle.len())
+        .any(|window| window.iter().zip(needle.iter()).all(|(a, b)| a == b))
+}
+
+/// Mask `cfg(test)` / `cfg(all(test, …))` attribute modules so inline fixture SQL
+/// under `app/src/**` does not false-positive as unaudited handlers.
+fn compute_test_mask(lines: &[&str]) -> Vec<bool> {
+    let mut mask = vec![false; lines.len()];
+    let mut i = 0;
+    while i < lines.len() {
+        let l = lines[i].trim_start();
+        if is_cfg_test_attr(l) {
+            let mut j = i;
+            while j < lines.len() && !lines[j].contains('{') {
+                j += 1;
+            }
+            if j < lines.len() {
+                let mut depth = 0i32;
+                let mut k = j;
+                loop {
+                    if k >= lines.len() {
+                        break;
+                    }
+                    for ch in lines[k].chars() {
+                        if ch == '{' {
+                            depth += 1;
+                        } else if ch == '}' {
+                            depth -= 1;
+                        }
+                    }
+                    mask[k] = true;
+                    if depth <= 0 {
+                        break;
+                    }
+                    k += 1;
+                }
+                for masked in mask.iter_mut().take(k + 1).skip(i) {
+                    *masked = true;
+                }
+                i = k + 1;
+                continue;
+            }
+        }
+        i += 1;
+    }
+    mask
+}
+
+fn is_cfg_test_attr(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    if !trimmed.starts_with("#[cfg(") {
+        return false;
+    }
+    let bytes = trimmed.as_bytes();
+    let needle = b"test";
+    let mut idx = 0usize;
+    while idx + needle.len() <= bytes.len() {
+        if &bytes[idx..idx + needle.len()] == needle {
+            let before = idx.checked_sub(1).map(|i| bytes[i]);
+            let after = bytes.get(idx + needle.len()).copied();
+            let boundary_before = matches!(
+                before,
+                None | Some(b'(') | Some(b',') | Some(b' ') | Some(b'\t')
+            );
+            let boundary_after = matches!(
+                after,
+                None | Some(b')') | Some(b',') | Some(b' ') | Some(b'\t')
+            );
+            if boundary_before && boundary_after {
+                return true;
+            }
+        }
+        idx += 1;
+    }
+    false
+}
+
 fn contains_state_mutating_sql(body: &str) -> bool {
-    let searchable = strip_comments_keep_strings(body).to_ascii_lowercase();
-    let uses_sqlx_query = searchable.contains("sqlx::query")
-        || searchable.contains("query!")
-        || searchable.contains("query_as!")
-        || searchable.contains("query_scalar!");
+    // sqlx call sites live in executable code; SQL verbs must appear inside
+    // string literals. Searching the mixed keep-strings view false-positives on
+    // Rust methods such as `headers_mut().insert(...)` in otherwise read-only
+    // handlers (console-937 app-surface expansion).
+    let executable = strip_comments_and_strings(body).to_ascii_lowercase();
+    let sql_literals = string_literal_contents(body).to_ascii_lowercase();
+    let uses_sqlx_query = executable.contains("sqlx::query")
+        || executable.contains("query!")
+        || executable.contains("query_as!")
+        || executable.contains("query_scalar!");
     uses_sqlx_query
         && (["insert", "delete", "merge", "truncate"]
             .iter()
-            .any(|keyword| contains_ascii_word(&searchable, keyword))
-            || contains_non_locking_update(&searchable))
+            .any(|keyword| contains_ascii_word(&sql_literals, keyword))
+            || contains_non_locking_update(&sql_literals))
+}
+
+/// Emit only the contents of Rust string / raw-string literals (comments and
+/// non-string code become spaces). Used to find SQL verbs without matching
+/// homonymous Rust identifiers.
+fn string_literal_contents(source: &str) -> String {
+    let bytes = source.as_bytes();
+    let mut output = String::with_capacity(source.len());
+    let mut index = 0usize;
+    let mut in_line_comment = false;
+    let mut in_block_comment = false;
+    let mut in_string = false;
+    let mut in_char = false;
+    let mut escaped = false;
+
+    while index < bytes.len() {
+        let b = bytes[index];
+        let next = bytes.get(index + 1).copied();
+
+        if in_line_comment {
+            if b == b'\n' {
+                in_line_comment = false;
+                output.push('\n');
+            } else {
+                output.push(' ');
+            }
+            index += 1;
+            continue;
+        }
+        if in_block_comment {
+            if b == b'*' && next == Some(b'/') {
+                in_block_comment = false;
+                output.push_str("  ");
+                index += 2;
+            } else {
+                output.push(if b == b'\n' { '\n' } else { ' ' });
+                index += 1;
+            }
+            continue;
+        }
+        if in_string {
+            if escaped {
+                escaped = false;
+                output.push(b as char);
+            } else if b == b'\\' {
+                escaped = true;
+                output.push(' ');
+            } else if b == b'"' {
+                in_string = false;
+                output.push(' ');
+            } else {
+                output.push(if b == b'\n' { '\n' } else { b as char });
+            }
+            index += 1;
+            continue;
+        }
+        if in_char {
+            if escaped {
+                escaped = false;
+            } else if b == b'\\' {
+                escaped = true;
+            } else if b == b'\'' {
+                in_char = false;
+            }
+            output.push(if b == b'\n' { '\n' } else { ' ' });
+            index += 1;
+            continue;
+        }
+
+        if b == b'/' && next == Some(b'/') {
+            in_line_comment = true;
+            output.push_str("  ");
+            index += 2;
+        } else if b == b'/' && next == Some(b'*') {
+            in_block_comment = true;
+            output.push_str("  ");
+            index += 2;
+        } else if b == b'"' {
+            in_string = true;
+            output.push(' ');
+            index += 1;
+        } else if b == b'\'' {
+            in_char = true;
+            output.push(' ');
+            index += 1;
+        } else {
+            output.push(if b == b'\n' { '\n' } else { ' ' });
+            index += 1;
+        }
+    }
+
+    output
 }
 
 fn contains_non_locking_update(searchable: &str) -> bool {
@@ -518,10 +742,6 @@ fn contains_ascii_word(haystack: &str, needle: &str) -> bool {
 
 fn strip_comments_and_strings(source: &str) -> String {
     strip_rust(source, false)
-}
-
-fn strip_comments_keep_strings(source: &str) -> String {
-    strip_rust(source, true)
 }
 
 fn strip_rust(source: &str, keep_string_contents: bool) -> String {

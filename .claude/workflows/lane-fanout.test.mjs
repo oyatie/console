@@ -737,6 +737,10 @@ const threw = async (args) => {
       const label = o.label || ''
       dispatched.push({ label, prompt })
       if (label === 'collect') return census
+      // Independent disk oracle — must not reuse Collect's crates as its only source.
+      if (label === 'crate-disk-census') {
+        return { cargoTomlPaths: census.cargoTomlPaths || [] }
+      }
       if (label.startsWith('triage:')) return { verdicts }
       if (label === 'reconcile') return { ok: true }
       return { domain: label, findings: [], coverage: 'read it all' }
@@ -787,21 +791,39 @@ const threw = async (args) => {
   check('a census with no crate inventory cannot claim coverage and must abort',
     !!blind.err && /crate inventory/i.test(blind.err), blind.err)
 
-  // cargoTomlPaths is the independent oracle (no Node fs in the workflow sandbox). Omitting a
+  // crate-disk-census is the independent oracle (workflow sandbox has no Node fs). Omitting a
   // path that find would have returned must abort — same fail-closed class as a partial crates list.
+  // A co-emitted Collect.cargoTomlPaths is NOT enough: Collect can omit from both fields together.
   const omittedDisk = await runAudit(CENSUS({
     crates: [{ name: 'identity' }],
     cargoTomlPaths: ['backend/crates/identity/Cargo.toml', 'backend/crates/brand-new/Cargo.toml'],
   }), [VERDICT({ reachableFromDefault: true })])
-  check('a census that omits a cargoTomlPaths crate aborts',
+  check('a census that omits a crate-disk-census crate aborts',
     !!omittedDisk.err && /omitted/i.test(omittedDisk.err), omittedDisk.err)
+  check('coverage uses a dedicated crate-disk-census agent, not Collect alone',
+    omittedDisk.dispatched.some((d) => d.label === 'crate-disk-census'))
 
   const emptyToml = await runAudit(CENSUS({
     crates: [{ name: 'identity' }],
     cargoTomlPaths: [],
   }), [VERDICT({ reachableFromDefault: true })])
-  check('an empty cargoTomlPaths list cannot cross-check coverage and must abort',
-    !!emptyToml.err && /cargoTomlPaths/i.test(emptyToml.err), emptyToml.err)
+  check('an empty crate-disk-census list cannot cross-check coverage and must abort',
+    !!emptyToml.err && /cargoTomlPaths|crate-disk-census/i.test(emptyToml.err), emptyToml.err)
+
+  // Hostile: Collect's crates list is internally consistent and would have matched a co-emitted
+  // cargoTomlPaths — the old self-validation false green. The independent disk census still sees
+  // the omitted crate and must abort.
+  const coordinatedPartial = await runAudit(CENSUS({
+    crates: [{ name: 'identity' }, { name: 'policy' }],
+    cargoTomlPaths: [
+      'backend/crates/identity/Cargo.toml',
+      'backend/crates/policy/Cargo.toml',
+      'backend/crates/brand-new/Cargo.toml',
+    ],
+  }), [VERDICT({ reachableFromDefault: true })])
+  check('a Collect list that omits an on-disk crate aborts even when well-formed',
+    !!coordinatedPartial.err && /omitted/i.test(coordinatedPartial.err)
+      && /brand-new/.test(coordinatedPartial.err), coordinatedPartial.err)
 }
 
 // Six green tests over a self-built registry coexisted with a production root that wired none of it.
@@ -1037,10 +1059,69 @@ const threw = async (args) => {
   check('an upheld STALE without an attested graft payload is unresolved',
     !!noPayload && noPayload.stale.length === 0 && noPayload.unconfirmed.length === 1,
     noPayload && { s: noPayload.stale, u: noPayload.unconfirmed })
+  // console-zd7: a confirmed-stale verdict that never attested content must not publish the
+  // first agent's text under the graft-shaped key. Unconfirmed may retain the claim under a
+  // distinctly-named field so operators see the accusation without a ready-to-apply payload.
+  check('an upheld STALE without attestation does not publish first-pass text as missingFromHead',
+    !!noPayload && noPayload.stale.length === 0
+      && !JSON.stringify(noPayload.stale).includes('the step')
+      && noPayload.unconfirmed.length === 1
+      && !Object.prototype.hasOwnProperty.call(noPayload.unconfirmed[0], 'missingFromHead')
+      && noPayload.unconfirmed[0].claimedMissingFromHead === 'the step',
+    noPayload && { s: noPayload.stale, u: noPayload.unconfirmed })
   const blankPayload = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: false, reasoning: 'real', missingFromHead: '   ' }))
   check('an upheld STALE with a blank graft payload is unresolved',
     !!blankPayload && blankPayload.stale.length === 0 && blankPayload.unconfirmed.length === 1,
     blankPayload && { s: blankPayload.stale, u: blankPayload.unconfirmed })
+  check('a blank confirmer payload does not expose a graft-shaped missingFromHead either',
+    !!blankPayload && blankPayload.unconfirmed.length === 1
+      && !Object.prototype.hasOwnProperty.call(blankPayload.unconfirmed[0], 'missingFromHead')
+      && blankPayload.unconfirmed[0].claimedMissingFromHead === 'the step',
+    blankPayload && blankPayload.unconfirmed)
+  // Confirmer attests a DIFFERENT payload: publish only that. Publishing the first-pass quote
+  // when the confirmation returned something else is the "mismatched" fail-open.
+  check('confirmed stale publishes the confirmer payload, never the first-pass quote',
+    !!kept && kept.stale[0].missingFromHead === 'the step (attested)'
+      && kept.stale[0].missingFromHead !== 'the step',
+    kept && kept.stale[0])
+  // Confirm must re-derive the graft from diffs. Handing the first-pass quote in the prompt
+  // invites rubber-stamping an unread payload (claim, not evidence).
+  {
+    let confirmPrompt = null
+    const agent = async (prompt, o = {}) => {
+      if ((o.label || '').startsWith('audit:')) {
+        return { results: [{ file: '.github/workflows/ci.yml', verdict: 'STALE', evidence: 'main has a step HEAD lacks', missingFromHead: 'FIRST_PASS_SECRET_GRAFT', wouldBreak: 'the suite un-wires' }] }
+      }
+      confirmPrompt = prompt
+      return { file: '.github/workflows/ci.yml', refuted: true, reasoning: 'deliberate', missingFromHead: '' }
+    }
+    await fn({ repo: '/r', main: 'origin/main', files: ['.github/workflows/ci.yml'] },
+      agent, async (t) => Promise.all(t.map((f) => f().catch(() => null))), async (i) => i,
+      () => {}, () => {}, { total: null, spent: () => 0, remaining: () => Infinity }, async () => ({}))
+    check('confirm prompt does not offer the first-pass graft payload for rubber-stamping',
+      typeof confirmPrompt === 'string'
+        && !/FIRST_PASS_SECRET_GRAFT/.test(confirmPrompt)
+        && !/PAYLOAD OFFERED/.test(confirmPrompt)
+        && /EVIDENCE OFFERED/.test(confirmPrompt),
+      confirmPrompt && confirmPrompt.slice(0, 400))
+  }
+  // Oracle integrity: the pre-zd7 publish path (`missingFromHead: r.missingFromHead` from the
+  // audit spread) would leak the first-pass quote under a confirmed-stale verdict. Mutating the
+  // control back to that mapping must go red against the attestation pin.
+  {
+    const leaked = { file: 'ci.yml', missingFromHead: 'FIRST_PASS_WRONG', confirmedMissing: null, refuted: false }
+    const oldPublish = [leaked].filter((c) => c.refuted === false)
+      .map((r) => ({ file: r.file, missingFromHead: r.missingFromHead }))
+    const newPublish = [leaked].filter((c) =>
+      c.refuted === false
+      && typeof c.confirmedMissing === 'string'
+      && c.confirmedMissing.trim() !== '')
+      .map((r) => ({ file: r.file, missingFromHead: r.confirmedMissing }))
+    check('mutate→red: old confirmed-stale publish path leaks the first-pass graft',
+      oldPublish.length === 1 && oldPublish[0].missingFromHead === 'FIRST_PASS_WRONG'
+        && newPublish.length === 0,
+      { oldPublish, newPublish })
+  }
   const dropped = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: true, reasoning: 'deliberate', missingFromHead: '' }))
   check('a live refutation still drops the suspicion',
     !!dropped && dropped.stale.length === 0 && dropped.refuted.length === 1 && dropped.unconfirmed.length === 0,
@@ -1185,7 +1266,12 @@ const threw = async (args) => {
 {
   const AUDIT = fs.readFileSync(path.join(HERE, 'backlog-audit.js'), 'utf8')
   check('backlog-audit does not import Node fs for the crate census', !/import\(['"]node:fs['"]\)/.test(AUDIT))
-  check('backlog-audit requires cargoTomlPaths on Collect', /cargoTomlPaths/.test(AUDIT) && /required: \[[^\]]*cargoTomlPaths/.test(AUDIT))
+  check('backlog-audit measures crates via a dedicated crate-disk-census agent',
+    /label: 'crate-disk-census'/.test(AUDIT) && /find backend\/crates -name Cargo\.toml/.test(AUDIT))
+  check('backlog-audit does not treat Collect.cargoTomlPaths as the disk oracle',
+    /required: \['openIssueNumbers', 'openIssueCount', 'issues', 'beads', 'crates'\]/.test(AUDIT)
+      && !/required: \['openIssueNumbers', 'openIssueCount', 'issues', 'beads', 'crates', 'cargoTomlPaths'\]/.test(AUDIT)
+      && /diskCensus\.cargoTomlPaths/.test(AUDIT))
   const omitSrc = AUDIT.match(/function cratesOmittedFromCensus\([\s\S]*?\n\}/)
   check('backlog-audit exposes cratesOmittedFromCensus to the preflight', !!omitSrc)
   if (omitSrc) {
@@ -1214,8 +1300,8 @@ const threw = async (args) => {
     driftSrc.includes('trimmedRight.match(/^ {2}(\\/.+):$/)')
       || driftSrc.includes('trimmedRight.match(/^ {2}(/.+):$/)')
       || /\\\/\.+\):\$/.test(driftSrc))
-  check('contract-drift refuses nonlocal resolution of generic PATH names',
-    /refusing nonlocal resolution for a generic name/.test(driftSrc))
+  check('contract-drift refuses repo-wide same-name fallback for undeclared PATH consts',
+    /refusing repo-wide same-name fallback/.test(driftSrc))
   check('contract-drift discovers route sources after stripping comments/literals',
     /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\(\s*"\.route\("\s*\)/.test(driftSrc)
       || /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\("\.route\("\)/.test(driftSrc))

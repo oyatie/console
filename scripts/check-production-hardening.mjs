@@ -1433,6 +1433,42 @@ export function evaluateWorkflowHardeningChecks(readText) {
     "image-release release-probe: pinned credential-free checkout precedes local topology script use",
     "image-release release-probe must perform a SHA-pinned actions/checkout with persist-credentials: false before using ops/postgres-reconcile-topology.sh",
   );
+  // Static ratchet for console-soe / console-bqg: the release-probe must invoke
+  // canonical-enforce.sh AFTER image migrate and BEFORE boot. Without this
+  // needle, deleting the step leaves check-production-hardening green while the
+  // census silently returns to the pre-migration structural no-op.
+  const releaseProbeMigrate = extractNamedWorkflowStep(
+    releaseProbe,
+    "Run migrations against the probe database as console_app",
+  );
+  const releaseProbeCanonicalEnforce = extractNamedWorkflowStep(
+    releaseProbe,
+    "Enforce canonical writer ownership on a migrated probe database",
+  );
+  const releaseProbeBoot = extractNamedWorkflowStep(
+    releaseProbe,
+    "Boot the release image (the real published image — no dev-auth flag exists to pass)",
+  );
+  const releaseProbeMigrateIndex = releaseProbe.indexOf(releaseProbeMigrate);
+  const releaseProbeCanonicalEnforceIndex = releaseProbe.indexOf(
+    releaseProbeCanonicalEnforce,
+  );
+  const releaseProbeBootIndex = releaseProbe.indexOf(releaseProbeBoot);
+  requirement(
+    result,
+    releaseProbeMigrate !== "" &&
+      releaseProbeCanonicalEnforce !== "" &&
+      releaseProbeBoot !== "" &&
+      releaseProbeMigrateIndex >= 0 &&
+      releaseProbeCanonicalEnforceIndex > releaseProbeMigrateIndex &&
+      releaseProbeBootIndex > releaseProbeCanonicalEnforceIndex &&
+      /backend\/ci\/gates\/writer-ownership\/canonical-enforce\.sh/.test(
+        releaseProbeCanonicalEnforce,
+      ) &&
+      /\bcanonical_probe_release\b/.test(releaseProbeCanonicalEnforce),
+    "image-release release-probe: post-migration canonical-enforce",
+    "image-release release-probe must run backend/ci/gates/writer-ownership/canonical-enforce.sh on a migrated probe database after migrate and before boot",
+  );
   requirement(
     result,
     workflowHasRun(imageReleaseWorkflow, [

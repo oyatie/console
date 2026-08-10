@@ -49,7 +49,8 @@ use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationRequest, AuthorizationResource,
     CoexistenceMapEntry, DecisionEffect, DualEngineMode, Feature, PermissionLevel, Principal,
     RlsScopeProof, Role, SubjectFreshnessRequirement, authorize, authorize_capability,
-    evaluate_cedar_pbac_boundary, observe_cedar_pbac_decision, permission_for,
+    custom_role_runtime_feature_allowed, evaluate_cedar_pbac_boundary, observe_cedar_pbac_decision,
+    permission_for,
 };
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::{RequestContextError, current_org};
@@ -2430,10 +2431,15 @@ fn team_policy_values(team: Team) -> [&'static str; 2] {
     }
 }
 
+/// Policy Studio UI catalog / GET-response visibility — narrower than the
+/// runtime safety predicate [`custom_role_runtime_feature_allowed`].
+///
+/// ADR-0010/0016: the oyatie AI assistant is an application-layer port only.
+/// Until the real adapter/route exists, Policy Studio must not expose a
+/// catalog row, system-role permission, or custom-role affordance for it.
+/// This is **not** a second safety predicate: runtime grant folding and REST
+/// write validation use `console_platform_authz::custom_role_runtime_feature_allowed`.
 fn policy_studio_feature_visible(feature: Feature) -> bool {
-    // ADR-0010/0016: the oyatie AI assistant is an application-layer port only.
-    // Until the real adapter/route exists, Policy Studio must not expose a
-    // catalog row, system-role permission, or custom-role affordance for it.
     !matches!(
         feature,
         Feature::AiAssist | Feature::AuditStreamRead | Feature::AuditStreamAccessLogRead
@@ -2444,14 +2450,6 @@ fn policy_feature_key_visible(feature_key: &str) -> bool {
     Feature::from_str(feature_key)
         .map(policy_studio_feature_visible)
         .unwrap_or(true)
-}
-
-fn custom_role_runtime_feature_allowed(feature: Feature) -> bool {
-    policy_studio_feature_visible(feature)
-        && !matches!(
-            feature,
-            Feature::RoleManage | Feature::ElevatedRoleGrant | Feature::OrgWideQueueTriage
-        )
 }
 
 fn is_elevated_policy_feature(feature: Feature) -> bool {
@@ -2759,16 +2757,20 @@ mod policy_role_template_tests {
             "visible custom-role permissions should remain intact"
         );
 
-        let error = validate_policy_permissions(&[PolicyPermissionResponse {
+        // UI quarantine must not fork the runtime safety predicate. AiAssist is
+        // absent from platform/authz::custom_role_runtime_feature_allowed's block
+        // list; REST write validation must agree (console-ctk / #614).
+        assert!(
+            custom_role_runtime_feature_allowed(Feature::AiAssist),
+            "runtime safety SSOT must allow AiAssist; Policy Studio visibility is separate"
+        );
+        let permissions = validate_policy_permissions(&[PolicyPermissionResponse {
             feature_key: "ai_assist".to_owned(),
             permission_level: "allow".to_owned(),
         }])
-        .unwrap_err();
-        assert_eq!(error.status, StatusCode::FORBIDDEN);
-        assert_eq!(
-            error.message,
-            "custom roles cannot grant elevated or scope-widening policy features yet"
-        );
+        .expect("AiAssist must not be rejected by the runtime safety predicate");
+        assert_eq!(permissions.len(), 1);
+        assert_eq!(permissions[0].feature_key, "ai_assist");
     }
 
     #[test]

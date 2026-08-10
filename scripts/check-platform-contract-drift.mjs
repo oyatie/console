@@ -29,7 +29,10 @@
  * route sources, no backend operations, or no contract operations each throw. A
  * `.route(` call whose path argument does not resolve to a literal is an error
  * rather than a silently dropped route, which is what keeps a spelling this
- * lexer does not understand from reading as "no drift".
+ * lexer does not understand from reading as "no drift". Path *constants* resolve
+ * only inside the registering module: a same-named `const` in another route
+ * source is never used as a fallback (that fail-open made OpenAPI agree with
+ * the gate while disagreeing with the server).
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -144,18 +147,17 @@ function backendRouteOperations(routeSourceFiles) {
     source: stripRustCommentsAndLiterals(readFileSync(path, "utf8")),
   }));
 
-  // Path constants are frequently declared in one module and routed in another,
-  // so resolution falls back from file-local to repo-wide. A name that carries
-  // two different values repo-wide is ambiguous and is never resolved globally —
-  // guessing produced a phantom `/api/v1/object-types` in development.
-  const globalConstants = new Map();
-  const ambiguous = new Set();
+  // Path constants must resolve inside the module that registers the route.
+  // A repo-wide same-name fallback (even for "distinctive" names, and even when
+  // the value is unique) binds an imported `PATH` / `LIST_PATH` to an unrelated
+  // declaration elsewhere — OpenAPI then agrees with the gate while disagreeing
+  // with the server. Names that are not declared among route sources at all
+  // (imports from a non-router module) stay unresolved and follow the deferred
+  // / routes-table path; they are never satisfied by a coincidental peer file.
+  const declaredElsewhere = new Set();
   for (const { source } of sources) {
-    for (const [name, value] of routePathConstants(source)) {
-      if (globalConstants.has(name) && globalConstants.get(name) !== value) {
-        ambiguous.add(name);
-      }
-      globalConstants.set(name, value);
+    for (const name of routePathConstants(source).keys()) {
+      declaredElsewhere.add(name);
     }
   }
 
@@ -167,27 +169,12 @@ function backendRouteOperations(routeSourceFiles) {
       if (local !== undefined) {
         return local;
       }
-      // Only a cross-file fallback can be ambiguous; a file-local declaration is
-      // always the one that name means here.
-      if (ambiguous.has(name)) {
+      if (declaredElsewhere.has(name)) {
         throw new Error(
-          `${sourcePath}: route path constant ${name} is declared with different values in more than one crate and is not declared here; resolving it would guess`,
+          `${sourcePath}: route path constant ${name} is not declared in this module; refusing repo-wide same-name fallback`,
         );
       }
-      const global = globalConstants.get(name);
-      if (global === undefined) {
-        return undefined;
-      }
-      // Generic names like PATH are reused across modules with unrelated meanings. A
-      // repo-wide fallback that finds one declaration will bind every nonlocal
-      // `PATH` to it, inventing or missing /api/ operations. Fail closed: refuse
-      // nonlocal resolution for names that are not distinctive.
-      if (/^(path|route|api_?path|base_?path|prefix)$/i.test(name)) {
-        throw new Error(
-          `${sourcePath}: route path constant ${name} is not declared in this file; refusing nonlocal resolution for a generic name`,
-        );
-      }
-      return global;
+      return undefined;
     };
 
     let registered = 0;

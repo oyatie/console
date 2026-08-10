@@ -2042,6 +2042,7 @@ async fn assign_work_order_tx(
     let event = work_order_audit_event(
         "work_order.assign",
         actor,
+        OrgId::from_uuid(org_uuid),
         row.branch_id,
         work_order_id,
         trace,

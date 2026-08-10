@@ -570,7 +570,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "a33b6dd367323e66fec87c4dc7a9900ff44458dd",
+      "blob_sha": "3adb61114b73c14685e7c8168eb51235d5408fc1",
       "archive_tag": null
     },
     {
@@ -730,7 +730,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "e2b92abb7b07669a55c101458fbcdfdd0487285e",
+      "blob_sha": "9007309212c3d9ffc9bad8d3563f0123097f58f3",
       "archive_tag": null
     },
     {
@@ -990,7 +990,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "ee6f24e1ee67d1cbc405e77306456498c10b08cf",
+      "blob_sha": "ebc0425e569498b06e867ce99699134defa3b6cf",
       "archive_tag": null
     },
     {
@@ -1094,13 +1094,23 @@
       "archive_tag": null
     },
     {
+      "path": "docs/decisions/ADR-0040-audit-coverage-console-telemetry-carve-out.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "33d97f2ab5ab7a27a11b9618679f75d10c97a018",
+      "archive_tag": null
+    },
+    {
       "path": "docs/decisions/README.md",
       "class": "decision",
       "owner": "repository maintainers",
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "b2f40d74db930a966fef378d843517fbdee2e5f7",
+      "blob_sha": "a836bc17337370965c0a0aa89b9a1d84a0456091",
       "archive_tag": null
     },
     {
@@ -2340,7 +2350,7 @@
       "status": "frozen",
       "replacement": null,
       "retention": "retain as context",
-      "blob_sha": "74ebea8be8b3e405f861b90cf011a448814ec215",
+      "blob_sha": "556e4db80371710fd9a93b7d30976e15bf517f34",
       "archive_tag": null
     },
     {
@@ -3586,6 +3596,16 @@
     {
       "path": "docs/program/ledger/2026-08-09-p4-canonical-writer-ownership.md",
       "blob_sha": "4f0ad5b40394481f94626dd490828a87adc347ca",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-10-train2-leaf-admission.md",
+      "blob_sha": "d3a06e3473ee0a67ad00078ffbfe2bfef9f6218d",
       "class": "evidence",
       "owner": "repository maintainers",
       "status": "frozen",

@@ -2245,8 +2245,8 @@ entry — the LocationPing ingestion path (ADR-0014) — and a test asserts that
 `location_ping_ingestion` / `record_location_ping` and
 `location_data_retention_purge` / `purge_expired_location_data`, both in
 `crates/compliance/adapter-postgres/src/lib.rs`. And the test is
-`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs` `fn allowed_exclusion_set_is_the_two_location_carveouts`
-`fn allowed_exclusion_set_is_the_two_location_carveouts()`, asserting `exclusions.len() == 2`.
+`backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs` `fn allowed_exclusion_set_is_the_bound_carveouts`
+`fn allowed_exclusion_set_is_the_bound_carveouts()`, asserting `exclusions.len() == 3` (ADR-0040 telemetry carve-out).
 
 **Cite the gate and the test name, never `ADR-0002`'s Decision line for this fact.** An ADR Decision line is
 **prose about code**. This one was propagated as a state fact through an entire review pass before anyone opened

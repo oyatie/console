@@ -1885,7 +1885,16 @@ fn effective_grants_from_checked_assignments(
         .collect())
 }
 
-fn custom_role_runtime_feature_allowed(feature: Feature) -> bool {
+/// Single safety predicate for features a custom role may grant at runtime.
+///
+/// Used by [`effective_grants_from_checked_assignments`] and by identity REST
+/// write/preview/assignment ceilings. Callers must not re-encode this block
+/// list. Policy Studio catalog visibility is a separate, narrower UI concern
+/// in `console-identity-rest` (`policy_studio_feature_visible`) and is **not**
+/// a second safety predicate — it may hide deferred features (e.g. AiAssist)
+/// from the catalog while this predicate still allows them.
+#[must_use]
+pub fn custom_role_runtime_feature_allowed(feature: Feature) -> bool {
     !matches!(
         feature,
         Feature::RoleManage
@@ -3155,5 +3164,31 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// Totality pin for the custom-role runtime safety block list. AiAssist is
+    /// intentionally allowed here (built-in matrix already grants it); Policy
+    /// Studio UI quarantine lives in identity/rest and must not fork this set.
+    #[test]
+    fn custom_role_runtime_feature_allowed_blocks_only_the_safety_set() {
+        let blocked = [
+            Feature::RoleManage,
+            Feature::ElevatedRoleGrant,
+            Feature::OrgWideQueueTriage,
+            Feature::AuditStreamRead,
+            Feature::AuditStreamAccessLogRead,
+        ];
+        for feature in Feature::ALL {
+            let expected = !blocked.contains(&feature);
+            assert_eq!(
+                custom_role_runtime_feature_allowed(feature),
+                expected,
+                "{feature:?}"
+            );
+        }
+        assert!(
+            custom_role_runtime_feature_allowed(Feature::AiAssist),
+            "AiAssist must stay outside the runtime safety block list"
+        );
     }
 }

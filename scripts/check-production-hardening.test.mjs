@@ -1448,6 +1448,73 @@ describe("production hardening workflow gates", () => {
     assertHasFailure(result, "before using ops/postgres-reconcile-topology.sh");
   });
 
+  it("rejects release-probe without post-migration canonical-enforce", () => {
+    const releaseWorkflow =
+      validWorkflowFiles[".github/workflows/image-release.yml"];
+    // Hostile: drop the soe step wholesale (the class proven green without a
+    // static pin). Sibling rename of the script path is covered by the same
+    // failure message.
+    const withoutCanonicalEnforce = releaseWorkflow.replace(
+      `      - name: Enforce canonical writer ownership on a migrated probe database
+        env:
+          POSTGRES_CONTAINER: \${{ job.services.postgres.id }}
+        run: |
+          docker cp ops/postgres-reconcile-topology.sh "\${POSTGRES_CONTAINER}:/topology.sh"
+          docker cp "$RUNNER_TEMP/probe-topology.env" "\${POSTGRES_CONTAINER}:/topology.env"
+          bash backend/ci/gates/writer-ownership/canonical-enforce.sh \\
+            "$GITHUB_WORKSPACE" "$POSTGRES_CONTAINER" canonical_probe_release
+
+`,
+      "",
+    );
+    assert.notEqual(
+      withoutCanonicalEnforce,
+      releaseWorkflow,
+      "fixture must actually remove the canonical-enforce step",
+    );
+    assertHasFailure(
+      evaluateWorkflows({
+        ".github/workflows/image-release.yml": withoutCanonicalEnforce,
+      }),
+      "canonical-enforce.sh on a migrated probe database after migrate and before boot",
+    );
+  });
+
+  it("rejects release-probe canonical-enforce sequenced after boot", () => {
+    const releaseWorkflow =
+      validWorkflowFiles[".github/workflows/image-release.yml"];
+    const enforceStep = `      - name: Enforce canonical writer ownership on a migrated probe database
+        env:
+          POSTGRES_CONTAINER: \${{ job.services.postgres.id }}
+        run: |
+          docker cp ops/postgres-reconcile-topology.sh "\${POSTGRES_CONTAINER}:/topology.sh"
+          docker cp "$RUNNER_TEMP/probe-topology.env" "\${POSTGRES_CONTAINER}:/topology.env"
+          bash backend/ci/gates/writer-ownership/canonical-enforce.sh \\
+            "$GITHUB_WORKSPACE" "$POSTGRES_CONTAINER" canonical_probe_release
+
+`;
+    const bootStepMarker =
+      "      - name: Boot the release image (the real published image — no dev-auth flag exists to pass)";
+    const withoutEnforce = releaseWorkflow.replace(enforceStep, "");
+    assert.notEqual(withoutEnforce, releaseWorkflow);
+    const bootAt = withoutEnforce.indexOf(bootStepMarker);
+    assert.ok(bootAt >= 0, "boot step must remain after removing enforce");
+    // Find the end of the boot step's run block by locating the next top-level
+    // step or job key is brittle; splice enforce immediately AFTER the boot
+    // step name line so extractNamedWorkflowStep order is boot-then-enforce.
+    const afterBootName = withoutEnforce.indexOf("\n", bootAt) + 1;
+    const reordered =
+      withoutEnforce.slice(0, afterBootName) +
+      enforceStep +
+      withoutEnforce.slice(afterBootName);
+    assertHasFailure(
+      evaluateWorkflows({
+        ".github/workflows/image-release.yml": reordered,
+      }),
+      "canonical-enforce.sh on a migrated probe database after migrate and before boot",
+    );
+  });
+
   it("rejects persisted release-probe checkout credentials", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];

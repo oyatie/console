@@ -511,7 +511,7 @@ impl PgLeaveStore {
 
         let created = sqlx::query(
             "SELECT * FROM leave_api.create_request(\
-             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)",
+             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)",
         )
         .bind(org.as_uuid())
         .bind(id.as_uuid())
@@ -519,7 +519,6 @@ impl PgLeaveStore {
         .bind(request.leave_type.as_str())
         .bind(request.start_date)
         .bind(request.end_date)
-        .bind(request.reason)
         .bind(request.partial_day_period.map(|period| period.as_str()))
         .bind(review_reasons)
         .bind(date_charges.as_ref().map(|_| branch_id))

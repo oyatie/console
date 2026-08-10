@@ -6,7 +6,8 @@ date: 2026-07-30
 owner: jasonlee
 decision: audit-coverage-exclusion-cardinality-and-binding
 amends: [ADR-0002, ADR-0014]
-related: [ADR-0002, ADR-0014, ADR-0035]
+amended_by: [ADR-0040]
+related: [ADR-0002, ADR-0014, ADR-0035, ADR-0040]
 ---
 
 # ADR-0029 — Audit-coverage exclusions are two, bound to a (file, function) pair
@@ -21,6 +22,11 @@ count, so at acceptance the owner took the first of the two remedies this record
 final section names and widened its scope to `amends: [ADR-0002, ADR-0014]` — both
 false sentences are corrected here rather than one, and the ADR-0014 reciprocity is
 carried in the final section alongside ADR-0002's.
+
+**Amended 2026-08-10 by ADR-0040**, which authorises a third bound carve-out for
+console route-telemetry ingestion after `backend/app/src` entered the handler-surface
+set. The two LocationPing bindings below remain in force; only the closed-at-two
+cardinality is lifted.
 
 ## Context
 

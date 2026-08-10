@@ -356,6 +356,14 @@ jobs:
   # ships. Runs the freshly built+signed `console-app` digest for real and asserts
   # its route table has no `/api/v1/dev-auth/session` at all (404, not a 401/
   # 400 that would mean the route exists but rejected the request).
+  #
+  # The job also carries the release pipeline's POST-MIGRATION canonical
+  # writer-ownership census (console-soe). The provision step's reconcile runs
+  # before migrations by construction — the image cannot migrate until the
+  # roles exist — so its census legitimately examines zero canonical tables. A
+  # dedicated step after the migrate step re-runs the census armed, via
+  # backend/ci/gates/writer-ownership/canonical-enforce.sh, so the release
+  # gate enforces on a real schema instead of performing a structural no-op.
   release-probe:
     name: console-app image — dev-auth route absence probe
     needs: [ci-admission, merge]
@@ -450,6 +458,23 @@ jobs:
             echo "PROBE_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
             echo "PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
           } >> "$GITHUB_ENV"
+          # The canonical writer-ownership enforce step below re-runs this
+          # reconcile post-migration and MUST reuse these exact passwords: the
+          # reconcile ALTERs the cluster-wide application roles, so a second
+          # password set would break the boot step later in this job.
+          umask 077
+          {
+            echo "POSTGRES_DB=console_release_probe"
+            echo "POSTGRES_HOST=127.0.0.1"
+            echo "POSTGRES_PORT=5432"
+            echo "POSTGRES_ADMIN_USER=postgres"
+            echo "POSTGRES_ADMIN_PASSWORD=postgres"
+            echo "CONSOLE_APP_POSTGRES_PASSWORD=${APP_PASSWORD}"
+            echo "CONSOLE_RT_POSTGRES_PASSWORD=${RT_PASSWORD}"
+            echo "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=${LEAVE_COMMAND_PASSWORD}"
+            echo "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${ONTOLOGY_COMMAND_PASSWORD}"
+            echo "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${PLATFORM_FORCE_COMMAND_PASSWORD}"
+          } > "$RUNNER_TEMP/probe-topology.env"
 
       - name: Run migrations against the probe database as console_app
         run: |
@@ -457,6 +482,27 @@ jobs:
             -e CONSOLE_APP_ROLE=migrate \
             -e DATABASE_URL="$PROBE_OWNER_DATABASE_URL" \
             "$IMAGE"
+
+      # Post-migration half of the canonical writer-ownership census. The
+      # provision step's reconcile ran BEFORE the image applied migrations, so
+      # its census examined zero canonical tables — a structural no-op, not a
+      # pass. Now that the migration point has passed, re-run it the way every
+      # other automated path does (backend/ci/gates/writer-ownership/
+      # canonical-enforce.sh): a disposable probe database inside the postgres
+      # service container, migrated with this checkout's migration set — the
+      # admitted release SHA, the same set the image embeds — then reconciled
+      # with CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES=1 so examining zero
+      # canonical tables FAILS instead of passing silently. Sequenced BEFORE
+      # the boot step because the reconcile terminates serving-role backends;
+      # console_release_probe itself is left untouched.
+      - name: Enforce canonical writer ownership on a migrated probe database
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker cp ops/postgres-reconcile-topology.sh "${POSTGRES_CONTAINER}:/topology.sh"
+          docker cp "$RUNNER_TEMP/probe-topology.env" "${POSTGRES_CONTAINER}:/topology.env"
+          bash backend/ci/gates/writer-ownership/canonical-enforce.sh \
+            "$GITHUB_WORKSPACE" "$POSTGRES_CONTAINER" canonical_probe_release
 
       - name: Boot the release image (the real published image — no dev-auth flag exists to pass)
         run: |

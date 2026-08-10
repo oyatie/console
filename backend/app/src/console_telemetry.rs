@@ -189,6 +189,8 @@ fn normalize_bounded_label(
     Ok(value.to_owned())
 }
 
+// console-gate: state-changing-handler
+// console-gate: audit-exempt console_route_telemetry_ingestion
 async fn insert_route_telemetry(
     pool: &PgPool,
     org: OrgId,

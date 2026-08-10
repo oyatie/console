@@ -113,6 +113,7 @@ async fn run_tick(
     payroll_staging: &PgPayRunPort,
 ) {
     let orgs: Vec<Uuid> = match sqlx::query_scalar("SELECT id FROM platform_list_organizations()")
+        // rls-arming: ok platform_list_organizations() is the SECURITY DEFINER id-only tenant discovery; every per-org drain below runs under scope_org / with_org_conn
         .fetch_all(pool)
         .await
     {

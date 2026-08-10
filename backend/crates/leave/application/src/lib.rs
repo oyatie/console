@@ -121,7 +121,8 @@ pub struct ListLeaveRequestsQuery {
     /// Resolved from the principal; passed opaquely to the data layer which
     /// narrows the query to these branches (deny-by-omission on empty scope).
     pub branch_scope: BranchScope,
-    /// When set, only requests in this status; otherwise all four.
+    /// When set, only requests in this status; otherwise every status,
+    /// including the read-only historical `returned`/`rejected` states.
     pub status: Option<LeaveStatus>,
     pub limit: i64,
     /// Last request returned by the previous page. The adapter resolves the
@@ -249,7 +250,13 @@ pub struct LeaveRequestView {
     pub start_date: Date,
     #[serde(with = "date_fmt")]
     pub end_date: Date,
-    pub reason: String,
+    /// 근로기준법 §60 guardrail (charter §4-31): 연차 has no 사유란. Always
+    /// `None` for requests filed after the guardrail; `Some` only on
+    /// historical rows that were filed while the field was (unlawfully)
+    /// mandatory. Serialized only when present so new rows expose no reason
+    /// key at all.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
     pub status: LeaveStatus,
     pub decided_by: Option<UserId>,
     #[serde(with = "time::serde::rfc3339::option")]

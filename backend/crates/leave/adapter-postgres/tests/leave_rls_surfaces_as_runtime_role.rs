@@ -297,14 +297,8 @@ fn create_cmd(
         requester_user_id: requester,
         subject_employee_id: subject,
         idempotency_key: Uuid::new_v4(),
-        request: NewLeaveRequest::new(
-            LeaveType::Annual,
-            date(2026, 7, 6),
-            date(2026, 7, 8),
-            "여름 휴가",
-            None,
-        )
-        .unwrap(),
+        request: NewLeaveRequest::new(LeaveType::Annual, date(2026, 7, 6), date(2026, 7, 8), None)
+            .unwrap(),
         trace: TraceContext::generate(),
         occurred_at: OffsetDateTime::now_utc(),
     }
@@ -325,7 +319,8 @@ fn decide_cmd(
         comment: if decision == LeaveDecision::Approve {
             None
         } else {
-            Some("사유 보완 필요".to_owned())
+            // §60⑤ 시기변경 협의 opener — the only lawful non-approve outcome.
+            Some("사업 운영에 막대한 지장 — 시기 변경 협의 요청".to_owned())
         },
         trace: TraceContext::generate(),
         occurred_at: OffsetDateTime::now_utc(),
@@ -1739,7 +1734,7 @@ async fn approve_writes_ledger_and_enforces_sod_branch_and_tenant(owner_pool: Pg
                 request.id,
                 approver,
                 scope_of(branch_a),
-                LeaveDecision::Reject,
+                LeaveDecision::TimeChange,
             ))
             .await
     })
@@ -1883,6 +1878,35 @@ async fn approve_rejects_when_days_exceed_remaining_balance(owner_pool: PgPool) 
     .await
     .unwrap();
     assert_eq!(still_pending.items[0].status, LeaveStatus::Pending);
+
+    // 근로기준법 §60 guardrail: the lawful way out of an unapprovable request is
+    // a 시기변경 협의 (§60⑤) — it must settle the request WITHOUT touching the
+    // ledger, because no leave was taken.
+    let consult = console_platform_request_context::scope_org(knl, async {
+        store
+            .decide(decide_cmd(
+                request.id,
+                approver,
+                scope_of(branch),
+                LeaveDecision::TimeChange,
+            ))
+            .await
+    })
+    .await
+    .expect("time-change consult on a pending request");
+    assert_eq!(consult.status, LeaveStatus::TimeChangeConsult);
+    assert_eq!(consult.decided_by, Some(approver));
+    let (used, remaining): (f64, f64) = sqlx::query_as(
+        "SELECT leave_used::float8, leave_remaining::float8 FROM employees WHERE id = $1",
+    )
+    .bind(employee)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert!(
+        (used - 14.0).abs() < f64::EPSILON && (remaining - 1.0).abs() < f64::EPSILON,
+        "시기변경 협의 never writes the ledger"
+    );
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -1910,10 +1934,10 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
     let seeded_ids: Vec<Uuid> = sqlx::query_scalar(
         "INSERT INTO leave_requests (\
              org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, \
-             start_date, end_date, reason, created_at\
+             start_date, end_date, created_at\
          ) \
          SELECT $1, $2, $3, $4, 'annual', 1, DATE '2026-07-06', DATE '2026-07-06', \
-                'pagination fixture', $5 + make_interval(secs => series_no) \
+                $5 + make_interval(secs => series_no) \
          FROM generate_series(1, 205) AS series_no \
          RETURNING id",
     )
@@ -1973,9 +1997,8 @@ async fn leave_queue_keyset_pages_past_cap_without_concurrent_insert_drift(owner
     let concurrent_id: Uuid = sqlx::query_scalar(
         "INSERT INTO leave_requests (\
              org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, \
-             start_date, end_date, reason, created_at\
-         ) VALUES ($1, $2, $3, $4, 'annual', 1, DATE '2026-07-07', DATE '2026-07-07', \
-                   'concurrent pagination fixture', $5) \
+             start_date, end_date, created_at\
+         ) VALUES ($1, $2, $3, $4, 'annual', 1, DATE '2026-07-07', DATE '2026-07-07', $5) \
          RETURNING id",
     )
     .bind(org_id)
@@ -2135,14 +2158,11 @@ async fn self_service_create_resolves_subject_and_branch_from_caller(owner_pool:
     );
 
     let mut conflicting = create;
-    conflicting.request = NewLeaveRequest::new(
-        LeaveType::Annual,
-        date(2026, 7, 6),
-        date(2026, 7, 8),
-        "different intent under reused submission key",
-        None,
-    )
-    .unwrap();
+    // Different intent = different dates: with the §60 guardrail there is no
+    // reason field left to differ on, so the submission digest is keyed off the
+    // schedule itself.
+    conflicting.request =
+        NewLeaveRequest::new(LeaveType::Annual, date(2026, 7, 6), date(2026, 7, 9), None).unwrap();
     let conflict = console_platform_request_context::scope_org(knl, async {
         store.create_request(conflicting).await
     })

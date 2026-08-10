@@ -7,7 +7,7 @@
   },
   "packageManager": "npm@11.13.0",
   "scripts": {
-    "check:platform-contract-drift": "node scripts/check-platform-contract-drift.mjs",
+    "check:platform-contract-drift": "node --test scripts/check-platform-contract-drift.test.mjs && node scripts/check-platform-contract-drift.mjs",
     "check:k8s:render": "tmpdir=\"${RUNNER_TEMP:-/tmp}/console-rendered-k8s\" && scripts/render-k8s-manifests.sh \"$tmpdir\"",
     "check:k8s:networkpolicy": "scripts/check-networkpolicy-enforcement.sh",
     "smoke:k8s:networkpolicy-deny": "scripts/smoke-networkpolicy-deny.sh",
@@ -19,7 +19,7 @@
     "adrs:index:write": "node scripts/console/generate-adr-index.mjs --write",
     "check:foundation-gates": "node scripts/check-foundation-gates.mjs",
     "check:undeclared-imports": "node --test scripts/check-undeclared-imports.test.mjs && node scripts/check-undeclared-imports.mjs",
-    "check:request-body-contract": "node --test scripts/check-request-body-contract.test.mjs && node scripts/check-request-body-contract.mjs",
+    "check:request-body-contract": "node --test scripts/check-request-body-contract.test.mjs scripts/check-openapi-refs.test.mjs && node scripts/check-request-body-contract.mjs && node scripts/check-openapi-refs.mjs",
     "check:ci-preflight": "node scripts/check-ci-preflight.mjs && node --test tools/ci/postgres-shard.test.mjs tools/ci/work-order-request-no-seed.test.mjs tools/ci/check-product-buck-residual.test.mjs tools/ci/check-nextest-config.test.mjs tools/ci/ingest-soft-reds.test.mjs scripts/local-admission.test.mjs tools/ci/assess-tip-contention.test.mjs tools/ci/check-mjs-dark-suites.test.mjs tools/ci/classify-ci-failure.test.mjs && node tools/ci/check-product-buck-residual.mjs && node tools/ci/check-nextest-config.mjs && node tools/ci/check-mjs-dark-suites.mjs --strict && node --test scripts/check-foundation-gates.test.mjs && node --test scripts/check-non-oci-mail-imessage-relay.test.mjs && node --test scripts/console/run-verification-queue.test.mjs",
     "check:reasoning-lens-contract": "node scripts/check-reasoning-lens-contract.mjs",
     "check:doc-links": "node scripts/check-doc-links.mjs",

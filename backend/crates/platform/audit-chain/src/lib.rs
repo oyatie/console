@@ -20,17 +20,23 @@
 //! first; OCI Vault is only the OCI adapter, while other clouds use their native
 //! KMS/HSM adapters. [`InMemoryEd25519Signer`] is for dev/test only.
 //!
-//! # PR-1 scope (dark plumbing — NO tamper evidence YET)
-//! This PR ships the chain plumbing with ONLY the in-crate signer, whose
-//! `verify` reconstructs the public key from the seal's own (attacker-writable)
-//! `key_ref` — so against the DB-writer threat actor above it provides **no real
-//! tamper evidence yet**: an attacker rewrites a row, recomputes the hashes,
-//! generates a fresh keypair, re-signs, and overwrites `signature` + `key_ref`.
-//! The evidentiary guarantee materializes only once the external signer adapter
-//! maps `key_ref` → public key through custody the DB writer cannot forge (plus
-//! an out-of-band seal anchor). PR-1 is correct, DARK scaffolding: it changes no
-//! live behavior and provides the seal/verify machinery PR-2 (a read-only
-//! attestation endpoint) and PR-3 (the real signer) build on.
+//! # Tamper evidence: the trust boundary is the signer
+//! Real tamper evidence against the DB-writer threat actor requires that
+//! `verify` establish the seal's public key from a source the writer CANNOT
+//! forge — never from the seal's own `key_ref`. [`ExternalSealSigner`] closes
+//! that boundary: the private key lives in an external key-custody service
+//! reached through a [`SealSignTransport`], and `verify` checks signatures ONLY
+//! against LOCALLY pinned trust anchors. An attacker who rewrites a row,
+//! recomputes the hashes, generates a fresh keypair, re-signs, and overwrites
+//! `signature` + `key_ref` now produces a seal under an UNPINNED key → a
+//! `BadSignature` verdict. Signing fails **closed**: an unreachable custody
+//! service yields [`SealSignError::Unavailable`] and no seal is written (no
+//! in-crate fallback key). Verification is deliberately custody-INDEPENDENT — it
+//! needs only the pinned public keys — so attestation still works during a
+//! signer outage (a DoS of the signer cannot blind tamper detection).
+//! [`InMemoryEd25519Signer`] is dev/test only: its `verify` reconstructs the
+//! public key from the attacker-writable `key_ref`, so it provides no evidence
+//! against the DB-writer actor and must never seal production chains.
 //!
 //! # Coverage gap: NULL-org audit rows
 //! Platform-tier audit rows (`audit_events.org_id IS NULL` — retention/roster
@@ -61,6 +67,9 @@ use sqlx::{PgPool, Postgres, Transaction};
 use time::{Duration, OffsetDateTime, UtcOffset};
 use tokio::sync::watch;
 use uuid::Uuid;
+
+mod external;
+pub use external::{ExternalSealSigner, SealSignTransport};
 
 // ===========================================================================
 // Constants
@@ -136,6 +145,13 @@ pub enum SealSignError {
     KeyRejected,
     #[error("invalid key_ref: {0}")]
     KeyRef(String),
+    /// The external key-custody signer could not be reached or refused to sign.
+    /// Sealing MUST fail closed on this: a chain is never sealed by any in-crate
+    /// fallback key, because a self-signed seal the DB writer can reproduce is
+    /// not tamper evidence. Distinct from a *bad signature* (`verify → Ok(false)`)
+    /// and from a malformed `key_ref` (`KeyRef`).
+    #[error("external seal signer unavailable: {0}")]
+    Unavailable(String),
 }
 
 /// Crate error surface. `with_org_conn` requires `E: From<DbError>`.
@@ -186,11 +202,14 @@ pub trait SealSigner: Send + Sync {
     ) -> Result<bool, SealSignError>;
 }
 
-/// In-process Ed25519 signer for dev/test. Generates a fresh keypair at
-/// construction and embeds the public key in `key_ref` as
-/// `test:ed25519:<hex pk>`, so `verify` reconstructs the public key from the
-/// seal's stored `key_ref` alone. Production swaps in the context-selected
-/// external signer/key-custody adapter.
+/// In-process Ed25519 signer for dev/test ONLY. Generates a fresh keypair at
+/// construction and embeds the public key in `key_ref` as `test:ed25519:<hex
+/// pk>`, so `verify` reconstructs the public key from the seal's stored
+/// `key_ref` alone. That makes it defenceless against the DB-writer threat
+/// actor — a party who edits a sealed row can re-sign under a fresh keypair and
+/// rewrite `key_ref`, and verification accepts it (exercised by the
+/// `resign_attack_defeats_key_ref_derived_dev_signer` integration test).
+/// Production uses [`ExternalSealSigner`] with locally pinned trust anchors.
 pub struct InMemoryEd25519Signer {
     key_pair: ring::signature::Ed25519KeyPair,
     key_ref: String,
@@ -214,6 +233,16 @@ impl InMemoryEd25519Signer {
             key_pair,
             key_ref: format!("{KEY_REF_PREFIX}{pk_hex}"),
         })
+    }
+
+    /// Raw Ed25519 public key bytes of this keypair. Lets a dev/test deployment
+    /// pin this ephemeral key as a trust anchor for [`ExternalSealSigner`]
+    /// (custody-backed verification) without going through the attacker-writable
+    /// `key_ref` path.
+    #[must_use]
+    pub fn public_key(&self) -> Vec<u8> {
+        use ring::signature::KeyPair;
+        self.key_pair.public_key().as_ref().to_vec()
     }
 
     /// Extract the raw Ed25519 public key from a `test:ed25519:<hex>` key_ref.

@@ -122,7 +122,9 @@ struct ListParams {
 
 /// Frozen v1 response DTO. Deployed Kotlin clients reject unknown JSON keys,
 /// so the exact pre-v2 field set must remain stable even though the internal
-/// application view has grown exact-charge and CAS metadata.
+/// application view has grown exact-charge and CAS metadata. `reason` stays in
+/// the key set for that reason only; requests filed after the 근로기준법 §60
+/// guardrail have none and project as an empty string.
 #[derive(Debug, Serialize)]
 struct LegacyLeaveRequestView {
     id: LeaveRequestId,
@@ -159,7 +161,7 @@ impl From<LeaveRequestView> for LegacyLeaveRequestView {
             days: value.days,
             start_date: value.start_date,
             end_date: value.end_date,
-            reason: value.reason,
+            reason: value.reason.unwrap_or_default(),
             status: value.status,
             decided_by: value.decided_by,
             decided_at: value.decided_at,
@@ -255,6 +257,9 @@ async fn list_requests_v2(
     Ok(Json(page).into_response())
 }
 
+/// 근로기준법 §60 guardrail (charter §4-31): there is deliberately **no
+/// `reason` field** — 연차 requires no 사유, and `deny_unknown_fields` turns a
+/// client that still sends one into a 4xx instead of silently storing it.
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CreateRequestBody {
@@ -269,7 +274,6 @@ struct CreateRequestBody {
     /// `YYYY-MM-DD`. Half-day intent must target a single date.
     start_date: String,
     end_date: String,
-    reason: String,
 }
 
 fn parse_iso_date(value: &str, field: &'static str) -> Result<Date, RestError> {
@@ -311,14 +315,8 @@ async fn create_request_v2(
         .map(PartialDayPeriod::parse)
         .transpose()
         .map_err(RestError::from_kernel)?;
-    let request = NewLeaveRequest::new(
-        leave_type,
-        start_date,
-        end_date,
-        &body.reason,
-        partial_day_period,
-    )
-    .map_err(RestError::from_kernel)?;
+    let request = NewLeaveRequest::new(leave_type, start_date, end_date, partial_day_period)
+        .map_err(RestError::from_kernel)?;
 
     let view = state
         .store
@@ -1011,11 +1009,23 @@ mod tests {
     #[test]
     fn v1_decide_body_accepts_deployed_shape_without_request_cas() {
         let body: DecideRequestV1 = serde_json::from_value(serde_json::json!({
-            "decision": "return",
-            "comment": "needs correction"
+            "decision": "time_change",
+            "comment": "성수기 인력 공백"
         }))
         .unwrap();
-        assert_eq!(body.decision, "return");
+        assert_eq!(body.decision, "time_change");
+    }
+
+    /// Charter §4-31 / 근로기준법 §60: refusal decisions must die at the
+    /// domain parse — the REST layer maps that to a 422, never a decision.
+    #[test]
+    fn kr_charter_refusal_decisions_are_unprocessable() {
+        for forbidden in ["reject", "return"] {
+            let error = RestError::from_kernel(
+                LeaveDecision::parse(forbidden).expect_err("refusal must not parse"),
+            );
+            assert_eq!(error.status, StatusCode::UNPROCESSABLE_ENTITY);
+        }
     }
 
     #[test]
@@ -1025,8 +1035,7 @@ mod tests {
             "idempotency_key": key,
             "leave_type": "annual",
             "start_date": "2026-08-03",
-            "end_date": "2026-08-03",
-            "reason": "vacation"
+            "end_date": "2026-08-03"
         }))
         .unwrap();
         assert_eq!(modern.idempotency_key, key);
@@ -1034,10 +1043,25 @@ mod tests {
         let missing_key = serde_json::from_value::<CreateRequestBody>(serde_json::json!({
             "leave_type": "annual",
             "start_date": "2026-08-03",
-            "end_date": "2026-08-03",
-            "reason": "vacation"
+            "end_date": "2026-08-03"
         }));
         assert!(missing_key.is_err());
+    }
+
+    /// Charter §4-31 / 근로기준법 §60: "연차=사유란 없음". A client that still
+    /// submits a 사유 is refused at the boundary instead of the field being
+    /// stored (or silently dropped, which would keep soliciting it).
+    #[test]
+    fn kr_charter_create_body_has_no_reason_field() {
+        let error = serde_json::from_value::<CreateRequestBody>(serde_json::json!({
+            "idempotency_key": Uuid::new_v4(),
+            "leave_type": "annual",
+            "start_date": "2026-08-03",
+            "end_date": "2026-08-03",
+            "reason": "vacation"
+        }))
+        .unwrap_err();
+        assert!(error.to_string().contains("unknown field `reason`"));
     }
 
     #[test]

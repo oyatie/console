@@ -3,7 +3,9 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
-use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
+use console_kernel_core::{
+    AuditAction, AuditEvent, BranchScope, ErrorKind, KernelError, TraceContext,
+};
 use console_platform_auth::{
     JwtVerifier, MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope,
     MobilePasskeyStepUpVerificationError, PasskeyService,
@@ -395,39 +397,46 @@ async fn collect_calendar_events(
     let org = principal.org_id;
     let user_ref = principal.user_id.as_uuid().to_string();
     let user_id = *principal.user_id.as_uuid();
+    let (branch_all, branch_refs) = audience_branch_binds(principal);
+    let audience = scope_visibility_sql(
+        "scope_type",
+        "scope_ref",
+        "created_by",
+        "$3",
+        "$4",
+        "$8",
+        "$9",
+    );
+    let sql = format!(
+        "SELECT id, scope_type, scope_ref, title, description, starts_at, ends_at, \
+                all_day, status, object_type, object_id, created_by, created_at, updated_at, \
+                COUNT(*) OVER() AS snapshot_total \
+         FROM collaboration_calendar_events \
+         WHERE status = 'ACTIVE' \
+           AND ( \
+               ($7 AND starts_at < $1 AND ends_at > $2) \
+               OR (NOT $7 AND starts_at <= $1 AND ends_at >= $2) \
+           ) \
+           AND {audience} \
+           AND created_at <= $5 \
+           AND updated_at <= $5 \
+         ORDER BY starts_at ASC, created_at DESC \
+         LIMIT $6"
+    );
     let rows = with_org_conn::<_, _, CollaborationError>(pool, org, move |tx| {
         Box::pin(async move {
-            Ok(sqlx::query(
-                r#"
-                SELECT id, scope_type, scope_ref, title, description, starts_at, ends_at,
-                       all_day, status, object_type, object_id, created_by, created_at, updated_at,
-                       COUNT(*) OVER() AS snapshot_total
-                FROM collaboration_calendar_events
-                WHERE status = 'ACTIVE'
-                  AND (
-                      ($7 AND starts_at < $1 AND ends_at > $2)
-                      OR (NOT $7 AND starts_at <= $1 AND ends_at >= $2)
-                  )
-                  AND (
-                      scope_type <> 'PERSONAL'
-                      OR scope_ref = $3
-                      OR created_by = $4
-                  )
-                  AND created_at <= $5
-                  AND updated_at <= $5
-                ORDER BY starts_at ASC, created_at DESC
-                LIMIT $6
-                "#,
-            )
-            .bind(to)
-            .bind(from)
-            .bind(user_ref)
-            .bind(user_id)
-            .bind(as_of)
-            .bind(limit)
-            .bind(half_open_range)
-            .fetch_all(tx.as_mut())
-            .await?)
+            Ok(sqlx::query(sqlx::AssertSqlSafe(sql))
+                .bind(to)
+                .bind(from)
+                .bind(user_ref)
+                .bind(user_id)
+                .bind(as_of)
+                .bind(limit)
+                .bind(half_open_range)
+                .bind(branch_all)
+                .bind(&branch_refs)
+                .fetch_all(tx.as_mut())
+                .await?)
         })
     })
     .await?;
@@ -505,6 +514,10 @@ async fn create_calendar_event(
 ) -> Result<Json<CalendarEventResponse>, CollaborationError> {
     authorize_collaboration_member(&principal)?;
     let normalized = normalize_calendar_event(body, principal.user_id.as_uuid())?;
+    if let Err(denied) = authorize_scope_publisher(&principal, normalized.scope_type) {
+        record_collaboration_request("calendar_create", "denied_scope");
+        return Err(denied);
+    }
     let event_id = Uuid::new_v4();
     let org = principal.org_id;
     let actor = principal.user_id;
@@ -589,63 +602,70 @@ async fn list_polls(
     let org = principal.org_id;
     let user_ref = principal.user_id.as_uuid().to_string();
     let user_id = *principal.user_id.as_uuid();
+    let (branch_all, branch_refs) = audience_branch_binds(&principal);
+    let audience = scope_visibility_sql(
+        "p.target_scope_type",
+        "p.target_scope_ref",
+        "p.created_by",
+        "$2",
+        "$3",
+        "$5",
+        "$6",
+    );
+    let sql = format!(
+        "SELECT p.id, p.target_scope_type, p.target_scope_ref, p.title, p.question, \
+                p.status, p.anonymity, p.allow_multiple, p.closes_at, \
+                p.object_type, p.object_id, p.created_by, p.created_at, p.updated_at, \
+                COALESCE(( \
+                    SELECT jsonb_agg( \
+                        jsonb_build_object( \
+                            'id', o.id, \
+                            'label', o.label, \
+                            'position', o.position, \
+                            'vote_count', COALESCE(( \
+                                SELECT COUNT(*) \
+                                FROM collaboration_poll_votes v \
+                                WHERE v.poll_id = p.id \
+                                  AND v.org_id = p.org_id \
+                                  AND o.id = ANY(v.selected_option_ids) \
+                            ), 0) \
+                        ) \
+                        ORDER BY o.position \
+                    ) \
+                    FROM collaboration_poll_options o \
+                    WHERE o.poll_id = p.id \
+                      AND o.org_id = p.org_id \
+                ), '[]'::jsonb) AS options, \
+                COALESCE(( \
+                    SELECT COUNT(*) \
+                    FROM collaboration_poll_votes v \
+                    WHERE v.poll_id = p.id \
+                      AND v.org_id = p.org_id \
+                ), 0) AS vote_count, \
+                ( \
+                    SELECT v.selected_option_ids \
+                    FROM collaboration_poll_votes v \
+                    WHERE v.poll_id = p.id \
+                      AND v.org_id = p.org_id \
+                      AND v.voter_id = $3 \
+                ) AS my_selected_option_ids \
+         FROM collaboration_polls p \
+         WHERE p.status = $1 \
+           AND {audience} \
+         ORDER BY p.created_at DESC \
+         LIMIT $4"
+    );
     let items = with_org_conn::<_, _, CollaborationError>(&state.pool, org, move |tx| {
         Box::pin(async move {
-            let rows = sqlx::query(
-                r#"
-                SELECT p.id, p.target_scope_type, p.target_scope_ref, p.title, p.question,
-                       p.status, p.anonymity, p.allow_multiple, p.closes_at,
-                       p.object_type, p.object_id, p.created_by, p.created_at, p.updated_at,
-                       COALESCE((
-                           SELECT jsonb_agg(
-                               jsonb_build_object(
-                                   'id', o.id,
-                                   'label', o.label,
-                                   'position', o.position,
-                                   'vote_count', COALESCE((
-                                       SELECT COUNT(*)
-                                       FROM collaboration_poll_votes v
-                                       WHERE v.poll_id = p.id
-                                         AND v.org_id = p.org_id
-                                         AND o.id = ANY(v.selected_option_ids)
-                                   ), 0)
-                               )
-                               ORDER BY o.position
-                           )
-                           FROM collaboration_poll_options o
-                           WHERE o.poll_id = p.id
-                             AND o.org_id = p.org_id
-                       ), '[]'::jsonb) AS options,
-                       COALESCE((
-                           SELECT COUNT(*)
-                           FROM collaboration_poll_votes v
-                           WHERE v.poll_id = p.id
-                             AND v.org_id = p.org_id
-                       ), 0) AS vote_count,
-                       (
-                           SELECT v.selected_option_ids
-                           FROM collaboration_poll_votes v
-                           WHERE v.poll_id = p.id
-                             AND v.org_id = p.org_id
-                             AND v.voter_id = $3
-                       ) AS my_selected_option_ids
-                FROM collaboration_polls p
-                WHERE p.status = $1
-                  AND (
-                      p.target_scope_type <> 'PERSONAL'
-                      OR p.target_scope_ref = $2
-                      OR p.created_by = $3
-                  )
-                ORDER BY p.created_at DESC
-                LIMIT $4
-                "#,
-            )
-            .bind(status.as_db())
-            .bind(user_ref)
-            .bind(user_id)
-            .bind(limit)
-            .fetch_all(tx.as_mut())
-            .await?;
+            let rows = sqlx::query(sqlx::AssertSqlSafe(sql))
+                .bind(status.as_db())
+                .bind(user_ref)
+                .bind(user_id)
+                .bind(limit)
+                .bind(branch_all)
+                .bind(&branch_refs)
+                .fetch_all(tx.as_mut())
+                .await?;
             rows.into_iter().map(poll_from_row).collect()
         })
     })
@@ -661,6 +681,10 @@ async fn create_poll(
 ) -> Result<Json<PollResponse>, CollaborationError> {
     authorize_collaboration_member(&principal)?;
     let normalized = normalize_poll(body, principal.user_id.as_uuid())?;
+    if let Err(denied) = authorize_scope_publisher(&principal, normalized.target_scope_type) {
+        record_collaboration_request("poll_create", "denied_scope");
+        return Err(denied);
+    }
     let poll_id = Uuid::new_v4();
     let org = principal.org_id;
     let actor = principal.user_id;
@@ -800,6 +824,8 @@ async fn submit_poll_vote(
 ) -> Result<PollResponse, CollaborationError> {
     let org = principal.org_id;
     let actor = principal.user_id;
+    let user_ref = principal.user_id.as_uuid().to_string();
+    let (branch_all, branch_refs) = audience_branch_binds(principal);
     let trace = TraceContext::generate();
     let now = OffsetDateTime::now_utc();
     let audit_after = json!({
@@ -818,7 +844,15 @@ async fn submit_poll_vote(
     .with_snapshots(None, Some(audit_after.clone()));
     with_audit::<_, _, CollaborationError>(&state.pool, audit_event, move |tx| {
         Box::pin(async move {
-            let poll = load_poll_vote_policy(tx, poll_id).await?;
+            let poll = load_poll_vote_policy(
+                tx,
+                poll_id,
+                &user_ref,
+                *actor.as_uuid(),
+                branch_all,
+                &branch_refs,
+            )
+            .await?;
             if poll.status != PollStatus::Open {
                 return Err(CollaborationError::validation("poll is not open"));
             }
@@ -1034,7 +1068,27 @@ fn normalize_scope_ref(
             "scope_ref must be 160 characters or less",
         ));
     }
-    Ok(normalized)
+    match scope_type {
+        // Tenant-/org-wide rows address everyone; a stored ref would be
+        // decorative and would desync from the visibility predicate.
+        ScopeType::Tenant | ScopeType::Org => Ok(None),
+        // DEPARTMENT audiences are branch ids (the ontology maps 조직/부서 to
+        // `branches`); anything that does not parse as a uuid could never
+        // match a caller's BranchScope and would create an unreachable row.
+        ScopeType::Department => {
+            let value = normalized.ok_or_else(|| {
+                CollaborationError::validation("DEPARTMENT scope requires scope_ref")
+            })?;
+            let branch = Uuid::parse_str(&value).map_err(|_| {
+                CollaborationError::validation("DEPARTMENT scope_ref must be a branch id")
+            })?;
+            Ok(Some(branch.to_string()))
+        }
+        ScopeType::Team => normalized
+            .map(Some)
+            .ok_or_else(|| CollaborationError::validation("TEAM scope requires scope_ref")),
+        ScopeType::Personal => unreachable!("handled above"),
+    }
 }
 
 fn normalize_object_link(
@@ -1232,21 +1286,41 @@ async fn load_poll_response(
     poll_from_row(row)
 }
 
+/// Loads the vote policy for a poll the caller is allowed to address. The
+/// audience predicate is part of the lookup, so a poll outside the caller's
+/// scope membership is indistinguishable from a missing poll (`not_found`,
+/// no existence leak) and can never be voted on.
 async fn load_poll_vote_policy(
     tx: &mut Transaction<'_, Postgres>,
     poll_id: Uuid,
+    user_ref: &str,
+    user_id: Uuid,
+    branch_all: bool,
+    branch_refs: &[String],
 ) -> Result<PollVotePolicy, CollaborationError> {
-    let row = sqlx::query(
-        r#"
-        SELECT status, allow_multiple, closes_at
-        FROM collaboration_polls
-        WHERE id = $1
-        "#,
-    )
-    .bind(poll_id)
-    .fetch_optional(tx.as_mut())
-    .await?
-    .ok_or_else(|| CollaborationError::not_found("poll not found"))?;
+    let audience = scope_visibility_sql(
+        "target_scope_type",
+        "target_scope_ref",
+        "created_by",
+        "$2",
+        "$3",
+        "$4",
+        "$5",
+    );
+    let sql = format!(
+        "SELECT status, allow_multiple, closes_at \
+         FROM collaboration_polls \
+         WHERE id = $1 AND {audience}"
+    );
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql))
+        .bind(poll_id)
+        .bind(user_ref)
+        .bind(user_id)
+        .bind(branch_all)
+        .bind(branch_refs)
+        .fetch_optional(tx.as_mut())
+        .await?
+        .ok_or_else(|| CollaborationError::not_found("poll not found"))?;
     let status_raw: String = row.try_get("status")?;
     Ok(PollVotePolicy {
         status: PollStatus::from_db(&status_raw)?,
@@ -1362,6 +1436,10 @@ fn scope_policy(scope_type: ScopeType, scope_ref: Option<String>) -> Collaborati
     }
 }
 
+/// Bare tenant-membership gate (`Feature::Login`). This is deliberately only
+/// the OUTER door: row visibility is decided per row by
+/// [`scope_visibility_sql`], and creating rows above PERSONAL scope requires
+/// the separate [`authorize_scope_publisher`] grant.
 fn authorize_collaboration_member(principal: &Principal) -> Result<(), CollaborationError> {
     let allowed_by_role = principal
         .roles
@@ -1377,6 +1455,93 @@ fn authorize_collaboration_member(principal: &Principal) -> Result<(), Collabora
     Err(CollaborationError::from_kernel(KernelError::forbidden(
         "collaboration requires an authenticated tenant member",
     )))
+}
+
+/// Addressing an audience wider than yourself is the announcement tier, not
+/// bare login: TENANT/ORG/DEPARTMENT/TEAM creation requires
+/// [`Feature::NoticeManage`] from the built-in role matrix (ADMIN, EXECUTIVE,
+/// SUPER_ADMIN) or an explicit Allow custom grant. PERSONAL stays Login-tier;
+/// its `scope_ref` is pinned to the actor by [`normalize_scope_ref`].
+fn authorize_scope_publisher(
+    principal: &Principal,
+    scope_type: ScopeType,
+) -> Result<(), CollaborationError> {
+    if scope_type == ScopeType::Personal {
+        return Ok(());
+    }
+    let allowed_by_role = principal
+        .roles
+        .iter()
+        .any(|role| permission_for(*role, Feature::NoticeManage) == PermissionLevel::Allow);
+    let allowed_by_custom_grant = principal.effective_feature_grants.iter().any(|grant| {
+        grant.feature == Feature::NoticeManage && grant.permission == PermissionLevel::Allow
+    });
+    if allowed_by_role || allowed_by_custom_grant {
+        return Ok(());
+    }
+    Err(CollaborationError::from_kernel(KernelError::forbidden(
+        "creating shared-scope collaboration content requires notice-manage authority",
+    )))
+}
+
+/// Bind values for [`scope_visibility_sql`], resolved from the caller's
+/// kernel [`BranchScope`] (the platform's branch-membership authority, minted
+/// from `user_branches` at token issuance and narrowed by claim scope).
+/// `BranchScope::All` is the SUPER_ADMIN/EXECUTIVE org-wide rollup tier.
+fn audience_branch_binds(principal: &Principal) -> (bool, Vec<String>) {
+    match &principal.branch_scope {
+        BranchScope::All => (true, Vec::new()),
+        BranchScope::Branches(set) => (
+            false,
+            set.iter()
+                .map(|branch| branch.as_uuid().to_string())
+                .collect(),
+        ),
+    }
+}
+
+/// The ONE audience predicate for scoped collaboration rows (calendar events
+/// and polls share it; per-query respellings of this rule are how §4-32
+/// shipped, so add call sites instead of copies). Stated audience rules:
+///
+/// - `TENANT` / `ORG`: every authenticated member of the tenant. RLS
+///   (`org_isolation` on `app.current_org`) pins the tenant; only the
+///   notice-manage tier can create these rows.
+/// - `DEPARTMENT`: `scope_ref` must be one of the caller's branch ids
+///   (the ontology maps 조직/부서 to `branches`; membership authority is the
+///   kernel `BranchScope`, `All` = org-wide rollup).
+/// - `TEAM`: `scope_ref` must equal the caller's live `users.team` value.
+/// - `PERSONAL`: the caller's own ref, or rows the caller created.
+/// - Creators always see their own rows.
+///
+/// Every column/bind placeholder is a `'static` literal supplied by the call
+/// site (the signature rejects runtime strings, so request data structurally
+/// cannot reach the SQL text; the composed query is `AssertSqlSafe` on that
+/// basis). Unknown scope values match no arm and NULL refs never compare
+/// equal, so both fail closed to invisible.
+fn scope_visibility_sql(
+    scope_type_col: &'static str,
+    scope_ref_col: &'static str,
+    created_by_col: &'static str,
+    user_ref_bind: &'static str,
+    user_id_bind: &'static str,
+    branch_all_bind: &'static str,
+    branch_refs_bind: &'static str,
+) -> String {
+    format!(
+        "(\
+            {scope_type_col} IN ('TENANT','ORG') \
+            OR ({scope_type_col} = 'DEPARTMENT' \
+                AND ({branch_all_bind} OR {scope_ref_col} = ANY({branch_refs_bind}))) \
+            OR ({scope_type_col} = 'TEAM' AND EXISTS (\
+                SELECT 1 FROM users audience_member \
+                WHERE audience_member.id = {user_id_bind} \
+                  AND audience_member.team = {scope_ref_col})) \
+            OR ({scope_type_col} = 'PERSONAL' \
+                AND ({scope_ref_col} = {user_ref_bind} OR {created_by_col} = {user_id_bind})) \
+            OR {created_by_col} = {user_id_bind}\
+        )"
+    )
 }
 
 fn record_collaboration_request(surface: &'static str, outcome: &'static str) {
@@ -1526,5 +1691,551 @@ mod tests {
 
         assert_eq!(err.code, "validation");
         Ok(())
+    }
+
+    // ------------------------------------------------------------------
+    // PostgreSQL scope-authorization coverage (console-l6c).
+    //
+    // These tests are the executable oracle for the §4-32 audience holes:
+    // before the membership predicate and the publisher gate existed, every
+    // authenticated tenant member read every non-PERSONAL row and could
+    // create rows at any scope. Each test seeds rows AS ANOTHER USER so the
+    // created_by ownership arm cannot mask a missing membership check.
+    // ------------------------------------------------------------------
+
+    #[cfg(feature = "test-postgres")]
+    use console_kernel_core::{BranchId, OrgId, UserId};
+    #[cfg(feature = "test-postgres")]
+    use console_platform_authz::{EffectiveFeatureGrant, Role};
+    #[cfg(feature = "test-postgres")]
+    use std::collections::BTreeSet;
+
+    #[cfg(feature = "test-postgres")]
+    async fn seed_org(pool: &sqlx::PgPool) -> OrgId {
+        let org = OrgId::new();
+        sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
+            .bind(*org.as_uuid())
+            .bind(format!("collab-{}", &org.as_uuid().to_string()[..8]))
+            .bind("Collaboration Scope Test")
+            .execute(pool)
+            .await
+            .expect("seed organization");
+        org
+    }
+
+    #[cfg(feature = "test-postgres")]
+    async fn seed_user(pool: &sqlx::PgPool, org: OrgId, role: &str, team: Option<&str>) -> UserId {
+        let user = UserId::new();
+        sqlx::query(
+            "INSERT INTO users (id, display_name, roles, team, is_active, org_id) \
+             VALUES ($1, $2, ARRAY[$3]::TEXT[], $4, true, $5)",
+        )
+        .bind(*user.as_uuid())
+        .bind(format!("collab-{}", &user.as_uuid().to_string()[..8]))
+        .bind(role)
+        .bind(team)
+        .bind(*org.as_uuid())
+        .execute(pool)
+        .await
+        .expect("seed user");
+        user
+    }
+
+    #[cfg(feature = "test-postgres")]
+    async fn seed_event(
+        pool: &sqlx::PgPool,
+        org: OrgId,
+        scope_type: &str,
+        scope_ref: Option<String>,
+        created_by: UserId,
+        title: &str,
+    ) -> Uuid {
+        let id = Uuid::new_v4();
+        let starts = OffsetDateTime::now_utc();
+        sqlx::query(
+            "INSERT INTO collaboration_calendar_events (\
+                id, org_id, scope_type, scope_ref, title, description, starts_at, ends_at, \
+                all_day, status, created_by, updated_by\
+             ) VALUES ($1, $2, $3, $4, $5, '', $6, $7, FALSE, 'ACTIVE', $8, $8)",
+        )
+        .bind(id)
+        .bind(*org.as_uuid())
+        .bind(scope_type)
+        .bind(scope_ref)
+        .bind(title)
+        .bind(starts)
+        .bind(starts + time::Duration::minutes(30))
+        .bind(*created_by.as_uuid())
+        .execute(pool)
+        .await
+        .expect("seed calendar event");
+        id
+    }
+
+    #[cfg(feature = "test-postgres")]
+    async fn seed_poll(
+        pool: &sqlx::PgPool,
+        org: OrgId,
+        scope_type: &str,
+        scope_ref: Option<String>,
+        created_by: UserId,
+        title: &str,
+    ) -> (Uuid, Uuid) {
+        let poll_id = Uuid::new_v4();
+        sqlx::query(
+            "INSERT INTO collaboration_polls (\
+                id, org_id, target_scope_type, target_scope_ref, title, question, status, \
+                anonymity, allow_multiple, created_by, updated_by\
+             ) VALUES ($1, $2, $3, $4, $5, 'pick one', 'OPEN', 'NAMED', false, $6, $6)",
+        )
+        .bind(poll_id)
+        .bind(*org.as_uuid())
+        .bind(scope_type)
+        .bind(scope_ref)
+        .bind(title)
+        .bind(*created_by.as_uuid())
+        .execute(pool)
+        .await
+        .expect("seed poll");
+        let option_id: Uuid = sqlx::query_scalar(
+            "INSERT INTO collaboration_poll_options (org_id, poll_id, label, position) \
+             VALUES ($1, $2, 'A', 0) RETURNING id",
+        )
+        .bind(*org.as_uuid())
+        .bind(poll_id)
+        .fetch_one(pool)
+        .await
+        .expect("seed poll option");
+        sqlx::query(
+            "INSERT INTO collaboration_poll_options (org_id, poll_id, label, position) \
+             VALUES ($1, $2, 'B', 1)",
+        )
+        .bind(*org.as_uuid())
+        .bind(poll_id)
+        .execute(pool)
+        .await
+        .expect("seed second poll option");
+        (poll_id, option_id)
+    }
+
+    #[cfg(feature = "test-postgres")]
+    fn principal_of(
+        user: UserId,
+        org: OrgId,
+        role: Role,
+        branch_scope: console_kernel_core::BranchScope,
+    ) -> Principal {
+        Principal::new(user, org, BTreeSet::from([role]), branch_scope)
+    }
+
+    #[cfg(feature = "test-postgres")]
+    fn collab_state(pool: &sqlx::PgPool) -> CollaborationState {
+        CollaborationState::new(pool.clone(), None)
+    }
+
+    #[cfg(feature = "test-postgres")]
+    async fn visible_calendar_ids(
+        pool: &sqlx::PgPool,
+        principal: &Principal,
+    ) -> std::collections::BTreeSet<Uuid> {
+        let now = OffsetDateTime::now_utc();
+        let snapshot = collect_calendar_events(
+            pool,
+            principal,
+            now - time::Duration::hours(1),
+            now + time::Duration::hours(2),
+            50,
+            now + time::Duration::minutes(5),
+            false,
+        )
+        .await
+        .expect("calendar visibility query");
+        snapshot.items.into_iter().map(|item| item.id).collect()
+    }
+
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn department_and_team_calendar_rows_are_hidden_outside_membership(pool: sqlx::PgPool) {
+        let org = seed_org(&pool).await;
+        let author = seed_user(&pool, org, "ADMIN", None).await;
+        let viewer = seed_user(&pool, org, "MEMBER", Some("정비")).await;
+        let branch_x = BranchId::new();
+        let branch_y = BranchId::new();
+
+        let tenant_row = seed_event(&pool, org, "TENANT", None, author, "tenant row").await;
+        let dept_x_row = seed_event(
+            &pool,
+            org,
+            "DEPARTMENT",
+            Some(branch_x.as_uuid().to_string()),
+            author,
+            "department x row",
+        )
+        .await;
+        let dept_y_row = seed_event(
+            &pool,
+            org,
+            "DEPARTMENT",
+            Some(branch_y.as_uuid().to_string()),
+            author,
+            "department y row",
+        )
+        .await;
+        let team_mine_row = seed_event(
+            &pool,
+            org,
+            "TEAM",
+            Some("정비".to_owned()),
+            author,
+            "my team row",
+        )
+        .await;
+        let team_other_row = seed_event(
+            &pool,
+            org,
+            "TEAM",
+            Some("예방".to_owned()),
+            author,
+            "other team row",
+        )
+        .await;
+        let author_personal_row = seed_event(
+            &pool,
+            org,
+            "PERSONAL",
+            Some(author.as_uuid().to_string()),
+            author,
+            "author personal row",
+        )
+        .await;
+
+        let member = principal_of(
+            viewer,
+            org,
+            Role::Member,
+            console_kernel_core::BranchScope::single(branch_x),
+        );
+        let visible = visible_calendar_ids(&pool, &member).await;
+        assert!(
+            visible.contains(&tenant_row),
+            "tenant row must stay visible"
+        );
+        assert!(
+            visible.contains(&dept_x_row),
+            "own-department row must be visible"
+        );
+        assert!(
+            visible.contains(&team_mine_row),
+            "own-team row must be visible"
+        );
+        assert!(
+            !visible.contains(&dept_y_row),
+            "member of department X must NOT read department Y rows"
+        );
+        assert!(
+            !visible.contains(&team_other_row),
+            "member of team 정비 must NOT read team 예방 rows"
+        );
+        assert!(
+            !visible.contains(&author_personal_row),
+            "another user's personal row must stay hidden"
+        );
+
+        // SUPER_ADMIN/EXECUTIVE rollup (BranchScope::All) keeps org-wide reach.
+        let executive = principal_of(
+            seed_user(&pool, org, "EXECUTIVE", None).await,
+            org,
+            Role::Executive,
+            console_kernel_core::BranchScope::All,
+        );
+        let rollup = visible_calendar_ids(&pool, &executive).await;
+        assert!(rollup.contains(&dept_x_row) && rollup.contains(&dept_y_row));
+        assert!(
+            !rollup.contains(&author_personal_row),
+            "rollup must not expose another user's personal row"
+        );
+    }
+
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn calendar_create_above_personal_requires_notice_manage(pool: sqlx::PgPool) {
+        let org = seed_org(&pool).await;
+        let member_user = seed_user(&pool, org, "MEMBER", None).await;
+        let admin_user = seed_user(&pool, org, "ADMIN", None).await;
+        let branch = BranchId::new();
+        let state = collab_state(&pool);
+
+        let request =
+            |scope_type: ScopeType, scope_ref: Option<String>| CreateCalendarEventRequest {
+                scope_type,
+                scope_ref,
+                title: "scope legality".to_owned(),
+                description: String::new(),
+                starts_at: OffsetDateTime::now_utc(),
+                ends_at: OffsetDateTime::now_utc() + time::Duration::minutes(30),
+                all_day: false,
+                object_type: None,
+                object_id: None,
+            };
+
+        let member = principal_of(
+            member_user,
+            org,
+            Role::Member,
+            console_kernel_core::BranchScope::single(branch),
+        );
+        let denied = create_calendar_event(
+            State(state.clone()),
+            Extension(member.clone()),
+            Json(request(ScopeType::Tenant, None)),
+        )
+        .await;
+        match denied {
+            Ok(_) => panic!("bare-login member must not create a TENANT-scoped event"),
+            Err(err) => assert_eq!(
+                err.status,
+                StatusCode::FORBIDDEN,
+                "expected forbidden, got {}: {}",
+                err.status,
+                err.message
+            ),
+        }
+
+        let personal = create_calendar_event(
+            State(state.clone()),
+            Extension(member.clone()),
+            Json(request(ScopeType::Personal, None)),
+        )
+        .await
+        .expect("member keeps PERSONAL creation");
+        assert_eq!(
+            personal.0.scope_ref,
+            Some(member_user.as_uuid().to_string()),
+            "personal scope stays pinned to the actor"
+        );
+
+        let admin = principal_of(
+            admin_user,
+            org,
+            Role::Admin,
+            console_kernel_core::BranchScope::single(branch),
+        );
+        let created = create_calendar_event(
+            State(state.clone()),
+            Extension(admin.clone()),
+            Json(request(ScopeType::Tenant, Some("ignored".to_owned()))),
+        )
+        .await
+        .expect("admin holds the notice-manage tier");
+        assert_eq!(
+            created.0.scope_ref, None,
+            "tenant/org rows must not store a decorative scope_ref"
+        );
+
+        // A custom NoticeManage grant (not the built-in matrix) also qualifies.
+        let mut granted_member = principal_of(
+            seed_user(&pool, org, "MEMBER", None).await,
+            org,
+            Role::Member,
+            console_kernel_core::BranchScope::single(branch),
+        );
+        granted_member.effective_feature_grants = vec![EffectiveFeatureGrant::new(
+            Feature::NoticeManage,
+            PermissionLevel::Allow,
+            console_kernel_core::BranchScope::All,
+        )];
+        let _ = create_calendar_event(
+            State(state.clone()),
+            Extension(granted_member.clone()),
+            Json(request(
+                ScopeType::Department,
+                Some(branch.as_uuid().to_string()),
+            )),
+        )
+        .await
+        .expect("custom NoticeManage grant may create a department event");
+
+        let junk_department = create_calendar_event(
+            State(state.clone()),
+            Extension(granted_member),
+            Json(request(ScopeType::Department, Some("총무팀".to_owned()))),
+        )
+        .await;
+        match junk_department {
+            Ok(_) => panic!("department scope_ref must be a branch id"),
+            Err(err) => assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY),
+        }
+
+        let missing_team_ref = create_calendar_event(
+            State(state),
+            Extension(admin),
+            Json(request(ScopeType::Team, None)),
+        )
+        .await;
+        match missing_team_ref {
+            Ok(_) => panic!("team scope requires a scope_ref"),
+            Err(err) => assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY),
+        }
+    }
+
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn poll_visibility_and_create_follow_scope_membership(pool: sqlx::PgPool) {
+        let org = seed_org(&pool).await;
+        let author = seed_user(&pool, org, "ADMIN", None).await;
+        let viewer = seed_user(&pool, org, "MEMBER", None).await;
+        let branch_x = BranchId::new();
+        let branch_y = BranchId::new();
+        let state = collab_state(&pool);
+
+        let (org_poll, _) = seed_poll(&pool, org, "ORG", None, author, "org poll").await;
+        let (dept_x_poll, _) = seed_poll(
+            &pool,
+            org,
+            "DEPARTMENT",
+            Some(branch_x.as_uuid().to_string()),
+            author,
+            "dept x poll",
+        )
+        .await;
+        let (dept_y_poll, _) = seed_poll(
+            &pool,
+            org,
+            "DEPARTMENT",
+            Some(branch_y.as_uuid().to_string()),
+            author,
+            "dept y poll",
+        )
+        .await;
+
+        let member = principal_of(
+            viewer,
+            org,
+            Role::Member,
+            console_kernel_core::BranchScope::single(branch_x),
+        );
+        let listed = list_polls(
+            State(state.clone()),
+            Extension(member.clone()),
+            Query(PollQuery {
+                status: None,
+                limit: None,
+            }),
+        )
+        .await
+        .expect("poll list");
+        let listed_ids: std::collections::BTreeSet<Uuid> =
+            listed.0.items.iter().map(|poll| poll.id).collect();
+        assert!(listed_ids.contains(&org_poll), "org poll must stay listed");
+        assert!(
+            listed_ids.contains(&dept_x_poll),
+            "own-department poll must be listed"
+        );
+        assert!(
+            !listed_ids.contains(&dept_y_poll),
+            "member of department X must NOT read department Y polls"
+        );
+
+        let poll_request = CreatePollRequest {
+            target_scope_type: ScopeType::Org,
+            target_scope_ref: None,
+            title: "scope legality".to_owned(),
+            question: "allowed?".to_owned(),
+            status: PollStatus::Open,
+            anonymity: PollAnonymity::Named,
+            allow_multiple: false,
+            closes_at: None,
+            options: vec!["A".to_owned(), "B".to_owned()],
+            object_type: None,
+            object_id: None,
+        };
+        let denied = create_poll(State(state.clone()), Extension(member), Json(poll_request)).await;
+        match denied {
+            Ok(_) => panic!("bare-login member must not create an ORG-scoped poll"),
+            Err(err) => assert_eq!(err.status, StatusCode::FORBIDDEN),
+        }
+
+        let admin = principal_of(
+            author,
+            org,
+            Role::Admin,
+            console_kernel_core::BranchScope::single(branch_x),
+        );
+        let _ = create_poll(
+            State(state),
+            Extension(admin),
+            Json(CreatePollRequest {
+                target_scope_type: ScopeType::Org,
+                target_scope_ref: None,
+                title: "admin poll".to_owned(),
+                question: "allowed?".to_owned(),
+                status: PollStatus::Open,
+                anonymity: PollAnonymity::Named,
+                allow_multiple: false,
+                closes_at: None,
+                options: vec!["A".to_owned(), "B".to_owned()],
+                object_type: None,
+                object_id: None,
+            }),
+        )
+        .await
+        .expect("admin creates org poll");
+    }
+
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn poll_vote_is_denied_outside_the_poll_audience(pool: sqlx::PgPool) {
+        let org = seed_org(&pool).await;
+        let author = seed_user(&pool, org, "ADMIN", None).await;
+        let voter = seed_user(&pool, org, "MEMBER", None).await;
+        let branch_x = BranchId::new();
+        let branch_y = BranchId::new();
+        let state = collab_state(&pool);
+
+        let (dept_y_poll, dept_y_option) = seed_poll(
+            &pool,
+            org,
+            "DEPARTMENT",
+            Some(branch_y.as_uuid().to_string()),
+            author,
+            "dept y poll",
+        )
+        .await;
+        let (org_poll, org_option) = seed_poll(&pool, org, "ORG", None, author, "org poll").await;
+
+        let member = principal_of(
+            voter,
+            org,
+            Role::Member,
+            console_kernel_core::BranchScope::single(branch_x),
+        );
+        let denied = vote_poll(
+            State(state.clone()),
+            Extension(member.clone()),
+            Path(dept_y_poll),
+            Json(VotePollRequest {
+                selected_option_ids: vec![dept_y_option],
+            }),
+        )
+        .await;
+        match denied {
+            Ok(_) => panic!("member outside the department audience must not vote"),
+            Err(err) => assert_eq!(
+                err.status,
+                StatusCode::NOT_FOUND,
+                "out-of-audience polls must stay indistinguishable from missing ones"
+            ),
+        }
+
+        let _ = vote_poll(
+            State(state),
+            Extension(member),
+            Path(org_poll),
+            Json(VotePollRequest {
+                selected_option_ids: vec![org_option],
+            }),
+        )
+        .await
+        .expect("org poll stays votable by members");
     }
 }

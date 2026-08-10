@@ -129,12 +129,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.create",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         let summary =
             with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
@@ -225,6 +225,7 @@ impl PgWorkOrderStore {
         &self,
         command: UpdatePriorityCommand,
     ) -> Result<WorkOrderSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
         let branch_id = self.branch_for_work_order(command.work_order_id).await?;
         let work_order_id = command.work_order_id;
         let priority = command.priority;
@@ -233,6 +234,7 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.priority",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
@@ -265,6 +267,7 @@ impl PgWorkOrderStore {
         &self,
         command: UpdateWorkOrderIntakeCommand,
     ) -> Result<WorkOrderSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
         let branch_id = self.branch_for_work_order(command.work_order_id).await?;
         let work_order_id = command.work_order_id;
         let actor = command.actor;
@@ -292,6 +295,7 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.update_intake",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
@@ -344,12 +348,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.assign",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -457,12 +461,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.start",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -512,12 +516,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.report",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -622,12 +626,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.approve",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
         )?
-        .with_org(org)
         .with_snapshots(None, Some(serde_json::json!({ "comment": comment })));
 
         with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
@@ -773,12 +777,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.reject",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
         )?
-        .with_org(org)
         .with_snapshots(None, Some(serde_json::json!({ "memo": memo })));
 
         with_audit::<_, WorkOrderSummary, PgWorkOrderError>(&self.pool, event, |tx| {
@@ -882,12 +886,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "target_change.request",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, TargetChangeRequestSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -930,6 +934,7 @@ impl PgWorkOrderStore {
         &self,
         command: ReviewTargetChangeCommand,
     ) -> Result<TargetChangeRequestSummary, PgWorkOrderError> {
+        let org = current_org().map_err(KernelError::from)?;
         let target = self.target_change_target(command.request_id).await?;
         let actor = command.actor;
         let request_id = command.request_id;
@@ -939,6 +944,7 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "target_change.review",
             actor,
+            org,
             target.branch_id,
             target.work_order_id,
             command.trace,
@@ -1033,12 +1039,12 @@ impl PgWorkOrderStore {
         let event = daily_plan_audit_event(
             "daily_plan.create",
             actor,
+            org,
             branch_id,
             plan_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, DailyPlanSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -1268,12 +1274,12 @@ impl PgWorkOrderStore {
         let event = work_order_audit_event(
             "work_order.outsource",
             actor,
+            org,
             branch_id,
             work_order_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, OutsourceWorkSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -1429,12 +1435,12 @@ impl PgWorkOrderStore {
         let event = settlement_audit_event(
             "work_order_settlement.create",
             actor,
+            org,
             branch_id,
             settlement_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -1557,12 +1563,12 @@ impl PgWorkOrderStore {
         let event = settlement_audit_event(
             "work_order_settlement.submit",
             actor,
+            org,
             current.branch_id,
             settlement_id,
             command.trace,
             occurred_at,
-        )?
-        .with_org(org);
+        )?;
 
         with_audit::<_, SettlementSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {
@@ -1613,12 +1619,12 @@ impl PgWorkOrderStore {
         let event = settlement_audit_event(
             "work_order_settlement.review",
             actor,
+            org,
             current.branch_id,
             settlement_id,
             command.trace,
             occurred_at,
         )?
-        .with_org(org)
         .with_snapshots(
             Some(serde_json::json!({ "status": current.status.as_db_str() })),
             Some(serde_json::json!({
@@ -1697,12 +1703,12 @@ impl PgWorkOrderStore {
         let event = settlement_audit_event(
             "work_order_settlement.void",
             actor,
+            org,
             current.branch_id,
             settlement_id,
             command.trace,
             occurred_at,
         )?
-        .with_org(org)
         .with_snapshots(
             Some(serde_json::json!({ "status": current.status.as_db_str() })),
             Some(serde_json::json!({ "reason": reason })),
@@ -1795,9 +1801,15 @@ impl PgWorkOrderStore {
             memo,
         } = transition;
         let plan = self.daily_plan_target(plan_id).await?;
-        let event =
-            daily_plan_audit_event(action, actor, plan.branch_id, plan_id, trace, occurred_at)?
-                .with_org(org);
+        let event = daily_plan_audit_event(
+            action,
+            actor,
+            org,
+            plan.branch_id,
+            plan_id,
+            trace,
+            occurred_at,
+        )?;
 
         with_audit::<_, DailyPlanSummary, PgWorkOrderError>(&self.pool, event, |tx| {
             Box::pin(async move {

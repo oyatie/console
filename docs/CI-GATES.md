@@ -341,16 +341,18 @@ its mutation through `with_audit` / `with_audits` / `insert_audit_event`, so the
 audit row is written in the **same transaction** as the mutation
 ([ADR-0002](decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md)).
 
-The **sole** carve-out is LocationPing ingestion: raw GPS coordinates must remain
-destructible and must never enter `audit_events`
-([ADR-0014](decisions/ADR-0014-locationping-destructible-store-carved-out-of.md),
-위치정보법). That exemption is **path-bound** to the
-single real writer (`crates/compliance/adapter-postgres/src/lib.rs ::
-record_location_ping`) — the same exemption reason on any other file/function is
-rejected. (Path binding was hardened in `fix/harden-1`; previously the exemption
-matched on reason only, which could silently apply to the wrong handler. The
-historical review path was `.omc/review/security-compliance.md`; runtime state is
-not repository authority.)
+Handler surfaces include path components `application` | `rest` | `worker` |
+`app` (so `backend/app/src` is unmarked-scanned — console-937 / gh#396), plus the
+bound compliance LocationPing writer. Examined-zero `app/src` files fail closed.
+
+Bound carve-outs (ADR-0014, ADR-0029, ADR-0040) — each path-bound to a single
+`(file, function)` pair; the same exemption reason on any other site is rejected:
+
+1. LocationPing ingestion (`record_location_ping`) — raw GPS must remain
+   destructible and must never enter `audit_events`.
+2. Expired location-data retention purge (`purge_expired_location_data`).
+3. Console route-telemetry ingestion (`insert_route_telemetry`) — high-volume RUM
+   must not flood the durable business audit trail.
 
 ### `console-gate-migration-safety` — append-only audit trail
 
@@ -607,10 +609,12 @@ observable before rolling them back.
 
 ### `console-gate-rls-arming` — production queries use an armed org context
 
-Source: `backend/ci/gates/rls-arming/`. Scans adapter/rest data-layer code for
-query execution on a bare pool where no per-transaction `app.current_org` GUC is
-armed. Legitimately global reads must carry an inline `// rls-arming: ok
-<reason>` marker so each exception is reviewed and path-local.
+Source: `backend/ci/gates/rls-arming/`. Scans `crates/` **and** `app/` production
+`src` trees for query execution on a bare pool where no per-transaction
+`app.current_org` GUC is armed. Both roots must exist and yield at least one
+scanned file (examined-zero fails closed). Legitimately global reads must carry
+an inline `// rls-arming: ok <reason>` marker so each exception is reviewed and
+path-local.
 
 ### `console-gate-fabricated-branch` — defence in depth, NOT a control
 
