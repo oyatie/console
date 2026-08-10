@@ -269,24 +269,16 @@
 //!     what keeps a `/*` from closing on a `*/` in an unrelated later literal —
 //!     `a_block_comment_does_not_close_on_a_later_literals_text`.
 //!
-//! 11. **A `--` inside single-quoted SQL DATA erases every later statement in
-//!     the SAME literal.** [`without_sql_comments`] is a raw byte scan: it has
-//!     no notion of a SQL single-quoted string, so the `--` in
-//!     `UPDATE t SET note = 'a -- b'; UPDATE employees SET x = 1` opens a
-//!     comment that runs to the end of the literal and takes the second,
-//!     entirely unobfuscated write with it. Measured, not argued:
-//!     `known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement`,
-//!     which also runs the `INSERT INTO t (note) VALUES ('x -- y'); UPDATE
-//!     employees …` spelling. This is the WORST residual here in kind — the
-//!     statement it hides is the plainly written control shape from
-//!     `gate_detects_second_writer_of_an_owned_table` — and it is bounded to one
-//!     Rust literal: a `--` in one literal does not reach a write in the next,
-//!     so it does not fan out across a file.
+//! 11. **CLOSED — `--` inside single-quoted SQL data.** When [`sql_comment_extent_needs_lexer`]
+//!     says the fragment needs it, [`without_sql_comments`] tokenizes with `sqlparser`
+//!     (PostgreSQL dialect) so `'a -- b'` stays one string literal and a later
+//!     `UPDATE employees …` in the same Rust literal is charged. Pinned by
+//!     `known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement`.
+//!     All other fragments keep the byte path unchanged.
 //!
-//!     It cannot be closed by tuning this scan. A SQL comment's extent depends
-//!     on whether the bytes stand inside a single-quoted string, which byte
-//!     scanning cannot decide; the two naive repairs have both been tried and
-//!     each introduces the other's failure. Dropping the comment resolution
+//!     Historical note: a raw byte scan could not decide comment extent inside
+//!     quoted strings; Fix A charged ordinary Rust (`cargo update --workspace`);
+//!     Fix B re-opened the separator/target family. Dropping comment resolution
 //!     re-opens residual 10's separator/target family (`UPDATE/*c*/employees …`
 //!     and four more), and putting `--` in [`UNREADABLE_TARGET`] charges
 //!     ordinary Rust — `"truncate --size=0 /var/log/app.log"` and
@@ -1120,6 +1112,97 @@ impl Production {
 /// --workspace` is still not one
 /// (`a_command_line_flag_after_a_verb_word_is_not_a_write`).
 fn without_sql_comments(text: &str) -> String {
+    if sql_comment_extent_needs_lexer(text) {
+        without_sql_comments_sqlparser(strip_one_string_literal_layer(text))
+    } else {
+        without_sql_comments_byte_fallback(text)
+    }
+}
+
+/// Macro token streams pass `Literal::to_string()` with surrounding `"`.
+fn strip_one_string_literal_layer(text: &str) -> &str {
+    let t = text.trim();
+    if t.len() >= 2 && t.starts_with('"') && t.ends_with('"') && !t[1..t.len() - 1].contains('"') {
+        &t[1..t.len() - 1]
+    } else {
+        t
+    }
+}
+
+/// True when comment markers' extents depend on SQL single-quoted strings, or
+/// when real SQL block/line comments must be resolved. Otherwise the byte path
+/// is unchanged — macro splits, unreadable targets, and doc-attribute drops
+/// behave exactly as before.
+fn sql_comment_extent_needs_lexer(text: &str) -> bool {
+    let mut in_single = false;
+    let bytes = text.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'\'' {
+            if in_single && i + 1 < bytes.len() && bytes[i + 1] == b'\'' {
+                i += 2;
+                continue;
+            }
+            in_single = !in_single;
+            i += 1;
+            continue;
+        }
+        if !in_single {
+            if bytes[i..].starts_with(b"--") || bytes[i..].starts_with(b"/*") {
+                return true;
+            }
+        } else if bytes[i..].starts_with(b"--") {
+            return true;
+        }
+        i += 1;
+    }
+    false
+}
+
+fn without_sql_comments_sqlparser(text: &str) -> String {
+    use sqlparser::dialect::PostgreSqlDialect;
+    use sqlparser::tokenizer::{Token, Tokenizer, Whitespace};
+
+    let dialect = PostgreSqlDialect {};
+    // Decode Rust/SQL escapes so `\n` becomes a real newline. With unescape
+    // off, `-- hint\nemployees …` is one EOF line comment and the write vanishes
+    // (fail-OPEN vs the byte path, which left the target unresolved).
+    match Tokenizer::new(&dialect, text)
+        .with_unescape(true)
+        .tokenize()
+    {
+        Ok(tokens) => {
+            let last = tokens.len().saturating_sub(1);
+            tokens
+                .into_iter()
+                .enumerate()
+                .map(|(i, token)| match token {
+                    Token::Whitespace(Whitespace::SingleLineComment { comment, .. }) => {
+                        // EOF line comments become `;` — same rule as the byte path
+                        // (residual 10: shell flags like `--workspace`).
+                        if i == last && !comment.contains('\n') {
+                            ";".to_string()
+                        } else {
+                            " ".to_string()
+                        }
+                    }
+                    Token::Whitespace(Whitespace::MultiLineComment(_)) => " ".to_string(),
+                    // Hold quoted DATA opaque so write_targets cannot charge a
+                    // table name that only appears inside a string literal
+                    // (`INSERT INTO notes VALUES ('-- UPDATE employees …')`).
+                    Token::SingleQuotedString(_)
+                    | Token::NationalStringLiteral(_)
+                    | Token::HexStringLiteral(_) => "''".to_string(),
+                    other => other.to_string(),
+                })
+                .collect()
+        }
+        Err(_) => without_sql_comments_byte_fallback(text),
+    }
+}
+
+/// Original byte scan — preserved verbatim for fragments that do not need the lexer.
+fn without_sql_comments_byte_fallback(text: &str) -> String {
     let bytes = text.as_bytes();
     let mut out = String::with_capacity(text.len());
     let mut copied = 0usize;

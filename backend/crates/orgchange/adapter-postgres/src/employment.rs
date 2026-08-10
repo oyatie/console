@@ -296,6 +296,18 @@ impl CanonicalQuery for EmploymentQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    /// Promote/Transfer name the employment head they revise. Without this, the
+    /// projected-dispatch `target_id` bind skips (trait default `None`) and a
+    /// four-eyes approval for employment I can be spent while the port revises J.
+    fn subject_id(&self) -> Option<Uuid> {
+        match self {
+            Self::Appoint { .. } => None,
+            Self::Promote { employment_id, .. } | Self::Transfer { employment_id, .. } => {
+                Some(*employment_id)
+            }
+        }
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key and `command_id`
@@ -318,6 +330,15 @@ pub enum EmploymentError {
     DigestConflict(Uuid),
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
     UnreadableReceipt(Uuid, String),
+    /// `employment_source_bindings` PK is `(org_id, employee_id)`, so one
+    /// `employment_id` can appear on N rows. Promote/Transfer must not pick.
+    #[error(
+        "employment {employment_id} has {binding_count} source bindings; refuse ambiguous promote/transfer"
+    )]
+    AmbiguousSourceBinding {
+        employment_id: Uuid,
+        binding_count: usize,
+    },
 }
 
 /// The one permitted holder of production DML against `employees`,
@@ -505,20 +526,29 @@ impl PgEmploymentPort {
 ///
 /// `RowNotFound` when nothing is bound is deliberate: a promotion whose legacy
 /// head cannot be found must fail the whole command rather than append a
-/// canonical revision the rest of the tree cannot see.
+/// canonical revision the rest of the tree cannot see. Multiple bindings for
+/// the same `employment_id` are refused — `fetch_one` would silently pick.
 async fn bound_employee(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     employment_id: Uuid,
-) -> Result<Uuid, sqlx::Error> {
-    sqlx::query_scalar(
+) -> Result<Uuid, EmploymentError> {
+    let rows: Vec<Uuid> = sqlx::query_scalar(
         "SELECT employee_id FROM employment_source_bindings \
          WHERE org_id = $1 AND employment_id = $2",
     )
     .bind(org_id)
     .bind(employment_id)
-    .fetch_one(tx.as_mut())
-    .await
+    .fetch_all(tx.as_mut())
+    .await?;
+    match rows.as_slice() {
+        [] => Err(EmploymentError::Database(sqlx::Error::RowNotFound)),
+        [employee_id] => Ok(*employee_id),
+        _ => Err(EmploymentError::AmbiguousSourceBinding {
+            employment_id,
+            binding_count: rows.len(),
+        }),
+    }
 }
 
 impl CanonicalPort for PgEmploymentPort {

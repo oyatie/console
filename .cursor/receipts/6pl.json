@@ -1,0 +1,30 @@
+{
+  "laneId": "console-6pl",
+  "status": "done",
+  "headSha": "7b568df9db961fa8aa3f36917eaa13c6af2c3023",
+  "codeChanged": false,
+  "summary": "Tip 7b568df9 already satisfies L4-PORT-JP: PgJobPositionPort + migration 0215 + runtime-role suite + sole production DML + required_tables/REQUIRED_TABLES pins. No owned gap; no leaf commit.",
+  "filesChanged": [],
+  "redBaseline": "Bead body at older tip claimed zero tables/writers; re-measured on 7b568df9 — FALSE. Production DML grep (POSIX ERE, validated against known UPDATE employees writer) hits only canonical-adapter-postgres/src/job_position.rs; tests/ hold hostile probes only. Gate exit-0 alone is not evidence (criterion 2 limit).",
+  "verification": "job_position_port_as_runtime_role: 13/13 ok via cargo_needs_postgres.sh (canonical-enforce examined 20 tables including job_positions/job_position_revisions). Gate: second-writer plant, dual-writer ratchet, stale ratchet, topology roster, expected-writer ratchet all ok; cargo run writer-ownership exit 0 scanned 254 files. Sole production DML in src/job_position.rs.",
+  "contractBreaches": "none. Did not touch forbidden writer-ownership/, ops/postgres-reconcile-topology.sh, orgchange/, ontology/rest|canonical-domain, sibling person/company/org_unit/pay_run modules.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour; tip peripherals (0215, topology required_tables, census REQUIRED_TABLES arity 20, gen_first_party package key, module docs) already present from #618.",
+  "commands": [
+    "git rev-parse HEAD",
+    "git grep -n -iE \"(INSERT +INTO|UPDATE|DELETE +FROM) +[\\\"']?(job_positions|job_position_revisions)\" HEAD -- backend/",
+    "bash tools/ci/cargo_needs_postgres.sh --only ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg --num-threads=1",
+    "cargo run -q -p console-gate-writer-ownership --manifest-path backend/Cargo.toml",
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation gate_detects_second_writer_of_an_owned_table -- --exact --test-threads=1",
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation measured_tip_has_exactly_the_ratcheted_dual_writers -- --exact --test-threads=1",
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation stale_ratchet_entries_fail_the_gate -- --exact --test-threads=1",
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation topology_script_table_roster_matches_the_registry -- --exact --test-threads=1",
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation topology_script_names_the_roles_that_lose_dml -- --exact --test-threads=1"
+  ],
+  "closeReasonForParent": "Close console-6pl: JobPosition single-writer port proven on origin/main tip 7b568df9 (landed in #618). Criteria 1–7 evidenced by migration 0215 (job_positions FK→org_units + append-only revisions), sole production DML in PgJobPositionPort, RED-capable gate_detects_second_writer_of_an_owned_table, unchanged KNOWN_SECOND_WRITERS, untouched roster, required_tables+REQUIRED_TABLES include both names with executed census examining 20 tables, expected-writer ratchet byte-identical. Honest negative: pre-#618 tip had zero writers/tables outside contract+roster; static gate was green before and after; proof is runtime-role suite + census execution + sole-DML grep, not gate exit code. Criterion 8 Buck key already present. Parent closes bead; no leaf commit (filesChanged=[]).",
+  "followUps": [
+    "Parent: bd close console-6pl with closeReasonForParent text after admit.",
+    "Unblocks console-xxp [L5-JOB].",
+    "ownerLease false: topology/census/writer-ownership already on tip; tai.1 must not be disturbed."
+  ]
+}

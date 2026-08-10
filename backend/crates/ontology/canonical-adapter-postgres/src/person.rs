@@ -114,6 +114,13 @@ impl CanonicalQuery for PersonQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        match self {
+            Self::Create { .. } => None,
+            Self::Revise { person_id, .. } => Some(*person_id),
+        }
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key and `command_id`

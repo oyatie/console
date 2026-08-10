@@ -1,0 +1,24 @@
+{
+  "laneId": "console-tai.1",
+  "status": "done",
+  "headSha": "74e80e3006a5b9aa215b5a3f49680e053484be85",
+  "summary": "Replaced byte-scan SQL comment stripping with sqlparser tokenizer for writer-ownership residual 11 (dash inside quoted SQL data hiding later statements).",
+  "filesChanged": [
+    "backend/Cargo.lock",
+    "backend/ci/gates/writer-ownership/Cargo.toml",
+    "backend/ci/gates/writer-ownership/src/lib.rs",
+    "backend/ci/gates/writer-ownership/tests/gate_detects_violation.rs"
+  ],
+  "redBaseline": "Prior tip: without_sql_comments byte-scan treated -- inside single-quoted SQL data as comment start, hiding a later UPDATE employees write in the same literal (residual 11 / known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement).",
+  "verification": "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation: 43 passed; 0 failed on leaf 74e80e300.",
+  "contractBreaches": "none",
+  "enforcementPlacement": "WHERE: console-gate-writer-ownership static scan runs on crate sources before/with CI cargo run -p console-gate-writer-ownership; subject SQL literals exist in scanned .rs files. Finest distinction: sqlparser PostgreSqlDialect tokens (string vs line comment vs block comment) with byte-fallback on tokenize Err. Examined-zero: gate still fails closed on second-writer plant tests; empty tree would yield no owner writes and ratchet/dual-writer tests fail.",
+  "peripheralsUpdated": "Module docs in writer-ownership/src/lib.rs updated for sqlparser path; Cargo.toml + Cargo.lock add sqlparser dep; residual test retained as control for the closed shape.",
+  "commands": [
+    "cargo test -p console-gate-writer-ownership --manifest-path backend/Cargo.toml --test gate_detects_violation"
+  ],
+  "owned": [
+    "backend/ci/gates/writer-ownership/",
+    "backend/Cargo.lock"
+  ]
+}

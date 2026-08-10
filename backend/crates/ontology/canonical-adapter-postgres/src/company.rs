@@ -107,6 +107,11 @@ impl CanonicalQuery for CompanyQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        // Company revise is the tenant itself (`org_id`), not a payload row id.
+        None
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key, the tenant, AND

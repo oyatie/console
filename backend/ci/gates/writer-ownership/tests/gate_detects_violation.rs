@@ -1647,31 +1647,14 @@ fn known_residual_a_line_comment_that_runs_off_the_end_of_its_literal()
     Ok(())
 }
 
-/// RESIDUAL 11: a `--` inside single-quoted SQL DATA hides every later
-/// statement in the SAME literal.
+/// RESIDUAL 11 (CLOSED for `--` via sqlparser): a `--` inside single-quoted SQL
+/// DATA must NOT hide later statements in the SAME literal.
 ///
-/// `without_sql_comments` is a raw byte scan with no notion of a SQL
-/// single-quoted string, so the `--` in the DATA `'a -- b'` opens a comment that
-/// runs to the end of the literal and deletes the second statement with it. That
-/// second statement is the control shape from
-/// `gate_detects_second_writer_of_an_owned_table`, written plainly and not
-/// obfuscated at all, which makes this the worst residual here in KIND.
-///
-/// Bounded, though, and the third case pins the boundary: a `--` in one Rust
-/// literal does not reach a write in the NEXT one, so this does not fan out
-/// across a file. The fourth case pins the other edge — a `--` in data that is
-/// not followed by another statement is still charged, because the write is
-/// already resolved before the comment opens.
-///
-/// It cannot be closed by tuning the scan. A comment's extent depends on whether
-/// the bytes stand inside a single-quoted string, which byte scanning cannot
-/// decide; the total primitive is a real SQL lexer, which is a new backend
-/// dependency and a separate decision. Both naive repairs have been tried and
-/// each introduces the other's failure: dropping the comment resolution re-opens
-/// the whole separator/target family
-/// (`a_comment_where_the_statement_expects_a_separator_or_a_table_is_charged`),
-/// and putting `--` in `UNREADABLE_TARGET` charges ordinary Rust
-/// (`a_command_line_flag_after_a_verb_word_is_not_a_write`).
+/// The sqlparser path tokenizes with string context so `'a -- b'` stays data.
+/// Cases below assert `employees` is charged when a later write follows (`escapes=
+/// false`). A `--` in one Rust literal still does not reach a write in the NEXT
+/// one; a `--` in data after the target is already resolved before the comment
+/// opens.
 ///
 /// Same two canaries as the residual test above, for the same two reasons.
 #[test]
@@ -1682,13 +1665,13 @@ fn known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement()
             "update-then-update",
             "pub const SQL: &str = \"UPDATE t SET note = 'a -- b'; \
              UPDATE employees SET org_unit = 1\";",
-            true,
+            false,
         ),
         (
             "insert-then-update",
             "pub const SQL: &str = \"INSERT INTO t (note) VALUES ('x -- y'); \
              UPDATE employees SET org_unit = 1\";",
-            true,
+            false,
         ),
         (
             // The hole stops at the literal boundary: two separate literals,
@@ -1735,6 +1718,70 @@ fn known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement()
             report.violations
         );
     }
+    Ok(())
+}
+
+/// Escaped-newline line comment must NOT erase a later write (sqlparser path).
+///
+/// Source form `"UPDATE -- hint\\nemployees …"` is what `Literal::to_string()`
+/// yields for a rustc string with an escape; with unescape off the lexer treated
+/// the whole suffix as one EOF `--` comment (fail-OPEN). Fail CLOSED: charge.
+#[test]
+fn escaped_newline_line_comment_still_charges_the_write() -> Result<(), Box<dyn std::error::Error>>
+{
+    let escape = temp_tree("escaped-newline-line-comment")?;
+    crate_with_source(
+        &escape,
+        "intruder",
+        "console-x-adapter-postgres",
+        "src/lib.rs",
+        &format!(
+            "{CANARY}{PARSED_ONLY_CANARY}pub mod employees {{}}\n\
+             pub const SQL: &str = \"UPDATE -- hint\\nemployees SET org_unit = 1\";\n"
+        ),
+    )?;
+    let report = scan(&escape)?;
+    let charged = |table: &str| report.violations.iter().any(|v| v.table == table);
+    assert!(
+        charged("organizations"),
+        "canary not charged — probe unread: {:#?}",
+        report.violations
+    );
+    assert!(
+        charged("employees"),
+        "escaped-newline `--` must charge employees: {:#?}",
+        report.violations
+    );
+    Ok(())
+}
+
+/// Quoted SQL DATA must not be scanned as a DML target (sqlparser path).
+#[test]
+fn quoted_sql_data_is_not_a_write_target() -> Result<(), Box<dyn std::error::Error>> {
+    let escape = temp_tree("quoted-sql-data-not-target")?;
+    crate_with_source(
+        &escape,
+        "intruder",
+        "console-x-adapter-postgres",
+        "src/lib.rs",
+        &format!(
+            "{CANARY}{PARSED_ONLY_CANARY}pub mod employees {{}}\n\
+             pub mod notes {{}}\n\
+             pub const SQL: &str = \"INSERT INTO notes(note) VALUES ('-- UPDATE employees SET x = 1')\";\n"
+        ),
+    )?;
+    let report = scan(&escape)?;
+    let charged = |table: &str| report.violations.iter().any(|v| v.table == table);
+    assert!(
+        charged("organizations"),
+        "canary not charged — probe unread: {:#?}",
+        report.violations
+    );
+    assert!(
+        !charged("employees"),
+        "quoted DATA must not charge employees: {:#?}",
+        report.violations
+    );
     Ok(())
 }
 

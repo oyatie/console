@@ -126,6 +126,15 @@ impl CanonicalQuery for JobPositionQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        match self {
+            Self::Create { .. } => None,
+            Self::Revise {
+                job_position_id, ..
+            } => Some(*job_position_id),
+        }
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key and `command_id`

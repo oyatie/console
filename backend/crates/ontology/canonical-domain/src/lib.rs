@@ -534,6 +534,16 @@ pub trait CanonicalQuery {
     /// The impls delegate to that inherent one; a same-named trait method would
     /// make the delegation resolve by precedence rules instead of by spelling.
     fn dispatch_target(&self) -> DispatchTarget;
+
+    /// The payload subject this query would write, when the command names one.
+    ///
+    /// `None` for create-style commands and for writes whose subject is the
+    /// tenant itself (company revise). Default so ports that do not yet bind a
+    /// subject keep compiling; the dispatcher only compares when both
+    /// `ProjectedDispatch::target_id` and this value are present.
+    fn subject_id(&self) -> Option<uuid::Uuid> {
+        None
+    }
 }
 
 /// The shape every canonical object port has: a typed query, a pure preflight,

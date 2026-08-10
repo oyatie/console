@@ -741,6 +741,71 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     );
 }
 
+/// Operator data-repair can leave one `employment_id` on N bindings (PK is
+/// `(org_id, employee_id)`). Promote must refuse that ambiguity rather than
+/// let `fetch_one` silently pick an arbitrary legacy row.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_ambiguous_employment_binding_refuses_promote(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (employee_a, employment_id) = appointed(&owner_pool, org, actor, &port, "ambig-a").await;
+    let employee_b = seed_employee(&owner_pool, ORG, "ambig-b").await;
+
+    sqlx::query(
+        "INSERT INTO employment_source_bindings \
+         (org_id, employee_id, employment_id, actor_id, payload_digest) \
+         VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(ORG)
+    .bind(employee_b)
+    .bind(employment_id)
+    .bind(*actor.as_uuid())
+    .bind([0_u8; 32].as_slice())
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(86_400),
+                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("ambiguous source binding must refuse promote, not pick an arbitrary employee");
+
+    assert!(
+        matches!(
+            refused,
+            EmploymentError::AmbiguousSourceBinding {
+                employment_id: id,
+                binding_count: 2,
+            } if id == employment_id
+        ),
+        "got {refused:?}"
+    );
+
+    // Neither legacy head was rewritten; no second revision landed.
+    assert_eq!(
+        legacy_head(&owner_pool, employee_a).await,
+        ("ACME".to_owned(), None, None, "ACTIVE".to_owned())
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, employee_b).await,
+        ("ACME".to_owned(), None, None, "ACTIVE".to_owned())
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        1,
+        "a refused promote must append no revision"
+    );
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
     let (org, actor, port) = fixture(&owner_pool).await;

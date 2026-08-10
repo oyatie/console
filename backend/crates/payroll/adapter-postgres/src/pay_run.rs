@@ -253,6 +253,10 @@ impl CanonicalQuery for PayRunQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        Some(self.run_id())
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key and `command_id`

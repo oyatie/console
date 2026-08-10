@@ -136,6 +136,13 @@ impl CanonicalQuery for OrgUnitQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         self.target()
     }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        match self {
+            Self::Create { .. } => None,
+            Self::Revise { org_unit_id, .. } => Some(*org_unit_id),
+        }
+    }
 }
 
 /// The typed write this port accepts. `org_id` is the RLS key and `command_id`

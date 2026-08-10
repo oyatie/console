@@ -1,0 +1,41 @@
+{
+  "verdict": "APPROVE",
+  "tipSha": "2faae5bab59269e3bbc871abd8c65bac1138c813",
+  "candidateSha": "b960bbecee4d78dc892daf5939ec57958db81ba9",
+  "baseSha": "7b568df9db961fa8aa3f36917eaa13c6af2c3023",
+  "rekey": {
+    "supersededTipSha": "2faae5bab59269e3bbc871abd8c65bac1138c813",
+    "supersededCandidateSha": "b960bbecee4d78dc892daf5939ec57958db81ba9",
+    "reason": "Tip rebuilt for doc-manifest/fmt/sqlparser unescape+opaque-quoted-string convergence; product leaf commits remain the admitted trees. C..T after rebuild is authority ledger ADD only.",
+    "independentCriticBlocker": "wave1-train-indep-critic.json BLOCK on check:doc-manifest at 9c7ea19f6 — discharged when generate-documentation-manifest --check and Repo gates are green at the new tip.",
+    "qaCriticFolded": "622-qa.json W-OWN-FAILOPEN + W-OWN-FALSEPOS closed on C; CI-A fmt + CI-B doc-manifest on C; AUTHZ-EMPLOYMENT deferred to console-h3e; /* sibling residual remains console-jth.",
+    "noFreshFullCriticRound": true
+  },
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Residual-11 integration test module docs still describe an open byte-scan hole and claim it cannot be closed, while lib.rs marks residual 11 CLOSED and the case flags expect the write charged (escapes=false).",
+      "failureScenario": "A later reader treats known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement as a live residual and re-opens a third spelling of the same class instead of trusting the closed control.",
+      "location": "backend/ci/gates/writer-ownership/tests/gate_detects_violation.rs:1650-1674",
+      "provenByExecution": true,
+      "ownerLease": true
+    },
+    {
+      "severity": "minor",
+      "claim": "EmploymentQuery still uses CanonicalQuery::subject_id default None; promote/transfer via projected dispatch can disagree with gated target_id without refusal. Documented q06/uoh deferral, not closed in this train.",
+      "failureScenario": "Four-eyes approval bound to employment I is spent while EmploymentQuery revises employment J because the handler skip-compares when subject_id is None.",
+      "location": "backend/crates/orgchange/adapter-postgres/src/employment.rs:295-299",
+      "provenByExecution": false,
+      "ownerLease": true
+    },
+    {
+      "severity": "minor",
+      "claim": "uoh postgres control an_ambiguous_employment_binding_refuses_promote was not re-executed in this critic pass (Docker socket unavailable); compile --no-run succeeded and the fetch_all !=1 refuse is present in the tip diff.",
+      "failureScenario": "If the runtime-role suite regresses only under Postgres, admit would green on static review without catching it.",
+      "location": "backend/crates/orgchange/adapter-postgres/tests/employment_port_as_runtime_role.rs",
+      "provenByExecution": false,
+      "ownerLease": true
+    }
+  ],
+  "notes": "Standing lenses on tip 2faae5bab (C=b960bbece ledger-only C..T). ORACLE: residual-11 green; mutate→red by flipping update-then-update escapes false→true failed with employees charged; q06 projected_dispatch_derivation 7/7 green including a_payload_whose_subject_differs_from_target_id_is_refused; residual-10 separator + command-line-flag + second-writer controls green on prior pass of same product commits. PERIPHERAL: lib.rs CLOSED + 0214 comment + Buck sqlparser face (sha256 matches Cargo.lock) + ledger T; test residual-11 prose stale (finding — addressed on convergence C). ENFORCEMENT: sqlparser path when comment extent needs lexer; bound_employee fetch_all count; handler subject_id vs target_id — examined-zero fails closed. FALSE GREEN: C binds writer-ownership + third-party/rust BUCK sqlparser faces so hermetic Buck is not cargo-only; no --workflow-only. No blocker / no proven major at review time. See rekey for post-review tip rebuild."
+}

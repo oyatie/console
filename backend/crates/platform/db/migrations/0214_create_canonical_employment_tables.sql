@@ -154,11 +154,11 @@ CREATE TABLE employment_revisions (
 -- carry two bindings, so a duplicate binding is made UNREPRESENTABLE by the
 -- primary key rather than discouraged by convention: `PRIMARY KEY (org_id,
 -- employee_id)` rejects both a second binding for the same employee AND a
--- re-insert of the identical (employee, employment) pair. The reverse direction
--- is deliberately NOT unique — a person rehired into a second employment is a
--- new head bound to a new `employees` row, and a data-repair rebind must be
--- able to point two historical employments at one source record without a
--- schema change.
+-- re-insert of the identical (employee, employment) pair. A rehire opens a new
+-- head on a new `employees` row, so employee-side uniqueness still admits a
+-- second employment. `employment_id` is only indexed, not unique — that permits
+-- an ambiguous N:1 binding which readers must refuse. Pointing two historical
+-- employments at one source record is exactly what this primary key forbids.
 --
 -- Same shape as 0213's `employee_person_bindings`, for the same reason: this is
 -- the surface a reader crosses to go from the legacy row to the canonical

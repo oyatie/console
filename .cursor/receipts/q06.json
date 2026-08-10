@@ -1,0 +1,43 @@
+{
+  "status": "done",
+  "summary": "Bind canonical projected dispatch to the gated/approved subject: CanonicalQuery::subject_id (default None) plus canonical_port_handler refuse when target_id and decoded payload subject disagree. Adapter impls for company/org_unit/job_position/person/pay_run; EmploymentQuery deferred via trait default (uoh lane).",
+  "filesChanged": [
+    "backend/crates/ontology/canonical-domain/src/lib.rs",
+    "backend/crates/ontology/rest/src/lib.rs",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/company.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/person.rs",
+    "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+    ".cursor/receipts/q06.json"
+  ],
+  "redBaseline": "Control projected_dispatch_derivation::a_payload_whose_subject_differs_from_target_id_is_refused: target_id=I with params.job_position_id=J\u2260I must Validation-refuse and leave StubPort unseen. Before the handler binding check, canonical_port_handler discarded target_id and the write proceeded \u2014 the PR #618 f6 / console-q06 failure class.",
+  "verification": "cargo test -p console-ontology-canonical-domain --manifest-path backend/Cargo.toml (9 ok); cargo test -p console-ontology-rest --manifest-path backend/Cargo.toml --lib projected_dispatch_derivation (7 ok incl. subject mismatch); cargo test -p console-ontology-canonical-adapter-postgres -p console-payroll-adapter-postgres --manifest-path backend/Cargo.toml --lib --no-run (compile ok). employment.rs not edited.",
+  "contractBreaches": "none. EmploymentQuery still uses trait default subject_id=None until uoh/admit implements it \u2014 revise employment with target_id set is not yet bound in this lane.",
+  "enforcementPlacement": "WHERE: canonical_port_handler after serde decode and dispatch_target() re-check, before preflight/execute \u2014 decoded Query and ProjectedDispatch.target_id both exist. Finest distinction: Option equality of bound instance uuid vs query.subject_id(); creates/company (None) skip the compare. Examined-zero fails: the new unit test requires a refusal; if the if-let binding is removed the expect_err goes red.",
+  "peripheralsUpdated": "projected_dispatch_derivation EchoQuery documents optional subject fields; handler comment updated from target_id discarded to bind-check semantics. No docs/** authority pins. Employment peripheral deferred to uoh.",
+  "commands": [
+    "cargo test -p console-ontology-canonical-domain --manifest-path backend/Cargo.toml",
+    "cargo test -p console-ontology-rest --manifest-path backend/Cargo.toml --lib projected_dispatch_derivation",
+    "cargo test -p console-ontology-canonical-adapter-postgres -p console-payroll-adapter-postgres --manifest-path backend/Cargo.toml --lib --no-run"
+  ],
+  "headSha": "fa8f063b88516b16e2cb33f7f546677bb6469a39",
+  "followUps": [
+    "EmploymentQuery::subject_id (employment_id on revise/transfer variants) owned by uoh lane \u2014 trait default None until admit/restack; do not edit employment.rs here.",
+    "Commit could not use -S: gpg binary missing in agent environment (error: cannot run gpg). Parent should re-sign or resign tip if forge requires signed commits.",
+    "Optional: company.revise bind target_id to org_id if projected company instances ever gate on a non-tenant uuid."
+  ],
+  "owned": [
+    "backend/crates/ontology/canonical-domain/src/lib.rs",
+    "backend/crates/ontology/canonical-domain/src/canonical_contract.rs",
+    "backend/crates/ontology/rest/src/lib.rs",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/company.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/person.rs",
+    "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+    ".cursor/receipts/q06.json"
+  ]
+}

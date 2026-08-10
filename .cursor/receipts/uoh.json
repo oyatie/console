@@ -1,0 +1,20 @@
+{
+  "status": "done",
+  "summary": "bound_employee now fetch_all-and-refuses when employment_source_bindings count != 1 (AmbiguousSourceBinding), preserving RowNotFound for 0; inverted 0214 comment corrected; RED control an_ambiguous_employment_binding_refuses_promote green.",
+  "filesChanged": [
+    "backend/crates/orgchange/adapter-postgres/src/employment.rs",
+    "backend/crates/orgchange/adapter-postgres/tests/employment_port_as_runtime_role.rs",
+    "backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql",
+    ".cursor/receipts/uoh.json"
+  ],
+  "redBaseline": "an_ambiguous_employment_binding_refuses_promote inserts a second employment_source_bindings row sharing one employment_id then asserts Promote returns AmbiguousSourceBinding{binding_count:2} and leaves both legacy heads + revision count unchanged. Pre-fix fetch_one would have Ok-picked an arbitrary employee.",
+  "verification": "tools/ci/cargo_needs_postgres.sh --only orgchange-adapter-postgres-employment-port-as-runtime-role-pg --num-threads=1 → 15 passed including an_ambiguous_employment_binding_refuses_promote.",
+  "contractBreaches": "none",
+  "enforcementPlacement": "WHERE: PgEmploymentPort::write Promote/Transfer path calls bound_employee after binding rows exist in the open transaction; subject (employment_source_bindings rows for org_id+employment_id) exists at read time. Finest distinction: row count from fetch_all (0→RowNotFound, 1→ok, N→AmbiguousSourceBinding). Examined-zero fails: empty result is EmploymentError::Database(RowNotFound), never Ok.",
+  "peripheralsUpdated": "0214_create_canonical_employment_tables.sql comment at employment_source_bindings (~157-161) rewritten so it no longer claims PK allows two employments→one employee; bound_employee module docs note multi-row refuse. subject_id on EmploymentQuery skipped (trait did not require it on base tip).",
+  "commands": [
+    "tools/ci/cargo_needs_postgres.sh --only orgchange-adapter-postgres-employment-port-as-runtime-role-pg --num-threads=1"
+  ],
+  "headSha": "91611d60ce08eb48c5a100f0fe6efd8ae0c32626",
+  "followUps": "none in-lane; parent admits push/PR"
+}
