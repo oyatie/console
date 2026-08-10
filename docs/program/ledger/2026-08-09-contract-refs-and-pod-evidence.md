@@ -5,9 +5,13 @@
 **Scope:** `backend/crates/contracts/`, `backend/crates/logistics/rest/`, and one schema property in
 `backend/openapi/openapi.yaml`.
 **Not product authority.** Clears no HOLD. No migration, no new dependency, no production promotion.
-**Head SHA (reviewed tip before finish):** `c6dea4d2075e42b0e4c3006e8a1809c5f646c367`
-**Review identities:** Codex connector automated review on PR #620 (7 threads); Cursor-native
-finish/self-critic lane on worktree `console-integration` (no CLI critic wrapper).
+**Head SHA (authority tip parent / candidate C):** `d37897aa5c56fffffc5c05cabfed173baaa9877e`
+**(Prior reviewed tip before finish-lane product commit):** `c6dea4d2075e42b0e4c3006e8a1809c5f646c367`
+**Review identities:** Codex connector automated review on PR #620 (7 threads, all resolved);
+Cursor-native finish/self-critic lane on worktree `console-integration` (no CLI critic wrapper).
+**Authority train note:** Finish-lane product (Buck `RESOURCE_CONFIG`, regenerated BUCK, class-sweep
+hardening) lives on candidate `C=d37897aa5`. This tip commit is authority-only (ledger) so `C..T`
+stays within the allow-listed train.
 
 ## Lane delivery evidence
 
